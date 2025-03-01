@@ -36,6 +36,19 @@ dist/
 .env
 EOL
 
+# Also add a root .dockerignore
+cat > ./.dockerignore << EOL
+node_modules/
+**/node_modules/
+**/venv/
+**/__pycache__/
+**/*.pyc
+**/*.pyo
+**/*.pyd
+**/.DS_Store
+**/.env
+EOL
+
 # 2. Add all changes to git
 echo "Adding all files to git..."
 git add .
