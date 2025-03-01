@@ -15,6 +15,7 @@
     "multer": "^1.4.5-lts.1",
     "redis": "^4.6.7",
     "winston": "^3.9.0",
+    "winston-daily-rotate-file": "^4.7.1",
     "openai": "^3.3.0",
     "node-powershell": "^5.0.1",
     "helmet": "^7.1.0",

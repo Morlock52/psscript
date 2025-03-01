@@ -1,7 +1,9 @@
 import winston from 'winston';
-import 'winston-daily-rotate-file';
 import fs from 'fs';
 import path from 'path';
+
+// Simplified logger for development purposes
+const { createLogger, format, transports } = winston;
 
 // Make sure logs directory exists
 const logDir = path.join(process.cwd(), 'logs');
@@ -27,25 +29,13 @@ winston.addColors({
   debug: 'blue',
 });
 
-// Create custom format for structured logging
-const structuredLogFormat = winston.format.combine(
-  winston.format.timestamp({
-    format: 'YYYY-MM-DD HH:mm:ss.SSS',
-  }),
-  winston.format.metadata({ 
-    fillExcept: ['timestamp', 'level', 'message'] 
-  }),
-  winston.format.errors({ stack: true }),
-  winston.format.json()
-);
-
 // Create custom format for console output
-const consoleFormat = winston.format.combine(
-  winston.format.colorize({ all: true }),
-  winston.format.timestamp({
+const consoleFormat = format.combine(
+  format.colorize({ all: true }),
+  format.timestamp({
     format: 'HH:mm:ss',
   }),
-  winston.format.printf(
+  format.printf(
     (info) => {
       const { timestamp, level, message, ...meta } = info;
       const metaString = Object.keys(meta).length ? 
@@ -62,61 +52,48 @@ const consoleFormat = winston.format.combine(
 const logLevel = process.env.LOG_LEVEL || 
   (process.env.NODE_ENV === 'production' ? 'info' : 'debug');
 
-// Create file transport with rotation
-const errorFileTransport = new winston.transports.DailyRotateFile({
-  filename: path.join(logDir, 'error-%DATE%.log'),
-  datePattern: 'YYYY-MM-DD',
-  level: 'error',
-  maxSize: '20m',
-  maxFiles: '14d',
-  format: structuredLogFormat,
-  zippedArchive: true,
-});
-
-const combinedFileTransport = new winston.transports.DailyRotateFile({
-  filename: path.join(logDir, 'combined-%DATE%.log'),
-  datePattern: 'YYYY-MM-DD',
-  maxSize: '20m',
-  maxFiles: '7d',
-  format: structuredLogFormat,
-  zippedArchive: true,
-});
-
-// Create transports array
-const transports = [
-  new winston.transports.Console({
+// Create transports array - simplified for development
+const transportList = [
+  new transports.Console({
     format: consoleFormat,
     handleExceptions: true,
   }),
+  new transports.File({
+    filename: path.join(logDir, 'error.log'),
+    level: 'error',
+  }),
+  new transports.File({
+    filename: path.join(logDir, 'combined.log'),
+  }),
 ];
 
-// Only add file transports in production or if explicitly enabled
-if (process.env.NODE_ENV === 'production' || process.env.ENABLE_FILE_LOGS === 'true') {
-  transports.push(errorFileTransport);
-  transports.push(combinedFileTransport);
-}
-
 // Create logger instance
-const logger = winston.createLogger({
+const logger = createLogger({
   level: logLevel,
   levels,
-  format: structuredLogFormat,
+  format: format.combine(
+    format.timestamp(),
+    format.json()
+  ),
   defaultMeta: { 
     service: 'psscript-api',
     environment: process.env.NODE_ENV || 'development',
     version: process.env.npm_package_version || '0.1.0'
   },
-  transports,
+  transports: transportList,
   exitOnError: false,
   silent: process.env.NODE_ENV === 'test' && process.env.LOG_IN_TESTS !== 'true',
 });
 
 // Create HTTP stream for morgan integration
-logger.stream = {
+const stream = {
   write: (message: string) => {
     logger.http(message.trim());
   },
 };
+
+// Add stream property to logger
+(logger as any).stream = stream;
 
 // Log initialization
 if (process.env.NODE_ENV !== 'test') {
