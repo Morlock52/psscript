@@ -4,7 +4,9 @@ WORKDIR /app
 
 COPY package*.json ./
 
-RUN npm install
+# Install all dependencies including the newly added ones
+RUN npm install && \
+    npm install helmet compression express-rate-limit morgan ioredis swagger-ui-express swagger-jsdoc
 
 COPY . .
 
