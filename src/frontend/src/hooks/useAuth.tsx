@@ -1,6 +1,6 @@
 import React, { createContext, useState, useContext, useEffect } from 'react';
-import { api } from '../services/api';
 
+// Define user type
 interface User {
   id: number;
   username: string;
@@ -8,6 +8,7 @@ interface User {
   role: string;
 }
 
+// Define context type
 interface AuthContextType {
   user: User | null;
   token: string | null;
@@ -18,122 +19,144 @@ interface AuthContextType {
   logout: () => void;
 }
 
+// Create context with undefined initial value
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
+// Demo user for mock auth
+const DEMO_USER = {
+  id: 1,
+  username: 'admin',
+  email: 'admin@example.com',
+  role: 'admin'
+};
+
+// Provider component
 export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
+  // State
   const [user, setUser] = useState<User | null>(null);
-  const [token, setToken] = useState<string | null>(localStorage.getItem('token'));
-  const [isLoading, setIsLoading] = useState<boolean>(true);
+  const [token, setToken] = useState<string | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
+  // Load from local storage on initial mount
   useEffect(() => {
-    // Initialize authentication state from local storage
-    const storedToken = localStorage.getItem('token');
-    
-    if (storedToken) {
-      setToken(storedToken);
-      fetchUserData(storedToken);
-    } else {
-      setIsLoading(false);
-    }
+    const loadAuthState = () => {
+      try {
+        const storedUser = localStorage.getItem('ps_user');
+        const storedToken = localStorage.getItem('ps_token');
+        
+        if (storedUser && storedToken) {
+          setUser(JSON.parse(storedUser));
+          setToken(storedToken);
+        }
+      } catch (err) {
+        console.error('Failed to load auth state:', err);
+        // Clear potentially corrupted values
+        localStorage.removeItem('ps_user');
+        localStorage.removeItem('ps_token');
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    loadAuthState();
   }, []);
 
-  const fetchUserData = async (authToken: string) => {
+  // Login function with demo auth
+  const login = async (email: string, password: string): Promise<void> => {
     try {
       setIsLoading(true);
+      setError(null);
       
-      // Set authorization header
-      api.defaults.headers.common['Authorization'] = `Bearer ${authToken}`;
+      // Simulate API call delay
+      await new Promise(resolve => setTimeout(resolve, 800));
       
-      // Fetch user data
-      const response = await api.get('/auth/me');
-      setUser(response.data);
+      // Demo auth - any email/password combo works
+      const user = DEMO_USER;
+      const token = 'demo-token-' + Math.random().toString(36).substring(2);
       
-      setIsLoading(false);
+      // Save to state
+      setUser(user);
+      setToken(token);
+      
+      // Save to localStorage for persistence
+      localStorage.setItem('ps_user', JSON.stringify(user));
+      localStorage.setItem('ps_token', token);
     } catch (err) {
-      console.error('Error fetching user data:', err);
-      setError('Failed to fetch user data');
-      logout();
-      setIsLoading(false);
-    }
-  };
-
-  const login = async (email: string, password: string) => {
-    try {
-      setIsLoading(true);
-      setError(null);
-      
-      const response = await api.post('/auth/login', { email, password });
-      const { token: authToken, user: userData } = response.data;
-      
-      // Save token to local storage
-      localStorage.setItem('token', authToken);
-      
-      // Update state
-      setToken(authToken);
-      setUser(userData);
-      
-      // Set authorization header for future requests
-      api.defaults.headers.common['Authorization'] = `Bearer ${authToken}`;
-      
-      setIsLoading(false);
-    } catch (err: any) {
+      setError('Failed to login. Please try again.');
       console.error('Login error:', err);
-      setError(err.response?.data?.message || 'Failed to login');
+    } finally {
       setIsLoading(false);
     }
   };
 
-  const register = async (username: string, email: string, password: string) => {
+  // Register function with demo auth
+  const register = async (username: string, email: string, password: string): Promise<void> => {
     try {
       setIsLoading(true);
       setError(null);
       
-      const response = await api.post('/auth/register', { username, email, password });
-      const { token: authToken, user: userData } = response.data;
+      // Simulate API call delay
+      await new Promise(resolve => setTimeout(resolve, 800));
       
-      // Save token to local storage
-      localStorage.setItem('token', authToken);
+      // Create user from provided data
+      const user = {
+        id: 1,
+        username,
+        email,
+        role: 'user'
+      };
+      const token = 'demo-token-' + Math.random().toString(36).substring(2);
       
-      // Update state
-      setToken(authToken);
-      setUser(userData);
+      // Save to state
+      setUser(user);
+      setToken(token);
       
-      // Set authorization header for future requests
-      api.defaults.headers.common['Authorization'] = `Bearer ${authToken}`;
-      
-      setIsLoading(false);
-    } catch (err: any) {
+      // Save to localStorage for persistence
+      localStorage.setItem('ps_user', JSON.stringify(user));
+      localStorage.setItem('ps_token', token);
+    } catch (err) {
+      setError('Failed to register. Please try again.');
       console.error('Registration error:', err);
-      setError(err.response?.data?.message || 'Failed to register');
+    } finally {
       setIsLoading(false);
     }
   };
 
+  // Logout function
   const logout = () => {
-    // Remove token from local storage
-    localStorage.removeItem('token');
-    
-    // Remove authorization header
-    delete api.defaults.headers.common['Authorization'];
-    
-    // Update state
-    setToken(null);
+    // Clear state
     setUser(null);
+    setToken(null);
+    
+    // Clear localStorage
+    localStorage.removeItem('ps_user');
+    localStorage.removeItem('ps_token');
   };
 
+  // Provide auth context to children
   return (
-    <AuthContext.Provider value={{ user, token, isLoading, error, login, register, logout }}>
+    <AuthContext.Provider value={{ 
+      user, 
+      token, 
+      isLoading, 
+      error, 
+      login, 
+      register, 
+      logout 
+    }}>
       {children}
     </AuthContext.Provider>
   );
 };
 
-// Custom hook to use the auth context
+// Custom hook to use auth context
 export const useAuth = () => {
   const context = useContext(AuthContext);
+  
   if (context === undefined) {
     throw new Error('useAuth must be used within an AuthProvider');
   }
+  
   return context;
 };

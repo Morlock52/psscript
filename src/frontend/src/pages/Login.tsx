@@ -24,7 +24,10 @@ const Login: React.FC = () => {
     }
     
     try {
+      // Note: For demo purposes, any email/password combination will work
       await login(email, password);
+      
+      // Navigate to the dashboard or the page they were trying to access
       navigate(from, { replace: true });
     } catch (err) {
       // Error is handled by useAuth
@@ -121,6 +124,13 @@ const Login: React.FC = () => {
               <Link to="/register" className="text-blue-400 hover:text-blue-300">
                 Sign up
               </Link>
+            </p>
+          </div>
+          
+          <div className="mt-6 p-4 bg-gray-700 rounded-lg border border-gray-600">
+            <h3 className="text-sm font-medium text-blue-400 mb-2">Demo Information</h3>
+            <p className="text-xs text-gray-300">
+              This is a demo application with a mocked authentication system. You can use any email and password to log in.
             </p>
           </div>
         </div>
