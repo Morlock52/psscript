@@ -1,0 +1,26 @@
+{
+  "name": "psscript-manager",
+  "version": "0.1.0",
+  "description": "PowerShell Script Management Application with AI Analysis",
+  "main": "index.js",
+  "scripts": {
+    "frontend:dev": "cd src/frontend && npm run dev",
+    "backend:dev": "cd src/backend && npm run dev",
+    "ai:dev": "cd src/ai && python -m uvicorn main:app --reload",
+    "dev": "concurrently \"npm run frontend:dev\" \"npm run backend:dev\" \"npm run ai:dev\"",
+    "install:all": "npm install && cd src/frontend && npm install && cd ../backend && npm install",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [
+    "powershell",
+    "script",
+    "management",
+    "ai",
+    "analysis"
+  ],
+  "author": "",
+  "license": "MIT",
+  "devDependencies": {
+    "concurrently": "^8.2.0"
+  }
+}
