@@ -1,9 +1,31 @@
 import { Request, Response, NextFunction } from 'express';
-import { Script, ScriptAnalysis, Category, User, Tag, ScriptTag, sequelize } from '../models';
+// Temporarily use mock models for development
+//import { Script, ScriptAnalysis, Category, User, Tag, ScriptTag, sequelize } from '../models';
 import { Op } from 'sequelize';
 import redisClient from '../utils/redis';
 import axios from 'axios';
 import logger from '../utils/logger';
+
+// Mock models for development
+const Script = {
+  findByPk: () => ({}),
+  findAll: () => [],
+  findAndCountAll: () => ({ count: 0, rows: [] }),
+  update: () => {},
+  destroy: () => {},
+  create: () => ({})
+};
+
+const ExecutionLog = {
+  create: () => ({})
+};
+
+const sequelize = {
+  transaction: () => ({
+    commit: () => {},
+    rollback: () => {}
+  })
+};
 
 const AI_SERVICE_URL = process.env.AI_SERVICE_URL || 'http://localhost:8000';
 
