@@ -78,7 +78,7 @@ services:
     volumes:
       - postgres_data:/var/lib/postgresql/data
       - ./src/db/schema.sql:/docker-entrypoint-initdb.d/01-schema.sql
-      - ./src/db/seeds:/docker-entrypoint-initdb.d/02-seeds
+      - ./src/db/seeds/01-initial-data.sql:/docker-entrypoint-initdb.d/02-seed-data.sql
     environment:
       - POSTGRES_DB=psscript
       - POSTGRES_USER=postgres
