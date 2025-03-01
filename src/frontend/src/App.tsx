@@ -1,10 +1,19 @@
 import React, { lazy, Suspense } from 'react';
-import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
+import { 
+  BrowserRouter as Router, 
+  Routes, 
+  Route, 
+  Navigate,
+  createRoutesFromElements,
+  createBrowserRouter,
+  RouterProvider
+} from 'react-router-dom';
 import { QueryClient, QueryClientProvider } from 'react-query';
 
 // Lazy-loaded Pages
 const Dashboard = lazy(() => import('./pages/Dashboard'));
 const ScriptDetail = lazy(() => import('./pages/ScriptDetail'));
+const ScriptAnalysis = lazy(() => import('./pages/ScriptAnalysis'));
 const ScriptUpload = lazy(() => import('./pages/ScriptUpload'));
 const ScriptManagement = lazy(() => import('./pages/ScriptManagement'));
 const ManageFiles = lazy(() => import('./pages/ManageFiles'));
@@ -62,6 +71,9 @@ const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
 };
 
 // App component with routes
+// This component is no longer used as we've migrated to createBrowserRouter
+// Keeping it commented for reference or if we need to revert
+/*
 const AppRoutes = () => {
   return (
     <Routes>
@@ -108,6 +120,11 @@ const AppRoutes = () => {
           <Route path=":id/edit" element={
             <Suspense fallback={<PageLoader />}>
               <ScriptDetail />
+            </Suspense>
+          } />
+          <Route path=":id/analysis" element={
+            <Suspense fallback={<PageLoader />}>
+              <ScriptAnalysis />
             </Suspense>
           } />
         </Route>
@@ -168,15 +185,134 @@ const AppRoutes = () => {
     </Routes>
   );
 };
+*/
+
+// Create router with future flags to address warnings
+const router = createBrowserRouter(
+  createRoutesFromElements(
+    <Route>
+      <Route path="/login" element={
+        <Suspense fallback={<PageLoader />}>
+          <Login />
+        </Suspense>
+      } />
+      <Route path="/register" element={
+        <Suspense fallback={<PageLoader />}>
+          <Register />
+        </Suspense>
+      } />
+      
+      <Route path="/" element={
+        <ProtectedRoute>
+          <Layout />
+        </ProtectedRoute>
+      }>
+        <Route index element={
+          <Suspense fallback={<PageLoader />}>
+            <Dashboard />
+          </Suspense>
+        } />
+        <Route path="scripts">
+          <Route index element={
+            <Suspense fallback={<PageLoader />}>
+              <Search />
+            </Suspense>
+          } />
+          <Route path="upload" element={
+            <Suspense fallback={<PageLoader />}>
+              <ScriptUpload />
+            </Suspense>
+          } />
+          <Route path="manage" element={
+            <Navigate to="/manage-files" replace />
+          } />
+          <Route path=":id" element={
+            <Suspense fallback={<PageLoader />}>
+              <ScriptDetail />
+            </Suspense>
+          } />
+          <Route path=":id/edit" element={
+            <Suspense fallback={<PageLoader />}>
+              <ScriptDetail />
+            </Suspense>
+          } />
+          <Route path=":id/analysis" element={
+            <Suspense fallback={<PageLoader />}>
+              <ScriptAnalysis />
+            </Suspense>
+          } />
+        </Route>
+        <Route path="manage-files" element={
+          <Suspense fallback={<PageLoader />}>
+            <ManageFiles />
+          </Suspense>
+        } />
+        <Route path="analytics" element={
+          <Suspense fallback={<PageLoader />}>
+            <Analytics />
+          </Suspense>
+        } />
+        <Route path="settings">
+          <Route index element={
+            <Suspense fallback={<PageLoader />}>
+              <Settings />
+            </Suspense>
+          } />
+          <Route path="application" element={
+            <Suspense fallback={<PageLoader />}>
+              <ApplicationSettings />
+            </Suspense>
+          } />
+          <Route path="profile" element={
+            <Suspense fallback={<PageLoader />}>
+              <ProfileSettings />
+            </Suspense>
+          } />
+          <Route path="appearance" element={
+            <Suspense fallback={<PageLoader />}>
+              <AppearanceSettings />
+            </Suspense>
+          } />
+          <Route path="security" element={
+            <Suspense fallback={<PageLoader />}>
+              <SecuritySettings />
+            </Suspense>
+          } />
+          <Route path="notifications" element={
+            <Suspense fallback={<PageLoader />}>
+              <NotificationSettings />
+            </Suspense>
+          } />
+          <Route path="api" element={
+            <Suspense fallback={<PageLoader />}>
+              <ApiSettings />
+            </Suspense>
+          } />
+        </Route>
+      </Route>
+      
+      <Route path="*" element={
+        <Suspense fallback={<PageLoader />}>
+          <NotFound />
+        </Suspense>
+      } />
+    </Route>
+  ),
+  {
+    // Add future flags to address the React Router warnings
+    future: {
+      v7_startTransition: true,
+      v7_relativeSplatPath: true
+    }
+  }
+);
 
 // Main app with providers
 const App: React.FC = () => {
   return (
     <QueryClientProvider client={queryClient}>
       <AuthProvider>
-        <Router>
-          <AppRoutes />
-        </Router>
+        <RouterProvider router={router} />
       </AuthProvider>
     </QueryClientProvider>
   );

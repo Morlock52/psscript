@@ -10,6 +10,7 @@
     "monaco-editor-webpack-plugin": "^7.0.1",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
+    "react-icons": "^5.5.0",
     "react-monaco-editor": "^0.58.0",
     "react-query": "^3.39.3",
     "react-router-dom": "^6.14.0"

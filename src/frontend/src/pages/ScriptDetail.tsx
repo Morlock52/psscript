@@ -250,8 +250,14 @@ const ScriptDetail: React.FC = () => {
           {/* AI Analysis */}
           {analysis && (
             <div className="bg-gray-700 rounded-lg shadow">
-              <div className="p-4 bg-gray-800 border-b border-gray-600">
+              <div className="p-4 bg-gray-800 border-b border-gray-600 flex justify-between items-center">
                 <h2 className="text-lg font-medium">AI Analysis</h2>
+                <button 
+                  className="text-xs px-2 py-1 bg-blue-600 text-white rounded hover:bg-blue-700"
+                  onClick={() => window.open(`/scripts/${id}/analysis`, '_blank')}
+                >
+                  View Full Analysis
+                </button>
               </div>
               <div className="p-4">
                 <div className="space-y-4">
@@ -259,53 +265,132 @@ const ScriptDetail: React.FC = () => {
                     <h3 className="text-sm text-gray-400">Purpose</h3>
                     <p className="text-white">{analysis.purpose}</p>
                   </div>
-                  <div>
-                    <h3 className="text-sm text-gray-400">Quality Score</h3>
-                    <div className="flex items-center">
-                      <div className="w-full bg-gray-800 rounded-full h-2.5 mr-2">
-                        <div 
-                          className="bg-blue-600 h-2.5 rounded-full" 
-                          style={{ width: `${analysis.code_quality_score * 10}%` }}
-                        ></div>
+                  
+                  <div className="grid grid-cols-2 gap-4">
+                    <div>
+                      <h3 className="text-sm text-gray-400">Quality Score</h3>
+                      <div className="flex items-center">
+                        <div className="w-full bg-gray-800 rounded-full h-2.5 mr-2">
+                          <div 
+                            className="bg-blue-600 h-2.5 rounded-full" 
+                            style={{ width: `${analysis.code_quality_score * 10}%` }}
+                          ></div>
+                        </div>
+                        <span>{analysis.code_quality_score}/10</span>
                       </div>
-                      <span>{analysis.code_quality_score}/10</span>
                     </div>
+                    
+                    <div>
+                      <h3 className="text-sm text-gray-400">Security Score</h3>
+                      <div className="flex items-center">
+                        <div className="w-full bg-gray-800 rounded-full h-2.5 mr-2">
+                          <div 
+                            className={`h-2.5 rounded-full ${
+                              analysis.security_score > 7 
+                                ? 'bg-green-500' 
+                                : analysis.security_score > 4 
+                                ? 'bg-yellow-500' 
+                                : 'bg-red-500'
+                            }`}
+                            style={{ width: `${analysis.security_score * 10}%` }}
+                          ></div>
+                        </div>
+                        <span>{analysis.security_score}/10</span>
+                      </div>
+                    </div>
+                    
+                    <div>
+                      <h3 className="text-sm text-gray-400">Risk Assessment</h3>
+                      <div className="flex items-center">
+                        <div className="w-full bg-gray-800 rounded-full h-2.5 mr-2">
+                          <div 
+                            className={`h-2.5 rounded-full ${
+                              analysis.risk_score < 3 
+                                ? 'bg-green-500' 
+                                : analysis.risk_score < 7 
+                                ? 'bg-yellow-500' 
+                                : 'bg-red-500'
+                            }`}
+                            style={{ width: `${analysis.risk_score * 10}%` }}
+                          ></div>
+                        </div>
+                        <span>{analysis.risk_score}/10</span>
+                      </div>
+                    </div>
+                    
+                    {analysis.complexity_score && (
+                      <div>
+                        <h3 className="text-sm text-gray-400">Complexity</h3>
+                        <div className="flex items-center">
+                          <div className="w-full bg-gray-800 rounded-full h-2.5 mr-2">
+                            <div 
+                              className={`h-2.5 rounded-full ${
+                                analysis.complexity_score < 4 
+                                  ? 'bg-green-500' 
+                                  : analysis.complexity_score < 8 
+                                  ? 'bg-yellow-500' 
+                                  : 'bg-red-500'
+                              }`}
+                              style={{ width: `${analysis.complexity_score * 10}%` }}
+                            ></div>
+                          </div>
+                          <span>{analysis.complexity_score}/10</span>
+                        </div>
+                      </div>
+                    )}
                   </div>
-                  <div>
-                    <h3 className="text-sm text-gray-400">Security Score</h3>
-                    <div className="flex items-center">
-                      <div className="w-full bg-gray-800 rounded-full h-2.5 mr-2">
-                        <div 
-                          className={`h-2.5 rounded-full ${
-                            analysis.security_score > 7 
-                              ? 'bg-green-500' 
-                              : analysis.security_score > 4 
-                              ? 'bg-yellow-500' 
-                              : 'bg-red-500'
-                          }`}
-                          style={{ width: `${analysis.security_score * 10}%` }}
-                        ></div>
-                      </div>
-                      <span>{analysis.security_score}/10</span>
+                  
+                  {analysis.optimization_suggestions && analysis.optimization_suggestions.length > 0 && (
+                    <div>
+                      <h3 className="text-sm text-gray-400 mb-2">Optimization Suggestions</h3>
+                      <ul className="list-disc pl-5 text-sm text-gray-300 space-y-1">
+                        {analysis.optimization_suggestions.map((suggestion, index) => (
+                          <li key={index}>{suggestion}</li>
+                        ))}
+                      </ul>
                     </div>
-                  </div>
-                  <div>
-                    <h3 className="text-sm text-gray-400">Risk Assessment</h3>
-                    <div className="flex items-center">
-                      <div className="w-full bg-gray-800 rounded-full h-2.5 mr-2">
-                        <div 
-                          className={`h-2.5 rounded-full ${
-                            analysis.risk_score < 3 
-                              ? 'bg-green-500' 
-                              : analysis.risk_score < 7 
-                              ? 'bg-yellow-500' 
-                              : 'bg-red-500'
-                          }`}
-                          style={{ width: `${analysis.risk_score * 10}%` }}
-                        ></div>
-                      </div>
-                      <span>{analysis.risk_score}/10</span>
+                  )}
+                  
+                  {analysis.security_concerns && analysis.security_concerns.length > 0 && (
+                    <div>
+                      <h3 className="text-sm text-gray-400 mb-2">Security Concerns</h3>
+                      <ul className="list-disc pl-5 text-sm text-red-300 space-y-1">
+                        {analysis.security_concerns.map((concern, index) => (
+                          <li key={index}>{concern}</li>
+                        ))}
+                      </ul>
                     </div>
+                  )}
+                  
+                  {analysis.best_practices && analysis.best_practices.length > 0 && (
+                    <div>
+                      <h3 className="text-sm text-gray-400 mb-2">Best Practices</h3>
+                      <ul className="list-disc pl-5 text-sm text-blue-300 space-y-1">
+                        {analysis.best_practices.map((practice, index) => (
+                          <li key={index}>{practice}</li>
+                        ))}
+                      </ul>
+                    </div>
+                  )}
+                  
+                  {analysis.performance_suggestions && analysis.performance_suggestions.length > 0 && (
+                    <div>
+                      <h3 className="text-sm text-gray-400 mb-2">Performance Tips</h3>
+                      <ul className="list-disc pl-5 text-sm text-green-300 space-y-1">
+                        {analysis.performance_suggestions.map((suggestion, index) => (
+                          <li key={index}>{suggestion}</li>
+                        ))}
+                      </ul>
+                    </div>
+                  )}
+                  
+                  <div className="mt-3 pt-3 border-t border-gray-600">
+                    <button
+                      className="w-full text-center text-sm text-blue-400 hover:text-blue-300"
+                      onClick={() => window.open(`/scripts/${id}/analysis`, '_blank')}
+                    >
+                      View Detailed Analysis →
+                    </button>
                   </div>
                 </div>
               </div>

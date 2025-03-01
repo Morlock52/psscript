@@ -646,15 +646,43 @@ const mockScriptService = {
     console.log("API Call (MOCK): getScriptAnalysis", id);
     const script = MOCK_SCRIPTS.find(s => s.id.toString() === id);
     
-    // Artificial delay for API call simulation
-    await new Promise(resolve => setTimeout(resolve, 300));
-    return script?.analysis || {
+    // Create a more detailed mock analysis response
+    const baseAnalysis = script?.analysis || {
       purpose: "Unknown",
       security_score: 0,
       code_quality_score: 0,
-      risk_score: 5,
-      parameters: {}
+      risk_score: 5
     };
+    
+    // Enhanced analysis with additional fields
+    const enhancedAnalysis = {
+      ...baseAnalysis,
+      parameters: baseAnalysis.parameters || {},
+      optimization_suggestions: [
+        "Add comprehensive error handling for network operations",
+        "Use parameter validation attributes for input validation",
+        "Implement verbose logging for troubleshooting"
+      ],
+      security_concerns: baseAnalysis.security_score < 7 ? [
+        "Credentials may be exposed in plain text",
+        "Script runs with elevated privileges"
+      ] : [],
+      best_practices: [
+        "Follow PowerShell Approved Verbs convention",
+        "Use comment-based help for documentation",
+        "Implement pipeline support where appropriate"
+      ],
+      reliability_score: Math.max(baseAnalysis.code_quality_score - 1, 1),
+      performance_suggestions: [
+        "Use [System.Collections.Generic.List] instead of arrays for better performance",
+        "Consider parallel processing for multiple computer queries"
+      ],
+      complexity_score: Math.floor(Math.random() * 7) + 2
+    };
+    
+    // Artificial delay for API call simulation
+    await new Promise(resolve => setTimeout(resolve, 300));
+    return enhancedAnalysis;
   },
   
   // Execute a script
@@ -722,8 +750,27 @@ const mockScriptService = {
       risk_score: Math.floor(Math.random() * 10) + 1,
       parameters: {},
       category: "System Administration",
-      optimization: ["Add error handling", "Use parameter validation"],
-      reliability_score: Math.floor(Math.random() * 10) + 1
+      optimization_suggestions: [
+        "Add comprehensive error handling for network operations",
+        "Use parameter validation attributes for input validation",
+        "Implement verbose logging for troubleshooting",
+        "Consider using try/catch blocks around critical operations"
+      ],
+      security_concerns: [
+        "Credentials may be exposed in plain text",
+        "Script runs with elevated privileges"
+      ],
+      best_practices: [
+        "Follow PowerShell Approved Verbs convention",
+        "Use comment-based help for documentation",
+        "Implement pipeline support where appropriate"
+      ],
+      reliability_score: Math.floor(Math.random() * 10) + 1,
+      performance_suggestions: [
+        "Use [System.Collections.Generic.List] instead of arrays for better performance",
+        "Consider parallel processing for multiple computer queries"
+      ],
+      complexity_score: Math.floor(Math.random() * 10) + 1
     };
   },
   
