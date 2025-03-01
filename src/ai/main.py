@@ -13,6 +13,9 @@ from pydantic import BaseModel, Field
 import psycopg2
 from psycopg2.extras import RealDictCursor
 import numpy as np
+import openai
+import tiktoken
+from tenacity import retry, stop_after_attempt, wait_exponential
 
 from analysis.script_analyzer import ScriptAnalyzer
 
@@ -81,6 +84,17 @@ class SimilarScript(BaseModel):
 
 class SimilarScriptsResponse(BaseModel):
     similar_scripts: List[SimilarScript]
+    
+class ChatMessage(BaseModel):
+    role: str = Field(..., description="The role of the message sender (user or assistant)")
+    content: str = Field(..., description="The content of the message")
+
+class ChatRequest(BaseModel):
+    messages: List[ChatMessage] = Field(..., description="Chat history")
+    system_prompt: Optional[str] = Field(None, description="Optional system prompt to override default")
+    
+class ChatResponse(BaseModel):
+    response: str = Field(..., description="The assistant's response")
 
 # API Routes
 @app.get("/", tags=["Root"])
@@ -283,6 +297,136 @@ async def get_categories():
     ]
     
     return {"categories": categories}
+
+@app.post("/chat", response_model=ChatResponse, tags=["Chat"])
+async def chat_with_powershell_expert(request: ChatRequest):
+    """Chat with a PowerShell expert AI assistant."""
+    try:
+        # Default system prompt for PowerShell expertise
+        default_system_prompt = """
+        You are PSScriptGPT, a specialized PowerShell scripting assistant with expertise in Windows system administration, automation, and scripting best practices.
+        
+        Your primary goal is to help users write, understand, and improve PowerShell scripts.
+        
+        When providing answers:
+        1. Offer complete, runnable code examples when appropriate
+        2. Explain the "why" behind your recommendations, not just the "how"
+        3. Highlight security considerations and best practices
+        4. Consider performance implications of your suggestions
+        5. Structure solutions to be modular and maintainable
+        6. Respect PowerShell conventions and style guidelines
+        7. When you don't know something, acknowledge it rather than guessing
+        
+        You have extensive knowledge about:
+        - PowerShell language features up to PowerShell 7.3
+        - Windows system administration and management
+        - Common PowerShell modules (ActiveDirectory, Azure, etc.)
+        - Error handling and debugging techniques
+        - PowerShell security considerations
+        - Script optimization and performance
+        
+        Your responses will be displayed in a code-focused environment, so markdown formatting for code blocks is appropriate.
+        """
+        
+        # Prepare the messages
+        messages = [
+            {
+                "role": "system", 
+                "content": request.system_prompt if request.system_prompt else default_system_prompt
+            }
+        ]
+        
+        # Add user conversation history
+        for msg in request.messages:
+            messages.append({"role": msg.role, "content": msg.content})
+            
+        # Make the API call with retry logic
+        @retry(
+            stop=stop_after_attempt(3),
+            wait=wait_exponential(min=1, max=10)
+        )
+        def get_chat_completion():
+            return openai.ChatCompletion.create(
+                model="gpt-4o",  # Use a capable model for PowerShell expertise
+                messages=messages,
+                temperature=0.7,
+                max_tokens=4000,
+                top_p=1.0,
+                frequency_penalty=0.0,
+                presence_penalty=0.0
+            )
+        
+        response = get_chat_completion()
+        assistant_response = response.choices[0].message.content
+        
+        # Save the chat history to the database for future reference
+        try:
+            conn = get_db_connection()
+            cur = conn.cursor()
+            
+            # Store the chat conversation in a structured format
+            # This assumes you have a chat_history table in your database
+            cur.execute(
+                """
+                INSERT INTO chat_history
+                (user_id, messages, response, timestamp)
+                VALUES (%s, %s, %s, CURRENT_TIMESTAMP)
+                RETURNING id
+                """,
+                (
+                    1,  # Use a default user ID or extract from request
+                    json.dumps([{"role": m.role, "content": m.content} for m in request.messages]),
+                    assistant_response
+                )
+            )
+            
+            conn.commit()
+        except Exception as e:
+            print(f"Database error while saving chat history: {e}")
+            # Continue even if database operation fails
+        finally:
+            if conn:
+                conn.close()
+        
+        return {"response": assistant_response}
+        
+    except Exception as e:
+        raise HTTPException(
+            status_code=500,
+            detail=f"Chat completion failed: {str(e)}"
+        )
+
+# Create a new table for chat history if it doesn't exist
+def init_db():
+    try:
+        conn = get_db_connection()
+        cur = conn.cursor()
+        
+        # Create chat_history table if it doesn't exist
+        cur.execute("""
+        CREATE TABLE IF NOT EXISTS chat_history (
+            id SERIAL PRIMARY KEY,
+            user_id INTEGER,
+            messages JSONB NOT NULL,
+            response TEXT NOT NULL,
+            timestamp TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+            embedding vector(1536) NULL,
+            FOREIGN KEY (user_id) REFERENCES users(id)
+        );
+        """)
+        
+        conn.commit()
+        print("Database initialized with chat_history table")
+    except Exception as e:
+        print(f"Database initialization error: {e}")
+    finally:
+        if conn:
+            conn.close()
+
+# Initialize database when starting up
+@app.on_event("startup")
+async def startup_event():
+    init_db()
 
 if __name__ == "__main__":
     import uvicorn

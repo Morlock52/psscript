@@ -22,6 +22,7 @@ const Analytics = lazy(() => import('./pages/Analytics'));
 const Login = lazy(() => import('./pages/Login'));
 const Register = lazy(() => import('./pages/Register'));
 const NotFound = lazy(() => import('./pages/NotFound'));
+const ChatWithAI = lazy(() => import('./pages/ChatWithAI'));
 
 // Settings Pages
 const Settings = lazy(() => import('./pages/Settings/Settings'));
