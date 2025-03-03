@@ -3,318 +3,176 @@ import {
   BrowserRouter as Router, 
   Routes, 
   Route, 
-  Navigate,
-  createRoutesFromElements,
-  createBrowserRouter,
-  RouterProvider
+  Navigate
 } from 'react-router-dom';
 import { QueryClient, QueryClientProvider } from 'react-query';
 
-// Lazy-loaded Pages
-const Dashboard = lazy(() => import('./pages/Dashboard'));
-const ScriptDetail = lazy(() => import('./pages/ScriptDetail'));
-const ScriptAnalysis = lazy(() => import('./pages/ScriptAnalysis'));
-const ScriptUpload = lazy(() => import('./pages/ScriptUpload'));
+// Import SimpleChatWithAI directly to avoid lazy loading issues
+import SimpleChatWithAI from './pages/SimpleChatWithAI';
+import Dashboard from './pages/Dashboard';
+import ModernDashboard from './pages/ModernDashboard';
+import Settings from './pages/Settings/Settings';
+import ApplicationSettings from './pages/Settings/ApplicationSettings';
+import ProfileSettings from './pages/Settings/ProfileSettings';
+import EnhancedScriptUpload from './pages/EnhancedScriptUpload';
+import Layout from './components/Layout';
+import Loading from './components/Loading';
+// DbToggle removed
+
+// Import providers
+import { AuthProvider } from './hooks/useAuth';
+import { ThemeProvider } from './hooks/useTheme';
+
+// Lazy load other pages
+const ChatHistory = lazy(() => import('./pages/ChatHistory'));
+const Login = lazy(() => import('./pages/Login'));
 const ScriptManagement = lazy(() => import('./pages/ScriptManagement'));
 const ManageFiles = lazy(() => import('./pages/ManageFiles'));
-const Search = lazy(() => import('./pages/Search'));
-const Analytics = lazy(() => import('./pages/Analytics'));
-const Login = lazy(() => import('./pages/Login'));
-const Register = lazy(() => import('./pages/Register'));
-const NotFound = lazy(() => import('./pages/NotFound'));
-const ChatWithAI = lazy(() => import('./pages/ChatWithAI'));
 
-// Settings Pages
-const Settings = lazy(() => import('./pages/Settings/Settings'));
-const ApplicationSettings = lazy(() => import('./pages/Settings/ApplicationSettings'));
-const ProfileSettings = lazy(() => import('./pages/Settings/ProfileSettings'));
-const AppearanceSettings = lazy(() => import('./pages/Settings/AppearanceSettings'));
-const SecuritySettings = lazy(() => import('./pages/Settings/SecuritySettings'));
-const NotificationSettings = lazy(() => import('./pages/Settings/NotificationSettings'));
-const ApiSettings = lazy(() => import('./pages/Settings/ApiSettings'));
+// Simpler layout just for the chat page
+const SimpleLayout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
+  return (
+    <div className="flex flex-col h-screen bg-gray-900 text-white">
+      <div className="flex-1 overflow-hidden">
+        {children}
+      </div>
+    </div>
+  );
+};
 
-// Components
-import Layout from './components/Layout';
-import { AuthProvider, useAuth } from './hooks/useAuth';
+// Create a component for SimpleChatWithAI route
+const ChatPage = () => {
+  return (
+    <SimpleLayout>
+      <SimpleChatWithAI />
+    </SimpleLayout>
+  );
+};
 
-// Create React Query client with stale time for better caching
+// Create a QueryClient 
 const queryClient = new QueryClient({
   defaultOptions: {
     queries: {
       retry: 1,
       refetchOnWindowFocus: false,
       staleTime: 60000, // 1 minute
-      cacheTime: 900000, // 15 minutes
+      cacheTime: 300000, // 5 minutes
     },
   },
 });
 
-// Loading component for suspense fallback
-const PageLoader = () => (
-  <div className="flex items-center justify-center h-screen bg-gray-900">
-    <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-blue-500"></div>
-  </div>
-);
-
-// Protected route component
-const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
-  const { user, isLoading } = useAuth();
-  
-  if (isLoading) {
-    return <PageLoader />;
-  }
-  
-  if (!user) {
-    return <Navigate to="/login" replace />;
-  }
-  
-  return <>{children}</>;
-};
-
-// App component with routes
-// This component is no longer used as we've migrated to createBrowserRouter
-// Keeping it commented for reference or if we need to revert
-/*
-const AppRoutes = () => {
+// NotFound component for fallback routes
+const NotFound = () => {
   return (
-    <Routes>
-      <Route path="/login" element={
-        <Suspense fallback={<PageLoader />}>
-          <Login />
-        </Suspense>
-      } />
-      <Route path="/register" element={
-        <Suspense fallback={<PageLoader />}>
-          <Register />
-        </Suspense>
-      } />
-      
-      <Route path="/" element={
-        <ProtectedRoute>
-          <Layout />
-        </ProtectedRoute>
-      }>
-        <Route index element={
-          <Suspense fallback={<PageLoader />}>
-            <Dashboard />
-          </Suspense>
-        } />
-        <Route path="scripts">
-          <Route index element={
-            <Suspense fallback={<PageLoader />}>
-              <Search />
-            </Suspense>
-          } />
-          <Route path="upload" element={
-            <Suspense fallback={<PageLoader />}>
-              <ScriptUpload />
-            </Suspense>
-          } />
-          <Route path="manage" element={
-            <Navigate to="/manage-files" replace />
-          } />
-          <Route path=":id" element={
-            <Suspense fallback={<PageLoader />}>
-              <ScriptDetail />
-            </Suspense>
-          } />
-          <Route path=":id/edit" element={
-            <Suspense fallback={<PageLoader />}>
-              <ScriptDetail />
-            </Suspense>
-          } />
-          <Route path=":id/analysis" element={
-            <Suspense fallback={<PageLoader />}>
-              <ScriptAnalysis />
-            </Suspense>
-          } />
-        </Route>
-        <Route path="manage-files" element={
-          <Suspense fallback={<PageLoader />}>
-            <ManageFiles />
-          </Suspense>
-        } />
-        <Route path="analytics" element={
-          <Suspense fallback={<PageLoader />}>
-            <Analytics />
-          </Suspense>
-        } />
-        <Route path="settings">
-          <Route index element={
-            <Suspense fallback={<PageLoader />}>
-              <Settings />
-            </Suspense>
-          } />
-          <Route path="application" element={
-            <Suspense fallback={<PageLoader />}>
-              <ApplicationSettings />
-            </Suspense>
-          } />
-          <Route path="profile" element={
-            <Suspense fallback={<PageLoader />}>
-              <ProfileSettings />
-            </Suspense>
-          } />
-          <Route path="appearance" element={
-            <Suspense fallback={<PageLoader />}>
-              <AppearanceSettings />
-            </Suspense>
-          } />
-          <Route path="security" element={
-            <Suspense fallback={<PageLoader />}>
-              <SecuritySettings />
-            </Suspense>
-          } />
-          <Route path="notifications" element={
-            <Suspense fallback={<PageLoader />}>
-              <NotificationSettings />
-            </Suspense>
-          } />
-          <Route path="api" element={
-            <Suspense fallback={<PageLoader />}>
-              <ApiSettings />
-            </Suspense>
-          } />
-        </Route>
-      </Route>
-      
-      <Route path="*" element={
-        <Suspense fallback={<PageLoader />}>
-          <NotFound />
-        </Suspense>
-      } />
-    </Routes>
+    <Layout>
+      <div className="flex flex-col items-center justify-center min-h-screen bg-gray-900 text-white p-4">
+        <h1 className="text-4xl font-bold mb-4">404 - Page Not Found</h1>
+        <p className="text-xl mb-8">The page you're looking for doesn't exist or has been moved.</p>
+        <a href="/chat" className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700">
+          Return to Chat
+        </a>
+      </div>
+    </Layout>
   );
 };
-*/
 
-// Create router with future flags to address warnings
-const router = createBrowserRouter(
-  createRoutesFromElements(
-    <Route>
-      <Route path="/login" element={
-        <Suspense fallback={<PageLoader />}>
-          <Login />
-        </Suspense>
-      } />
-      <Route path="/register" element={
-        <Suspense fallback={<PageLoader />}>
-          <Register />
-        </Suspense>
-      } />
-      
-      <Route path="/" element={
-        <ProtectedRoute>
-          <Layout />
-        </ProtectedRoute>
-      }>
-        <Route index element={
-          <Suspense fallback={<PageLoader />}>
-            <Dashboard />
-          </Suspense>
-        } />
-        <Route path="scripts">
-          <Route index element={
-            <Suspense fallback={<PageLoader />}>
-              <Search />
-            </Suspense>
-          } />
-          <Route path="upload" element={
-            <Suspense fallback={<PageLoader />}>
-              <ScriptUpload />
-            </Suspense>
-          } />
-          <Route path="manage" element={
-            <Navigate to="/manage-files" replace />
-          } />
-          <Route path=":id" element={
-            <Suspense fallback={<PageLoader />}>
-              <ScriptDetail />
-            </Suspense>
-          } />
-          <Route path=":id/edit" element={
-            <Suspense fallback={<PageLoader />}>
-              <ScriptDetail />
-            </Suspense>
-          } />
-          <Route path=":id/analysis" element={
-            <Suspense fallback={<PageLoader />}>
-              <ScriptAnalysis />
-            </Suspense>
-          } />
-        </Route>
-        <Route path="manage-files" element={
-          <Suspense fallback={<PageLoader />}>
-            <ManageFiles />
-          </Suspense>
-        } />
-        <Route path="analytics" element={
-          <Suspense fallback={<PageLoader />}>
-            <Analytics />
-          </Suspense>
-        } />
-        <Route path="settings">
-          <Route index element={
-            <Suspense fallback={<PageLoader />}>
-              <Settings />
-            </Suspense>
-          } />
-          <Route path="application" element={
-            <Suspense fallback={<PageLoader />}>
-              <ApplicationSettings />
-            </Suspense>
-          } />
-          <Route path="profile" element={
-            <Suspense fallback={<PageLoader />}>
-              <ProfileSettings />
-            </Suspense>
-          } />
-          <Route path="appearance" element={
-            <Suspense fallback={<PageLoader />}>
-              <AppearanceSettings />
-            </Suspense>
-          } />
-          <Route path="security" element={
-            <Suspense fallback={<PageLoader />}>
-              <SecuritySettings />
-            </Suspense>
-          } />
-          <Route path="notifications" element={
-            <Suspense fallback={<PageLoader />}>
-              <NotificationSettings />
-            </Suspense>
-          } />
-          <Route path="api" element={
-            <Suspense fallback={<PageLoader />}>
-              <ApiSettings />
-            </Suspense>
-          } />
-        </Route>
-      </Route>
-      
-      <Route path="*" element={
-        <Suspense fallback={<PageLoader />}>
-          <NotFound />
-        </Suspense>
-      } />
-    </Route>
-  ),
-  {
-    // Add future flags to address the React Router warnings
-    future: {
-      v7_startTransition: true,
-      v7_relativeSplatPath: true
-    }
-  }
-);
+// Fallback component for scripts detail page
+const ScriptFallback = () => {
+  return (
+    <Layout>
+      <div className="flex flex-col items-center justify-center min-h-screen bg-gray-900 text-white p-4">
+        <h1 className="text-2xl font-bold mb-4">Script Feature Not Available</h1>
+        <p className="text-lg mb-6">The script viewing feature is not fully implemented in this demo.</p>
+        <p className="mb-8">You can continue using the chat feature to get help with PowerShell scripts.</p>
+        <a href="/chat" className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700">
+          Return to Chat
+        </a>
+      </div>
+    </Layout>
+  );
+};
 
-// Main app with providers
+// Dashboard component with Layout
+const DashboardPage = () => {
+  return (
+    <Layout>
+      <ModernDashboard />
+    </Layout>
+  );
+};
+
+// Main app
 const App: React.FC = () => {
+  // Debug initialization
+  console.log('DEBUG: App - Initializing application');  
+  
+  // Debug route rendering
+  const logRouteRender = (routeName: string) => {
+    console.log(`DEBUG: App - ${routeName} route rendered`);
+    return null;
+  };
+  
   return (
     <QueryClientProvider client={queryClient}>
-      <AuthProvider>
-        <RouterProvider router={router} />
-      </AuthProvider>
+      <ThemeProvider>
+        <AuthProvider>
+          {/* Log providers initialization */}
+          {logRouteRender('Providers initialized')}
+          <Router>
+            {/* Log router initialization */}
+            {logRouteRender('Router initialized')}
+            <Suspense fallback={<Loading />}>
+              <Routes>
+                {/* Log routes definition */}
+                {logRouteRender('Routes defined')}
+                <Route path='/chat' element={<ChatPage />} />
+                <Route path='/chat/history' element={<ChatHistory />} />
+                <Route path='/login' element={<Login />} />
+                <Route path='/dashboard' element={<DashboardPage />} />
+                <Route path='/settings' element={
+                  <Layout>
+                    {logRouteRender('Settings route rendered')}
+                    <Settings />
+                  </Layout>
+                } />
+                <Route path='/settings/application' element={
+                  <Layout>
+                    {logRouteRender('Application Settings route rendered')}
+                    <ApplicationSettings />
+                  </Layout>
+                } />
+                <Route path='/settings/profile' element={
+                  <Layout>
+                    {logRouteRender('Profile Settings route rendered')}
+                    <ProfileSettings />
+                  </Layout>
+                } />
+                <Route path='/scripts' element={
+                  <Layout>
+                    {logRouteRender('Scripts route rendered')}
+                    <ScriptManagement />
+                  </Layout>
+                } />
+                <Route path='/scripts/manage' element={
+                  <Layout>
+                    {logRouteRender('Scripts manage route rendered')}
+                    <ManageFiles />
+                  </Layout>
+                } />
+                <Route path='/scripts/upload' element={
+                  <Layout>
+                    {logRouteRender('Script Upload route rendered')}
+                    <EnhancedScriptUpload />
+                  </Layout>
+                } />
+                <Route path='/scripts/:id' element={<ScriptFallback />} />
+                <Route path='/' element={<Navigate to='/dashboard' replace />} />
+                <Route path='*' element={<NotFound />} />
+              </Routes>
+            </Suspense>
+          </Router>
+        </AuthProvider>
+      </ThemeProvider>
     </QueryClientProvider>
   );
 };

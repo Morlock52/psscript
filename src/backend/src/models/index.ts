@@ -10,6 +10,7 @@ import ScriptEmbedding from './ScriptEmbedding';
 import ExecutionLog from './ExecutionLog';
 import UserFavorite from './UserFavorite';
 import Comment from './Comment';
+import ChatHistory from './ChatHistory';
 
 import dotenv from 'dotenv';
 dotenv.config();
@@ -47,6 +48,7 @@ ScriptEmbedding.initialize(sequelize);
 ExecutionLog.initialize(sequelize);
 UserFavorite.initialize(sequelize);
 Comment.initialize(sequelize);
+ChatHistory.initialize(sequelize);
 
 // Set up associations
 User.associate();
@@ -60,6 +62,7 @@ ScriptEmbedding.associate();
 ExecutionLog.associate();
 UserFavorite.associate();
 Comment.associate();
+ChatHistory.associate();
 
 export {
   sequelize,
@@ -73,5 +76,6 @@ export {
   ScriptEmbedding,
   ExecutionLog,
   UserFavorite,
-  Comment
+  Comment,
+  ChatHistory
 };

@@ -15,6 +15,7 @@ import categoryRoutes from './routes/categories';
 import tagRoutes from './routes/tags';
 import analyticsRoutes from './routes/analytics';
 import healthRoutes from './routes/health';
+import chatRoutes from './routes/chat';
 import { errorHandler } from './middleware/errorHandler';
 import { redisMiddleware } from './middleware/redisMiddleware';
 import { setupSwagger } from './utils/swagger';
@@ -119,6 +120,7 @@ app.use('/api/categories', categoryRoutes);
 app.use('/api/tags', tagRoutes);
 app.use('/api/analytics', analyticsRoutes);
 app.use('/api/health', healthRoutes);
+app.use('/api/chat', chatRoutes);
 
 // Root route with API information
 app.get('/', (req, res) => {

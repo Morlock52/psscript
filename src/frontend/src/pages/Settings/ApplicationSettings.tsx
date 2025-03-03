@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import { AI_MODELS, loadSettings, saveSettings, toggleDbToggleVisibility, setAiModel } from '../../services/settings';
+import { Link } from 'react-router-dom';
+import { AI_MODELS, loadSettings, saveSettings, setAiModel } from '../../services/settings';
 import ReadmeViewer from '../../components/ReadmeViewer';
 
 const ApplicationSettings: React.FC = () => {
@@ -11,9 +12,7 @@ const ApplicationSettings: React.FC = () => {
   const handleSettingChange = (settingName: string, value: any) => {
     let newSettings;
     
-    if (settingName === 'showDbToggle') {
-      newSettings = toggleDbToggleVisibility();
-    } else if (settingName === 'aiModel') {
+    if (settingName === 'aiModel') {
       newSettings = setAiModel(value);
     } else {
       newSettings = saveSettings({ [settingName]: value });
@@ -22,7 +21,7 @@ const ApplicationSettings: React.FC = () => {
     setSettings(newSettings);
     
     // Check if restart is needed for certain settings
-    if (['showDbToggle', 'aiModel'].includes(settingName)) {
+    if (['aiModel'].includes(settingName)) {
       setRestartRequired(true);
     }
   };
@@ -30,6 +29,19 @@ const ApplicationSettings: React.FC = () => {
   return (
     <div className="p-6 max-w-3xl mx-auto">
       <div className="mb-6">
+        {/* Back to Dashboard link */}
+        <div className="mb-4">
+          <Link 
+            to="/dashboard"
+            className="text-blue-600 dark:text-blue-400 hover:underline flex items-center space-x-1"
+          >
+            <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 19l-7-7m0 0l7-7m-7 7h18" />
+            </svg>
+            <span>Back to Dashboard</span>
+          </Link>
+        </div>
+        
         <h1 className="text-2xl font-bold mb-2">Application Settings</h1>
         <p className="text-gray-500 dark:text-gray-400">
           Configure advanced application features and settings
@@ -68,33 +80,14 @@ const ApplicationSettings: React.FC = () => {
         {/* Database Settings */}
         <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-6 border border-gray-200 dark:border-gray-700">
           <h2 className="text-xl font-semibold mb-4">Database Settings</h2>
-          
-          <div className="space-y-4">
-            <div className="flex items-center justify-between">
-              <div>
-                <h3 className="font-medium">Database Toggle Button</h3>
-                <p className="text-sm text-gray-500 dark:text-gray-400">
-                  Show a button to quickly switch between mock and production database
-                </p>
-              </div>
-              <label className="relative inline-flex items-center cursor-pointer">
-                <input
-                  type="checkbox"
-                  checked={settings.showDbToggle}
-                  onChange={(e) => handleSettingChange('showDbToggle', e.target.checked)}
-                  className="sr-only peer"
-                />
-                <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-300 dark:peer-focus:ring-blue-800 rounded-full peer dark:bg-gray-700 peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all dark:border-gray-600 peer-checked:bg-blue-600"></div>
-              </label>
-            </div>
-            
-            <div className="pt-4 border-t border-gray-200 dark:border-gray-700">
-              <p className="text-sm text-gray-500 dark:text-gray-400">
-                Current Database Mode: <span className={settings.useMockData ? "text-yellow-500 font-semibold" : "text-green-500 font-semibold"}>
-                  {settings.useMockData ? "Mock Database" : "Production Database"}
-                </span>
-              </p>
-            </div>
+
+          <div>
+            <p className="text-sm text-gray-500 dark:text-gray-400">
+              Database Mode: <span className="text-green-500 font-semibold">Production Database</span>
+            </p>
+            <p className="text-sm text-gray-500 dark:text-gray-400 mt-2">
+              This application is configured to use the production database. Mock data functionality has been removed.
+            </p>
           </div>
         </div>
         
@@ -108,18 +101,22 @@ const ApplicationSettings: React.FC = () => {
               <p className="text-sm text-gray-500 dark:text-gray-400 mb-3">
                 Select the AI model to use for script analysis and suggestions
               </p>
-              
-              <select
-                value={settings.aiModel}
-                onChange={(e) => handleSettingChange('aiModel', e.target.value)}
-                className="w-full bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
-              >
-                {AI_MODELS.map(model => (
-                  <option key={model.id} value={model.id}>
-                    {model.name}
-                  </option>
-                ))}
-              </select>
+              <label htmlFor="aiModelSelect" className="sr-only">Select AI Model</label>
+              <div>
+                <select
+                  id="aiModelSelect"
+                  value={settings.aiModel}
+                  onChange={(e) => handleSettingChange('aiModel', e.target.value)}
+                  className="w-full bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
+                  aria-label="Select AI Model"
+                >
+                  {AI_MODELS.map(model => (
+                    <option key={model.id} value={model.id}>
+                      {model.name}
+                    </option>
+                  ))}
+                </select>
+              </div>
               
               {/* Show selected model description */}
               <div className="mt-2 text-sm text-gray-500 dark:text-gray-400">
@@ -136,10 +133,12 @@ const ApplicationSettings: React.FC = () => {
               </div>
               <label className="relative inline-flex items-center cursor-pointer">
                 <input
+                  id="autoRunAnalysisToggle"
                   type="checkbox"
                   checked={settings.autoRunAnalysis}
                   onChange={(e) => handleSettingChange('autoRunAnalysis', e.target.checked)}
                   className="sr-only peer"
+                  aria-label="Auto-Run AI Analysis"
                 />
                 <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-300 dark:peer-focus:ring-blue-800 rounded-full peer dark:bg-gray-700 peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all dark:border-gray-600 peer-checked:bg-blue-600"></div>
               </label>
@@ -157,8 +156,10 @@ const ApplicationSettings: React.FC = () => {
               Maximum time (in seconds) that a script is allowed to run
             </p>
             
+            <label htmlFor="executionTimeoutSlider" className="sr-only">Script Execution Timeout</label>
             <div className="flex items-center space-x-4">
               <input
+                id="executionTimeoutSlider"
                 type="range"
                 min="10"
                 max="600"
@@ -166,6 +167,7 @@ const ApplicationSettings: React.FC = () => {
                 value={settings.executionTimeout}
                 onChange={(e) => handleSettingChange('executionTimeout', parseInt(e.target.value))}
                 className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer dark:bg-gray-700"
+                aria-label="Script Execution Timeout"
               />
               <span className="w-16 text-center font-medium">
                 {settings.executionTimeout}s

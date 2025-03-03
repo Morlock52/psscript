@@ -13,9 +13,7 @@ export const AI_MODELS = [
 ];
 
 // Default settings
-const DEFAULT_SETTINGS = {
-  useMockData: true,
-  showDbToggle: true, // Changed to true to make database toggle visible by default
+const DEFAULT_SETTINGS: AppSettings = {
   aiModel: 'gpt-4o',
   theme: 'dark',
   autoRunAnalysis: true,
@@ -24,8 +22,6 @@ const DEFAULT_SETTINGS = {
 
 // Type definition for settings
 export interface AppSettings {
-  useMockData: boolean;
-  showDbToggle: boolean;
   aiModel: string;
   theme: 'light' | 'dark' | 'system';
   autoRunAnalysis: boolean;
@@ -50,24 +46,10 @@ export const saveSettings = (settings: Partial<AppSettings>): AppSettings => {
   const currentSettings = loadSettings();
   const newSettings = { ...currentSettings, ...settings };
   localStorage.setItem('app_settings', JSON.stringify(newSettings));
-  
-  // Also update use_mock_data for the API service
-  localStorage.setItem('use_mock_data', newSettings.useMockData.toString());
-  
   return newSettings;
 };
 
-// Toggle the database mode
-export const toggleDatabaseMode = (): AppSettings => {
-  const settings = loadSettings();
-  return saveSettings({ useMockData: !settings.useMockData });
-};
-
-// Toggle the database toggle visibility
-export const toggleDbToggleVisibility = (): AppSettings => {
-  const settings = loadSettings();
-  return saveSettings({ showDbToggle: !settings.showDbToggle });
-};
+// Removed toggleDbToggleVisibility
 
 // Set the AI model
 export const setAiModel = (modelId: string): AppSettings => {
@@ -83,8 +65,9 @@ export const getCurrentAiModel = () => {
 // Initialize settings
 export const initializeSettings = () => {
   const settings = loadSettings();
-  // Ensure use_mock_data is set for the API service
-  localStorage.setItem('use_mock_data', settings.useMockData.toString());
+  console.log('Initializing settings - mock data functionality has been removed');
+  // Remove any existing mock data settings from localStorage
+  localStorage.removeItem('use_mock_data');
   return settings;
 };
 

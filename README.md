@@ -7,6 +7,7 @@ A comprehensive platform for managing, analyzing, and executing PowerShell scrip
 ## 🚀 Features
 
 - **AI-Powered Analysis**: Automatically analyzes scripts for purpose, security risks, and code quality
+- **PowerShell AI Chat**: Interactive chat interface with a PowerShell AI assistant
 - **Semantic Search**: Find scripts by natural language queries, not just keywords
 - **Version Control**: Track changes to scripts over time with full history
 - **Intelligent Categorization**: Auto-categorizes scripts into 20 predefined categories
@@ -15,6 +16,7 @@ A comprehensive platform for managing, analyzing, and executing PowerShell scrip
 - **Responsive UI**: Modern interface that works on desktop and mobile devices
 - **Performance Optimization**: Redis caching and efficient database queries
 - **Dark/Light Theme**: Supports both dark and light modes
+- **Chat History**: Persistent chat history with the ability to search past conversations
 
 ## 📋 Prerequisites
 
@@ -193,6 +195,16 @@ The application utilizes OpenAI models to provide advanced analysis of PowerShel
 | GET    | `/api/analytics/security-metrics` | Get security metrics |
 | GET    | `/api/analytics/category-distribution` | Get category distribution |
 
+### Chat Endpoints
+
+| Method | Endpoint | Description |
+|--------|----------|-------------|
+| POST   | `/api/chat` | Send a message to the PowerShell AI assistant |
+| GET    | `/api/chat/history` | Get chat history for the current user |
+| POST   | `/api/chat/history` | Save chat history |
+| DELETE | `/api/chat/history` | Clear chat history |
+| GET    | `/api/chat/history/search` | Search chat history by query |
+
 ## 🖥️ Environment Variables
 
 The application uses the following environment variables:
@@ -202,6 +214,7 @@ The application uses the following environment variables:
 | Variable | Description | Default |
 |----------|-------------|---------|
 | `VITE_API_URL` | Backend API URL | `http://localhost:4000/api` |
+| `VITE_AI_SERVICE_URL` | AI service URL for chat | `http://localhost:8000` |
 | `VITE_USE_MOCKS` | Use mock data instead of real API | `false` |
 
 ### Backend (`.env` in root)
@@ -224,6 +237,12 @@ The application uses the following environment variables:
 | Variable | Description | Default |
 |----------|-------------|---------|
 | `OPENAI_API_KEY` | OpenAI API key | - |
+| `MOCK_MODE` | Use mock responses instead of real AI | `false` |
+| `DB_HOST` | PostgreSQL database host | `postgres` |
+| `DB_PORT` | PostgreSQL database port | `5432` |
+| `DB_NAME` | PostgreSQL database name | `psscript` |
+| `DB_USER` | PostgreSQL username | `postgres` |
+| `DB_PASSWORD` | PostgreSQL password | `postgres` |
 
 ## 📱 User Interface
 
@@ -233,6 +252,7 @@ The application includes the following main pages:
 - **Search**: Advanced search interface with filters
 - **Script Upload**: Form to upload and analyze new scripts
 - **Script Detail**: View script details, analysis, and execution options
+- **Chat**: Interactive chat with a PowerShell AI assistant for scripting help
 - **Manage Files**: Bulk management of scripts with AI-enhanced improvement suggestions
 - **Analytics**: Visualizations of script data and usage
 - **Categories**: Browse scripts by category

@@ -1,0 +1,1 @@
+const { Sequelize } = require("sequelize"); const sequelize = new Sequelize("psscript", "postgres", "postgres", { host: "postgres", dialect: "postgres" }); sequelize.authenticate().then(() => console.log("Connection successful")).catch(err => console.error("Connection failed:", err));

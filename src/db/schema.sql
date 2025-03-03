@@ -1,6 +1,16 @@
 -- Enable pgvector extension
 CREATE EXTENSION IF NOT EXISTS vector;
 
+-- Reset the public schema if exists
+DO $$ 
+BEGIN
+    IF EXISTS (SELECT 1 FROM pg_namespace WHERE nspname = 'public') THEN
+        -- Keep this commented unless you want to reset the database
+        -- DROP SCHEMA public CASCADE;
+        -- CREATE SCHEMA public;
+    END IF;
+END $$;
+
 -- Users table
 CREATE TABLE users (
     id SERIAL PRIMARY KEY,

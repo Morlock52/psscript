@@ -1,7 +1,9 @@
--- Create an admin user
+-- Create an admin user with randomly generated password
+-- For production, you should change this password immediately after setup
+-- Current hash is for a randomly generated password
 INSERT INTO users (username, email, password_hash, role)
 VALUES 
-  ('admin', 'admin@example.com', '$2b$10$LZSzQO9xVMVPLoBhYhzM/u9A23U43t/nQoLJB2cIKNmwmNSpSrm2K', 'admin');
+  ('admin', 'admin@example.com', '$2b$10$V2AZQJ/zLnSA2C0UBH3hO.DSRb0olqB/ZSa36L4vF/qI6aiGrBAHG', 'admin');
 
 -- Create some categories
 INSERT INTO categories (name, description)
@@ -124,4 +126,14 @@ VALUES (
   0.2, 
   '{"Get-SystemInfo": {"Description": "Collects system information", "Parameters": {}}}', 
   '[{"type": "improvement", "description": "Consider adding parameter validation"}, {"type": "security", "description": "No security concerns detected"}]'
+);
+
+-- Create chat_history table if it doesn't exist
+CREATE TABLE IF NOT EXISTS chat_history (
+  id SERIAL PRIMARY KEY,
+  user_id INTEGER REFERENCES users(id),
+  messages JSONB NOT NULL,
+  response TEXT NOT NULL,
+  timestamp TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+  embedding vector(1536) NULL
 );

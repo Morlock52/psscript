@@ -16,7 +16,7 @@ services:
     environment:
       - NODE_ENV=development
       - VITE_API_URL=http://localhost:4000/api
-      - VITE_USE_MOCKS=true
+      - VITE_USE_MOCKS=false
     healthcheck:
       test: ["CMD", "wget", "-qO-", "http://localhost:3000"]
       interval: 30s
@@ -63,7 +63,8 @@ services:
     depends_on:
       - postgres
     environment:
-      - OPENAI_API_KEY=${OPENAI_API_KEY}
+      - OPENAI_API_KEY=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
+      - MOCK_MODE=false
       - DB_HOST=postgres
       - DB_PORT=5432
       - DB_NAME=psscript
@@ -80,9 +81,9 @@ services:
       - ./src/db/schema.sql:/docker-entrypoint-initdb.d/01-schema.sql
       - ./src/db/seeds/01-initial-data.sql:/docker-entrypoint-initdb.d/02-seed-data.sql
     environment:
-      - POSTGRES_DB=psscript
-      - POSTGRES_USER=postgres
-      - POSTGRES_PASSWORD=postgres
+      - POSTGRES_DB=${DB_NAME:-psscript}
+      - POSTGRES_USER=${DB_USER:-postgres}
+      - POSTGRES_PASSWORD=${DB_PASSWORD:-postgres}
 
   # Redis for caching
   redis:

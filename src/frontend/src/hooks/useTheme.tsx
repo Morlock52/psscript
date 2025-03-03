@@ -46,7 +46,26 @@ export const ThemeProvider: React.FC<{ children: React.ReactNode }> = ({ childre
   
   // Toggle between dark and light mode
   const toggleTheme = () => {
-    setThemeState(prev => (prev === 'dark' ? 'light' : 'dark'));
+    console.log('Toggle theme called, current theme:', theme);
+    // Toggle with debugging
+    try {
+      setThemeState(prevTheme => {
+        const newTheme = prevTheme === 'dark' ? 'light' : 'dark';
+        console.log(`Changing theme from ${prevTheme} to ${newTheme}`);
+        return newTheme;
+      });
+      
+      // Apply theme directly to document as a fallback
+      const newTheme = theme === 'dark' ? 'light' : 'dark';
+      document.documentElement.classList.remove('dark', 'light');
+      document.documentElement.classList.add(newTheme);
+      console.log('Applied theme class directly to document');
+    } catch (e) {
+      console.error('Error toggling theme:', e);
+      // Emergency fallback
+      document.documentElement.classList.toggle('dark');
+      document.documentElement.classList.toggle('light');
+    }
   };
   
   // Set theme explicitly

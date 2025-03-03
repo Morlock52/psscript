@@ -4,7 +4,7 @@ openai==0.27.8
 numpy>=1.26.0
 pandas>=2.0.2
 scikit-learn>=1.2.2
-pgvector==0.1.8
+pgvector==0.2.3
 psycopg2-binary==2.9.6
 pydantic==1.10.9
 python-dotenv==1.0.0

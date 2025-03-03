@@ -94,9 +94,9 @@ const Dashboard: React.FC = () => {
           <div className="flex justify-between">
             <h2 className="text-lg font-medium text-gray-300 mb-2">Total Scripts</h2>
             <Link
-              to="/manage-files"
+              to="/scripts"
               className="text-green-400 hover:text-green-300 text-sm flex items-center"
-              title="Manage Scripts"
+              title="View All Scripts"
             >
               <svg
                 className="w-5 h-5"
@@ -154,8 +154,8 @@ const Dashboard: React.FC = () => {
           <h2 className="text-xl font-bold">Recent Scripts</h2>
           <div className="flex space-x-4">
             <Link
-              to="/manage-files"
-              className="text-green-400 hover:text-green-300 text-sm flex items-center"
+              to="/scripts"
+              className="inline-flex items-center px-3 py-1 bg-green-600 text-white text-sm font-medium rounded hover:bg-green-700 transition duration-150"
             >
               <svg
                 className="w-4 h-4 mr-1"
@@ -180,10 +180,24 @@ const Dashboard: React.FC = () => {
               Manage
             </Link>
             <Link
-              to="/scripts"
-              className="text-blue-400 hover:text-blue-300 text-sm"
+              to="/scripts/upload"
+              className="inline-flex items-center px-3 py-1 bg-blue-600 text-white text-sm font-medium rounded hover:bg-blue-700 transition duration-150"
             >
-              View All
+              <svg
+                className="w-4 h-4 mr-1"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+                xmlns="http://www.w3.org/2000/svg"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M5 10l7-7m0 0l7 7m-7-7v18"
+                ></path>
+              </svg>
+              Upload New
             </Link>
           </div>
         </div>
@@ -252,7 +266,29 @@ const Dashboard: React.FC = () => {
       
       {/* AI Insights */}
       <div className="bg-gray-700 rounded-lg p-6 shadow">
-        <h2 className="text-xl font-bold mb-4">AI Insights</h2>
+        <div className="flex justify-between items-center mb-4">
+          <h2 className="text-xl font-bold">AI Insights</h2>
+          <Link
+            to="/chat-with-ai"
+            className="inline-flex items-center px-3 py-1 bg-purple-600 text-white text-sm font-medium rounded hover:bg-purple-700 transition duration-150"
+          >
+            <svg
+              className="w-4 h-4 mr-1"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+              xmlns="http://www.w3.org/2000/svg"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z"
+              ></path>
+            </svg>
+            Chat with AI
+          </Link>
+        </div>
         
         <div className="p-4 bg-gray-800 border border-gray-600 rounded-lg">
           <div className="flex items-start space-x-4">
