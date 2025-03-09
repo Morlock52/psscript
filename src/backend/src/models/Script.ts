@@ -1,6 +1,8 @@
 import { Model, DataTypes, Sequelize } from 'sequelize';
 import User from './User';
 import Category from './Category';
+import ScriptAnalysis from './ScriptAnalysis';
+import Tag from './Tag';
 
 export default class Script extends Model {
   public id!: number;
@@ -12,7 +14,7 @@ export default class Script extends Model {
   public version!: number;
   public executionCount!: number;
   public isPublic!: boolean;
-  public metadata!: object;
+  public fileHash?: string;
   
   public readonly createdAt!: Date;
   public readonly updatedAt!: Date;
@@ -46,7 +48,8 @@ export default class Script extends Model {
         references: {
           model: 'users',
           key: 'id'
-        }
+        },
+        field: 'user_id'
       },
       categoryId: {
         type: DataTypes.INTEGER,
@@ -54,7 +57,8 @@ export default class Script extends Model {
         references: {
           model: 'categories',
           key: 'id'
-        }
+        },
+        field: 'category_id'
       },
       version: {
         type: DataTypes.INTEGER,
@@ -62,19 +66,23 @@ export default class Script extends Model {
       },
       executionCount: {
         type: DataTypes.INTEGER,
-        defaultValue: 0
+        defaultValue: 0,
+        field: 'execution_count'
       },
       isPublic: {
         type: DataTypes.BOOLEAN,
-        defaultValue: true
+        defaultValue: true,
+        field: 'is_public'
       },
-      metadata: {
-        type: DataTypes.JSONB,
-        defaultValue: {}
+      fileHash: {
+        type: DataTypes.STRING(32),
+        allowNull: true,
+        field: 'file_hash'
       }
     }, {
       sequelize,
       tableName: 'scripts',
+      underscored: true,
       hooks: {
         beforeCreate: async (script: Script) => {
           // Any pre-save processing logic
@@ -86,5 +94,12 @@ export default class Script extends Model {
   static associate() {
     Script.belongsTo(User, { foreignKey: 'userId', as: 'user' });
     Script.belongsTo(Category, { foreignKey: 'categoryId', as: 'category' });
+    Script.hasOne(ScriptAnalysis, { foreignKey: 'scriptId', as: 'analysis' });
+    Script.belongsToMany(Tag, { 
+      through: 'script_tags',
+      foreignKey: 'script_id',
+      otherKey: 'tag_id',
+      as: 'tags'
+    });
   }
 }

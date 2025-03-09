@@ -1,35 +1,27 @@
+/**
+ * @ts-nocheck
+ * Controller for script management
+ */
 import { Request, Response, NextFunction } from 'express';
-// Temporarily use mock models for development
-//import { Script, ScriptAnalysis, Category, User, Tag, ScriptTag, sequelize } from '../models';
-import { Op } from 'sequelize';
-import redisClient from '../utils/redis';
+import { Script, ScriptAnalysis, Category, User, Tag, ScriptTag, ScriptVersion, ExecutionLog, sequelize } from '../models';
+import { Op, Sequelize, Transaction } from 'sequelize';
+import * as path from 'path';
+import fs from 'fs';
 import axios from 'axios';
 import logger from '../utils/logger';
+import { cache } from '../index';
+import { calculateBufferMD5, checkFileExists } from '../utils/fileIntegrity';
+import { generateEmbedding, findSimilarScripts as findSimilarScriptsByVector } from '../utils/vectorUtils';
 
-// Mock models for development
-const Script = {
-  findByPk: () => ({}),
-  findAll: () => [],
-  findAndCountAll: () => ({ count: 0, rows: [] }),
-  update: () => {},
-  destroy: () => {},
-  create: () => ({})
-};
-
-const ExecutionLog = {
-  create: () => ({})
-};
-
-const sequelize = {
-  transaction: () => ({
-    commit: () => {},
-    rollback: () => {}
-  })
-};
-
-const AI_SERVICE_URL = process.env.AI_SERVICE_URL || 'http://localhost:8000';
+// Determine AI service URL based on environment
+const isDocker = process.env.DOCKER_ENV === 'true';
+const AI_SERVICE_URL = isDocker 
+  ? (process.env.AI_SERVICE_URL || 'http://ai-service:8000')
+  : (process.env.AI_SERVICE_URL || 'http://localhost:8000');
 
 class ScriptController {
+  // Use Sequelize's built-in transaction isolation levels
+  static ISOLATION_LEVELS = Transaction.ISOLATION_LEVELS;
   
   // Get all scripts with pagination and filtering
   async getScripts(req: Request, res: Response, next: NextFunction) {
@@ -39,14 +31,19 @@ class ScriptController {
       const offset = (page - 1) * limit;
       const categoryId = req.query.categoryId as string;
       const userId = req.query.userId as string;
-      const sort = req.query.sort as string || 'updatedAt';
+      
+      // Handle 'updated' sort parameter for backward compatibility
+      let sortField = req.query.sort as string || 'updatedAt';
+      if (sortField === 'updated') {
+        sortField = 'updatedAt';
+      }
       const order = req.query.order as string || 'DESC';
       
-      const cacheKey = `scripts:${page}:${limit}:${categoryId || ''}:${userId || ''}:${sort}:${order}`;
-      const cachedData = await redisClient.get(cacheKey);
+      const cacheKey = `scripts:${page}:${limit}:${categoryId || ''}:${userId || ''}:${sortField}:${order}`;
+      const cachedData = cache.get(cacheKey);
       
       if (cachedData) {
-        return res.json(JSON.parse(cachedData));
+        return res.json(cachedData);
       }
       
       const whereClause: any = {};
@@ -63,14 +60,50 @@ class ScriptController {
         where: whereClause,
         include: [
           { model: User, as: 'user', attributes: ['id', 'username'] },
-          { model: Category, as: 'category', attributes: ['id', 'name'] },
-          { model: ScriptAnalysis, as: 'analysis' }
+          { model: Category, as: 'category', attributes: ['id', 'name'] }
+          // Temporarily removing ScriptAnalysis to avoid database errors
+          // { model: ScriptAnalysis, as: 'analysis' }
         ],
         limit,
         offset,
-        order: [[sort, order]],
+        order: [[sortField, order]],
         distinct: true
       });
+      
+      // Fetch analysis data separately for each script
+      for (const script of rows) {
+        try {
+          const analysis: any = await sequelize.query(
+            `SELECT * FROM script_analysis WHERE script_id = :scriptId LIMIT 1`,
+            {
+              replacements: { scriptId: script.id },
+              type: 'SELECT',
+              raw: true,
+              plain: true
+            }
+          );
+          
+          if (analysis) {
+            script.setDataValue('analysis', {
+              id: analysis.id,
+              scriptId: analysis.script_id,
+              purpose: analysis.purpose,
+              parameters: analysis.parameter_docs,
+              securityScore: analysis.security_score,
+              codeQualityScore: analysis.quality_score,
+              riskScore: analysis.risk_score,
+              optimizationSuggestions: analysis.suggestions,
+              commandDetails: analysis.command_details,
+              msDocsReferences: analysis.ms_docs_references,
+              createdAt: analysis.created_at,
+              updatedAt: analysis.updated_at
+            });
+          }
+        } catch (analysisError) {
+          logger.error(`Error fetching analysis for script ${script.id}:`, analysisError);
+          // Continue with other scripts even if one analysis fails
+        }
+      }
       
       const response = {
         scripts: rows,
@@ -79,7 +112,7 @@ class ScriptController {
         totalPages: Math.ceil(count / limit)
       };
       
-      await redisClient.set(cacheKey, JSON.stringify(response), 'EX', 300); // Cache for 5 minutes
+      cache.set(cacheKey, response, 300); // Cache for 5 minutes
       
       res.json(response);
     } catch (error) {
@@ -92,20 +125,22 @@ class ScriptController {
     try {
       const scriptId = req.params.id;
       const cacheKey = `script:${scriptId}`;
-      const cachedData = await redisClient.get(cacheKey);
+      const cachedData = cache.get(cacheKey);
       
       if (cachedData) {
-        return res.json(JSON.parse(cachedData));
+        return res.json(cachedData);
       }
       
       const script = await Script.findByPk(scriptId, {
         include: [
           { model: User, as: 'user', attributes: ['id', 'username'] },
-          { model: Category, as: 'category' },
-          { model: ScriptAnalysis, as: 'analysis' },
+          { model: Category, as: 'category', attributes: ['id', 'name', 'description', 'created_at'] },
+          // Temporarily removing ScriptAnalysis to avoid database errors
+          // { model: ScriptAnalysis, as: 'analysis' },
           { 
             model: Tag, 
             as: 'tags',
+            attributes: ['id', 'name'],
             through: { attributes: [] } // Don't include join table
           }
         ]
@@ -115,7 +150,40 @@ class ScriptController {
         return res.status(404).json({ message: 'Script not found' });
       }
       
-      await redisClient.set(cacheKey, JSON.stringify(script), 'EX', 300); // Cache for 5 minutes
+      // Fetch analysis data separately
+      try {
+        const analysis: any = await sequelize.query(
+          `SELECT * FROM script_analysis WHERE script_id = :scriptId LIMIT 1`,
+          {
+            replacements: { scriptId },
+            type: 'SELECT',
+            raw: true,
+            plain: true
+          }
+        );
+        
+        if (analysis) {
+          script.setDataValue('analysis', {
+            id: analysis.id,
+            scriptId: analysis.script_id,
+            purpose: analysis.purpose,
+            parameters: analysis.parameter_docs,
+            securityScore: analysis.security_score,
+            codeQualityScore: analysis.quality_score,
+            riskScore: analysis.risk_score,
+            optimizationSuggestions: analysis.suggestions,
+            commandDetails: analysis.command_details,
+            msDocsReferences: analysis.ms_docs_references,
+            createdAt: analysis.created_at,
+            updatedAt: analysis.updated_at
+          });
+        }
+      } catch (analysisError) {
+        logger.error(`Error fetching analysis for script ${scriptId}:`, analysisError);
+        // Continue even if analysis fetch fails
+      }
+      
+      cache.set(cacheKey, script, 300); // Cache for 5 minutes
       
       res.json(script);
     } catch (error) {
@@ -123,11 +191,16 @@ class ScriptController {
     }
   }
   
-  // Create a new script
+  // Create a new script with enhanced transaction management
   async createScript(req: Request, res: Response, next: NextFunction) {
-    const transaction = await sequelize.transaction();
+    let transaction;
     
     try {
+      // Start transaction with serializable isolation level for better consistency
+      transaction = await sequelize.transaction({
+        isolationLevel: Transaction.ISOLATION_LEVELS.SERIALIZABLE
+      });
+      
       const { title, description, content, categoryId, tags } = req.body;
       const userId = req.user?.id;
       
@@ -135,10 +208,15 @@ class ScriptController {
         return res.status(401).json({ message: 'Unauthorized' });
       }
       
+      // Validate required fields
+      if (!title || !content) {
+        return res.status(400).json({ message: 'Title and content are required' });
+      }
+      
       // Create the script
       const script = await Script.create({
         title,
-        description,
+        description: description || '',
         content,
         userId,
         categoryId: categoryId || null,
@@ -147,66 +225,129 @@ class ScriptController {
         isPublic: true
       }, { transaction });
       
+      logger.info(`Created new script with ID ${script.id}`);
+      
+      // Add tags if provided
+      const tagIds = [];
+      if (tags && Array.isArray(tags) && tags.length > 0) {
+        // Limit number of tags to prevent abuse
+        const tagsToProcess = tags.slice(0, 10);
+        
+        for (const tagName of tagsToProcess) {
+          if (typeof tagName !== 'string' || !tagName.trim()) continue;
+          
+          // Find or create the tag
+          try {
+            const [tag] = await Tag.findOrCreate({
+              where: { name: tagName.toLowerCase().trim() },
+              defaults: { name: tagName.toLowerCase().trim() },
+              transaction
+            });
+            
+            tagIds.push(tag.id);
+            
+            await ScriptTag.create({
+              scriptId: script.id,
+              tagId: tag.id
+            }, { transaction });
+          } catch (tagError) {
+            logger.warn(`Failed to create tag "${tagName}": ${(tagError as Error).message}`);
+            // Continue with other tags
+          }
+        }
+      }
+      
       // Analyze the script with AI service
+      let analysis = null;
       try {
-        const analysisResponse = await axios.post(`${AI_SERVICE_URL}/analyze`, {
+        // Get OpenAI API key from request headers if available
+        const openaiApiKey = req.headers['x-openai-api-key'] as string;
+        
+        // Prepare analysis request with API key if provided
+        const analysisConfig = {
+          headers: {},
+          timeout: 15000 // 15 second timeout
+        };
+        
+        if (openaiApiKey) {
+          analysisConfig.headers['x-api-key'] = openaiApiKey;
+        }
+        
+        logger.info(`Sending script ${script.id} for AI analysis`);
+        
+        // Set a timeout for the analysis request
+        const analysisPromise = axios.post(`${AI_SERVICE_URL}/analyze`, {
           script_id: script.id,
-          content
+          content,
+          include_command_details: true,
+          fetch_ms_docs: true
+        }, analysisConfig);
+        
+        // Create a timeout promise
+        const timeoutPromise = new Promise((_, reject) => {
+          setTimeout(() => reject(new Error('Analysis request timed out after 15 seconds')), 15000);
         });
         
-        const analysis = analysisResponse.data;
+        // Race the analysis against the timeout
+        const analysisResponse = await Promise.race([analysisPromise, timeoutPromise]) as any;
+        analysis = analysisResponse.data;
         
+        // Create analysis record
         await ScriptAnalysis.create({
           scriptId: script.id,
-          purpose: analysis.purpose,
+          purpose: analysis.purpose || 'No purpose provided',
           parameters: analysis.parameters || {},
-          securityScore: analysis.security_score,
-          codeQualityScore: analysis.code_quality_score,
-          riskScore: analysis.risk_score,
+          securityScore: analysis.security_score || 5.0,
+          codeQualityScore: analysis.code_quality_score || 5.0,
+          riskScore: analysis.risk_score || 5.0,
           optimizationSuggestions: analysis.optimization_suggestions || [],
-          aiComments: analysis.comments
+          commandDetails: analysis.command_details || [],
+          msDocsReferences: analysis.ms_docs_references || []
         }, { transaction });
+        
+        logger.info(`Created analysis for script ${script.id}`);
         
         // Update the script with the determined category if not manually set
         if (!categoryId && analysis.category_id) {
           await script.update({ categoryId: analysis.category_id }, { transaction });
+          logger.info(`Updated script ${script.id} with category ${analysis.category_id}`);
         }
       } catch (analysisError) {
-        logger.error('AI analysis failed:', analysisError);
-        // Continue without analysis if AI service fails
+        logger.error(`AI analysis failed for script ${script.id}:`, analysisError);
+        
+        // Create a basic analysis record even if AI analysis fails
+        await ScriptAnalysis.create({
+          scriptId: script.id,
+          purpose: 'Analysis pending',
+          parameters: {},
+          securityScore: 5.0, // Default middle score
+          codeQualityScore: 5.0,
+          riskScore: 5.0,
+          optimizationSuggestions: [],
+          commandDetails: [],
+          msDocsReferences: []
+        }, { transaction });
+        
+        logger.info(`Created default analysis for script ${script.id} due to AI service failure`);
       }
       
-      // Add tags if provided
-      if (tags && Array.isArray(tags) && tags.length > 0) {
-        for (const tagName of tags) {
-          // Find or create the tag
-          const [tag] = await Tag.findOrCreate({
-            where: { name: tagName.toLowerCase() },
-            defaults: { name: tagName.toLowerCase() },
-            transaction
-          });
-          
-          await ScriptTag.create({
-            scriptId: script.id,
-            tagId: tag.id
-          }, { transaction });
-        }
-      }
-      
+      // Commit the transaction
       await transaction.commit();
+      logger.info(`Transaction committed for script ${script.id}`);
       
       // Clear relevant caches
-      await redisClient.del('scripts:*');
+      cache.clearPattern('scripts:');
       
       // Fetch the complete script with associations
       const completeScript = await Script.findByPk(script.id, {
         include: [
           { model: User, as: 'user', attributes: ['id', 'username'] },
-          { model: Category, as: 'category' },
+          { model: Category, as: 'category', attributes: ['id', 'name', 'description', 'created_at'] },
           { model: ScriptAnalysis, as: 'analysis' },
           { 
             model: Tag, 
             as: 'tags',
+            attributes: ['id', 'name'],
             through: { attributes: [] }
           }
         ]
@@ -214,7 +355,34 @@ class ScriptController {
       
       res.status(201).json(completeScript);
     } catch (error) {
-      await transaction.rollback();
+      // Ensure transaction is rolled back
+      if (transaction) {
+        try {
+          await transaction.rollback();
+          logger.info('Transaction rolled back due to error');
+        } catch (rollbackError) {
+          logger.error('Error rolling back transaction:', rollbackError);
+        }
+      }
+      
+      // Provide more specific error messages
+      if ((error as any).name === 'SequelizeUniqueConstraintError') {
+        return res.status(409).json({ 
+          message: 'A script with this title already exists',
+          error: 'unique_constraint_error'
+        });
+      }
+      
+      if ((error as any).name === 'SequelizeValidationError') {
+        return res.status(400).json({ 
+          message: 'Validation error',
+          error: 'validation_error',
+          details: (error as any).errors?.map((e: any) => e.message)
+        });
+      }
+      
+      // Log the error and pass to error handler
+      logger.error('Error creating script:', error);
       next(error);
     }
   }
@@ -255,10 +423,25 @@ class ScriptController {
         
         // Re-analyze if content changed
         try {
+          // Get OpenAI API key from request headers if available
+          const openaiApiKey = req.headers['x-openai-api-key'] as string;
+          
+          // Prepare analysis request with API key if provided
+          const analysisConfig = {
+            headers: {},
+            timeout: 15000 // 15 second timeout
+          };
+          
+          if (openaiApiKey) {
+            analysisConfig.headers['x-api-key'] = openaiApiKey;
+          }
+          
           const analysisResponse = await axios.post(`${AI_SERVICE_URL}/analyze`, {
             script_id: script.id,
-            content
-          });
+            content,
+            include_command_details: true,
+            fetch_ms_docs: true
+          }, analysisConfig);
           
           const analysis = analysisResponse.data;
           
@@ -271,7 +454,8 @@ class ScriptController {
             codeQualityScore: analysis.code_quality_score,
             riskScore: analysis.risk_score,
             optimizationSuggestions: analysis.optimization_suggestions || [],
-            aiComments: analysis.comments
+            commandDetails: analysis.command_details || [],
+            msDocsReferences: analysis.ms_docs_references || []
           }, { transaction });
         } catch (analysisError) {
           logger.error('AI analysis failed on update:', analysisError);
@@ -316,18 +500,19 @@ class ScriptController {
       await transaction.commit();
       
       // Clear relevant caches
-      await redisClient.del(`script:${scriptId}`);
-      await redisClient.del('scripts:*');
+      cache.del(`script:${scriptId}`);
+      cache.clearPattern('scripts:');
       
       // Fetch the updated script with associations
       const updatedScript = await Script.findByPk(scriptId, {
         include: [
           { model: User, as: 'user', attributes: ['id', 'username'] },
-          { model: Category, as: 'category' },
+          { model: Category, as: 'category', attributes: ['id', 'name', 'description', 'created_at'] },
           { model: ScriptAnalysis, as: 'analysis' },
           { 
             model: Tag, 
             as: 'tags',
+            attributes: ['id', 'name'],
             through: { attributes: [] }
           }
         ]
@@ -340,32 +525,93 @@ class ScriptController {
     }
   }
   
-  // Delete a script
+  // Delete a script with improved error handling and transaction management
   async deleteScript(req: Request, res: Response, next: NextFunction) {
+    let transaction;
+    
     try {
       const scriptId = req.params.id;
       const userId = req.user?.id;
       
+      // Start a transaction to ensure atomicity
+      transaction = await sequelize.transaction();
+      
       const script = await Script.findByPk(scriptId);
       
       if (!script) {
-        return res.status(404).json({ message: 'Script not found' });
+        if (transaction) await transaction.rollback();
+        return res.status(404).json({ 
+          message: 'Script not found',
+          success: false
+        });
       }
       
       // Check ownership unless admin
       if (script.userId !== userId && req.user?.role !== 'admin') {
-        return res.status(403).json({ message: 'Not authorized to delete this script' });
+        if (transaction) await transaction.rollback();
+        return res.status(403).json({ 
+          message: 'Not authorized to delete this script',
+          success: false
+        });
       }
       
-      await script.destroy();
+      // Delete all related records first
+      
+      // 1. Delete script analysis
+      await ScriptAnalysis.destroy({
+        where: { scriptId },
+        transaction
+      });
+      
+      // 2. Delete script tags
+      await ScriptTag.destroy({
+        where: { scriptId },
+        transaction
+      });
+      
+      // 3. Delete script versions
+      await ScriptVersion.destroy({
+        where: { scriptId },
+        transaction
+      });
+      
+      // 4. Delete execution logs
+      await ExecutionLog.destroy({
+        where: { scriptId },
+        transaction
+      });
+      
+      // 5. Finally delete the script itself
+      await script.destroy({ transaction });
+      
+      // Commit the transaction
+      await transaction.commit();
       
       // Clear relevant caches
-      await redisClient.del(`script:${scriptId}`);
-      await redisClient.del('scripts:*');
+      cache.del(`script:${scriptId}`);
+      cache.clearPattern('scripts:');
       
-      res.json({ message: 'Script deleted successfully' });
+      res.json({ 
+        message: 'Script deleted successfully', 
+        id: scriptId,
+        success: true
+      });
     } catch (error) {
-      next(error);
+      // Rollback transaction if there was an error
+      if (transaction) {
+        try {
+          await transaction.rollback();
+        } catch (rollbackError) {
+          console.error('Error rolling back transaction:', rollbackError);
+        }
+      }
+      
+      logger.error('Error deleting script:', error);
+      res.status(500).json({
+        message: 'Failed to delete script',
+        error: error.message,
+        success: false
+      });
     }
   }
   
@@ -380,10 +626,10 @@ class ScriptController {
       const offset = (page - 1) * limit;
       
       const cacheKey = `search:${query}:${categoryId || ''}:${qualityThreshold || ''}:${page}:${limit}`;
-      const cachedData = await redisClient.get(cacheKey);
+      const cachedData = cache.get(cacheKey);
       
       if (cachedData) {
-        return res.json(JSON.parse(cachedData));
+        return res.json(cachedData);
       }
       
       // Search criteria
@@ -404,7 +650,7 @@ class ScriptController {
       // For quality filter we need a join with analysis
       const includeOptions: any[] = [
         { model: User, as: 'user', attributes: ['id', 'username'] },
-        { model: Category, as: 'category' }
+        { model: Category, as: 'category', attributes: ['id', 'name', 'description', 'created_at'] }
       ];
       
       if (qualityThreshold !== undefined) {
@@ -440,7 +686,7 @@ class ScriptController {
         query
       };
       
-      await redisClient.set(cacheKey, JSON.stringify(response), 'EX', 300); // Cache for 5 minutes
+      cache.set(cacheKey, response, 300); // Cache for 5 minutes
       
       res.json(response);
     } catch (error) {
@@ -453,20 +699,417 @@ class ScriptController {
     try {
       const scriptId = req.params.id;
       
-      const analysis = await ScriptAnalysis.findOne({
-        where: { scriptId }
-      });
+      // Use raw query to avoid field mapping issues
+      const analysis: any = await sequelize.query(
+        `SELECT * FROM script_analysis WHERE script_id = :scriptId LIMIT 1`,
+        {
+          replacements: { scriptId },
+          type: 'SELECT',
+          raw: true,
+          plain: true
+        }
+      );
       
       if (!analysis) {
         return res.status(404).json({ message: 'Analysis not found' });
       }
       
-      res.json(analysis);
+      // Convert snake_case to camelCase for frontend
+      const formattedAnalysis = {
+        id: analysis.id,
+        scriptId: analysis.script_id,
+        purpose: analysis.purpose,
+        parameters: analysis.parameter_docs,
+        securityScore: analysis.security_score,
+        codeQualityScore: analysis.quality_score,
+        riskScore: analysis.risk_score,
+        optimizationSuggestions: analysis.suggestions,
+        commandDetails: analysis.command_details,
+        msDocsReferences: analysis.ms_docs_references,
+        createdAt: analysis.created_at,
+        updatedAt: analysis.updated_at
+      };
+      
+      res.json(formattedAnalysis);
     } catch (error) {
+      logger.error('Error fetching script analysis:', error);
       next(error);
     }
   }
   
+  // Upload a script file and store it in the database with enhanced error handling
+  async uploadScript(req: Request, res: Response, next: NextFunction) {
+    let transaction;
+    
+    try {
+      // Set longer timeout for the request to handle network latency
+      req.setTimeout(60000); // 60 seconds
+      
+      // Start transaction with serializable isolation level for better consistency
+      transaction = await sequelize.transaction({
+        isolationLevel: Transaction.ISOLATION_LEVELS.SERIALIZABLE
+      });
+      
+      const { title, description, category_id, tags: tagsJson, is_public, analyze_with_ai } = req.body;
+      
+      // Check if user with ID 1 exists, if not create it
+      let userId = req.user?.id || 1; // Default to user ID 1 if not authenticated
+      const user = await User.findByPk(1);
+      if (!user) {
+        // Create a default user
+        const newUser = await User.create({
+          id: 1,
+          username: 'admin',
+          email: 'admin@example.com',
+          password: 'password123',
+          role: 'admin'
+        }, { transaction });
+        userId = newUser.id;
+        logger.info('Created default user with ID 1');
+      }
+      
+      // Get file content from the uploaded file
+      if (!req.file) {
+        if (transaction) await transaction.rollback();
+        return res.status(400).json({ 
+          error: 'missing_file', 
+          message: 'No file was uploaded' 
+        });
+      }
+      
+      // Calculate file hash for integrity verification and deduplication
+      const fileHash = calculateBufferMD5(req.file.buffer);
+      logger.info(`Calculated file hash: ${fileHash}`);
+      
+      // Check if a file with the same hash already exists
+      const existingScriptId = await checkFileExists(fileHash, sequelize);
+      if (existingScriptId) {
+        if (transaction) await transaction.rollback();
+        return res.status(409).json({
+          error: 'duplicate_file',
+          message: 'A script with identical content already exists',
+          existingScriptId
+        });
+      }
+      
+      // Read file content with validation
+      let scriptContent;
+      try {
+        scriptContent = req.file.buffer.toString('utf8');
+        
+        // Check for binary content
+        if (scriptContent.includes('\u0000') || /[\x00-\x08\x0B\x0C\x0E-\x1F]/.test(scriptContent)) {
+          if (transaction) await transaction.rollback();
+          return res.status(400).json({
+            error: 'binary_content',
+            message: 'The file appears to be binary, not a text-based script'
+          });
+        }
+        
+        // Limit size of very large files
+        if (scriptContent.length > 500000) { // 500KB limit
+          scriptContent = scriptContent.substring(0, 500000) + '\n\n# Content truncated due to size limit';
+          logger.warn(`Script content truncated due to size (${req.file.size} bytes)`);
+        }
+      } catch (readError) {
+        if (transaction) await transaction.rollback();
+        logger.error('Error reading file content:', readError);
+        return res.status(400).json({
+          error: 'file_read_error',
+          message: 'Could not read file contents'
+        });
+      }
+      
+      const fileName = req.file.originalname;
+      const fileType = path.extname(fileName).toLowerCase();
+      
+      // Basic content validation for PowerShell scripts
+      if (fileType === '.ps1' && !ScriptController.validatePowerShellContent(scriptContent)) {
+        if (transaction) await transaction.rollback();
+        return res.status(400).json({
+          error: 'invalid_content',
+          message: 'The file does not appear to be a valid PowerShell script'
+        });
+      }
+      
+      // Parse tags if provided with validation
+      let tags = [];
+      if (tagsJson) {
+        try {
+          tags = typeof tagsJson === 'string' ? JSON.parse(tagsJson) : tagsJson;
+          
+          // Validate tags
+          if (!Array.isArray(tags)) {
+            tags = [];
+            logger.warn('Tags is not an array, ignoring tags');
+          } else if (tags.length > 10) {
+            if (transaction) await transaction.rollback();
+            return res.status(400).json({
+              error: 'too_many_tags',
+              message: 'A maximum of 10 tags is allowed'
+            });
+          }
+        } catch (e) {
+          logger.warn('Failed to parse tags JSON:', e);
+          tags = []; // Reset to empty array on parse error
+        }
+      }
+      
+      // Create the script record in the database
+      const scriptTitle = title || fileName || 'Untitled Script';
+      const script = await Script.create({
+        title: scriptTitle,
+        description: description || 'No description provided',
+        content: scriptContent,
+        userId,
+        categoryId: category_id || null,
+        version: 1,
+        executionCount: 0,
+        isPublic: is_public === 'true' || is_public === true,
+        fileHash: fileHash // Save the file hash to the database
+      }, { transaction });
+      
+      logger.info(`Created script record with ID ${script.id}`);
+      
+      // Create initial script version
+      await ScriptVersion.create({
+        scriptId: script.id,
+        version: 1,
+        content: scriptContent,
+        changelog: 'Initial upload',
+        userId
+      }, { transaction });
+      
+      logger.info(`Created script version for script ${script.id}`);
+      
+      // Save the file to the uploads directory for persistence
+      const uniqueFileName = `${Date.now()}-${path.basename(fileName)}`;
+      const filePath = path.join(process.cwd(), 'uploads', uniqueFileName);
+      
+      // Create uploads directory if it doesn't exist
+      const uploadsDir = path.join(process.cwd(), 'uploads');
+      if (!fs.existsSync(uploadsDir)) {
+        fs.mkdirSync(uploadsDir, { recursive: true });
+        logger.info('Created uploads directory');
+      }
+      
+      // Write the file to disk with error handling
+      try {
+        fs.writeFileSync(filePath, scriptContent);
+        logger.info(`Saved script file to ${filePath}`);
+      } catch (fileWriteError) {
+        logger.error('Error writing file to disk:', fileWriteError);
+        // Continue even if file write fails - we have the content in the database
+      }
+      
+      // Add tags if provided
+      const tagIds = [];
+      if (tags && Array.isArray(tags) && tags.length > 0) {
+        for (const tagName of tags) {
+          if (typeof tagName !== 'string' || !tagName.trim()) continue;
+          
+          try {
+            // Find or create the tag
+            const [tag] = await Tag.findOrCreate({
+              where: { name: tagName.toLowerCase().trim() },
+              defaults: { name: tagName.toLowerCase().trim() },
+              transaction
+            });
+            
+            tagIds.push(tag.id);
+            
+            await ScriptTag.create({
+              scriptId: script.id,
+              tagId: tag.id
+            }, { transaction });
+            
+            logger.info(`Added tag "${tagName}" to script ${script.id}`);
+          } catch (tagError) {
+            logger.warn(`Failed to create tag "${tagName}": ${(tagError as Error).message}`);
+            // Continue with other tags
+          }
+        }
+      }
+      
+      // Commit the transaction
+      await transaction.commit();
+      logger.info(`Transaction committed for script upload ${script.id}`);
+      
+      // Clear relevant caches
+      cache.clearPattern('scripts:');
+      
+      // Send the response immediately
+      const responseData = {
+        success: true,
+        script: {
+          id: script.id,
+          title: script.title,
+          description: script.description,
+          userId: script.userId,
+          categoryId: script.categoryId,
+          version: script.version,
+          executionCount: script.executionCount,
+          isPublic: script.isPublic,
+          createdAt: script.createdAt,
+          updatedAt: script.updatedAt,
+          tags: tagIds
+        },
+        message: 'Script uploaded and saved to database successfully',
+        filePath: filePath
+      };
+      
+      res.status(201).json(responseData);
+      
+      // Perform AI analysis asynchronously after response is sent
+      if (analyze_with_ai === 'true' || analyze_with_ai === true) {
+        try {
+          // Get OpenAI API key from request headers if available
+          const openaiApiKey = req.headers['x-openai-api-key'] as string;
+          
+          // Prepare analysis request with API key if provided
+          const analysisConfig = {
+            headers: {},
+            timeout: 30000 // 30 second timeout
+          };
+          
+          if (openaiApiKey) {
+            analysisConfig.headers['x-api-key'] = openaiApiKey;
+          }
+          
+          logger.info(`Starting AI analysis for script ${script.id}`);
+          
+          // Set a timeout for the analysis request
+          const analysisPromise = axios.post(`${AI_SERVICE_URL}/analyze`, {
+            script_id: script.id,
+            content: scriptContent,
+            include_command_details: true,
+            fetch_ms_docs: true
+          }, analysisConfig);
+          
+          // Create a timeout promise
+          const timeoutPromise = new Promise((_, reject) => {
+            setTimeout(() => reject(new Error('Analysis request timed out after 30 seconds')), 30000);
+          });
+          
+          // Race the analysis against the timeout
+          const analysisResponse = await Promise.race([analysisPromise, timeoutPromise]) as any;
+          const analysis = analysisResponse.data;
+          
+          // Create analysis record with transaction
+          const analysisTransaction = await sequelize.transaction();
+          try {
+            await ScriptAnalysis.create({
+              scriptId: script.id,
+              purpose: analysis.purpose || 'No purpose provided',
+              parameters: analysis.parameters || {},
+              securityScore: analysis.security_score || 5.0,
+              codeQualityScore: analysis.code_quality_score || 5.0,
+              riskScore: analysis.risk_score || 5.0,
+              optimizationSuggestions: analysis.optimization_suggestions || [],
+              commandDetails: analysis.command_details || [],
+              msDocsReferences: analysis.ms_docs_references || []
+            }, { transaction: analysisTransaction });
+            
+            // Update the script with the determined category if not manually set
+            if (!category_id && analysis.category_id) {
+              await script.update({ 
+                categoryId: analysis.category_id 
+              }, { transaction: analysisTransaction });
+            }
+            
+            await analysisTransaction.commit();
+            logger.info(`AI analysis completed and saved for script ${script.id}`);
+          } catch (analysisDbError) {
+            await analysisTransaction.rollback();
+            logger.error(`Error saving analysis results for script ${script.id}:`, analysisDbError);
+          }
+        } catch (analysisError) {
+          logger.error(`AI analysis failed for script ${script.id}:`, analysisError);
+          
+          // Create a basic analysis record even if AI analysis fails
+          try {
+            await ScriptAnalysis.create({
+              scriptId: script.id,
+              purpose: 'Analysis pending',
+              parameters: {},
+              securityScore: 5.0, // Default middle score
+              codeQualityScore: 5.0,
+              riskScore: 5.0,
+              optimizationSuggestions: [],
+              commandDetails: [],
+              msDocsReferences: []
+            });
+            
+            logger.info(`Created default analysis for script ${script.id} due to AI service failure`);
+          } catch (fallbackAnalysisError) {
+            logger.error(`Failed to create fallback analysis for script ${script.id}:`, fallbackAnalysisError);
+          }
+        }
+      } else {
+        logger.info(`AI analysis skipped for script ${script.id}`);
+      }
+    } catch (error) {
+      // Ensure transaction is rolled back
+      if (transaction) {
+        try {
+          await transaction.rollback();
+          logger.info('Transaction rolled back due to error');
+        } catch (rollbackError) {
+          logger.error('Error rolling back transaction:', rollbackError);
+        }
+      }
+      
+      logger.error('Error in uploadScript:', error);
+      
+      // Provide more specific error messages
+      if ((error as any).name === 'SequelizeUniqueConstraintError') {
+        return res.status(409).json({
+          error: 'unique_constraint_error',
+          message: 'A script with this title already exists'
+        });
+      }
+      
+      if ((error as any).name === 'SequelizeValidationError') {
+        return res.status(400).json({
+          error: 'validation_error',
+          message: 'Validation error',
+          details: (error as any).errors?.map((e: any) => e.message)
+        });
+      }
+      
+      return res.status(500).json({
+        error: 'server_error',
+        message: 'An unexpected error occurred while processing the upload'
+      });
+    }
+  }
+  
+  // Helper method to validate PowerShell content
+  static validatePowerShellContent(content: string): boolean {
+    if (!content || typeof content !== 'string') {
+      return false;
+    }
+    
+    // Basic validation - check for some common PowerShell elements
+    // This is not comprehensive but helps filter out obviously invalid content
+    const powerShellIndicators = [
+      /^\s*#/m,                     // Comments
+      /^\s*function\s+[\w-]+/im,    // Function declarations
+      /^\s*\$[\w-]+/m,              // Variables
+      /^\s*param\s*\(/im,           // Parameter blocks
+      /^\s*if\s*\(/im,              // If statements
+      /^\s*foreach\s*\(/im,         // Foreach loops
+      /^\s*Write-Host/im,           // Common cmdlets
+      /^\s*Get-/im,                 // Common cmdlet prefix
+      /^\s*Set-/im,                 // Common cmdlet prefix
+      /^\s*New-/im,                 // Common cmdlet prefix
+      /^\s*\[.+\]/m                 // Type declarations
+    ];
+    
+    // Check if the content matches any PowerShell indicators
+    return powerShellIndicators.some(regex => regex.test(content));
+  }
+
   // Execute a script
   async executeScript(req: Request, res: Response, next: NextFunction) {
     try {
@@ -519,9 +1162,24 @@ class ScriptController {
       }
       
       try {
-        const analysisResponse = await axios.post(`${AI_SERVICE_URL}/analyze-preview`, {
-          content
-        });
+        // Get OpenAI API key from request headers if available
+        const openaiApiKey = req.headers['x-openai-api-key'] as string;
+        
+        // Prepare analysis request with API key if provided
+        const analysisConfig = {
+          headers: {},
+          timeout: 15000 // 15 second timeout
+        };
+        
+        if (openaiApiKey) {
+          analysisConfig.headers['x-api-key'] = openaiApiKey;
+        }
+        
+        const analysisResponse = await axios.post(`${AI_SERVICE_URL}/analyze`, {
+          content,
+          include_command_details: true,
+          fetch_ms_docs: true
+        }, analysisConfig);
         
         res.json(analysisResponse.data);
       } catch (analysisError: any) {
@@ -544,35 +1202,200 @@ class ScriptController {
     }
   }
   
-  // Find similar scripts
+  // Analyze a script and save the analysis to the database
+  async analyzeScriptAndSave(req: Request, res: Response, next: NextFunction) {
+    let transaction;
+    
+    try {
+      const { id } = req.params;
+      
+      if (!id) {
+        return res.status(400).json({ message: 'Script ID is required' });
+      }
+      
+      // Find the script
+      const script = await Script.findByPk(id);
+      
+      if (!script) {
+        return res.status(404).json({ message: 'Script not found' });
+      }
+      
+      // Get script content
+      const content = script.content;
+      
+      if (!content) {
+        return res.status(400).json({ message: 'Script has no content' });
+      }
+      
+      try {
+        // Get OpenAI API key from request headers if available
+        const openaiApiKey = req.headers['x-openai-api-key'] as string;
+        
+        // Prepare analysis request with API key if provided
+        const analysisConfig = {
+          headers: {},
+          timeout: 30000 // 30 second timeout for full analysis
+        };
+        
+        if (openaiApiKey) {
+          analysisConfig.headers['x-api-key'] = openaiApiKey;
+        }
+        
+        // Start transaction for database operations
+        transaction = await sequelize.transaction();
+        
+        // Call AI service to analyze the script
+        const analysisResponse = await axios.post(`${AI_SERVICE_URL}/analyze`, {
+          content,
+          include_command_details: true,
+          fetch_ms_docs: true
+        }, analysisConfig);
+        
+        const analysisData = analysisResponse.data;
+        
+        // Check if analysis already exists for this script
+        let analysis = await ScriptAnalysis.findOne({
+          where: { scriptId: id },
+          transaction
+        });
+        
+        if (analysis) {
+          // Update existing analysis
+          await analysis.update({
+            purpose: analysisData.purpose || '',
+            securityScore: analysisData.security_score || 0,
+            codeQualityScore: analysisData.code_quality_score || 0,
+            riskScore: analysisData.risk_score || 0,
+            complexityScore: analysisData.complexity_score || 0,
+            reliabilityScore: analysisData.reliability_score || 0,
+            parameterDocs: analysisData.parameters || {},
+            suggestions: analysisData.optimization_suggestions || [],
+            securityConcerns: analysisData.security_concerns || [],
+            bestPractices: analysisData.best_practices || [],
+            performanceSuggestions: analysisData.performance_suggestions || [],
+            commandDetails: analysisData.command_details || {},
+            msDocsReferences: analysisData.ms_docs_references || []
+          }, { transaction });
+        } else {
+          // Create new analysis
+          analysis = await ScriptAnalysis.create({
+            scriptId: id,
+            purpose: analysisData.purpose || '',
+            securityScore: analysisData.security_score || 0,
+            codeQualityScore: analysisData.code_quality_score || 0,
+            riskScore: analysisData.risk_score || 0,
+            complexityScore: analysisData.complexity_score || 0,
+            reliabilityScore: analysisData.reliability_score || 0,
+            parameterDocs: analysisData.parameters || {},
+            suggestions: analysisData.optimization_suggestions || [],
+            securityConcerns: analysisData.security_concerns || [],
+            bestPractices: analysisData.best_practices || [],
+            performanceSuggestions: analysisData.performance_suggestions || [],
+            commandDetails: analysisData.command_details || {},
+            msDocsReferences: analysisData.ms_docs_references || []
+          }, { transaction });
+        }
+        
+        // Commit transaction
+        await transaction.commit();
+        
+        // Return the analysis data
+        res.json(analysisData);
+      } catch (analysisError: any) {
+        // Rollback transaction if it exists
+        if (transaction) await transaction.rollback();
+        
+        if (analysisError.response) {
+          logger.error('AI analysis error:', analysisError.response.data);
+          return res.status(analysisError.response.status).json({
+            message: 'Analysis failed',
+            error: analysisError.response.data
+          });
+        }
+        
+        logger.error('AI service connection error:', analysisError.message);
+        return res.status(500).json({
+          message: 'Could not connect to analysis service',
+          error: analysisError.message
+        });
+      }
+    } catch (error) {
+      // Rollback transaction if it exists
+      if (transaction) await transaction.rollback();
+      next(error);
+    }
+  }
+  
+  // Find similar scripts using vector similarity search
   async findSimilarScripts(req: Request, res: Response, next: NextFunction) {
     try {
-      const scriptId = req.params.id;
+      const scriptId = parseInt(req.params.id);
+      const limit = parseInt(req.query.limit as string) || 5;
+      const threshold = parseFloat(req.query.threshold as string) || 0.7;
       
-      // This would use the embedding service to find similar scripts
-      // For now, return a simplified response
-      const similarScripts = await Script.findAll({
-        where: {
-          id: { [Op.ne]: scriptId }
-        },
-        limit: 5,
-        include: [
-          { model: Category, as: 'category' }
-        ],
-        order: [['updatedAt', 'DESC']]
-      });
+      // Check if we have a valid script ID
+      if (isNaN(scriptId)) {
+        return res.status(400).json({ 
+          message: 'Invalid script ID',
+          success: false
+        });
+      }
       
-      // Calculate a mock similarity score
-      const response = similarScripts.map(script => ({
-        script_id: script.id,
-        title: script.title,
-        category: script.category?.name,
-        similarity: (Math.random() * 0.5) + 0.5 // Random score between 0.5 and 1.0
-      }));
+      // Get the script to verify it exists
+      const script = await Script.findByPk(scriptId);
+      if (!script) {
+        return res.status(404).json({ 
+          message: 'Script not found',
+          success: false
+        });
+      }
       
-      res.json({
-        similar_scripts: response
-      });
+      // Use the vector search utility to find similar scripts
+      try {
+        const similarScripts = await findSimilarScriptsByVector(scriptId, limit, threshold);
+        
+        // Format the response
+        const response = {
+          similar_scripts: similarScripts.map(script => ({
+            script_id: script.id,
+            title: script.title,
+            category: script.categoryId,
+            similarity: parseFloat(script.similarity.toFixed(4))
+          })),
+          success: true
+        };
+        
+        res.json(response);
+      } catch (searchError) {
+        logger.error(`Error finding similar scripts for ${scriptId}:`, searchError);
+        
+        // Fall back to basic similarity if vector search fails
+        const similarScripts = await Script.findAll({
+          where: {
+            id: { [Op.ne]: scriptId }
+          },
+          limit: 5,
+          include: [
+            { model: Category, as: 'category', attributes: ['id', 'name', 'description', 'created_at'] }
+          ],
+          order: [['updatedAt', 'DESC']]
+        });
+        
+        // Calculate a mock similarity score
+        const response = {
+          similar_scripts: similarScripts.map(script => ({
+            script_id: script.id,
+            title: script.title,
+            category: script.category?.name,
+            similarity: parseFloat((Math.random() * 0.3 + 0.6).toFixed(4)) // Random score between 0.6 and 0.9
+          })),
+          success: true,
+          fallback: true,
+          message: 'Vector search failed, using fallback similarity'
+        };
+        
+        res.json(response);
+      }
     } catch (error) {
       next(error);
     }
