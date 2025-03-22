@@ -44,13 +44,40 @@ const ManageFiles: React.FC = () => {
     { staleTime: 30000 }
   );
 
-  // Delete mutation
+  // Delete mutation with improved feedback and error handling
   const deleteMutation = useMutation(
-    (ids: string[]) => scriptService.deleteScripts(ids),
+    (ids: string[]) => scriptService.bulkDeleteScripts(ids),
     {
-      onSuccess: () => {
-        queryClient.invalidateQueries('allScripts');
-        setSelectedScripts([]);
+      onSuccess: (data, variables) => {
+        // variables contains the ids that were passed to the mutation
+        const deletedIds = variables;
+        
+        // Update the local state immediately for a more responsive UI
+        if (data && data.success) {
+          // Show success notification
+          const message = deletedIds.length > 1 
+            ? `Successfully deleted ${deletedIds.length} scripts` 
+            : 'Script deleted successfully';
+          
+          // You could add a toast notification here if you have a toast library
+          console.log(message);
+          
+          // Remove deleted scripts from the local state if they exist
+          if (scriptsData && scriptsData.scripts) {
+            const updatedScripts = scriptsData.scripts.filter(script => !deletedIds.includes(script.id));
+            queryClient.setQueryData(['allScripts'], { ...scriptsData, scripts: updatedScripts });
+          }
+          
+          // Invalidate the query to refresh data from server
+          queryClient.invalidateQueries('allScripts');
+          
+          // Clear selection
+          setSelectedScripts([]);
+        }
+      },
+      onError: (error) => {
+        console.error('Error deleting scripts:', error);
+        alert('Failed to delete script(s). Please try again.');
       }
     }
   );
@@ -109,7 +136,13 @@ const ManageFiles: React.FC = () => {
   };
 
   const handleDeleteSelected = () => {
-    if (window.confirm(`Are you sure you want to delete ${selectedScripts.length} script(s)?`)) {
+    if (selectedScripts.length === 0) {
+      alert('Please select at least one script to delete.');
+      return;
+    }
+    
+    if (window.confirm(`Are you sure you want to delete ${selectedScripts.length} script(s)? This action cannot be undone.`)) {
+      // Show loading state if needed
       deleteMutation.mutate(selectedScripts);
     }
   };
@@ -209,6 +242,8 @@ const ManageFiles: React.FC = () => {
             <input
               type="text"
               placeholder="Search scripts..."
+                aria-label="Search scripts"
+                title="Search scripts"
               className="w-full p-2 bg-gray-800 border border-gray-600 rounded text-white"
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
@@ -246,6 +281,8 @@ const ManageFiles: React.FC = () => {
                     <input 
                       type="checkbox" 
                       checked={selectedScripts.length === filteredScripts.length && filteredScripts.length > 0}
+                      aria-label="Select all scripts"
+                      title="Select all scripts"
                       onChange={selectAllScripts}
                       className="w-4 h-4 rounded"
                     />
@@ -264,6 +301,8 @@ const ManageFiles: React.FC = () => {
                       <input 
                         type="checkbox" 
                         checked={selectedScripts.includes(script.id)}
+                        aria-label={`Select script ${script.title}`}
+                        title={`Select script ${script.title}`}
                         onChange={() => toggleScriptSelection(script.id)}
                         className="w-4 h-4 rounded"
                       />
@@ -374,12 +413,18 @@ const ManageFiles: React.FC = () => {
                         </button>
                         <button
                           onClick={() => {
-                            if (window.confirm('Are you sure you want to delete this script?')) {
+                            if (window.confirm('Are you sure you want to delete this script? This action cannot be undone.')) {
+                              // Remove from UI immediately for better UX
+                              const updatedScripts = scripts.filter(s => s.id !== script.id);
+                              queryClient.setQueryData(['allScripts'], { ...scriptsData, scripts: updatedScripts });
+                              
+                              // Then perform the actual deletion
                               deleteMutation.mutate([script.id]);
                             }
                           }}
                           className="text-red-400 hover:text-red-300"
                           title="Delete"
+                          data-testid={`delete-script-${script.id}`}
                         >
                           <svg
                             className="w-5 h-5"

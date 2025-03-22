@@ -33,7 +33,7 @@ export const setupSwagger = (app: express.Application): void => {
         },
         servers: [
           {
-            url: 'http://localhost:4000',
+            url: 'http://localhost:4001',
             description: 'Development server',
           },
           {

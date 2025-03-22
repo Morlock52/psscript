@@ -1,0 +1,186 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Crawl4AI Vector Database Demo</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        body {
+            padding-top: 2rem;
+            padding-bottom: 2rem;
+        }
+        .feature-icon {
+            font-size: 2.5rem;
+            color: #0d6efd;
+            margin-bottom: 1rem;
+        }
+        .code-block {
+            background-color: #f8f9fa;
+            padding: 1rem;
+            border-radius: 0.25rem;
+            margin-bottom: 1rem;
+            overflow-x: auto;
+        }
+        .nav-tabs .nav-link {
+            cursor: pointer;
+        }
+        .tab-content {
+            padding: 1rem;
+            border: 1px solid #dee2e6;
+            border-top: none;
+            border-radius: 0 0 0.25rem 0.25rem;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header class="pb-3 mb-4 border-bottom">
+            <div class="d-flex align-items-center">
+                <h1 class="display-5 fw-bold">Crawl4AI Vector Database</h1>
+                <span class="ms-3 badge bg-primary">v0.2.0</span>
+            </div>
+            <p class="lead">A vector database integration for crawl4ai that enables semantic search and chat capabilities over crawled web content.</p>
+        </header>
+
+        <div class="row mb-5">
+            <div class="col-md-6">
+                <h2>What is Crawl4AI Vector Database?</h2>
+                <p>
+                    Crawl4AI Vector Database is a powerful tool that combines web crawling with vector embeddings to enable semantic search and chat capabilities over web content. It uses PostgreSQL with pgvector for storing and querying vector embeddings.
+                </p>
+                <p>
+                    With the latest improvements, it now supports deep crawling with multiple strategies, browser profiles for authenticated crawling, and multiple embedding providers.
+                </p>
+            </div>
+            <div class="col-md-6">
+                <img src="https://via.placeholder.com/600x300?text=Crawl4AI+Vector+Database" alt="Crawl4AI Vector Database" class="img-fluid rounded">
+            </div>
+        </div>
+
+        <h2 class="mb-4">Key Features</h2>
+        <div class="row g-4 mb-5">
+            <div class="col-md-4">
+                <div class="card h-100">
+                    <div class="card-body">
+                        <div class="feature-icon">
+                            <i class="bi bi-globe"></i>
+                        </div>
+                        <h3 class="card-title">Deep Crawling</h3>
+                        <p class="card-text">Recursively crawl websites using BFS, DFS, or BestFirst strategies to build a comprehensive knowledge base.</p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="card h-100">
+                    <div class="card-body">
+                        <div class="feature-icon">
+                            <i class="bi bi-person-badge"></i>
+                        </div>
+                        <h3 class="card-title">Browser Profiles</h3>
+                        <p class="card-text">Create and manage persistent browser profiles for authenticated crawling of login-protected content.</p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="card h-100">
+                    <div class="card-body">
+                        <div class="feature-icon">
+                            <i class="bi bi-cpu"></i>
+                        </div>
+                        <h3 class="card-title">Multiple Embedding Providers</h3>
+                        <p class="card-text">Generate embeddings using OpenAI or HuggingFace models with configurable dimensions and parameters.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <h2 class="mb-4">Usage Examples</h2>
+        <ul class="nav nav-tabs" id="myTab" role="tablist">
+            <li class="nav-item" role="presentation">
+                <button class="nav-link active" id="cli-tab" data-bs-toggle="tab" data-bs-target="#cli" type="button" role="tab" aria-controls="cli" aria-selected="true">CLI</button>
+            </li>
+            <li class="nav-item" role="presentation">
+                <button class="nav-link" id="api-tab" data-bs-toggle="tab" data-bs-target="#api" type="button" role="tab" aria-controls="api" aria-selected="false">API</button>
+            </li>
+            <li class="nav-item" role="presentation">
+                <button class="nav-link" id="code-tab" data-bs-toggle="tab" data-bs-target="#code" type="button" role="tab" aria-controls="code" aria-selected="false">Code</button>
+            </li>
+        </ul>
+        <div class="tab-content" id="myTabContent">
+            <div class="tab-pane fade show active" id="cli" role="tabpanel" aria-labelledby="cli-tab">
+                <h4>Deep Crawling</h4>
+                <pre class="code-block"><code>npm run crawl site https://example.com --strategy bfs --max-pages 50</code></pre>
+                
+                <h4>Browser Profiles</h4>
+                <pre class="code-block"><code># Create a profile
+npm run crawl profile create my-profile
+
+# Use a profile for crawling
+npm run crawl url https://example.com --profile my-profile</code></pre>
+                
+                <h4>Semantic Search</h4>
+                <pre class="code-block"><code>npm run search query "What is vector search?"</code></pre>
+            </div>
+            <div class="tab-pane fade" id="api" role="tabpanel" aria-labelledby="api-tab">
+                <h4>Deep Crawling</h4>
+                <pre class="code-block"><code>POST /api/webpages
+{
+  "url": "https://example.com",
+  "deepCrawl": true,
+  "strategy": "bfs",
+  "maxPages": 50,
+  "threshold": 0.7
+}</code></pre>
+                
+                <h4>Get Child Pages</h4>
+                <pre class="code-block"><code>GET /api/webpages/:id/children</code></pre>
+                
+                <h4>Semantic Search</h4>
+                <pre class="code-block"><code>POST /api/search
+{
+  "query": "What is vector search?",
+  "limit": 5
+}</code></pre>
+            </div>
+            <div class="tab-pane fade" id="code" role="tabpanel" aria-labelledby="code-tab">
+                <h4>Embedding Service</h4>
+                <pre class="code-block"><code>const embeddingService = new EmbeddingService({
+  provider: 'openai',
+  model: 'text-embedding-3-small',
+  dimensions: 1536
+});
+
+const embedding = await embeddingService.generateEmbedding("What is vector search?");</code></pre>
+                
+                <h4>Deep Crawling</h4>
+                <pre class="code-block"><code>const crawlService = new CrawlService();
+
+const result = await crawlService.crawlAndStore(url, {
+  deepCrawlEnabled: true,
+  deepCrawlStrategy: 'BFS',
+  maxPages: 50,
+  scoreThreshold: 0.7
+});</code></pre>
+            </div>
+        </div>
+
+        <h2 class="mt-5 mb-4">Installation</h2>
+        <div class="code-block">
+            <pre><code>git clone https://github.com/yourusername/crawl4ai-vector-db.git
+cd crawl4ai-vector-db
+npm install
+npm run setup-all
+npm run run-deep-crawl-migration
+npm run start-dev</code></pre>
+        </div>
+
+        <footer class="pt-3 mt-4 text-muted border-top">
+            &copy; 2025 Crawl4AI Vector Database
+        </footer>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css">
+</body>
+</html>

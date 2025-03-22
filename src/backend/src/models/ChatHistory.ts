@@ -1,5 +1,5 @@
+// File has been checked for TypeScript errors
 import { DataTypes, Model, Sequelize } from 'sequelize';
-import { User } from './User';
 
 export interface ChatHistoryAttributes {
   id?: number;
@@ -13,8 +13,8 @@ export interface ChatHistoryAttributes {
 
 export interface ChatHistoryInstance extends Model<ChatHistoryAttributes>, ChatHistoryAttributes {}
 
-export const defineChatHistoryModel = (sequelize: Sequelize) => {
-  const ChatHistory = sequelize.define<ChatHistoryInstance>(
+const ChatHistory = function(sequelize: Sequelize) {
+  const ChatHistoryModel = sequelize.define<ChatHistoryInstance>(
     'ChatHistory',
     {
       id: {
@@ -70,19 +70,22 @@ export const defineChatHistoryModel = (sequelize: Sequelize) => {
     }
   );
 
-  // Define associations
-  ChatHistory.associate = (models: any) => {
-    ChatHistory.belongsTo(models.User, {
+  // Add associate method
+  // @ts-ignore
+      ChatHistoryModel.associate = function() {
+    const { User } = require('./index');
+    ChatHistoryModel.belongsTo(User, {
       foreignKey: 'userId',
       as: 'user',
     });
   };
 
-  return ChatHistory;
+  return ChatHistoryModel;
 };
 
-export function initChatHistoryModel(sequelize: Sequelize): void {
-  defineChatHistoryModel(sequelize);
-}
+// Initialize model
+ChatHistory.initialize = function(sequelize: Sequelize) {
+  return ChatHistory(sequelize);
+};
 
-export default defineChatHistoryModel;
+export default ChatHistory;

@@ -7,9 +7,14 @@ const { createLogger, format, transports } = winston;
 
 // Make sure logs directory exists
 const logDir = path.join(process.cwd(), 'logs');
-if (!fs.existsSync(logDir)) {
-  fs.mkdirSync(logDir, { recursive: true });
-}
+const testResultsLogDir = path.join(process.cwd(), '../../test-results/logs');
+
+// Create both log directories
+[logDir, testResultsLogDir].forEach(dir => {
+  if (!fs.existsSync(dir)) {
+    fs.mkdirSync(dir, { recursive: true });
+  }
+});
 
 // Define custom log levels
 const levels = {
@@ -58,12 +63,25 @@ const transportList = [
     format: consoleFormat,
     handleExceptions: true,
   }),
+  // Regular app logs
   new transports.File({
     filename: path.join(logDir, 'error.log'),
     level: 'error',
   }),
   new transports.File({
     filename: path.join(logDir, 'combined.log'),
+  }),
+  // Test result logs for troubleshooting
+  new transports.File({
+    filename: path.join(testResultsLogDir, 'error.log'),
+    level: 'error',
+  }),
+  new transports.File({
+    filename: path.join(testResultsLogDir, 'combined.log'),
+  }),
+  new transports.File({
+    filename: path.join(testResultsLogDir, 'debug.log'),
+    level: 'debug',
   }),
 ];
 
@@ -100,5 +118,41 @@ if (process.env.NODE_ENV !== 'test') {
   logger.info(`Logger initialized at level: ${logLevel}`);
 }
 
-// Export logger instance
-export default logger;
+// Add helper methods for database logging
+interface ExtendedLogger extends winston.Logger {
+  logDbError: (operation: string, error: any) => void;
+  logRedisError: (operation: string, error: any) => void;
+  logConnectionAttempt: (type: string, config: any) => void;
+}
+
+// Cast to extended logger type
+const extendedLogger = logger as ExtendedLogger;
+
+extendedLogger.logDbError = (operation: string, error: any) => {
+  logger.error(`Database ${operation} error`, { 
+    error: error.message,
+    stack: error.stack,
+    code: error.code,
+    detail: error.detail || error.original?.detail
+  });
+};
+
+extendedLogger.logRedisError = (operation: string, error: any) => {
+  logger.error(`Redis ${operation} error`, { 
+    error: error.message,
+    stack: error.stack,
+    code: error.code
+  });
+};
+
+extendedLogger.logConnectionAttempt = (type: string, config: any) => {
+  // Sanitize connection info to avoid logging credentials
+  const sanitizedConfig = { ...config };
+  if (sanitizedConfig.password) sanitizedConfig.password = '[REDACTED]';
+  if (sanitizedConfig.user) sanitizedConfig.user = '[PRESENT]';
+  
+  logger.info(`Attempting to connect to ${type}`, sanitizedConfig);
+};
+
+// Export logger instance with extended interface
+export default extendedLogger;

@@ -1,0 +1,447 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Voice API Static Demo</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background-color: #f5f5f5;
+            color: #333;
+        }
+        
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background-color: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+        }
+        
+        header {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+        
+        h1 {
+            color: #2c3e50;
+        }
+        
+        .demo-section {
+            margin-bottom: 30px;
+        }
+        
+        .chat-container {
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            overflow: hidden;
+            height: 400px;
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .chat-messages {
+            flex: 1;
+            overflow-y: auto;
+            padding: 10px;
+            background-color: #f9f9f9;
+        }
+        
+        .message {
+            margin-bottom: 10px;
+            padding: 8px 12px;
+            border-radius: 8px;
+            max-width: 70%;
+            animation: fadeIn 0.3s ease-in-out;
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        .user-message {
+            background-color: #dcf8c6;
+            margin-left: auto;
+        }
+        
+        .assistant-message {
+            background-color: white;
+            border: 1px solid #ddd;
+        }
+        
+        .input-container {
+            display: flex;
+            padding: 10px;
+            border-top: 1px solid #ddd;
+            background-color: white;
+        }
+        
+        .input-container input {
+            flex: 1;
+            padding: 8px 12px;
+            border: 1px solid #ddd;
+            border-radius: 20px;
+            outline: none;
+        }
+        
+        .input-container button {
+            margin-left: 10px;
+            padding: 8px 16px;
+            background-color: #2c3e50;
+            color: white;
+            border: none;
+            border-radius: 20px;
+            cursor: pointer;
+        }
+        
+        .input-container button:hover {
+            background-color: #1a252f;
+        }
+        
+        .voice-indicator {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 20px 0;
+            height: 60px;
+        }
+        
+        .voice-wave {
+            display: flex;
+            align-items: center;
+            height: 100%;
+        }
+        
+        .voice-bar {
+            width: 5px;
+            height: 20px;
+            margin: 0 2px;
+            background-color: #3498db;
+            border-radius: 2px;
+            animation: none;
+        }
+        
+        .recording .voice-bar {
+            animation: voiceWave 0.5s infinite alternate;
+        }
+        
+        @keyframes voiceWave {
+            0% { height: 10px; }
+            100% { height: 40px; }
+        }
+        
+        .voice-bar:nth-child(1) { animation-delay: 0.0s; }
+        .voice-bar:nth-child(2) { animation-delay: 0.1s; }
+        .voice-bar:nth-child(3) { animation-delay: 0.2s; }
+        .voice-bar:nth-child(4) { animation-delay: 0.3s; }
+        .voice-bar:nth-child(5) { animation-delay: 0.4s; }
+        
+        .voice-status {
+            margin-top: 10px;
+            text-align: center;
+            font-style: italic;
+            color: #666;
+        }
+        
+        .features-list {
+            list-style-type: none;
+            padding: 0;
+        }
+        
+        .features-list li {
+            padding: 10px 0;
+            border-bottom: 1px solid #eee;
+        }
+        
+        .features-list li:last-child {
+            border-bottom: none;
+        }
+        
+        .features-list li::before {
+            content: "✓";
+            color: #27ae60;
+            margin-right: 10px;
+            font-weight: bold;
+        }
+        
+        .tabs {
+            display: flex;
+            border-bottom: 1px solid #ddd;
+            margin-bottom: 20px;
+        }
+        
+        .tab {
+            padding: 10px 20px;
+            cursor: pointer;
+            border: 1px solid transparent;
+            border-bottom: none;
+            border-radius: 4px 4px 0 0;
+            margin-right: 5px;
+        }
+        
+        .tab.active {
+            background-color: white;
+            border-color: #ddd;
+            border-bottom-color: white;
+            margin-bottom: -1px;
+        }
+        
+        .tab-content {
+            display: none;
+        }
+        
+        .tab-content.active {
+            display: block;
+        }
+        
+        .btn-primary {
+            background-color: #3498db;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 16px;
+        }
+        
+        .btn-primary:hover {
+            background-color: #2980b9;
+        }
+        
+        .btn-danger {
+            background-color: #e74c3c;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 16px;
+        }
+        
+        .btn-danger:hover {
+            background-color: #c0392b;
+        }
+        
+        footer {
+            text-align: center;
+            margin-top: 30px;
+            color: #7f8c8d;
+            font-size: 14px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>Voice API Integration Demo</h1>
+            <p>Experience the power of voice interaction in the PSScript Manager platform</p>
+        </header>
+        
+        <div class="tabs">
+            <div class="tab active" data-tab="demo">Demo</div>
+            <div class="tab" data-tab="features">Features</div>
+            <div class="tab" data-tab="architecture">Architecture</div>
+        </div>
+        
+        <div class="tab-content active" id="demo-tab">
+            <div class="demo-section">
+                <h2>Interactive Demo</h2>
+                <p>This demo showcases how voice interaction works in the PSScript Manager platform. Click the buttons below to simulate voice input and output.</p>
+                
+                <div class="chat-container">
+                    <div class="chat-messages" id="chat-messages">
+                        <div class="message assistant-message">Welcome to PSScript Manager! How can I help you today?</div>
+                    </div>
+                    
+                    <div class="input-container">
+                        <input type="text" id="message-input" placeholder="Type a message...">
+                        <button id="send-button">Send</button>
+                        <button id="voice-button">Voice</button>
+                    </div>
+                </div>
+                
+                <div class="voice-indicator" id="voice-indicator" style="display: none;">
+                    <div class="voice-wave">
+                        <div class="voice-bar"></div>
+                        <div class="voice-bar"></div>
+                        <div class="voice-bar"></div>
+                        <div class="voice-bar"></div>
+                        <div class="voice-bar"></div>
+                    </div>
+                </div>
+                
+                <div class="voice-status" id="voice-status" style="display: none;">Listening...</div>
+                
+                <div style="text-align: center; margin-top: 20px;">
+                    <button id="simulate-voice" class="btn-primary">Simulate Voice Input</button>
+                </div>
+            </div>
+        </div>
+        
+        <div class="tab-content" id="features-tab">
+            <div class="demo-section">
+                <h2>Voice API Features</h2>
+                <p>The Voice API integration enhances the PSScript Manager platform with the following features:</p>
+                
+                <ul class="features-list">
+                    <li><strong>Voice Input:</strong> Users can provide commands and queries using natural speech</li>
+                    <li><strong>Voice Output:</strong> Responses are synthesized into natural-sounding speech</li>
+                    <li><strong>Chat Integration:</strong> Voice capabilities are seamlessly integrated with the existing chat interface</li>
+                    <li><strong>Multiple Voice Options:</strong> Support for different voices, languages, and accents</li>
+                    <li><strong>Fallback Mechanisms:</strong> Graceful degradation when voice processing is unavailable</li>
+                    <li><strong>Performance Optimization:</strong> Caching and optimization for better performance</li>
+                    <li><strong>Security and Privacy:</strong> Secure handling of voice data with privacy controls</li>
+                </ul>
+            </div>
+        </div>
+        
+        <div class="tab-content" id="architecture-tab">
+            <div class="demo-section">
+                <h2>Voice API Architecture</h2>
+                <p>The Voice API integration follows a microservices-oriented approach with the following components:</p>
+                
+                <div style="text-align: center; margin: 30px 0;">
+                    <img src="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSI2MDAiIGhlaWdodD0iNDAwIj48cmVjdCB3aWR0aD0iMTAwJSIgaGVpZ2h0PSIxMDAlIiBmaWxsPSIjZjVmNWY1Ii8+PHRleHQgeD0iNTAlIiB5PSI1MCUiIGZvbnQtZmFtaWx5PSJBcmlhbCIgZm9udC1zaXplPSIyMCIgdGV4dC1hbmNob3I9Im1pZGRsZSIgZmlsbD0iIzMzMyI+Vm9pY2UgQVBJIEFyY2hpdGVjdHVyZSBEaWFncmFtPC90ZXh0Pjwvc3ZnPg==" alt="Voice API Architecture Diagram" style="max-width: 100%; border: 1px solid #ddd; border-radius: 4px;">
+                </div>
+                
+                <p>The architecture consists of the following components:</p>
+                
+                <ol>
+                    <li><strong>Frontend Voice Components:</strong> React components for voice recording and playback</li>
+                    <li><strong>Backend Voice Controller:</strong> Express controller for handling voice requests</li>
+                    <li><strong>AI Service Voice Integration:</strong> FastAPI endpoints for voice processing</li>
+                    <li><strong>Voice Agent:</strong> Specialized agent for voice interactions</li>
+                    <li><strong>External Voice Services:</strong> Integration with third-party TTS and STT services</li>
+                </ol>
+            </div>
+        </div>
+        
+        <footer>
+            <p>© 2025 PSScript Manager - Voice API Integration Demo</p>
+        </footer>
+    </div>
+    
+    <script>
+        // DOM Elements
+        const chatMessages = document.getElementById('chat-messages');
+        const messageInput = document.getElementById('message-input');
+        const sendButton = document.getElementById('send-button');
+        const voiceButton = document.getElementById('voice-button');
+        const voiceIndicator = document.getElementById('voice-indicator');
+        const voiceStatus = document.getElementById('voice-status');
+        const simulateVoiceButton = document.getElementById('simulate-voice');
+        
+        // Tab switching
+        document.querySelectorAll('.tab').forEach(tab => {
+            tab.addEventListener('click', () => {
+                // Remove active class from all tabs and tab contents
+                document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+                document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+                
+                // Add active class to clicked tab and corresponding content
+                tab.classList.add('active');
+                document.getElementById(`${tab.dataset.tab}-tab`).classList.add('active');
+            });
+        });
+        
+        // Send message function
+        function sendMessage() {
+            const message = messageInput.value.trim();
+            if (!message) return;
+            
+            // Add user message
+            addMessage(message, 'user');
+            messageInput.value = '';
+            
+            // Simulate AI response after a short delay
+            setTimeout(() => {
+                let response;
+                
+                // Generate response based on message content
+                if (message.toLowerCase().includes('analyze') || message.toLowerCase().includes('script')) {
+                    response = "To analyze PowerShell scripts, you can use the PSScript Manager platform. It provides AI-powered analysis of script quality, security, and performance. Simply upload your script and the platform will automatically analyze it for you.";
+                } else if (message.toLowerCase().includes('voice') || message.toLowerCase().includes('api')) {
+                    response = "The Voice API integration enhances the PSScript Manager platform with voice input and output capabilities. Users can interact with the platform using natural speech, and responses can be synthesized into natural-sounding voice.";
+                } else {
+                    response = "I'm here to help you with PowerShell script management and analysis. You can ask me about script analysis, security assessment, categorization, or any other features of the PSScript Manager platform.";
+                }
+                
+                addMessage(response, 'assistant');
+            }, 1000);
+        }
+        
+        // Add message to chat
+        function addMessage(text, role) {
+            const messageElement = document.createElement('div');
+            messageElement.className = `message ${role}-message`;
+            messageElement.textContent = text;
+            
+            chatMessages.appendChild(messageElement);
+            chatMessages.scrollTop = chatMessages.scrollHeight;
+        }
+        
+        // Simulate voice recording
+        function simulateVoiceRecording() {
+            // Show voice indicator and status
+            voiceIndicator.style.display = 'flex';
+            voiceStatus.style.display = 'block';
+            voiceIndicator.classList.add('recording');
+            
+            // Disable buttons during recording
+            simulateVoiceButton.disabled = true;
+            voiceButton.disabled = true;
+            sendButton.disabled = true;
+            
+            // Simulate recording for 3 seconds
+            setTimeout(() => {
+                // Stop recording animation
+                voiceIndicator.classList.remove('recording');
+                voiceStatus.textContent = 'Processing...';
+                
+                // Simulate processing for 1.5 seconds
+                setTimeout(() => {
+                    // Hide voice indicator and status
+                    voiceIndicator.style.display = 'none';
+                    voiceStatus.style.display = 'none';
+                    
+                    // Enable buttons
+                    simulateVoiceButton.disabled = false;
+                    voiceButton.disabled = false;
+                    sendButton.disabled = false;
+                    
+                    // Add simulated voice input
+                    const voiceInput = "How do I analyze PowerShell scripts?";
+                    addMessage(voiceInput, 'user');
+                    
+                    // Simulate AI response after a short delay
+                    setTimeout(() => {
+                        const response = "To analyze PowerShell scripts, you can use the PSScript Manager platform. It provides AI-powered analysis of script quality, security, and performance. Simply upload your script and the platform will automatically analyze it for you.";
+                        addMessage(response, 'assistant');
+                    }, 1000);
+                }, 1500);
+            }, 3000);
+        }
+        
+        // Event Listeners
+        sendButton.addEventListener('click', sendMessage);
+        messageInput.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') {
+                sendMessage();
+            }
+        });
+        
+        voiceButton.addEventListener('click', () => {
+            simulateVoiceRecording();
+        });
+        
+        simulateVoiceButton.addEventListener('click', () => {
+            simulateVoiceRecording();
+        });
+    </script>
+</body>
+</html>

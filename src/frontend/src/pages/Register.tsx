@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../hooks/useAuth';
+import { useTheme } from '../hooks/useTheme';
 
 const Register: React.FC = () => {
   const [username, setUsername] = useState('');
@@ -10,6 +11,7 @@ const Register: React.FC = () => {
   const [formError, setFormError] = useState('');
   
   const { register, error, isLoading } = useAuth();
+  const { theme } = useTheme();
   const navigate = useNavigate();
   
   const handleSubmit = async (e: React.FormEvent) => {
@@ -41,25 +43,31 @@ const Register: React.FC = () => {
   };
   
   return (
-    <div className="flex items-center justify-center min-h-screen bg-gray-900 px-4">
+    <div className={`flex items-center justify-center min-h-screen px-4 ${theme === 'dark' ? 'bg-gray-900' : 'bg-gray-100'}`}>
       <div className="w-full max-w-md">
         <div className="text-center mb-10">
-          <h1 className="text-3xl font-bold text-white">PSScript</h1>
-          <p className="text-gray-400 mt-2">PowerShell Script Management</p>
+          <h1 className={`text-3xl font-bold ${theme === 'dark' ? 'text-white' : 'text-gray-900'}`}>PSScript</h1>
+          <p className={`mt-2 ${theme === 'dark' ? 'text-gray-400' : 'text-gray-600'}`}>PowerShell Script Management</p>
         </div>
         
-        <div className="bg-gray-800 rounded-lg shadow-xl p-8">
-          <h2 className="text-2xl font-bold text-white mb-6">Create an Account</h2>
+        <div className={`rounded-lg shadow-xl p-8 ${theme === 'dark' ? 'bg-gray-800' : 'bg-white'}`}>
+          <h2 className={`text-2xl font-bold mb-6 ${theme === 'dark' ? 'text-white' : 'text-gray-900'}`}>Create an Account</h2>
           
           {(error || formError) && (
-            <div className="bg-red-900/50 border border-red-800 text-red-300 px-4 py-3 rounded mb-4">
+            <div className={`px-4 py-3 rounded mb-4 ${
+              theme === 'dark' 
+                ? 'bg-red-900/50 border border-red-800 text-red-300' 
+                : 'bg-red-100 border border-red-200 text-red-800'
+            }`}>
               {error || formError}
             </div>
           )}
           
           <form onSubmit={handleSubmit}>
             <div className="mb-6">
-              <label htmlFor="username" className="block text-gray-400 text-sm font-medium mb-2">
+              <label htmlFor="username" className={`block text-sm font-medium mb-2 ${
+                theme === 'dark' ? 'text-gray-400' : 'text-gray-700'
+              }`}>
                 Username
               </label>
               <input
@@ -67,14 +75,20 @@ const Register: React.FC = () => {
                 type="text"
                 value={username}
                 onChange={(e) => setUsername(e.target.value)}
-                className="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-md text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
+                className={`w-full px-3 py-2 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 ${
+                  theme === 'dark'
+                    ? 'bg-gray-700 border border-gray-600 text-white'
+                    : 'bg-white border border-gray-300 text-gray-900'
+                }`}
                 placeholder="username"
                 required
               />
             </div>
             
             <div className="mb-6">
-              <label htmlFor="email" className="block text-gray-400 text-sm font-medium mb-2">
+              <label htmlFor="email" className={`block text-sm font-medium mb-2 ${
+                theme === 'dark' ? 'text-gray-400' : 'text-gray-700'
+              }`}>
                 Email Address
               </label>
               <input
@@ -82,14 +96,20 @@ const Register: React.FC = () => {
                 type="email"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
-                className="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-md text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
+                className={`w-full px-3 py-2 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 ${
+                  theme === 'dark'
+                    ? 'bg-gray-700 border border-gray-600 text-white'
+                    : 'bg-white border border-gray-300 text-gray-900'
+                }`}
                 placeholder="you@example.com"
                 required
               />
             </div>
             
             <div className="mb-6">
-              <label htmlFor="password" className="block text-gray-400 text-sm font-medium mb-2">
+              <label htmlFor="password" className={`block text-sm font-medium mb-2 ${
+                theme === 'dark' ? 'text-gray-400' : 'text-gray-700'
+              }`}>
                 Password
               </label>
               <input
@@ -97,17 +117,23 @@ const Register: React.FC = () => {
                 type="password"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
-                className="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-md text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
+                className={`w-full px-3 py-2 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 ${
+                  theme === 'dark'
+                    ? 'bg-gray-700 border border-gray-600 text-white'
+                    : 'bg-white border border-gray-300 text-gray-900'
+                }`}
                 placeholder="••••••••"
                 required
               />
-              <p className="mt-1 text-xs text-gray-500">
+              <p className={`mt-1 text-xs ${theme === 'dark' ? 'text-gray-500' : 'text-gray-600'}`}>
                 Password must be at least 8 characters long
               </p>
             </div>
             
             <div className="mb-6">
-              <label htmlFor="confirm-password" className="block text-gray-400 text-sm font-medium mb-2">
+              <label htmlFor="confirm-password" className={`block text-sm font-medium mb-2 ${
+                theme === 'dark' ? 'text-gray-400' : 'text-gray-700'
+              }`}>
                 Confirm Password
               </label>
               <input
@@ -115,7 +141,11 @@ const Register: React.FC = () => {
                 type="password"
                 value={confirmPassword}
                 onChange={(e) => setConfirmPassword(e.target.value)}
-                className="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-md text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
+                className={`w-full px-3 py-2 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 ${
+                  theme === 'dark'
+                    ? 'bg-gray-700 border border-gray-600 text-white'
+                    : 'bg-white border border-gray-300 text-gray-900'
+                }`}
                 placeholder="••••••••"
                 required
               />
@@ -124,7 +154,9 @@ const Register: React.FC = () => {
             <button
               type="submit"
               disabled={isLoading}
-              className="w-full bg-blue-600 hover:bg-blue-700 text-white font-medium py-2 px-4 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 focus:ring-offset-gray-800 disabled:opacity-50 disabled:cursor-not-allowed"
+              className={`w-full bg-blue-600 hover:bg-blue-700 text-white font-medium py-2 px-4 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed ${
+                theme === 'dark' ? 'focus:ring-offset-2 focus:ring-offset-gray-800' : 'focus:ring-offset-2 focus:ring-offset-white'
+              }`}
             >
               {isLoading ? (
                 <div className="flex items-center justify-center">
@@ -141,16 +173,20 @@ const Register: React.FC = () => {
           </form>
           
           <div className="mt-6 text-center">
-            <p className="text-gray-400">
+            <p className={`${theme === 'dark' ? 'text-gray-400' : 'text-gray-700'}`}>
               Already have an account?{' '}
-              <Link to="/login" className="text-blue-400 hover:text-blue-300">
+              <Link to="/login" className={`${
+                theme === 'dark' ? 'text-blue-400 hover:text-blue-300' : 'text-blue-600 hover:text-blue-800'
+              }`}>
                 Sign in
               </Link>
             </p>
           </div>
         </div>
         
-        <div className="text-center mt-8 text-gray-500 text-sm">
+        <div className={`text-center mt-8 text-sm ${
+          theme === 'dark' ? 'text-gray-500' : 'text-gray-600'
+        }`}>
           &copy; {new Date().getFullYear()} PSScript. All rights reserved.
         </div>
       </div>

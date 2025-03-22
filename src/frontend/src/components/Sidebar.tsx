@@ -1,409 +1,280 @@
-import React, { useState, useEffect, useCallback } from 'react';
-import { NavLink, useLocation } from 'react-router-dom';
-import { useQuery } from 'react-query';
-import { categoryService } from '../services/api';
+import React, { useState } from 'react';
+import { NavLink } from 'react-router-dom';
+import { useTheme } from '../hooks/useTheme';
 import { useAuth } from '../hooks/useAuth';
 
-// Category type definition
-interface Category {
-  id: number;
+// Define submenu item interface
+interface SubmenuItem {
   name: string;
-  description?: string;
+  path: string;
+  icon: React.ReactNode;
 }
 
+// Define navigation item interface with optional submenu
+interface NavItem {
+  name: string;
+  path?: string;
+  icon: React.ReactNode;
+  hasSubmenu?: boolean;
+  submenuItems?: SubmenuItem[];
+}
+
+// Define props for Sidebar
 interface SidebarProps {
-  collapsed?: boolean;
-  theme?: 'dark' | 'light';
+  isOpen: boolean;
+  onClose: () => void;
 }
 
-const Sidebar: React.FC<SidebarProps> = ({ 
-  collapsed = false,
-  theme = 'dark' 
-}) => {
-  const { user } = useAuth();
-  const location = useLocation();
-  const [expandedSections, setExpandedSections] = useState<{[key: string]: boolean}>({
-    categories: true,
-    favorites: false
-  });
+const Sidebar: React.FC<SidebarProps> = ({ isOpen, onClose }) => {
+  const { theme } = useTheme();
+  const { isAuthenticated } = useAuth();
+  const [aiMenuOpen, setAiMenuOpen] = useState(false);
   
-  // Use static categories instead of fetching to avoid errors
-  const isCategoriesLoading = false;
-  const categoriesData = {
-    categories: [
-      { id: 1, name: "System Administration", description: "Scripts for system administration tasks" },
-      { id: 2, name: "Security", description: "Scripts for security tasks" },
-      { id: 3, name: "Automation", description: "Scripts for automating tasks" }
-    ]
-  };
-  
-  // Extract categories from query result
-  const categories: Category[] = categoriesData?.categories || [];
-  
-  // Recently viewed scripts from localStorage
-  const [recentScripts, setRecentScripts] = useState<{id: string, title: string}[]>([]);
-
-  // Load recent scripts from localStorage on mount
-  useEffect(() => {
-    try {
-      const savedRecent = localStorage.getItem('recentScripts');
-      if (savedRecent) {
-        setRecentScripts(JSON.parse(savedRecent));
-      }
-    } catch (e) {
-      console.error('Error loading recent scripts:', e);
-    }
-  }, []);
-  
-  // Update recent scripts when visiting script detail page
-  useEffect(() => {
-    const match = location.pathname.match(/\/scripts\/(\d+)/);
-    if (match && match[1]) {
-      // Extract script ID and title from URL or page data
-      // For demo, we'll use a placeholder title
-      const scriptId = match[1];
-      const scriptTitle = document.title.replace(' | PSScript', '') || 'Script ' + scriptId;
-      
-      setRecentScripts(prev => {
-        // Remove if exists already
-        const filtered = prev.filter(s => s.id !== scriptId);
-        // Add to beginning, limit to 5 items
-        const updated = [{ id: scriptId, title: scriptTitle }, ...filtered].slice(0, 5);
-        // Save to localStorage
-        localStorage.setItem('recentScripts', JSON.stringify(updated));
-        return updated;
-      });
-    }
-  }, [location.pathname]);
-  
-  // Toggle expanded sections
-  const toggleSection = useCallback((section: string) => {
-    setExpandedSections(prev => ({
-      ...prev,
-      [section]: !prev[section]
-    }));
-  }, []);
-  
-  // Navigation items
-  const navItems = [
+  // Define navigation items
+  const navItems: NavItem[] = [
     {
       name: 'Dashboard',
       path: '/',
       icon: (
-        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"></path>
+        <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" />
         </svg>
       ),
     },
     {
-      name: 'Scripts',
+      name: 'Script Management',
       path: '/scripts',
       icon: (
-        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" d="M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4"></path>
+        <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
         </svg>
       ),
     },
     {
-      name: 'Upload',
-      path: '/scripts/upload',
+      name: 'AI Assistant',
+      hasSubmenu: true,
       icon: (
-        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"></path>
+        <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
+        </svg>
+      ),
+      submenuItems: [
+        {
+          name: 'Chat Assistant',
+          path: '/chat',
+          icon: (
+            <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z" />
+            </svg>
+          ),
+        },
+        {
+          name: 'Agentic Assistant',
+          path: '/ai/assistant',
+          icon: (
+            <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z" />
+            </svg>
+          ),
+        }
+      ]
+    },
+    {
+      name: 'Documentation',
+      path: '/documentation',
+      icon: (
+        <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" />
         </svg>
       ),
     },
     {
-      name: 'Manage',
-      path: '/scripts/manage',
+      name: 'UI Components',
+      path: '/ui-components',
       icon: (
-        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"></path>
-        </svg>
-      ),
-    },
-    {
-      name: 'Chat',
-      path: '/chat',
-      icon: (
-        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z"></path>
-        </svg>
-      ),
-    },
-    {
-      name: 'Chat History',
-      path: '/chat/history',
-      icon: (
-        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
-        </svg>
-      ),
-    },
-    {
-      name: 'Analytics',
-      path: '/analytics',
-      icon: (
-        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"></path>
-        </svg>
-      ),
-    },
-    {
-      name: 'Settings',
-      path: '/settings',
-      icon: (
-        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"></path>
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path>
+        <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 5a1 1 0 011-1h14a1 1 0 011 1v2a1 1 0 01-1 1H5a1 1 0 01-1-1V5zM4 13a1 1 0 011-1h6a1 1 0 011 1v6a1 1 0 01-1 1H5a1 1 0 01-1-1v-6zM16 13a1 1 0 011-1h2a1 1 0 011 1v6a1 1 0 01-1 1h-2a1 1 0 01-1-1v-6z" />
         </svg>
       ),
     },
   ];
-
+  
+  // Define authenticated-only items
+  const authItems: NavItem[] = [
+    {
+      name: 'Settings',
+      path: '/settings',
+      icon: (
+        <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+        </svg>
+      ),
+    },
+  ];
+  
+  // Define auth-related items
+  const authActionItems: NavItem[] = isAuthenticated
+    ? []
+    : [
+        {
+          name: 'Login',
+          path: '/login',
+          icon: (
+            <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 16l-4-4m0 0l4-4m-4 4h14m-5 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h7a3 3 0 013 3v1" />
+            </svg>
+          ),
+        },
+        {
+          name: 'Register',
+          path: '/register',
+          icon: (
+            <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M18 9v3m0 0v3m0-3h3m-3 0h-3m-2-5a4 4 0 11-8 0 4 4 0 018 0zM3 20a6 6 0 0112 0v1H3v-1z" />
+            </svg>
+          ),
+        },
+      ];
+  
+  // Combine all items
+  const allItems: NavItem[] = [...navItems, ...(isAuthenticated ? authItems : []), ...authActionItems];
+  
+  // Toggle AI submenu
+  const toggleAiMenu = () => {
+    setAiMenuOpen(!aiMenuOpen);
+  };
+  
   return (
-    <aside 
-      className={`h-full flex flex-col overflow-hidden transition-all duration-300
-        ${theme === 'dark' ? 'bg-gray-900 text-white' : 'bg-white text-gray-800'} 
-        ${theme === 'dark' ? 'border-r border-gray-700' : 'border-r border-gray-200'}`}
-    >
-      {/* Logo section */}
-      <div className={`flex items-center justify-between h-16 px-4 
-        ${theme === 'dark' ? 'border-b border-gray-700' : 'border-b border-gray-200'}`}>
-        <div className="flex items-center space-x-3">
-          <div className="flex items-center justify-center w-8 h-8 rounded-lg bg-blue-600 text-white font-bold">
-            PS
+    <>
+      {/* Backdrop */}
+      {isOpen && (
+        <div
+          className="fixed inset-0 bg-black bg-opacity-50 z-20 lg:hidden"
+          onClick={onClose}
+          aria-hidden="true"
+        />
+      )}
+      
+      {/* Sidebar */}
+      <div
+        className={`fixed inset-y-0 left-0 z-30 w-64 transform ${
+          isOpen ? 'translate-x-0' : '-translate-x-full'
+        } transition-transform duration-300 ease-in-out ${
+          theme === 'dark' ? 'bg-gray-900' : 'bg-white'
+        } lg:translate-x-0 lg:static lg:w-auto`}
+      >
+        {/* Logo and close button */}
+        <div className="flex items-center justify-between p-4">
+          <div className="flex items-center">
+            <div className={`text-2xl font-bold ${theme === 'dark' ? 'text-blue-400' : 'text-blue-600'}`}>
+              PSScript
+            </div>
           </div>
-          {!collapsed && <span className="text-lg font-semibold">PSScript</span>}
-          {!collapsed && <span className="text-xs px-1.5 py-0.5 rounded bg-blue-600 text-white">BETA</span>}
+          <button
+            onClick={onClose}
+            className={`p-2 rounded-md lg:hidden ${
+              theme === 'dark' ? 'hover:bg-gray-800' : 'hover:bg-gray-100'
+            }`}
+            aria-label="Close menu"
+          >
+            <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+            </svg>
+          </button>
+        </div>
+        
+        {/* Navigation */}
+        <nav className={`mt-5 px-2 ${theme === 'dark' ? 'text-gray-300' : 'text-gray-600'}`}>
+          <div className="space-y-1">
+            {allItems.map((item, index) => (
+              item.hasSubmenu ? (
+                <div key={`submenu-${index}`}>
+                  {/* Parent menu item with submenu */}
+                  <button
+                    onClick={toggleAiMenu}
+                    className={`w-full flex items-center justify-between px-4 py-2 text-sm font-medium rounded-md ${
+                      theme === 'dark'
+                        ? 'hover:bg-gray-800 hover:text-white'
+                        : 'hover:bg-gray-100 hover:text-gray-900'
+                    }`}
+                  >
+                    <div className="flex items-center">
+                      <span className="mr-3">{item.icon}</span>
+                      {item.name}
+                    </div>
+                    <svg
+                      xmlns="http://www.w3.org/2000/svg"
+                      className={`h-4 w-4 transition-transform ${aiMenuOpen ? 'transform rotate-180' : ''}`}
+                      fill="none"
+                      viewBox="0 0 24 24"
+                      stroke="currentColor"
+                    >
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                    </svg>
+                  </button>
+                  
+                  {/* Submenu items */}
+                  {aiMenuOpen && (
+                    <div className="pl-10 mt-1 space-y-1">
+                      {item.submenuItems?.map((subItem, subIndex) => (
+                        <NavLink
+                          key={`subitem-${subIndex}`}
+                          to={subItem.path}
+                          className={({ isActive }) =>
+                            `flex items-center px-4 py-2 text-sm font-medium rounded-md ${
+                              isActive
+                                ? theme === 'dark'
+                                  ? 'bg-gray-800 text-white'
+                                  : 'bg-gray-100 text-blue-600'
+                                : theme === 'dark'
+                                ? 'hover:bg-gray-800 hover:text-white'
+                                : 'hover:bg-gray-100 hover:text-gray-900'
+                            }`
+                          }
+                          onClick={onClose}
+                        >
+                          <span className="mr-3">{subItem.icon}</span>
+                          {subItem.name}
+                        </NavLink>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              ) : (
+                <NavLink
+                  key={item.path}
+                  to={item.path}
+                  className={({ isActive }) =>
+                    `flex items-center px-4 py-2 text-sm font-medium rounded-md ${
+                      isActive
+                        ? theme === 'dark'
+                          ? 'bg-gray-800 text-white'
+                          : 'bg-gray-100 text-blue-600'
+                        : theme === 'dark'
+                        ? 'hover:bg-gray-800 hover:text-white'
+                        : 'hover:bg-gray-100 hover:text-gray-900'
+                    }`
+                  }
+                  onClick={onClose}
+                >
+                  <span className="mr-3">{item.icon}</span>
+                  {item.name}
+                </NavLink>
+              )
+            ))}
+          </div>
+        </nav>
+        
+        {/* Footer */}
+        <div className="absolute bottom-0 w-full p-4">
+          <div className={`text-xs ${theme === 'dark' ? 'text-gray-500' : 'text-gray-400'}`}>
+            <p>&copy; 2025 PSScript</p>
+            <p className="mt-1">AI-Powered PowerShell Management</p>
+          </div>
         </div>
       </div>
-      
-      {/* Main navigation */}
-      <nav className={`flex-shrink-0 p-2 ${collapsed ? 'mt-2' : 'mt-4'}`}>
-        <ul className="space-y-1">
-          {navItems.map((item) => (
-            <li key={item.path}>
-              <NavLink
-                to={item.path}
-                end={item.path === '/'}
-                className={({ isActive }) =>
-                  `flex items-center p-2 rounded-lg transition-colors duration-200
-                  ${isActive 
-                    ? theme === 'dark' 
-                      ? 'bg-blue-600 text-white' 
-                      : 'bg-blue-100 text-blue-800'
-                    : theme === 'dark'
-                      ? 'text-gray-300 hover:bg-gray-800'
-                      : 'text-gray-700 hover:bg-gray-100'
-                  } ${!collapsed ? 'justify-start' : 'justify-center'}`
-                }
-                title={collapsed ? item.name : undefined}
-              >
-                <span className="flex-shrink-0">{item.icon}</span>
-                {!collapsed && <span className="ml-3">{item.name}</span>}
-              </NavLink>
-            </li>
-          ))}
-        </ul>
-      </nav>
-      
-      {/* Categories section */}
-      {!collapsed && (
-        <div className={`mt-2 px-3 overflow-hidden
-          ${theme === 'dark' ? 'border-t border-gray-700' : 'border-t border-gray-200'}`}>
-          <div 
-            className="flex items-center justify-between py-3 cursor-pointer"
-            onClick={() => toggleSection('categories')}
-          >
-            <h3 className={`text-xs font-medium uppercase tracking-wider
-              ${theme === 'dark' ? 'text-gray-400' : 'text-gray-500'}`}>
-              Categories
-            </h3>
-            <svg 
-              className={`w-3 h-3 transform transition-transform
-                ${expandedSections.categories ? 'rotate-0' : '-rotate-90'}
-                ${theme === 'dark' ? 'text-gray-400' : 'text-gray-500'}`}
-              fill="none" 
-              stroke="currentColor" 
-              viewBox="0 0 24 24"
-            >
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" d="M19 9l-7 7-7-7" />
-            </svg>
-          </div>
-          
-          {expandedSections.categories && (
-            <div className="overflow-y-auto max-h-40 pb-2 transition-all duration-300">
-              {isCategoriesLoading ? (
-                <div className={`flex justify-center py-2 ${theme === 'dark' ? 'text-gray-400' : 'text-gray-500'}`}>
-                  <svg className="animate-spin h-4 w-4 mr-2" viewBox="0 0 24 24">
-                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" fill="none"></circle>
-                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                  </svg>
-                  <span>Loading...</span>
-                </div>
-              ) : categories.length > 0 ? (
-                <ul className="space-y-1">
-                  {categories.map(category => (
-                    <li key={category.id}>
-                      <NavLink
-                        to={`/scripts?category=${category.id}`}
-                        className={({ isActive }) => `block px-3 py-2 text-sm rounded-md
-                          ${isActive
-                            ? theme === 'dark'
-                              ? 'bg-gray-700 text-white'
-                              : 'bg-gray-100 text-gray-900'
-                            : theme === 'dark'
-                              ? 'text-gray-400 hover:bg-gray-800 hover:text-white'
-                              : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900'
-                          }`}
-                        title={category.description}
-                      >
-                        {category.name}
-                      </NavLink>
-                    </li>
-                  ))}
-                  <li>
-                    <NavLink
-                      to="/categories"
-                      className={`block px-3 py-2 text-sm rounded-md
-                        ${theme === 'dark'
-                          ? 'text-blue-400 hover:bg-gray-800'
-                          : 'text-blue-600 hover:bg-gray-50'
-                        }`}
-                    >
-                      View all categories...
-                    </NavLink>
-                  </li>
-                </ul>
-              ) : (
-                <div className={`text-center py-2 ${theme === 'dark' ? 'text-gray-400' : 'text-gray-500'}`}>
-                  No categories found
-                </div>
-              )}
-            </div>
-          )}
-        </div>
-      )}
-      
-      {/* Recently viewed section */}
-      {!collapsed && recentScripts.length > 0 && (
-        <div className={`mt-2 px-3 overflow-hidden
-          ${theme === 'dark' ? 'border-t border-gray-700' : 'border-t border-gray-200'}`}>
-          <div 
-            className="flex items-center justify-between py-3 cursor-pointer"
-            onClick={() => toggleSection('recent')}
-          >
-            <h3 className={`text-xs font-medium uppercase tracking-wider
-              ${theme === 'dark' ? 'text-gray-400' : 'text-gray-500'}`}>
-              Recent
-            </h3>
-            <svg 
-              className={`w-3 h-3 transform transition-transform
-                ${expandedSections.recent ? 'rotate-0' : '-rotate-90'}
-                ${theme === 'dark' ? 'text-gray-400' : 'text-gray-500'}`}
-              fill="none" 
-              stroke="currentColor" 
-              viewBox="0 0 24 24"
-            >
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" d="M19 9l-7 7-7-7" />
-            </svg>
-          </div>
-          
-          {expandedSections.recent && (
-            <div className="overflow-y-auto max-h-40 pb-2">
-              <ul className="space-y-1">
-                {recentScripts.map(script => (
-                  <li key={script.id}>
-                    <NavLink
-                      to={`/scripts/${script.id}`}
-                      className={({ isActive }) => `block px-3 py-2 text-sm rounded-md truncate
-                        ${isActive
-                          ? theme === 'dark'
-                            ? 'bg-gray-700 text-white'
-                            : 'bg-gray-100 text-gray-900'
-                          : theme === 'dark'
-                            ? 'text-gray-400 hover:bg-gray-800 hover:text-white'
-                            : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900'
-                        }`}
-                    >
-                      {script.title}
-                    </NavLink>
-                  </li>
-                ))}
-              </ul>
-            </div>
-          )}
-        </div>
-      )}
-      
-      {/* Favorites section */}
-      {!collapsed && (
-        <div className={`mt-2 px-3 overflow-hidden
-          ${theme === 'dark' ? 'border-t border-gray-700' : 'border-t border-gray-200'}`}>
-          <div 
-            className="flex items-center justify-between py-3 cursor-pointer"
-            onClick={() => toggleSection('favorites')}
-          >
-            <h3 className={`text-xs font-medium uppercase tracking-wider
-              ${theme === 'dark' ? 'text-gray-400' : 'text-gray-500'}`}>
-              Favorites
-            </h3>
-            <svg 
-              className={`w-3 h-3 transform transition-transform
-                ${expandedSections.favorites ? 'rotate-0' : '-rotate-90'}
-                ${theme === 'dark' ? 'text-gray-400' : 'text-gray-500'}`}
-              fill="none" 
-              stroke="currentColor" 
-              viewBox="0 0 24 24"
-            >
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" d="M19 9l-7 7-7-7" />
-            </svg>
-          </div>
-          
-          {expandedSections.favorites && (
-            <div className="flex flex-col items-center justify-center py-4 px-3">
-              <svg
-                className={`w-6 h-6 ${theme === 'dark' ? 'text-gray-600' : 'text-gray-300'}`}
-                fill="currentColor"
-                viewBox="0 0 20 20"
-                xmlns="http://www.w3.org/2000/svg"
-              >
-                <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
-              </svg>
-              <p className={`mt-2 text-sm ${theme === 'dark' ? 'text-gray-400' : 'text-gray-500'}`}>
-                Star scripts to add them here
-              </p>
-            </div>
-          )}
-        </div>
-      )}
-      
-      {/* Spacer to push user section to bottom */}
-      <div className="flex-grow"></div>
-      
-      {/* User section at bottom */}
-      {!collapsed && (
-        <div className={`p-4 ${theme === 'dark' ? 'bg-gray-800' : 'bg-gray-50'} border-t
-          ${theme === 'dark' ? 'border-gray-700' : 'border-gray-200'}`}>
-          <div className="flex items-center">
-            <div className="flex-shrink-0">
-              <div className="w-9 h-9 rounded-full bg-blue-600 flex items-center justify-center text-white font-medium">
-                {user?.username?.charAt(0).toUpperCase() || 'U'}
-              </div>
-            </div>
-            <div className="ml-3 min-w-0">
-              <p className="text-sm font-medium truncate">
-                {user?.username || 'User'}
-              </p>
-              <p className={`text-xs truncate ${theme === 'dark' ? 'text-gray-400' : 'text-gray-500'}`}>
-                {user?.email || 'user@example.com'}
-              </p>
-            </div>
-          </div>
-        </div>
-      )}
-    </aside>
+    </>
   );
 };
 

@@ -1,29 +1,35 @@
 """
 PowerShell Script Analysis API
-A FastAPI service that analyzes PowerShell scripts using OpenAI APIs.
+A FastAPI service that analyzes PowerShell scripts using AI-powered multi-agent system.
 """
 
 import os
 import json
+import asyncio
+import time
 from typing import Dict, List, Optional, Any
 
-from fastapi import FastAPI, HTTPException, Depends, Body
+from fastapi import FastAPI, HTTPException, Header, Query
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel, Field
 import psycopg2
 from psycopg2.extras import RealDictCursor
 import numpy as np
-import openai
-import tiktoken
-from tenacity import retry, stop_after_attempt, wait_exponential
 
+from voice_endpoints import router as voice_router
+
+# Import configuration
+from config import config
+# Import our agent system
+from agents import agent_factory
+from agents.agent_coordinator import AgentCoordinator
 from analysis.script_analyzer import ScriptAnalyzer
 
 # Initialize FastAPI app
 app = FastAPI(
     title="PowerShell Script Analysis API",
     description="API for analyzing PowerShell scripts using AI",
-    version="0.1.0"
+    version="0.2.0"
 )
 
 # Add CORS middleware
@@ -35,46 +41,135 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+# Add voice router
+app.include_router(voice_router)
+
 # Initialize script analyzer
-script_analyzer = ScriptAnalyzer()
+script_analyzer = ScriptAnalyzer(use_cache=True)
 
-# Check if we have a valid API key
-# In production, set OPENAI_API_KEY environment variable
-# For testing without valid API key, explicitly set MOCK_MODE=true
-OPENAI_API_KEY = os.getenv("OPENAI_API_KEY", "")
-print(f"Using API key: {OPENAI_API_KEY[:8]}...")
+# Define MOCK_MODE based on config
+MOCK_MODE = config.mock_mode
 
-# Set to True because the API key isn't working correctly
-MOCK_MODE = True
-print("Using mock mode because API key is not working correctly")
+# Log configuration
+if config.api_keys.openai:
+    print(f"Using OpenAI API key: {config.api_keys.openai[:8]}...")
+else:
+    print("No OpenAI API key found in environment variables")
 
 print(f"Mock mode enabled: {MOCK_MODE}")
+print(f"Default agent: {config.agent.default_agent}")
+print(f"Default model: {config.agent.default_model}")
+
+
+# Initialize agent coordinator
+agent_coordinator = None
+if not MOCK_MODE:
+    try:
+        # Create memory storage directory if it doesn't exist
+        memory_storage_path = os.path.join(os.path.dirname(__file__), 
+                                          "memory_storage")
+        os.makedirs(memory_storage_path, exist_ok=True)
+        
+        # Create visualization output directory if it doesn't exist
+        visualization_output_dir = os.path.join(os.path.dirname(__file__), 
+                                               "visualizations")
+        os.makedirs(visualization_output_dir, exist_ok=True)
+        
+        # Initialize the agent coordinator
+        agent_coordinator = AgentCoordinator(
+            api_key=config.api_keys.openai,
+            memory_storage_path=memory_storage_path,
+            visualization_output_dir=visualization_output_dir,
+            model=config.agent.default_model
+        )
+        print("Agent coordinator initialized successfully")
+    except Exception as e:
+        print(f"Error initializing agent coordinator: {e}")
+        print("Falling back to legacy agent system")
+
+
+# Initialize legacy agent system as fallback
+if not MOCK_MODE and not agent_coordinator:
+    try:
+        # Test the agent system
+        test_message = [{"role": "user", "content": "Hello"}]
+        asyncio.run(agent_factory.process_message(test_message, 
+                                                 config.api_keys.openai))
+        print("Legacy agent system initialized successfully")
+    except Exception as e:
+        print(f"Error initializing legacy agent system: {e}")
+        print("Falling back to mock mode")
+        MOCK_MODE = True
+
 
 # Database connection
 def get_db_connection():
     """Create and return a database connection."""
-    conn = psycopg2.connect(
-        host=os.getenv("DB_HOST", "localhost"),
-        database=os.getenv("DB_NAME", "psscript"),
-        user=os.getenv("DB_USER", "postgres"),
-        password=os.getenv("DB_PASSWORD", "postgres"),
-        port=os.getenv("DB_PORT", "5432")
-    )
-    conn.cursor_factory = RealDictCursor
-    return conn
+    try:
+        # Use environment variables with localhost fallback
+        conn = psycopg2.connect(
+            host=os.getenv("DB_HOST", "localhost"),
+            database=os.getenv("DB_NAME", "psscript"),
+            user=os.getenv("DB_USER", "postgres"),
+            password=os.getenv("DB_PASSWORD", "postgres"),
+            port=os.getenv("DB_PORT", "5432")
+        )
+        conn.cursor_factory = RealDictCursor
+        return conn
+    except Exception as e:
+        print(f"Database connection error: {e}")
+        return None
+
+
+# Check if pgvector extension is available
+def is_pgvector_available():
+    """Check if pgvector extension is available and installed."""
+    conn = None
+    try:
+        conn = get_db_connection()
+        if not conn:
+            print("Could not connect to database to check pgvector")
+            return False
+            
+        cur = conn.cursor()
+        
+        # Check if vector extension is installed
+        cur.execute("SELECT * FROM pg_extension WHERE extname = 'vector'")
+        result = cur.fetchone()
+        
+        return result is not None
+    except Exception as e:
+        print(f"Error checking pgvector availability: {e}")
+        return False
+    finally:
+        if conn:
+            conn.close()
+
+
+# Global flag for vector operations
+VECTOR_ENABLED = is_pgvector_available()
+print(f"Vector operations enabled: {VECTOR_ENABLED}")
+
 
 # Request/Response Models
 class ScriptContent(BaseModel):
     content: str = Field(..., description="PowerShell script content to analyze")
     script_id: Optional[int] = Field(None, description="Script ID if already stored")
+    script_name: Optional[str] = Field(None, description="Name of the script")
+
 
 class ScriptEmbeddingRequest(BaseModel):
-    content: str = Field(..., description="PowerShell script content to generate embedding for")
+    content: str = Field(..., 
+                        description="PowerShell script content to generate embedding for")
+
 
 class SimilarScriptsRequest(BaseModel):
-    script_id: Optional[int] = Field(None, description="Script ID to find similar scripts for")
-    content: Optional[str] = Field(None, description="Script content to find similar scripts for")
+    script_id: Optional[int] = Field(None, 
+                                    description="Script ID to find similar scripts for")
+    content: Optional[str] = Field(None, 
+                                  description="Script content to find similar scripts for")
     limit: int = Field(5, description="Maximum number of similar scripts to return")
+
 
 class AnalysisResponse(BaseModel):
     purpose: str
@@ -83,30 +178,61 @@ class AnalysisResponse(BaseModel):
     code_quality_score: float
     parameters: Dict[str, Any]
     category: str
+    category_id: Optional[int] = None
+    command_details: Optional[List[Dict[str, Any]]] = None
+    ms_docs_references: Optional[List[Dict[str, Any]]] = None
     optimization: List[str]
     risk_score: float
 
+
 class EmbeddingResponse(BaseModel):
     embedding: List[float]
+
 
 class SimilarScript(BaseModel):
     script_id: int
     title: str
     similarity: float
 
+
 class SimilarScriptsResponse(BaseModel):
     similar_scripts: List[SimilarScript]
-    
+
+
+class VisualizationRequest(BaseModel):
+    visualization_type: str = Field(..., 
+                                   description="Type of visualization to generate")
+    parameters: Dict[str, Any] = Field(default_factory=dict, 
+                                     description="Optional parameters for the visualization")
+
+
+class VisualizationResponse(BaseModel):
+    visualization_path: str = Field(..., 
+                                   description="Path to the generated visualization file")
+    visualization_type: str = Field(..., 
+                                   description="Type of visualization that was generated")
+
+
 class ChatMessage(BaseModel):
     role: str = Field(..., description="The role of the message sender (user or assistant)")
     content: str = Field(..., description="The content of the message")
 
+
 class ChatRequest(BaseModel):
-    messages: List[ChatMessage] = Field(..., description="Chat history")
-    system_prompt: Optional[str] = Field(None, description="Optional system prompt to override default")
-    
+    messages: List[ChatMessage] = Field(..., description="The chat messages")
+    system_prompt: Optional[str] = Field(None, description="System prompt to use")
+    api_key: Optional[str] = Field(None, description="Optional API key to use")
+    agent_type: Optional[str] = Field(None, 
+                                     description="Type of agent to use")
+    session_id: Optional[str] = Field(None, 
+                                     description="Session ID for persistent conversations")
+
+
 class ChatResponse(BaseModel):
     response: str = Field(..., description="The assistant's response")
+    session_id: Optional[str] = Field(None, 
+                                     description="Session ID for continuing the conversation")
+
 
 # API Routes
 @app.get("/", tags=["Root"])
@@ -114,17 +240,98 @@ async def root():
     """Root endpoint, returns API info."""
     return {
         "message": "PowerShell Script Analysis API",
-        "version": "0.1.0",
+        "version": "0.2.0",
         "status": "operational",
-        "mode": "mock" if MOCK_MODE else "production"
+        "mode": "mock" if MOCK_MODE else "production",
+        "agent_coordinator": "enabled" if agent_coordinator else "disabled"
     }
 
+
 @app.post("/analyze", response_model=AnalysisResponse, tags=["Analysis"])
-async def analyze_script(script_data: ScriptContent):
-    """Analyze a PowerShell script and return detailed information."""
+async def analyze_script(
+    script_data: ScriptContent,
+    include_command_details: bool = False,
+    fetch_ms_docs: bool = False,
+    api_key: Optional[str] = Header(None, alias="x-api-key")
+):
+    """
+    Analyze a PowerShell script and return detailed information.
+    
+    - include_command_details: Set to true to include detailed analysis of each PowerShell command
+    - fetch_ms_docs: Set to true to fetch Microsoft documentation references
+    - api_key: Optional OpenAI API key to use for this request
+    """
     try:
-        # Perform script analysis
-        analysis = script_analyzer.analyze_script(script_data.content)
+        # Use the agent coordinator if available
+        if agent_coordinator and not MOCK_MODE:
+            # Prepare metadata
+            metadata = {
+                "include_command_details": include_command_details,
+                "fetch_ms_docs": fetch_ms_docs
+            }
+            
+            # Perform script analysis with the agent coordinator
+            analysis_results = await agent_coordinator.analyze_script(
+                script_content=script_data.content,
+                script_name=script_data.script_name,
+                script_id=script_data.script_id,
+                metadata=metadata
+            )
+            
+            # Extract the analysis results
+            analysis = {
+                "purpose": analysis_results.get("analysis", {}).get("purpose", 
+                                                                   "Unknown purpose"),
+                "security_analysis": analysis_results.get("security", {}).get(
+                    "security_analysis", "No security analysis available"),
+                "security_score": analysis_results.get("security", {}).get(
+                    "security_score", 5.0),
+                "code_quality_score": analysis_results.get("analysis", {}).get(
+                    "code_quality_score", 5.0),
+                "parameters": analysis_results.get("analysis", {}).get("parameters", {}),
+                "category": analysis_results.get("categorization", {}).get(
+                    "category", "Utilities & Helpers"),
+                "category_id": None,  # Will be set below
+                "optimization": analysis_results.get("optimization", {}).get(
+                    "recommendations", []),
+                "risk_score": analysis_results.get("security", {}).get("risk_score", 5.0)
+            }
+            
+            # Add command details if requested
+            if include_command_details:
+                analysis["command_details"] = analysis_results.get(
+                    "analysis", {}).get("command_details", [])
+            
+            # Add MS Docs references if requested
+            if fetch_ms_docs:
+                analysis["ms_docs_references"] = analysis_results.get(
+                    "documentation", {}).get("references", [])
+            
+            # Map category to category_id
+            category_mapping = {
+                "System Administration": 1,
+                "Security & Compliance": 2,
+                "Automation & DevOps": 3,
+                "Cloud Management": 4,
+                "Network Management": 5,
+                "Data Management": 6,
+                "Active Directory": 7,
+                "Monitoring & Diagnostics": 8,
+                "Backup & Recovery": 9,
+                "Utilities & Helpers": 10
+            }
+            analysis["category_id"] = category_mapping.get(analysis["category"], 10)
+        else:
+            # Fall back to the legacy agent system
+            agent = agent_factory.get_agent("hybrid", api_key or config.api_keys.openai)
+            
+            # Perform script analysis with the hybrid agent
+            analysis = await agent.analyze_script(
+                script_data.script_id or "temp", 
+                script_data.content,
+                include_command_details=include_command_details,
+                fetch_ms_docs=fetch_ms_docs
+            )
         
         # If script_id is provided, store the analysis result in the database
         if script_data.script_id:
@@ -195,14 +402,147 @@ async def analyze_script(script_data: ScriptContent):
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Analysis failed: {str(e)}")
 
+
+@app.post("/security-analysis", tags=["Analysis"])
+async def analyze_script_security(
+    script_data: ScriptContent,
+    api_key: Optional[str] = Header(None, alias="x-api-key")
+):
+    """
+    Analyze the security aspects of a PowerShell script.
+    
+    - api_key: Optional OpenAI API key to use for this request
+    """
+    try:
+        # Use the agent coordinator if available
+        if agent_coordinator and not MOCK_MODE:
+            security_results = await agent_coordinator.analyze_script_security(
+                script_content=script_data.content,
+                script_name=script_data.script_name,
+                script_id=script_data.script_id
+            )
+            return security_results
+        else:
+            # Fall back to the legacy agent system
+            agent = agent_factory.get_agent("hybrid", api_key or config.api_keys.openai)
+            
+            # Extract security analysis from the full analysis
+            full_analysis = await agent.analyze_script(
+                script_data.script_id or "temp", 
+                script_data.content,
+                include_command_details=False,
+                fetch_ms_docs=False
+            )
+            
+            return {
+                "security_score": full_analysis["security_score"],
+                "security_analysis": full_analysis["security_analysis"],
+                "risk_score": full_analysis["risk_score"]
+            }
+    
+    except Exception as e:
+        raise HTTPException(status_code=500, 
+                           detail=f"Security analysis failed: {str(e)}")
+
+
+@app.post("/categorize", tags=["Analysis"])
+async def categorize_script(
+    script_data: ScriptContent,
+    api_key: Optional[str] = Header(None, alias="x-api-key")
+):
+    """
+    Categorize a PowerShell script based on its purpose and functionality.
+    
+    - api_key: Optional OpenAI API key to use for this request
+    """
+    try:
+        # Use the agent coordinator if available
+        if agent_coordinator and not MOCK_MODE:
+            categorization_results = await agent_coordinator.categorize_script(
+                script_content=script_data.content,
+                script_name=script_data.script_name,
+                script_id=script_data.script_id
+            )
+            return categorization_results
+        else:
+            # Fall back to the legacy agent system
+            agent = agent_factory.get_agent("hybrid", api_key or config.api_keys.openai)
+            
+            # Extract categorization from the full analysis
+            full_analysis = await agent.analyze_script(
+                script_data.script_id or "temp", 
+                script_data.content,
+                include_command_details=False,
+                fetch_ms_docs=False
+            )
+            
+            return {
+                "category": full_analysis["category"],
+                "category_id": full_analysis["category_id"],
+                "confidence": 0.8  # Default confidence for legacy system
+            }
+    
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Categorization failed: {str(e)}")
+
+
+@app.post("/documentation", tags=["Analysis"])
+async def find_documentation_references(
+    script_data: ScriptContent,
+    api_key: Optional[str] = Header(None, alias="x-api-key")
+):
+    """
+    Find documentation references for PowerShell commands used in a script.
+    
+    - api_key: Optional OpenAI API key to use for this request
+    """
+    try:
+        # Use the agent coordinator if available
+        if agent_coordinator and not MOCK_MODE:
+            documentation_results = await agent_coordinator.find_documentation_references(
+                script_content=script_data.content,
+                script_name=script_data.script_name,
+                script_id=script_data.script_id
+            )
+            return documentation_results
+        else:
+            # Fall back to the legacy agent system
+            agent = agent_factory.get_agent("hybrid", api_key or config.api_keys.openai)
+            
+            # Perform script analysis with documentation
+            full_analysis = await agent.analyze_script(
+                script_data.script_id or "temp", 
+                script_data.content,
+                include_command_details=False,
+                fetch_ms_docs=True
+            )
+            
+            return {
+                "references": full_analysis.get("ms_docs_references", []),
+                "commands_found": len(full_analysis.get("ms_docs_references", []))
+            }
+    
+    except Exception as e:
+        raise HTTPException(status_code=500, 
+                           detail=f"Documentation search failed: {str(e)}")
+
+
 @app.post("/embedding", response_model=EmbeddingResponse, tags=["Embeddings"])
 async def create_embedding(request: ScriptEmbeddingRequest):
     """Generate an embedding vector for a PowerShell script."""
     try:
-        embedding = script_analyzer.generate_embedding(request.content)
+        # Use the agent coordinator if available
+        if agent_coordinator and not MOCK_MODE:
+            embedding = await agent_coordinator.generate_script_embedding(request.content)
+        else:
+            # Fall back to the script analyzer
+            embedding = script_analyzer.generate_embedding(request.content)
+            
         return {"embedding": embedding}
     except Exception as e:
-        raise HTTPException(status_code=500, detail=f"Embedding generation failed: {str(e)}")
+        raise HTTPException(status_code=500, 
+                           detail=f"Embedding generation failed: {str(e)}")
+
 
 @app.post("/similar", response_model=SimilarScriptsResponse, tags=["Search"])
 async def find_similar_scripts(request: SimilarScriptsRequest):
@@ -215,6 +555,27 @@ async def find_similar_scripts(request: SimilarScriptsRequest):
         )
     
     try:
+        # Use the agent coordinator if available and content is provided
+        if agent_coordinator and not MOCK_MODE and request.content:
+            similar_scripts = await agent_coordinator.search_similar_scripts(
+                script_content=request.content,
+                limit=request.limit
+            )
+            
+            # Convert to response format if needed
+            if similar_scripts and not isinstance(similar_scripts[0], dict):
+                similar_scripts = [
+                    {
+                        "script_id": script.id,
+                        "title": script.title,
+                        "similarity": script.similarity
+                    }
+                    for script in similar_scripts
+                ]
+                
+            return {"similar_scripts": similar_scripts}
+        
+        # Otherwise use the database approach
         conn = get_db_connection()
         
         # Get the embedding for the query script
@@ -250,7 +611,7 @@ async def find_similar_scripts(request: SimilarScriptsRequest):
             SELECT se.script_id, se.embedding, s.title
             FROM script_embeddings se
             JOIN scripts s ON se.script_id = s.id
-            WHERE se.script_id \!= %s
+            WHERE se.script_id != %s
         """, (request.script_id or 0,))
         
         script_embeddings = cur.fetchall()
@@ -283,33 +644,124 @@ async def find_similar_scripts(request: SimilarScriptsRequest):
         if conn:
             conn.close()
 
+
+@app.post("/visualize", response_model=VisualizationResponse, tags=["Visualization"])
+async def generate_visualization(request: VisualizationRequest):
+    """
+    Generate a visualization of the agent system.
+    
+    Visualization types:
+    - agent_network: Visualize the agent network
+    - memory_graph: Visualize the memory graph
+    - task_progress: Visualize task progress
+    """
+    if not agent_coordinator:
+        raise HTTPException(
+            status_code=400,
+            detail="Agent coordinator is not available"
+        )
+    
+    try:
+        visualization_path = None
+        
+        if request.visualization_type == "agent_network":
+            filename = request.parameters.get("filename", 
+                                             f"agent_network_{int(time.time())}.png")
+            visualization_path = agent_coordinator.visualize_agent_network(
+                filename=filename)
+        
+        elif request.visualization_type == "memory_graph":
+            # This would call the appropriate visualization method
+            # For now, return a placeholder
+            visualization_path = "/path/to/memory_graph.png"
+        
+        elif request.visualization_type == "task_progress":
+            # This would call the appropriate visualization method
+            # For now, return a placeholder
+            visualization_path = "/path/to/task_progress.png"
+        
+        else:
+            raise HTTPException(
+                status_code=400,
+                detail=f"Unsupported visualization type: {request.visualization_type}"
+            )
+        
+        if not visualization_path:
+            raise HTTPException(
+                status_code=500,
+                detail="Failed to generate visualization"
+            )
+        
+        return {
+            "visualization_path": visualization_path,
+            "visualization_type": request.visualization_type
+        }
+    
+    except Exception as e:
+        raise HTTPException(
+            status_code=500,
+            detail=f"Visualization generation failed: {str(e)}"
+        )
+
+
 @app.get("/categories", tags=["Categories"])
 async def get_categories():
-    """Get the list of predefined script categories."""
+    """Get the list of predefined script categories with IDs and descriptions."""
     categories = [
-        "System Administration",
-        "Network Management",
-        "Active Directory",
-        "Security Tools",
-        "Backup & Recovery",
-        "Monitoring Scripts",
-        "Automation Workflows",
-        "Cloud Management",
-        "Virtualization",
-        "Development Tools",
-        "Database Management",
-        "Reporting Scripts",
-        "File Operations",
-        "User Management",
-        "Configuration Management",
-        "Deployment Scripts",
-        "Troubleshooting Tools",
-        "Data Processing",
-        "Integration Scripts",
-        "Documentation Generators"
+        {
+            "id": 1,
+            "name": "System Administration",
+            "description": "Scripts for managing Windows/Linux systems, including system configuration, maintenance, and monitoring."
+        },
+        {
+            "id": 2,
+            "name": "Security & Compliance",
+            "description": "Scripts for security auditing, hardening, compliance checks, vulnerability scanning, and implementing security best practices."
+        },
+        {
+            "id": 3,
+            "name": "Automation & DevOps",
+            "description": "Scripts that automate repetitive tasks, create workflows, CI/CD pipelines, and streamline IT processes."
+        },
+        {
+            "id": 4,
+            "name": "Cloud Management",
+            "description": "Scripts for managing resources on Azure, AWS, GCP, and other cloud platforms, including provisioning and configuration."
+        },
+        {
+            "id": 5,
+            "name": "Network Management",
+            "description": "Scripts for network configuration, monitoring, troubleshooting, and management of network devices and services."
+        },
+        {
+            "id": 6,
+            "name": "Data Management",
+            "description": "Scripts for database operations, data processing, ETL (Extract, Transform, Load), and data analysis tasks."
+        },
+        {
+            "id": 7,
+            "name": "Active Directory",
+            "description": "Scripts for managing Active Directory, user accounts, groups, permissions, and domain services."
+        },
+        {
+            "id": 8,
+            "name": "Monitoring & Diagnostics",
+            "description": "Scripts for system monitoring, logging, diagnostics, performance analysis, and alerting."
+        },
+        {
+            "id": 9,
+            "name": "Backup & Recovery",
+            "description": "Scripts for data backup, disaster recovery, system restore, and business continuity operations."
+        },
+        {
+            "id": 10,
+            "name": "Utilities & Helpers",
+            "description": "General-purpose utility scripts, helper functions, and reusable modules for various administrative tasks."
+        }
     ]
     
     return {"categories": categories}
+
 
 # Mock chat response for development without API key
 def get_mock_chat_response(messages):
@@ -340,423 +792,6 @@ Key features of PowerShell include:
 7. **Remote Management**: Built-in remoting capabilities to manage remote systems
 
 Would you like to see some basic PowerShell examples?"""
-    
-    # Script examples - basic
-    if any(term in user_message.lower() for term in ['script', 'example', 'sample', 'code']):
-        return """Here's a PowerShell script example that demonstrates several key concepts:
-
-```powershell
-# Get-SystemReport.ps1
-# This script generates a system report including OS, disk, and memory information
-# Author: PSScriptGPT
-# Version: 1.0
-
-function Get-SystemReport {
-    <#
-    .SYNOPSIS
-        Generates a comprehensive system report.
-    
-    .DESCRIPTION
-        This function collects system information including operating system details,
-        disk space, and memory utilization, and returns a custom object.
-    
-    .PARAMETER ComputerName
-        The name of the computer to query. Defaults to the local computer.
-    
-    .EXAMPLE
-        Get-SystemReport
-        
-        Returns a system report for the local computer.
-    
-    .EXAMPLE
-        Get-SystemReport -ComputerName "Server01"
-        
-        Returns a system report for Server01.
-    #>
-    
-    [CmdletBinding()]
-    param(
-        [Parameter(ValueFromPipeline=$true, ValueFromPipelineByPropertyName=$true)]
-        [string]$ComputerName = $env:COMPUTERNAME
-    )
-    
-    process {
-        try {
-            # Get operating system information
-            $OS = Get-CimInstance -ClassName Win32_OperatingSystem -ComputerName $ComputerName -ErrorAction Stop
-            
-            # Get disk information
-            $Disks = Get-CimInstance -ClassName Win32_LogicalDisk -Filter "DriveType=3" -ComputerName $ComputerName |
-                     Select-Object DeviceID, 
-                                  @{Name="SizeGB";Expression={[math]::Round($_.Size / 1GB, 2)}},
-                                  @{Name="FreeGB";Expression={[math]::Round($_.FreeSpace / 1GB, 2)}},
-                                  @{Name="PercentFree";Expression={[math]::Round(($_.FreeSpace / $_.Size) * 100, 2)}}
-            
-            # Get memory information
-            $Memory = @{
-                TotalGB = [math]::Round($OS.TotalVisibleMemorySize / 1MB, 2)
-                FreeGB = [math]::Round($OS.FreePhysicalMemory / 1MB, 2)
-                PercentFree = [math]::Round(($OS.FreePhysicalMemory / $OS.TotalVisibleMemorySize) * 100, 2)
-            }
-            
-            # Return custom object with all information
-            [PSCustomObject]@{
-                ComputerName = $ComputerName
-                OSName = $OS.Caption
-                OSVersion = $OS.Version
-                OSBuildNumber = $OS.BuildNumber
-                LastBoot = $OS.LastBootUpTime
-                Uptime = (Get-Date) - $OS.LastBootUpTime
-                Disks = $Disks
-                Memory = $Memory
-                ReportTime = Get-Date
-            }
-        }
-        catch {
-            Write-Error "Failed to generate system report for $ComputerName. Error: $_"
-        }
-    }
-}
-
-# Example usage
-Get-SystemReport | Format-List
-```
-
-This script demonstrates:
-1. Comment-based help with synopsis, description, parameters, and examples
-2. Advanced function structure with [CmdletBinding()]
-3. Parameter handling with validation
-4. Error handling with try/catch
-5. CIM instance queries for system information
-6. Custom object creation with calculated properties
-7. Pipeline support
-
-Would you like me to explain any particular part of this script in more detail?"""
-    
-    # File operations
-    if any(term in user_message.lower() for term in ['file', 'folder', 'directory', 'copy', 'move']):
-        return """Here's a PowerShell script for file operations that demonstrates how to work with files and directories:
-
-```powershell
-# File-Operations.ps1
-# Script to demonstrate common file operations in PowerShell
-# Author: PSScriptGPT
-# Version: 1.0
-
-# Create a new directory
-function New-DirectoryIfNotExists {
-    param (
-        [Parameter(Mandatory=$true)]
-        [string]$Path
-    )
-    
-    if (!(Test-Path -Path $Path)) {
-        New-Item -Path $Path -ItemType Directory -Force
-        Write-Output "Created directory: $Path"
-    } else {
-        Write-Output "Directory already exists: $Path"
-    }
-}
-
-# Copy files with progress bar
-function Copy-FilesWithProgress {
-    param (
-        [Parameter(Mandatory=$true)]
-        [string]$SourceDir,
-        
-        [Parameter(Mandatory=$true)]
-        [string]$DestinationDir,
-        
-        [Parameter(Mandatory=$false)]
-        [string]$FileFilter = "*"
-    )
-    
-    # Ensure source directory exists
-    if (!(Test-Path -Path $SourceDir)) {
-        Write-Error "Source directory does not exist: $SourceDir"
-        return
-    }
-    
-    # Create destination directory if it doesn't exist
-    New-DirectoryIfNotExists -Path $DestinationDir
-    
-    # Get files to copy
-    $files = Get-ChildItem -Path $SourceDir -Filter $FileFilter -File
-    $totalFiles = $files.Count
-    $filesCopied = 0
-    
-    if ($totalFiles -eq 0) {
-        Write-Warning "No files found matching filter '$FileFilter' in $SourceDir"
-        return
-    }
-    
-    Write-Output "Copying $totalFiles files from $SourceDir to $DestinationDir"
-    
-    foreach ($file in $files) {
-        $percentComplete = [int](($filesCopied / $totalFiles) * 100)
-        Write-Progress -Activity "Copying Files" -Status "$percentComplete% Complete" -PercentComplete $percentComplete -CurrentOperation $file.Name
-        
-        try {
-            Copy-Item -Path $file.FullName -Destination $DestinationDir -Force
-            $filesCopied++
-        }
-        catch {
-            Write-Error "Failed to copy $($file.Name): $_"
-        }
-    }
-    
-    Write-Progress -Activity "Copying Files" -Completed
-    Write-Output "Successfully copied $filesCopied of $totalFiles files"
-}
-
-# Find and replace text in multiple files
-function Find-ReplaceInFiles {
-    param (
-        [Parameter(Mandatory=$true)]
-        [string]$Directory,
-        
-        [Parameter(Mandatory=$true)]
-        [string]$FileFilter,
-        
-        [Parameter(Mandatory=$true)]
-        [string]$FindText,
-        
-        [Parameter(Mandatory=$true)]
-        [string]$ReplaceText,
-        
-        [Parameter(Mandatory=$false)]
-        [switch]$Backup
-    )
-    
-    $files = Get-ChildItem -Path $Directory -Filter $FileFilter -File -Recurse
-    $count = 0
-    
-    foreach ($file in $files) {
-        try {
-            $content = Get-Content -Path $file.FullName -Raw
-            
-            if ($content -match [regex]::Escape($FindText)) {
-                if ($Backup) {
-                    Copy-Item -Path $file.FullName -Destination "$($file.FullName).bak" -Force
-                }
-                
-                $newContent = $content -replace [regex]::Escape($FindText), $ReplaceText
-                Set-Content -Path $file.FullName -Value $newContent -Force
-                $count++
-                Write-Output "Updated: $($file.FullName)"
-            }
-        }
-        catch {
-            Write-Error "Error processing $($file.FullName): $_"
-        }
-    }
-    
-    Write-Output "Replaced text in $count files"
-}
-
-# Example usage:
-# New-DirectoryIfNotExists -Path "C:\\Temp\\BackupFiles"
-# Copy-FilesWithProgress -SourceDir "C:\\Documents" -DestinationDir "C:\\Temp\\BackupFiles" -FileFilter "*.docx"
-# Find-ReplaceInFiles -Directory "C:\\Temp\\BackupFiles" -FileFilter "*.txt" -FindText "old text" -ReplaceText "new text" -Backup
-```
-
-This script demonstrates several important file operation techniques in PowerShell:
-
-1. Directory management with Test-Path and New-Item
-2. File copying with progress bar display
-3. Finding and replacing text in multiple files
-4. Error handling for file operations
-5. Parameter validation
-6. Progress reporting with Write-Progress
-
-You can use these functions individually or combine them into a larger workflow for file management tasks.
-
-Would you like me to explain any of these functions in more detail?"""
-    
-    # Process management
-    if any(term in user_message.lower() for term in ['process', 'running', 'services', 'stop', 'start']):
-        return """Here's a PowerShell script for process and service management:
-
-```powershell
-# Process-Management.ps1
-# Script for managing processes and services in PowerShell
-# Author: PSScriptGPT
-# Version: 1.0
-
-# Get processes consuming the most memory
-function Get-TopMemoryConsumers {
-    param (
-        [Parameter(Mandatory=$false)]
-        [int]$Top = 10
-    )
-    
-    Get-Process | 
-        Sort-Object -Property WorkingSet64 -Descending | 
-        Select-Object -First $Top -Property Name, ID, 
-            @{Name="MemoryUsageMB"; Expression={[math]::Round($_.WorkingSet64 / 1MB, 2)}},
-            CPU, Description
-}
-
-# Get processes consuming the most CPU
-function Get-TopCpuConsumers {
-    param (
-        [Parameter(Mandatory=$false)]
-        [int]$Top = 10,
-        
-        [Parameter(Mandatory=$false)]
-        [int]$SampleInterval = 5
-    )
-    
-    Write-Output "Sampling CPU usage for $SampleInterval seconds..."
-    
-    # Get initial CPU times
-    $initialProcesses = Get-Process | Select-Object ID, Name, @{Name="TotalProcessorTime"; Expression={$_.TotalProcessorTime}}
-    
-    # Wait for sample interval
-    Start-Sleep -Seconds $SampleInterval
-    
-    # Get updated CPU times and calculate difference
-    $currentProcesses = Get-Process
-    
-    $cpuUsage = @()
-    foreach ($currentProcess in $currentProcesses) {
-        $initialProcess = $initialProcesses | Where-Object { $_.ID -eq $currentProcess.ID }
-        
-        if ($initialProcess) {
-            $cpuTimeDiff = ($currentProcess.TotalProcessorTime - $initialProcess.TotalProcessorTime).TotalSeconds
-            
-            $cpuUsage += [PSCustomObject]@{
-                Name = $currentProcess.Name
-                ID = $currentProcess.ID
-                CPUSeconds = [math]::Round($cpuTimeDiff, 2)
-                MemoryUsageMB = [math]::Round($currentProcess.WorkingSet64 / 1MB, 2)
-                Description = $currentProcess.Description
-            }
-        }
-    }
-    
-    # Return top CPU consumers
-    $cpuUsage | Sort-Object -Property CPUSeconds -Descending | Select-Object -First $Top
-}
-
-# Safely stop a process with confirmation
-function Stop-ProcessSafely {
-    param (
-        [Parameter(Mandatory=$true)]
-        [string]$Name,
-        
-        [Parameter(Mandatory=$false)]
-        [switch]$Force,
-        
-        [Parameter(Mandatory=$false)]
-        [switch]$ConfirmEach
-    )
-    
-    $processes = Get-Process -Name $Name -ErrorAction SilentlyContinue
-    
-    if ($processes.Count -eq 0) {
-        Write-Warning "No processes found with name '$Name'"
-        return
-    }
-    
-    Write-Output "Found $($processes.Count) processes with name '$Name'"
-    
-    foreach ($process in $processes) {
-        $stopProcess = $true
-        
-        if ($ConfirmEach -and -not $Force) {
-            $response = Read-Host "Stop process $($process.Name) (ID: $($process.ID))? [Y/N]"
-            $stopProcess = $response -eq "Y" -or $response -eq "y"
-        }
-        
-        if ($stopProcess) {
-            try {
-                if ($Force) {
-                    $process | Stop-Process -Force -ErrorAction Stop
-                    Write-Output "Forced stop of process $($process.Name) (ID: $($process.ID))"
-                } else {
-                    $process | Stop-Process -ErrorAction Stop
-                    Write-Output "Gracefully stopped process $($process.Name) (ID: $($process.ID))"
-                }
-            }
-            catch {
-                Write-Error "Failed to stop process $($process.Name) (ID: $($process.ID)): $_"
-            }
-        }
-    }
-}
-
-# Monitor service status
-function Watch-ServiceStatus {
-    param (
-        [Parameter(Mandatory=$true)]
-        [string[]]$ServiceNames,
-        
-        [Parameter(Mandatory=$false)]
-        [int]$RefreshInterval = 5,
-        
-        [Parameter(Mandatory=$false)]
-        [int]$Count = 10
-    )
-    
-    $iteration = 0
-    $previousStatuses = @{}
-    
-    # Initialize previous statuses
-    foreach ($serviceName in $ServiceNames) {
-        $previousStatuses[$serviceName] = (Get-Service -Name $serviceName -ErrorAction SilentlyContinue).Status
-    }
-    
-    while ($iteration -lt $Count -or $Count -eq 0) {
-        Clear-Host
-        Write-Output "Service Status Monitor - Refresh: $RefreshInterval seconds - Press Ctrl+C to exit"
-        Write-Output "Time: $(Get-Date)"
-        Write-Output "------------------------------------------------------------------"
-        
-        foreach ($serviceName in $ServiceNames) {
-            try {
-                $service = Get-Service -Name $serviceName -ErrorAction Stop
-                $currentStatus = $service.Status
-                
-                $statusChanged = $previousStatuses[$serviceName] -ne $currentStatus
-                $statusColor = if ($currentStatus -eq "Running") { "Green" } elseif ($currentStatus -eq "Stopped") { "Red" } else { "Yellow" }
-                $changeIndicator = if ($statusChanged) { " [CHANGED]" } else { "" }
-                
-                Write-Host "$($service.DisplayName) [$serviceName]: " -NoNewline
-                Write-Host "$currentStatus$changeIndicator" -ForegroundColor $statusColor
-                
-                $previousStatuses[$serviceName] = $currentStatus
-            }
-            catch {
-                Write-Host "$serviceName: " -NoNewline
-                Write-Host "Not Found" -ForegroundColor Red
-            }
-        }
-        
-        $iteration++
-        if ($Count -eq 0 -or $iteration -lt $Count) {
-            Start-Sleep -Seconds $RefreshInterval
-        }
-    }
-}
-
-# Example usage:
-# Get-TopMemoryConsumers -Top 5
-# Get-TopCpuConsumers -Top 5 -SampleInterval 3
-# Stop-ProcessSafely -Name "notepad" -ConfirmEach
-# Watch-ServiceStatus -ServiceNames "wuauserv", "spooler" -RefreshInterval 2 -Count 10
-```
-
-This script demonstrates:
-
-1. Monitoring memory usage of processes
-2. Tracking CPU usage over time
-3. Safely stopping processes with confirmation
-4. Watching services with status change indicators
-
-These functions can be useful for system administrators who need to monitor and manage processes and services on Windows systems.
-
-Would you like me to explain how any of these functions work in more detail?"""
     
     # Provide a generic response for other queries
     return """I'm running in mock mode because no valid API key was provided. In production, I would use an AI model to generate helpful responses about PowerShell scripting. 
@@ -831,151 +866,83 @@ function Get-FileStats {
 
 Is there a specific PowerShell topic you'd like me to cover?"""
 
+
 @app.post("/chat", response_model=ChatResponse, tags=["Chat"])
 async def chat_with_powershell_expert(request: ChatRequest):
     """Chat with a PowerShell expert AI assistant."""
+    start_time = time.time()
     try:
+        # Extract API key from request if provided
+        api_key = getattr(request, 'api_key', None)
+        # Use the provided API key or fall back to the configured API key
+        api_key = api_key or config.api_keys.openai
+        
         # Default system prompt for PowerShell expertise
         default_system_prompt = """
-        You are PSScriptGPT, a specialized PowerShell scripting assistant with expertise in Windows system administration, automation, and scripting best practices.
-        
-        Your primary goal is to help users write, understand, and improve PowerShell scripts.
-        
-        When providing answers:
-        1. Offer complete, runnable code examples when appropriate
-        2. Explain the "why" behind your recommendations, not just the "how"
-        3. Highlight security considerations and best practices
-        4. Consider performance implications of your suggestions
-        5. Structure solutions to be modular and maintainable
-        6. Respect PowerShell conventions and style guidelines
-        7. When you don't know something, acknowledge it rather than guessing
-        8. Format your code examples with ```powershell syntax for proper syntax highlighting
-        9. Use a friendly, helpful tone while maintaining professionalism
-        10. Recommend the most modern PowerShell approaches when applicable
-        
-        You have extensive knowledge about:
-        - PowerShell language features up to PowerShell 7.4
-        - Windows system administration and management
-        - Common PowerShell modules (ActiveDirectory, Azure, etc.)
-        - Error handling and debugging techniques
-        - PowerShell security considerations including ExecutionPolicy and script signing
-        - Script optimization and performance analysis
-        - PowerShell DSC (Desired State Configuration)
-        - PowerShell remoting and cross-platform capabilities
-        - Integration with other systems (APIs, databases, etc.)
-        - PowerShell module development and packaging
-        - CI/CD pipelines for PowerShell
-        - PowerShell on Linux and macOS
-        - PowerShell security best practices and avoiding common anti-patterns
-        
-        Your responses will be displayed in a code-focused environment, so markdown formatting for code blocks is essential. Always use proper PowerShell casing conventions (Pascal case for functions, cmdlets, etc.) and include comments in your code examples.
-        
-        For complex tasks, consider breaking down your solution into steps or providing a function with clear parameters and documentation.
+        You are PSScriptGPT, a specialized PowerShell expert assistant. You provide accurate, 
+        detailed information about PowerShell scripting, best practices, and help users 
+        troubleshoot their PowerShell scripts. You can explain PowerShell concepts, 
+        cmdlets, modules, and provide code examples when appropriate.
         """
         
-        # Prepare the messages
-        messages = [
-            {
-                "role": "system", 
-                "content": request.system_prompt if request.system_prompt else default_system_prompt
-            }
-        ]
+        # Check if we have a valid API key
+        if not api_key and MOCK_MODE:
+            # Use mock response in development mode
+            response = get_mock_chat_response([msg.dict() for msg in request.messages])
+            processing_time = time.time() - start_time
+            print(f"Chat request processed in {processing_time:.2f}s (mock mode)")
+            return {"response": response}
         
-        # Add user conversation history
+        # Convert messages to the format expected by the agent system
+        messages = []
+        
+        # Add system prompt if provided, otherwise use default
+        system_prompt = request.system_prompt or default_system_prompt
+        messages.append({"role": "system", "content": system_prompt})
+        
+        # Add user messages
         for msg in request.messages:
             messages.append({"role": msg.role, "content": msg.content})
-            
-        # Use mock response in development mode
-        if MOCK_MODE:
-            assistant_response = get_mock_chat_response([{"role": m.role, "content": m.content} for m in request.messages])
+        
+        # Session ID for persistent conversations
+        session_id = request.session_id or None
+        
+        # Process the chat request
+        if agent_coordinator and not MOCK_MODE and not request.agent_type:
+            # Use the agent coordinator
+            response = await agent_coordinator.process_chat(messages)
+            return {"response": response}
+        elif request.agent_type == "assistant":
+            # Use the OpenAI Assistant agent
+            try:
+                from agents.openai_assistant_agent import OpenAIAssistantAgent
+                
+                # Create an assistant agent
+                assistant_agent = OpenAIAssistantAgent(api_key=api_key)
+                
+                # Process the message with the assistant agent
+                response = await assistant_agent.process_message(messages, session_id)
+                
+                # Get the session ID for the response
+                if not session_id:
+                    session_id = assistant_agent.get_or_create_thread()
+                
+                return {"response": response, "session_id": session_id}
+            except ImportError as e:
+                print(f"OpenAI Assistant agent not available: {e}")
+                print("Falling back to legacy agent system")
+                # Fall back to legacy agent
+                response = await agent_factory.process_message(messages, api_key)
+                return {"response": response}
         else:
-            # Make the API call with retry logic
-            @retry(
-                stop=stop_after_attempt(3),
-                wait=wait_exponential(min=1, max=10)
+            # Use the agent factory with specified or auto-detected agent type
+            response = await agent_factory.process_message(
+                messages, 
+                api_key, 
+                request.agent_type,
+                session_id
             )
-            def get_chat_completion():
-                return openai.ChatCompletion.create(
-                    model="gpt-4o",  # Use a capable model for PowerShell expertise
-                    messages=messages,
-                    temperature=0.7,
-                    max_tokens=4000,
-                    top_p=1.0,
-                    frequency_penalty=0.0,
-                    presence_penalty=0.0
-                )
-            
-            response = get_chat_completion()
-            assistant_response = response.choices[0].message.content
-        
-        # Save the chat history to the database for future reference
-        try:
-            conn = get_db_connection()
-            cur = conn.cursor()
-            
-            # Store the chat conversation in a structured format
-            cur.execute(
-                """
-                INSERT INTO chat_history
-                (user_id, messages, response, timestamp)
-                VALUES (%s, %s, %s, CURRENT_TIMESTAMP)
-                RETURNING id
-                """,
-                (
-                    1,  # Use a default user ID or extract from request
-                    json.dumps([{"role": m.role, "content": m.content} for m in request.messages]),
-                    assistant_response
-                )
-            )
-            
-            conn.commit()
-        except Exception as e:
-            print(f"Database error while saving chat history: {e}")
-            # Continue even if database operation fails
-        finally:
-            if conn:
-                conn.close()
-        
-        return {"response": assistant_response}
+            return {"response": response}
         
     except Exception as e:
-        raise HTTPException(
-            status_code=500,
-            detail=f"Chat completion failed: {str(e)}"
-        )
-
-# Create a new table for chat history if it doesn't exist
-def init_db():
-    try:
-        conn = get_db_connection()
-        cur = conn.cursor()
-        
-        # Create chat_history table if it doesn't exist
-        cur.execute("""
-        CREATE TABLE IF NOT EXISTS chat_history (
-            id SERIAL PRIMARY KEY,
-            user_id INTEGER,
-            messages JSONB NOT NULL,
-            response TEXT NOT NULL,
-            timestamp TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
-            embedding vector(1536) NULL,
-            FOREIGN KEY (user_id) REFERENCES users(id)
-        );
-        """)
-        
-        conn.commit()
-        print("Database initialized with chat_history table")
-    except Exception as e:
-        print(f"Database initialization error: {e}")
-    finally:
-        if conn:
-            conn.close()
-
-# Initialize database when starting up
-@app.on_event("startup")
-async def startup_event():
-    init_db()
-
-if __name__ == "__main__":
-    import uvicorn
-    uvicorn.run("main:app", host="0.0.0.0", port=8000, reload=True)
+        raise HTTPException(status_code=500, detail=f"Chat processing failed: {str(e)}")

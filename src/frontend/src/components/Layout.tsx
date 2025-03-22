@@ -6,9 +6,10 @@ import Sidebar from './Sidebar';
 
 interface LayoutProps {
   children?: ReactNode;
+  hideSidebar?: boolean;
 }
 
-const Layout: React.FC<LayoutProps> = ({ children }) => {
+const Layout: React.FC<LayoutProps> = ({ children, hideSidebar = false }) => {
   const [sidebarOpen, setSidebarOpen] = useState(
     localStorage.getItem('sidebar-open') === 'false' ? false : true
   );
@@ -54,13 +55,15 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
     <div className={`flex h-screen overflow-hidden transition-colors duration-300
       ${theme === 'dark' ? 'bg-gray-900 text-white' : 'bg-gray-50 text-gray-900'}`}>
       {/* Sidebar with animation */}
-      <div 
-        className={`transition-all duration-300 ease-in-out
-          ${sidebarOpen ? 'w-64' : 'w-0 md:w-16'} 
-          ${sidebarOpen ? 'opacity-100' : 'opacity-0 md:opacity-100'}`}
-      >
-        <Sidebar collapsed={!sidebarOpen} theme={theme} />
-      </div>
+      {!hideSidebar && (
+        <div 
+          className={`transition-all duration-300 ease-in-out
+            ${sidebarOpen ? 'w-64' : 'w-0 md:w-16'} 
+            ${sidebarOpen ? 'opacity-100' : 'opacity-0 md:opacity-100'}`}
+        >
+          <Sidebar collapsed={!sidebarOpen} theme={theme} />
+        </div>
+      )}
       
       {/* Main content area */}
       <div className="flex flex-col flex-1 overflow-hidden">

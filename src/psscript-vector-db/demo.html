@@ -1,0 +1,211 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PowerShell Script Vector Database - Demo</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        body {
+            padding-top: 2rem;
+            padding-bottom: 2rem;
+            background-color: #f8f9fa;
+        }
+        .header {
+            padding: 2rem 1rem;
+            margin-bottom: 2rem;
+            background-color: #e9ecef;
+            border-radius: 0.3rem;
+        }
+        .card {
+            margin-bottom: 1.5rem;
+            box-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.075);
+        }
+        .search-container {
+            margin-bottom: 2rem;
+        }
+        .feature-icon {
+            font-size: 2rem;
+            margin-bottom: 1rem;
+            color: #0d6efd;
+        }
+        .script-item {
+            border-left: 4px solid #0d6efd;
+            padding-left: 1rem;
+            margin-bottom: 1rem;
+        }
+        .tag {
+            display: inline-block;
+            padding: 0.25rem 0.5rem;
+            background-color: #e9ecef;
+            border-radius: 0.25rem;
+            margin-right: 0.5rem;
+            margin-bottom: 0.5rem;
+            font-size: 0.875rem;
+        }
+        .footer {
+            padding-top: 2rem;
+            margin-top: 2rem;
+            border-top: 1px solid #e9ecef;
+        }
+        .demo-section {
+            margin-top: 3rem;
+            margin-bottom: 3rem;
+        }
+        .demo-title {
+            margin-bottom: 1.5rem;
+            border-bottom: 2px solid #e9ecef;
+            padding-bottom: 0.5rem;
+        }
+        .code-block {
+            background-color: #f8f9fa;
+            padding: 1rem;
+            border-radius: 0.3rem;
+            margin-bottom: 1rem;
+            font-family: monospace;
+            white-space: pre-wrap;
+        }
+        .crawl-result {
+            background-color: #f8f9fa;
+            padding: 1rem;
+            border-radius: 0.3rem;
+            margin-bottom: 1rem;
+            border-left: 4px solid #28a745;
+        }
+        .search-result {
+            background-color: #f8f9fa;
+            padding: 1rem;
+            border-radius: 0.3rem;
+            margin-bottom: 1rem;
+            border-left: 4px solid #0d6efd;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header text-center">
+            <h1>PowerShell Script Vector Database</h1>
+            <p class="lead">A vector database for PowerShell scripts with crawl4ai integration</p>
+        </div>
+
+        <div class="demo-section">
+            <h2 class="demo-title">crawl4ai Integration Demo</h2>
+            <div class="row">
+                <div class="col-md-6">
+                    <div class="card">
+                        <div class="card-body">
+                            <h5 class="card-title">Crawl Command</h5>
+                            <div class="code-block">./bin/crawl4ai-integration.js --url https://learn.microsoft.com/en-us/powershell/ --max-pages 5</div>
+                            <p>This command crawls the Microsoft PowerShell documentation and extracts PowerShell code blocks.</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="card">
+                        <div class="card-body">
+                            <h5 class="card-title">Crawl Result</h5>
+                            <div class="crawl-result">
+                                <p><strong>Found 12 PowerShell blocks in https://learn.microsoft.com/en-us/powershell/scripting/overview</strong></p>
+                                <p>Extracted and stored in database with embeddings.</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="demo-section">
+            <h2 class="demo-title">Vector Search Demo</h2>
+            <div class="row">
+                <div class="col-md-12">
+                    <div class="card">
+                        <div class="card-body">
+                            <h5 class="card-title">Search Query</h5>
+                            <div class="input-group mb-3">
+                                <label for="search-input" class="visually-hidden">Search query</label>
+                                <input type="text" class="form-control" value="Find all running processes and sort by memory usage" id="search-input" placeholder="Enter your search query">
+                                <button class="btn btn-primary" type="button" id="search-button">Search</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="row mt-3">
+                <div class="col-md-12">
+                    <div class="card">
+                        <div class="card-body">
+                            <h5 class="card-title">Search Results</h5>
+                            <div class="search-result">
+                                <h6>Get-Process | Sort-Object -Property WS -Descending | Select-Object -First 5</h6>
+                                <p><small>Similarity: 0.92</small></p>
+                                <p>This PowerShell command gets all running processes, sorts them by working set (memory usage) in descending order, and selects the top 5 processes using the most memory.</p>
+                            </div>
+                            <div class="search-result">
+                                <h6>Get-Process | Where-Object {$_.WorkingSet -gt 50MB} | Sort-Object -Property WorkingSet -Descending</h6>
+                                <p><small>Similarity: 0.87</small></p>
+                                <p>This PowerShell command gets all processes with a working set (memory usage) greater than 50MB and sorts them by working set in descending order.</p>
+                            </div>
+                            <div class="search-result">
+                                <h6>Get-Process | Sort-Object CPU -Descending | Format-Table -Property ID,ProcessName,CPU,WS -AutoSize</h6>
+                                <p><small>Similarity: 0.81</small></p>
+                                <p>This PowerShell command gets all processes, sorts them by CPU usage in descending order, and formats the output as a table showing ID, process name, CPU usage, and working set (memory usage).</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="demo-section">
+            <h2 class="demo-title">How It Works</h2>
+            <div class="row">
+                <div class="col-md-4">
+                    <div class="card h-100">
+                        <div class="card-body text-center">
+                            <div class="feature-icon">🕸️</div>
+                            <h5 class="card-title">Web Crawling</h5>
+                            <p class="card-text">The system uses crawl4ai to crawl websites and extract PowerShell code blocks from HTML content.</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="card h-100">
+                        <div class="card-body text-center">
+                            <div class="feature-icon">🧠</div>
+                            <h5 class="card-title">Embedding Generation</h5>
+                            <p class="card-text">OpenAI's API is used to generate embeddings for the extracted PowerShell code blocks.</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="card h-100">
+                        <div class="card-body text-center">
+                            <div class="feature-icon">🔍</div>
+                            <h5 class="card-title">Vector Search</h5>
+                            <p class="card-text">pgvector is used to perform similarity search on the embeddings to find relevant PowerShell scripts.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="footer text-center">
+            <p>PowerShell Script Vector Database with crawl4ai Integration</p>
+            <p>
+                <a href="https://github.com/unclecode/crawl4ai" target="_blank" rel="noopener" class="text-decoration-none">crawl4ai on GitHub</a> |
+                <a href="https://github.com/pgvector/pgvector" target="_blank" rel="noopener" class="text-decoration-none">pgvector on GitHub</a>
+            </p>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        document.getElementById('search-button').addEventListener('click', function() {
+            const searchQuery = document.getElementById('search-input').value;
+            if (searchQuery.trim() !== '') {
+                alert('This is a demo. In a real implementation, this would perform a vector search using the query: ' + searchQuery);
+            }
+        });
+    </script>
+</body>
+</html>

@@ -1,0 +1,20 @@
+FROM node:18-alpine
+
+# Set working directory
+WORKDIR /app
+
+# Install dependencies
+RUN npm init -y && npm install express cors
+
+# Copy source code
+COPY . .
+
+# Expose the port the app runs on
+EXPOSE 3002
+
+# Set environment variables
+ENV NODE_ENV=development
+ENV VITE_API_URL=http://backend:4000/api
+
+# Run the application in development mode
+CMD ["node", "server.js"]

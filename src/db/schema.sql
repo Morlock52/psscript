@@ -27,7 +27,8 @@ CREATE TABLE categories (
     id SERIAL PRIMARY KEY,
     name VARCHAR(255) UNIQUE NOT NULL,
     description TEXT,
-    created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
 );
 
 -- Tags table
@@ -83,9 +84,15 @@ CREATE TABLE script_analysis (
     risk_score FLOAT,
     parameter_docs JSONB,
     suggestions JSONB,
+    command_details JSONB DEFAULT '[]'::jsonb,
+    ms_docs_references JSONB DEFAULT '[]'::jsonb,
     created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
 );
+
+-- Add comments to explain the purpose of these columns
+COMMENT ON COLUMN script_analysis.command_details IS 'Detailed analysis of PowerShell commands used in the script';
+COMMENT ON COLUMN script_analysis.ms_docs_references IS 'References to Microsoft documentation for commands used in the script';
 
 -- Vector embeddings table
 CREATE TABLE script_embeddings (

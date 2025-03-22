@@ -5,10 +5,8 @@ import ScriptTag from './ScriptTag';
 export default class Tag extends Model {
   public id!: number;
   public name!: string;
-  public description!: string | null;
   
   public readonly createdAt!: Date;
-  public readonly updatedAt!: Date;
 
   // References
   public readonly scripts?: Script[];
@@ -24,22 +22,19 @@ export default class Tag extends Model {
         type: DataTypes.STRING(50),
         allowNull: false,
         unique: true
-      },
-      description: {
-        type: DataTypes.TEXT,
-        allowNull: true
       }
     }, {
       sequelize,
-      tableName: 'tags'
+      tableName: 'tags',
+      underscored: true
     });
   }
 
   static associate() {
     Tag.belongsToMany(Script, { 
       through: ScriptTag,
-      foreignKey: 'tagId',
-      otherKey: 'scriptId',
+      foreignKey: 'tag_id',
+      otherKey: 'script_id',
       as: 'scripts'
     });
   }

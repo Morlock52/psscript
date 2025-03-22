@@ -1,0 +1,275 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PSScript Manager - Voice API Demo</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #f5f5f5;
+            color: #333;
+        }
+        
+        header {
+            background-color: #2c3e50;
+            color: white;
+            padding: 1rem;
+            text-align: center;
+        }
+        
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 2rem;
+        }
+        
+        .demo-section {
+            background-color: white;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+            padding: 1.5rem;
+            margin-bottom: 2rem;
+        }
+        
+        h1, h2, h3 {
+            margin-top: 0;
+        }
+        
+        .tabs {
+            display: flex;
+            border-bottom: 1px solid #ddd;
+            margin-bottom: 1rem;
+        }
+        
+        .tab {
+            padding: 0.5rem 1rem;
+            cursor: pointer;
+            border: 1px solid transparent;
+            border-bottom: none;
+            border-radius: 4px 4px 0 0;
+            margin-right: 0.5rem;
+        }
+        
+        .tab.active {
+            background-color: white;
+            border-color: #ddd;
+            border-bottom-color: white;
+            margin-bottom: -1px;
+        }
+        
+        .tab-content {
+            display: none;
+        }
+        
+        .tab-content.active {
+            display: block;
+        }
+        
+        .feature-list {
+            list-style-type: none;
+            padding: 0;
+        }
+        
+        .feature-list li {
+            padding: 0.5rem 0;
+            border-bottom: 1px solid #eee;
+        }
+        
+        .feature-list li:last-child {
+            border-bottom: none;
+        }
+        
+        .feature-list li::before {
+            content: "✓";
+            color: #27ae60;
+            margin-right: 0.5rem;
+            font-weight: bold;
+        }
+        
+        .settings-form {
+            display: grid;
+            grid-template-columns: 1fr 2fr;
+            gap: 1rem;
+            align-items: center;
+        }
+        
+        .settings-form label {
+            font-weight: bold;
+        }
+        
+        .settings-form input, .settings-form select {
+            padding: 0.5rem;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+        }
+        
+        .settings-form button {
+            grid-column: span 2;
+            padding: 0.5rem 1rem;
+            background-color: #3498db;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            margin-top: 1rem;
+        }
+        
+        .settings-form button:hover {
+            background-color: #2980b9;
+        }
+        
+        #app {
+            margin-top: 2rem;
+            height: 500px;
+        }
+        
+        footer {
+            text-align: center;
+            padding: 1rem;
+            background-color: #2c3e50;
+            color: white;
+            font-size: 0.8rem;
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <h1>PSScript Manager - Voice API Demo</h1>
+    </header>
+    
+    <div class="container">
+        <div class="demo-section">
+            <div class="tabs">
+                <div class="tab active" data-tab="demo">Demo</div>
+                <div class="tab" data-tab="features">Features</div>
+                <div class="tab" data-tab="settings">Settings</div>
+            </div>
+            
+            <div class="tab-content active" id="demo-tab">
+                <h2>Voice API Integration Demo</h2>
+                <p>This demo showcases the integration of Voice API capabilities into the PSScript Manager platform. You can interact with the chat interface using both text and voice inputs.</p>
+                
+                <div id="app"></div>
+                
+                <p><strong>Note:</strong> This is a proof-of-concept demonstration. In a real implementation, the voice data would be processed by the backend services.</p>
+            </div>
+            
+            <div class="tab-content" id="features-tab">
+                <h2>Voice API Features</h2>
+                <p>The Voice API integration enhances the PSScript Manager platform with the following features:</p>
+                
+                <ul class="feature-list">
+                    <li>Voice input for commands and queries</li>
+                    <li>Natural-sounding voice responses</li>
+                    <li>Integration with existing chat interface</li>
+                    <li>Support for multiple voice options</li>
+                    <li>Customizable voice settings</li>
+                    <li>Fallback to text when voice is unavailable</li>
+                    <li>Secure handling of voice data</li>
+                    <li>Performance optimization through caching</li>
+                </ul>
+            </div>
+            
+            <div class="tab-content" id="settings-tab">
+                <h2>Voice Settings</h2>
+                <p>Customize your voice interaction experience with these settings:</p>
+                
+                <form class="settings-form">
+                    <label for="voice-id">Voice:</label>
+                    <select id="voice-id">
+                        <option value="en-US-Standard-A">English (US) - Female</option>
+                        <option value="en-US-Standard-B">English (US) - Male</option>
+                        <option value="en-GB-Standard-A">English (UK) - Female</option>
+                        <option value="en-GB-Standard-B">English (UK) - Male</option>
+                    </select>
+                    
+                    <label for="output-format">Audio Format:</label>
+                    <select id="output-format">
+                        <option value="mp3">MP3</option>
+                        <option value="wav">WAV</option>
+                        <option value="ogg">OGG</option>
+                    </select>
+                    
+                    <label for="auto-play">Auto-play Responses:</label>
+                    <input type="checkbox" id="auto-play" checked>
+                    
+                    <label for="api-key">API Key:</label>
+                    <input type="password" id="api-key" placeholder="Enter your API key">
+                    
+                    <button type="button" id="save-settings">Save Settings</button>
+                </form>
+            </div>
+        </div>
+    </div>
+    
+    <footer>
+        <p>&copy; 2025 PSScript Manager - Voice API Integration Demo</p>
+    </footer>
+    
+    <script src="voice-api-poc.js"></script>
+    <script>
+        // Tab switching functionality
+        document.querySelectorAll('.tab').forEach(tab => {
+            tab.addEventListener('click', () => {
+                // Remove active class from all tabs and tab contents
+                document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+                document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+                
+                // Add active class to clicked tab and corresponding content
+                tab.classList.add('active');
+                document.getElementById(`${tab.dataset.tab}-tab`).classList.add('active');
+            });
+        });
+        
+        // Settings form functionality
+        document.getElementById('save-settings').addEventListener('click', () => {
+            const settings = {
+                voiceId: document.getElementById('voice-id').value,
+                outputFormat: document.getElementById('output-format').value,
+                autoPlay: document.getElementById('auto-play').checked,
+                apiKey: document.getElementById('api-key').value
+            };
+            
+            // In a real implementation, this would update the settings in the application
+            console.log('Settings saved:', settings);
+            alert('Settings saved successfully!');
+            
+            // Switch back to demo tab
+            document.querySelector('.tab[data-tab="demo"]').click();
+        });
+        
+        // Mock API responses for the demo
+        // This overrides the actual API calls in the voice-api-poc.js file
+        VoiceApiClient.prototype.synthesizeSpeech = async function(text) {
+            console.log('Synthesizing speech:', text);
+            
+            // In a real implementation, this would call the actual API
+            // For this demo, we'll return a mock response after a short delay
+            await new Promise(resolve => setTimeout(resolve, 1000));
+            
+            return {
+                audio_data: 'R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7', // Dummy base64 data
+                format: 'mp3',
+                duration: 2.5,
+                text: text
+            };
+        };
+        
+        VoiceApiClient.prototype.recognizeSpeech = async function(audioData) {
+            console.log('Recognizing speech...');
+            
+            // In a real implementation, this would call the actual API
+            // For this demo, we'll return a mock response after a short delay
+            await new Promise(resolve => setTimeout(resolve, 1500));
+            
+            return {
+                text: 'How do I analyze PowerShell scripts?',
+                confidence: 0.92
+            };
+        };
+    </script>
+</body>
+</html>

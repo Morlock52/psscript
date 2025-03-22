@@ -121,7 +121,7 @@ class ScriptAnalyzer:
         stop=stop_after_attempt(5),
         wait=wait_exponential(min=1, max=20),
         retry=retry_if_exception_type(
-            (openai.error.APIError, openai.error.Timeout, openai.error.ServiceUnavailableError)
+            (Exception)  # Simplified error handling for compatibility
         )
     )
     async def generate_embedding_async(self, text: str) -> List[float]:
@@ -138,13 +138,13 @@ class ScriptAnalyzer:
         try:
             response = await loop.run_in_executor(
                 self.executor,
-                lambda: openai.Embedding.create(
+                lambda: openai.embeddings.create(
                     model=EMBEDDING_MODEL,
                     input=text
                 )
             )
             
-            embedding = response["data"][0]["embedding"]
+            embedding = response.data[0].embedding
             
             # Cache the result
             self._save_to_cache(cache_key, embedding)
@@ -156,6 +156,17 @@ class ScriptAnalyzer:
     
     def generate_embedding(self, text: str) -> List[float]:
         """Synchronous wrapper for embedding generation."""
+        # Check if vector operations are enabled in the main module
+        try:
+            from main import VECTOR_ENABLED
+            if not VECTOR_ENABLED:
+                # Return a mock embedding if vector operations are disabled
+                logger.warning("Vector operations are disabled. Returning mock embedding.")
+                return [0.0] * EMBEDDING_DIMENSION
+        except ImportError:
+            # If we can't import the flag, assume vector operations are enabled
+            pass
+            
         loop = asyncio.new_event_loop()
         try:
             return loop.run_until_complete(self.generate_embedding_async(text))
@@ -166,7 +177,7 @@ class ScriptAnalyzer:
         stop=stop_after_attempt(3),
         wait=wait_exponential(min=1, max=30),
         retry=retry_if_exception_type(
-            (openai.error.APIError, openai.error.Timeout, openai.error.ServiceUnavailableError)
+            (Exception)  # Simplified error handling for compatibility
         )
     )
     async def analyze_script_async(self, script_content: str) -> Dict[str, Any]:
@@ -189,15 +200,56 @@ class ScriptAnalyzer:
         
         1. PURPOSE: Summarize what this script is designed to do in 1-2 sentences
         2. SECURITY_ANALYSIS: Identify potential security vulnerabilities or risks (scale 1-10, with 10 being highest risk)
+          - A score of 1-3 means minimal security risks
+          - A score of 4-6 means moderate security risks that should be addressed
+          - A score of 7-10 means severe security risks requiring immediate attention
         3. CODE_QUALITY: Evaluate code quality and best practices (scale 1-10, with 10 being highest quality)
+          - A score of 8-10 means excellent code following best practices
+          - A score of 5-7 means acceptable code with some improvements needed
+          - A score of 1-4 means poor code quality requiring significant refactoring
         4. PARAMETERS: Identify and document all parameters, including types and purposes
-        5. CATEGORY: Classify this script into ONE of these categories: System Administration, Network Management, Active Directory, Security Tools, Backup & Recovery, Monitoring Scripts, Automation Workflows, Cloud Management, Virtualization, Development Tools, Database Management, Reporting Scripts, File Operations, User Management, Configuration Management, Deployment Scripts, Troubleshooting Tools, Data Processing, Integration Scripts, Documentation Generators
+        5. CATEGORY: Classify this script into ONE of these categories:
+           - System Administration: Scripts for managing Windows/Linux systems, including system configuration, maintenance, and monitoring
+           - Security & Compliance: Scripts for security auditing, hardening, compliance checks, vulnerability scanning, and implementing security best practices
+           - Automation & DevOps: Scripts that automate repetitive tasks, create workflows, CI/CD pipelines, and streamline IT processes
+           - Cloud Management: Scripts for managing resources on Azure, AWS, GCP, and other cloud platforms, including provisioning and configuration
+           - Network Management: Scripts for network configuration, monitoring, troubleshooting, and management of network devices and services
+           - Data Management: Scripts for database operations, data processing, ETL (Extract, Transform, Load), and data analysis tasks
+           - Active Directory: Scripts for managing Active Directory, user accounts, groups, permissions, and domain services
+           - Monitoring & Diagnostics: Scripts for system monitoring, logging, diagnostics, performance analysis, and alerting
+           - Backup & Recovery: Scripts for data backup, disaster recovery, system restore, and business continuity operations
+           - Utilities & Helpers: General-purpose utility scripts, helper functions, and reusable modules for various administrative tasks
         6. OPTIMIZATION: Provide specific suggestions for improving the script
         7. RISK_ASSESSMENT: Evaluate the potential risk of executing this script (scale 1-10, with 10 being highest risk)
+          - A score of 1-3 means minimal execution risk
+          - A score of 4-6 means moderate execution risk requiring caution
+          - A score of 7-10 means high execution risk requiring careful review and controlled environment
         8. DEPENDENCIES: List any modules, tools, or services this script depends on
         9. RELIABILITY: Evaluate the error handling and robustness (scale 1-10, with 10 being most reliable)
+          - A score of 8-10 means robust with excellent error handling
+          - A score of 5-7 means adequate error handling with some improvements needed
+          - A score of 1-4 means poor error handling requiring significant improvements
+        10. COMMAND_DETAILS: Identify and document all PowerShell commands used in the script, including their purpose and potential risks
+        11. MS_DOCS_REFERENCES: For each PowerShell command or concept in the script, include relevant Microsoft Learn documentation links with brief descriptions
         
-        Format your response as a JSON object with these keys: "purpose", "security_analysis", "security_score", "code_quality_score", "parameters", "category", "optimization", "risk_score", "dependencies", "reliability_score"
+        Format your response as a JSON object with these keys: "purpose", "security_analysis", "security_score", "code_quality_score", "parameters", "category", "category_id", "optimization", "risk_score", "dependencies", "reliability_score", "command_details", "ms_docs_references"
+        
+        For the category_id field, use these mappings:
+        1: "System Administration"
+        2: "Security & Compliance"
+        3: "Automation & DevOps"
+        4: "Cloud Management"
+        5: "Network Management"
+        6: "Data Management"
+        7: "Active Directory"
+        8: "Monitoring & Diagnostics"
+        9: "Backup & Recovery"
+        10: "Utilities & Helpers"
+        
+        For the ms_docs_references field, provide an array of objects, each containing:
+        - "command": The PowerShell command or concept
+        - "url": The full URL to the Microsoft Learn documentation
+        - "description": A brief (10-25 word) description of what the documentation covers
         
         SCRIPT:
         ```powershell
@@ -211,7 +263,7 @@ class ScriptAnalyzer:
         try:
             response = await loop.run_in_executor(
                 self.executor,
-                lambda: openai.ChatCompletion.create(
+                lambda: openai.chat.completions.create(
                     model=ANALYSIS_MODEL,
                     messages=[
                         {"role": "system", "content": system_prompt},
@@ -230,8 +282,8 @@ class ScriptAnalyzer:
             # Ensure all expected keys are present
             required_keys = [
                 "purpose", "security_analysis", "security_score", "code_quality_score", 
-                "parameters", "category", "optimization", "risk_score", 
-                "dependencies", "reliability_score"
+                "parameters", "category", "category_id", "optimization", "risk_score", 
+                "dependencies", "reliability_score", "command_details"
             ]
             
             for key in required_keys:
@@ -259,11 +311,13 @@ class ScriptAnalyzer:
                 "security_score": 5,
                 "code_quality_score": 5,
                 "parameters": {},
-                "category": "Unknown",
+                "category": "Utilities & Helpers",
+                "category_id": 10,
                 "optimization": ["Analysis failed"],
                 "risk_score": 5,
                 "dependencies": [],
                 "reliability_score": 5,
+                "command_details": [],
                 "error": str(e),
                 "analyzed_at": int(time.time()),
                 "model": ANALYSIS_MODEL

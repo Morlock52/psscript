@@ -10,7 +10,18 @@ export default class ScriptAnalysis extends Model {
   public codeQualityScore!: number;
   public riskScore!: number;
   public optimizationSuggestions!: string[];
-  public aiComments!: string;
+  public commandDetails!: object[];
+  public msDocsReferences!: object[];
+  
+  // New comprehensive analysis fields
+  public securityIssues!: object[];
+  public bestPracticeViolations!: object[];
+  public performanceInsights!: object[];
+  public potentialRisks!: object[];
+  public codeComplexityMetrics!: object;
+  public compatibilityNotes!: string[];
+  public executionSummary!: object;
+  public analysisVersion!: string;
   
   public readonly createdAt!: Date;
   public readonly updatedAt!: Date;
@@ -32,7 +43,8 @@ export default class ScriptAnalysis extends Model {
           model: 'scripts',
           key: 'id'
         },
-        unique: true
+        unique: true,
+        field: 'script_id'
       },
       purpose: {
         type: DataTypes.TEXT,
@@ -40,38 +52,99 @@ export default class ScriptAnalysis extends Model {
       },
       parameters: {
         type: DataTypes.JSONB,
-        defaultValue: {}
+        defaultValue: {},
+        field: 'parameter_docs'
       },
       securityScore: {
         type: DataTypes.FLOAT,
         allowNull: false,
-        defaultValue: 0
+        defaultValue: 0,
+        field: 'security_score'
       },
       codeQualityScore: {
         type: DataTypes.FLOAT,
         allowNull: false,
-        defaultValue: 0
+        defaultValue: 0,
+        field: 'quality_score'
       },
       riskScore: {
         type: DataTypes.FLOAT,
         allowNull: false,
-        defaultValue: 0
+        defaultValue: 0,
+        field: 'risk_score'
       },
       optimizationSuggestions: {
-        type: DataTypes.ARRAY(DataTypes.TEXT),
-        defaultValue: []
+        type: DataTypes.JSONB,
+        defaultValue: [],
+        field: 'suggestions'
       },
-      aiComments: {
-        type: DataTypes.TEXT,
-        allowNull: true
+      commandDetails: {
+        type: DataTypes.JSONB,
+        defaultValue: [],
+        field: 'command_details'
+      },
+      msDocsReferences: {
+        type: DataTypes.JSONB,
+        defaultValue: [],
+        field: 'ms_docs_references'
+      },
+      // New comprehensive analysis fields
+      securityIssues: {
+        type: DataTypes.JSONB,
+        defaultValue: [],
+        field: 'security_issues',
+        comment: 'Detailed security issues found in the script, including severity and remediation steps'
+      },
+      bestPracticeViolations: {
+        type: DataTypes.JSONB,
+        defaultValue: [],
+        field: 'best_practice_violations',
+        comment: 'PowerShell best practice violations based on PSScriptAnalyzer rules'
+      },
+      performanceInsights: {
+        type: DataTypes.JSONB,
+        defaultValue: [],
+        field: 'performance_insights',
+        comment: 'Performance optimization opportunities and insights'
+      },
+      potentialRisks: {
+        type: DataTypes.JSONB,
+        defaultValue: [],
+        field: 'potential_risks',
+        comment: 'Potential risks identified in the script execution or implementation'
+      },
+      codeComplexityMetrics: {
+        type: DataTypes.JSONB,
+        defaultValue: {},
+        field: 'code_complexity_metrics',
+        comment: 'Metrics about code complexity, including cyclomatic complexity, nesting levels, etc.'
+      },
+      compatibilityNotes: {
+        type: DataTypes.JSONB,
+        defaultValue: [],
+        field: 'compatibility_notes',
+        comment: 'Notes about compatibility with different PowerShell versions and environments'
+      },
+      executionSummary: {
+        type: DataTypes.JSONB,
+        defaultValue: {},
+        field: 'execution_summary',
+        comment: 'Summary of script execution behavior, including resources accessed and modified'
+      },
+      analysisVersion: {
+        type: DataTypes.STRING,
+        defaultValue: '1.0',
+        field: 'analysis_version',
+        comment: 'Version of the analysis engine used'
       }
     }, {
       sequelize,
-      tableName: 'script_analysis'
+      tableName: 'script_analysis',
+      underscored: true
     });
   }
 
   static associate() {
-    ScriptAnalysis.belongsTo(Script, { foreignKey: 'scriptId', as: 'script' });
+    ScriptAnalysis.belongsTo(Script, { foreignKey: 'scriptId', as: 'script', foreignKeyConstraint: true });
   }
 }

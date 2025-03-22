@@ -5,6 +5,21 @@ import { QueryTypes } from 'sequelize';
 import dns from 'dns';
 import net from 'net';
 import os from 'os';
+import { cache } from '../index';
+import { 
+  getCache, 
+  setCache, 
+  deleteCache, 
+  invalidateByPattern, 
+  persistCache, 
+  loadCache 
+} from '../utils/redis';
+
+// Constants for cache health checks
+// These match the values defined in index.ts
+const MAX_CACHE_ITEMS = 10000; // Maximum number of items to store in cache before eviction
+const MAX_MEMORY_USAGE = process.env.MAX_CACHE_MEMORY ? parseInt(process.env.MAX_CACHE_MEMORY, 10) : 500 * 1024 * 1024; // 500MB default
+const CLEANUP_INTERVAL = 5 * 60 * 1000; // 5 minutes
 
 const router = express.Router();
 
@@ -40,14 +55,42 @@ router.get('/', async (req, res) => {
       }
     }
     
+    // Check in-memory cache status
+    let cacheStatus = 'connected';
+    let cacheMetrics = {};
+    
+    try {
+      // Get cache statistics
+      const cacheStats = cache.stats();
+      
+      cacheMetrics = {
+        size: cacheStats.size,
+        keys: cacheStats.keys.slice(0, 10), // Show first 10 keys
+        memoryUsage: process.memoryUsage()
+      };
+      
+      logger.info('Health check - In-memory cache statistics retrieved successfully');
+    } catch (cacheError: any) {
+      const errorMessage = cacheError instanceof Error ? cacheError.message : String(cacheError);
+      logger.error('Cache statistics check failed:', errorMessage);
+      cacheStatus = 'error';
+      
+      cacheMetrics = { 
+        error: 'Failed to get cache metrics'
+      };
+    }
+    
     // Always return a valid response
     return res.status(200).json({
       dbStatus: dbStatus,
-      status: 'healthy',
-      message: authErrorMessage,
+      cacheStatus: cacheStatus,
+      status: dbStatus === 'connected' ? 'healthy' : 'degraded',
+      message: authErrorMessage ? `DB: ${authErrorMessage}` : '',
       time: new Date().toISOString(),
       uptime: process.uptime(),
-      tables: tables
+      tables: tables,
+      cache: cacheMetrics,
+      environment: process.env.NODE_ENV || 'development'
     });
   } catch (error: any) {
     // Fallback error handling to ensure we always return a valid JSON response
@@ -496,6 +539,298 @@ router.get('/diagnostics', async (req, res) => {
     res.status(500).json({
       error: error.message,
       status: 'error',
+      time: new Date().toISOString()
+    });
+  }
+});
+
+// Test cache persistence
+router.get('/cache/persistence', async (req, res) => {
+  try {
+    const filePath = './cache-backup-test.json';
+    
+    // First check if we can persist the cache
+    const beforeSize = cache.stats().size;
+    const persistResult = await persistCache(filePath);
+    
+    if (!persistResult.success) {
+      return res.status(500).json({
+        success: false,
+        message: 'Failed to persist cache',
+        error: persistResult.error
+      });
+    }
+    
+    // Now clear the cache and verify it's empty
+    cache.clear();
+    const afterClearSize = cache.stats().size;
+    
+    if (afterClearSize !== 0) {
+      return res.status(500).json({
+        success: false,
+        message: 'Failed to clear cache',
+        beforeSize,
+        afterClearSize
+      });
+    }
+    
+    // Now load the cache from the file
+    const loadResult = await loadCache(filePath);
+    
+    if (!loadResult.success) {
+      return res.status(500).json({
+        success: false,
+        message: 'Failed to load cache from file',
+        error: loadResult.error
+      });
+    }
+    
+    // Verify the cache is loaded
+    const afterLoadSize = cache.stats().size;
+    
+    // Run test with typed cache operations
+    const testKey = 'typed:test:key';
+    const testValue = { name: 'Test Object', value: Date.now() };
+    
+    // Test typed set operation
+    const setResult = await setCache<typeof testValue>(testKey, testValue, 60);
+    
+    // Test typed get operation
+    const getResult = await getCache<typeof testValue>(testKey);
+    
+    // Test delete operation
+    const deleteResult = await deleteCache(testKey);
+    
+    res.json({
+      success: true,
+      message: 'Cache persistence test completed successfully',
+      persistResult: {
+        success: persistResult.success,
+        filePath: persistResult.value
+      },
+      loadResult: {
+        success: loadResult.success,
+        filePath: loadResult.value
+      },
+      sizeBefore: beforeSize,
+      sizeAfterClear: afterClearSize,
+      sizeAfterLoad: afterLoadSize,
+      typedCacheOperations: {
+        set: setResult,
+        get: getResult,
+        delete: deleteResult
+      }
+    });
+    
+    // Try to clean up the test file
+    try {
+      const fs = require('fs');
+      if (fs.existsSync(filePath)) {
+        fs.unlinkSync(filePath);
+      }
+    } catch (cleanupError) {
+      logger.error('Failed to clean up test file:', cleanupError);
+    }
+  } catch (error) {
+    const errorMessage = error instanceof Error ? error.message : String(error);
+    logger.error('Cache persistence test failed:', errorMessage);
+    
+    return res.status(500).json({
+      success: false,
+      message: 'Cache persistence test failed',
+      error: errorMessage
+    });
+  }
+});
+
+// Enhanced Cache health check endpoint
+router.get('/cache', async (req, res) => {
+  try {
+    // Get enhanced cache statistics with metrics
+    const cacheStats = cache.stats();
+    
+    // Test cache with a simple set/get
+    let readWriteTest = false;
+    let readWriteError = null;
+    let readWriteTime = 0;
+    
+    try {
+      const testKey = 'health:check:test';
+      const testValue = `test-${Date.now()}`;
+      
+      // Set a value in the cache and measure time
+      const setStart = Date.now();
+      cache.set(testKey, testValue, 60); // 60 seconds expiry
+      const setEnd = Date.now();
+      
+      // Retrieve the value and measure time
+      const getStart = Date.now();
+      const retrievedValue = cache.get(testKey);
+      const getEnd = Date.now();
+      
+      // Total operation time
+      readWriteTime = (setEnd - setStart) + (getEnd - getStart);
+      
+      // Check if the retrieved value matches the original
+      readWriteTest = testValue === retrievedValue;
+      logger.info(`Cache diagnostics - Read/write test ${readWriteTest ? 'successful' : 'failed'} in ${readWriteTime}ms`);
+      
+      // Clean up by removing the test key
+      cache.del(testKey);
+    } catch (rwError) {
+      readWriteError = rwError instanceof Error ? rwError.message : String(rwError);
+      logger.error('Cache diagnostics - Read/write test failed:', readWriteError);
+    }
+    
+    // Count different types of keys by prefix
+    const keyTypes = cacheStats.keys.reduce((acc: Record<string, number>, key: string) => {
+      // Check common key prefixes
+      const prefix = key.split(':')[0] || 'other';
+      acc[prefix] = (acc[prefix] || 0) + 1;
+      return acc;
+    }, {});
+    
+    // Calculate memory usage
+    const memoryUsage = process.memoryUsage();
+    const cacheMemoryPercentage = Math.round((cacheStats.memoryEstimate / memoryUsage.heapUsed) * 100);
+    
+    // Get the hottest keys (most accessed)
+    const hotKeys = cacheStats.topHits.map(hit => ({
+      key: hit.key,
+      hits: hit.hits,
+      accessFrequency: 'high'
+    }));
+    
+    // Get the coldest keys (most missed)
+    const coldKeys = cacheStats.topMisses.map(miss => ({
+      key: miss.key,
+      misses: miss.misses,
+      accessFrequency: 'low'
+    }));
+    
+    // Run stressful operation to measure performance
+    let stressTestResult = null;
+    try {
+      const testItemCount = 100;
+      const testItemSize = 1; // 1KB
+      
+      const stressStart = Date.now();
+      
+      // Create a test key with timestamp to avoid conflicts
+      const stressTestKeyPrefix = `stress:test:${Date.now()}:`;
+      
+      // Generate random data
+      const generateRandomString = (sizeKB: number) => {
+        const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
+        let result = '';
+        // 1KB is roughly 1000 characters
+        const length = sizeKB * 1000;
+        for (let i = 0; i < length; i++) {
+          result += chars.charAt(Math.floor(Math.random() * chars.length));
+        }
+        return result;
+      };
+      
+      const testData = generateRandomString(testItemSize);
+      
+      // Add items to cache
+      for (let i = 0; i < testItemCount; i++) {
+        cache.set(`${stressTestKeyPrefix}${i}`, { 
+          data: testData,
+          index: i
+        }, 30); // 30 seconds TTL
+      }
+      
+      // Read back some random items
+      const readItems = 20;
+      for (let i = 0; i < readItems; i++) {
+        const randomIndex = Math.floor(Math.random() * testItemCount);
+        cache.get(`${stressTestKeyPrefix}${randomIndex}`);
+      }
+      
+      const stressEnd = Date.now();
+      const stressTime = stressEnd - stressStart;
+      
+      // Clean up stress test keys
+      cache.clearPattern(stressTestKeyPrefix);
+      
+      stressTestResult = {
+        success: true,
+        itemsCreated: testItemCount,
+        itemsRead: readItems,
+        itemSizeKB: testItemSize,
+        executionTimeMs: stressTime,
+        opsPerSecond: Math.round((testItemCount + readItems) / (stressTime / 1000))
+      };
+    } catch (stressError) {
+      stressTestResult = {
+        success: false,
+        error: stressError instanceof Error ? stressError.message : String(stressError)
+      };
+    }
+    
+    return res.status(200).json({
+      status: 'connected',
+      time: new Date().toISOString(),
+      environment: process.env.NODE_ENV || 'development',
+      
+      // Basic tests
+      basicTest: {
+        readWriteTest,
+        readWriteError,
+        readWriteTimeMs: readWriteTime
+      },
+      
+      // Cache metrics
+      metrics: {
+        totalKeys: cacheStats.size,
+        keysByType: keyTypes,
+        hitRatio: cacheStats.hitRatio,
+        errorsCount: Object.values(cacheStats.errors || {}).reduce((a, b) => a + b, 0),
+        keysSample: cacheStats.keys.slice(0, 10)
+      },
+      
+      // Memory usage
+      memory: {
+        heapTotal: `${Math.round(memoryUsage.heapTotal / 1024 / 1024)} MB`,
+        heapUsed: `${Math.round(memoryUsage.heapUsed / 1024 / 1024)} MB`,
+        rss: `${Math.round(memoryUsage.rss / 1024 / 1024)} MB`,
+        external: `${Math.round((memoryUsage.external || 0) / 1024 / 1024)} MB`,
+        cacheEstimate: `${Math.round(cacheStats.memoryEstimate / 1024 / 1024)} MB`,
+        cachePercentage: `${cacheMemoryPercentage}%`,
+        maxAllowed: `${Math.round(MAX_MEMORY_USAGE / 1024 / 1024)} MB`,
+      },
+      
+      // Performance metrics
+      performance: {
+        hotKeys,
+        coldKeys,
+        stressTest: stressTestResult,
+        cpuUsage: process.cpuUsage(),
+        resourceUsage: process.resourceUsage ? process.resourceUsage() : null
+      },
+      
+      // Configuration
+      config: {
+        maxItems: MAX_CACHE_ITEMS,
+        ttlCleanupInterval: CLEANUP_INTERVAL / 1000 + ' seconds',
+        persistenceSupported: true
+      },
+      
+      // Server info
+      serverInfo: {
+        platform: process.platform,
+        nodeVersion: process.version,
+        uptime: `${Math.floor(process.uptime())} seconds`
+      }
+    });
+  } catch (error: any) {
+    const errorMessage = error instanceof Error ? error.message : String(error);
+    logger.error('Cache health check failed:', errorMessage);
+    
+    return res.status(500).json({
+      status: 'error',
+      message: errorMessage,
       time: new Date().toISOString()
     });
   }

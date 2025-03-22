@@ -91,18 +91,26 @@ const FullScreenEditor: React.FC<FullScreenEditorProps> = ({
     }
   };
 
+  // Define Monaco type
+  interface Monaco {
+    KeyMod: any;
+    KeyCode: any;
+  }
+  
   const handleEditorMount = (editor: any) => {
     editorRef.current = editor;
     editor.focus();
     
     // Add editor formatting commands if Monaco is available
     try {
-      if (typeof monaco !== 'undefined') {
+      // Use window object to check if monaco is defined
+      const monacoInstance = (window as any).monaco;
+      if (monacoInstance) {
         editor.addAction({
           id: 'format-document',
           label: 'Format Document',
           keybindings: [
-            monaco.KeyMod.Alt | monaco.KeyMod.Shift | monaco.KeyCode.KeyF
+            monacoInstance.KeyMod.Alt | monacoInstance.KeyMod.Shift | monacoInstance.KeyCode.KeyF
           ],
           run: function(editor: any) {
             editor.getAction('editor.action.formatDocument').run();
@@ -114,7 +122,8 @@ const FullScreenEditor: React.FC<FullScreenEditorProps> = ({
     }
   };
 
-  const editorOptions = {
+  // Define editor options with proper typing
+  const editorOptions: any = {
     selectOnLineNumbers: true,
     roundedSelection: false,
     readOnly: false,
@@ -125,7 +134,7 @@ const FullScreenEditor: React.FC<FullScreenEditorProps> = ({
     contextmenu: true,
     fontFamily: 'Consolas, "Courier New", monospace',
     fontSize: 14,
-    lineNumbers: 'on',
+    lineNumbers: 'on', // This should be 'on' | 'off' | 'relative' but using string for compatibility
     wordWrap: 'on',
     quickSuggestions: true,
     snippetSuggestions: 'inline',

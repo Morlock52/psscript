@@ -1,4 +1,4 @@
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useQuery, useMutation } from 'react-query';
 import { scriptService, categoryService, tagService } from '../services/api';
@@ -16,8 +16,16 @@ const ScriptUpload: React.FC = () => {
   const [analyzeWithAI, setAnalyzeWithAI] = useState(true);
   const [customTag, setCustomTag] = useState('');
   const [fileError, setFileError] = useState('');
+  const [fileSize, setFileSize] = useState(0);
+  const [fileName, setFileName] = useState('');
+  const [fileType, setFileType] = useState('');
+  const [isLargeFile, setIsLargeFile] = useState(false);
+  const [uploadProgress, setUploadProgress] = useState(0);
   const [showAnalysisPreview, setShowAnalysisPreview] = useState(false);
   const [analysisPreview, setAnalysisPreview] = useState<any>(null);
+  const [isNetworkError, setIsNetworkError] = useState(false);
+  const [retryCount, setRetryCount] = useState(0);
+  const MAX_RETRIES = 3;
   
   // Fetch categories
   const { data: categories } = useQuery('categories', () => categoryService.getCategories());
@@ -27,18 +35,54 @@ const ScriptUpload: React.FC = () => {
   
   // Script upload mutation
   const uploadMutation = useMutation(
-    (scriptData: any) => scriptService.uploadScript(scriptData),
+    (scriptData: any) => scriptService.uploadScript(scriptData, isLargeFile),
     {
       onSuccess: (data) => {
         console.log("Script uploaded successfully:", data);
-        // Add a small delay to ensure the script is properly added to the mock data
-        setTimeout(() => {
-          navigate(`/scripts/${data.id}`);
-        }, 300);
+        // Reset states
+        setUploadProgress(0);
+        setIsNetworkError(false);
+        setRetryCount(0);
+        
+        // Navigate to the script detail page
+        const scriptId = data.script?.id || data.id;
+        if (scriptId) {
+          // Add a small delay to ensure the script is properly added to the mock data
+          setTimeout(() => {
+            navigate(`/scripts/${scriptId}`);
+          }, 300);
+        } else {
+          navigate('/scripts');
+        }
       },
-      onError: (error) => {
+      onError: (error: any) => {
         console.error("Error uploading script:", error);
-        alert("Failed to upload script. Please try again.");
+        setUploadProgress(0);
+        
+        // Check if it's a network-related error
+        const isNetworkRelated = 
+          error.message?.includes('Network error') || 
+          error.message?.includes('check your connection') || 
+          error.message?.includes('No response received') || 
+          error.message?.includes('timeout');
+        
+        setIsNetworkError(isNetworkRelated);
+        setFileError(error.message || "Failed to upload script. Please try again.");
+      },
+      retry: (failureCount, error: any) => {
+        // Only retry for network-related errors and up to MAX_RETRIES times
+        const isNetworkRelated = 
+          error.message?.includes('Network error') || 
+          error.message?.includes('check your connection') || 
+          error.message?.includes('No response received') || 
+          error.message?.includes('timeout');
+        
+        return isNetworkRelated && failureCount < MAX_RETRIES;
+      },
+      retryDelay: (attemptIndex) => Math.min(1000 * (2 ** attemptIndex), 10000), // Exponential backoff
+      onMutate: () => {
+        setFileError('');
+        setIsNetworkError(false);
       }
     }
   );
@@ -51,13 +95,38 @@ const ScriptUpload: React.FC = () => {
     }
   );
   
+  // Acceptable PowerShell file extensions
+  const ALLOWED_EXTENSIONS = ['.ps1', '.psm1', '.psd1', '.ps1xml'];
+  
+  // Format file size for display
+  const formatFileSize = (bytes: number): string => {
+    if (bytes < 1024) return bytes + ' bytes';
+    if (bytes < 1024 * 1024) return (bytes / 1024).toFixed(1) + ' KB';
+    return (bytes / (1024 * 1024)).toFixed(2) + ' MB';
+  };
+  
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
     
+    // Get file extension
+    const fileExt = ('.' + file.name.split('.').pop()).toLowerCase();
+    
     // Check file extension
-    if (!file.name.toLowerCase().endsWith('.ps1')) {
-      setFileError('Only PowerShell (.ps1) files are allowed');
+    if (!ALLOWED_EXTENSIONS.includes(fileExt)) {
+      setFileError(`Only PowerShell files (${ALLOWED_EXTENSIONS.join(', ')}) are allowed`);
+      return;
+    }
+    
+    // Check file size
+    const fileSizeInMB = file.size / (1024 * 1024);
+    setFileSize(file.size);
+    setFileName(file.name);
+    setFileType(fileExt);
+    setIsLargeFile(fileSizeInMB > 2); // Files larger than 2MB use the large file upload endpoint
+    
+    if (fileSizeInMB > 10) {
+      setFileError('File size exceeds the maximum limit of 10MB');
       return;
     }
     
@@ -71,7 +140,7 @@ const ScriptUpload: React.FC = () => {
       
       // Try to extract title from filename if not set
       if (!title) {
-        const filename = file.name.replace('.ps1', '');
+        const filename = file.name.replace(fileExt, '');
         setTitle(filename);
       }
       
@@ -130,30 +199,117 @@ const ScriptUpload: React.FC = () => {
     });
   };
   
+  // Track upload progress and retry count
+  useEffect(() => {
+    if (uploadMutation.isLoading) {
+      // Simulate upload progress
+      const interval = setInterval(() => {
+        setUploadProgress(prev => {
+          const increment = Math.random() * 15;
+          const newProgress = prev + increment;
+          return newProgress >= 95 ? 95 : newProgress; // Cap at 95% until complete
+        });
+      }, 500);
+      
+      return () => clearInterval(interval);
+    } else if (uploadMutation.isSuccess) {
+      setUploadProgress(100);
+    }
+    
+    // Update retry count when failureCount changes, but never exceed MAX_RETRIES
+    if (uploadMutation.failureCount > retryCount && uploadMutation.failureCount <= MAX_RETRIES) {
+      setRetryCount(uploadMutation.failureCount);
+    }
+  }, [uploadMutation.isLoading, uploadMutation.isSuccess, uploadMutation.failureCount, retryCount, MAX_RETRIES]);
+  
+  const validateForm = (): string | null => {
+    if (!title || title.trim() === '') {
+      return 'Script title is required';
+    }
+    
+    if (!content || content.trim() === '') {
+      return 'Script content is required';
+    }
+    
+    if (tags.length > 10) {
+      return 'A maximum of 10 tags is allowed';
+    }
+    
+    return null;
+  };
+  
+  // Prepare form data for submission
+  const prepareFormData = () => {
+    const formData = new FormData();
+    
+    // Add script metadata
+    formData.append('title', title);
+    formData.append('description', description);
+    formData.append('content', content);
+    if (category) {
+      formData.append('category_id', category);
+    }
+    if (tags.length > 0) {
+      formData.append('tags', JSON.stringify(tags));
+    }
+    formData.append('is_public', isPublic.toString());
+    formData.append('analyze_with_ai', analyzeWithAI.toString());
+    
+    // If we have a file in the input, append it directly
+    if (fileInputRef.current?.files?.[0]) {
+      formData.append('script_file', fileInputRef.current.files[0]);
+    }
+    
+    return formData;
+  };
+  
+  // Handle retry after network error
+  const handleRetry = () => {
+    // Reset error states
+    setFileError('');
+    setUploadProgress(0);
+    setIsNetworkError(false);
+    
+    // Reset retry count if we're manually retrying
+    // This gives the user a fresh set of automatic retries
+    setRetryCount(0);
+    
+    // Prepare and submit form data again
+    const formData = prepareFormData();
+    uploadMutation.mutate(formData);
+  };
+  
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     
-    if (!title || !content) {
+    // Validate form
+    const validationError = validateForm();
+    if (validationError) {
+      setFileError(validationError);
       return;
     }
     
-    const scriptData = {
-      title,
-      description,
-      content,
-      category_id: category || undefined,
-      tags,
-      is_public: isPublic,
-      analyze_with_ai: analyzeWithAI
-    };
+    setFileError('');
+    setUploadProgress(0);
+    setRetryCount(0);
     
-    uploadMutation.mutate(scriptData);
+    // Create and submit form data
+    const formData = prepareFormData();
+    uploadMutation.mutate(formData);
   };
   
   return (
     <div className="container mx-auto pb-8">
       <div className="flex justify-between items-center mb-6">
         <h1 className="text-2xl font-bold">Upload Script</h1>
+        <div className="flex space-x-2">
+          <button
+            className="px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700"
+            onClick={() => navigate('/')}
+          >
+            Dashboard
+          </button>
+        </div>
       </div>
       
       <div className="bg-gray-700 rounded-lg shadow p-6">
@@ -172,7 +328,7 @@ const ScriptUpload: React.FC = () => {
                   type="file" 
                   ref={fileInputRef}
                   className="hidden" 
-                  accept=".ps1"
+                  accept=".ps1,.psm1,.psd1,.ps1xml"
                   onChange={handleFileChange}
                 />
                 
@@ -195,17 +351,54 @@ const ScriptUpload: React.FC = () => {
                   Drag and drop your PowerShell script here, or click to browse
                 </p>
                 <p className="mt-1 text-xs text-gray-500">
-                  Only .ps1 files are accepted
+                  Accepted file types: .ps1, .psm1, .psd1, .ps1xml
                 </p>
                 
                 {fileError && (
-                  <p className="mt-2 text-sm text-red-500">{fileError}</p>
+                  <div className="mt-2">
+                    <p className="text-sm text-red-500">{fileError}</p>
+                    {isNetworkError && (
+                      <button 
+                        onClick={handleRetry} 
+                        className="mt-2 px-3 py-1 bg-blue-600 text-white text-sm rounded hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                      >
+                        Retry Upload
+                      </button>
+                    )}
+                    {retryCount > 0 && retryCount <= MAX_RETRIES && (
+                      <p className="text-xs text-yellow-500 mt-1">
+                        Retry attempt {retryCount} of {MAX_RETRIES}
+                      </p>
+                    )}
+                  </div>
                 )}
                 
-                {content && (
+                {content && !fileError && (
                   <p className="mt-2 text-sm text-green-500">
                     ✓ Script loaded successfully ({content.length} bytes)
                   </p>
+                )}
+                
+                {fileName && !fileError && (
+                  <div className="mt-2 text-sm text-gray-300">
+                    <p><span className="font-semibold">File:</span> {fileName}</p>
+                    <p><span className="font-semibold">Size:</span> {formatFileSize(fileSize)}</p>
+                    <p><span className="font-semibold">Type:</span> {fileType} {isLargeFile && <span className="text-yellow-400">(Large file upload)</span>}</p>
+                  </div>
+                )}
+                
+                {uploadMutation.isLoading && (
+                  <div className="mt-4">
+                    <div className="w-full bg-gray-700 rounded-full h-2.5">
+                      <div 
+                        className="bg-blue-600 h-2.5 rounded-full transition-all duration-300" 
+                        style={{ width: `${uploadProgress}%` }}
+                      ></div>
+                    </div>
+                    <p className="text-gray-400 text-sm mt-1 text-center">
+                      {uploadProgress < 100 ? 'Uploading...' : 'Processing...'} {Math.round(uploadProgress)}%
+                    </p>
+                  </div>
                 )}
               </div>
               
@@ -413,8 +606,8 @@ const ScriptUpload: React.FC = () => {
             </button>
             <button
               type="submit"
-              className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:opacity-50"
-              disabled={!title || !content || uploadMutation.isLoading}
+              className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed"
+              disabled={!title || !content || !!fileError || uploadMutation.isLoading}
             >
               {uploadMutation.isLoading ? 'Uploading...' : 'Upload Script'}
             </button>

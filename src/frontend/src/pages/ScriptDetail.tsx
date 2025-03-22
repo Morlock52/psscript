@@ -4,12 +4,14 @@ import { useQuery, useMutation } from 'react-query';
 import { scriptService } from '../services/api';
 import ScriptDownloadButton from '../components/ScriptDownloadButton';
 import FullScreenEditor from '../components/FullScreenEditor';
+import toast from 'react-hot-toast';
 
 const ScriptDetail: React.FC = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const [parameters, setParameters] = useState<Record<string, string>>({});
   const [isEditorOpen, setIsEditorOpen] = useState(false);
+  const [isAnalyzing, setIsAnalyzing] = useState(false);
   
   const { data: script, isLoading, error, refetch } = useQuery(
     ['script', id],
@@ -20,12 +22,19 @@ const ScriptDetail: React.FC = () => {
     }
   );
   
-  const { data: analysis } = useQuery(
+  const { data: analysis, error: analysisError } = useQuery(
     ['scriptAnalysis', id],
     () => scriptService.getScriptAnalysis(id || ''),
     {
       enabled: !!id,
       refetchOnWindowFocus: false,
+      retry: false,
+      onError: (error: any) => {
+        // Don't show error toast for 404 errors as they're expected when no analysis exists
+        if (error.response?.status !== 404) {
+          console.error('Error fetching analysis:', error);
+        }
+      }
     }
   );
   
@@ -61,7 +70,27 @@ const ScriptDetail: React.FC = () => {
       },
       onError: (error) => {
         console.error('Error updating script:', error);
-        // Handle error (could show a toast notification here)
+        toast.error('Failed to update script');
+      }
+    }
+  );
+  
+  // Mutation for analyzing script with AI and saving to database
+  const analyzeScriptMutation = useMutation(
+    () => scriptService.analyzeScriptAndSave(id || ''),
+    {
+      onSuccess: (analysisData) => {
+        toast.success('Script analyzed successfully');
+        
+        // Navigate to the analysis page
+        navigate(`/scripts/${id}/analysis`);
+      },
+      onError: (error) => {
+        console.error('Error analyzing script:', error);
+        toast.error('Failed to analyze script');
+      },
+      onSettled: () => {
+        setIsAnalyzing(false);
       }
     }
   );
@@ -83,6 +112,11 @@ const ScriptDetail: React.FC = () => {
   
   const handleSaveScript = (content: string) => {
     updateScriptMutation.mutate(content);
+  };
+  
+  const handleAnalyzeScript = () => {
+    setIsAnalyzing(true);
+    analyzeScriptMutation.mutate();
   };
   
   if (isLoading) {
@@ -128,10 +162,33 @@ const ScriptDetail: React.FC = () => {
             Edit
           </button>
           <button
+            className="px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 disabled:opacity-50 flex items-center"
+            onClick={handleAnalyzeScript}
+            disabled={isAnalyzing}
+          >
+            {isAnalyzing ? (
+              <>
+                <svg className="animate-spin -ml-1 mr-2 h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                  <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                  <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                </svg>
+                Analyzing...
+              </>
+            ) : (
+              'Analyze with AI'
+            )}
+          </button>
+          <button
             className="px-4 py-2 bg-gray-600 text-white rounded-lg hover:bg-gray-700"
             onClick={() => navigate('/scripts')}
           >
-            Back
+            Back to Scripts
+          </button>
+          <button
+            className="px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700"
+            onClick={() => navigate('/')}
+          >
+            Dashboard
           </button>
         </div>
       </div>
@@ -247,7 +304,36 @@ const ScriptDetail: React.FC = () => {
             </div>
           </div>
           
-          {/* AI Analysis */}
+          {/* AI Analysis Button (when no analysis exists) */}
+          {!analysis && (
+            <div className="bg-gray-700 rounded-lg shadow">
+              <div className="p-4 bg-gray-800 border-b border-gray-600">
+                <h2 className="text-lg font-medium">AI Analysis</h2>
+              </div>
+              <div className="p-6 text-center">
+                <p className="text-gray-300 mb-4">No analysis available for this script yet.</p>
+                <button
+                  className="px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 disabled:opacity-50 w-full flex items-center justify-center"
+                  onClick={handleAnalyzeScript}
+                  disabled={isAnalyzing}
+                >
+                  {isAnalyzing ? (
+                    <>
+                      <svg className="animate-spin -ml-1 mr-2 h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                        <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                        <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                      </svg>
+                      Analyzing Script...
+                    </>
+                  ) : (
+                    'Analyze with AI'
+                  )}
+                </button>
+              </div>
+            </div>
+          )}
+          
+          {/* AI Analysis Results */}
           {analysis && (
             <div className="bg-gray-700 rounded-lg shadow">
               <div className="p-4 bg-gray-800 border-b border-gray-600 flex justify-between items-center">

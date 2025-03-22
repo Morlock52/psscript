@@ -2,20 +2,35 @@ import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { useQuery, useMutation, useQueryClient } from 'react-query';
 import { scriptService, categoryService } from '../services/api';
+import InfoBox from '../components/InfoBox';
 
 interface Script {
   id: string;
   title: string;
   description: string;
-  author: string;
+  author?: string;
+  userId?: number;
   version: string;
-  dateCreated: string;
-  dateModified: string;
+  content?: string;
+  dateCreated?: string;
+  dateModified?: string;
+  createdAt?: string;
+  updatedAt?: string;
   tags: string[];
   isPublic: boolean;
-  category: string;
+  category: { id: number; name: string } | string | null;
+  categoryId?: number;
   executionCount: number;
-  averageRating: number;
+  averageRating?: number;
+  analysis?: {
+    securityScore: number;
+    codeQualityScore: number;
+    riskScore?: number;
+  };
+  user?: {
+    id: number;
+    username: string;
+  };
 }
 
 interface Category {
@@ -31,7 +46,9 @@ const ScriptManagement: React.FC = () => {
   const [selectedTags, setSelectedTags] = useState<string[]>([]);
   const [searchQuery, setSearchQuery] = useState("");
   const [showBulkActions, setShowBulkActions] = useState(false);
-  
+  const [errorMessage, setErrorMessage] = useState<string | null>(null);
+  const [successMessage, setSuccessMessage] = useState<string | null>(null);
+
   // Fetch scripts with filters
   const { data: scriptsData, isLoading: isScriptsLoading } = useQuery(
     ['scripts', selectedCategory, isPublicFilter, selectedTags, searchQuery],
@@ -71,16 +88,35 @@ const ScriptManagement: React.FC = () => {
         queryClient.invalidateQueries('scripts');
         setSelectedScripts([]);
         setShowBulkActions(false);
+        setSuccessMessage('Scripts updated successfully');
+        setTimeout(() => setSuccessMessage(null), 3000);
+      },
+      onError: (error: any) => {
+        console.error('Failed to update scripts:', error);
+        setErrorMessage(error.message || 'Failed to update scripts. Please try again.');
+        setTimeout(() => setErrorMessage(null), 5000);
       }
     }
   );
 
-  // Delete script mutation
+  // Delete script mutation with improved error handling
   const deleteScriptMutation = useMutation(
     (id: string) => scriptService.deleteScript(id),
     {
-      onSuccess: () => {
-        queryClient.invalidateQueries('scripts');
+      onSuccess: (data) => {
+        if (data.success) {
+          // Show success toast or notification
+          console.log('Script deleted successfully');
+          queryClient.invalidateQueries('scripts');
+          setSuccessMessage('Script deleted successfully');
+          setTimeout(() => setSuccessMessage(null), 3000);
+        }
+      },
+      onError: (error: any) => {
+        // Show error toast or notification
+        console.error('Failed to delete script:', error);
+        setErrorMessage(error.message || 'Failed to delete script. Please try again.');
+        setTimeout(() => setErrorMessage(null), 5000);
       }
     }
   );
@@ -93,6 +129,13 @@ const ScriptManagement: React.FC = () => {
         queryClient.invalidateQueries('scripts');
         setSelectedScripts([]);
         setShowBulkActions(false);
+        setSuccessMessage(`${selectedScripts.length} scripts deleted successfully`);
+        setTimeout(() => setSuccessMessage(null), 3000);
+      },
+      onError: (error: any) => {
+        console.error('Failed to delete scripts:', error);
+        setErrorMessage(error.message || 'Failed to delete scripts. Please try again.');
+        setTimeout(() => setErrorMessage(null), 5000);
       }
     }
   );
@@ -151,11 +194,58 @@ const ScriptManagement: React.FC = () => {
 
   return (
     <div className="p-6">
-      <div className="mb-6">
-        <h1 className="text-2xl font-bold mb-4">Manage Scripts</h1>
-        <p className="text-gray-500 dark:text-gray-400">
-          Batch manage your PowerShell scripts, apply bulk actions and organize your collection.
-        </p>
+      {/* Success and Error Messages */}
+      {successMessage && (
+        <div className="mb-4">
+          <InfoBox 
+            type="success"
+            title="Success"
+            message={successMessage}
+            dismissable
+            onDismiss={() => setSuccessMessage(null)}
+          />
+        </div>
+      )}
+      
+      {errorMessage && (
+        <div className="mb-4">
+          <InfoBox 
+            type="error"
+            title="Error"
+            message={errorMessage}
+            dismissable
+            onDismiss={() => setErrorMessage(null)}
+          />
+        </div>
+      )}
+      
+      <div className="mb-6 flex justify-between items-start">
+        <div>
+          <h1 className="text-2xl font-bold mb-4">Manage Scripts</h1>
+          <p className="text-gray-500 dark:text-gray-400">
+            Batch manage your PowerShell scripts, apply bulk actions and organize your collection.
+          </p>
+        </div>
+        <div className="flex space-x-3">
+          <Link 
+            to="/scripts/upload"
+            className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 flex items-center space-x-2"
+          >
+            <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" />
+            </svg>
+            <span>Upload Script</span>
+          </Link>
+          <Link 
+            to="/"
+            className="px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 flex items-center space-x-2"
+          >
+            <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" />
+            </svg>
+            <span>Dashboard</span>
+          </Link>
+        </div>
       </div>
 
       {/* Filters and Search */}
@@ -171,6 +261,8 @@ const ScriptManagement: React.FC = () => {
               <select 
                 className="w-full border border-gray-300 dark:border-gray-700 rounded-md py-2 px-3 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100"
                 value={selectedCategory?.toString() || ""}
+                aria-label="Filter by category"
+                title="Filter by category"
                 onChange={(e) => setSelectedCategory(e.target.value ? parseInt(e.target.value) : null)}
               >
                 <option value="">All Categories</option>
@@ -190,6 +282,8 @@ const ScriptManagement: React.FC = () => {
               <select 
                 className="w-full border border-gray-300 dark:border-gray-700 rounded-md py-2 px-3 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100"
                 value={isPublicFilter === null ? "" : isPublicFilter ? "public" : "private"}
+                aria-label="Filter by visibility"
+                title="Filter by visibility"
                 onChange={(e) => {
                   if (e.target.value === "") setIsPublicFilter(null);
                   else setIsPublicFilter(e.target.value === "public");
@@ -211,6 +305,8 @@ const ScriptManagement: React.FC = () => {
                   type="text"
                   className="w-full border border-gray-300 dark:border-gray-700 rounded-md py-2 pl-10 pr-3 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100"
                   placeholder="Search scripts..."
+                  aria-label="Search scripts"
+                  title="Search scripts"
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
                 />
@@ -295,22 +391,30 @@ const ScriptManagement: React.FC = () => {
             <p className="mt-3 text-gray-600 dark:text-gray-400">Loading scripts...</p>
           </div>
         ) : scripts.length === 0 ? (
-          <div className="p-6 text-center">
-            <svg className="w-16 h-16 text-gray-400 mx-auto" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" d="M9.75 17L9 20l-1 1h8l-1-1-.75-3M3 13h18M5 17h14a2 2 0 002-2V5a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"></path>
-            </svg>
-            <p className="mt-3 text-gray-600 dark:text-gray-400">No scripts match your filters.</p>
-            <button
-              onClick={() => {
-                setSelectedCategory(null);
-                setIsPublicFilter(null);
-                setSelectedTags([]);
-                setSearchQuery("");
-              }}
-              className="mt-4 px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-md text-sm font-medium"
-            >
-              Clear Filters
-            </button>
+          <div className="p-6">
+            <InfoBox
+              type="info"
+              title="No Scripts Found"
+              message={
+                <div className="text-center">
+                  <svg className="w-16 h-16 text-gray-400 mx-auto mt-2 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" d="M9.75 17L9 20l-1 1h8l-1-1-.75-3M3 13h18M5 17h14a2 2 0 002-2V5a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"></path>
+                  </svg>
+                  <p className="mb-4">No scripts match your current filters.</p>
+                  <button
+                    onClick={() => {
+                      setSelectedCategory(null);
+                      setIsPublicFilter(null);
+                      setSelectedTags([]);
+                      setSearchQuery("");
+                    }}
+                    className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-md text-sm font-medium"
+                  >
+                    Clear Filters
+                  </button>
+                </div>
+              }
+            />
           </div>
         ) : (
           <div className="overflow-x-auto">
@@ -322,6 +426,8 @@ const ScriptManagement: React.FC = () => {
                       <input
                         type="checkbox"
                         className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
+                        aria-label="Select all scripts"
+                        title="Select all scripts"
                         onChange={handleSelectAll}
                         checked={selectedScripts.length > 0 && selectedScripts.length === scripts.length}
                       />
@@ -354,6 +460,8 @@ const ScriptManagement: React.FC = () => {
                       <input
                         type="checkbox"
                         className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
+                        aria-label={`Select script ${script.title}`}
+                        title={`Select script ${script.title}`}
                         checked={selectedScripts.includes(script.id)}
                         onChange={(e) => handleSelectScript(script.id, e.target.checked)}
                       />
@@ -374,7 +482,9 @@ const ScriptManagement: React.FC = () => {
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap">
                       <span className="text-sm text-gray-900 dark:text-white">
-                        {script.category}
+                        {typeof script.category === 'string' 
+                          ? script.category 
+                          : script.category?.name || ''}
                       </span>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap">
@@ -407,6 +517,12 @@ const ScriptManagement: React.FC = () => {
                           className="text-indigo-600 hover:text-indigo-900 dark:text-indigo-400 dark:hover:text-indigo-300"
                         >
                           Edit
+                        </Link>
+                        <Link 
+                          to={`/scripts/${script.id}/analysis`}
+                          className="text-green-600 hover:text-green-900 dark:text-green-400 dark:hover:text-green-300"
+                        >
+                          Analyze
                         </Link>
                         <button
                           onClick={() => {

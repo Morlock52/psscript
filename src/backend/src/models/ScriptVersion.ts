@@ -29,7 +29,8 @@ export default class ScriptVersion extends Model {
           model: 'scripts',
           key: 'id'
         },
-        onDelete: 'CASCADE'
+        onDelete: 'CASCADE',
+        field: 'script_id'
       },
       version: {
         type: DataTypes.INTEGER,
@@ -41,7 +42,8 @@ export default class ScriptVersion extends Model {
       },
       changelog: {
         type: DataTypes.TEXT,
-        allowNull: true
+        allowNull: true,
+        field: 'commit_message'
       },
       userId: {
         type: DataTypes.INTEGER,
@@ -49,11 +51,13 @@ export default class ScriptVersion extends Model {
         references: {
           model: 'users',
           key: 'id'
-        }
+        },
+        field: 'user_id'
       }
     }, {
       sequelize,
       tableName: 'script_versions',
+      timestamps: false,
       indexes: [
         {
           unique: true,

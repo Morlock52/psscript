@@ -1,6 +1,4 @@
 import { Model, DataTypes, Sequelize } from 'sequelize';
-import Script from './Script';
-import Tag from './Tag';
 
 export default class ScriptTag extends Model {
   public scriptId!: number;
@@ -18,7 +16,8 @@ export default class ScriptTag extends Model {
           model: 'scripts',
           key: 'id'
         },
-        onDelete: 'CASCADE'
+        onDelete: 'CASCADE',
+        field: 'script_id'
       },
       tagId: {
         type: DataTypes.INTEGER,
@@ -27,12 +26,14 @@ export default class ScriptTag extends Model {
           model: 'tags',
           key: 'id'
         },
-        onDelete: 'CASCADE'
+        onDelete: 'CASCADE',
+        field: 'tag_id'
       }
     }, {
       sequelize,
       tableName: 'script_tags',
-      timestamps: true
+      timestamps: true,
+      underscored: true
     });
   }
 

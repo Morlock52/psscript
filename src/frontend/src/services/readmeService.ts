@@ -77,7 +77,7 @@ A comprehensive platform for managing, analyzing, and executing PowerShell scrip
 
 4. **Access the application**:
    - Frontend UI: [http://localhost:3000](http://localhost:3000)
-   - API Documentation: [http://localhost:4000/api-docs](http://localhost:4000/api-docs)
+   - API Documentation: [http://localhost:4001/api-docs](http://localhost:4001/api-docs)
    - Monitoring Dashboard: [http://localhost:8080](http://localhost:8080)
 
    Default administrator login:
@@ -111,7 +111,7 @@ A comprehensive platform for managing, analyzing, and executing PowerShell scrip
    cd src/backend
    npm run dev
    
-   # The API will be available at http://localhost:4000
+   # The API will be available at http://localhost:4001
    \`\`\`
 
 5. **Start the AI analysis service**:
@@ -353,7 +353,7 @@ The application is configured using environment variables:
 | Variable | Description | Default | Required |
 |----------|-------------|---------|----------|
 | \`NODE_ENV\` | Environment (development/production) | development | No |
-| \`PORT\` | Backend API port | 4000 | No |
+| \`PORT\` | Backend API port | 4001 | No |
 | \`DB_HOST\` | PostgreSQL database host | postgres | No |
 | \`DB_PORT\` | PostgreSQL database port | 5432 | No |
 | \`DB_NAME\` | PostgreSQL database name | psscript | No |

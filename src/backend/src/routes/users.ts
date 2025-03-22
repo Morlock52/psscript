@@ -1,16 +1,28 @@
 import express from 'express';
+import { authenticateJWT } from '../middleware/authMiddleware';
+import UserController from '../controllers/UserController';
 
 const router = express.Router();
 
-// User routes will be implemented here
-router.get('/', (req, res) => {
-  // Temporary placeholder response
-  res.json({ message: 'Get users endpoint (to be implemented)' });
-});
+// Require authentication for all user routes
+router.use(authenticateJWT);
 
-router.get('/:id', (req, res) => {
-  // Temporary placeholder response
-  res.json({ message: `Get user with ID ${req.params.id} (to be implemented)` });
-});
+// Get all users (admin only)
+router.get('/', UserController.getUsers);
+
+// Get user by ID
+router.get('/:id', UserController.getUserById);
+
+// Create new user (admin only)
+router.post('/', UserController.createUser);
+
+// Update user
+router.put('/:id', UserController.updateUser);
+
+// Delete user (admin only)
+router.delete('/:id', UserController.deleteUser);
+
+// Reset user password
+router.post('/:id/reset-password', UserController.resetPassword);
 
 export default router;

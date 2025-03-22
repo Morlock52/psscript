@@ -6,6 +6,12 @@ interface User {
   username: string;
   email: string;
   role: string;
+  // Additional fields used in ProfileSettings
+  firstName?: string;
+  lastName?: string;
+  jobTitle?: string;
+  company?: string;
+  bio?: string;
 }
 
 // Define context type
@@ -44,7 +50,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     const loadAuthState = () => {
       try {
         const storedUser = localStorage.getItem('ps_user');
-        const storedToken = localStorage.getItem('ps_token');
+        const storedToken = localStorage.getItem('auth_token');
         
         if (storedUser && storedToken) {
           setUser(JSON.parse(storedUser));
@@ -82,7 +88,9 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       
       // Save to localStorage for persistence
       localStorage.setItem('ps_user', JSON.stringify(user));
-      localStorage.setItem('ps_token', token);
+      localStorage.setItem('auth_token', token);
+      // Also set refresh token for API service
+      localStorage.setItem('refresh_token', token);
     } catch (err) {
       setError('Failed to login. Please try again.');
       console.error('Login error:', err);
@@ -115,7 +123,9 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       
       // Save to localStorage for persistence
       localStorage.setItem('ps_user', JSON.stringify(user));
-      localStorage.setItem('ps_token', token);
+      localStorage.setItem('auth_token', token);
+      // Also set refresh token for API service
+      localStorage.setItem('refresh_token', token);
     } catch (err) {
       setError('Failed to register. Please try again.');
       console.error('Registration error:', err);
@@ -132,7 +142,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     
     // Clear localStorage
     localStorage.removeItem('ps_user');
-    localStorage.removeItem('ps_token');
+    localStorage.removeItem('auth_token');
+    localStorage.removeItem('refresh_token');
   };
 
   // Provide auth context to children

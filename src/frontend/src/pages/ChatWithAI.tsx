@@ -48,7 +48,8 @@ Feel free to paste in script snippets, and I'll help you improve them.
     if (!input.trim()) return;
 
     // Add user message to the chat
-    const newMessages = [...messages, { role: 'user', content: input }];
+    const userMessage: Message = { role: 'user', content: input };
+    const newMessages: Message[] = [...messages, userMessage];
     setMessages(newMessages);
     setInput('');
     setIsLoading(true);
@@ -60,16 +61,15 @@ Feel free to paste in script snippets, and I'll help you improve them.
       });
 
       // Add AI response to chat
-      setMessages([...newMessages, { role: 'assistant', content: response.data.response }]);
+      const assistantMessage: Message = { role: 'assistant', content: response.data.response };
+      setMessages([...newMessages, assistantMessage]);
     } catch (error) {
       console.error('Error getting chat response:', error);
-      setMessages([
-        ...newMessages, 
-        { 
-          role: 'assistant', 
-          content: 'Sorry, I encountered an error processing your request. Please try again later.' 
-        }
-      ]);
+      const errorMessage: Message = { 
+        role: 'assistant', 
+        content: 'Sorry, I encountered an error processing your request. Please try again later.' 
+      };
+      setMessages([...newMessages, errorMessage]);
     } finally {
       setIsLoading(false);
     }
@@ -117,7 +117,7 @@ Feel free to paste in script snippets, and I'll help you improve them.
                 >
                   <ReactMarkdown 
                     components={{
-                      code: ({ node, inline, className, children, ...props }) => {
+                      code({ node, inline, className, children, ...props }) {
                         if (inline) {
                           return <code className="bg-gray-700 px-1 rounded font-mono text-yellow-300" {...props}>{children}</code>;
                         }

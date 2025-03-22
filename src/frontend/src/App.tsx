@@ -1,178 +1,123 @@
-import React, { lazy, Suspense } from 'react';
-import { 
-  BrowserRouter as Router, 
-  Routes, 
-  Route, 
-  Navigate
-} from 'react-router-dom';
+import React, { useState, useEffect } from 'react';
+import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import { QueryClient, QueryClientProvider } from 'react-query';
+import { ToastContainer } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
 
-// Import SimpleChatWithAI directly to avoid lazy loading issues
-import SimpleChatWithAI from './pages/SimpleChatWithAI';
+// Pages
 import Dashboard from './pages/Dashboard';
-import ModernDashboard from './pages/ModernDashboard';
-import Settings from './pages/Settings/Settings';
-import ApplicationSettings from './pages/Settings/ApplicationSettings';
+import ScriptManagement from './pages/ScriptManagement';
+import ScriptDetail from './pages/ScriptDetail';
+import ScriptEditor from './pages/ScriptEditor';
+import ScriptAnalysis from './pages/ScriptAnalysis';
+import SimpleChatWithAI from './pages/SimpleChatWithAI';
+import Documentation from './pages/Documentation';
+import Login from './pages/Login';
+import Register from './pages/Register';
+import Settings from './pages/Settings';
+import NotFound from './pages/NotFound';
+import ChatHistory from './pages/ChatHistory';
+import DocumentationCrawl from './pages/DocumentationCrawl';
+import ScriptUpload from './pages/ScriptUpload';
+import AgenticAIPage from './pages/AgenticAIPage';
+import AgentOrchestrationPage from './pages/AgentOrchestrationPage';
+import UIComponentsDemo from './pages/UIComponentsDemo';
+
+// Settings Pages
 import ProfileSettings from './pages/Settings/ProfileSettings';
-import EnhancedScriptUpload from './pages/EnhancedScriptUpload';
-import Layout from './components/Layout';
-import Loading from './components/Loading';
-// DbToggle removed
+import AppearanceSettings from './pages/Settings/AppearanceSettings';
+import SecuritySettings from './pages/Settings/SecuritySettings';
+import NotificationSettings from './pages/Settings/NotificationSettings';
+import ApiSettings from './pages/Settings/ApiSettings';
+import UserManagement from './pages/Settings/UserManagement';
 
-// Import providers
-import { AuthProvider } from './hooks/useAuth';
-import { ThemeProvider } from './hooks/useTheme';
+// Components
+import Navbar from './components/Navbar';
+import Sidebar from './components/Sidebar';
+import ProtectedRoute from './components/ProtectedRoute';
+import LoadingScreen from './components/LoadingScreen';
 
-// Lazy load other pages
-const ChatHistory = lazy(() => import('./pages/ChatHistory'));
-const Login = lazy(() => import('./pages/Login'));
-const ScriptManagement = lazy(() => import('./pages/ScriptManagement'));
-const ManageFiles = lazy(() => import('./pages/ManageFiles'));
-
-// Simpler layout just for the chat page
-const SimpleLayout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  return (
-    <div className="flex flex-col h-screen bg-gray-900 text-white">
-      <div className="flex-1 overflow-hidden">
-        {children}
-      </div>
-    </div>
-  );
-};
-
-// Create a component for SimpleChatWithAI route
-const ChatPage = () => {
-  return (
-    <SimpleLayout>
-      <SimpleChatWithAI />
-    </SimpleLayout>
-  );
-};
-
-// Create a QueryClient 
+// Create a client for React Query
 const queryClient = new QueryClient({
   defaultOptions: {
     queries: {
-      retry: 1,
       refetchOnWindowFocus: false,
-      staleTime: 60000, // 1 minute
-      cacheTime: 300000, // 5 minutes
+      retry: 1,
+      staleTime: 30000,
     },
   },
 });
 
-// NotFound component for fallback routes
-const NotFound = () => {
-  return (
-    <Layout>
-      <div className="flex flex-col items-center justify-center min-h-screen bg-gray-900 text-white p-4">
-        <h1 className="text-4xl font-bold mb-4">404 - Page Not Found</h1>
-        <p className="text-xl mb-8">The page you're looking for doesn't exist or has been moved.</p>
-        <a href="/chat" className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700">
-          Return to Chat
-        </a>
-      </div>
-    </Layout>
-  );
-};
-
-// Fallback component for scripts detail page
-const ScriptFallback = () => {
-  return (
-    <Layout>
-      <div className="flex flex-col items-center justify-center min-h-screen bg-gray-900 text-white p-4">
-        <h1 className="text-2xl font-bold mb-4">Script Feature Not Available</h1>
-        <p className="text-lg mb-6">The script viewing feature is not fully implemented in this demo.</p>
-        <p className="mb-8">You can continue using the chat feature to get help with PowerShell scripts.</p>
-        <a href="/chat" className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700">
-          Return to Chat
-        </a>
-      </div>
-    </Layout>
-  );
-};
-
-// Dashboard component with Layout
-const DashboardPage = () => {
-  return (
-    <Layout>
-      <ModernDashboard />
-    </Layout>
-  );
-};
-
-// Main app
 const App: React.FC = () => {
-  // Debug initialization
-  console.log('DEBUG: App - Initializing application');  
-  
-  // Debug route rendering
-  const logRouteRender = (routeName: string) => {
-    console.log(`DEBUG: App - ${routeName} route rendered`);
-    return null;
-  };
-  
+  const [isLoading, setIsLoading] = useState(true);
+  const [sidebarOpen, setSidebarOpen] = useState(false);
+
+  // Simulate initial loading
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setIsLoading(false);
+    }, 1000);
+    return () => clearTimeout(timer);
+  }, []);
+
+  if (isLoading) {
+    return <LoadingScreen />;
+  }
+
   return (
     <QueryClientProvider client={queryClient}>
-      <ThemeProvider>
-        <AuthProvider>
-          {/* Log providers initialization */}
-          {logRouteRender('Providers initialized')}
-          <Router>
-            {/* Log router initialization */}
-            {logRouteRender('Router initialized')}
-            <Suspense fallback={<Loading />}>
+      <Router>
+        <div className="flex h-screen bg-gray-100 dark:bg-gray-900">
+          <ToastContainer position="top-right" theme="colored" />
+          
+          {/* Sidebar */}
+          <Sidebar isOpen={sidebarOpen} onClose={() => setSidebarOpen(false)} />
+          
+          {/* Main Content */}
+          <div className="flex flex-col flex-1 overflow-hidden">
+            <Navbar onMenuClick={() => setSidebarOpen(true)} />
+            
+            <main className="flex-1 overflow-y-auto p-4">
               <Routes>
-                {/* Log routes definition */}
-                {logRouteRender('Routes defined')}
-                <Route path='/chat' element={<ChatPage />} />
-                <Route path='/chat/history' element={<ChatHistory />} />
-                <Route path='/login' element={<Login />} />
-                <Route path='/dashboard' element={<DashboardPage />} />
-                <Route path='/settings' element={
-                  <Layout>
-                    {logRouteRender('Settings route rendered')}
-                    <Settings />
-                  </Layout>
-                } />
-                <Route path='/settings/application' element={
-                  <Layout>
-                    {logRouteRender('Application Settings route rendered')}
-                    <ApplicationSettings />
-                  </Layout>
-                } />
-                <Route path='/settings/profile' element={
-                  <Layout>
-                    {logRouteRender('Profile Settings route rendered')}
-                    <ProfileSettings />
-                  </Layout>
-                } />
-                <Route path='/scripts' element={
-                  <Layout>
-                    {logRouteRender('Scripts route rendered')}
-                    <ScriptManagement />
-                  </Layout>
-                } />
-                <Route path='/scripts/manage' element={
-                  <Layout>
-                    {logRouteRender('Scripts manage route rendered')}
-                    <ManageFiles />
-                  </Layout>
-                } />
-                <Route path='/scripts/upload' element={
-                  <Layout>
-                    {logRouteRender('Script Upload route rendered')}
-                    <EnhancedScriptUpload />
-                  </Layout>
-                } />
-                <Route path='/scripts/:id' element={<ScriptFallback />} />
-                <Route path='/' element={<Navigate to='/dashboard' replace />} />
-                <Route path='*' element={<NotFound />} />
+                <Route path="/" element={<Dashboard />} />
+                <Route path="/login" element={<Login />} />
+                <Route path="/register" element={<Register />} />
+                
+                {/* Script Management */}
+                <Route path="/scripts" element={<ProtectedRoute><ScriptManagement /></ProtectedRoute>} />
+                <Route path="/scripts/upload" element={<ProtectedRoute><ScriptUpload /></ProtectedRoute>} />
+                <Route path="/scripts/:id" element={<ScriptDetail />} />
+                <Route path="/scripts/:id/edit" element={<ProtectedRoute><ScriptEditor /></ProtectedRoute>} />
+                <Route path="/scripts/:id/analysis" element={<ScriptAnalysis />} />
+                
+                {/* AI Features */}
+                <Route path="/chat" element={<SimpleChatWithAI />} />
+                <Route path="/chat/history" element={<ProtectedRoute><ChatHistory /></ProtectedRoute>} />
+                <Route path="/ai/assistant" element={<AgenticAIPage />} />
+                <Route path="/ai/agents" element={<ProtectedRoute><AgentOrchestrationPage /></ProtectedRoute>} />
+                
+                {/* Documentation */}
+                <Route path="/documentation" element={<Documentation />} />
+                <Route path="/documentation/crawl" element={<ProtectedRoute><DocumentationCrawl /></ProtectedRoute>} />
+                <Route path="/ui-components" element={<UIComponentsDemo />} />
+                
+                {/* Settings */}
+                <Route path="/settings" element={<ProtectedRoute><Settings /></ProtectedRoute>} />
+                <Route path="/settings/profile" element={<ProtectedRoute><ProfileSettings /></ProtectedRoute>} />
+                <Route path="/settings/appearance" element={<ProtectedRoute><AppearanceSettings /></ProtectedRoute>} />
+                <Route path="/settings/security" element={<ProtectedRoute><SecuritySettings /></ProtectedRoute>} />
+                <Route path="/settings/notifications" element={<ProtectedRoute><NotificationSettings /></ProtectedRoute>} />
+                <Route path="/settings/api" element={<ProtectedRoute><ApiSettings /></ProtectedRoute>} />
+                <Route path="/settings/users" element={<ProtectedRoute><UserManagement /></ProtectedRoute>} />
+                
+                {/* Fallbacks */}
+                <Route path="/404" element={<NotFound />} />
+                <Route path="*" element={<Navigate to="/404" replace />} />
               </Routes>
-            </Suspense>
-          </Router>
-        </AuthProvider>
-      </ThemeProvider>
+            </main>
+          </div>
+        </div>
+      </Router>
     </QueryClientProvider>
   );
 };

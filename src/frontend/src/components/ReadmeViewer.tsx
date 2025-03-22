@@ -33,7 +33,7 @@ const ReadmeViewer: React.FC<ReadmeViewerProps> = ({ isOpen, onClose }) => {
   // Convert markdown headings to HTML
   const formatMarkdown = (content: string) => {
     // Replace markdown headings with styled HTML
-    let html = content
+    const html = content
       // Format h1 headers
       .replace(/^# (.+)$/gm, '<h1 class="text-3xl font-bold mb-4 border-b pb-2 border-gray-200 dark:border-gray-700">$1</h1>')
       // Format h2 headers

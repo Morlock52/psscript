@@ -1,13 +1,27 @@
-import React, { useState } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useQuery } from 'react-query';
 import { scriptService } from '../services/api';
-import { FaExclamationTriangle, FaCheckCircle, FaInfoCircle, FaLightbulb, FaChartLine } from 'react-icons/fa';
+import axios from 'axios';
+import ReactMarkdown from 'react-markdown';
+import { FaExclamationTriangle, FaCheckCircle, FaInfoCircle, FaLightbulb, FaChartLine, FaPaperPlane, FaRobot } from 'react-icons/fa';
+
+// Define message type for AI chat
+interface Message {
+  role: 'user' | 'assistant' | 'system';
+  content: string;
+}
 
 const ScriptAnalysis: React.FC = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState<string>('overview');
+  
+  // AI Assistant state
+  const [messages, setMessages] = useState<Message[]>([]);
+  const [input, setInput] = useState('');
+  const [isLoading, setIsLoading] = useState(false);
+  const messagesEndRef = useRef<HTMLDivElement>(null);
   
   const { data: script, isLoading: scriptLoading } = useQuery(
     ['script', id],
@@ -27,9 +41,125 @@ const ScriptAnalysis: React.FC = () => {
     }
   );
   
-  const isLoading = scriptLoading || analysisLoading;
+  const isDataLoading = scriptLoading || analysisLoading;
   
-  if (isLoading) {
+  // Scroll to bottom of messages when they change
+  useEffect(() => {
+    if (activeTab === 'assistant' && messagesEndRef.current) {
+      messagesEndRef.current.scrollIntoView({ behavior: 'smooth' });
+    }
+  }, [messages, activeTab]);
+
+  // Initialize AI assistant with a welcome message when the tab is first opened
+  useEffect(() => {
+    if (activeTab === 'assistant' && messages.length === 0 && script && analysis) {
+      setMessages([
+        {
+          role: 'assistant',
+          content: `# Welcome to Psscript AI Assistant!
+
+I'm here to help you understand and improve your PowerShell script: **${script.title}**.
+
+You can ask me questions about:
+- How specific parts of your script work
+- Security concerns and how to address them
+- Performance optimization opportunities
+- Best practices for PowerShell scripting
+- How to implement specific features
+
+What would you like to know about your script?`
+        }
+      ]);
+    }
+  }, [activeTab, messages.length, script, analysis]);
+
+  // Handle sending a message to the AI
+  const handleSendMessage = async () => {
+    if (!input.trim()) return;
+    
+    // Create a copy of the user message
+    const userMessage = { role: 'user' as const, content: input };
+    
+    // Update state
+    setInput('');
+    setIsLoading(true);
+    setMessages(prev => [...prev, userMessage]);
+    
+    try {
+      // Prepare context about the script for the AI
+      const systemPrompt = `You are Psscript AI, a PowerShell scripting assistant analyzing the following script:
+
+Title: ${script?.title}
+Purpose: ${analysis?.purpose}
+Security Score: ${analysis?.security_score}/10
+Code Quality Score: ${analysis?.code_quality_score}/10
+
+You should help the user understand this script, address any concerns, and suggest improvements.
+Be specific and reference details from the script analysis when possible.
+If you don't know something specific about the script, be honest about it.
+`;
+      
+      // Get the API URL from environment or use dynamic hostname
+      const apiUrl = import.meta.env.VITE_API_URL || 
+        `http://${window.location.hostname}:4000/api`;
+      
+      // Call AI service
+      const response = await axios.post(`${apiUrl}/chat`, {
+        messages: [...messages, userMessage],
+        system_prompt: systemPrompt
+      }, {
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        timeout: 30000 // 30 second timeout
+      });
+      
+      // Add AI response
+      if (response.data && response.data.response) {
+        setMessages(prev => [
+          ...prev,
+          { role: 'assistant', content: response.data.response }
+        ]);
+      } else {
+        throw new Error('Invalid response format from AI service');
+      }
+    } catch (error) {
+      console.error('Error sending message to AI:', error);
+      // Add error message to chat
+      setMessages(prev => [
+        ...prev,
+        { 
+          role: 'assistant', 
+          content: "I'm sorry, I encountered an error processing your request. Please try again later."
+        }
+      ]);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  // Render code blocks with syntax highlighting
+  const CodeBlock = ({ className, children }: { className?: string; children: React.ReactNode }) => {
+    const language = className ? className.replace('language-', '') : 'powershell';
+    return (
+      <div className="relative rounded-md overflow-hidden bg-gray-800 my-4">
+        <div className="flex justify-between items-center px-4 py-2 text-xs border-b border-gray-700">
+          <span>{language}</span>
+          <button
+            onClick={() => navigator.clipboard.writeText(String(children))}
+            className="px-2 py-1 rounded text-xs bg-gray-700 hover:bg-gray-600 text-gray-300"
+          >
+            Copy
+          </button>
+        </div>
+        <pre className="p-4 overflow-x-auto">
+          <code className="text-gray-300">{children}</code>
+        </pre>
+      </div>
+    );
+  };
+
+  if (isDataLoading) {
     return (
       <div className="flex justify-center items-center h-96">
         <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-blue-500"></div>
@@ -105,12 +235,23 @@ const ScriptAnalysis: React.FC = () => {
           <h1 className="text-2xl font-bold">AI Analysis: {script.title}</h1>
           <p className="text-gray-400">Comprehensive analysis and improvement recommendations for your PowerShell script</p>
         </div>
-        <button
-          className="px-4 py-2 bg-gray-600 text-white rounded-lg hover:bg-gray-700"
-          onClick={() => navigate(`/scripts/${id}`)}
-        >
-          Back to Script
-        </button>
+        <div className="flex space-x-2">
+          <button
+            className="px-4 py-2 bg-gray-600 text-white rounded-lg hover:bg-gray-700"
+            onClick={() => navigate(`/scripts/${id}`)}
+          >
+            Back to Script
+          </button>
+          <button
+            className="px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 flex items-center space-x-2"
+            onClick={() => navigate('/')}
+          >
+            <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" />
+            </svg>
+            <span>Dashboard</span>
+          </button>
+        </div>
       </div>
       
       {/* Tab Navigation */}
@@ -146,6 +287,13 @@ const ScriptAnalysis: React.FC = () => {
           >
             Parameters
           </button>
+          <button
+            className={`py-3 px-4 text-sm font-medium flex items-center ${activeTab === 'assistant' ? 'text-blue-400 border-b-2 border-blue-400' : 'text-gray-400 hover:text-white'}`}
+            onClick={() => setActiveTab('assistant')}
+          >
+            <FaRobot className="mr-2" />
+            Psscript AI
+          </button>
         </nav>
       </div>
       
@@ -171,33 +319,209 @@ const ScriptAnalysis: React.FC = () => {
                 
                 <div className="mt-6 space-y-6">
                   <div>
-                    <h3 className="text-lg font-medium mb-2">Key Findings</h3>
-                    <ul className="space-y-2 text-gray-300">
-                      <li className="flex items-start">
-                        <FaInfoCircle className="text-blue-400 mt-1 mr-2 flex-shrink-0" />
-                        <span>This script {analysis.security_score > 7 ? 'follows good security practices' : 'has some security concerns that should be addressed'}.</span>
-                      </li>
-                      <li className="flex items-start">
-                        <FaInfoCircle className="text-blue-400 mt-1 mr-2 flex-shrink-0" />
-                        <span>Code quality is {analysis.code_quality_score > 7 ? 'high' : analysis.code_quality_score > 5 ? 'moderate' : 'needs improvement'} with potential for optimization.</span>
-                      </li>
-                      {analysis.security_concerns && analysis.security_concerns.length > 0 && (
-                        <li className="flex items-start">
-                          <FaExclamationTriangle className="text-yellow-400 mt-1 mr-2 flex-shrink-0" />
-                          <span>Found {analysis.security_concerns.length} security {analysis.security_concerns.length === 1 ? 'concern' : 'concerns'} that should be addressed.</span>
-                        </li>
+                    <h3 className="text-lg font-medium mb-4 flex items-center">
+                      <svg className="w-5 h-5 mr-2 text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                      </svg>
+                      Key Findings
+                    </h3>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      <div className={`p-4 rounded-lg border ${analysis.security_score > 7 ? 'bg-green-900 bg-opacity-20 border-green-700' : 'bg-yellow-900 bg-opacity-20 border-yellow-700'}`}>
+                        <div className="flex items-start">
+                          {analysis.security_score > 7 ? (
+                            <FaCheckCircle className="text-green-400 mt-1 mr-3 flex-shrink-0 text-xl" />
+                          ) : (
+                            <FaInfoCircle className="text-yellow-400 mt-1 mr-3 flex-shrink-0 text-xl" />
+                          )}
+                          <div>
+                            <h4 className="font-medium mb-1">Security Assessment</h4>
+                            <p className="text-gray-300">
+                              This script {analysis.security_score > 7 ? 'follows good security practices' : 'has some security concerns that should be addressed'}.
+                            </p>
+                          </div>
+                        </div>
+                      </div>
+                      
+                      <div className={`p-4 rounded-lg border ${analysis.code_quality_score > 7 ? 'bg-green-900 bg-opacity-20 border-green-700' : analysis.code_quality_score > 5 ? 'bg-blue-900 bg-opacity-20 border-blue-700' : 'bg-yellow-900 bg-opacity-20 border-yellow-700'}`}>
+                        <div className="flex items-start">
+                          {analysis.code_quality_score > 7 ? (
+                            <FaCheckCircle className="text-green-400 mt-1 mr-3 flex-shrink-0 text-xl" />
+                          ) : analysis.code_quality_score > 5 ? (
+                            <FaInfoCircle className="text-blue-400 mt-1 mr-3 flex-shrink-0 text-xl" />
+                          ) : (
+                            <FaInfoCircle className="text-yellow-400 mt-1 mr-3 flex-shrink-0 text-xl" />
+                          )}
+                          <div>
+                            <h4 className="font-medium mb-1">Code Quality</h4>
+                            <p className="text-gray-300">
+                              Code quality is {analysis.code_quality_score > 7 ? 'high' : analysis.code_quality_score > 5 ? 'moderate' : 'needs improvement'} with potential for optimization.
+                            </p>
+                          </div>
+                        </div>
+                      </div>
+                      
+                      {/* Security concerns card */}
+                      {analysis.security_concerns && analysis.security_concerns.length > 0 ? (
+                        <div className="p-4 rounded-lg border bg-red-900 bg-opacity-20 border-red-700">
+                          <div className="flex items-start">
+                            <FaExclamationTriangle className="text-red-500 mt-1 mr-3 flex-shrink-0" />
+                            <div>
+                              <p className="text-red-300">{analysis.security_concerns.length} security {analysis.security_concerns.length === 1 ? 'concern' : 'concerns'} found.</p>
+                            </div>
+                          </div>
+                        </div>
+                      ) : (
+                        <div className="p-4 rounded-lg border bg-green-900 bg-opacity-20 border-green-700">
+                          <div className="flex items-start">
+                            <FaCheckCircle className="text-green-500 mt-1 mr-3 flex-shrink-0" />
+                            <div>
+                              <p className="text-green-300">No significant security concerns were found in this script.</p>
+                            </div>
+                          </div>
+                        </div>
                       )}
-                      {analysis.performance_suggestions && analysis.performance_suggestions.length > 0 && (
-                        <li className="flex items-start">
-                          <FaLightbulb className="text-yellow-400 mt-1 mr-2 flex-shrink-0" />
-                          <span>Performance could be improved with {analysis.performance_suggestions.length} {analysis.performance_suggestions.length === 1 ? 'suggestion' : 'suggestions'}.</span>
-                        </li>
+                      
+                      {/* Performance suggestions card */}
+                      {analysis.performance_suggestions && analysis.performance_suggestions.length > 0 ? (
+                        <div className="p-4 rounded-lg border bg-purple-900 bg-opacity-20 border-purple-700">
+                          <div className="flex items-start">
+                            <FaLightbulb className="text-purple-400 mt-1 mr-3 flex-shrink-0" />
+                            <div>
+                              <p className="text-purple-300">{analysis.performance_suggestions.length} performance {analysis.performance_suggestions.length === 1 ? 'suggestion' : 'suggestions'} found.</p>
+                            </div>
+                          </div>
+                        </div>
+                      ) : (
+                        <div className="p-4 rounded-lg border bg-blue-900 bg-opacity-20 border-blue-700">
+                          <div className="flex items-start">
+                            <FaCheckCircle className="text-blue-400 mt-1 mr-3 flex-shrink-0" />
+                            <div>
+                              <p className="text-blue-300">No specific performance optimization suggestions were identified for this script.</p>
+                            </div>
+                          </div>
+                        </div>
                       )}
-                    </ul>
+                    </div>
                   </div>
                   
                   <div className="mt-6 pt-6 border-t border-gray-600">
-                    <h3 className="text-lg font-medium mb-3">AI Command Analysis</h3>
+                    <h3 className="text-lg font-medium mb-3 flex items-center">
+                      <svg className="w-5 h-5 mr-2 text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 3v2m6-2v2M9 19v2m6-2v2M5 9H3m2 6H3m18-6h-2m2 6h-2M7 19h10a2 2 0 002-2V7a2 2 0 00-2-2H7a2 2 0 00-2 2v10a2 2 0 002 2z" />
+                      </svg>
+                      Key PowerShell Commands Analysis
+                    </h3>
+                    <div className="space-y-6">
+                      {analysis.commandDetails && analysis.commandDetails.length > 0 ? (
+                        analysis.commandDetails.map((command, index) => (
+                          <div key={index} className="bg-gradient-to-r from-gray-800 to-gray-900 p-4 rounded-lg border border-gray-700 shadow-md">
+                            <h4 className="text-blue-400 font-medium mb-3">{command.name}</h4>
+                            <div className="space-y-3">
+                              <p className="text-gray-300">{command.description}</p>
+                              
+                              <div className="bg-gray-900 bg-opacity-50 p-3 rounded-lg">
+                                <h5 className="text-sm text-blue-300 font-semibold mb-2">Purpose</h5>
+                                <p className="text-gray-300">{command.purpose}</p>
+                              </div>
+                              
+                              {command.parameters && command.parameters.length > 0 && (
+                                <div className="bg-gray-900 bg-opacity-50 p-3 rounded-lg">
+                                  <h5 className="text-sm text-blue-300 font-semibold mb-2">Common Parameters</h5>
+                                  <ul className="list-disc pl-5 text-gray-300">
+                                    {command.parameters.map((param, paramIndex) => (
+                                      <li key={paramIndex}>
+                                        <code className="bg-gray-800 px-1 rounded text-yellow-300">{param.name}</code> - {param.description}
+                                      </li>
+                                    ))}
+                                  </ul>
+                                </div>
+                              )}
+                              
+                              {command.example && (
+                                <div className="bg-gray-900 bg-opacity-50 p-3 rounded-lg">
+                                  <h5 className="text-sm text-blue-300 font-semibold mb-2">Example in Script</h5>
+                                  <div className="bg-gray-800 p-2 rounded my-1 border-l-4 border-blue-500">
+                                    <code className="text-yellow-300">{command.example}</code>
+                                  </div>
+                                </div>
+                              )}
+                              
+                              {command.alternatives && (
+                                <div className="bg-gray-900 bg-opacity-50 p-3 rounded-lg">
+                                  <h5 className="text-sm text-blue-300 font-semibold mb-2">Alternative Approaches</h5>
+                                  <div className="bg-gray-800 p-2 rounded my-1 border-l-4 border-green-500">
+                                    <code className="text-green-300">{command.alternatives}</code>
+                                  </div>
+                                  {command.alternativeNote && (
+                                    <p className="text-gray-400 text-xs mt-1">Note: {command.alternativeNote}</p>
+                                  )}
+                                </div>
+                              )}
+                              
+                              {command.msDocsUrl && (
+                                <div className="mt-2">
+                                  <a 
+                                    href={command.msDocsUrl} 
+                                    target="_blank" 
+                                    rel="noopener noreferrer"
+                                    className="text-blue-400 hover:text-blue-300 flex items-center"
+                                  >
+                                    <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
+                                    </svg>
+                                    Microsoft Documentation
+                                  </a>
+                                </div>
+                              )}
+                            </div>
+                          </div>
+                        ))
+                      ) : (
+                        <div className="bg-gray-800 p-4 rounded-lg border border-gray-700">
+                          <p className="text-gray-300">No detailed command analysis available for this script.</p>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                  
+                  {analysis.msDocsReferences && analysis.msDocsReferences.length > 0 && (
+                    <div className="mt-6 pt-6 border-t border-gray-600">
+                      <h3 className="text-lg font-medium mb-3 flex items-center">
+                        <svg className="w-5 h-5 mr-2 text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                        </svg>
+                        Microsoft Documentation References
+                      </h3>
+                      <div className="bg-gray-800 p-4 rounded-lg border border-gray-700">
+                        <ul className="space-y-3">
+                          {analysis.msDocsReferences.map((doc, index) => (
+                            <li key={index} className="flex items-start bg-gray-900 bg-opacity-50 p-3 rounded-lg hover:bg-opacity-70 transition-colors duration-200">
+                              <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 text-blue-400 mr-3 mt-0.5 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                              </svg>
+                              <div>
+                                <a 
+                                  href={doc.url} 
+                                  target="_blank" 
+                                  rel="noopener noreferrer"
+                                  className="text-blue-400 hover:text-blue-300 font-medium"
+                                >
+                                  {doc.title}
+                                </a>
+                                <p className="text-gray-400 text-sm mt-1">{doc.description}</p>
+                              </div>
+                            </li>
+                          ))}
+                        </ul>
+                      </div>
+                    </div>
+                  )}
+                  
+                  <div className="mt-6 pt-6 border-t border-gray-600">
+                    <h3 className="text-lg font-medium mb-3 flex items-center">
+                      <FaRobot className="mr-2 text-blue-400" />
+                      AI Command Analysis
+                    </h3>
                     <div className="bg-gray-800 p-4 rounded-lg border border-gray-700 overflow-auto">
                       <pre className="text-sm text-gray-300 whitespace-pre-wrap font-mono">
 {`# AI Command Analysis for ${script.title}
@@ -230,151 +554,6 @@ This script follows the PowerShell cmdlet naming convention "Verb-Noun" and uses
 * Add verbose output for troubleshooting
 * Implement timeout parameter for WMI queries`}
                       </pre>
-                    </div>
-                  </div>
-                  
-                  <div className="mt-6 pt-6 border-t border-gray-600">
-                    <h3 className="text-lg font-medium mb-3">Key PowerShell Commands Analysis</h3>
-                    <div className="space-y-6">
-                      <div className="bg-gray-800 p-4 rounded-lg border border-gray-700">
-                        <h4 className="text-blue-400 font-medium mb-2">Get-WmiObject</h4>
-                        <div className="space-y-3">
-                          <p className="text-gray-300">Core command used for retrieving system information from WMI (Windows Management Instrumentation).</p>
-                          
-                          <div>
-                            <h5 className="text-sm text-gray-400 font-semibold">Purpose:</h5>
-                            <p className="text-gray-300">Queries WMI to retrieve hardware, operating system, and configuration information.</p>
-                          </div>
-                          
-                          <div>
-                            <h5 className="text-sm text-gray-400 font-semibold">Classes Used:</h5>
-                            <ul className="list-disc pl-5 text-gray-300">
-                              <li><code className="bg-gray-900 px-1 rounded">Win32_OperatingSystem</code> - OS information, version, and uptime</li>
-                              <li><code className="bg-gray-900 px-1 rounded">Win32_ComputerSystem</code> - Computer manufacturer and model details</li>
-                              <li><code className="bg-gray-900 px-1 rounded">Win32_BIOS</code> - BIOS version and serial number</li>
-                              <li><code className="bg-gray-900 px-1 rounded">Win32_Processor</code> - CPU information</li>
-                              <li><code className="bg-gray-900 px-1 rounded">Win32_PhysicalMemory</code> - RAM details</li>
-                              <li><code className="bg-gray-900 px-1 rounded">Win32_NetworkAdapterConfiguration</code> - Network configurations</li>
-                            </ul>
-                          </div>
-                          
-                          <div>
-                            <h5 className="text-sm text-gray-400 font-semibold">Example in Script:</h5>
-                            <div className="bg-gray-900 p-2 rounded my-1">
-                              <code className="text-yellow-300">$osInfo = Get-WmiObject -Class Win32_OperatingSystem -ComputerName $ComputerName</code>
-                            </div>
-                          </div>
-                          
-                          <div>
-                            <h5 className="text-sm text-gray-400 font-semibold">Alternative in Modern PowerShell:</h5>
-                            <div className="bg-gray-900 p-2 rounded my-1">
-                              <code className="text-green-300">$osInfo = Get-CimInstance -ClassName Win32_OperatingSystem -ComputerName $ComputerName</code>
-                            </div>
-                            <p className="text-gray-400 text-xs mt-1">Note: Get-CimInstance is more modern and uses WS-MAN protocol instead of DCOM</p>
-                          </div>
-                        </div>
-                      </div>
-                      
-                      <div className="bg-gray-800 p-4 rounded-lg border border-gray-700">
-                        <h4 className="text-blue-400 font-medium mb-2">Measure-Object</h4>
-                        <div className="space-y-3">
-                          <p className="text-gray-300">Used for calculating the sum of memory capacity across multiple memory modules.</p>
-                          
-                          <div>
-                            <h5 className="text-sm text-gray-400 font-semibold">Purpose:</h5>
-                            <p className="text-gray-300">Calculates aggregate values like sum, average, minimum, maximum, or count from the input objects.</p>
-                          </div>
-                          
-                          <div>
-                            <h5 className="text-sm text-gray-400 font-semibold">Example in Script:</h5>
-                            <div className="bg-gray-900 p-2 rounded my-1">
-                              <code className="text-yellow-300">$memory = Get-WmiObject -Class Win32_PhysicalMemory | Measure-Object -Property Capacity -Sum</code>
-                            </div>
-                            <p className="text-gray-300 text-sm mt-1">This sums up the capacity of all memory modules to get total installed RAM.</p>
-                          </div>
-                          
-                          <div>
-                            <h5 className="text-sm text-gray-400 font-semibold">Common Usage Pattern:</h5>
-                            <div className="bg-gray-900 p-2 rounded my-1">
-                              <code className="text-gray-300"># Count files<br/>
-Get-ChildItem -Path C:\Folder -File | Measure-Object<br/><br/>
-# Sum file sizes<br/>
-Get-ChildItem -Path C:\Folder -File | Measure-Object -Property Length -Sum<br/><br/>
-# Find average CPU usage<br/>
-Get-Process | Measure-Object -Property CPU -Average</code>
-                            </div>
-                          </div>
-                        </div>
-                      </div>
-                      
-                      <div className="bg-gray-800 p-4 rounded-lg border border-gray-700">
-                        <h4 className="text-blue-400 font-medium mb-2">PSCustomObject Creation</h4>
-                        <div className="space-y-3">
-                          <p className="text-gray-300">Creates structured output data that can be used in the PowerShell pipeline.</p>
-                          
-                          <div>
-                            <h5 className="text-sm text-gray-400 font-semibold">Purpose:</h5>
-                            <p className="text-gray-300">Creates a structured object with defined properties to return script output.</p>
-                          </div>
-                          
-                          <div>
-                            <h5 className="text-sm text-gray-400 font-semibold">Example in Script:</h5>
-                            <div className="bg-gray-900 p-2 rounded my-1">
-                              <code className="text-yellow-300">$systemInfo = [PSCustomObject]@&#123;<br/>
-    ComputerName = $computerSystem.Name<br/>
-    Manufacturer = $computerSystem.Manufacturer<br/>
-    Model = $computerSystem.Model<br/>
-    # Additional properties...<br/>
-&#125;</code>
-                            </div>
-                          </div>
-                          
-                          <div>
-                            <h5 className="text-sm text-gray-400 font-semibold">Benefits:</h5>
-                            <ul className="list-disc pl-5 text-gray-300">
-                              <li>Creates structured, consistent output</li>
-                              <li>Facilitates pipeline processing</li>
-                              <li>Improves readability compared to hashtables</li>
-                              <li>Allows easy property access with dot notation ($result.PropertyName)</li>
-                            </ul>
-                          </div>
-                        </div>
-                      </div>
-                      
-                      <div className="bg-gray-800 p-4 rounded-lg border border-gray-700">
-                        <h4 className="text-blue-400 font-medium mb-2">Add-Member</h4>
-                        <div className="space-y-3">
-                          <p className="text-gray-300">Conditionally adds network adapter information to the returned object.</p>
-                          
-                          <div>
-                            <h5 className="text-sm text-gray-400 font-semibold">Purpose:</h5>
-                            <p className="text-gray-300">Extends an existing object by adding new properties, methods, or other members.</p>
-                          </div>
-                          
-                          <div>
-                            <h5 className="text-sm text-gray-400 font-semibold">Example in Script:</h5>
-                            <div className="bg-gray-900 p-2 rounded my-1">
-                              <code className="text-yellow-300">$systemInfo | Add-Member -MemberType NoteProperty -Name NetworkAdapters -Value $networkInfo</code>
-                            </div>
-                            <p className="text-gray-300 text-sm mt-1">This adds network adapter information to the system info object when the IncludeNetworkInfo parameter is specified.</p>
-                          </div>
-                          
-                          <div>
-                            <h5 className="text-sm text-gray-400 font-semibold">Alternative Approaches:</h5>
-                            <div className="bg-gray-900 p-2 rounded my-1">
-                              <code className="text-gray-300"># Using calculated properties<br/>
-$systemInfo = [PSCustomObject]@&#123;<br/>
-    # Base properties...<br/>
-    NetworkAdapters = if($IncludeNetworkInfo) &#123; $networkInfo &#125; else &#123; $null &#125;<br/>
-&#125;<br/><br/>
-# Using update of existing object<br/>
-if($IncludeNetworkInfo) &#123;<br/>
-    $systemInfo.NetworkAdapters = $networkInfo<br/>
-&#125;</code>
-                            </div>
-                          </div>
-                        </div>
-                      </div>
                     </div>
                   </div>
                 </div>
@@ -622,6 +801,7 @@ if($IncludeNetworkInfo) &#123;<br/>
           
           {/* Parameters Tab */}
           {activeTab === 'parameters' && (
+
             <div className="bg-gray-700 rounded-lg shadow mb-6">
               <div className="p-4 bg-gray-800 border-b border-gray-600">
                 <h2 className="text-lg font-medium">Script Parameters</h2>
@@ -672,6 +852,113 @@ if($IncludeNetworkInfo) &#123;<br/>
                     </div>
                   </div>
                 )}
+              </div>
+            </div>
+          )}
+
+          {/* AI Assistant Tab */}
+          {activeTab === 'assistant' && (
+            <div className="bg-gray-700 rounded-lg shadow mb-6 flex flex-col h-[600px]">
+              <div className="p-4 bg-gray-800 border-b border-gray-600">
+                <h2 className="text-lg font-medium flex items-center">
+                  <FaRobot className="mr-2 text-blue-400" />
+                  Psscript AI Assistant
+                </h2>
+              </div>
+              
+              {/* Chat Messages */}
+              <div className="flex-1 overflow-y-auto p-4">
+                <div className="space-y-4">
+                  {messages.map((msg, index) => (
+                    <div 
+                      key={index} 
+                      className={`flex ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}
+                    >
+                      <div 
+                        className={`max-w-3/4 rounded-lg p-3 ${
+                          msg.role === 'user' 
+                            ? 'bg-blue-600 text-white' 
+                            : 'bg-gray-800 text-gray-200'
+                        }`}
+                      >
+                        <ReactMarkdown
+                          components={{
+                            code({node, inline, className, children, ...props}) {
+                              if (inline) {
+                                return <code className="bg-gray-900 px-1 rounded font-mono text-yellow-300" {...props}>{children}</code>;
+                              }
+                              return <CodeBlock className={className}>{children}</CodeBlock>;
+                            },
+                            h1: ({children}) => <h1 className="text-xl font-bold mb-2">{children}</h1>,
+                            h2: ({children}) => <h2 className="text-lg font-bold mb-2">{children}</h2>,
+                            h3: ({children}) => <h3 className="text-md font-bold mb-2">{children}</h3>,
+                            p: ({children}) => <p className="mb-2">{children}</p>,
+                            ul: ({children}) => <ul className="list-disc pl-5 mb-2">{children}</ul>,
+                            ol: ({children}) => <ol className="list-decimal pl-5 mb-2">{children}</ol>,
+                            // Handle li elements
+                            li: ({children, ...props}) => {
+                              return <li className="mb-1" {...props}>{children}</li>;
+                            },
+                            // Custom component for handling text that might be intended as list items but not in a list
+                            text: ({children}) => {
+                              // Check if the text looks like a list item (starts with - or * or number.)
+                              const text = String(children);
+                              if (text.trim().match(/^[-*]\s/) || text.trim().match(/^\d+\.\s/)) {
+                                return <div className="mb-1 pl-2 border-l-2 border-gray-600">{children}</div>;
+                              }
+                              return <>{children}</>;
+                            },
+                          }}
+                        >
+                          {msg.content}
+                        </ReactMarkdown>
+                      </div>
+                    </div>
+                  ))}
+                  {isLoading && (
+                    <div className="flex justify-start">
+                      <div className="bg-gray-800 text-white rounded-lg p-3">
+                        <div className="flex space-x-2">
+                          <div className="w-2 h-2 rounded-full bg-gray-500 animate-pulse"></div>
+                          <div className="w-2 h-2 rounded-full bg-gray-500 animate-pulse delay-75"></div>
+                          <div className="w-2 h-2 rounded-full bg-gray-500 animate-pulse delay-150"></div>
+                        </div>
+                      </div>
+                    </div>
+                  )}
+                  <div ref={messagesEndRef} />
+                </div>
+              </div>
+              
+              {/* Input Area */}
+              <div className="p-4 border-t border-gray-600">
+                <form 
+                  onSubmit={(e) => {
+                    e.preventDefault();
+                    handleSendMessage();
+                  }}
+                  className="flex space-x-2"
+                >
+                  <input
+                    type="text"
+                    value={input}
+                    onChange={(e) => setInput(e.target.value)}
+                    placeholder="Ask about your PowerShell script..."
+                    className="flex-1 bg-gray-800 text-white border border-gray-600 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    disabled={isLoading}
+                  />
+                  <button
+                    type="submit"
+                    disabled={isLoading || !input.trim()}
+                    className="bg-blue-600 text-white rounded-lg px-4 py-2 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed flex items-center"
+                  >
+                    <FaPaperPlane className="mr-2" />
+                    Send
+                  </button>
+                </form>
+                <p className="text-xs text-gray-500 mt-2">
+                  Ask questions about your script to get AI-powered insights and recommendations.
+                </p>
               </div>
             </div>
           )}
@@ -744,28 +1031,58 @@ if($IncludeNetworkInfo) &#123;<br/>
           </div>
           
           {/* AI Info Card */}
-          <div className="bg-gray-700 rounded-lg shadow">
-            <div className="p-4 bg-gray-800 border-b border-gray-600">
-              <h2 className="text-lg font-medium">Analysis Information</h2>
+          <div className="bg-gray-700 rounded-lg shadow overflow-hidden">
+            <div className="p-4 bg-gradient-to-r from-indigo-800 to-blue-700 border-b border-gray-600">
+              <h2 className="text-lg font-medium flex items-center">
+                <FaRobot className="mr-2" />
+                Analysis Information
+              </h2>
             </div>
             <div className="p-4">
               <div className="space-y-4">
-                <div>
-                  <h3 className="text-sm text-gray-400">Analysis Date</h3>
-                  <p className="text-white">{new Date().toLocaleDateString()}</p>
+                <div className="flex items-center">
+                  <div className="w-10 h-10 rounded-full bg-blue-900 flex items-center justify-center mr-3">
+                    <svg className="w-6 h-6 text-blue-300" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                    </svg>
+                  </div>
+                  <div>
+                    <h3 className="text-sm text-gray-400">Analysis Date</h3>
+                    <p className="text-white font-medium">{new Date().toLocaleDateString()}</p>
+                  </div>
                 </div>
-                <div>
-                  <h3 className="text-sm text-gray-400">Analysis Model</h3>
-                  <p className="text-white">GPT-4 Turbo</p>
+                
+                <div className="flex items-center">
+                  <div className="w-10 h-10 rounded-full bg-purple-900 flex items-center justify-center mr-3">
+                    <svg className="w-6 h-6 text-purple-300" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9.75 17L9 20l-1 1h8l-1-1-.75-3M3 13h18M5 17h14a2 2 0 002-2V5a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+                    </svg>
+                  </div>
+                  <div>
+                    <h3 className="text-sm text-gray-400">Analysis Model</h3>
+                    <p className="text-white font-medium">o3-mini</p>
+                  </div>
                 </div>
-                <div>
-                  <h3 className="text-sm text-gray-400">Analysis Version</h3>
-                  <p className="text-white">3.2.1</p>
+                
+                <div className="flex items-center">
+                  <div className="w-10 h-10 rounded-full bg-green-900 flex items-center justify-center mr-3">
+                    <svg className="w-6 h-6 text-green-300" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M13 10V3L4 14h7v7l9-11h-7z" />
+                    </svg>
+                  </div>
+                  <div>
+                    <h3 className="text-sm text-gray-400">Analysis Version</h3>
+                    <p className="text-white font-medium">3.2.1</p>
+                  </div>
                 </div>
-                <div className="pt-3 mt-3 border-t border-gray-600">
-                  <p className="text-xs text-gray-400">
-                    AI analysis is provided as guidance and may not catch all issues. Always review scripts manually before use in production environments.
-                  </p>
+                
+                <div className="mt-4 pt-4 border-t border-gray-600 bg-gray-800 rounded-lg p-3">
+                  <div className="flex items-start">
+                    <FaInfoCircle className="text-blue-400 mt-1 mr-2 flex-shrink-0" />
+                    <p className="text-xs text-gray-300">
+                      AI analysis is provided as guidance and may not catch all issues. Always review scripts manually before use in production environments.
+                    </p>
+                  </div>
                 </div>
               </div>
             </div>

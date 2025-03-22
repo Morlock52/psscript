@@ -1,16 +1,38 @@
 import express from 'express';
+import CategoryController from '../controllers/CategoryController';
+import { authenticateJWT, requireAdmin } from '../middleware/authMiddleware';
+import { cache } from '../index';
 
 const router = express.Router();
 
-// Category routes will be implemented here
-router.get('/', (req, res) => {
-  // Temporary placeholder response
-  res.json({ message: 'Get categories endpoint (to be implemented)' });
+// Public routes
+router.get('/', CategoryController.getCategories.bind(CategoryController));
+router.get('/:id', CategoryController.getCategory.bind(CategoryController));
+router.get('/:id/scripts', CategoryController.getCategoryScripts.bind(CategoryController));
+
+// Add a refresh endpoint to clear the cache and reload categories
+router.get('/refresh/cache', (req, res) => {
+  try {
+    // Clear the categories cache
+    cache.del('categories:all');
+    
+    // Return success
+    res.json({ 
+      success: true, 
+      message: 'Categories cache cleared successfully' 
+    });
+  } catch (error) {
+    res.status(500).json({ 
+      success: false, 
+      message: 'Failed to clear categories cache',
+      error: error.message
+    });
+  }
 });
 
-router.get('/:id', (req, res) => {
-  // Temporary placeholder response
-  res.json({ message: `Get category with ID ${req.params.id} (to be implemented)` });
-});
+// Protected routes (require authentication)
+router.post('/', authenticateJWT, requireAdmin, CategoryController.createCategory.bind(CategoryController));
+router.put('/:id', authenticateJWT, requireAdmin, CategoryController.updateCategory.bind(CategoryController));
+router.delete('/:id', authenticateJWT, requireAdmin, CategoryController.deleteCategory.bind(CategoryController));
 
 export default router;

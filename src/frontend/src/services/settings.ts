@@ -1,5 +1,6 @@
 // Available AI models for the application (updated March 2025)
 export const AI_MODELS = [
+  { id: 'o3-mini', name: 'o3-mini (Efficient)', description: 'OpenAI\'s lightweight model optimized for speed and efficiency' },
   { id: 'gpt-4o', name: 'GPT-4o (Optimal)', description: 'OpenAI\'s most advanced model with optimal balance of intelligence, speed, and cost' },
   { id: 'gpt-4-turbo', name: 'GPT-4 Turbo (Powerful)', description: 'High-performance model with improved reasoning and context length' },
   { id: 'gpt-4-vision', name: 'GPT-4 Vision (Image Analysis)', description: 'Capable of analyzing PowerShell scripts as images or screenshots' },
@@ -14,7 +15,7 @@ export const AI_MODELS = [
 
 // Default settings
 const DEFAULT_SETTINGS: AppSettings = {
-  aiModel: 'gpt-4o',
+  aiModel: 'o3-mini',
   theme: 'dark',
   autoRunAnalysis: true,
   executionTimeout: 60,
@@ -48,8 +49,6 @@ export const saveSettings = (settings: Partial<AppSettings>): AppSettings => {
   localStorage.setItem('app_settings', JSON.stringify(newSettings));
   return newSettings;
 };
-
-// Removed toggleDbToggleVisibility
 
 // Set the AI model
 export const setAiModel = (modelId: string): AppSettings => {
