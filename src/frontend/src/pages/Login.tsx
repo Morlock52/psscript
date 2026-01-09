@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
-import { useAuth } from '../hooks/useAuth';
+import { useAuth } from '../contexts/AuthContext';
 import { useTheme } from '../hooks/useTheme';
 
 interface ErrorDetails {
@@ -31,7 +31,8 @@ const Login: React.FC = () => {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setErrorDetails(null);
-    
+    setFormError('');
+
     // Enhanced validation
     if (!email.trim()) {
       setFormError('Email is required');
@@ -50,13 +51,13 @@ const Login: React.FC = () => {
     
     try {
       await login(email, password);
-      
+
       // Navigate to the dashboard or the page they were trying to access
       navigate(from, { replace: true });
     } catch (err: any) {
       // Enhanced error handling
       console.error('Login failed:', err);
-      
+
       // Try to extract structured error information if available
       if (err.response?.data) {
         const responseData = err.response.data;
@@ -65,6 +66,9 @@ const Login: React.FC = () => {
           message: responseData.message || 'An unexpected error occurred',
           details: responseData.details
         });
+      } else {
+        // Handle simple Error objects (e.g., from demo auth)
+        setFormError(err instanceof Error ? err.message : 'Login failed. Please try again.');
       }
     }
   };
@@ -94,13 +98,15 @@ const Login: React.FC = () => {
         </div>
         
         <div className={`rounded-lg shadow-xl p-8 ${theme === 'dark' ? 'bg-gray-800' : 'bg-white'}`}>
-          <h2 className={`text-2xl font-bold mb-6 ${theme === 'dark' ? 'text-white' : 'text-gray-900'}`}>Log In</h2>
+          <h2 className={`text-2xl font-bold mb-6 ${theme === 'dark' ? 'text-white' : 'text-gray-900'}`}>Login</h2>
           
           {/* Enhanced error display */}
           {(error || formError || errorDetails) && (
-            <div className={`px-4 py-3 rounded mb-4 ${
-              theme === 'dark' 
-                ? 'bg-red-900/50 border border-red-800 text-red-300' 
+            <div
+              data-testid="login-error-message"
+              className={`px-4 py-3 rounded mb-4 ${
+              theme === 'dark'
+                ? 'bg-red-900/50 border border-red-800 text-red-300'
                 : 'bg-red-100 border border-red-200 text-red-800'
             }`}>
               <div className="flex">
