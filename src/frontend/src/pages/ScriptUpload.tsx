@@ -1,6 +1,6 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { useQuery, useMutation } from 'react-query';
+import { useQuery, useMutation } from '@tanstack/react-query';
 import { scriptService, categoryService, tagService } from '../services/api';
 
 const ScriptUpload: React.FC = () => {
@@ -28,16 +28,21 @@ const ScriptUpload: React.FC = () => {
   const MAX_RETRIES = 3;
   
   // Fetch categories
-  const { data: categories } = useQuery('categories', () => categoryService.getCategories());
-  
+  const { data: categories } = useQuery({
+    queryKey: ['categories'],
+    queryFn: () => categoryService.getCategories()
+  });
+
   // Fetch tags
-  const { data: existingTags } = useQuery('tags', () => tagService.getTags());
+  const { data: existingTags } = useQuery({
+    queryKey: ['tags'],
+    queryFn: () => tagService.getTags()
+  });
   
   // Script upload mutation
-  const uploadMutation = useMutation(
-    (scriptData: any) => scriptService.uploadScript(scriptData, isLargeFile),
-    {
-      onSuccess: (data) => {
+  const uploadMutation = useMutation({
+    mutationFn: (scriptData: any) => scriptService.uploadScript(scriptData, isLargeFile),
+    onSuccess: (data) => {
         console.log("Script uploaded successfully:", data);
         // Reset states
         setUploadProgress(0);
@@ -84,16 +89,15 @@ const ScriptUpload: React.FC = () => {
         setFileError('');
         setIsNetworkError(false);
       }
-    }
-  );
+  });
   
   // AI analysis preview mutation
-  const analysisPreviewMutation = useMutation(
-    (scriptContent: string) => {
+  const analysisPreviewMutation = useMutation({
+    mutationFn: (scriptContent: string) => {
       // Use the existing analyze endpoint instead of a preview-specific one
       return scriptService.analyzeScript(scriptContent);
     }
-  );
+  });
   
   // Acceptable PowerShell file extensions
   const ALLOWED_EXTENSIONS = ['.ps1', '.psm1', '.psd1', '.ps1xml'];
@@ -201,7 +205,7 @@ const ScriptUpload: React.FC = () => {
   
   // Track upload progress and retry count
   useEffect(() => {
-    if (uploadMutation.isLoading) {
+    if (uploadMutation.isPending) {
       // Simulate upload progress
       const interval = setInterval(() => {
         setUploadProgress(prev => {
@@ -210,17 +214,17 @@ const ScriptUpload: React.FC = () => {
           return newProgress >= 95 ? 95 : newProgress; // Cap at 95% until complete
         });
       }, 500);
-      
+
       return () => clearInterval(interval);
     } else if (uploadMutation.isSuccess) {
       setUploadProgress(100);
     }
-    
+
     // Update retry count when failureCount changes, but never exceed MAX_RETRIES
     if (uploadMutation.failureCount > retryCount && uploadMutation.failureCount <= MAX_RETRIES) {
       setRetryCount(uploadMutation.failureCount);
     }
-  }, [uploadMutation.isLoading, uploadMutation.isSuccess, uploadMutation.failureCount, retryCount, MAX_RETRIES]);
+  }, [uploadMutation.isPending, uploadMutation.isSuccess, uploadMutation.failureCount, retryCount, MAX_RETRIES]);
   
   const validateForm = (): string | null => {
     if (!title || title.trim() === '') {
@@ -387,11 +391,11 @@ const ScriptUpload: React.FC = () => {
                   </div>
                 )}
                 
-                {uploadMutation.isLoading && (
+                {uploadMutation.isPending && (
                   <div className="mt-4">
                     <div className="w-full bg-gray-700 rounded-full h-2.5">
-                      <div 
-                        className="bg-blue-600 h-2.5 rounded-full transition-all duration-300" 
+                      <div
+                        className="bg-blue-600 h-2.5 rounded-full transition-all duration-300"
                         style={{ width: `${uploadProgress}%` }}
                       ></div>
                     </div>
@@ -588,9 +592,9 @@ const ScriptUpload: React.FC = () => {
                   type="button"
                   onClick={handlePreviewAnalysis}
                   className="w-full bg-gray-600 hover:bg-gray-700 text-white font-medium py-2 px-4 rounded-md"
-                  disabled={analysisPreviewMutation.isLoading}
+                  disabled={analysisPreviewMutation.isPending}
                 >
-                  {analysisPreviewMutation.isLoading ? 'Analyzing...' : 'Preview Analysis'}
+                  {analysisPreviewMutation.isPending ? 'Analyzing...' : 'Preview Analysis'}
                 </button>
               )}
             </div>
@@ -607,9 +611,9 @@ const ScriptUpload: React.FC = () => {
             <button
               type="submit"
               className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed"
-              disabled={!title || !content || !!fileError || uploadMutation.isLoading}
+              disabled={!title || !content || !!fileError || uploadMutation.isPending}
             >
-              {uploadMutation.isLoading ? 'Uploading...' : 'Upload Script'}
+              {uploadMutation.isPending ? 'Uploading...' : 'Upload Script'}
             </button>
           </div>
         </form>

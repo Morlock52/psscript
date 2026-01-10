@@ -1,8 +1,9 @@
 import React, { useState, useEffect } from 'react';
-import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
-import { QueryClient, QueryClientProvider } from 'react-query';
+import { BrowserRouter as Router, Routes, Route, Navigate, useLocation } from 'react-router-dom';
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
+import { useAuth } from './hooks/useAuth';
 
 // Pages
 import Dashboard from './pages/Dashboard';
@@ -22,6 +23,7 @@ import ScriptUpload from './pages/ScriptUpload';
 import AgenticAIPage from './pages/AgenticAIPage';
 import AgentOrchestrationPage from './pages/AgentOrchestrationPage';
 import UIComponentsDemo from './pages/UIComponentsDemo';
+import Analytics from './pages/Analytics';
 
 // Settings Pages
 import ProfileSettings from './pages/Settings/ProfileSettings';
@@ -48,9 +50,39 @@ const queryClient = new QueryClient({
   },
 });
 
+// Home route that shows Login for unauthenticated users, Dashboard for authenticated
+const Home: React.FC = () => {
+  const { user } = useAuth();
+  return user ? <Dashboard /> : <Navigate to="/login" replace />;
+};
+
+// Layout wrapper that conditionally shows navigation
+const AppLayout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
+  const [sidebarOpen, setSidebarOpen] = useState(false);
+  const location = useLocation();
+
+  // Don't show sidebar/navbar on auth pages
+  const isAuthPage = location.pathname === '/login' || location.pathname === '/register';
+
+  if (isAuthPage) {
+    return <>{children}</>;
+  }
+
+  return (
+    <div className="flex h-screen bg-gray-100 dark:bg-gray-900">
+      <Sidebar isOpen={sidebarOpen} onClose={() => setSidebarOpen(false)} />
+      <div className="flex flex-col flex-1 overflow-hidden">
+        <Navbar onMenuClick={() => setSidebarOpen(true)} />
+        <main className="flex-1 overflow-y-auto p-4">
+          {children}
+        </main>
+      </div>
+    </div>
+  );
+};
+
 const App: React.FC = () => {
   const [isLoading, setIsLoading] = useState(true);
-  const [sidebarOpen, setSidebarOpen] = useState(false);
 
   // Simulate initial loading
   useEffect(() => {
@@ -67,22 +99,15 @@ const App: React.FC = () => {
   return (
     <QueryClientProvider client={queryClient}>
       <Router>
-        <div className="flex h-screen bg-gray-100 dark:bg-gray-900">
-          <ToastContainer position="top-right" theme="colored" />
-          
-          {/* Sidebar */}
-          <Sidebar isOpen={sidebarOpen} onClose={() => setSidebarOpen(false)} />
-          
-          {/* Main Content */}
-          <div className="flex flex-col flex-1 overflow-hidden">
-            <Navbar onMenuClick={() => setSidebarOpen(true)} />
-            
-            <main className="flex-1 overflow-y-auto p-4">
-              <Routes>
-                <Route path="/" element={<Dashboard />} />
-                <Route path="/login" element={<Login />} />
-                <Route path="/register" element={<Register />} />
-                
+        <ToastContainer position="top-right" theme="colored" />
+        <AppLayout>
+          <Routes>
+            <Route path="/" element={<Home />} />
+            <Route path="/login" element={<Login />} />
+            <Route path="/register" element={<Register />} />
+            <Route path="/dashboard" element={<ProtectedRoute><Dashboard /></ProtectedRoute>} />
+            <Route path="/analytics" element={<ProtectedRoute><Analytics /></ProtectedRoute>} />
+
                 {/* Script Management */}
                 <Route path="/scripts" element={<ProtectedRoute><ScriptManagement /></ProtectedRoute>} />
                 <Route path="/scripts/upload" element={<ProtectedRoute><ScriptUpload /></ProtectedRoute>} />
@@ -110,13 +135,11 @@ const App: React.FC = () => {
                 <Route path="/settings/api" element={<ProtectedRoute><ApiSettings /></ProtectedRoute>} />
                 <Route path="/settings/users" element={<ProtectedRoute><UserManagement /></ProtectedRoute>} />
                 
-                {/* Fallbacks */}
-                <Route path="/404" element={<NotFound />} />
-                <Route path="*" element={<Navigate to="/404" replace />} />
-              </Routes>
-            </main>
-          </div>
-        </div>
+            {/* Fallbacks */}
+            <Route path="/404" element={<NotFound />} />
+            <Route path="*" element={<Navigate to="/404" replace />} />
+          </Routes>
+        </AppLayout>
       </Router>
     </QueryClientProvider>
   );

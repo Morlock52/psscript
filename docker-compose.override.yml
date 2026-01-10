@@ -23,9 +23,9 @@ services:
       - /app/node_modules
     environment:
       NODE_ENV: development
-    command: node server.js
+      VITE_API_URL: http://localhost:4000/api
     ports:
-      - "3002:3002"
+      - "3000:3000"
 
   # Development configuration for AI service
   ai-service:

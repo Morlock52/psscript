@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import { Link } from 'react-router-dom';
-import { useQuery, useMutation, useQueryClient } from 'react-query';
+import { Link, useNavigate } from 'react-router-dom';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { scriptService, categoryService } from '../services/api';
 import InfoBox from '../components/InfoBox';
 
@@ -39,6 +39,7 @@ interface Category {
 }
 
 const ScriptManagement: React.FC = () => {
+  const navigate = useNavigate();
   const queryClient = useQueryClient();
   const [selectedScripts, setSelectedScripts] = useState<string[]>([]);
   const [selectedCategory, setSelectedCategory] = useState<number | null>(null);
@@ -50,28 +51,24 @@ const ScriptManagement: React.FC = () => {
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
 
   // Fetch scripts with filters
-  const { data: scriptsData, isLoading: isScriptsLoading } = useQuery(
-    ['scripts', selectedCategory, isPublicFilter, selectedTags, searchQuery],
-    () => scriptService.getScripts({
+  const { data: scriptsData, isLoading: isScriptsLoading } = useQuery({
+    queryKey: ['scripts', selectedCategory, isPublicFilter, selectedTags, searchQuery],
+    queryFn: () => scriptService.getScripts({
       category: selectedCategory,
       isPublic: isPublicFilter,
       tags: selectedTags.length > 0 ? selectedTags : undefined,
       search: searchQuery || undefined
     }),
-    {
-      keepPreviousData: true,
-      staleTime: 10000
-    }
-  );
+    placeholderData: (previousData) => previousData,
+    staleTime: 10000
+  });
 
   // Fetch categories
-  const { data: categoriesData } = useQuery(
-    ['categories'],
-    () => categoryService.getCategories(),
-    {
-      staleTime: 600000
-    }
-  );
+  const { data: categoriesData } = useQuery({
+    queryKey: ['categories'],
+    queryFn: () => categoryService.getCategories(),
+    staleTime: 600000
+  });
 
   // Mock data for tags
   const availableTags = [
@@ -80,65 +77,59 @@ const ScriptManagement: React.FC = () => {
   ];
 
   // Bulk mutate scripts (public/private status)
-  const bulkUpdateMutation = useMutation(
-    (data: { ids: string[], isPublic: boolean }) => 
+  const bulkUpdateMutation = useMutation({
+    mutationFn: (data: { ids: string[], isPublic: boolean }) =>
       scriptService.bulkUpdateScripts(data),
-    {
-      onSuccess: () => {
-        queryClient.invalidateQueries('scripts');
-        setSelectedScripts([]);
-        setShowBulkActions(false);
-        setSuccessMessage('Scripts updated successfully');
-        setTimeout(() => setSuccessMessage(null), 3000);
-      },
-      onError: (error: any) => {
-        console.error('Failed to update scripts:', error);
-        setErrorMessage(error.message || 'Failed to update scripts. Please try again.');
-        setTimeout(() => setErrorMessage(null), 5000);
-      }
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['scripts'] });
+      setSelectedScripts([]);
+      setShowBulkActions(false);
+      setSuccessMessage('Scripts updated successfully');
+      setTimeout(() => setSuccessMessage(null), 3000);
+    },
+    onError: (error: any) => {
+      console.error('Failed to update scripts:', error);
+      setErrorMessage(error.message || 'Failed to update scripts. Please try again.');
+      setTimeout(() => setErrorMessage(null), 5000);
     }
-  );
+  });
 
   // Delete script mutation with improved error handling
-  const deleteScriptMutation = useMutation(
-    (id: string) => scriptService.deleteScript(id),
-    {
-      onSuccess: (data) => {
-        if (data.success) {
-          // Show success toast or notification
-          console.log('Script deleted successfully');
-          queryClient.invalidateQueries('scripts');
-          setSuccessMessage('Script deleted successfully');
-          setTimeout(() => setSuccessMessage(null), 3000);
-        }
-      },
-      onError: (error: any) => {
-        // Show error toast or notification
-        console.error('Failed to delete script:', error);
-        setErrorMessage(error.message || 'Failed to delete script. Please try again.');
-        setTimeout(() => setErrorMessage(null), 5000);
+  const deleteScriptMutation = useMutation({
+    mutationFn: (id: string) => scriptService.deleteScript(id),
+    onSuccess: (data) => {
+      if (data.success) {
+        // Show success toast or notification
+        console.log('Script deleted successfully');
+        queryClient.invalidateQueries({ queryKey: ['scripts'] });
+        setSuccessMessage('Script deleted successfully');
+        setTimeout(() => setSuccessMessage(null), 3000);
       }
+    },
+    onError: (error: any) => {
+      // Show error toast or notification
+      console.error('Failed to delete script:', error);
+      setErrorMessage(error.message || 'Failed to delete script. Please try again.');
+      setTimeout(() => setErrorMessage(null), 5000);
     }
-  );
+  });
 
   // Bulk delete scripts
-  const bulkDeleteMutation = useMutation(
-    (ids: string[]) => scriptService.bulkDeleteScripts(ids),
-    {
-      onSuccess: () => {
-        queryClient.invalidateQueries('scripts');
-        setSelectedScripts([]);
-        setShowBulkActions(false);
-        setSuccessMessage(`${selectedScripts.length} scripts deleted successfully`);
-        setTimeout(() => setSuccessMessage(null), 3000);
-      },
-      onError: (error: any) => {
-        console.error('Failed to delete scripts:', error);
-        setErrorMessage(error.message || 'Failed to delete scripts. Please try again.');
-        setTimeout(() => setErrorMessage(null), 5000);
-      }
+  const bulkDeleteMutation = useMutation({
+    mutationFn: (ids: string[]) => scriptService.bulkDeleteScripts(ids),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['scripts'] });
+      setSelectedScripts([]);
+      setShowBulkActions(false);
+      setSuccessMessage(`${selectedScripts.length} scripts deleted successfully`);
+      setTimeout(() => setSuccessMessage(null), 3000);
+    },
+    onError: (error: any) => {
+      console.error('Failed to delete scripts:', error);
+      setErrorMessage(error.message || 'Failed to delete scripts. Please try again.');
+      setTimeout(() => setErrorMessage(null), 5000);
     }
-  );
+  });
 
   // Handle selecting all scripts
   const handleSelectAll = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -227,15 +218,16 @@ const ScriptManagement: React.FC = () => {
           </p>
         </div>
         <div className="flex space-x-3">
-          <Link 
-            to="/scripts/upload"
+          <button
+            onClick={() => navigate('/scripts/upload')}
             className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 flex items-center space-x-2"
+            aria-label="Upload Script"
           >
             <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" />
             </svg>
             <span>Upload Script</span>
-          </Link>
+          </button>
           <Link 
             to="/"
             className="px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 flex items-center space-x-2"
@@ -418,7 +410,7 @@ const ScriptManagement: React.FC = () => {
           </div>
         ) : (
           <div className="overflow-x-auto">
-            <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
+            <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700" data-testid="scripts-list">
               <thead className="bg-gray-50 dark:bg-gray-700">
                 <tr>
                   <th scope="col" className="px-6 py-3 text-left">

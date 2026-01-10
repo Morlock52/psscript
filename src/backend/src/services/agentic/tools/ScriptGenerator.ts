@@ -1,14 +1,13 @@
-import { OpenAIApi, Configuration } from 'openai';
+import OpenAI from 'openai';
 import dotenv from 'dotenv';
 
 // Initialize environment variables
 dotenv.config();
 
 // Set up OpenAI API client
-const configuration = new Configuration({
-  apiKey: process.env.OPENAI_API_KEY,
+const openai = new OpenAI({
+  apiKey: process.env.OPENAI_API_KEY || '',
 });
-const openai = new OpenAIApi(configuration);
 
 /**
  * Generate a PowerShell script based on user requirements
@@ -18,7 +17,7 @@ const openai = new OpenAIApi(configuration);
  */
 export async function generatePowerShellScript(requirements: string): Promise<string> {
   try {
-    const response = await openai.createChatCompletion({
+    const response = await openai.chat.completions.create({
       model: 'gpt-4o',
       messages: [
         {
@@ -46,8 +45,8 @@ Format your response as a complete, ready-to-run PowerShell script.`
       ],
       max_tokens: 2048,
     });
-    
-    const script = response.data.choices[0]?.message?.content || 'Script generation failed.';
+
+    const script = response.choices[0]?.message?.content || 'Script generation failed.';
     
     // Analyze the script for security issues before returning
     const securityAnalysis = await analyzeScriptSecurity(script);

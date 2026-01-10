@@ -3,18 +3,25 @@ FROM node:18-alpine
 # Set working directory
 WORKDIR /app
 
-# Install dependencies
-RUN npm init -y && npm install express cors
+# Copy entrypoint script and make it executable
+COPY docker-entrypoint.sh /usr/local/bin/
+RUN chmod +x /usr/local/bin/docker-entrypoint.sh
+
+# Copy package files
+COPY package*.json ./
 
 # Copy source code
 COPY . .
 
 # Expose the port the app runs on
-EXPOSE 3002
+EXPOSE 3000
 
 # Set environment variables
 ENV NODE_ENV=development
 ENV VITE_API_URL=http://backend:4000/api
 
+# Use entrypoint to install dependencies on startup
+ENTRYPOINT ["docker-entrypoint.sh"]
+
 # Run the application in development mode
-CMD ["node", "server.js"]
+CMD ["npm", "run", "dev", "--", "--host", "0.0.0.0", "--port", "3000"]

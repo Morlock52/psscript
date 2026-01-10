@@ -11,7 +11,7 @@ import json
 from typing import Dict, Any, List, Optional
 
 from .multi_agent_system import Agent, AgentRole, AgentCapability
-from ..voice_service import VoiceService
+from voice_service import VoiceService
 
 # Configure logging
 logging.basicConfig(

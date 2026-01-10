@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
-import { useQuery } from 'react-query';
+import { useQuery } from '@tanstack/react-query';
 import { useTheme } from '../hooks/useTheme';
 import { useAuth } from '../hooks/useAuth';
 import { scriptService, categoryService, analysisService } from '../services/api-enhanced';
@@ -21,82 +21,70 @@ const Dashboard: React.FC = () => {
   const [trendPeriod, setTrendPeriod] = useState<'week' | 'month' | 'year'>('week');
 
   // Fetch scripts
-  const { 
-    data: scripts, 
+  const {
+    data: scripts,
     isLoading: isLoadingScripts,
     error: scriptsError
-  } = useQuery(
-    ['scripts', selectedCategory], 
-    () => selectedCategory 
+  } = useQuery({
+    queryKey: ['scripts', selectedCategory],
+    queryFn: () => selectedCategory
       ? scriptService.getScriptsByCategory(selectedCategory)
       : scriptService.getRecentScripts(8),
-    {
-      enabled: isAuthenticated,
-      staleTime: 60000,
-    }
-  );
+    enabled: isAuthenticated,
+    staleTime: 60000,
+  });
 
   // Fetch categories
-  const { 
-    data: categories, 
-    isLoading: isLoadingCategories 
-  } = useQuery(
-    'categories', 
-    () => categoryService.getCategories(),
-    {
-      staleTime: 300000, // 5 minutes
-    }
-  );
+  const {
+    data: categories,
+    isLoading: isLoadingCategories
+  } = useQuery({
+    queryKey: ['categories'],
+    queryFn: () => categoryService.getCategories(),
+    staleTime: 300000, // 5 minutes
+  });
 
   // Fetch statistics
-  const { 
-    data: stats, 
-    isLoading: isLoadingStats 
-  } = useQuery(
-    'dashboard-stats', 
-    () => scriptService.getDashboardStats(),
-    {
-      staleTime: 300000, // 5 minutes
-    }
-  );
+  const {
+    data: stats,
+    isLoading: isLoadingStats
+  } = useQuery({
+    queryKey: ['dashboard-stats'],
+    queryFn: () => scriptService.getDashboardStats(),
+    staleTime: 300000, // 5 minutes
+  });
 
   // Fetch recent activity
-  const { 
-    data: activity, 
-    isLoading: isLoadingActivity 
-  } = useQuery(
-    'recent-activity', 
-    () => scriptService.getRecentActivity(),
-    {
-      enabled: isAuthenticated,
-      staleTime: 60000,
-    }
-  );
+  const {
+    data: activity,
+    isLoading: isLoadingActivity
+  } = useQuery({
+    queryKey: ['recent-activity'],
+    queryFn: () => scriptService.getRecentActivity(),
+    enabled: isAuthenticated,
+    staleTime: 60000,
+  });
 
   // Fetch security metrics
-  const { 
-    data: securityMetrics, 
-    isLoading: isLoadingSecurityMetrics 
-  } = useQuery(
-    'security-metrics', 
-    () => analysisService.getSecurityMetrics(),
-    {
-      staleTime: 300000, // 5 minutes
-    }
-  );
+  const {
+    data: securityMetrics,
+    isLoading: isLoadingSecurityMetrics
+  } = useQuery({
+    queryKey: ['security-metrics'],
+    queryFn: () => analysisService.getSecurityMetrics(),
+    staleTime: 300000, // 5 minutes
+  });
 
   // Fetch trend data
-  const { 
-    data: trendData, 
+  const {
+    data: trendData,
     isLoading: isLoadingTrendData,
     refetch: refetchTrendData
-  } = useQuery(
-    ['script-trends', trendPeriod],
-    () => scriptService.getScriptTrends(trendPeriod),
-    {
-      staleTime: 300000, // 5 minutes
-    }
-  );
+  } = useQuery({
+    queryKey: ['script-trends', trendPeriod],
+    queryFn: () => scriptService.getScriptTrends(trendPeriod),
+    staleTime: 300000, // 5 minutes
+  });
 
   const isLoading = isLoadingScripts || isLoadingCategories || isLoadingStats || isLoadingActivity || isLoadingSecurityMetrics || isLoadingTrendData;
 

@@ -8,7 +8,7 @@ from fastapi import APIRouter, Header, HTTPException, Depends
 from pydantic import BaseModel, Field
 from typing import Dict, List, Optional, Any
 
-from .voice_service import VoiceService
+from voice_service import VoiceService
 
 # Create router
 router = APIRouter(prefix="/voice", tags=["Voice"])

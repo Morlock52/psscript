@@ -38,6 +38,19 @@ class ScriptController {
       if (sortField === 'updated') {
         sortField = 'updatedAt';
       }
+
+      // Map camelCase to snake_case for database column names
+      const sortFieldMap: Record<string, string> = {
+        'updatedAt': 'updated_at',
+        'createdAt': 'created_at',
+        'userId': 'user_id',
+        'categoryId': 'category_id',
+        'executionCount': 'execution_count',
+        'isPublic': 'is_public',
+        'fileHash': 'file_hash'
+      };
+
+      const dbSortField = sortFieldMap[sortField] || sortField;
       const order = req.query.order as string || 'DESC';
       
       const cacheKey = `scripts:${page}:${limit}:${categoryId || ''}:${userId || ''}:${sortField}:${order}`;
@@ -67,7 +80,7 @@ class ScriptController {
         ],
         limit,
         offset,
-        order: [[sortField, order]],
+        order: [[sequelize.col(`Script.${dbSortField}`), order]],
         distinct: true
       });
       
@@ -675,7 +688,7 @@ class ScriptController {
         include: includeOptions,
         limit,
         offset,
-        order: [['updatedAt', 'DESC']],
+        order: [[sequelize.col('Script.updated_at'), 'DESC']],
         distinct: true
       });
       
@@ -1132,7 +1145,7 @@ class ScriptController {
     }
   }
   
-  // Execute a script
+  // Generate PowerShell command for script execution
   async executeScript(req: Request, res: Response, next: NextFunction) {
     try {
       const scriptId = req.params.id;
@@ -1145,29 +1158,100 @@ class ScriptController {
         return res.status(404).json({ message: 'Script not found' });
       }
       
-      // Here you would implement the actual PowerShell script execution
-      // This is a simplified placeholder implementation
+      // Generate proper PowerShell command with parameters
+      const scriptPath = `./${script.title.replace(/[^a-zA-Z0-9-_]/g, '_')}.ps1`;
+      let powershellCommand = `powershell.exe -ExecutionPolicy Bypass -File "${scriptPath}"`;
+      
+      // Add parameters to command if provided
+      if (params && Object.keys(params).length > 0) {
+        const paramStrings = Object.entries(params).map(([key, value]) => {
+          // Properly escape parameter values
+          const escapedValue = String(value).replace(/"/g, '\`"').replace(/\$/g, '\`$');
+          return `-${key} "${escapedValue}"`;
+        });
+        powershellCommand += ' ' + paramStrings.join(' ');
+      }
       
       // Increment execution count
       await script.update({
         executionCount: script.executionCount + 1
       });
       
-      // Record execution in logs
-      await ExecutionLog.create({
+      // Record execution in logs with "command_generated" status
+      const executionLog = await ExecutionLog.create({
         scriptId,
         userId,
         parameters: params || {},
         status: 'success',
-        output: 'Script executed successfully',
-        executionTime: 1.25 // This would be the actual execution time
+        output: `PowerShell command generated: ${powershellCommand}`,
+        executionTime: 0 // Command generation is instant
       });
       
       res.json({
         success: true,
-        output: 'Script executed successfully',
-        executionTime: 1.25,
-        timestamp: new Date()
+        command: powershellCommand,
+        scriptPath: scriptPath,
+        parameters: params || {},
+        executionCount: script.executionCount,
+        timestamp: new Date(),
+        message: 'PowerShell command generated successfully. Copy and run this command in PowerShell.',
+        executionLogId: executionLog.id
+      });
+    } catch (error) {
+      next(error);
+    }
+  }
+  
+  // Get execution history for a script
+  async getExecutionHistory(req: Request, res: Response, next: NextFunction) {
+    try {
+      const scriptId = req.params.id;
+      const limit = parseInt(req.query.limit as string) || 10;
+      const offset = parseInt(req.query.offset as string) || 0;
+      
+      const script = await Script.findByPk(scriptId);
+      if (!script) {
+        return res.status(404).json({ message: 'Script not found' });
+      }
+      
+      // Get execution logs with user information
+      const executionLogs = await ExecutionLog.findAll({
+        where: { scriptId },
+        include: [
+          {
+            model: User,
+            as: 'user',
+            attributes: ['id', 'username', 'email']
+          }
+        ],
+        order: [['createdAt', 'DESC']],
+        limit,
+        offset
+      });
+      
+      // Get total count for pagination
+      const totalCount = await ExecutionLog.count({ where: { scriptId } });
+      
+      res.json({
+        executions: executionLogs.map(log => ({
+          id: log.id,
+          parameters: log.parameters,
+          status: log.status,
+          output: log.output,
+          errorMessage: log.errorMessage,
+          executionTime: log.executionTime,
+          user: log.user ? {
+            id: log.user.id,
+            username: log.user.username
+          } : null,
+          createdAt: log.createdAt
+        })),
+        pagination: {
+          total: totalCount,
+          limit,
+          offset,
+          hasMore: offset + limit < totalCount
+        }
       });
     } catch (error) {
       next(error);
@@ -1445,7 +1529,7 @@ class ScriptController {
           include: [
             { model: Category, as: 'category', attributes: ['id', 'name', 'description', 'created_at'] }
           ],
-          order: [['updatedAt', 'DESC']]
+          order: [[sequelize.col('Script.updated_at'), 'DESC']]
         });
         
         // Calculate a mock similarity score
@@ -1604,12 +1688,345 @@ class ScriptController {
     }
   }
   
+  // ============================================================================
+  // LangGraph Integration - Phase 1 Implementation
+  // ============================================================================
+
+  /**
+   * Analyze script using LangGraph 1.0 production orchestrator
+   * This leverages the multi-agent system with checkpointing and human-in-the-loop
+   */
+  async analyzeLangGraph(req: Request, res: Response, next: NextFunction) {
+    try {
+      const scriptId = req.params.id;
+      const { require_human_review = false, thread_id, model = 'gpt-4' } = req.body;
+
+      logger.info(`[LangGraph] Starting analysis for script ${scriptId}`);
+
+      // Get the script
+      const script = await Script.findByPk(scriptId);
+      if (!script) {
+        return res.status(404).json({ message: 'Script not found' });
+      }
+
+      // Get OpenAI API key from request headers if available
+      const openaiApiKey = req.headers['x-openai-api-key'] as string;
+
+      // Prepare request for LangGraph service
+      const analysisConfig = {
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        timeout: 120000 // 2 minute timeout for full analysis
+      };
+
+      if (openaiApiKey) {
+        analysisConfig.headers['x-api-key'] = openaiApiKey;
+      }
+
+      // Call LangGraph analysis endpoint
+      const langgraphResponse = await axios.post(
+        `${AI_SERVICE_URL}/langgraph/analyze`,
+        {
+          script_content: script.content,
+          thread_id: thread_id || `script_${scriptId}_${Date.now()}`,
+          require_human_review,
+          stream: false, // Non-streaming for this endpoint
+          model,
+          api_key: openaiApiKey
+        },
+        analysisConfig
+      );
+
+      const analysisResult = langgraphResponse.data;
+
+      logger.info(`[LangGraph] Analysis completed for script ${scriptId}, workflow: ${analysisResult.workflow_id}`);
+
+      // Save analysis results to database if workflow completed
+      if (analysisResult.status === 'completed' && analysisResult.analysis_results) {
+        try {
+          const results = analysisResult.analysis_results;
+
+          // Extract scores and findings from tool results
+          const securityData = results.security_scan ? JSON.parse(results.security_scan) : {};
+          const qualityData = results.quality_analysis ? JSON.parse(results.quality_analysis) : {};
+          const optimizationData = results.generate_optimizations ? JSON.parse(results.generate_optimizations) : {};
+
+          // Upsert analysis record
+          await ScriptAnalysis.upsert({
+            scriptId: parseInt(scriptId),
+            purpose: analysisResult.final_response || 'Analysis completed',
+            securityScore: securityData.risk_score || 5.0,
+            codeQualityScore: qualityData.quality_score || 5.0,
+            riskScore: securityData.risk_score || 5.0,
+            parameterDocs: {},
+            suggestions: optimizationData.optimizations || [],
+            securityConcerns: securityData.findings || [],
+            commandDetails: {},
+            msDocsReferences: []
+          });
+
+          logger.info(`[LangGraph] Saved analysis results for script ${scriptId}`);
+        } catch (saveError) {
+          logger.error(`[LangGraph] Error saving analysis: ${saveError}`);
+          // Continue - don't fail the request if save fails
+        }
+      }
+
+      // Return the full LangGraph response
+      res.json({
+        success: true,
+        workflow_id: analysisResult.workflow_id,
+        thread_id: analysisResult.workflow_id, // Use workflow_id as thread_id for consistency
+        status: analysisResult.status,
+        current_stage: analysisResult.current_stage,
+        final_response: analysisResult.final_response,
+        analysis_results: analysisResult.analysis_results,
+        requires_human_review: analysisResult.requires_human_review,
+        started_at: analysisResult.started_at,
+        completed_at: analysisResult.completed_at
+      });
+
+    } catch (error) {
+      logger.error('[LangGraph] Analysis failed:', error);
+
+      // Provide helpful error messages
+      if (error.code === 'ECONNREFUSED') {
+        return res.status(503).json({
+          success: false,
+          message: 'AI service unavailable. Please try again later.',
+          error: 'service_unavailable'
+        });
+      }
+
+      if (error.response?.status === 401 || error.response?.status === 403) {
+        return res.status(401).json({
+          success: false,
+          message: 'OpenAI API key is invalid or missing.',
+          error: 'authentication_failed'
+        });
+      }
+
+      return res.status(500).json({
+        success: false,
+        message: 'Script analysis failed',
+        error: error.message
+      });
+    }
+  }
+
+  /**
+   * Stream analysis progress using Server-Sent Events (SSE)
+   * Provides real-time updates as the LangGraph workflow executes
+   */
+  async streamAnalysis(req: Request, res: Response, next: NextFunction) {
+    try {
+      const scriptId = req.params.id;
+      const { require_human_review = false, thread_id, model = 'gpt-4' } = req.query;
+
+      logger.info(`[LangGraph] Starting streaming analysis for script ${scriptId}`);
+
+      // Get the script
+      const script = await Script.findByPk(scriptId);
+      if (!script) {
+        return res.status(404).json({ message: 'Script not found' });
+      }
+
+      // Set up SSE headers
+      res.setHeader('Content-Type', 'text/event-stream');
+      res.setHeader('Cache-Control', 'no-cache');
+      res.setHeader('Connection', 'keep-alive');
+      res.setHeader('X-Accel-Buffering', 'no'); // Disable nginx buffering
+
+      // Send initial connection event
+      res.write(`data: ${JSON.stringify({ type: 'connected', message: 'Stream started' })}\n\n`);
+
+      // Get OpenAI API key from request headers
+      const openaiApiKey = req.headers['x-openai-api-key'] as string;
+
+      // Call LangGraph with streaming enabled
+      const analysisConfig = {
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        timeout: 120000,
+        responseType: 'stream' as const
+      };
+
+      if (openaiApiKey) {
+        analysisConfig.headers['x-api-key'] = openaiApiKey;
+      }
+
+      const langgraphStream = await axios.post(
+        `${AI_SERVICE_URL}/langgraph/analyze`,
+        {
+          script_content: script.content,
+          thread_id: thread_id || `script_${scriptId}_${Date.now()}`,
+          require_human_review: require_human_review === 'true',
+          stream: true,
+          model,
+          api_key: openaiApiKey
+        },
+        analysisConfig
+      );
+
+      // Forward events from LangGraph to client
+      langgraphStream.data.on('data', (chunk: Buffer) => {
+        const data = chunk.toString();
+
+        // Parse and re-format events for frontend
+        const lines = data.split('\n');
+        for (const line of lines) {
+          if (line.startsWith('data: ')) {
+            try {
+              const eventData = JSON.parse(line.substring(6));
+
+              // Add script_id to each event for context
+              eventData.script_id = scriptId;
+
+              // Forward to client
+              res.write(`data: ${JSON.stringify(eventData)}\n\n`);
+            } catch (e) {
+              // Skip malformed events
+              logger.warn('[LangGraph] Malformed event:', line);
+            }
+          }
+        }
+      });
+
+      langgraphStream.data.on('end', () => {
+        res.write(`data: ${JSON.stringify({ type: 'completed', message: 'Analysis complete' })}\n\n`);
+        res.end();
+        logger.info(`[LangGraph] Streaming completed for script ${scriptId}`);
+      });
+
+      langgraphStream.data.on('error', (error: Error) => {
+        res.write(`data: ${JSON.stringify({ type: 'error', message: error.message })}\n\n`);
+        res.end();
+        logger.error(`[LangGraph] Streaming error for script ${scriptId}:`, error);
+      });
+
+      // Handle client disconnect
+      req.on('close', () => {
+        langgraphStream.data.destroy();
+        logger.info(`[LangGraph] Client disconnected from stream for script ${scriptId}`);
+      });
+
+    } catch (error) {
+      logger.error('[LangGraph] Streaming failed:', error);
+
+      // Send error event if connection is still open
+      if (!res.headersSent) {
+        res.status(500).json({
+          success: false,
+          message: 'Failed to start analysis stream',
+          error: error.message
+        });
+      } else {
+        res.write(`data: ${JSON.stringify({ type: 'error', message: error.message })}\n\n`);
+        res.end();
+      }
+    }
+  }
+
+  /**
+   * Provide human feedback for paused workflow
+   * Allows continuation of human-in-the-loop analysis
+   */
+  async provideFeedback(req: Request, res: Response, next: NextFunction) {
+    try {
+      const scriptId = req.params.id;
+      const { thread_id, feedback } = req.body;
+
+      if (!thread_id || !feedback) {
+        return res.status(400).json({
+          success: false,
+          message: 'thread_id and feedback are required'
+        });
+      }
+
+      logger.info(`[LangGraph] Providing feedback for script ${scriptId}, thread ${thread_id}`);
+
+      // Get OpenAI API key from request headers
+      const openaiApiKey = req.headers['x-openai-api-key'] as string;
+
+      const feedbackConfig = {
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        timeout: 120000
+      };
+
+      if (openaiApiKey) {
+        feedbackConfig.headers['x-api-key'] = openaiApiKey;
+      }
+
+      // Call LangGraph feedback endpoint
+      const feedbackResponse = await axios.post(
+        `${AI_SERVICE_URL}/langgraph/feedback`,
+        {
+          thread_id,
+          feedback
+        },
+        feedbackConfig
+      );
+
+      const result = feedbackResponse.data;
+
+      logger.info(`[LangGraph] Feedback processed for thread ${thread_id}`);
+
+      // Save updated analysis if completed
+      if (result.status === 'completed' && result.analysis_results) {
+        try {
+          const results = result.analysis_results;
+          const securityData = results.security_scan ? JSON.parse(results.security_scan) : {};
+          const qualityData = results.quality_analysis ? JSON.parse(results.quality_analysis) : {};
+          const optimizationData = results.generate_optimizations ? JSON.parse(results.generate_optimizations) : {};
+
+          await ScriptAnalysis.upsert({
+            scriptId: parseInt(scriptId),
+            purpose: result.final_response || 'Analysis completed with feedback',
+            securityScore: securityData.risk_score || 5.0,
+            codeQualityScore: qualityData.quality_score || 5.0,
+            riskScore: securityData.risk_score || 5.0,
+            parameterDocs: {},
+            suggestions: optimizationData.optimizations || [],
+            securityConcerns: securityData.findings || [],
+            commandDetails: {},
+            msDocsReferences: []
+          });
+        } catch (saveError) {
+          logger.error(`[LangGraph] Error saving feedback analysis: ${saveError}`);
+        }
+      }
+
+      res.json({
+        success: true,
+        workflow_id: result.workflow_id,
+        status: result.status,
+        current_stage: result.current_stage,
+        final_response: result.final_response,
+        analysis_results: result.analysis_results,
+        requires_human_review: result.requires_human_review
+      });
+
+    } catch (error) {
+      logger.error('[LangGraph] Feedback submission failed:', error);
+
+      return res.status(500).json({
+        success: false,
+        message: 'Failed to process feedback',
+        error: error.message
+      });
+    }
+  }
+
   // Helper method to validate PowerShell content
   static validatePowerShellContent(content: string): boolean {
     if (!content || typeof content !== 'string') {
       return false;
     }
-    
+
     // Basic validation - check for some common PowerShell elements
     // This is not comprehensive but helps filter out obviously invalid content
     const powerShellIndicators = [
@@ -1625,7 +2042,7 @@ class ScriptController {
       /^\s*New-/im,                 // Common cmdlet prefix
       /^\s*\[.+\]/m                 // Type declarations
     ];
-    
+
     // Check if the content matches any PowerShell indicators
     return powerShellIndicators.some(regex => regex.test(content));
   }

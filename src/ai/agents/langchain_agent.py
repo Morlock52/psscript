@@ -64,7 +64,7 @@ class LangChainAgent:
         return ChatOpenAI(
             openai_api_key=self.api_key,
             temperature=0.7,
-            model_name="gpt-4o",
+            model_name="gpt-4-turbo",
             streaming=True,
             callback_manager=callback_manager,
             verbose=True

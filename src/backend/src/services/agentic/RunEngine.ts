@@ -3,7 +3,7 @@ import { Run, RunStatus, ToolCall, SubmittedToolCallOutput } from '../../models/
 import { createMessage } from '../../models/Agentic/Message';
 import { AssistantTool } from '../../models/Agentic/Assistant';
 import { getMessageText } from '../../models/Agentic/Message';
-import { Configuration, OpenAIApi } from 'openai';
+import OpenAI from 'openai';
 import dotenv from 'dotenv';
 import { searchPowerShellDocs } from './tools/PowerShellDocsSearch';
 import { analyzeScriptSecurity } from './tools/SecurityAnalyzer';
@@ -13,10 +13,9 @@ import { generatePowerShellScript } from './tools/ScriptGenerator';
 dotenv.config();
 
 // Set up OpenAI API client
-const configuration = new Configuration({
-  apiKey: process.env.OPENAI_API_KEY,
+const openai = new OpenAI({
+  apiKey: process.env.OPENAI_API_KEY || '',
 });
-const openai = new OpenAIApi(configuration);
 
 /**
  * Map of active runs being processed
@@ -185,14 +184,14 @@ export async function handleAssistantRun(
     
     try {
       // Call OpenAI API
-      const completion = await openai.createChatCompletion({
+      const completion = await openai.chat.completions.create({
         model: run.model,
         messages: conversationHistory,
         tools: run.tools.length > 0 ? prepareTools(run.tools) : undefined,
         tool_choice: run.tools.length > 0 ? 'auto' : undefined,
       });
-      
-      const assistantMessage = completion.data.choices[0]?.message;
+
+      const assistantMessage = completion.choices[0]?.message;
       
       if (!assistantMessage) {
         throw new Error('No response from OpenAI API');
@@ -221,7 +220,7 @@ export async function handleAssistantRun(
           
           // Continue the conversation with the outputs
           if (outputs && outputs.length > 0) {
-            const updatedCompletion = await openai.createChatCompletion({
+            const updatedCompletion = await openai.chat.completions.create({
               model: run.model,
               messages: [
                 ...conversationHistory,
@@ -237,8 +236,8 @@ export async function handleAssistantRun(
                 },
               ],
             });
-            
-            const finalMessage = updatedCompletion.data.choices[0]?.message;
+
+            const finalMessage = updatedCompletion.choices[0]?.message;
             
             if (finalMessage && finalMessage.content) {
               // Create message from assistant
@@ -256,7 +255,6 @@ export async function handleAssistantRun(
                 thread_id: thread.id,
                 assistant_id: assistant.id,
                 type: 'message_creation',
-                status: 'completed',
               });
               
               // Mark run as completed
@@ -269,7 +267,7 @@ export async function handleAssistantRun(
             required_action: {
               type: 'submit_tool_outputs',
               submit_tool_outputs: {
-                tool_calls: assistantMessage.tool_calls,
+                tool_calls: assistantMessage.tool_calls as any,
               },
             },
           });
@@ -292,7 +290,6 @@ export async function handleAssistantRun(
             assistant_id: assistant.id,
             type: 'message_creation',
             message_id: message.id,
-            status: 'completed',
           });
         }
         

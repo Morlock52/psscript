@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { useQuery, useMutation } from 'react-query';
+import { useQuery, useMutation } from '@tanstack/react-query';
 import { scriptService } from '../services/api';
 import ScriptDownloadButton from '../components/ScriptDownloadButton';
 import FullScreenEditor from '../components/FullScreenEditor';
@@ -13,87 +13,69 @@ const ScriptDetail: React.FC = () => {
   const [isEditorOpen, setIsEditorOpen] = useState(false);
   const [isAnalyzing, setIsAnalyzing] = useState(false);
   
-  const { data: script, isLoading, error, refetch } = useQuery(
-    ['script', id],
-    () => scriptService.getScript(id || ''),
-    {
-      enabled: !!id,
-      refetchOnWindowFocus: false,
-    }
-  );
+  const { data: script, isLoading, error, refetch } = useQuery({
+    queryKey: ['script', id],
+    queryFn: () => scriptService.getScript(id || ''),
+    enabled: !!id,
+    refetchOnWindowFocus: false,
+  });
+
+  const { data: analysis, error: analysisError } = useQuery({
+    queryKey: ['scriptAnalysis', id],
+    queryFn: () => scriptService.getScriptAnalysis(id || ''),
+    enabled: !!id,
+    refetchOnWindowFocus: false,
+    retry: false,
+  });
+
+  const { data: similarScripts } = useQuery({
+    queryKey: ['similarScripts', id],
+    queryFn: () => scriptService.getSimilarScripts(id || ''),
+    enabled: !!id,
+    refetchOnWindowFocus: false,
+  });
   
-  const { data: analysis, error: analysisError } = useQuery(
-    ['scriptAnalysis', id],
-    () => scriptService.getScriptAnalysis(id || ''),
-    {
-      enabled: !!id,
-      refetchOnWindowFocus: false,
-      retry: false,
-      onError: (error: any) => {
-        // Don't show error toast for 404 errors as they're expected when no analysis exists
-        if (error.response?.status !== 404) {
-          console.error('Error fetching analysis:', error);
-        }
-      }
+  const executeMutation = useMutation({
+    mutationFn: (params: Record<string, string>) => scriptService.executeScript(id || '', params),
+    onSuccess: (data) => {
+      console.log('Script executed successfully:', data);
+      // Handle successful execution
+    },
+    onError: (error) => {
+      console.error('Error executing script:', error);
+      // Handle execution error
     }
-  );
-  
-  const { data: similarScripts } = useQuery(
-    ['similarScripts', id],
-    () => scriptService.getSimilarScripts(id || ''),
-    {
-      enabled: !!id,
-      refetchOnWindowFocus: false,
+  });
+
+  const updateScriptMutation = useMutation({
+    mutationFn: (content: string) => scriptService.updateScript(id || '', { content }),
+    onSuccess: () => {
+      // Refetch the script to get the updated version
+      refetch();
+    },
+    onError: (error) => {
+      console.error('Error updating script:', error);
+      toast.error('Failed to update script');
     }
-  );
-  
-  const executeMutation = useMutation(
-    (params: Record<string, string>) => scriptService.executeScript(id || '', params),
-    {
-      onSuccess: (data) => {
-        console.log('Script executed successfully:', data);
-        // Handle successful execution
-      },
-      onError: (error) => {
-        console.error('Error executing script:', error);
-        // Handle execution error
-      }
-    }
-  );
-  
-  const updateScriptMutation = useMutation(
-    (content: string) => scriptService.updateScript(id || '', { content }),
-    {
-      onSuccess: () => {
-        // Refetch the script to get the updated version
-        refetch();
-      },
-      onError: (error) => {
-        console.error('Error updating script:', error);
-        toast.error('Failed to update script');
-      }
-    }
-  );
-  
+  });
+
   // Mutation for analyzing script with AI and saving to database
-  const analyzeScriptMutation = useMutation(
-    () => scriptService.analyzeScriptAndSave(id || ''),
-    {
-      onSuccess: (analysisData) => {
-        toast.success('Script analyzed successfully');
-        
-        // Navigate to the analysis page
-        navigate(`/scripts/${id}/analysis`);
-      },
-      onError: (error) => {
-        console.error('Error analyzing script:', error);
-        toast.error('Failed to analyze script');
-      },
-      onSettled: () => {
-        setIsAnalyzing(false);
-      }
+  const analyzeScriptMutation = useMutation({
+    mutationFn: () => scriptService.analyzeScriptAndSave(id || ''),
+    onSuccess: (analysisData) => {
+      toast.success('Script analyzed successfully');
+
+      // Navigate to the analysis page
+      navigate(`/scripts/${id}/analysis`);
+    },
+    onError: (error) => {
+      console.error('Error analyzing script:', error);
+      toast.error('Failed to analyze script');
+    },
+    onSettled: () => {
+      setIsAnalyzing(false);
     }
-  );
+  });
   
   const handleExecute = () => {
     executeMutation.mutate(parameters);
@@ -251,9 +233,9 @@ const ScriptDetail: React.FC = () => {
                   <button
                     className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 disabled:opacity-50"
                     onClick={handleExecute}
-                    disabled={executeMutation.isLoading}
+                    disabled={executeMutation.isPending}
                   >
-                    {executeMutation.isLoading ? 'Executing...' : 'Execute Script'}
+                    {executeMutation.isPending ? 'Executing...' : 'Execute Script'}
                   </button>
                 </div>
               </div>

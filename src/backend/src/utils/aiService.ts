@@ -402,7 +402,7 @@ foreach ($pattern in $ErrorPatterns) {
 Pattern: $pattern
 Count: $($results.Errors[$pattern].Count)
 Examples:
-$($results.Errors[$pattern].Examples -join "`n")
+$($results.Errors[$pattern].Examples -join "\`n")
 
 "@
 }

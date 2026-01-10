@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { useQuery, useMutation, useQueryClient } from 'react-query';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { scriptService } from '../services/api';
 import BatchDownloadButton from '../components/BatchDownloadButton';
 
@@ -34,21 +34,20 @@ const ManageFiles: React.FC = () => {
   const [isApplyingAI, setIsApplyingAI] = useState(false);
 
   // Fetch scripts with React Query
-  const { 
+  const {
     data: scriptsData,
     isLoading,
-    error 
-  } = useQuery(
-    ['allScripts'], 
-    () => scriptService.getScripts({ limit: 100 }),
-    { staleTime: 30000 }
-  );
+    error
+  } = useQuery({
+    queryKey: ['allScripts'],
+    queryFn: () => scriptService.getScripts({ limit: 100 }),
+    staleTime: 30000
+  });
 
   // Delete mutation with improved feedback and error handling
-  const deleteMutation = useMutation(
-    (ids: string[]) => scriptService.bulkDeleteScripts(ids),
-    {
-      onSuccess: (data, variables) => {
+  const deleteMutation = useMutation({
+    mutationFn: (ids: string[]) => scriptService.bulkDeleteScripts(ids),
+    onSuccess: (data, variables) => {
         // variables contains the ids that were passed to the mutation
         const deletedIds = variables;
         
@@ -69,7 +68,7 @@ const ManageFiles: React.FC = () => {
           }
           
           // Invalidate the query to refresh data from server
-          queryClient.invalidateQueries('allScripts');
+          queryClient.invalidateQueries({ queryKey: ['allScripts'] });
           
           // Clear selection
           setSelectedScripts([]);
@@ -79,14 +78,12 @@ const ManageFiles: React.FC = () => {
         console.error('Error deleting scripts:', error);
         alert('Failed to delete script(s). Please try again.');
       }
-    }
-  );
+  });
 
   // AI analysis mutation
-  const aiAnalysisMutation = useMutation(
-    (scriptId: string) => scriptService.getScriptAnalysis(scriptId),
-    {
-      onSuccess: (data) => {
+  const aiAnalysisMutation = useMutation({
+    mutationFn: (scriptId: string) => scriptService.getScriptAnalysis(scriptId),
+    onSuccess: (data) => {
         setAiSuggestions(data.ai_suggestions || []);
         setShowAIModal(true);
         setIsApplyingAI(false);
@@ -94,22 +91,19 @@ const ManageFiles: React.FC = () => {
       onError: () => {
         setIsApplyingAI(false);
       }
-    }
-  );
+  });
 
   // Apply AI suggestions mutation
-  const applyAiSuggestionsMutation = useMutation(
-    (params: { scriptId: string, suggestions: string[] }) => 
+  const applyAiSuggestionsMutation = useMutation({
+    mutationFn: (params: { scriptId: string, suggestions: string[] }) =>
       scriptService.applyAiSuggestions(params.scriptId, params.suggestions),
-    {
-      onSuccess: () => {
-        queryClient.invalidateQueries('allScripts');
+    onSuccess: () => {
+        queryClient.invalidateQueries({ queryKey: ['allScripts'] });
         setShowAIModal(false);
         setSelectedScriptForAI(null);
         setAiSuggestions([]);
       }
-    }
-  );
+  });
 
   const scripts = scriptsData?.scripts || [];
 

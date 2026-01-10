@@ -61,35 +61,29 @@ export const authenticateJWT = async (req: Request, res: Response, next: NextFun
     ipAddress,
     userAgent
   });
-  
-  // Get token from Authorization header
+
+  // Get token from Authorization header or query parameter (for SSE)
+  let token: string | undefined;
   const authHeader = req.headers.authorization;
-  
-  if (!authHeader) {
-    logger.warn('Authentication failed: No authorization header', {
+
+  if (authHeader) {
+    // Extract token from Authorization header (remove "Bearer " prefix)
+    token = authHeader.split(' ')[1];
+  } else if (req.query.token) {
+    // For SSE which doesn't support custom headers, get token from query param
+    token = req.query.token as string;
+    logger.debug('Using token from query parameter for SSE', { requestId });
+  }
+
+  if (!token) {
+    logger.warn('Authentication failed: No token provided', {
       requestId,
       path: req.path,
       method: req.method
     });
-    return res.status(401).json({ 
+    return res.status(401).json({
       message: 'Access denied. No token provided.',
       error: 'missing_token',
-      requestId
-    });
-  }
-  
-  // Extract token (remove "Bearer " prefix)
-  const token = authHeader.split(' ')[1];
-  
-  if (!token) {
-    logger.warn('Authentication failed: Invalid token format', {
-      requestId,
-      path: req.path,
-      method: req.method
-    });
-    return res.status(401).json({ 
-      message: 'Invalid token format.',
-      error: 'invalid_token_format',
       requestId
     });
   }

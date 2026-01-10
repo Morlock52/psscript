@@ -5,13 +5,10 @@ import DOMPurify from 'dompurify';
 import hljs from 'highlight.js';
 import 'highlight.js/styles/github.css';
 
-// Configure marked for syntax highlighting
+// Configure marked options
 marked.setOptions({
-  highlight: function(code, lang) {
-    const language = hljs.getLanguage(lang) ? lang : 'plaintext';
-    return hljs.highlight(code, { language }).value;
-  },
-  langPrefix: 'hljs language-',
+  breaks: true,
+  gfm: true,
 });
 
 // Message styling for different roles
@@ -69,7 +66,7 @@ const MessageList: React.FC<MessageListProps> = ({ messages, loading = false }) 
 
   // Parse and sanitize markdown
   const renderMarkdown = (text: string) => {
-    const rawHtml = marked(text);
+    const rawHtml = marked.parse(text) as string;
     const cleanHtml = DOMPurify.sanitize(rawHtml);
     return { __html: cleanHtml };
   };

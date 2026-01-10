@@ -302,3 +302,13 @@ class Database {
 // Create and export database instance
 const db = Database.getInstance();
 export default db;
+
+// Export sequelize instance for model initialization
+export const sequelize = db.sequelize;
+
+// Debug: Log to verify sequelize is defined
+if (!sequelize) {
+  console.error('CRITICAL: sequelize instance is undefined at export time!');
+} else {
+  console.log('sequelize instance exported successfully');
+}

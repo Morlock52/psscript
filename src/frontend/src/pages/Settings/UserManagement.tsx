@@ -304,11 +304,11 @@ const UserManagement: React.FC = () => {
                   <TableRow key={user.id}>
                     <TableCell>
                       {user.username}
-                      {currentUser?.id === user.id && (
-                        <Chip 
-                          label="You" 
-                          size="small" 
-                          color="primary" 
+                      {String(currentUser?.id) === String(user.id) && (
+                        <Chip
+                          label="You"
+                          size="small"
+                          color="primary"
                           sx={{ ml: 1 }}
                         />
                       )}
@@ -344,10 +344,10 @@ const UserManagement: React.FC = () => {
                           <LockResetIcon fontSize="small" />
                         </IconButton>
                       </Tooltip>
-                      
-                      {currentUser?.id !== user.id && (
+
+                      {String(currentUser?.id) !== String(user.id) && (
                         <Tooltip title="Delete user">
-                          <IconButton 
+                          <IconButton
                             onClick={() => handleOpenDeleteDialog(user)}
                             size="small"
                             color="error"
@@ -483,14 +483,14 @@ const UserManagement: React.FC = () => {
               value={newRole}
               label="Role"
               onChange={(e) => setNewRole(e.target.value)}
-              disabled={currentUser?.id === selectedUser?.id}
+              disabled={String(currentUser?.id) === String(selectedUser?.id)}
             >
               <MenuItem value="user">User</MenuItem>
               <MenuItem value="admin">Admin</MenuItem>
             </Select>
           </FormControl>
-          
-          {currentUser?.id === selectedUser?.id && (
+
+          {String(currentUser?.id) === String(selectedUser?.id) && (
             <Alert severity="info" sx={{ mt: 2 }}>
               You cannot change your own role.
             </Alert>

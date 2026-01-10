@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { useQuery } from 'react-query';
+import { useQuery } from '@tanstack/react-query';
 import { scriptService, categoryService, tagService } from '../services/api';
 
 interface FilterState {
@@ -32,19 +32,23 @@ const Search: React.FC = () => {
   };
   
   // Fetch scripts with filters
-  const { data: scriptsData, isLoading, refetch } = useQuery(
-    ['scripts', queryParams],
-    () => scriptService.getScripts(queryParams),
-    {
-      keepPreviousData: true,
-    }
-  );
-  
+  const { data: scriptsData, isLoading, refetch } = useQuery({
+    queryKey: ['scripts', queryParams],
+    queryFn: () => scriptService.getScripts(queryParams),
+    placeholderData: (previousData) => previousData,
+  });
+
   // Fetch categories
-  const { data: categoriesData } = useQuery('categories', () => categoryService.getCategories());
-  
+  const { data: categoriesData } = useQuery({
+    queryKey: ['categories'],
+    queryFn: () => categoryService.getCategories()
+  });
+
   // Fetch popular tags
-  const { data: tagsData } = useQuery('tags', () => tagService.getTags());
+  const { data: tagsData } = useQuery({
+    queryKey: ['tags'],
+    queryFn: () => tagService.getTags()
+  });
   
   const handleFilterChange = (key: keyof FilterState, value: any) => {
     setFilters((prev) => ({

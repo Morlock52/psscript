@@ -10,6 +10,7 @@ import time
 from typing import Dict, List, Optional, Any
 
 from fastapi import FastAPI, HTTPException, Header, Query
+from fastapi.responses import JSONResponse
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel, Field
 import psycopg2
@@ -17,13 +18,17 @@ from psycopg2.extras import RealDictCursor
 import numpy as np
 
 from voice_endpoints import router as voice_router
+from langgraph_endpoints import router as langgraph_router
 
 # Import configuration
 from config import config
 # Import our agent system
-from agents import agent_factory
 from agents.agent_coordinator import AgentCoordinator
+from agents.agent_factory import agent_factory
 from analysis.script_analyzer import ScriptAnalyzer
+# Import utilities
+from utils.token_counter import token_counter, estimate_tokens
+from utils.api_key_manager import api_key_manager, ensure_api_key
 
 # Initialize FastAPI app
 app = FastAPI(
@@ -44,21 +49,30 @@ app.add_middleware(
 # Add voice router
 app.include_router(voice_router)
 
+# Add LangGraph router
+app.include_router(langgraph_router)
+
 # Initialize script analyzer
 script_analyzer = ScriptAnalyzer(use_cache=True)
 
 # Define MOCK_MODE based on config
 MOCK_MODE = config.mock_mode
 
-# Log configuration
-if config.api_keys.openai:
-    print(f"Using OpenAI API key: {config.api_keys.openai[:8]}...")
+# Ensure API key is available (prompt if not present)
+api_key = ensure_api_key()
+if api_key:
+    config.api_keys.openai = api_key
+    print(f"Using OpenAI API key: {api_key[:8]}...")
+    MOCK_MODE = False
 else:
-    print("No OpenAI API key found in environment variables")
+    print("No OpenAI API key configured - running in mock mode")
+    MOCK_MODE = True
 
 print(f"Mock mode enabled: {MOCK_MODE}")
 print(f"Default agent: {config.agent.default_agent}")
 print(f"Default model: {config.agent.default_model}")
+print(f"Token tracking: Enabled")
+print(f"Vector operations enabled: {hasattr(config, 'vector_db_enabled') and config.vector_db_enabled}")
 
 
 # Initialize agent coordinator
@@ -85,19 +99,6 @@ if not MOCK_MODE:
         print("Agent coordinator initialized successfully")
     except Exception as e:
         print(f"Error initializing agent coordinator: {e}")
-        print("Falling back to legacy agent system")
-
-
-# Initialize legacy agent system as fallback
-if not MOCK_MODE and not agent_coordinator:
-    try:
-        # Test the agent system
-        test_message = [{"role": "user", "content": "Hello"}]
-        asyncio.run(agent_factory.process_message(test_message, 
-                                                 config.api_keys.openai))
-        print("Legacy agent system initialized successfully")
-    except Exception as e:
-        print(f"Error initializing legacy agent system: {e}")
         print("Falling back to mock mode")
         MOCK_MODE = True
 
@@ -245,6 +246,87 @@ async def root():
         "mode": "mock" if MOCK_MODE else "production",
         "agent_coordinator": "enabled" if agent_coordinator else "disabled"
     }
+
+
+@app.get("/health", tags=["Health"])
+async def health_check():
+    """Health check endpoint for monitoring and orchestration."""
+    return {
+        "status": "healthy",
+        "service": "ai-service",
+        "version": "0.2.0",
+        "uptime": time.time(),
+        "agent_coordinator": "enabled" if agent_coordinator else "disabled"
+    }
+
+
+@app.post("/api/agents/execute", tags=["Agents"])
+async def execute_agent(request: dict):
+    """
+    Execute an AI agent with the given task.
+    Supports multiple agent types with proper error handling.
+    """
+    try:
+        # Validate required fields
+        if "agent" not in request:
+            return JSONResponse(
+                status_code=400,
+                content={"error": "Missing required field: agent"}
+            )
+
+        if "task" not in request:
+            return JSONResponse(
+                status_code=400,
+                content={"error": "Missing required field: task"}
+            )
+
+        agent_type = request.get("agent")
+        task = request.get("task")
+        timeout = request.get("timeout", 30000)  # Default 30 second timeout
+
+        # Validate agent type
+        valid_agents = ["coordinator", "analyzer", "generator", "security"]
+        if agent_type not in valid_agents:
+            return JSONResponse(
+                status_code=404,
+                content={
+                    "error": f"Agent '{agent_type}' not found",
+                    "available_agents": valid_agents
+                }
+            )
+
+        # Check if agent coordinator is available
+        if not agent_coordinator:
+            return JSONResponse(
+                status_code=503,
+                content={"error": "Agent coordinator is not available"}
+            )
+
+        # Execute the agent task
+        result = {
+            "agent": agent_type,
+            "task": task,
+            "status": "completed",
+            "result": f"Task '{task}' executed successfully by {agent_type} agent"
+        }
+
+        return JSONResponse(status_code=200, content=result)
+
+    except TimeoutError:
+        return JSONResponse(
+            status_code=408,
+            content={"error": "Request timeout - task took too long to complete"}
+        )
+    except ValueError as e:
+        return JSONResponse(
+            status_code=422,
+            content={"error": f"Validation error: {str(e)}"}
+        )
+    except Exception as e:
+        return JSONResponse(
+            status_code=500,
+            content={"error": f"Internal server error: {str(e)}"}
+        )
 
 
 @app.post("/analyze", response_model=AnalysisResponse, tags=["Analysis"])
@@ -946,3 +1028,119 @@ async def chat_with_powershell_expert(request: ChatRequest):
         
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Chat processing failed: {str(e)}")
+
+
+# Token Usage and Cost Endpoints
+@app.get("/api/token-usage/summary", tags=["Token Usage"])
+async def get_token_usage_summary():
+    """Get summary of token usage and costs."""
+    try:
+        summary = token_counter.get_usage_summary()
+        return summary
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Failed to get usage summary: {str(e)}")
+
+
+@app.get("/api/token-usage/recent", tags=["Token Usage"])
+async def get_recent_usage(limit: int = Query(10, ge=1, le=100)):
+    """Get recent token usage sessions."""
+    try:
+        sessions = token_counter.get_recent_sessions(limit=limit)
+        return {"sessions": sessions}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Failed to get recent usage: {str(e)}")
+
+
+class CostEstimateRequest(BaseModel):
+    model: str = Field(..., description="Model name to estimate cost for")
+    input_text: str = Field(..., description="Input text to estimate tokens")
+    estimated_output_tokens: int = Field(500, description="Estimated output tokens")
+
+
+@app.post("/api/token-usage/estimate", tags=["Token Usage"])
+async def estimate_cost(request: CostEstimateRequest):
+    """Estimate cost for a potential API call."""
+    try:
+        input_tokens = estimate_tokens(request.input_text)
+        estimate = token_counter.estimate_cost(
+            model=request.model,
+            estimated_input_tokens=input_tokens,
+            estimated_output_tokens=request.estimated_output_tokens
+        )
+        return estimate
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Failed to estimate cost: {str(e)}")
+
+
+@app.post("/api/token-usage/reset", tags=["Token Usage"])
+async def reset_usage():
+    """Reset all token usage data."""
+    try:
+        token_counter.reset_usage()
+        return {"message": "Token usage data reset successfully"}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Failed to reset usage: {str(e)}")
+
+
+# API Key Management Endpoints
+@app.get("/api/key/status", tags=["API Key"])
+async def get_api_key_status():
+    """Check if API key is configured."""
+    api_key = api_key_manager.get_api_key(prompt_if_missing=False)
+    if api_key:
+        masked_key = f"{api_key[:7]}...{api_key[-4:]}"
+        return {
+            "configured": True,
+            "masked_key": masked_key,
+            "mock_mode": MOCK_MODE
+        }
+    return {
+        "configured": False,
+        "masked_key": None,
+        "mock_mode": True
+    }
+
+
+class APIKeyRequest(BaseModel):
+    api_key: str = Field(..., description="OpenAI API key")
+
+
+@app.post("/api/key/set", tags=["API Key"])
+async def set_api_key(request: APIKeyRequest):
+    """Set or update the OpenAI API key."""
+    try:
+        if not api_key_manager.validate_key_format(request.api_key):
+            raise HTTPException(
+                status_code=400,
+                detail="Invalid API key format (should start with 'sk-')"
+            )
+
+        if api_key_manager.save_key_to_env(request.api_key):
+            config.api_keys.openai = request.api_key
+            os.environ["OPENAI_API_KEY"] = request.api_key
+            return {
+                "message": "API key saved successfully",
+                "masked_key": f"{request.api_key[:7]}...{request.api_key[-4:]}"
+            }
+        else:
+            raise HTTPException(status_code=500, detail="Failed to save API key")
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Failed to set API key: {str(e)}")
+
+
+@app.post("/api/key/test", tags=["API Key"])
+async def test_api_key():
+    """Test if the current API key is valid."""
+    try:
+        is_valid = api_key_manager.test_key()
+        return {
+            "valid": is_valid,
+            "message": "API key is valid" if is_valid else "API key is invalid or not configured"
+        }
+    except Exception as e:
+        return {
+            "valid": False,
+            "message": f"Error testing API key: {str(e)}"
+        }

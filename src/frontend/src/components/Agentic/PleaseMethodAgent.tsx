@@ -227,7 +227,7 @@ const PleaseMethodAgent: React.FC<PleaseMethodAgentProps> = ({
                 metadata: {
                   internet: response.includes('Based on information from the internet') ||
                     response.includes('According to online resources'),
-                  command: generatedScript ? true : false,
+                  command: generatedScript || undefined,
                 },
               }
             : msg

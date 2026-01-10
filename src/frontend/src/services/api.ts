@@ -377,6 +377,18 @@ const scriptService = {
     }
   },
   
+  getExecutionHistory: async (id: string, limit = 10, offset = 0) => {
+    try {
+      const response = await apiClient.get(`/scripts/${id}/execution-history`, {
+        params: { limit, offset }
+      });
+      return response.data;
+    } catch (error) {
+      console.error(`Error fetching execution history for script ${id}:`, error);
+      return { executions: [], pagination: { total: 0, limit, offset, hasMore: false } };
+    }
+  },
+  
   getSimilarScripts: async (id: string) => {
     try {
       const response = await apiClient.get(`/scripts/${id}/similar`);

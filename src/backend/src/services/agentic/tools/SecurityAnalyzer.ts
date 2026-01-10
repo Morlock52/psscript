@@ -1,14 +1,13 @@
-import { OpenAIApi, Configuration } from 'openai';
+import OpenAI from 'openai';
 import dotenv from 'dotenv';
 
 // Initialize environment variables
 dotenv.config();
 
 // Set up OpenAI API client
-const configuration = new Configuration({
-  apiKey: process.env.OPENAI_API_KEY,
+const openai = new OpenAI({
+  apiKey: process.env.OPENAI_API_KEY || '',
 });
-const openai = new OpenAIApi(configuration);
 
 /**
  * Patterns and rules to check for security issues
@@ -132,7 +131,7 @@ function checkSecurityPatterns(script: string): any[] {
  */
 async function analyzeWithAI(script: string): Promise<string> {
   try {
-    const response = await openai.createChatCompletion({
+    const response = await openai.chat.completions.create({
       model: 'gpt-4o',
       messages: [
         {
@@ -146,8 +145,8 @@ async function analyzeWithAI(script: string): Promise<string> {
       ],
       max_tokens: 1024,
     });
-    
-    return response.data.choices[0]?.message?.content || 'AI analysis not available.';
+
+    return response.choices[0]?.message?.content || 'AI analysis not available.';
   } catch (error) {
     console.error('Error using AI for security analysis:', error);
     return 'Unable to perform AI-assisted analysis.';

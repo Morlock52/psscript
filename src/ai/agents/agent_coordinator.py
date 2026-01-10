@@ -28,6 +28,7 @@ from .tool_integration import tool_registry
 from .task_planning import TaskPlanner, TaskType, TaskPriority, TaskContext
 from .state_visualization import StateTracker
 from .voice_agent import VoiceAgent
+from ..analysis.script_analyzer import ScriptAnalyzer
 
 # Configure logging
 logging.basicConfig(
@@ -80,6 +81,9 @@ class AgentCoordinator:
         
         # Create specialized agents
         self._create_specialized_agents(model)
+        
+        # Initialize script analyzer for embeddings
+        self.script_analyzer = ScriptAnalyzer(use_cache=True)
         
         # Visualization output directory
         self.visualization_output_dir = visualization_output_dir
@@ -586,10 +590,25 @@ class AgentCoordinator:
         Returns:
             List of similar scripts with similarity scores
         """
-        # This would typically call a vector search service
-        # For now, return a placeholder
-        logger.info(f"Searching for similar scripts (placeholder)")
-        return []
+        try:
+            logger.info(f"Searching for similar scripts (limit={limit})")
+            
+            # Generate embedding for the input script
+            embedding = await self.generate_script_embedding(script_content)
+            
+            # In a real implementation, this would:
+            # 1. Query the vector database for similar embeddings
+            # 2. Return matching scripts with similarity scores
+            #
+            # For now, we'll return an empty list as the vector DB integration
+            # requires database connection setup
+            
+            logger.info("Vector similarity search completed (no results due to DB not configured)")
+            return []
+            
+        except Exception as e:
+            logger.error(f"Error searching for similar scripts: {e}")
+            return []
     
     async def generate_script_embedding(
         self,
@@ -602,12 +621,19 @@ class AgentCoordinator:
             script_content: Content of the script
             
         Returns:
-            Vector embedding
+            Vector embedding (3072-dimensional for text-embedding-3-large)
         """
-        # This would typically call an embedding service
-        # For now, return a placeholder
-        logger.info(f"Generating script embedding (placeholder)")
-        return [0.0] * 1536  # Placeholder for a 1536-dimensional embedding
+        try:
+            # Use the script analyzer to generate embeddings
+            logger.info("Generating script embedding using text-embedding-3-large")
+            embedding = await self.script_analyzer.generate_embedding_async(script_content)
+            
+            logger.info(f"Generated embedding with {len(embedding)} dimensions")
+            return embedding
+        except Exception as e:
+            logger.error(f"Error generating script embedding: {e}")
+            # Return a zero vector on error
+            return [0.0] * 3072
     
     def visualize_agent_network(
         self,

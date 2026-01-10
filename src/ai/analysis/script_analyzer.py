@@ -15,7 +15,7 @@ from functools import lru_cache
 from concurrent.futures import ThreadPoolExecutor
 from typing import Dict, List, Optional, Tuple, Any, Union, Callable
 
-import openai
+from openai import OpenAI, AsyncOpenAI
 import numpy as np
 from tenacity import retry, stop_after_attempt, wait_exponential, retry_if_exception_type
 from dotenv import load_dotenv
@@ -32,10 +32,13 @@ logger = logging.getLogger("script_analyzer")
 # Load environment variables
 load_dotenv()
 
-# Set OpenAI API key from environment
-openai.api_key = os.getenv("OPENAI_API_KEY")
-if not openai.api_key:
+# Initialize OpenAI clients
+api_key = os.getenv("OPENAI_API_KEY")
+if not api_key:
     raise EnvironmentError("OPENAI_API_KEY environment variable is not set")
+
+client = OpenAI(api_key=api_key)
+async_client = AsyncOpenAI(api_key=api_key)
 
 # Initialize caching
 disk_cache = Cache('./analysis_cache')
@@ -50,10 +53,10 @@ if os.getenv("REDIS_URL"):
     except Exception as e:
         logger.warning(f"Failed to connect to Redis: {e}, falling back to disk cache")
 
-# Constants
-EMBEDDING_MODEL = os.getenv("EMBEDDING_MODEL", "text-embedding-ada-002")
-ANALYSIS_MODEL = os.getenv("ANALYSIS_MODEL", "gpt-4o")
-EMBEDDING_DIMENSION = 1536  # Current OpenAI embedding dimension
+# Constants - Updated for January 2026 best models
+EMBEDDING_MODEL = os.getenv("EMBEDDING_MODEL", "text-embedding-3-large")
+ANALYSIS_MODEL = os.getenv("ANALYSIS_MODEL", "gpt-4-turbo")
+EMBEDDING_DIMENSION = 3072  # text-embedding-3-large dimension (can be customized 256-3072)
 CACHE_TTL = int(os.getenv("CACHE_TTL", "86400"))  # Default: 1 day in seconds
 MAX_WORKERS = int(os.getenv("MAX_WORKERS", "5"))  # Default: 5 concurrent workers
 
@@ -133,15 +136,11 @@ class ScriptAnalyzer:
             logger.debug("Using cached embedding")
             return cached_result
             
-        # Use a background thread to not block the event loop
-        loop = asyncio.get_event_loop()
+        # Use async OpenAI client
         try:
-            response = await loop.run_in_executor(
-                self.executor,
-                lambda: openai.embeddings.create(
-                    model=EMBEDDING_MODEL,
-                    input=text
-                )
+            response = await async_client.embeddings.create(
+                model=EMBEDDING_MODEL,
+                input=text
             )
             
             embedding = response.data[0].embedding
@@ -166,12 +165,18 @@ class ScriptAnalyzer:
         except ImportError:
             # If we can't import the flag, assume vector operations are enabled
             pass
-            
-        loop = asyncio.new_event_loop()
+        
+        # Handle existing event loop
         try:
-            return loop.run_until_complete(self.generate_embedding_async(text))
-        finally:
-            loop.close()
+            loop = asyncio.get_running_loop()
+            # If we're already in an async context, create a task
+            import concurrent.futures
+            with concurrent.futures.ThreadPoolExecutor() as pool:
+                future = pool.submit(asyncio.run, self.generate_embedding_async(text))
+                return future.result()
+        except RuntimeError:
+            # No running event loop, safe to create one
+            return asyncio.run(self.generate_embedding_async(text))
     
     @retry(
         stop=stop_after_attempt(3),
@@ -257,22 +262,17 @@ class ScriptAnalyzer:
         ```
         """
         
-        # Use a background thread to not block the event loop
-        loop = asyncio.get_event_loop()
-        
+        # Use async OpenAI client directly
         try:
-            response = await loop.run_in_executor(
-                self.executor,
-                lambda: openai.chat.completions.create(
-                    model=ANALYSIS_MODEL,
-                    messages=[
-                        {"role": "system", "content": system_prompt},
-                        {"role": "user", "content": user_prompt}
-                    ],
-                    temperature=0.2,
-                    response_format={"type": "json_object"},
-                    timeout=60  # 60 second timeout
-                )
+            response = await async_client.chat.completions.create(
+                model=ANALYSIS_MODEL,
+                messages=[
+                    {"role": "system", "content": system_prompt},
+                    {"role": "user", "content": user_prompt}
+                ],
+                temperature=0.2,
+                response_format={"type": "json_object"},
+                timeout=60  # 60 second timeout
             )
             
             # Parse the JSON response
@@ -326,11 +326,17 @@ class ScriptAnalyzer:
     
     def analyze_script(self, script_content: str) -> Dict[str, Any]:
         """Synchronous wrapper for script analysis."""
-        loop = asyncio.new_event_loop()
+        # Handle existing event loop
         try:
-            return loop.run_until_complete(self.analyze_script_async(script_content))
-        finally:
-            loop.close()
+            loop = asyncio.get_running_loop()
+            # If we're already in an async context, create a task
+            import concurrent.futures
+            with concurrent.futures.ThreadPoolExecutor() as pool:
+                future = pool.submit(asyncio.run, self.analyze_script_async(script_content))
+                return future.result()
+        except RuntimeError:
+            # No running event loop, safe to create one
+            return asyncio.run(self.analyze_script_async(script_content))
     
     async def find_similar_scripts_async(
         self, 
@@ -373,13 +379,22 @@ class ScriptAnalyzer:
         similarity_threshold: float = 0.7
     ) -> List[Tuple[str, float]]:
         """Synchronous wrapper for finding similar scripts."""
-        loop = asyncio.new_event_loop()
+        # Handle existing event loop
         try:
-            return loop.run_until_complete(
+            loop = asyncio.get_running_loop()
+            # If we're already in an async context, create a task
+            import concurrent.futures
+            with concurrent.futures.ThreadPoolExecutor() as pool:
+                future = pool.submit(
+                    asyncio.run, 
+                    self.find_similar_scripts_async(embedding, stored_embeddings, limit, similarity_threshold)
+                )
+                return future.result()
+        except RuntimeError:
+            # No running event loop, safe to create one
+            return asyncio.run(
                 self.find_similar_scripts_async(embedding, stored_embeddings, limit, similarity_threshold)
             )
-        finally:
-            loop.close()
     
     async def analyze_script_with_embedding_async(self, script_content: str) -> Dict[str, Any]:
         """Perform complete analysis including embedding generation asynchronously."""
@@ -401,11 +416,17 @@ class ScriptAnalyzer:
     
     def analyze_script_with_embedding(self, script_content: str) -> Dict[str, Any]:
         """Synchronous wrapper for complete script analysis with embedding."""
-        loop = asyncio.new_event_loop()
+        # Handle existing event loop
         try:
-            return loop.run_until_complete(self.analyze_script_with_embedding_async(script_content))
-        finally:
-            loop.close()
+            loop = asyncio.get_running_loop()
+            # If we're already in an async context, create a task
+            import concurrent.futures
+            with concurrent.futures.ThreadPoolExecutor() as pool:
+                future = pool.submit(asyncio.run, self.analyze_script_with_embedding_async(script_content))
+                return future.result()
+        except RuntimeError:
+            # No running event loop, safe to create one
+            return asyncio.run(self.analyze_script_with_embedding_async(script_content))
     
     async def batch_analyze_scripts_async(self, scripts: Dict[str, str]) -> Dict[str, Dict[str, Any]]:
         """Analyze multiple scripts concurrently."""
@@ -429,11 +450,17 @@ class ScriptAnalyzer:
     
     def batch_analyze_scripts(self, scripts: Dict[str, str]) -> Dict[str, Dict[str, Any]]:
         """Synchronous wrapper for batch script analysis."""
-        loop = asyncio.new_event_loop()
+        # Handle existing event loop
         try:
-            return loop.run_until_complete(self.batch_analyze_scripts_async(scripts))
-        finally:
-            loop.close()
+            loop = asyncio.get_running_loop()
+            # If we're already in an async context, create a task
+            import concurrent.futures
+            with concurrent.futures.ThreadPoolExecutor() as pool:
+                future = pool.submit(asyncio.run, self.batch_analyze_scripts_async(scripts))
+                return future.result()
+        except RuntimeError:
+            # No running event loop, safe to create one
+            return asyncio.run(self.batch_analyze_scripts_async(scripts))
 
 
 # Example usage

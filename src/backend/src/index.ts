@@ -21,6 +21,7 @@ import chatRoutes from './routes/chat';
 // Voice routes are imported differently or disabled
 // import voiceRoutes from './routes/voiceRoutes';
 import aiAgentRoutes from './routes/ai-agent';
+import assistantsRoutes from './routes/assistants';
 import { errorHandler } from './middleware/errorHandler';
 import { setupSwagger } from './utils/swagger';
 import path from 'path';
@@ -408,12 +409,35 @@ app.use(helmet({
 }));
 
 // Enable CORS - configure for both development and production with more permissive settings
+// Supports Server-Sent Events (SSE) for real-time streaming
 app.use(cors({
-  origin: '*', // Allow all origins for simplicity - in production you may want to restrict this
+  // Use dynamic origin to support credentials (cannot be '*' with credentials: true)
+  origin: function (origin, callback) {
+    // Allow requests with no origin (like mobile apps, curl, or Postman)
+    if (!origin) return callback(null, true);
+    // Allow all origins in development
+    callback(null, true);
+  },
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
-  allowedHeaders: ['Content-Type', 'Authorization', 'Accept', 'Origin', 'X-Requested-With'],
-  exposedHeaders: ['Content-Length', 'Content-Type'],
-  credentials: false, // Set to false for simpler CORS handling with file uploads
+  allowedHeaders: [
+    'Content-Type',
+    'Authorization',
+    'Accept',
+    'Origin',
+    'X-Requested-With',
+    'x-openai-api-key',
+    'x-api-key',
+    'Cache-Control',
+    'X-Requested-With'
+  ],
+  exposedHeaders: [
+    'Content-Length',
+    'Content-Type',
+    'Cache-Control',
+    'Connection',
+    'X-Accel-Buffering'
+  ],
+  credentials: true, // Required for EventSource with withCredentials
   preflightContinue: false,
   optionsSuccessStatus: 204
 }));
@@ -528,10 +552,12 @@ app.use('/api/categories', categoryRoutes);
 app.use('/api/tags', tagRoutes);
 app.use('/api/analytics', analyticsRoutes);
 app.use('/api/health', healthRoutes);
+app.use('/health', healthRoutes); // Standard health check endpoint
 app.use('/api/chat', chatRoutes);
 // Voice API is disabled for now
 // app.use('/api/voice', voiceRoutes);
 app.use('/api/ai-agent', aiAgentRoutes);
+app.use('/api/assistants', assistantsRoutes);
 
 // Create proxy routes for the frontend to use
 // This ensures the frontend can directly call /scripts/please instead of /api/ai-agent/please

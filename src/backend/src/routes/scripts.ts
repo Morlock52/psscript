@@ -436,6 +436,135 @@ router.post('/:id/analyze', authenticateJWT, ScriptController.analyzeScriptAndSa
 
 /**
  * @swagger
+ * /api/scripts/{id}/analyze-langgraph:
+ *   post:
+ *     summary: Analyze script using LangGraph orchestrator
+ *     description: Analyzes a script using the LangGraph 1.0 production orchestrator with multi-agent system
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: integer
+ *         description: Script ID
+ *     requestBody:
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               require_human_review:
+ *                 type: boolean
+ *                 description: Whether to require human review during analysis
+ *               thread_id:
+ *                 type: string
+ *                 description: Thread ID for continuing previous analysis
+ *               model:
+ *                 type: string
+ *                 description: AI model to use (default gpt-4)
+ *     responses:
+ *       200:
+ *         description: LangGraph analysis results
+ *       401:
+ *         description: Unauthorized
+ *       404:
+ *         description: Script not found
+ *       503:
+ *         description: AI service unavailable
+ */
+router.post('/:id/analyze-langgraph', authenticateJWT, ScriptController.analyzeLangGraph);
+
+/**
+ * @swagger
+ * /api/scripts/{id}/analysis-stream:
+ *   get:
+ *     summary: Stream analysis progress in real-time
+ *     description: Returns a Server-Sent Events stream of analysis progress
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: integer
+ *         description: Script ID
+ *       - in: query
+ *         name: require_human_review
+ *         schema:
+ *           type: boolean
+ *         description: Whether to require human review
+ *       - in: query
+ *         name: thread_id
+ *         schema:
+ *           type: string
+ *         description: Thread ID for session continuity
+ *       - in: query
+ *         name: model
+ *         schema:
+ *           type: string
+ *         description: AI model to use
+ *     responses:
+ *       200:
+ *         description: SSE stream of analysis events
+ *         content:
+ *           text/event-stream:
+ *             schema:
+ *               type: string
+ *       401:
+ *         description: Unauthorized
+ *       404:
+ *         description: Script not found
+ */
+router.get('/:id/analysis-stream', authenticateJWT, ScriptController.streamAnalysis);
+
+/**
+ * @swagger
+ * /api/scripts/{id}/provide-feedback:
+ *   post:
+ *     summary: Provide human feedback for paused workflow
+ *     description: Continues a paused LangGraph workflow with human feedback
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: integer
+ *         description: Script ID
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - thread_id
+ *               - feedback
+ *             properties:
+ *               thread_id:
+ *                 type: string
+ *                 description: Thread ID of the paused workflow
+ *               feedback:
+ *                 type: string
+ *                 description: Human feedback text
+ *     responses:
+ *       200:
+ *         description: Updated analysis after feedback
+ *       400:
+ *         description: Missing required parameters
+ *       401:
+ *         description: Unauthorized
+ *       404:
+ *         description: Script or workflow not found
+ */
+router.post('/:id/provide-feedback', authenticateJWT, ScriptController.provideFeedback);
+
+/**
+ * @swagger
  * /api/scripts/{id}/execute:
  *   post:
  *     summary: Execute a script
@@ -466,6 +595,37 @@ router.post('/:id/analyze', authenticateJWT, ScriptController.analyzeScriptAndSa
  *         description: Script not found
  */
 router.post('/:id/execute', authenticateJWT, ScriptController.executeScript);
+
+/**
+ * @swagger
+ * /api/scripts/{id}/execution-history:
+ *   get:
+ *     summary: Get execution history for a script
+ *     description: Returns the execution history with pagination
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: integer
+ *         description: Script ID
+ *       - in: query
+ *         name: limit
+ *         schema:
+ *           type: integer
+ *         description: Number of records to return (default 10)
+ *       - in: query
+ *         name: offset
+ *         schema:
+ *           type: integer
+ *         description: Number of records to skip (default 0)
+ *     responses:
+ *       200:
+ *         description: Execution history
+ *       404:
+ *         description: Script not found
+ */
+router.get('/:id/execution-history', authenticateJWT, ScriptController.getExecutionHistory);
 
 /**
  * @swagger

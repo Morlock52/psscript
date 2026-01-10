@@ -56,23 +56,12 @@ const Layout: React.FC<LayoutProps> = ({ children, hideSidebar = false }) => {
       ${theme === 'dark' ? 'bg-gray-900 text-white' : 'bg-gray-50 text-gray-900'}`}>
       {/* Sidebar with animation */}
       {!hideSidebar && (
-        <div 
-          className={`transition-all duration-300 ease-in-out
-            ${sidebarOpen ? 'w-64' : 'w-0 md:w-16'} 
-            ${sidebarOpen ? 'opacity-100' : 'opacity-0 md:opacity-100'}`}
-        >
-          <Sidebar collapsed={!sidebarOpen} theme={theme} />
-        </div>
+        <Sidebar isOpen={sidebarOpen} onClose={() => setSidebarOpen(false)} />
       )}
-      
+
       {/* Main content area */}
       <div className="flex flex-col flex-1 overflow-hidden">
-        <Navbar 
-          onToggleSidebar={toggleSidebar} 
-          onToggleTheme={toggleTheme}
-          theme={theme}
-          sidebarOpen={sidebarOpen}
-        />
+        <Navbar onMenuClick={toggleSidebar} />
         
         <main className={`flex-1 overflow-y-auto p-4 transition-colors duration-300
           ${theme === 'dark' ? 'bg-gray-800' : 'bg-white'}`}>

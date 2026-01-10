@@ -20,31 +20,37 @@ declare global {
 
 /**
  * Middleware to authenticate JWT tokens
+ * Supports tokens in Authorization header or query parameter (for SSE)
  */
 export const authenticateJWT = (req: Request, res: Response, next: NextFunction) => {
-  // Get the authorization header
+  let token: string | undefined;
+
+  // Try to get token from Authorization header first
   const authHeader = req.headers.authorization;
-  
-  if (!authHeader) {
-    return res.status(401).json({ message: 'Authorization header missing' });
+  if (authHeader) {
+    const parts = authHeader.split(' ');
+    if (parts.length === 2 && parts[0] === 'Bearer') {
+      token = parts[1];
+    }
   }
-  
-  // Extract the token
-  const parts = authHeader.split(' ');
-  if (parts.length !== 2 || parts[0] !== 'Bearer') {
-    return res.status(401).json({ message: 'Invalid token format' });
+
+  // If not in header, try query parameter (for SSE which doesn't support custom headers)
+  if (!token && req.query.token) {
+    token = req.query.token as string;
   }
-  
-  const token = parts[1];
-  
+
+  if (!token) {
+    return res.status(401).json({ message: 'Authorization token missing' });
+  }
+
   try {
     // Verify the token (the secret should be in environment variables in production)
     const secret = process.env.JWT_SECRET || 'your-secret-key';
     const decoded = jwt.verify(token, secret) as JwtPayload;
-    
+
     // Add user info to request object
     req.user = decoded;
-    
+
     next();
   } catch (error) {
     return res.status(403).json({ message: 'Invalid or expired token' });

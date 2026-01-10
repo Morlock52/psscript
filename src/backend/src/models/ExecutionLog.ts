@@ -73,6 +73,7 @@ export default class ExecutionLog extends Model {
     }, {
       sequelize,
       tableName: 'execution_logs',
+      underscored: true,
       indexes: [
         {
           fields: ['scriptId']

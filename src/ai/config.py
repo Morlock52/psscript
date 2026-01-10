@@ -43,8 +43,9 @@ class AgentConfig(BaseModel):
     default_agent: str = Field("langchain", description="Default agent type")
     max_steps: int = Field(10, description="Maximum steps for AutoGPT agent")
     memory_size: int = Field(10, description="Number of messages to keep in memory")
-    default_model: str = Field("o3-mini", description="Default OpenAI model")
-    # Removed fallback_model - only using o3-mini
+    default_model: str = Field("gpt-4-turbo", description="Default OpenAI model for general tasks")
+    reasoning_model: str = Field("gpt-4o", description="OpenAI model for complex analysis and reasoning")
+    embedding_model: str = Field("text-embedding-3-large", description="OpenAI model for generating embeddings")
     temperature: float = Field(0.7, description="Default temperature for OpenAI API calls")
     max_tokens: int = Field(4000, description="Maximum tokens for OpenAI API calls")
 
@@ -129,8 +130,13 @@ def load_config() -> Config:
         logger.warning("No OpenAI API key provided, enabling mock mode")
         config.mock_mode = True
     
-    # Update all agent models to o3-mini
-    config.agent.default_model = "o3-mini"
+    # Ensure valid models are set
+    if not config.agent.default_model:
+        config.agent.default_model = "gpt-4-turbo"
+    if not config.agent.reasoning_model:
+        config.agent.reasoning_model = "gpt-4o"
+    if not hasattr(config.agent, 'embedding_model') or not config.agent.embedding_model:
+        config.agent.embedding_model = "text-embedding-3-large"
     
     return config
 

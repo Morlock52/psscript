@@ -1,10 +1,13 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { useQuery } from 'react-query';
+import { useQuery } from '@tanstack/react-query';
 import { scriptService } from '../services/api';
 import axios from 'axios';
 import ReactMarkdown from 'react-markdown';
 import { FaExclamationTriangle, FaCheckCircle, FaInfoCircle, FaLightbulb, FaChartLine, FaPaperPlane, FaRobot } from 'react-icons/fa';
+// LangGraph Integration
+import { streamAnalysis, AnalysisEvent, LangGraphAnalysisResults } from '../services/langgraphService';
+import { AnalysisProgressPanel } from '../components/Analysis/AnalysisProgressPanel';
 
 // Define message type for AI chat
 interface Message {
@@ -16,30 +19,34 @@ const ScriptAnalysis: React.FC = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState<string>('overview');
-  
+
   // AI Assistant state
   const [messages, setMessages] = useState<Message[]>([]);
   const [input, setInput] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
+
+  // LangGraph Analysis state
+  const [isAnalyzing, setIsAnalyzing] = useState(false);
+  const [analysisEvents, setAnalysisEvents] = useState<AnalysisEvent[]>([]);
+  const [currentStage, setCurrentStage] = useState('idle');
+  const [workflowId, setWorkflowId] = useState<string | null>(null);
+  const [analysisError, setAnalysisError] = useState<string | null>(null);
+  const cleanupRef = useRef<(() => void) | null>(null);
   
-  const { data: script, isLoading: scriptLoading } = useQuery(
-    ['script', id],
-    () => scriptService.getScript(id || ''),
-    {
-      enabled: !!id,
-      refetchOnWindowFocus: false,
-    }
-  );
-  
-  const { data: analysis, isLoading: analysisLoading } = useQuery(
-    ['scriptAnalysis', id],
-    () => scriptService.getScriptAnalysis(id || ''),
-    {
-      enabled: !!id,
-      refetchOnWindowFocus: false,
-    }
-  );
+  const { data: script, isLoading: scriptLoading } = useQuery({
+    queryKey: ['script', id],
+    queryFn: () => scriptService.getScript(id || ''),
+    enabled: !!id,
+    refetchOnWindowFocus: false,
+  });
+
+  const { data: analysis, isLoading: analysisLoading } = useQuery({
+    queryKey: ['scriptAnalysis', id],
+    queryFn: () => scriptService.getScriptAnalysis(id || ''),
+    enabled: !!id,
+    refetchOnWindowFocus: false,
+  });
   
   const isDataLoading = scriptLoading || analysisLoading;
   
@@ -137,6 +144,89 @@ If you don't know something specific about the script, be honest about it.
       setIsLoading(false);
     }
   };
+
+  // LangGraph Analysis Handler
+  const handleLangGraphAnalysis = async () => {
+    if (!id) return;
+
+    setIsAnalyzing(true);
+    setAnalysisEvents([]);
+    setAnalysisError(null);
+    setCurrentStage('analyzing');
+
+    try {
+      // Start streaming analysis
+      const cleanup = streamAnalysis(
+        parseInt(id),
+        (event: AnalysisEvent) => {
+          // Add event to history
+          setAnalysisEvents((prev) => [...prev, event]);
+
+          // Handle different event types
+          switch (event.type) {
+            case 'stage_change':
+              setCurrentStage(event.data?.stage || 'unknown');
+              break;
+
+            case 'tool_started':
+              console.log(`[LangGraph] Tool started: ${event.data?.tool_name}`);
+              break;
+
+            case 'tool_completed':
+              console.log(`[LangGraph] Tool completed: ${event.data?.tool_name}`);
+              break;
+
+            case 'completed':
+              setIsAnalyzing(false);
+              setCurrentStage('completed');
+              // Refetch the analysis to get updated results
+              if (id) {
+                scriptService.getScriptAnalysis(id).catch(console.error);
+              }
+              break;
+
+            case 'error':
+              setIsAnalyzing(false);
+              setCurrentStage('failed');
+              setAnalysisError(event.message || 'Analysis failed');
+              console.error('[LangGraph] Analysis error:', event.message);
+              break;
+
+            case 'human_review_required':
+              setIsAnalyzing(false);
+              setCurrentStage('paused');
+              break;
+          }
+
+          // Extract workflow ID from first event that has it
+          if (event.data?.workflow_id && !workflowId) {
+            setWorkflowId(event.data.workflow_id);
+          }
+        },
+        {
+          require_human_review: false,
+          model: 'gpt-4',
+        }
+      );
+
+      // Store cleanup function
+      cleanupRef.current = cleanup;
+    } catch (error) {
+      console.error('[LangGraph] Failed to start analysis:', error);
+      setIsAnalyzing(false);
+      setCurrentStage('failed');
+      setAnalysisError(error instanceof Error ? error.message : 'Failed to start analysis');
+    }
+  };
+
+  // Cleanup on unmount
+  useEffect(() => {
+    return () => {
+      if (cleanupRef.current) {
+        cleanupRef.current();
+      }
+    };
+  }, []);
 
   // Render code blocks with syntax highlighting
   const CodeBlock = ({ className, children }: { className?: string; children: React.ReactNode }) => {
@@ -303,12 +393,85 @@ If you don't know something specific about the script, be honest about it.
         <div className="md:col-span-2">
           {/* Overview Tab */}
           {activeTab === 'overview' && (
-            <div className="bg-gray-700 rounded-lg shadow mb-6">
-              <div className="p-4 bg-gray-800 border-b border-gray-600">
-                <h2 className="text-lg font-medium">Analysis Summary</h2>
+            <>
+              {/* LangGraph Analysis Button */}
+              <div className="bg-gradient-to-r from-indigo-900 to-purple-900 rounded-lg shadow mb-6 p-6 border border-indigo-700">
+                <div className="flex items-center justify-between">
+                  <div className="flex-1">
+                    <h3 className="text-xl font-bold text-white mb-2 flex items-center">
+                      <FaRobot className="mr-3 text-indigo-400" size={24} />
+                      AI Agent Analysis
+                    </h3>
+                    <p className="text-gray-300 text-sm">
+                      Run deep multi-agent analysis with LangGraph orchestrator for comprehensive security scanning, quality assessment, and optimization recommendations.
+                    </p>
+                  </div>
+                  <button
+                    onClick={handleLangGraphAnalysis}
+                    disabled={isAnalyzing}
+                    className={`ml-6 px-6 py-3 rounded-lg font-medium transition-all ${
+                      isAnalyzing
+                        ? 'bg-gray-600 text-gray-400 cursor-not-allowed'
+                        : 'bg-indigo-600 text-white hover:bg-indigo-700 hover:shadow-lg'
+                    }`}
+                  >
+                    {isAnalyzing ? (
+                      <span className="flex items-center">
+                        <svg className="animate-spin -ml-1 mr-3 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                          <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                          <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                        </svg>
+                        Analyzing...
+                      </span>
+                    ) : (
+                      'Analyze with AI Agents'
+                    )}
+                  </button>
+                </div>
               </div>
-              <div className="p-6">
-                <p className="text-gray-300 mb-6">{analysis.purpose}</p>
+
+              {/* Analysis Progress Panel */}
+              {isAnalyzing && (
+                <AnalysisProgressPanel
+                  workflowId={workflowId || undefined}
+                  currentStage={currentStage}
+                  status="analyzing"
+                  events={analysisEvents}
+                />
+              )}
+
+              {/* Analysis Complete Message */}
+              {currentStage === 'completed' && !isAnalyzing && (
+                <div className="bg-green-900 bg-opacity-20 border border-green-700 rounded-lg p-4 mb-6">
+                  <div className="flex items-center">
+                    <FaCheckCircle className="text-green-400 mr-3" size={20} />
+                    <div>
+                      <h4 className="font-medium text-green-300">Analysis Complete!</h4>
+                      <p className="text-sm text-gray-300">The analysis results have been updated below.</p>
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              {/* Analysis Error Message */}
+              {analysisError && (
+                <div className="bg-red-900 bg-opacity-20 border border-red-700 rounded-lg p-4 mb-6">
+                  <div className="flex items-center">
+                    <FaExclamationTriangle className="text-red-400 mr-3" size={20} />
+                    <div>
+                      <h4 className="font-medium text-red-300">Analysis Failed</h4>
+                      <p className="text-sm text-gray-300">{analysisError}</p>
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              <div className="bg-gray-700 rounded-lg shadow mb-6">
+                <div className="p-4 bg-gray-800 border-b border-gray-600">
+                  <h2 className="text-lg font-medium">Analysis Summary</h2>
+                </div>
+                <div className="p-6">
+                  <p className="text-gray-300 mb-6">{analysis.purpose}</p>
                 
                 <div className="grid grid-cols-4 gap-4 mb-8">
                   {renderScoreIndicator(analysis.code_quality_score, 'Quality')}
@@ -558,9 +721,10 @@ This script follows the PowerShell cmdlet naming convention "Verb-Noun" and uses
                   </div>
                 </div>
               </div>
-            </div>
+              </div>
+            </>
           )}
-          
+
           {/* Security Tab */}
           {activeTab === 'security' && (
             <div className="bg-gray-700 rounded-lg shadow mb-6">

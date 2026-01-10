@@ -1,18 +1,14 @@
 """
 Agents Package
 
-This package contains implementations of various AI agents with advanced capabilities,
-including LangChain and AutoGPT-inspired agents for autonomous reasoning, planning,
-and execution.
+This package contains the AI agent coordination system for PowerShell script analysis.
+Uses AgentCoordinator for LangGraph-based multi-agent workflows.
+
+Legacy agents (LangChain, AutoGPT, etc.) have been archived to agents/archived/
 """
 
-from .langchain_agent import LangChainAgent
-from .autogpt_agent import AutoGPTAgent
-from .agent_factory import agent_factory, AgentFactory
+from .agent_coordinator import AgentCoordinator
 
 __all__ = [
-    'LangChainAgent',
-    'AutoGPTAgent',
-    'agent_factory',
-    'AgentFactory'
+    'AgentCoordinator'
 ]

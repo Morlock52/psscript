@@ -7,6 +7,7 @@ interface Category {
   name: string;
   description: string;
   count?: number;
+  scriptCount?: number; // Backend returns scriptCount
   color?: string;
 }
 
@@ -54,9 +55,13 @@ const CategoryPieChart: React.FC<CategoryPieChartProps> = ({ data, theme }) => {
     if (!chartRef.current) return;
     
     // Prepare data for chart
-    const categories = data.filter(category => category.count !== undefined && category.count > 0);
+    // Use scriptCount if count is not provided (backend compatibility)
+    const categories = data.filter(category => {
+      const countValue = category.count ?? category.scriptCount ?? 0;
+      return countValue > 0;
+    });
     const labels = categories.map(category => category.name);
-    const counts = categories.map(category => category.count || 0);
+    const counts = categories.map(category => category.count ?? category.scriptCount ?? 0);
     const colors = categories.map(category => category.color || '');
     
     // Use provided colors or generate new ones
