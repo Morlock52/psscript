@@ -858,7 +858,8 @@ class ScriptController {
       try {
         scriptContent = req.file.buffer.toString('utf8');
         
-        // Check for binary content
+        // Check for binary content (control characters indicate non-text file)
+        // eslint-disable-next-line no-control-regex
         if (scriptContent.includes('\u0000') || /[\x00-\x08\x0B\x0C\x0E-\x1F]/.test(scriptContent)) {
           if (transaction) await transaction.rollback();
           return res.status(400).json({
@@ -1165,7 +1166,8 @@ class ScriptController {
       // Add parameters to command if provided
       if (params && Object.keys(params).length > 0) {
         const paramStrings = Object.entries(params).map(([key, value]) => {
-          // Properly escape parameter values
+          // Properly escape parameter values for PowerShell (backtick is escape char)
+          // eslint-disable-next-line no-useless-escape
           const escapedValue = String(value).replace(/"/g, '\`"').replace(/\$/g, '\`$');
           return `-${key} "${escapedValue}"`;
         });
@@ -1699,7 +1701,7 @@ class ScriptController {
   async analyzeLangGraph(req: Request, res: Response, next: NextFunction) {
     try {
       const scriptId = req.params.id;
-      const { require_human_review = false, thread_id, model = 'gpt-4' } = req.body;
+      const { require_human_review = false, thread_id, model = 'gpt-4o' } = req.body;
 
       logger.info(`[LangGraph] Starting analysis for script ${scriptId}`);
 
@@ -1822,7 +1824,7 @@ class ScriptController {
   async streamAnalysis(req: Request, res: Response, next: NextFunction) {
     try {
       const scriptId = req.params.id;
-      const { require_human_review = false, thread_id, model = 'gpt-4' } = req.query;
+      const { require_human_review = false, thread_id, model = 'gpt-4o' } = req.query;
 
       logger.info(`[LangGraph] Starting streaming analysis for script ${scriptId}`);
 

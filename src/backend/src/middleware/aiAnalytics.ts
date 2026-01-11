@@ -7,7 +7,7 @@
  */
 
 import { Request, Response, NextFunction } from 'express';
-import { Sequelize, DataTypes, Model } from 'sequelize';
+import { Sequelize, DataTypes, Model, Op } from 'sequelize';
 import logger from '../utils/logger';
 
 /**
@@ -279,8 +279,8 @@ export class AIAnalyticsMiddleware {
 
     const whereClause: any = {
       createdAt: {
-        [Sequelize.Op.gte]: startDate,
-        [Sequelize.Op.lte]: endDate,
+        [Op.gte]: startDate,
+        [Op.lte]: endDate,
       },
     };
 
@@ -390,17 +390,17 @@ export class AIAnalyticsMiddleware {
     const startOfMonth = new Date(today.getFullYear(), today.getMonth(), 1);
 
     const [dailyCost, monthlyCost] = await Promise.all([
-      AIMetric.sum('total_cost', {
+      AIMetric.sum('totalCost' as keyof AIMetricAttributes, {
         where: {
           createdAt: {
-            [Sequelize.Op.gte]: today,
+            [Op.gte]: today,
           },
         },
       }),
-      AIMetric.sum('total_cost', {
+      AIMetric.sum('totalCost' as keyof AIMetricAttributes, {
         where: {
           createdAt: {
-            [Sequelize.Op.gte]: startOfMonth,
+            [Op.gte]: startOfMonth,
           },
         },
       }),

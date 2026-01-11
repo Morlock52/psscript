@@ -1,5 +1,5 @@
 import express from 'express';
-import { assistantsController } from '../controllers/agentic/AssistantsController';
+import { assistantsController } from '../controllers/Agentic/AssistantsController';
 
 const router = express.Router();
 

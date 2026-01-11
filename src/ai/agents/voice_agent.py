@@ -33,7 +33,7 @@ class VoiceAgent(Agent):
         agent_id: str,
         name: str,
         api_key: Optional[str] = None,
-        model: str = "o3-mini"
+        model: str = "gpt-4o"
     ):
         """
         Initialize the Voice Agent.

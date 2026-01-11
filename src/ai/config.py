@@ -39,15 +39,40 @@ class RateLimits(BaseModel):
     alpha_vantage_rpm: int = Field(5, description="Alpha Vantage requests per minute")
 
 class AgentConfig(BaseModel):
-    """Agent configuration."""
-    default_agent: str = Field("langchain", description="Default agent type")
-    max_steps: int = Field(10, description="Maximum steps for AutoGPT agent")
-    memory_size: int = Field(10, description="Number of messages to keep in memory")
-    default_model: str = Field("gpt-4-turbo", description="Default OpenAI model for general tasks")
-    reasoning_model: str = Field("gpt-4o", description="OpenAI model for complex analysis and reasoning")
-    embedding_model: str = Field("text-embedding-3-large", description="OpenAI model for generating embeddings")
-    temperature: float = Field(0.7, description="Default temperature for OpenAI API calls")
-    max_tokens: int = Field(4000, description="Maximum tokens for OpenAI API calls")
+    """Agent configuration - Updated January 2026.
+
+    Based on latest OpenAI model recommendations:
+    - o3: Best reasoning model for complex tasks (coding, math, STEM)
+    - gpt-4o: Best general-purpose model
+    - gpt-4o-mini: Fast model for quick tasks
+
+    Reference: https://platform.openai.com/docs/models
+    """
+    default_agent: str = Field("langgraph", description="Default agent type (langgraph recommended)")
+    max_steps: int = Field(15, description="Maximum steps for agent workflows")
+    memory_size: int = Field(20, description="Number of messages to keep in memory")
+
+    # Updated models for January 2026
+    default_model: str = Field("gpt-4o", description="Default OpenAI model for general tasks")
+    reasoning_model: str = Field("o3", description="OpenAI o3 reasoning model for complex analysis")
+    fast_model: str = Field("gpt-4o-mini", description="Fast model for quick tasks")
+
+    # Embedding configuration
+    embedding_model: str = Field("text-embedding-3-large", description="Embedding model (3072 dimensions)")
+    embedding_dimensions: int = Field(3072, description="Dimension size for embeddings")
+
+    # Temperature settings
+    temperature: float = Field(0.3, description="Default temperature for general tasks")
+    reasoning_temperature: float = Field(0.1, description="Lower temperature for reasoning")
+
+    # Token limits
+    max_tokens: int = Field(4096, description="Maximum tokens for general API calls")
+    max_reasoning_tokens: int = Field(8192, description="Maximum tokens for reasoning model")
+
+    # Timeout settings
+    request_timeout: int = Field(60, description="Request timeout in seconds")
+    analysis_timeout: int = Field(120, description="Analysis timeout in seconds")
+    reasoning_timeout: int = Field(300, description="Reasoning task timeout in seconds")
 
 class Config(BaseModel):
     """Main configuration."""
@@ -130,13 +155,17 @@ def load_config() -> Config:
         logger.warning("No OpenAI API key provided, enabling mock mode")
         config.mock_mode = True
     
-    # Ensure valid models are set
+    # Ensure valid models are set - Updated January 2026
     if not config.agent.default_model:
-        config.agent.default_model = "gpt-4-turbo"
+        config.agent.default_model = "gpt-4o"  # Current best stable model
     if not config.agent.reasoning_model:
         config.agent.reasoning_model = "gpt-4o"
+    if not hasattr(config.agent, 'fast_model') or not config.agent.fast_model:
+        config.agent.fast_model = "gpt-4o-mini"  # Fast model for quick tasks
     if not hasattr(config.agent, 'embedding_model') or not config.agent.embedding_model:
         config.agent.embedding_model = "text-embedding-3-large"
+    if not hasattr(config.agent, 'embedding_dimensions'):
+        config.agent.embedding_dimensions = 3072
     
     return config
 

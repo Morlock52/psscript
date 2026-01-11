@@ -28,7 +28,7 @@ from .tool_integration import tool_registry
 from .task_planning import TaskPlanner, TaskType, TaskPriority, TaskContext
 from .state_visualization import StateTracker
 from .voice_agent import VoiceAgent
-from ..analysis.script_analyzer import ScriptAnalyzer
+from analysis.script_analyzer import ScriptAnalyzer
 
 # Configure logging
 logging.basicConfig(
@@ -48,20 +48,21 @@ class AgentCoordinator:
         api_key: Optional[str] = None,
         memory_storage_path: Optional[str] = None,
         visualization_output_dir: Optional[str] = None,
-        model: str = "o3-mini"
+        model: str = "gpt-4o"  # Updated to gpt-4o for January 2026
     ):
         """
         Initialize the agent coordinator.
-        
+
         Args:
             api_key: OpenAI API key
             memory_storage_path: Path to store memory
             visualization_output_dir: Directory to save visualizations
-            model: Model to use for agents
+            model: Model to use for agents (default: gpt-4o as of January 2026)
         """
         self.api_key = api_key or os.environ.get("OPENAI_API_KEY")
+        self.model = model
         if not self.api_key:
-            raise ValueError("OpenAI API key is required")
+            logger.warning("OpenAI API key is not set, some features may not work")
         
         # Initialize the multi-agent system
         self.multi_agent_system = MultiAgentSystem(coordinator_api_key=self.api_key)
@@ -282,181 +283,183 @@ class AgentCoordinator:
         metadata: Optional[Dict[str, Any]] = None
     ) -> Dict[str, Any]:
         """
-        Analyze a PowerShell script using the multi-agent system.
-        
+        Analyze a PowerShell script using the ScriptAnalyzer directly.
+
+        This method executes analysis directly instead of creating tasks,
+        ensuring actual results are returned.
+
         Args:
             script_content: Content of the script
             script_name: Name of the script
             script_id: ID of the script in the database
             metadata: Additional metadata for the script
-            
+
         Returns:
-            Analysis results from all agents
+            Analysis results including purpose, security, categorization, and optimization
         """
+        start_time = time.time()
+
         # Start a new episode in the memory system
         episode_name = f"Script Analysis: {script_name or script_id or 'Unnamed Script'}"
         self.memory_system.start_new_episode(episode_name)
-        
+
         # Add script to working memory
-        script_memory_id = self.memory_system.add_to_working_memory(
+        self.memory_system.add_to_working_memory(
             content=script_content,
             memory_type="script",
             source="user",
             importance=0.9
         )
-        
-        # Create a task for script analysis
-        analysis_task_id = self.multi_agent_system.create_task(
-            name=f"Analyze Script: {script_name or script_id or 'Unnamed Script'}",
-            description=f"Analyze the PowerShell script to determine its purpose, functionality, security risks, and quality.",
-            required_capabilities=[AgentCapability.SCRIPT_ANALYSIS, AgentCapability.REASONING],
-            priority=5,
-            context={
-                "script_content": script_content,
+
+        try:
+            # Execute analysis directly using ScriptAnalyzer (which works!)
+            logger.info(f"Starting script analysis for {script_name or script_id or 'Unnamed Script'}")
+
+            # Run all analysis tasks concurrently for better performance
+            analysis_task = asyncio.create_task(
+                self.script_analyzer.analyze_script_async(script_content)
+            )
+            embedding_task = asyncio.create_task(
+                self.script_analyzer.generate_embedding_async(script_content)
+            )
+
+            # Also run tool-based analysis in parallel
+            security_task = asyncio.create_task(
+                self._execute_security_analysis(script_content)
+            )
+            categorization_task = asyncio.create_task(
+                self._execute_categorization(script_content)
+            )
+            documentation_task = asyncio.create_task(
+                self._execute_documentation_search(script_content)
+            )
+
+            # Wait for all tasks to complete
+            analysis_result, embedding, security_result, categorization_result, documentation_result = await asyncio.gather(
+                analysis_task,
+                embedding_task,
+                security_task,
+                categorization_task,
+                documentation_task,
+                return_exceptions=True
+            )
+
+            # Handle any exceptions in results
+            if isinstance(analysis_result, Exception):
+                logger.error(f"Analysis failed: {analysis_result}")
+                analysis_result = {"error": str(analysis_result)}
+            if isinstance(embedding, Exception):
+                logger.error(f"Embedding generation failed: {embedding}")
+                embedding = [0.0] * 3072
+            if isinstance(security_result, Exception):
+                logger.error(f"Security analysis failed: {security_result}")
+                security_result = {"error": str(security_result)}
+            if isinstance(categorization_result, Exception):
+                logger.error(f"Categorization failed: {categorization_result}")
+                categorization_result = {"error": str(categorization_result)}
+            if isinstance(documentation_result, Exception):
+                logger.error(f"Documentation search failed: {documentation_result}")
+                documentation_result = {"error": str(documentation_result)}
+
+            # Combine results
+            results = {
                 "script_name": script_name,
                 "script_id": script_id,
-                "metadata": metadata or {}
+                "analysis_time": time.time() - start_time,
+                "timestamp": datetime.now().isoformat(),
+                "model": self.model,
+                # Main analysis results
+                "purpose": analysis_result.get("purpose", "Unknown purpose"),
+                "security_analysis": security_result.get("security_issues", analysis_result.get("security_analysis", [])),
+                "security_score": security_result.get("security_score", analysis_result.get("security_score", 5.0)),
+                "code_quality_score": analysis_result.get("code_quality_score", 5.0),
+                "parameters": analysis_result.get("parameters", {}),
+                "category": categorization_result.get("category", analysis_result.get("category", "Utilities & Helpers")),
+                "category_id": categorization_result.get("category_id", analysis_result.get("category_id", 10)),
+                "optimization": analysis_result.get("optimization", []),
+                "risk_score": analysis_result.get("risk_score", 5.0),
+                "reliability_score": analysis_result.get("reliability_score", 5.0),
+                "command_details": analysis_result.get("command_details", []),
+                "ms_docs_references": documentation_result.get("references", analysis_result.get("ms_docs_references", [])),
+                "embedding_generated": len(embedding) > 0 and any(e != 0.0 for e in embedding[:10])
             }
-        )
-        
-        # Create a task for security analysis
-        security_task_id = self.multi_agent_system.create_task(
-            name=f"Security Analysis: {script_name or script_id or 'Unnamed Script'}",
-            description=f"Analyze the PowerShell script for security vulnerabilities and risks.",
-            required_capabilities=[AgentCapability.SECURITY_ANALYSIS],
-            priority=4,
-            context={
-                "script_content": script_content,
+
+            # Add to long-term memory
+            self.memory_system.add_to_long_term_memory(
+                content=results,
+                memory_type="analysis_results",
+                source="agent_coordinator",
+                importance=0.8
+            )
+
+            # Add event to episodic memory
+            self.memory_system.add_event(
+                event_type="script_analysis_completed",
+                content={
+                    "script_name": script_name,
+                    "script_id": script_id,
+                    "analysis_time": results["analysis_time"]
+                }
+            )
+
+            logger.info(f"Script analysis completed in {results['analysis_time']:.2f} seconds")
+            return results
+
+        except Exception as e:
+            logger.error(f"Error in analyze_script: {e}")
+            return {
                 "script_name": script_name,
                 "script_id": script_id,
-                "metadata": metadata or {}
+                "analysis_time": time.time() - start_time,
+                "timestamp": datetime.now().isoformat(),
+                "error": str(e),
+                "purpose": "Error analyzing script",
+                "security_score": 5.0,
+                "code_quality_score": 5.0,
+                "risk_score": 5.0
             }
-        )
-        
-        # Create a task for categorization
-        categorization_task_id = self.multi_agent_system.create_task(
-            name=f"Categorize Script: {script_name or script_id or 'Unnamed Script'}",
-            description=f"Categorize the PowerShell script based on its purpose and functionality.",
-            required_capabilities=[AgentCapability.CATEGORIZATION],
-            priority=3,
-            context={
-                "script_content": script_content,
-                "script_name": script_name,
-                "script_id": script_id,
-                "metadata": metadata or {}
-            }
-        )
-        
-        # Create a task for documentation
-        documentation_task_id = self.multi_agent_system.create_task(
-            name=f"Find Documentation: {script_name or script_id or 'Unnamed Script'}",
-            description=f"Find relevant documentation for the PowerShell commands used in the script.",
-            required_capabilities=[AgentCapability.DOCUMENTATION, AgentCapability.TOOL_USE],
-            priority=2,
-            context={
-                "script_content": script_content,
-                "script_name": script_name,
-                "script_id": script_id,
-                "metadata": metadata or {}
-            }
-        )
-        
-        # Create a task for optimization
-        optimization_task_id = self.multi_agent_system.create_task(
-            name=f"Optimize Script: {script_name or script_id or 'Unnamed Script'}",
-            description=f"Suggest optimizations for the PowerShell script to improve performance, readability, and maintainability.",
-            required_capabilities=[AgentCapability.OPTIMIZATION, AgentCapability.CODE_GENERATION],
-            priority=1,
-            context={
-                "script_content": script_content,
-                "script_name": script_name,
-                "script_id": script_id,
-                "metadata": metadata or {}
-            }
-        )
-        
-        # Wait for tasks to complete
-        tasks_completed = False
-        start_time = time.time()
-        timeout = 300  # 5 minutes timeout
-        
-        while not tasks_completed and time.time() - start_time < timeout:
-            # Check if all tasks are completed
-            analysis_task = self.multi_agent_system.tasks.get(analysis_task_id)
-            security_task = self.multi_agent_system.tasks.get(security_task_id)
-            categorization_task = self.multi_agent_system.tasks.get(categorization_task_id)
-            documentation_task = self.multi_agent_system.tasks.get(documentation_task_id)
-            optimization_task = self.multi_agent_system.tasks.get(optimization_task_id)
-            
-            if (
-                analysis_task and analysis_task.status in [TaskStatus.COMPLETED, TaskStatus.FAILED] and
-                security_task and security_task.status in [TaskStatus.COMPLETED, TaskStatus.FAILED] and
-                categorization_task and categorization_task.status in [TaskStatus.COMPLETED, TaskStatus.FAILED] and
-                documentation_task and documentation_task.status in [TaskStatus.COMPLETED, TaskStatus.FAILED] and
-                optimization_task and optimization_task.status in [TaskStatus.COMPLETED, TaskStatus.FAILED]
-            ):
-                tasks_completed = True
-            else:
-                # Wait a bit before checking again
-                await asyncio.sleep(1)
-        
-        # Collect results
-        results = {
-            "script_name": script_name,
-            "script_id": script_id,
-            "analysis_time": time.time() - start_time,
-            "timestamp": datetime.now().isoformat()
-        }
-        
-        # Add analysis results
-        if analysis_task and analysis_task.status == TaskStatus.COMPLETED:
-            results["analysis"] = analysis_task.result
-        else:
-            results["analysis"] = {"error": "Analysis task failed or timed out"}
-        
-        # Add security results
-        if security_task and security_task.status == TaskStatus.COMPLETED:
-            results["security"] = security_task.result
-        else:
-            results["security"] = {"error": "Security task failed or timed out"}
-        
-        # Add categorization results
-        if categorization_task and categorization_task.status == TaskStatus.COMPLETED:
-            results["categorization"] = categorization_task.result
-        else:
-            results["categorization"] = {"error": "Categorization task failed or timed out"}
-        
-        # Add documentation results
-        if documentation_task and documentation_task.status == TaskStatus.COMPLETED:
-            results["documentation"] = documentation_task.result
-        else:
-            results["documentation"] = {"error": "Documentation task failed or timed out"}
-        
-        # Add optimization results
-        if optimization_task and optimization_task.status == TaskStatus.COMPLETED:
-            results["optimization"] = optimization_task.result
-        else:
-            results["optimization"] = {"error": "Optimization task failed or timed out"}
-        
-        # Add to long-term memory
-        self.memory_system.add_to_long_term_memory(
-            content=results,
-            memory_type="analysis_results",
-            source="agent_coordinator",
-            importance=0.8
-        )
-        
-        # Add event to episodic memory
-        self.memory_system.add_event(
-            event_type="script_analysis_completed",
-            content={
-                "script_name": script_name,
-                "script_id": script_id,
-                "analysis_time": results["analysis_time"]
-            }
-        )
-        
-        return results
+
+    async def _execute_security_analysis(self, script_content: str) -> Dict[str, Any]:
+        """Execute security analysis using tool registry."""
+        try:
+            result = await tool_registry.execute_tool(
+                tool_name="security_analysis",
+                args={"script_content": script_content},
+                use_cache=True,
+                api_key=self.api_key
+            )
+            return result.get("result", {}) if result.get("success") else {"error": result.get("error")}
+        except Exception as e:
+            logger.error(f"Security analysis error: {e}")
+            return {"error": str(e)}
+
+    async def _execute_categorization(self, script_content: str) -> Dict[str, Any]:
+        """Execute categorization using tool registry."""
+        try:
+            result = await tool_registry.execute_tool(
+                tool_name="script_categorization",
+                args={"script_content": script_content},
+                use_cache=True,
+                api_key=self.api_key
+            )
+            return result.get("result", {}) if result.get("success") else {"error": result.get("error")}
+        except Exception as e:
+            logger.error(f"Categorization error: {e}")
+            return {"error": str(e)}
+
+    async def _execute_documentation_search(self, script_content: str) -> Dict[str, Any]:
+        """Execute documentation search using tool registry."""
+        try:
+            result = await tool_registry.execute_tool(
+                tool_name="ms_docs_reference",
+                args={"script_content": script_content},
+                use_cache=True,
+                api_key=self.api_key
+            )
+            return result.get("result", {}) if result.get("success") else {"error": result.get("error")}
+        except Exception as e:
+            logger.error(f"Documentation search error: {e}")
+            return {"error": str(e)}
     
     async def categorize_script(
         self,

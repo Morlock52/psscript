@@ -1,21 +1,36 @@
 """
-PowerShell Script Analysis API
+PowerShell Script Analysis API - Updated January 2026
+
 A FastAPI service that analyzes PowerShell scripts using AI-powered multi-agent system.
+Uses psycopg3 async connection pooling and LangGraph 1.0 agents.
 """
 
 import os
 import json
 import asyncio
 import time
+import logging
 from typing import Dict, List, Optional, Any
+from contextlib import asynccontextmanager
 
-from fastapi import FastAPI, HTTPException, Header, Query
+from fastapi import FastAPI, HTTPException, Header, Query, Depends
 from fastapi.responses import JSONResponse
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel, Field
+import numpy as np
+
+# psycopg3 for async connection pooling (2026 best practice)
+try:
+    from psycopg_pool import AsyncConnectionPool
+    from psycopg.rows import dict_row
+    PSYCOPG3_AVAILABLE = True
+except ImportError:
+    PSYCOPG3_AVAILABLE = False
+    logging.warning("psycopg3 not available, falling back to psycopg2")
+
+# Fallback to psycopg2 for compatibility
 import psycopg2
 from psycopg2.extras import RealDictCursor
-import numpy as np
 
 from voice_endpoints import router as voice_router
 from langgraph_endpoints import router as langgraph_router
@@ -30,11 +45,92 @@ from analysis.script_analyzer import ScriptAnalyzer
 from utils.token_counter import token_counter, estimate_tokens
 from utils.api_key_manager import api_key_manager, ensure_api_key
 
-# Initialize FastAPI app
+# Configure logging
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger("psscript_api")
+
+# Global async connection pool (psycopg3)
+db_pool: Optional[AsyncConnectionPool] = None
+
+
+def get_db_conninfo() -> str:
+    """Build database connection string."""
+    return (
+        f"host={os.getenv('DB_HOST', 'localhost')} "
+        f"dbname={os.getenv('DB_NAME', 'psscript')} "
+        f"user={os.getenv('DB_USER', 'postgres')} "
+        f"password={os.getenv('DB_PASSWORD', 'postgres')} "
+        f"port={os.getenv('DB_PORT', '5432')}"
+    )
+
+
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    """
+    FastAPI lifespan handler for managing async resources.
+
+    This is the 2026 best practice for connection pool lifecycle management.
+    """
+    global db_pool, agent_coordinator
+
+    # Startup: Initialize resources
+    logger.info("Starting up PowerShell Script Analysis API...")
+
+    # Initialize psycopg3 async connection pool
+    if PSYCOPG3_AVAILABLE:
+        try:
+            db_pool = AsyncConnectionPool(
+                conninfo=get_db_conninfo(),
+                min_size=2,
+                max_size=10,
+                open=False  # 2026 best practice: create with open=False
+            )
+            await db_pool.open()
+            logger.info("Async database connection pool initialized (psycopg3)")
+        except Exception as e:
+            logger.warning(f"Failed to initialize psycopg3 pool: {e}")
+            db_pool = None
+
+    # Initialize agent coordinator
+    if not config.mock_mode:
+        try:
+            memory_storage_path = os.path.join(os.path.dirname(__file__), "memory_storage")
+            os.makedirs(memory_storage_path, exist_ok=True)
+
+            visualization_output_dir = os.path.join(os.path.dirname(__file__), "visualizations")
+            os.makedirs(visualization_output_dir, exist_ok=True)
+
+            agent_coordinator = AgentCoordinator(
+                api_key=config.api_keys.openai,
+                memory_storage_path=memory_storage_path,
+                visualization_output_dir=visualization_output_dir,
+                model=config.agent.default_model
+            )
+            logger.info("Agent coordinator initialized successfully")
+        except Exception as e:
+            logger.error(f"Error initializing agent coordinator: {e}")
+            agent_coordinator = None
+
+    logger.info("API startup complete")
+
+    yield  # Application runs here
+
+    # Shutdown: Clean up resources
+    logger.info("Shutting down PowerShell Script Analysis API...")
+
+    if db_pool:
+        await db_pool.close()
+        logger.info("Database connection pool closed")
+
+    logger.info("API shutdown complete")
+
+
+# Initialize FastAPI app with lifespan handler
 app = FastAPI(
     title="PowerShell Script Analysis API",
-    description="API for analyzing PowerShell scripts using AI",
-    version="0.2.0"
+    description="API for analyzing PowerShell scripts using AI (Updated January 2026)",
+    version="1.0.0",
+    lifespan=lifespan
 )
 
 # Add CORS middleware
@@ -62,52 +158,50 @@ MOCK_MODE = config.mock_mode
 api_key = ensure_api_key()
 if api_key:
     config.api_keys.openai = api_key
-    print(f"Using OpenAI API key: {api_key[:8]}...")
+    # Security: Don't log API key, even partially
+    print("OpenAI API key configured successfully")
     MOCK_MODE = False
 else:
     print("No OpenAI API key configured - running in mock mode")
     MOCK_MODE = True
 
+# Updated logging for January 2026
 print(f"Mock mode enabled: {MOCK_MODE}")
 print(f"Default agent: {config.agent.default_agent}")
-print(f"Default model: {config.agent.default_model}")
+print(f"Default model: {config.agent.default_model} (January 2026)")
 print(f"Token tracking: Enabled")
 print(f"Vector operations enabled: {hasattr(config, 'vector_db_enabled') and config.vector_db_enabled}")
 
 
-# Initialize agent coordinator
+# Initialize agent coordinator (will be set in lifespan)
 agent_coordinator = None
-if not MOCK_MODE:
-    try:
-        # Create memory storage directory if it doesn't exist
-        memory_storage_path = os.path.join(os.path.dirname(__file__), 
-                                          "memory_storage")
-        os.makedirs(memory_storage_path, exist_ok=True)
-        
-        # Create visualization output directory if it doesn't exist
-        visualization_output_dir = os.path.join(os.path.dirname(__file__), 
-                                               "visualizations")
-        os.makedirs(visualization_output_dir, exist_ok=True)
-        
-        # Initialize the agent coordinator
-        agent_coordinator = AgentCoordinator(
-            api_key=config.api_keys.openai,
-            memory_storage_path=memory_storage_path,
-            visualization_output_dir=visualization_output_dir,
-            model=config.agent.default_model
-        )
-        print("Agent coordinator initialized successfully")
-    except Exception as e:
-        print(f"Error initializing agent coordinator: {e}")
-        print("Falling back to mock mode")
-        MOCK_MODE = True
 
 
-# Database connection
-def get_db_connection():
-    """Create and return a database connection."""
+# Database connection dependency (2026 best practice: use dependency injection)
+async def get_db_connection_async():
+    """
+    Get async database connection from pool.
+
+    Uses psycopg3 AsyncConnectionPool when available, falls back to psycopg2.
+    """
+    global db_pool
+
+    if db_pool and PSYCOPG3_AVAILABLE:
+        async with db_pool.connection() as conn:
+            yield conn
+    else:
+        # Fallback to synchronous psycopg2 connection
+        conn = get_db_connection_sync()
+        try:
+            yield conn
+        finally:
+            if conn:
+                conn.close()
+
+
+def get_db_connection_sync():
+    """Create and return a synchronous database connection (psycopg2 fallback)."""
     try:
-        # Use environment variables with localhost fallback
         conn = psycopg2.connect(
             host=os.getenv("DB_HOST", "localhost"),
             database=os.getenv("DB_NAME", "psscript"),
@@ -118,8 +212,14 @@ def get_db_connection():
         conn.cursor_factory = RealDictCursor
         return conn
     except Exception as e:
-        print(f"Database connection error: {e}")
+        logger.error(f"Database connection error: {e}")
         return None
+
+
+# Alias for backwards compatibility
+def get_db_connection():
+    """Create and return a database connection (backwards compatible)."""
+    return get_db_connection_sync()
 
 
 # Check if pgvector extension is available

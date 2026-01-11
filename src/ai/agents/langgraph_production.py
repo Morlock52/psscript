@@ -407,7 +407,7 @@ async def analyze_node(state: PowerShellAnalysisState, config: RunnableConfig) -
 
     # Get the LLM with tools
     llm = ChatOpenAI(
-        model=config.get("configurable", {}).get("model", "gpt-4-turbo"),
+        model=config.get("configurable", {}).get("model", "gpt-4o"),
         temperature=0,
         streaming=True
     )
@@ -470,7 +470,7 @@ async def synthesis_node(state: PowerShellAnalysisState, config: RunnableConfig)
     logger.info(f"Synthesizing results for workflow {state.get('workflow_id')}")
 
     llm = ChatOpenAI(
-        model=config.get("configurable", {}).get("model", "gpt-4-turbo"),
+        model=config.get("configurable", {}).get("model", "gpt-4o"),
         temperature=0.3,
         streaming=True
     )
@@ -648,7 +648,7 @@ class LangGraphProductionOrchestrator:
     def __init__(
         self,
         api_key: Optional[str] = None,
-        model: str = "gpt-4-turbo",
+        model: str = "gpt-4o",
         use_postgres_checkpointing: bool = False,
         postgres_connection_string: Optional[str] = None
     ):
@@ -877,7 +877,7 @@ class LangGraphProductionOrchestrator:
 async def analyze_powershell_script_simple(
     script_content: str,
     api_key: Optional[str] = None,
-    model: str = "gpt-4-turbo"
+    model: str = "gpt-4o"
 ) -> Dict[str, Any]:
     """
     Simple convenience function for analyzing PowerShell scripts.

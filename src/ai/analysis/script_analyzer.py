@@ -32,13 +32,25 @@ logger = logging.getLogger("script_analyzer")
 # Load environment variables
 load_dotenv()
 
-# Initialize OpenAI clients
+# Initialize OpenAI clients with graceful fallback
 api_key = os.getenv("OPENAI_API_KEY")
-if not api_key:
-    raise EnvironmentError("OPENAI_API_KEY environment variable is not set")
+MOCK_MODE = False
 
-client = OpenAI(api_key=api_key)
-async_client = AsyncOpenAI(api_key=api_key)
+if not api_key:
+    logger.warning("OPENAI_API_KEY environment variable is not set - running in mock mode")
+    MOCK_MODE = True
+    client = None
+    async_client = None
+else:
+    try:
+        client = OpenAI(api_key=api_key, timeout=REQUEST_TIMEOUT if 'REQUEST_TIMEOUT' in dir() else 60)
+        async_client = AsyncOpenAI(api_key=api_key, timeout=REQUEST_TIMEOUT if 'REQUEST_TIMEOUT' in dir() else 60)
+        logger.info("OpenAI clients initialized successfully")
+    except Exception as e:
+        logger.error(f"Failed to initialize OpenAI clients: {e}")
+        MOCK_MODE = True
+        client = None
+        async_client = None
 
 # Initialize caching
 disk_cache = Cache('./analysis_cache')
@@ -55,10 +67,12 @@ if os.getenv("REDIS_URL"):
 
 # Constants - Updated for January 2026 best models
 EMBEDDING_MODEL = os.getenv("EMBEDDING_MODEL", "text-embedding-3-large")
-ANALYSIS_MODEL = os.getenv("ANALYSIS_MODEL", "gpt-4-turbo")
+ANALYSIS_MODEL = os.getenv("ANALYSIS_MODEL", "gpt-4o")  # Updated to gpt-4o (best as of Jan 2026)
+FAST_MODEL = os.getenv("FAST_MODEL", "gpt-4o-mini")  # Fast model for quick tasks
 EMBEDDING_DIMENSION = 3072  # text-embedding-3-large dimension (can be customized 256-3072)
 CACHE_TTL = int(os.getenv("CACHE_TTL", "86400"))  # Default: 1 day in seconds
 MAX_WORKERS = int(os.getenv("MAX_WORKERS", "5"))  # Default: 5 concurrent workers
+REQUEST_TIMEOUT = int(os.getenv("REQUEST_TIMEOUT", "60"))  # Request timeout in seconds
 
 class ScriptAnalyzer:
     """Analyzes PowerShell scripts using AI with caching and parallel processing."""

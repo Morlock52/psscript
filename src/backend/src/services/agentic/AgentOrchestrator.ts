@@ -31,7 +31,7 @@ export interface Tool {
   name: string;
   description: string;
   parameters: Record<string, any>;
-  function?: Function;
+  function?: (...args: unknown[]) => unknown | Promise<unknown>;
   metadata: Record<string, any>;
 }
 

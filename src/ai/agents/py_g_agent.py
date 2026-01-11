@@ -17,7 +17,7 @@ from openai import OpenAI
 
 # Local imports
 from .base_agent import BaseAgent
-from ..analysis.script_analyzer import ScriptAnalyzer
+from analysis.script_analyzer import ScriptAnalyzer
 
 # Configure logging
 logging.basicConfig(
@@ -357,7 +357,7 @@ class PyGAgent(BaseAgent):
         try:
             # Use the OpenAI API to get documentation information
             response = self.client.chat.completions.create(
-                model="o3-mini",
+                model="gpt-4o",
                 messages=[
                     {"role": "system", "content": "You are a PowerShell documentation expert. Provide concise, accurate information about PowerShell commands, concepts, and best practices."},
                     {"role": "user", "content": query}
@@ -390,7 +390,7 @@ class PyGAgent(BaseAgent):
         try:
             # Use the OpenAI API to get improvement suggestions
             response = self.client.chat.completions.create(
-                model="o3-mini",
+                model="gpt-4o",
                 messages=[
                     {"role": "system", "content": "You are a PowerShell expert. Analyze the provided script and suggest specific improvements for better performance, readability, security, and adherence to best practices. Provide concise, actionable suggestions."},
                     {"role": "user", "content": f"Suggest improvements for this PowerShell script:\n\n```powershell\n{content}\n```"}

@@ -1,5 +1,5 @@
 import express from 'express';
-import AiAgentController from '../controllers/AIAgentController';
+import AiAgentController from '../controllers/AiAgentController';
 import { corsMiddleware } from '../middleware/corsMiddleware';
 import logger from '../utils/logger';
 
@@ -388,9 +388,9 @@ router.get('/examples', async (req, res) => {
     if (descString.includes('user') || descString.includes('account')) priorityTypes.push('User');
     if (descString.includes('security') || descString.includes('compliance')) priorityTypes.push('Security');
     
-    const limitNum = typeof limit === 'string' ? parseInt(limit, 10) : limit;
-    
-    for (let i = 0; i < Math.min(limitNum, titles.length); i++) {
+    const limitNum = typeof limit === 'string' ? parseInt(limit, 10) : (typeof limit === 'number' ? limit : 10);
+
+    for (let i = 0; i < Math.min(limitNum as number, titles.length); i++) {
       const titleIndex = priorityTypes.length > 0 && i < priorityTypes.length
         ? titles.findIndex(t => t.includes(priorityTypes[i]))
         : i;

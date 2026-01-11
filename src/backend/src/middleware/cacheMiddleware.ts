@@ -72,7 +72,7 @@ export function cacheMiddleware(options: CacheOptions = {}) {
       const cached = await redis.get(cacheKey);
 
       if (cached) {
-        const data = JSON.parse(cached);
+        const data = JSON.parse(cached as string);
         const etag = generateETag(data);
 
         // Check client ETag (304 Not Modified)
@@ -95,7 +95,7 @@ export function cacheMiddleware(options: CacheOptions = {}) {
 
       res.json = function(data: any) {
         // Store in Redis
-        redis.setex(cacheKey, ttl, JSON.stringify(data))
+        redis.set(cacheKey, JSON.stringify(data), ttl)
           .catch(err => logger.error('Redis cache write error:', err));
 
         const etag = generateETag(data);
@@ -128,7 +128,8 @@ export async function invalidateCache(pattern: string): Promise<number> {
       return 0;
     }
 
-    await redis.del(...keys);
+    // Delete each key individually (CacheService.del accepts single key)
+    await Promise.all(keys.map(key => redis.del(key)));
     logger.info(`Invalidated ${keys.length} cache entries for pattern: ${pattern}`);
     return keys.length;
   } catch (error) {
@@ -146,7 +147,7 @@ export async function warmCache(
   ttl: number = 300
 ): Promise<void> {
   try {
-    await redis.setex(`cache:${key}`, ttl, JSON.stringify(data));
+    await redis.set(`cache:${key}`, JSON.stringify(data), ttl);
     logger.info(`Cache warmed: ${key}`);
   } catch (error) {
     logger.error('Cache warming error:', error);

@@ -111,7 +111,7 @@ export async function handleAssistantRun(
     // Function for handling tool calls
     const handleToolCalls = async (toolCalls: any[]): Promise<any> => {
       const toolOutputs = [];
-      let requiresAction = false;
+      const requiresAction = false;
       
       for (const toolCall of toolCalls) {
         if (toolCall.type === 'function') {

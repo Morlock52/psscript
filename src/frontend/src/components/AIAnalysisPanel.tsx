@@ -46,13 +46,36 @@ interface AIAnalysisPanelProps {
 
 /**
  * Renders the score as a colored circular progress with label
+ * Enhanced for 2026 best practices: 1-10 scale, accessibility, visual feedback
  */
 const ScoreIndicator: React.FC<{
-  score: number;
+  score: number | undefined | null;
   label: string;
   color: string;
   icon: React.ReactNode;
-}> = ({ score, label, color, icon }) => {
+  reverseColor?: boolean; // true for Risk (lower is better)
+}> = ({ score, label, color, icon, reverseColor = false }) => {
+  // Handle edge cases - default to 0 if score is missing
+  // Normalize: if score > 10, assume 0-100 scale and convert to 1-10
+  let normalizedScore = typeof score === 'number' && !isNaN(score) ? score : 0;
+  if (normalizedScore > 10) {
+    normalizedScore = normalizedScore / 10; // Convert 0-100 to 0-10
+  }
+  const safeScore = Math.min(10, Math.max(0, normalizedScore));
+  const displayScore = safeScore.toFixed(1);
+  // Convert 1-10 score to 0-100 percentage for CircularProgress
+  const percentage = safeScore * 10;
+
+  // Determine color based on score threshold (1-10 scale)
+  let scoreColor = color;
+  if (reverseColor) {
+    // For Risk score (lower is better)
+    scoreColor = safeScore < 3 ? 'success.main' : safeScore < 7 ? 'warning.main' : 'error.main';
+  } else {
+    // For Quality, Security (higher is better)
+    scoreColor = safeScore > 7 ? 'success.main' : safeScore > 4 ? 'warning.main' : 'error.main';
+  }
+
   return (
     <Box
       display="flex"
@@ -60,14 +83,31 @@ const ScoreIndicator: React.FC<{
       alignItems="center"
       justifyContent="center"
       p={1}
+      sx={{
+        transition: 'transform 0.2s',
+        '&:hover': { transform: 'scale(1.05)' }
+      }}
     >
       <Box position="relative" display="inline-flex">
+        {/* Background track */}
         <CircularProgress
           variant="determinate"
-          value={score}
-          size={70}
-          thickness={5}
-          sx={{ color }}
+          value={100}
+          size={80}
+          thickness={4}
+          sx={{ color: 'grey.800', position: 'absolute' }}
+        />
+        {/* Animated progress */}
+        <CircularProgress
+          variant="determinate"
+          value={percentage}
+          size={80}
+          thickness={4}
+          sx={{
+            color: scoreColor,
+            transition: 'all 1s ease-out',
+            filter: `drop-shadow(0 0 8px currentColor)`,
+          }}
         />
         <Box
           top={0}
@@ -76,11 +116,15 @@ const ScoreIndicator: React.FC<{
           right={0}
           position="absolute"
           display="flex"
+          flexDirection="column"
           alignItems="center"
           justifyContent="center"
         >
-          <Typography variant="h6" component="div" color={color}>
-            {score}
+          <Typography variant="h5" component="div" sx={{ color: scoreColor, fontWeight: 'bold' }}>
+            {displayScore}
+          </Typography>
+          <Typography variant="caption" color="text.secondary" sx={{ fontSize: '0.65rem' }}>
+            /10
           </Typography>
         </Box>
       </Box>
@@ -96,6 +140,10 @@ const ScoreIndicator: React.FC<{
           {label}
         </Typography>
       </Box>
+      {/* Accessibility: Screen reader text */}
+      <Typography sx={{ position: 'absolute', width: 1, height: 1, overflow: 'hidden' }}>
+        {label}: {displayScore} out of 10. {reverseColor ? 'Lower is better.' : 'Higher is better.'}
+      </Typography>
     </Box>
   );
 };
@@ -390,24 +438,27 @@ const AIAnalysisPanel: React.FC<AIAnalysisPanelProps> = ({
             <ScoreIndicator
               score={securityScore}
               label="Security"
-              color={securityScore > 70 ? 'success.main' : securityScore > 40 ? 'warning.main' : 'error.main'}
+              color="primary.main"
               icon={<SecurityIcon fontSize="small" />}
+              reverseColor={false}
             />
           </Grid>
           <Grid item>
             <ScoreIndicator
               score={codeQualityScore}
               label="Code Quality"
-              color={codeQualityScore > 70 ? 'success.main' : codeQualityScore > 40 ? 'warning.main' : 'error.main'}
+              color="primary.main"
               icon={<CodeIcon fontSize="small" />}
+              reverseColor={false}
             />
           </Grid>
           <Grid item>
             <ScoreIndicator
               score={riskScore}
               label="Risk Level"
-              color={riskScore < 30 ? 'success.main' : riskScore < 70 ? 'warning.main' : 'error.main'}
+              color="primary.main"
               icon={<WarningIcon fontSize="small" />}
+              reverseColor={true}
             />
           </Grid>
         </Grid>

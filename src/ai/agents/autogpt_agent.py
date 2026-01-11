@@ -36,7 +36,7 @@ class AutoGPTAgent:
     AutoGPT-inspired agent capable of autonomous planning and execution.
     """
     
-    def __init__(self, api_key: Optional[str] = None, model: str = "o3-mini"):
+    def __init__(self, api_key: Optional[str] = None, model: str = "gpt-4o"):
         """
         Initialize the AutoGPT agent.
         

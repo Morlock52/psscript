@@ -43,7 +43,7 @@ class LangGraphAnalysisRequest(BaseModel):
     thread_id: Optional[str] = Field(None, description="Thread ID for conversation continuity")
     require_human_review: bool = Field(False, description="Whether to require human review")
     stream: bool = Field(False, description="Whether to stream responses")
-    model: Optional[str] = Field("gpt-4", description="Model to use for analysis")
+    model: Optional[str] = Field("gpt-4o", description="Model to use for analysis (default: gpt-4o)")
     api_key: Optional[str] = Field(None, description="Optional OpenAI API key")
 
 
@@ -295,9 +295,9 @@ async def orchestrator_info():
             }
         ],
         "supported_models": [
-            "gpt-4",
-            "gpt-4-turbo",
-            "gpt-3.5-turbo"
+            "gpt-4o",        # Default general-purpose model (January 2026)
+            "o3",            # Reasoning model for complex analysis
+            "gpt-4o-mini"    # Fast model for quick tasks
         ],
         "features": {
             "checkpointing": {

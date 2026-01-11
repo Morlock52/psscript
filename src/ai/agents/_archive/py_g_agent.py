@@ -17,7 +17,7 @@ from openai import OpenAI
 
 # Local imports
 from .base_agent import BaseAgent
-from ..analysis.script_analyzer import ScriptAnalyzer
+from analysis.script_analyzer import ScriptAnalyzer
 
 # Configure logging
 logging.basicConfig(

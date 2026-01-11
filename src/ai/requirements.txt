@@ -1,27 +1,30 @@
-fastapi==0.115.6
-uvicorn==0.34.0
-openai>=1.0.0
+# Core dependencies - Updated January 2026
+# Requires Python 3.10+ (LangChain 1.0 requirement)
+fastapi>=0.115.0
+uvicorn>=0.34.0
+openai>=1.50.0  # Latest OpenAI SDK with o3/GPT-4o support
 backoff>=2.2.1
-numpy>=1.24.0
-pandas>=2.0.2
-scikit-learn>=1.2.2
-pgvector==0.4.2
-psycopg2-binary==2.9.10
-pydantic==2.12.5
-python-dotenv==1.0.0
-httpx>=0.25.2
-tenacity==8.2.2
-tiktoken>=0.7.0
-redis==5.0.1
-diskcache==5.6.3
+numpy>=1.26.0
+pandas>=2.2.0
+scikit-learn>=1.4.0
+pgvector>=0.4.2
+# Use psycopg3 for async connection pooling (2026 best practice)
+psycopg[binary,pool]>=3.2.0  # psycopg3 with async pool support
+psycopg2-binary>=2.9.10  # Keep for backwards compatibility
+pydantic>=2.10.0
+python-dotenv>=1.0.0
+httpx>=0.27.0
+tenacity>=8.3.0
+tiktoken>=0.8.0
+redis>=5.0.0
+diskcache>=5.6.0
 
 # Web tools and APIs
-requests==2.31.0
-aiohttp==3.13.3
-beautifulsoup4==4.12.2
+requests>=2.31.0
+aiohttp>=3.9.0
+beautifulsoup4>=4.12.2
 
-# Async support
-asyncio==3.4.3
+# Note: asyncio is part of standard library, no need to install
 
 # Rate limiting and API management
 ratelimit==2.2.1
@@ -40,9 +43,12 @@ soundfile==0.12.1
 librosa==0.10.0
 ffmpeg-python==0.2.0
 
-# Graph and workflow dependencies - verified working combination
-networkx>=3.2.1
-langgraph==1.0.5
-langchain-core==1.2.2
-langsmith==0.5.0
-matplotlib>=3.7.0
+# Graph and workflow dependencies - Updated January 2026 for LangGraph 1.0 stable
+networkx>=3.2.0
+langgraph>=0.2.0  # LangGraph with durable state and persistence
+langchain>=0.3.0  # LangChain stable
+langchain-core>=0.3.0  # Core LangChain components
+langchain-community>=0.3.0  # Community integrations
+langchain-openai>=0.2.0  # OpenAI integration
+langsmith>=0.1.0  # LangSmith for observability
+matplotlib>=3.8.0

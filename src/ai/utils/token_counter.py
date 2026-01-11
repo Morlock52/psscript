@@ -15,12 +15,20 @@ logger = logging.getLogger("token_counter")
 
 # OpenAI Pricing as of January 2026 (per 1M tokens)
 PRICING = {
-    # GPT-4 Series
+    # GPT-4 Series - Updated January 2026
     "gpt-4o": {
         "input": 2.50,
         "output": 10.0,
     },
-    "gpt-4-turbo": {
+    "gpt-4o-mini": {
+        "input": 0.15,
+        "output": 0.60,
+    },
+    "o3": {
+        "input": 10.0,  # Reasoning model - higher cost
+        "output": 40.0,
+    },
+    "gpt-4-turbo": {  # Legacy - kept for backwards compatibility
         "input": 10.0,
         "output": 30.0,
     },
@@ -283,7 +291,7 @@ if __name__ == "__main__":
 
     # Track some usage
     tokens, cost = counter.track_usage(
-        model="gpt-4-turbo",
+        model="gpt-4o",
         input_tokens=1000,
         output_tokens=500,
         operation="PowerShell analysis"
@@ -292,7 +300,7 @@ if __name__ == "__main__":
 
     # Estimate cost
     estimate = counter.estimate_cost(
-        model="gpt-4-turbo",
+        model="gpt-4o",
         estimated_input_tokens=2000,
         estimated_output_tokens=1000
     )

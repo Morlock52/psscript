@@ -274,45 +274,116 @@ If you don't know something specific about the script, be honest about it.
     );
   }
   
-  // Helper function to render score indicator
-  const renderScoreIndicator = (score: number, label: string, reverseColor: boolean = false) => {
-    let colorClass = '';
-    
-    if (reverseColor) {
-      colorClass = score < 3 
-        ? 'bg-green-500' 
-        : score < 7 
-        ? 'bg-yellow-500' 
-        : 'bg-red-500';
-    } else {
-      colorClass = score > 7 
-        ? 'bg-green-500' 
-        : score > 4 
-        ? 'bg-yellow-500' 
-        : 'bg-red-500';
+  // Helper function to render score indicator with 1-10 rating
+  // Enhanced for 2026 best practices: animations, accessibility, and visual feedback
+  const renderScoreIndicator = (score: number | undefined | null, label: string, reverseColor: boolean = false) => {
+    // Handle edge cases - default to 0 if score is missing
+    // Normalize: if score > 10, assume 0-100 scale and convert to 1-10
+    let normalizedScore = typeof score === 'number' && !isNaN(score) ? score : 0;
+    if (normalizedScore > 10) {
+      normalizedScore = normalizedScore / 10; // Convert 0-100 to 0-10
     }
-    
+    const safeScore = Math.min(10, Math.max(0, normalizedScore));
+    const displayScore = safeScore.toFixed(1);
+    const percentage = safeScore * 10;
+
+    // Determine color based on score and direction
+    let strokeColor = '';
+    let textColor = '';
+    let bgGlow = '';
+
+    if (reverseColor) {
+      // For Risk score (lower is better)
+      if (safeScore < 3) {
+        strokeColor = '#22c55e'; // green-500
+        textColor = 'text-green-400';
+        bgGlow = 'shadow-green-500/20';
+      } else if (safeScore < 7) {
+        strokeColor = '#eab308'; // yellow-500
+        textColor = 'text-yellow-400';
+        bgGlow = 'shadow-yellow-500/20';
+      } else {
+        strokeColor = '#ef4444'; // red-500
+        textColor = 'text-red-400';
+        bgGlow = 'shadow-red-500/20';
+      }
+    } else {
+      // For Quality, Security, Reliability (higher is better)
+      if (safeScore > 7) {
+        strokeColor = '#22c55e'; // green-500
+        textColor = 'text-green-400';
+        bgGlow = 'shadow-green-500/20';
+      } else if (safeScore > 4) {
+        strokeColor = '#eab308'; // yellow-500
+        textColor = 'text-yellow-400';
+        bgGlow = 'shadow-yellow-500/20';
+      } else {
+        strokeColor = '#ef4444'; // red-500
+        textColor = 'text-red-400';
+        bgGlow = 'shadow-red-500/20';
+      }
+    }
+
+    // Calculate stroke dasharray for circular progress
+    // Circle circumference = 2 * PI * radius ≈ 100 for r=15.9155
+    const circumference = 100;
+    const dashArray = `${percentage} ${circumference - percentage}`;
+
     return (
-      <div className="flex flex-col items-center">
-        <div className="relative w-24 h-24 flex items-center justify-center mb-2">
-          <svg className="w-full h-full" viewBox="0 0 36 36">
-            <path
-              className="stroke-current text-gray-600"
+      <div className="flex flex-col items-center group">
+        {/* Circular Progress Ring */}
+        <div className={`relative w-24 h-24 flex items-center justify-center mb-2 rounded-full shadow-lg ${bgGlow}`}>
+          <svg
+            className="w-full h-full transform -rotate-90"
+            viewBox="0 0 36 36"
+            role="progressbar"
+            aria-valuenow={safeScore}
+            aria-valuemin={0}
+            aria-valuemax={10}
+            aria-label={`${label} score: ${displayScore} out of 10`}
+          >
+            {/* Background track */}
+            <circle
+              cx="18"
+              cy="18"
+              r="15.9155"
               fill="none"
+              stroke="#374151"
               strokeWidth="3"
-              d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831"
+              className="opacity-60"
             />
-            <path
-              className={`stroke-current ${colorClass}`}
+            {/* Animated progress arc */}
+            <circle
+              cx="18"
+              cy="18"
+              r="15.9155"
               fill="none"
+              stroke={strokeColor}
               strokeWidth="3"
-              strokeDasharray={`${score * 10}, 100`}
-              d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831"
+              strokeDasharray={dashArray}
+              strokeLinecap="round"
+              className="transition-all duration-1000 ease-out"
+              style={{
+                filter: `drop-shadow(0 0 6px ${strokeColor}40)`,
+              }}
             />
-            <text x="18" y="20.5" textAnchor="middle" className="fill-current text-white font-bold text-xl">{score}</text>
           </svg>
+          {/* Score text overlay */}
+          <div className="absolute inset-0 flex flex-col items-center justify-center">
+            <span className={`text-2xl font-bold ${textColor}`}>
+              {displayScore}
+            </span>
+            <span className="text-xs text-gray-500">/10</span>
+          </div>
         </div>
-        <span className="text-sm text-gray-300">{label}</span>
+        {/* Label */}
+        <span className="text-sm font-medium text-gray-300 group-hover:text-white transition-colors">
+          {label}
+        </span>
+        {/* Accessibility: Screen reader text */}
+        <span className="sr-only">
+          {label}: {displayScore} out of 10. {reverseColor ? 'Lower is better.' : 'Higher is better.'}
+        </span>
       </div>
     );
   };
@@ -474,10 +545,10 @@ If you don't know something specific about the script, be honest about it.
                   <p className="text-gray-300 mb-6">{analysis.purpose}</p>
                 
                 <div className="grid grid-cols-4 gap-4 mb-8">
-                  {renderScoreIndicator(analysis.code_quality_score, 'Quality')}
-                  {renderScoreIndicator(analysis.security_score, 'Security')}
-                  {renderScoreIndicator(analysis.risk_score, 'Risk', true)}
-                  {analysis.reliability_score && renderScoreIndicator(analysis.reliability_score, 'Reliability')}
+                  {renderScoreIndicator(analysis.codeQualityScore, 'Quality')}
+                  {renderScoreIndicator(analysis.securityScore, 'Security')}
+                  {renderScoreIndicator(analysis.riskScore, 'Risk', true)}
+                  {analysis.reliabilityScore && renderScoreIndicator(analysis.reliabilityScore, 'Reliability')}
                 </div>
                 
                 <div className="mt-6 space-y-6">
@@ -489,9 +560,9 @@ If you don't know something specific about the script, be honest about it.
                       Key Findings
                     </h3>
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                      <div className={`p-4 rounded-lg border ${analysis.security_score > 7 ? 'bg-green-900 bg-opacity-20 border-green-700' : 'bg-yellow-900 bg-opacity-20 border-yellow-700'}`}>
+                      <div className={`p-4 rounded-lg border ${analysis.securityScore > 7 ? 'bg-green-900 bg-opacity-20 border-green-700' : 'bg-yellow-900 bg-opacity-20 border-yellow-700'}`}>
                         <div className="flex items-start">
-                          {analysis.security_score > 7 ? (
+                          {analysis.securityScore > 7 ? (
                             <FaCheckCircle className="text-green-400 mt-1 mr-3 flex-shrink-0 text-xl" />
                           ) : (
                             <FaInfoCircle className="text-yellow-400 mt-1 mr-3 flex-shrink-0 text-xl" />
@@ -499,17 +570,17 @@ If you don't know something specific about the script, be honest about it.
                           <div>
                             <h4 className="font-medium mb-1">Security Assessment</h4>
                             <p className="text-gray-300">
-                              This script {analysis.security_score > 7 ? 'follows good security practices' : 'has some security concerns that should be addressed'}.
+                              This script {analysis.securityScore > 7 ? 'follows good security practices' : 'has some security concerns that should be addressed'}.
                             </p>
                           </div>
                         </div>
                       </div>
                       
-                      <div className={`p-4 rounded-lg border ${analysis.code_quality_score > 7 ? 'bg-green-900 bg-opacity-20 border-green-700' : analysis.code_quality_score > 5 ? 'bg-blue-900 bg-opacity-20 border-blue-700' : 'bg-yellow-900 bg-opacity-20 border-yellow-700'}`}>
+                      <div className={`p-4 rounded-lg border ${analysis.codeQualityScore > 7 ? 'bg-green-900 bg-opacity-20 border-green-700' : analysis.codeQualityScore > 5 ? 'bg-blue-900 bg-opacity-20 border-blue-700' : 'bg-yellow-900 bg-opacity-20 border-yellow-700'}`}>
                         <div className="flex items-start">
-                          {analysis.code_quality_score > 7 ? (
+                          {analysis.codeQualityScore > 7 ? (
                             <FaCheckCircle className="text-green-400 mt-1 mr-3 flex-shrink-0 text-xl" />
-                          ) : analysis.code_quality_score > 5 ? (
+                          ) : analysis.codeQualityScore > 5 ? (
                             <FaInfoCircle className="text-blue-400 mt-1 mr-3 flex-shrink-0 text-xl" />
                           ) : (
                             <FaInfoCircle className="text-yellow-400 mt-1 mr-3 flex-shrink-0 text-xl" />
@@ -517,19 +588,19 @@ If you don't know something specific about the script, be honest about it.
                           <div>
                             <h4 className="font-medium mb-1">Code Quality</h4>
                             <p className="text-gray-300">
-                              Code quality is {analysis.code_quality_score > 7 ? 'high' : analysis.code_quality_score > 5 ? 'moderate' : 'needs improvement'} with potential for optimization.
+                              Code quality is {analysis.codeQualityScore > 7 ? 'high' : analysis.codeQualityScore > 5 ? 'moderate' : 'needs improvement'} with potential for optimization.
                             </p>
                           </div>
                         </div>
                       </div>
                       
                       {/* Security concerns card */}
-                      {analysis.security_concerns && analysis.security_concerns.length > 0 ? (
+                      {analysis.securityConcerns && analysis.securityConcerns.length > 0 ? (
                         <div className="p-4 rounded-lg border bg-red-900 bg-opacity-20 border-red-700">
                           <div className="flex items-start">
                             <FaExclamationTriangle className="text-red-500 mt-1 mr-3 flex-shrink-0" />
                             <div>
-                              <p className="text-red-300">{analysis.security_concerns.length} security {analysis.security_concerns.length === 1 ? 'concern' : 'concerns'} found.</p>
+                              <p className="text-red-300">{analysis.securityConcerns.length} security {analysis.securityConcerns.length === 1 ? 'concern' : 'concerns'} found.</p>
                             </div>
                           </div>
                         </div>
@@ -545,12 +616,12 @@ If you don't know something specific about the script, be honest about it.
                       )}
                       
                       {/* Performance suggestions card */}
-                      {analysis.performance_suggestions && analysis.performance_suggestions.length > 0 ? (
+                      {analysis.performanceSuggestions && analysis.performanceSuggestions.length > 0 ? (
                         <div className="p-4 rounded-lg border bg-purple-900 bg-opacity-20 border-purple-700">
                           <div className="flex items-start">
                             <FaLightbulb className="text-purple-400 mt-1 mr-3 flex-shrink-0" />
                             <div>
-                              <p className="text-purple-300">{analysis.performance_suggestions.length} performance {analysis.performance_suggestions.length === 1 ? 'suggestion' : 'suggestions'} found.</p>
+                              <p className="text-purple-300">{analysis.performanceSuggestions.length} performance {analysis.performanceSuggestions.length === 1 ? 'suggestion' : 'suggestions'} found.</p>
                             </div>
                           </div>
                         </div>
@@ -697,12 +768,12 @@ This script follows the PowerShell cmdlet naming convention "Verb-Noun" and uses
 
 ## Command Safety
 * Execution Scope: Runs in the user's security context
-* Network Activity: ${analysis.security_score > 7 ? 'Limited to specified computers' : 'May access undefined network resources'}
+* Network Activity: ${analysis.securityScore > 7 ? 'Limited to specified computers' : 'May access undefined network resources'}
 * Permissions: Requires standard WMI query permissions
-* Error Handling: ${analysis.code_quality_score > 7 ? 'Comprehensive' : 'Basic'} error handling implemented
+* Error Handling: ${analysis.codeQualityScore > 7 ? 'Comprehensive' : 'Basic'} error handling implemented
 
 ## Command Performance
-* Resource Usage: ${analysis.performance_suggestions?.length ? 'Moderate to high on large environments' : 'Efficient for most environments'}
+* Resource Usage: ${analysis.performanceSuggestions?.length ? 'Moderate to high on large environments' : 'Efficient for most environments'}
 * Execution Time: Expected to complete within 1-5 seconds per target system
 * Memory Impact: Low to moderate depending on number of network adapters
 
@@ -736,34 +807,34 @@ This script follows the PowerShell cmdlet naming convention "Verb-Noun" and uses
                   <div className="flex items-center justify-between mb-2">
                     <h3 className="text-md font-medium">Security Score</h3>
                     <span className={`px-2 py-1 rounded text-sm ${
-                      analysis.security_score > 7 
+                      analysis.securityScore > 7 
                         ? 'bg-green-900 text-green-300' 
-                        : analysis.security_score > 4 
+                        : analysis.securityScore > 4 
                         ? 'bg-yellow-900 text-yellow-300' 
                         : 'bg-red-900 text-red-300'
                     }`}>
-                      {analysis.security_score}/10
+                      {analysis.securityScore}/10
                     </span>
                   </div>
                   <div className="w-full bg-gray-800 rounded-full h-2.5">
                     <div 
                       className={`h-2.5 rounded-full ${
-                        analysis.security_score > 7 
+                        analysis.securityScore > 7 
                           ? 'bg-green-500' 
-                          : analysis.security_score > 4 
+                          : analysis.securityScore > 4 
                           ? 'bg-yellow-500' 
                           : 'bg-red-500'
                       }`}
-                      style={{ width: `${analysis.security_score * 10}%` }}
+                      style={{ width: `${analysis.securityScore * 10}%` }}
                     ></div>
                   </div>
                 </div>
                 
-                {analysis.security_concerns && analysis.security_concerns.length > 0 ? (
+                {analysis.securityConcerns && analysis.securityConcerns.length > 0 ? (
                   <div className="mb-6">
                     <h3 className="text-md font-medium mb-3">Security Concerns</h3>
                     <ul className="space-y-3">
-                      {analysis.security_concerns.map((concern, index) => (
+                      {analysis.securityConcerns.map((concern, index) => (
                         <li key={index} className="bg-red-900 bg-opacity-20 p-3 rounded-lg border border-red-700">
                           <div className="flex items-start">
                             <FaExclamationTriangle className="text-red-500 mt-1 mr-3 flex-shrink-0" />
@@ -788,9 +859,9 @@ This script follows the PowerShell cmdlet naming convention "Verb-Noun" and uses
                 
                 <div className="mt-6">
                   <h3 className="text-md font-medium mb-3">Best Practices</h3>
-                  {analysis.best_practices && analysis.best_practices.length > 0 ? (
+                  {analysis.bestPractices && analysis.bestPractices.length > 0 ? (
                     <ul className="space-y-2">
-                      {analysis.best_practices.map((practice, index) => (
+                      {analysis.bestPractices.map((practice, index) => (
                         <li key={index} className="flex items-start">
                           <FaCheckCircle className="text-blue-400 mt-1 mr-2 flex-shrink-0" />
                           <span className="text-gray-300">{practice}</span>
@@ -816,28 +887,28 @@ This script follows the PowerShell cmdlet naming convention "Verb-Noun" and uses
                   <div className="flex items-center justify-between mb-2">
                     <h3 className="text-md font-medium">Quality Score</h3>
                     <span className={`px-2 py-1 rounded text-sm ${
-                      analysis.code_quality_score > 7 
+                      analysis.codeQualityScore > 7 
                         ? 'bg-green-900 text-green-300' 
-                        : analysis.code_quality_score > 4 
+                        : analysis.codeQualityScore > 4 
                         ? 'bg-yellow-900 text-yellow-300' 
                         : 'bg-red-900 text-red-300'
                     }`}>
-                      {analysis.code_quality_score}/10
+                      {analysis.codeQualityScore}/10
                     </span>
                   </div>
                   <div className="w-full bg-gray-800 rounded-full h-2.5">
                     <div 
                       className="bg-blue-600 h-2.5 rounded-full" 
-                      style={{ width: `${analysis.code_quality_score * 10}%` }}
+                      style={{ width: `${analysis.codeQualityScore * 10}%` }}
                     ></div>
                   </div>
                 </div>
                 
-                {analysis.optimization_suggestions && analysis.optimization_suggestions.length > 0 && (
+                {analysis.optimizationSuggestions && analysis.optimizationSuggestions.length > 0 && (
                   <div className="mb-6">
                     <h3 className="text-md font-medium mb-3">Suggested Improvements</h3>
                     <div className="space-y-3">
-                      {analysis.optimization_suggestions.map((suggestion, index) => (
+                      {analysis.optimizationSuggestions.map((suggestion, index) => (
                         <div key={index} className="bg-blue-900 bg-opacity-20 p-3 rounded-lg border border-blue-800">
                           <div className="flex items-start">
                             <FaLightbulb className="text-yellow-400 mt-1 mr-3 flex-shrink-0" />
@@ -851,36 +922,36 @@ This script follows the PowerShell cmdlet naming convention "Verb-Noun" and uses
                   </div>
                 )}
                 
-                {analysis.complexity_score && (
+                {analysis.complexityScore && (
                   <div className="mb-6">
                     <div className="flex items-center justify-between mb-2">
                       <h3 className="text-md font-medium">Complexity</h3>
                       <span className={`px-2 py-1 rounded text-sm ${
-                        analysis.complexity_score < 4 
+                        analysis.complexityScore < 4 
                           ? 'bg-green-900 text-green-300' 
-                          : analysis.complexity_score < 8 
+                          : analysis.complexityScore < 8 
                           ? 'bg-yellow-900 text-yellow-300' 
                           : 'bg-red-900 text-red-300'
                       }`}>
-                        {analysis.complexity_score}/10
+                        {analysis.complexityScore}/10
                       </span>
                     </div>
                     <div className="w-full bg-gray-800 rounded-full h-2.5">
                       <div 
                         className={`h-2.5 rounded-full ${
-                          analysis.complexity_score < 4 
+                          analysis.complexityScore < 4 
                             ? 'bg-green-500' 
-                            : analysis.complexity_score < 8 
+                            : analysis.complexityScore < 8 
                             ? 'bg-yellow-500' 
                             : 'bg-red-500'
                         }`}
-                        style={{ width: `${analysis.complexity_score * 10}%` }}
+                        style={{ width: `${analysis.complexityScore * 10}%` }}
                       ></div>
                     </div>
                     <p className="text-sm text-gray-400 mt-2">
-                      {analysis.complexity_score < 4 
+                      {analysis.complexityScore < 4 
                         ? 'Low complexity makes this script easy to understand and maintain.' 
-                        : analysis.complexity_score < 8 
+                        : analysis.complexityScore < 8 
                         ? 'Moderate complexity - some sections might benefit from refactoring.' 
                         : 'High complexity - consider breaking this script into smaller modules.'}
                     </p>
@@ -897,11 +968,11 @@ This script follows the PowerShell cmdlet naming convention "Verb-Noun" and uses
                 <h2 className="text-lg font-medium">Performance Analysis</h2>
               </div>
               <div className="p-6">
-                {analysis.performance_suggestions && analysis.performance_suggestions.length > 0 ? (
+                {analysis.performanceSuggestions && analysis.performanceSuggestions.length > 0 ? (
                   <div className="mb-6">
                     <h3 className="text-md font-medium mb-3">Performance Optimization Opportunities</h3>
                     <div className="space-y-4">
-                      {analysis.performance_suggestions.map((suggestion, index) => (
+                      {analysis.performanceSuggestions.map((suggestion, index) => (
                         <div key={index} className="bg-green-900 bg-opacity-20 p-4 rounded-lg border border-green-800">
                           <div className="flex items-start">
                             <FaChartLine className="text-green-400 mt-1 mr-3 flex-shrink-0" />
@@ -924,36 +995,36 @@ This script follows the PowerShell cmdlet naming convention "Verb-Noun" and uses
                   </div>
                 )}
                 
-                {analysis.reliability_score && (
+                {analysis.reliabilityScore && (
                   <div className="mb-6">
                     <div className="flex items-center justify-between mb-2">
                       <h3 className="text-md font-medium">Reliability</h3>
                       <span className={`px-2 py-1 rounded text-sm ${
-                        analysis.reliability_score > 7 
+                        analysis.reliabilityScore > 7 
                           ? 'bg-green-900 text-green-300' 
-                          : analysis.reliability_score > 4 
+                          : analysis.reliabilityScore > 4 
                           ? 'bg-yellow-900 text-yellow-300' 
                           : 'bg-red-900 text-red-300'
                       }`}>
-                        {analysis.reliability_score}/10
+                        {analysis.reliabilityScore}/10
                       </span>
                     </div>
                     <div className="w-full bg-gray-800 rounded-full h-2.5">
                       <div 
                         className={`h-2.5 rounded-full ${
-                          analysis.reliability_score > 7 
+                          analysis.reliabilityScore > 7 
                             ? 'bg-green-500' 
-                            : analysis.reliability_score > 4 
+                            : analysis.reliabilityScore > 4 
                             ? 'bg-yellow-500' 
                             : 'bg-red-500'
                         }`}
-                        style={{ width: `${analysis.reliability_score * 10}%` }}
+                        style={{ width: `${analysis.reliabilityScore * 10}%` }}
                       ></div>
                     </div>
                     <p className="text-sm text-gray-400 mt-2">
-                      {analysis.reliability_score > 7 
+                      {analysis.reliabilityScore > 7 
                         ? 'High reliability - script handles errors well and should operate consistently.' 
-                        : analysis.reliability_score > 4 
+                        : analysis.reliabilityScore > 4 
                         ? 'Moderate reliability - additional error handling would improve robustness.' 
                         : 'Low reliability - significant improvements to error handling recommended.'}
                     </p>

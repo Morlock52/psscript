@@ -1,9 +1,11 @@
 """
-LangGraph Agent
+LangGraph Agent - Updated January 2026
 
 This module implements an agent using LangGraph for explicit state management
 and multi-actor workflows. It provides a structured approach to agent design
 with explicit state transitions and error handling.
+
+Updated for LangGraph 1.0 and LangChain 1.x+ APIs (January 2026).
 """
 
 import os
@@ -11,25 +13,25 @@ import json
 import time
 import logging
 import asyncio
-from typing import Dict, List, Any, Optional, Callable, TypedDict, Sequence
+from typing import Dict, List, Any, Optional, Callable, TypedDict, Sequence, Annotated
+from operator import add
 
-# LangGraph imports
-from langgraph.graph import StateGraph, END
-from langgraph.graph.nodes import ToolNode
-from langgraph.checkpoint import MemorySaver
+# LangGraph imports - Updated for LangGraph 1.0 stable (January 2026)
+from langgraph.graph import StateGraph, END, START
+from langgraph.prebuilt import ToolNode
+from langgraph.checkpoint.memory import MemorySaver
 
-# LangChain imports
-from langchain.prompts import ChatPromptTemplate, MessagesPlaceholder
-from langchain.schema import SystemMessage, HumanMessage, AIMessage
-from langchain.tools import BaseTool
-from langchain.chat_models import ChatOpenAI
-from langchain.agents import AgentExecutor, create_openai_tools_agent
-from langchain.callbacks.manager import CallbackManagerForToolRun
-from langchain.pydantic_v1 import BaseModel, Field
+# LangChain imports - Updated for LangChain 1.x (January 2026)
+from langchain_core.prompts import ChatPromptTemplate, MessagesPlaceholder
+from langchain_core.messages import SystemMessage, HumanMessage, AIMessage, BaseMessage
+from langchain_core.tools import BaseTool
+from langchain_openai import ChatOpenAI
+from langchain_core.callbacks import CallbackManagerForToolRun
+from pydantic import BaseModel, Field
 
 # Local imports
 from .base_agent import BaseAgent
-from ..analysis.script_analyzer import ScriptAnalyzer
+from analysis.script_analyzer import ScriptAnalyzer
 
 # Configure logging
 logging.basicConfig(
@@ -38,16 +40,20 @@ logging.basicConfig(
 )
 logger = logging.getLogger("langgraph_agent")
 
-# Define the state schema for the agent
+# Define the state schema for the agent - Updated for LangGraph 0.2.x+
 class AgentState(TypedDict):
-    """State schema for the LangGraph agent."""
-    messages: List[Dict[str, str]]
+    """State schema for the LangGraph agent.
+
+    Uses Annotated with add operator for message accumulation as per LangGraph 0.2.x API.
+    """
+    messages: Annotated[List[BaseMessage], add]  # Messages accumulate using add operator
     tools: List[Dict[str, str]]
-    tool_results: List[Dict[str, Any]]
+    tool_results: Annotated[List[Dict[str, Any]], add]  # Tool results accumulate
     current_plan: Optional[List[str]]
     working_memory: Dict[str, Any]
-    errors: List[Dict[str, Any]]
+    errors: Annotated[List[Dict[str, Any]], add]  # Errors accumulate
     final_response: Optional[str]
+    next_action: Optional[str]  # Added to track workflow routing
 
 class PowerShellAnalysisTool(BaseTool):
     """Tool for analyzing PowerShell scripts."""
@@ -296,17 +302,20 @@ class MSDocsReferenceTool(BaseTool):
 class LangGraphAgent(BaseAgent):
     """
     Agent implementation using LangGraph for explicit state management and multi-actor workflows.
+
+    Updated for January 2026 with LangGraph 0.2.x+ and latest model configurations.
     """
-    
-    def __init__(self, api_key: Optional[str] = None):
+
+    def __init__(self, api_key: Optional[str] = None, model: str = "gpt-4o"):
         """
         Initialize the LangGraph agent.
-        
+
         Args:
             api_key: OpenAI API key to use for the agent
+            model: Model to use for the agent (default: gpt-4o for January 2026)
         """
         super().__init__(api_key)
-        
+
         # Initialize tools
         self.tools = [
             PowerShellAnalysisTool(),
@@ -314,25 +323,27 @@ class LangGraphAgent(BaseAgent):
             ScriptCategorizationTool(),
             MSDocsReferenceTool()
         ]
-        
-        # Initialize tool executor
-        self.tool_executor = self._create_tool_executor()
-        
-        # Initialize the LLM
+
+        # Initialize the LLM with updated model - gpt-4o is current best as of Jan 2026
         self.llm = ChatOpenAI(
-            model="o3-mini",
-            temperature=0.7,
+            model=model,
+            temperature=0.3,  # Lower temperature for more consistent analysis
             streaming=True,
-            callbacks=[StreamingCallbackHandler()]
+            api_key=api_key or os.getenv("OPENAI_API_KEY"),
+            timeout=60,  # 60 second timeout
+            max_retries=2
         )
-        
-        # Build the graph
-        self.graph = self._build_graph()
-        
+
+        # Bind tools to LLM for tool calling
+        self.llm_with_tools = self.llm.bind_tools(self.tools)
+
         # Initialize memory saver for state persistence
         self.memory_saver = MemorySaver()
-        
-        logger.info("LangGraph agent initialized")
+
+        # Build the graph
+        self.graph = self._build_graph()
+
+        logger.info(f"LangGraph agent initialized with model {model}")
     
     def _create_tool_executor(self) -> Callable:
         """Create a tool executor for the agent."""
@@ -509,189 +520,225 @@ If you have all the information you need to respond to the user, provide a final
         return error_handler
     
     def _build_graph(self) -> StateGraph:
-        """Build the agent workflow graph."""
-        # Define the nodes
-        planner = self._create_planner_node()
-        tool_executor_node = ToolNode(self.tool_executor)
-        responder = self._create_responder_node()
-        error_handler = self._create_error_handler_node()
-        
-        # Create the graph
+        """Build the agent workflow graph using LangGraph 0.2.x+ API."""
+
+        def agent_node(state: AgentState) -> Dict[str, Any]:
+            """Call the LLM with tools to decide next action."""
+            messages = state.get("messages", [])
+            response = self.llm_with_tools.invoke(messages)
+            return {"messages": [response]}
+
+        def should_continue(state: AgentState) -> str:
+            """Determine if we should continue to tools or end."""
+            messages = state.get("messages", [])
+            if not messages:
+                return "end"
+            last_message = messages[-1]
+            # If the LLM made tool calls, continue to tools
+            if hasattr(last_message, "tool_calls") and last_message.tool_calls:
+                return "tools"
+            # Otherwise, end the conversation
+            return "end"
+
+        # Create the graph with AgentState
         workflow = StateGraph(AgentState)
-        
-        # Add nodes
-        workflow.add_node("planner", planner)
-        workflow.add_node("tool_executor", tool_executor_node)
-        workflow.add_node("responder", responder)
-        workflow.add_node("error_handler", error_handler)
-        
-        # Add edges
-        workflow.add_edge("planner", "tool_executor")
-        workflow.add_edge("tool_executor", "planner")
-        workflow.add_edge("planner", "responder")
-        workflow.add_edge("responder", END)
-        
-        # Add error handling
-        workflow.add_edge_from_exception("tool_executor", "error_handler")
-        workflow.add_edge("error_handler", "planner")
-        
-        # Set the entry point
-        workflow.set_entry_point("planner")
-        
-        # Compile the graph
-        return workflow.compile()
+
+        # Add nodes - using prebuilt ToolNode for tool execution
+        workflow.add_node("agent", agent_node)
+        workflow.add_node("tools", ToolNode(self.tools))
+
+        # Set entry point
+        workflow.add_edge(START, "agent")
+
+        # Add conditional edges for routing
+        workflow.add_conditional_edges(
+            "agent",
+            should_continue,
+            {
+                "tools": "tools",
+                "end": END
+            }
+        )
+
+        # Tools always return to agent
+        workflow.add_edge("tools", "agent")
+
+        # Compile the graph with checkpointing
+        return workflow.compile(checkpointer=self.memory_saver)
     
-    async def process_message(self, messages: List[Dict[str, str]]) -> str:
+    async def process_message(self, messages: List[Dict[str, str]], thread_id: str = "default") -> str:
         """
         Process a message using the LangGraph agent.
-        
+
         Args:
             messages: List of message dictionaries with 'role' and 'content' keys
-            
+            thread_id: Thread ID for conversation tracking
+
         Returns:
             The agent's response as a string
         """
         try:
-            # Initialize the state
+            # Convert dict messages to LangChain message objects
+            lc_messages = []
+            for msg in messages:
+                role = msg.get("role", "user")
+                content = msg.get("content", "")
+                if role == "system":
+                    lc_messages.append(SystemMessage(content=content))
+                elif role == "assistant":
+                    lc_messages.append(AIMessage(content=content))
+                else:
+                    lc_messages.append(HumanMessage(content=content))
+
+            # Initialize the state with LangChain message objects
             initial_state: AgentState = {
-                "messages": messages,
+                "messages": lc_messages,
                 "tools": [{"name": tool.name, "description": tool.description} for tool in self.tools],
                 "tool_results": [],
                 "current_plan": None,
                 "working_memory": {},
                 "errors": [],
-                "final_response": None
+                "final_response": None,
+                "next_action": None
             }
-            
-            # Run the graph
-            for event in self.graph.stream(initial_state, checkpointer=self.memory_saver):
-                if "final_response" in event:
-                    return event["final_response"]
-            
-            # If we get here, something went wrong
+
+            # Configuration for the graph run
+            config = {"configurable": {"thread_id": thread_id}}
+
+            # Run the graph with async streaming
+            final_state = None
+            async for event in self.graph.astream(initial_state, config=config):
+                # Each event is a partial state update
+                if event:
+                    final_state = event
+
+            # Extract the final response from the last message
+            if final_state and "messages" in final_state:
+                messages_result = final_state.get("messages", [])
+                if messages_result:
+                    last_msg = messages_result[-1]
+                    if hasattr(last_msg, "content"):
+                        return last_msg.content
+
             return "I apologize, but I couldn't process your request. Please try again."
-            
+
         except Exception as e:
             logger.error(f"Error processing message with LangGraph agent: {e}")
             return f"I encountered an error while processing your request: {str(e)}"
     
-    async def analyze_script(self, script_id: str, content: str, 
+    async def analyze_script(self, script_id: str, content: str,
                             include_command_details: bool = False,
-                            fetch_ms_docs: bool = False) -> Dict[str, Any]:
+                            fetch_ms_docs: bool = True) -> Dict[str, Any]:
         """
         Analyze a PowerShell script using the LangGraph agent.
-        
+
         Args:
             script_id: The ID of the script to analyze
             content: The content of the script
             include_command_details: Whether to include detailed command analysis
             fetch_ms_docs: Whether to fetch Microsoft documentation references
-            
+
         Returns:
             A dictionary containing the analysis results
         """
         logger.info(f"Starting LangGraph analysis for script {script_id}")
-        
-        # Create a message for script analysis
-        messages = [
-            {"role": "system", "content": "You are an expert PowerShell script analyzer. Your task is to analyze the provided PowerShell script and extract key information about it."},
-            {"role": "user", "content": f"""
-            Analyze the following PowerShell script and provide a detailed report with the following sections:
-            
-            1. PURPOSE: Summarize what this script is designed to do in 1-2 sentences
-            2. SECURITY_ANALYSIS: Identify potential security vulnerabilities or risks
-            3. CODE_QUALITY: Evaluate code quality and best practices
-            4. PARAMETERS: Identify and document all parameters, including types and purposes
-            5. CATEGORY: Classify this script into an appropriate category
-            6. OPTIMIZATION: Provide specific suggestions for improving the script
-            7. RISK_ASSESSMENT: Evaluate the potential risk of executing this script
-            
-            Script content:
-            ```powershell
-            {content}
-            ```
-            """}
-        ]
-        
-        # Initialize the state
-        initial_state: AgentState = {
-            "messages": messages,
-            "tools": [{"name": tool.name, "description": tool.description} for tool in self.tools],
-            "tool_results": [],
-            "current_plan": None,
-            "working_memory": {
-                "script_id": script_id,
-                "include_command_details": include_command_details,
-                "fetch_ms_docs": fetch_ms_docs
-            },
-            "errors": [],
-            "final_response": None
-        }
-        
-        # Run the graph
-        analysis_results = {}
-        
+
         try:
-            # Execute tools directly for script analysis
-            powershell_analysis_result = self.tools[0].run(content)
-            security_analysis_result = self.tools[1].run(content)
-            categorization_result = self.tools[2].run(content)
-            
+            # Execute all analysis tools concurrently using asyncio
+            import asyncio
+
+            async def run_tool(tool, input_content):
+                """Run a tool asynchronously."""
+                loop = asyncio.get_event_loop()
+                return await loop.run_in_executor(None, tool.run, input_content)
+
+            # Run analysis tools in parallel
+            results = await asyncio.gather(
+                run_tool(self.tools[0], content),  # PowerShell analysis
+                run_tool(self.tools[1], content),  # Security analysis
+                run_tool(self.tools[2], content),  # Categorization
+                run_tool(self.tools[3], content) if fetch_ms_docs else asyncio.coroutine(lambda: "{}")(),
+                return_exceptions=True
+            )
+
             # Parse the results
+            analysis_results = {}
+
             try:
-                powershell_analysis = json.loads(powershell_analysis_result)
-                security_analysis = json.loads(security_analysis_result)
-                categorization = json.loads(categorization_result)
-                
+                powershell_analysis = json.loads(results[0]) if isinstance(results[0], str) else {}
+                security_analysis = json.loads(results[1]) if isinstance(results[1], str) else {}
+                categorization = json.loads(results[2]) if isinstance(results[2], str) else {}
+
                 # Combine the results
                 analysis_results = {
-                    "purpose": powershell_analysis.get("purpose", "Unknown purpose"),
+                    "purpose": powershell_analysis.get("purpose", "Script purpose could not be determined"),
                     "security_analysis": security_analysis.get("security_issues", []),
                     "security_score": security_analysis.get("security_score", 5.0),
                     "code_quality_score": powershell_analysis.get("code_quality_score", 5.0),
                     "parameters": powershell_analysis.get("parameters", {}),
-                    "category": categorization.get("category", "Unknown"),
-                    "category_id": None,  # This would be filled in by the backend
+                    "category": categorization.get("category", "Utilities & Helpers"),
+                    "category_id": self._get_category_id(categorization.get("category", "")),
                     "optimization": powershell_analysis.get("optimization", []),
-                    "risk_score": powershell_analysis.get("risk_score", 5.0)
+                    "risk_score": powershell_analysis.get("risk_score", 5.0),
+                    "reliability_score": powershell_analysis.get("reliability_score", 5.0),
+                    "analyzed_at": int(time.time()),
+                    "model": "gpt-4o"  # Updated model name
                 }
-                
+
                 # Add command details if requested
                 if include_command_details:
-                    # This would be a more detailed analysis of each command
-                    analysis_results["command_details"] = []
-                
-                # Add MS Docs references if requested
-                if fetch_ms_docs:
-                    ms_docs_result = self.tools[3].run(content)
-                    ms_docs = json.loads(ms_docs_result)
-                    analysis_results["ms_docs_references"] = ms_docs.get("references", [])
+                    analysis_results["command_details"] = powershell_analysis.get("command_details", [])
+
+                # Add MS Docs references if requested and available
+                if fetch_ms_docs and len(results) > 3 and isinstance(results[3], str):
+                    try:
+                        ms_docs = json.loads(results[3])
+                        analysis_results["ms_docs_references"] = ms_docs.get("references", [])
+                    except json.JSONDecodeError:
+                        analysis_results["ms_docs_references"] = []
+                else:
+                    analysis_results["ms_docs_references"] = []
+
             except json.JSONDecodeError as e:
                 logger.error(f"Error parsing analysis results: {e}")
-                analysis_results = {
-                    "purpose": "Error analyzing script",
-                    "security_analysis": "Error analyzing script",
-                    "security_score": 5.0,
-                    "code_quality_score": 5.0,
-                    "parameters": {},
-                    "category": "Unknown",
-                    "category_id": None,
-                    "optimization": [],
-                    "risk_score": 5.0
-                }
-            
+                analysis_results = self._get_default_analysis()
+
             return analysis_results
-        
+
         except Exception as e:
-            logger.error(f"Error analyzing script: {e}")
-            return {
-                "purpose": f"Error analyzing script: {str(e)}",
-                "security_analysis": "Error",
-                "security_score": 5.0,
-                "code_quality_score": 5.0,
-                "parameters": {},
-                "category": "Unknown",
-                "category_id": None,
-                "optimization": [],
-                "risk_score": 5.0
-            }
+            logger.error(f"Error analyzing script {script_id}: {e}")
+            return self._get_default_analysis(error=str(e))
+
+    def _get_category_id(self, category: str) -> int:
+        """Map category name to ID."""
+        category_map = {
+            "System Administration": 1,
+            "Security & Compliance": 2,
+            "Automation & DevOps": 3,
+            "Cloud Management": 4,
+            "Network Management": 5,
+            "Data Management": 6,
+            "Active Directory": 7,
+            "Monitoring & Diagnostics": 8,
+            "Backup & Recovery": 9,
+            "Utilities & Helpers": 10
+        }
+        return category_map.get(category, 10)
+
+    def _get_default_analysis(self, error: str = None) -> Dict[str, Any]:
+        """Return default analysis results."""
+        return {
+            "purpose": f"Error analyzing script: {error}" if error else "Analysis incomplete",
+            "security_analysis": [],
+            "security_score": 5.0,
+            "code_quality_score": 5.0,
+            "parameters": {},
+            "category": "Utilities & Helpers",
+            "category_id": 10,
+            "optimization": [],
+            "risk_score": 5.0,
+            "reliability_score": 5.0,
+            "ms_docs_references": [],
+            "analyzed_at": int(time.time()),
+            "error": error
+        }
