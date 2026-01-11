@@ -37,6 +37,14 @@ from langgraph_endpoints import router as langgraph_router
 
 # Import configuration
 from config import config
+# Import guardrails for topic validation (January 2026 best practices)
+from guardrails import (
+    TopicValidator,
+    validate_powershell_topic,
+    is_script_generation_request,
+    extract_script_requirements,
+    TopicCategory
+)
 # Import our agent system
 from agents.agent_coordinator import AgentCoordinator
 from agents.agent_factory import agent_factory
