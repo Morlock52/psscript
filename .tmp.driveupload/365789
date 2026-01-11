@@ -1,0 +1,30 @@
+0000000000000000000000000000000000000000 e8b4efe122be2382808659e66c6048220be3fc82 Morlock52$ <morlok52@gmail.com> 1740789663 -0500	commit (initial): Initial commit: PowerShell Script Management Application
+e8b4efe122be2382808659e66c6048220be3fc82 6cc408c49ef784284e796d25150563d644e635cf Morlock52$ <morlok52@gmail.com> 1740830487 -0500	commit: Initial commit: PowerShell Script Management Application
+6cc408c49ef784284e796d25150563d644e635cf 0000000000000000000000000000000000000000 Morlock52$ <morlok52@gmail.com> 1740830920 -0500	Branch: renamed refs/heads/master to refs/heads/main
+0000000000000000000000000000000000000000 6cc408c49ef784284e796d25150563d644e635cf Morlock52$ <morlok52@gmail.com> 1740830920 -0500	Branch: renamed refs/heads/master to refs/heads/main
+6cc408c49ef784284e796d25150563d644e635cf 0000000000000000000000000000000000000000 Morlock52$ <morlok52@gmail.com> 1740831013 -0500	Branch: renamed refs/heads/main to refs/heads/main
+6cc408c49ef784284e796d25150563d644e635cf 6cc408c49ef784284e796d25150563d644e635cf Morlock52$ <morlok52@gmail.com> 1740831013 -0500	Branch: renamed refs/heads/main to refs/heads/main
+6cc408c49ef784284e796d25150563d644e635cf 0000000000000000000000000000000000000000 Morlock52$ <morlok52@gmail.com> 1740831053 -0500	Branch: renamed refs/heads/main to refs/heads/main
+6cc408c49ef784284e796d25150563d644e635cf 6cc408c49ef784284e796d25150563d644e635cf Morlock52$ <morlok52@gmail.com> 1740831053 -0500	Branch: renamed refs/heads/main to refs/heads/main
+6cc408c49ef784284e796d25150563d644e635cf c3d1c8ea279f50dd55f6e2c7a02dd2672392936e Morlock52$ <morlok52@gmail.com> 1740838715 -0500	commit: Prepare for deployment
+c3d1c8ea279f50dd55f6e2c7a02dd2672392936e eb432aaf141aaeb2a6931f2e018bdd2aad283b88 Morlock52$ <morlok52@gmail.com> 1740838778 -0500	commit: Prepare for deployment
+eb432aaf141aaeb2a6931f2e018bdd2aad283b88 de3fbddb9dfd7e5be402ec6c83c44f883a38c0e0 Morlock52$ <morlok52@gmail.com> 1740839179 -0500	commit: Fix database and backend dependencies
+de3fbddb9dfd7e5be402ec6c83c44f883a38c0e0 e9b80217f06f126779a40a0ed3d17f6fb5063a2c Morlock52$ <morlok52@gmail.com> 1740839209 -0500	commit: Update backend Dockerfile to install missing dependencies
+e9b80217f06f126779a40a0ed3d17f6fb5063a2c 61c18c5fbd5b0ccd86ab33a646472c0fa4fcaadc Morlock52$ <morlok52@gmail.com> 1740839246 -0500	commit: Add tsconfig.json for backend
+61c18c5fbd5b0ccd86ab33a646472c0fa4fcaadc d5f51673acd287ebc8d8eff76cbc31d44514d745 Morlock52$ <morlok52@gmail.com> 1740839298 -0500	commit: Simplify logger to fix backend startup issues
+d5f51673acd287ebc8d8eff76cbc31d44514d745 ecd0a96fe94ef9563659f446ef99def45a82e86a Morlock52$ <morlok52@gmail.com> 1740839355 -0500	commit: Add mock models to fix backend startup issues
+ecd0a96fe94ef9563659f446ef99def45a82e86a 4749f0362a04e78b893ebbc1a17e69b72ca3f098 Morlock52$ <morlok52@gmail.com> 1740840269 -0500	commit: Add AI chatbot functionality with vector database integration
+4749f0362a04e78b893ebbc1a17e69b72ca3f098 18678cccf8b6fa4171136dd9e3cade0824aa5c9b Morlock52$ <morlok52@gmail.com> 1740840297 -0500	commit: Add missing AI service dependencies
+18678cccf8b6fa4171136dd9e3cade0824aa5c9b 5c1cb1d0a5c2947779064a9922163f144fde105a Morlock52$ <morlok52@gmail.com> 1741029921 -0500	commit: Redesign database connectivity and remove DbToggle component
+5c1cb1d0a5c2947779064a9922163f144fde105a cf72633d0a85968560931b3eaeb916af88978c6a Morlock52$ <morlok52@gmail.com> 1741544521 -0400	commit: Add file hash deduplication for PowerShell scripts
+cf72633d0a85968560931b3eaeb916af88978c6a e7d9b7501c78bf76bb0815273c0bf874ddb2c9aa Morlock52$ <morlok52@gmail.com> 1742654775 -0400	commit: Initial commit with Docker setup
+e7d9b7501c78bf76bb0815273c0bf874ddb2c9aa e7d9b7501c78bf76bb0815273c0bf874ddb2c9aa Morlock52$ <morlok52@gmail.com> 1744966651 -0400	reset: moving to HEAD
+e7d9b7501c78bf76bb0815273c0bf874ddb2c9aa db33af721cd19c744111d5b6b6eaa16817380187 Morlock52 <morlok52@gmail.com> 1767825590 -0500	commit: Move documentation files to docs directory
+db33af721cd19c744111d5b6b6eaa16817380187 88ed362b06e2b7d4531bfa710f5af060df61b588 Morlock52 <morlok52@gmail.com> 1767918871 -0500	commit: Fix E2E test validation and script list issues
+88ed362b06e2b7d4531bfa710f5af060df61b588 eaf19bb01abf51e1dec7154c9c958081b479b50e Morlock52 <morlok52@gmail.com> 1768004717 -0500	commit: Add comprehensive Playwright E2E testing infrastructure
+eaf19bb01abf51e1dec7154c9c958081b479b50e 88ed362b06e2b7d4531bfa710f5af060df61b588 Morlock52 <morlok52@gmail.com> 1768004819 -0500	reset: moving to 88ed362b06e2b7d4531bfa710f5af060df61b588
+88ed362b06e2b7d4531bfa710f5af060df61b588 d8a771603541d4c9cb8e8dc5a5d04d33c590bfc8 Morlock52 <morlok52@gmail.com> 1768004824 -0500	commit: Add comprehensive Playwright E2E testing infrastructure
+d8a771603541d4c9cb8e8dc5a5d04d33c590bfc8 05085452a328be238329c64f74a8f8e00764bf4f Morlock52 <morlok52@gmail.com> 1768144969 -0500	commit: Refactor AI agent and analysis modules
+05085452a328be238329c64f74a8f8e00764bf4f eda8e038e567551988fe94ad724f6d03b6840358 Morlock52 <morlok52@gmail.com> 1768145099 -0500	commit: Add guardrails module for topic validation
+eda8e038e567551988fe94ad724f6d03b6840358 70873c45b30aa2fe45e510618369f07c28ce8be4 Morlock52 <morlok52@gmail.com> 1768145119 -0500	commit: Enhance chat endpoint with topic guardrails and script generation
+70873c45b30aa2fe45e510618369f07c28ce8be4 a14e40e76329b17d057fa3e420db203a84a1369c Morlock52 <morlok52@gmail.com> 1768145124 -0500	commit: Add new binary files to .tmp.driveupload
