@@ -1059,82 +1059,182 @@ Is there a specific PowerShell topic you'd like me to cover?"""
 
 @app.post("/chat", response_model=ChatResponse, tags=["Chat"])
 async def chat_with_powershell_expert(request: ChatRequest):
-    """Chat with a PowerShell expert AI assistant."""
+    """
+    Chat with a PowerShell expert AI assistant.
+
+    Features (January 2026):
+    - Topic guardrails: Validates requests are PowerShell/scripting related
+    - Script generation: Can create new PowerShell scripts from requirements
+    - Context-aware: Uses conversation history for better responses
+    """
     start_time = time.time()
     try:
         # Extract API key from request if provided
         api_key = getattr(request, 'api_key', None)
         # Use the provided API key or fall back to the configured API key
         api_key = api_key or config.api_keys.openai
-        
-        # Default system prompt for PowerShell expertise
-        default_system_prompt = """
-        You are PSScriptGPT, a specialized PowerShell expert assistant. You provide accurate, 
-        detailed information about PowerShell scripting, best practices, and help users 
-        troubleshoot their PowerShell scripts. You can explain PowerShell concepts, 
-        cmdlets, modules, and provide code examples when appropriate.
-        """
-        
+
+        # Get the latest user message for guardrail validation
+        latest_user_message = ""
+        conversation_history = []
+        for msg in request.messages:
+            msg_dict = msg.dict() if hasattr(msg, 'dict') else msg
+            conversation_history.append(msg_dict)
+            if msg_dict.get('role') == 'user':
+                latest_user_message = msg_dict.get('content', '')
+
+        # =====================================================
+        # GUARDRAIL: Topic Validation (January 2026 Best Practice)
+        # =====================================================
+        validation_result = validate_powershell_topic(
+            latest_user_message,
+            conversation_history[:-1] if len(conversation_history) > 1 else None
+        )
+
+        logger.info(f"Topic validation: valid={validation_result.is_valid}, "
+                   f"category={validation_result.category.value}, "
+                   f"confidence={validation_result.confidence:.2f}")
+
+        # If off-topic, return helpful guidance instead of processing
+        if not validation_result.is_valid:
+            logger.info(f"Off-topic request detected: {latest_user_message[:100]}...")
+            return {
+                "response": validation_result.suggested_response,
+                "session_id": request.session_id
+            }
+
+        # =====================================================
+        # SCRIPT GENERATION: Enhanced prompt for script requests
+        # =====================================================
+        is_script_request = is_script_generation_request(latest_user_message)
+        script_requirements = None
+
+        if is_script_request:
+            script_requirements = extract_script_requirements(latest_user_message)
+            logger.info(f"Script generation request detected: {script_requirements}")
+
+        # Build the appropriate system prompt
+        if is_script_request:
+            system_prompt = f"""You are PSScriptGPT, an expert PowerShell script generator.
+You create professional, production-ready PowerShell scripts following 2026 best practices.
+
+SCRIPT GENERATION GUIDELINES:
+1. Always include comprehensive comment-based help (<# .SYNOPSIS, .DESCRIPTION, .PARAMETER, .EXAMPLE #>)
+2. Use [CmdletBinding()] for advanced function features
+3. Implement proper parameter validation with [ValidateNotNullOrEmpty()], [ValidateRange()], etc.
+4. Include error handling with try/catch blocks
+5. Use Write-Verbose for progress messages, Write-Warning for warnings
+6. Follow PowerShell naming conventions (Verb-Noun)
+7. Support -WhatIf and -Confirm for destructive operations
+8. Return proper objects, not formatted text
+9. Include examples in the help section
+
+TARGET SYSTEM: {script_requirements.get('target_system', 'windows') if script_requirements else 'windows'}
+COMPLEXITY LEVEL: {script_requirements.get('complexity', 'medium') if script_requirements else 'medium'}
+REQUESTED FEATURES: {', '.join(script_requirements.get('features', [])) if script_requirements else 'standard'}
+
+When generating scripts:
+- Start with the script purpose and requirements analysis
+- Provide the complete, runnable script
+- Explain key sections of the code
+- Include usage examples
+- Mention any prerequisites or dependencies"""
+        else:
+            # Standard PowerShell assistant prompt
+            system_prompt = request.system_prompt or """You are PSScriptGPT, a specialized PowerShell expert assistant.
+
+EXPERTISE AREAS:
+- PowerShell scripting and automation (Windows PowerShell 5.1 & PowerShell 7+)
+- Script analysis, debugging, and optimization
+- Security best practices and vulnerability assessment
+- DevOps and CI/CD pipeline automation
+- System administration and Active Directory
+- Cloud scripting (Azure, AWS, GCP)
+- Cross-platform scripting
+
+RESPONSE GUIDELINES:
+1. Provide accurate, tested code examples when relevant
+2. Explain concepts clearly with practical examples
+3. Highlight security considerations and best practices
+4. Suggest improvements and optimizations
+5. Reference official Microsoft documentation when helpful
+6. Use markdown code blocks with 'powershell' syntax highlighting
+
+You can help with:
+- Writing new scripts
+- Debugging existing scripts
+- Explaining PowerShell concepts
+- Reviewing code for security issues
+- Optimizing performance
+- Converting scripts between platforms"""
+
         # Check if we have a valid API key
         if not api_key and MOCK_MODE:
             # Use mock response in development mode
             response = get_mock_chat_response([msg.dict() for msg in request.messages])
             processing_time = time.time() - start_time
-            print(f"Chat request processed in {processing_time:.2f}s (mock mode)")
-            return {"response": response}
-        
+            logger.info(f"Chat request processed in {processing_time:.2f}s (mock mode)")
+            return {"response": response, "session_id": request.session_id}
+
         # Convert messages to the format expected by the agent system
         messages = []
-        
-        # Add system prompt if provided, otherwise use default
-        system_prompt = request.system_prompt or default_system_prompt
+
+        # Add the system prompt
         messages.append({"role": "system", "content": system_prompt})
-        
+
         # Add user messages
         for msg in request.messages:
-            messages.append({"role": msg.role, "content": msg.content})
-        
+            msg_dict = msg.dict() if hasattr(msg, 'dict') else msg
+            messages.append({"role": msg_dict.get('role'), "content": msg_dict.get('content')})
+
         # Session ID for persistent conversations
         session_id = request.session_id or None
-        
+
         # Process the chat request
         if agent_coordinator and not MOCK_MODE and not request.agent_type:
             # Use the agent coordinator
             response = await agent_coordinator.process_chat(messages)
-            return {"response": response}
+            processing_time = time.time() - start_time
+            logger.info(f"Chat request processed in {processing_time:.2f}s (agent coordinator)")
+            return {"response": response, "session_id": session_id}
         elif request.agent_type == "assistant":
             # Use the OpenAI Assistant agent
             try:
                 from agents.openai_assistant_agent import OpenAIAssistantAgent
-                
+
                 # Create an assistant agent
                 assistant_agent = OpenAIAssistantAgent(api_key=api_key)
-                
+
                 # Process the message with the assistant agent
                 response = await assistant_agent.process_message(messages, session_id)
-                
+
                 # Get the session ID for the response
                 if not session_id:
                     session_id = assistant_agent.get_or_create_thread()
-                
+
+                processing_time = time.time() - start_time
+                logger.info(f"Chat request processed in {processing_time:.2f}s (assistant agent)")
                 return {"response": response, "session_id": session_id}
             except ImportError as e:
-                print(f"OpenAI Assistant agent not available: {e}")
-                print("Falling back to legacy agent system")
+                logger.warning(f"OpenAI Assistant agent not available: {e}")
+                logger.info("Falling back to legacy agent system")
                 # Fall back to legacy agent
                 response = await agent_factory.process_message(messages, api_key)
-                return {"response": response}
+                return {"response": response, "session_id": session_id}
         else:
             # Use the agent factory with specified or auto-detected agent type
             response = await agent_factory.process_message(
-                messages, 
-                api_key, 
+                messages,
+                api_key,
                 request.agent_type,
                 session_id
             )
-            return {"response": response}
-        
+            processing_time = time.time() - start_time
+            logger.info(f"Chat request processed in {processing_time:.2f}s (agent factory)")
+            return {"response": response, "session_id": session_id}
+
     except Exception as e:
+        logger.error(f"Chat processing failed: {str(e)}")
         raise HTTPException(status_code=500, detail=f"Chat processing failed: {str(e)}")
 
 
