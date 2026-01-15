@@ -5,12 +5,10 @@ This module provides a framework for multi-agent collaboration, allowing
 multiple specialized agents to work together to solve complex tasks.
 """
 
-import os
 import json
 import time
 import logging
-import asyncio
-from typing import Dict, List, Any, Optional, Union, Tuple, Callable
+from typing import Dict, List, Any, Optional
 from enum import Enum, auto
 import uuid
 
@@ -34,6 +32,7 @@ class AgentRole(Enum):
     PLANNER = auto()      # Creates plans for complex tasks
     SPECIALIST = auto()   # Specialized in a specific domain
     ASSISTANT = auto()    # Assists other agents with their tasks
+    INTERFACE = auto()    # Handles user interface and communication
 
 class AgentCapability(Enum):
     """Capabilities that agents can have."""

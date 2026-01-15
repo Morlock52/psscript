@@ -1,0 +1,546 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <base href="file:///Users/morlock/fun/psscript/" />
+  <title>Voice-API</title>
+  <style>
+:root {
+  color-scheme: light;
+}
+body {
+  font-family: "Segoe UI", "Helvetica Neue", Arial, sans-serif;
+  margin: 0;
+  padding: 0;
+  background: #ffffff;
+  color: #0f172a;
+}
+.markdown-body {
+  max-width: 980px;
+  margin: 40px auto 60px;
+  padding: 0 32px;
+  line-height: 1.65;
+}
+.markdown-body h1 {
+  font-size: 32px;
+  margin-bottom: 12px;
+  border-bottom: 2px solid #e2e8f0;
+  padding-bottom: 12px;
+  page-break-before: always;
+  page-break-after: avoid;
+  break-before: page;
+  break-after: avoid;
+}
+.markdown-body h1:first-of-type {
+  page-break-before: avoid;
+  break-before: avoid;
+}
+.markdown-body h2 {
+  font-size: 24px;
+  margin-top: 28px;
+  border-bottom: 1px solid #e2e8f0;
+  padding-bottom: 8px;
+  page-break-before: always;
+  page-break-after: avoid;
+  break-before: page;
+  break-after: avoid;
+}
+.markdown-body h3 {
+  font-size: 18px;
+  margin-top: 20px;
+  page-break-after: avoid;
+  break-after: avoid;
+}
+.markdown-body h4, .markdown-body h5, .markdown-body h6 {
+  page-break-after: avoid;
+  break-after: avoid;
+}
+.markdown-body table {
+  width: 100%;
+  border-collapse: collapse;
+  margin: 16px 0;
+  font-size: 14px;
+  page-break-inside: avoid;
+  break-inside: avoid;
+}
+.markdown-body th,
+.markdown-body td {
+  border: 1px solid #e2e8f0;
+  padding: 8px 10px;
+  text-align: left;
+}
+.markdown-body th {
+  background: #f8fafc;
+}
+.markdown-body tr {
+  page-break-inside: avoid;
+  break-inside: avoid;
+}
+.markdown-body code {
+  background: #f1f5f9;
+  padding: 2px 4px;
+  border-radius: 4px;
+  font-family: "SFMono-Regular", Menlo, Consolas, monospace;
+  font-size: 0.92em;
+}
+.markdown-body pre {
+  background: #0f172a;
+  color: #e2e8f0;
+  padding: 16px;
+  border-radius: 8px;
+  overflow-x: auto;
+  page-break-inside: avoid;
+  break-inside: avoid;
+}
+.markdown-body pre code {
+  background: transparent;
+  color: inherit;
+}
+.markdown-body blockquote {
+  border-left: 4px solid #38bdf8;
+  margin: 16px 0;
+  padding: 8px 16px;
+  background: #f8fafc;
+  color: #334155;
+}
+.markdown-body img {
+  max-width: 100%;
+  height: auto;
+  display: block;
+  margin: 16px 0;
+  border-radius: 10px;
+  box-shadow: 0 8px 20px rgba(15, 23, 42, 0.12);
+  page-break-inside: avoid;
+  break-inside: avoid;
+}
+.markdown-body figure {
+  page-break-inside: avoid;
+  break-inside: avoid;
+  margin: 16px 0;
+}
+.markdown-body a {
+  color: #2563eb;
+  text-decoration: none;
+}
+.markdown-body a:hover {
+  text-decoration: underline;
+}
+.cover {
+  padding: 80px 60px 60px;
+  background: linear-gradient(135deg, #0b1220 0%, #1e3a8a 100%);
+  color: #f8fafc;
+  border-radius: 18px;
+  margin-bottom: 32px;
+}
+.cover-title {
+  font-size: 36px;
+  font-weight: 700;
+  margin: 0 0 12px;
+}
+.cover-subtitle {
+  font-size: 18px;
+  color: #cbd5f5;
+  margin: 0 0 16px;
+}
+.cover-meta {
+  font-size: 13px;
+  color: #94a3b8;
+}
+.page-break {
+  page-break-after: always;
+  break-after: page;
+}
+.footer {
+  margin-top: 40px;
+  font-size: 12px;
+  color: #64748b;
+}
+/* Print and PDF-specific styles */
+@page {
+  margin: 20mm 18mm;
+}
+@media print {
+  .markdown-body {
+    orphans: 3;
+    widows: 3;
+  }
+  .markdown-body p {
+    orphans: 3;
+    widows: 3;
+  }
+  .markdown-body li {
+    page-break-inside: avoid;
+    break-inside: avoid;
+  }
+  .markdown-body ul, .markdown-body ol {
+    page-break-before: avoid;
+    break-before: avoid;
+  }
+  .markdown-body blockquote {
+    page-break-inside: avoid;
+    break-inside: avoid;
+  }
+  /* Keep section content together */
+  .markdown-body h2 + *, .markdown-body h3 + * {
+    page-break-before: avoid;
+    break-before: avoid;
+  }
+}
+</style>
+</head>
+<body>
+  <div class="markdown-body">
+    
+  <section class="cover page-break">
+    <h1 class="cover-title">Voice API</h1>
+    <p class="cover-subtitle">Speech synthesis and recognition flows</p>
+    <p class="cover-meta">PSScript Manager Docs</p>
+  </section>
+  
+    <h1 id="voice-api-integration">Voice API Integration</h1>
+<p>This document provides an overview of the Voice API integration for the PSScript Manager platform. The Voice API enables voice input and output capabilities, enhancing the user experience and accessibility of the platform.</p>
+<h2 id="table-of-contents">Table of Contents</h2>
+<ol>
+<li><a href="#overview">Overview</a></li>
+<li><a href="#architecture">Architecture</a></li>
+<li><a href="#features">Features</a></li>
+<li><a href="#setup-and-configuration">Setup and Configuration</a></li>
+<li><a href="#api-reference">API Reference</a></li>
+<li><a href="#usage-examples">Usage Examples</a></li>
+<li><a href="#testing">Testing</a></li>
+<li><a href="#troubleshooting">Troubleshooting</a></li>
+</ol>
+<h2 id="overview">Overview</h2>
+<p>The Voice API integration adds voice capabilities to the PSScript Manager platform, allowing users to:</p>
+<ul>
+<li>Convert text to speech (voice synthesis)</li>
+<li>Convert speech to text (voice recognition)</li>
+<li>Interact with the platform using voice commands</li>
+<li>Receive voice responses to queries</li>
+</ul>
+<p>The implementation supports multiple voice service providers (Google Cloud, Amazon AWS, Microsoft Azure) with fallback mechanisms and caching for improved performance and reliability.</p>
+<h2 id="architecture">Architecture</h2>
+<p>The Voice API integration follows a layered architecture:</p>
+<ol>
+<li><strong>AI Service Layer</strong>:</li>
+<li><code>voice_service.py</code>: Core service with speech synthesis and recognition capabilities</li>
+<li><code>voice_endpoints.py</code>: FastAPI endpoints for voice processing</li>
+<li>
+<p><code>voice_agent.py</code>: Specialized agent for voice tasks</p>
+</li>
+<li>
+<p><strong>Backend Layer</strong>:</p>
+</li>
+<li><code>voiceController.js</code>: Express controller for voice functionality</li>
+<li>
+<p><code>voiceRoutes.js</code>: API routes for voice endpoints</p>
+</li>
+<li>
+<p><strong>Frontend Layer</strong>:</p>
+</li>
+<li><code>VoiceRecorder.jsx</code>: Audio recording with visualization</li>
+<li><code>VoicePlayback.jsx</code>: Audio playback with controls</li>
+<li><code>VoiceChatInterface.jsx</code>: Chat UI with voice integration</li>
+<li><code>VoiceSettings.jsx</code>: User preferences for voice features</li>
+</ol>
+<h2 id="features">Features</h2>
+<ul>
+<li><strong>Multi-provider Support</strong>: Integration with Google Cloud, Amazon AWS, and Microsoft Azure voice services</li>
+<li><strong>Fallback Mechanism</strong>: Automatic fallback to alternative providers if the primary provider fails</li>
+<li><strong>Caching</strong>: Efficient caching of voice responses to reduce API calls and improve performance</li>
+<li><strong>Voice Settings</strong>: User-configurable voice settings (voice selection, playback options)</li>
+<li><strong>Accessibility</strong>: Enhanced accessibility through voice interaction</li>
+<li><strong>Visualization</strong>: Audio waveform visualization during recording and playback</li>
+<li><strong>Error Handling</strong>: Comprehensive error handling and recovery mechanisms</li>
+</ul>
+<h2 id="setup-and-configuration">Setup and Configuration</h2>
+<h3 id="prerequisites">Prerequisites</h3>
+<ul>
+<li>Node.js 14+ for the backend</li>
+<li>Python 3.8+ for the AI service</li>
+<li>API keys for the voice service providers:</li>
+<li>Google Cloud Speech-to-Text and Text-to-Speech</li>
+<li>Amazon Polly and Transcribe</li>
+<li>Microsoft Azure Cognitive Services</li>
+</ul>
+<h3 id="installation">Installation</h3>
+<ol>
+<li>
+<p><strong>AI Service Setup</strong>:
+   <code>bash
+   cd src/ai
+   pip install -r requirements.txt</code></p>
+</li>
+<li>
+<p><strong>Backend Setup</strong>:
+   <code>bash
+   cd src/backend
+   npm install</code></p>
+</li>
+<li>
+<p><strong>Environment Variables</strong>:</p>
+</li>
+</ol>
+<p>Create a <code>.env</code> file in the <code>src/ai</code> directory with the following variables:
+   ```
+   VOICE_API_KEY=your-api-key
+   TTS_SERVICE=google  # google, amazon, or microsoft
+   STT_SERVICE=google  # google, amazon, or microsoft
+   TTS_CACHE_DIR=voice_cache
+   TTS_CACHE_TTL=86400  # 24 hours in seconds</p>
+<p># Google Cloud credentials
+   GOOGLE_APPLICATION_CREDENTIALS=path/to/google-credentials.json</p>
+<p># Amazon AWS credentials
+   AWS_ACCESS_KEY_ID=your-aws-access-key
+   AWS_SECRET_ACCESS_KEY=your-aws-secret-key
+   AWS_REGION=us-east-1</p>
+<p># Microsoft Azure credentials
+   AZURE_SPEECH_KEY=your-azure-speech-key
+   AZURE_SPEECH_REGION=eastus
+   ```</p>
+<h3 id="starting-the-services">Starting the Services</h3>
+<ol>
+<li>
+<p><strong>Start the AI Service</strong>:
+   <code>bash
+   cd src/ai
+   uvicorn main:app --reload --port 8000</code></p>
+</li>
+<li>
+<p><strong>Start the Backend</strong>:
+   <code>bash
+   cd src/backend
+   npm run dev</code></p>
+</li>
+</ol>
+<h2 id="api-reference">API Reference</h2>
+<h3 id="backend-api-endpoints">Backend API Endpoints</h3>
+<h4 id="voice-synthesis">Voice Synthesis</h4>
+<pre><code>POST /api/voice/synthesize
+</code></pre>
+<p>Request body:</p>
+<pre><code class="language-json">{
+  &quot;text&quot;: &quot;Text to synthesize&quot;,
+  &quot;voiceId&quot;: &quot;en-US-Standard-A&quot;,
+  &quot;outputFormat&quot;: &quot;mp3&quot;
+}
+</code></pre>
+<p>Response:</p>
+<pre><code class="language-json">{
+  &quot;audio_data&quot;: &quot;base64-encoded-audio-data&quot;,
+  &quot;format&quot;: &quot;mp3&quot;,
+  &quot;duration&quot;: 2.5,
+  &quot;text&quot;: &quot;Text to synthesize&quot;
+}
+</code></pre>
+<h4 id="voice-recognition">Voice Recognition</h4>
+<pre><code>POST /api/voice/recognize
+</code></pre>
+<p>Request body:</p>
+<pre><code class="language-json">{
+  &quot;audioData&quot;: &quot;base64-encoded-audio-data&quot;,
+  &quot;language&quot;: &quot;en-US&quot;
+}
+</code></pre>
+<p>Response:</p>
+<pre><code class="language-json">{
+  &quot;text&quot;: &quot;Recognized text&quot;,
+  &quot;confidence&quot;: 0.92,
+  &quot;alternatives&quot;: [
+    {
+      &quot;text&quot;: &quot;Recognized text&quot;,
+      &quot;confidence&quot;: 0.92
+    },
+    {
+      &quot;text&quot;: &quot;Alternative text&quot;,
+      &quot;confidence&quot;: 0.85
+    }
+  ]
+}
+</code></pre>
+<h4 id="voice-settings">Voice Settings</h4>
+<pre><code>GET /api/voice/settings
+</code></pre>
+<p>Response:</p>
+<pre><code class="language-json">{
+  &quot;voiceId&quot;: &quot;en-US-Standard-A&quot;,
+  &quot;autoPlay&quot;: true,
+  &quot;volume&quot;: 0.8,
+  &quot;speed&quot;: 1.0
+}
+</code></pre>
+<pre><code>PUT /api/voice/settings
+</code></pre>
+<p>Request body:</p>
+<pre><code class="language-json">{
+  &quot;voiceId&quot;: &quot;en-US-Standard-A&quot;,
+  &quot;autoPlay&quot;: true,
+  &quot;volume&quot;: 0.8,
+  &quot;speed&quot;: 1.0
+}
+</code></pre>
+<h4 id="available-voices">Available Voices</h4>
+<pre><code>GET /api/voice/voices
+</code></pre>
+<p>Response:</p>
+<pre><code class="language-json">{
+  &quot;voices&quot;: [
+    {
+      &quot;id&quot;: &quot;en-US-Standard-A&quot;,
+      &quot;name&quot;: &quot;English US (Female)&quot;,
+      &quot;language&quot;: &quot;en-US&quot;,
+      &quot;gender&quot;: &quot;female&quot;
+    },
+    {
+      &quot;id&quot;: &quot;en-US-Standard-B&quot;,
+      &quot;name&quot;: &quot;English US (Male)&quot;,
+      &quot;language&quot;: &quot;en-US&quot;,
+      &quot;gender&quot;: &quot;male&quot;
+    }
+  ]
+}
+</code></pre>
+<h3 id="ai-service-endpoints">AI Service Endpoints</h3>
+<h4 id="voice-synthesis_1">Voice Synthesis</h4>
+<pre><code>POST /voice/synthesize
+</code></pre>
+<p>Request body:</p>
+<pre><code class="language-json">{
+  &quot;text&quot;: &quot;Text to synthesize&quot;,
+  &quot;voice_id&quot;: &quot;en-US-Standard-A&quot;,
+  &quot;output_format&quot;: &quot;mp3&quot;
+}
+</code></pre>
+<h4 id="voice-recognition_1">Voice Recognition</h4>
+<pre><code>POST /voice/recognize
+</code></pre>
+<p>Request body:</p>
+<pre><code class="language-json">{
+  &quot;audio_data&quot;: &quot;base64-encoded-audio-data&quot;,
+  &quot;language&quot;: &quot;en-US&quot;
+}
+</code></pre>
+<h2 id="usage-examples">Usage Examples</h2>
+<h3 id="frontend-integration">Frontend Integration</h3>
+<pre><code class="language-jsx">import React, { useState } from 'react';
+import VoiceRecorder from '../components/VoiceRecorder';
+import VoicePlayback from '../components/VoicePlayback';
+
+const VoiceExample = () =&gt; {
+  const [recognizedText, setRecognizedText] = useState('');
+  const [audioData, setAudioData] = useState(null);
+
+  const handleVoiceInput = (text, audio) =&gt; {
+    setRecognizedText(text);
+    setAudioData(audio);
+  };
+
+  return (
+    &lt;div className=&quot;voice-example&quot;&gt;
+      &lt;h2&gt;Voice Example&lt;/h2&gt;
+
+      &lt;VoiceRecorder onAudioCaptured={handleVoiceInput} /&gt;
+
+      {recognizedText &amp;&amp; (
+        &lt;div className=&quot;recognized-text&quot;&gt;
+          &lt;h3&gt;Recognized Text:&lt;/h3&gt;
+          &lt;p&gt;{recognizedText}&lt;/p&gt;
+        &lt;/div&gt;
+      )}
+
+      {audioData &amp;&amp; (
+        &lt;div className=&quot;playback&quot;&gt;
+          &lt;h3&gt;Playback:&lt;/h3&gt;
+          &lt;VoicePlayback audioData={audioData} autoPlay={true} /&gt;
+        &lt;/div&gt;
+      )}
+    &lt;/div&gt;
+  );
+};
+</code></pre>
+<h3 id="backend-integration">Backend Integration</h3>
+<pre><code class="language-javascript">const voiceController = require('./controllers/voiceController');
+
+// Synthesize speech
+app.post('/api/custom/speak', async (req, res) =&gt; {
+  try {
+    const { text } = req.body;
+
+    // Call the voice controller
+    const result = await voiceController.synthesizeSpeech({
+      body: {
+        text,
+        voiceId: 'en-US-Standard-A',
+        outputFormat: 'mp3'
+      }
+    }, res);
+
+    // The result is already sent by the controller
+  } catch (error) {
+    console.error('Error in custom speak endpoint:', error);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+});
+</code></pre>
+<h2 id="testing">Testing</h2>
+<p>The Voice API integration includes a comprehensive test script (<code>test-voice-api.sh</code>) that tests all aspects of the integration:</p>
+<pre><code class="language-bash"># Make the script executable
+chmod +x test-voice-api.sh
+
+# Run the tests
+./test-voice-api.sh
+</code></pre>
+<p>The test script performs the following tests:</p>
+<ol>
+<li>Get available voices</li>
+<li>Get voice settings</li>
+<li>Update voice settings</li>
+<li>Synthesize speech</li>
+<li>Recognize speech</li>
+<li>End-to-end test (synthesize then recognize)</li>
+<li>Performance test with multiple languages</li>
+<li>Stress test with long text</li>
+<li>Direct AI service test</li>
+<li>Cache test</li>
+</ol>
+<h2 id="troubleshooting">Troubleshooting</h2>
+<h3 id="common-issues">Common Issues</h3>
+<ol>
+<li><strong>Authentication Errors</strong>:</li>
+<li>Ensure that the API keys for the voice service providers are correctly set in the environment variables.</li>
+<li>
+<p>Check that the authentication middleware is correctly configured.</p>
+</li>
+<li>
+<p><strong>Voice Service Errors</strong>:</p>
+</li>
+<li>Verify that the selected voice service provider is available and properly configured.</li>
+<li>
+<p>Check the logs for specific error messages from the voice service provider.</p>
+</li>
+<li>
+<p><strong>Audio Format Issues</strong>:</p>
+</li>
+<li>Ensure that the audio format specified in the request is supported by the voice service provider.</li>
+<li>
+<p>Check that the audio data is correctly encoded in base64 format.</p>
+</li>
+<li>
+<p><strong>Performance Issues</strong>:</p>
+</li>
+<li>Verify that the caching mechanism is working correctly.</li>
+<li>Check the network latency between the backend and the voice service provider.</li>
+</ol>
+<h3 id="logs-and-debugging">Logs and Debugging</h3>
+<ul>
+<li>AI Service logs: Check the console output of the AI service for error messages.</li>
+<li>Backend logs: Check the backend logs for API request/response details.</li>
+<li>Browser console: Check the browser console for frontend errors.</li>
+</ul>
+<h3 id="support">Support</h3>
+<p>For additional support, please contact the development team or refer to the documentation of the specific voice service provider being used.</p>
+    <div class="footer">Generated 2026-01-13 06:26 UTC</div>
+  </div>
+</body>
+</html>

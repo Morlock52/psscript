@@ -1,0 +1,316 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <base href="file:///Users/morlock/fun/psscript/" />
+  <title>docs-FILE-HASH-IMPLEMENTATION-REPORT</title>
+  <style>
+:root {
+  color-scheme: light;
+}
+body {
+  font-family: "Segoe UI", "Helvetica Neue", Arial, sans-serif;
+  margin: 0;
+  padding: 0;
+  background: #ffffff;
+  color: #0f172a;
+}
+.markdown-body {
+  max-width: 980px;
+  margin: 40px auto 60px;
+  padding: 0 32px;
+  line-height: 1.65;
+}
+.markdown-body h1 {
+  font-size: 32px;
+  margin-bottom: 12px;
+  border-bottom: 2px solid #e2e8f0;
+  padding-bottom: 12px;
+  page-break-before: always;
+  page-break-after: avoid;
+  break-before: page;
+  break-after: avoid;
+}
+.markdown-body h1:first-of-type {
+  page-break-before: avoid;
+  break-before: avoid;
+}
+.markdown-body h2 {
+  font-size: 24px;
+  margin-top: 28px;
+  border-bottom: 1px solid #e2e8f0;
+  padding-bottom: 8px;
+  page-break-before: always;
+  page-break-after: avoid;
+  break-before: page;
+  break-after: avoid;
+}
+.markdown-body h3 {
+  font-size: 18px;
+  margin-top: 20px;
+  page-break-after: avoid;
+  break-after: avoid;
+}
+.markdown-body h4, .markdown-body h5, .markdown-body h6 {
+  page-break-after: avoid;
+  break-after: avoid;
+}
+.markdown-body table {
+  width: 100%;
+  border-collapse: collapse;
+  margin: 16px 0;
+  font-size: 14px;
+  page-break-inside: avoid;
+  break-inside: avoid;
+}
+.markdown-body th,
+.markdown-body td {
+  border: 1px solid #e2e8f0;
+  padding: 8px 10px;
+  text-align: left;
+}
+.markdown-body th {
+  background: #f8fafc;
+}
+.markdown-body tr {
+  page-break-inside: avoid;
+  break-inside: avoid;
+}
+.markdown-body code {
+  background: #f1f5f9;
+  padding: 2px 4px;
+  border-radius: 4px;
+  font-family: "SFMono-Regular", Menlo, Consolas, monospace;
+  font-size: 0.92em;
+}
+.markdown-body pre {
+  background: #0f172a;
+  color: #e2e8f0;
+  padding: 16px;
+  border-radius: 8px;
+  overflow-x: auto;
+  page-break-inside: avoid;
+  break-inside: avoid;
+}
+.markdown-body pre code {
+  background: transparent;
+  color: inherit;
+}
+.markdown-body blockquote {
+  border-left: 4px solid #38bdf8;
+  margin: 16px 0;
+  padding: 8px 16px;
+  background: #f8fafc;
+  color: #334155;
+}
+.markdown-body img {
+  max-width: 100%;
+  height: auto;
+  display: block;
+  margin: 16px 0;
+  border-radius: 10px;
+  box-shadow: 0 8px 20px rgba(15, 23, 42, 0.12);
+  page-break-inside: avoid;
+  break-inside: avoid;
+}
+.markdown-body figure {
+  page-break-inside: avoid;
+  break-inside: avoid;
+  margin: 16px 0;
+}
+.markdown-body a {
+  color: #2563eb;
+  text-decoration: none;
+}
+.markdown-body a:hover {
+  text-decoration: underline;
+}
+.cover {
+  padding: 80px 60px 60px;
+  background: linear-gradient(135deg, #0b1220 0%, #1e3a8a 100%);
+  color: #f8fafc;
+  border-radius: 18px;
+  margin-bottom: 32px;
+}
+.cover-title {
+  font-size: 36px;
+  font-weight: 700;
+  margin: 0 0 12px;
+}
+.cover-subtitle {
+  font-size: 18px;
+  color: #cbd5f5;
+  margin: 0 0 16px;
+}
+.cover-meta {
+  font-size: 13px;
+  color: #94a3b8;
+}
+.page-break {
+  page-break-after: always;
+  break-after: page;
+}
+.footer {
+  margin-top: 40px;
+  font-size: 12px;
+  color: #64748b;
+}
+/* Print and PDF-specific styles */
+@page {
+  margin: 20mm 18mm;
+}
+@media print {
+  .markdown-body {
+    orphans: 3;
+    widows: 3;
+  }
+  .markdown-body p {
+    orphans: 3;
+    widows: 3;
+  }
+  .markdown-body li {
+    page-break-inside: avoid;
+    break-inside: avoid;
+  }
+  .markdown-body ul, .markdown-body ol {
+    page-break-before: avoid;
+    break-before: avoid;
+  }
+  .markdown-body blockquote {
+    page-break-inside: avoid;
+    break-inside: avoid;
+  }
+  /* Keep section content together */
+  .markdown-body h2 + *, .markdown-body h3 + * {
+    page-break-before: avoid;
+    break-before: avoid;
+  }
+}
+</style>
+</head>
+<body>
+  <div class="markdown-body">
+    
+    <h1 id="file-hash-deduplication-implementation-report">File Hash Deduplication Implementation Report</h1>
+<h2 id="overview">Overview</h2>
+<p>This report documents the implementation and testing of the file hash deduplication feature in the PSScript platform. The feature prevents duplicate scripts from being uploaded to the database by calculating a unique hash for each script file and checking for existing matches.</p>
+<h2 id="implementation-details">Implementation Details</h2>
+<h3 id="components">Components</h3>
+<p>The file hash deduplication feature is implemented across several components:</p>
+<ol>
+<li><strong>Database Schema</strong>:</li>
+<li>The <code>scripts</code> table includes a <code>file_hash</code> column (VARCHAR(255)) to store the MD5 hash of each script.</li>
+<li>
+<p>An index (<code>idx_scripts_file_hash</code>) was created on this column to speed up duplicate detection.</p>
+</li>
+<li>
+<p><strong>Script Model</strong> (<code>src/backend/src/models/Script.ts</code>):</p>
+</li>
+<li>
+<p>The Script model includes a <code>fileHash</code> field defined as:
+     <code>typescript
+     fileHash: {
+       type: DataTypes.STRING(32),
+       allowNull: true,
+       field: 'file_hash'
+     }</code></p>
+</li>
+<li>
+<p><strong>File Integrity Utilities</strong> (<code>src/backend/src/utils/fileIntegrity.ts</code>):</p>
+</li>
+<li><code>calculateBufferMD5</code>: Calculates the MD5 hash of a file buffer.</li>
+<li><code>calculateStringMD5</code>: Calculates the MD5 hash of a string.</li>
+<li><code>checkFileExists</code>: Checks if a file with the same hash already exists in the database.</li>
+<li><code>verifyFileIntegrity</code>: Verifies file integrity by comparing hashes.</li>
+<li><code>updateFileHash</code>: Updates file hash in the database.</li>
+<li>
+<p><code>batchUpdateFileHashes</code>: Batch updates file hashes for scripts without hashes.</p>
+</li>
+<li>
+<p><strong>Script Controller</strong> (<code>src/backend/src/controllers/ScriptController.ts</code>):</p>
+</li>
+<li>When a script is uploaded, the controller:<ol>
+<li>Calculates the MD5 hash of the file content.</li>
+<li>Checks if a script with the same hash already exists.</li>
+<li>If a match is found, rejects the upload with a 409 Conflict response.</li>
+<li>If no match is found, saves the script with its hash.</li>
+</ol>
+</li>
+</ol>
+<h3 id="workflow">Workflow</h3>
+<p>The file hash deduplication workflow is as follows:</p>
+<ol>
+<li>User uploads a PowerShell script through the API.</li>
+<li>The system calculates an MD5 hash of the file content.</li>
+<li>The system checks if a script with the same hash exists in the database.</li>
+<li>If a match is found:</li>
+<li>The upload is rejected with a 409 Conflict response.</li>
+<li>The user is informed that a script with identical content already exists.</li>
+<li>The existing script ID is provided in the response.</li>
+<li>If no match is found:</li>
+<li>The script is saved to the database with its hash.</li>
+<li>The script file is stored on the server.</li>
+<li>A success response is returned to the user.</li>
+</ol>
+<h2 id="testing-results">Testing Results</h2>
+<p>We conducted comprehensive testing of the file hash deduplication feature using various test scripts and scenarios:</p>
+<h3 id="test-1-upload-original-script">Test 1: Upload Original Script</h3>
+<ul>
+<li><strong>Script</strong>: <code>test-script-unique.ps1</code></li>
+<li><strong>Hash</strong>: <code>7f2a8ffa3577ad81591e7f24d53bd642</code></li>
+<li><strong>Result</strong>: Successfully uploaded with ID 20</li>
+<li><strong>Conclusion</strong>: The system correctly accepts a new script and stores its hash.</li>
+</ul>
+<h3 id="test-2-upload-duplicate-script">Test 2: Upload Duplicate Script</h3>
+<ul>
+<li><strong>Script</strong>: <code>test-script-unique.ps1</code> (same content)</li>
+<li><strong>Hash</strong>: <code>7f2a8ffa3577ad81591e7f24d53bd642</code></li>
+<li><strong>Result</strong>: Rejected with 409 Conflict, referencing existing script ID 20</li>
+<li><strong>Response</strong>:
+  <code>json
+  {
+    "error": "duplicate_file",
+    "message": "A script with identical content already exists",
+    "existingScriptId": 20
+  }</code></li>
+<li><strong>Conclusion</strong>: The system correctly identifies duplicate content based on file hash.</li>
+</ul>
+<h3 id="test-3-upload-modified-script">Test 3: Upload Modified Script</h3>
+<ul>
+<li><strong>Script</strong>: <code>test-script-unique-modified.ps1</code> (modified version with parameter added)</li>
+<li><strong>Hash</strong>: <code>43294651b4d5318371cc5d803cfb5746</code></li>
+<li><strong>Result</strong>: Successfully uploaded with ID 21</li>
+<li><strong>Conclusion</strong>: The system correctly accepts a script with different content, even if it's similar to an existing script.</li>
+</ul>
+<h3 id="test-4-upload-duplicate-of-modified-script">Test 4: Upload Duplicate of Modified Script</h3>
+<ul>
+<li><strong>Script</strong>: <code>test-script-unique-modified.ps1</code> (same content as Test 3)</li>
+<li><strong>Hash</strong>: <code>43294651b4d5318371cc5d803cfb5746</code></li>
+<li><strong>Result</strong>: Rejected with 409 Conflict, referencing existing script ID 21</li>
+<li><strong>Conclusion</strong>: The system correctly identifies duplicate content of the modified script.</li>
+</ul>
+<h2 id="benefits">Benefits</h2>
+<p>The file hash deduplication feature provides several benefits:</p>
+<ol>
+<li><strong>Storage Efficiency</strong>: Prevents duplicate scripts from consuming storage space.</li>
+<li><strong>Data Integrity</strong>: Ensures that each script in the database is unique.</li>
+<li><strong>User Experience</strong>: Informs users when they attempt to upload a script that already exists.</li>
+<li><strong>Search Optimization</strong>: Eliminates duplicates from search results.</li>
+<li><strong>Performance</strong>: Uses an indexed hash field for fast duplicate detection.</li>
+</ol>
+<h2 id="recommendations-for-future-enhancements">Recommendations for Future Enhancements</h2>
+<p>Based on our implementation and testing, we recommend the following enhancements:</p>
+<ol>
+<li><strong>Similarity Detection</strong>: Implement fuzzy matching to detect scripts that are similar but not identical.</li>
+<li><strong>Version Control Integration</strong>: Allow users to create new versions of existing scripts instead of requiring them to upload as new scripts.</li>
+<li><strong>Duplicate Management</strong>: Provide tools for administrators to manage and merge duplicate scripts.</li>
+<li><strong>Alternative Hash Algorithms</strong>: Support additional hash algorithms (SHA-256, etc.) for improved security.</li>
+<li><strong>Content-Based Deduplication</strong>: Implement more sophisticated content analysis to detect functionally equivalent scripts with minor formatting differences.</li>
+</ol>
+<h2 id="conclusion">Conclusion</h2>
+<p>The file hash deduplication feature is working correctly and effectively prevents duplicate scripts from being uploaded to the database. The implementation is robust and provides a good foundation for future enhancements.</p>
+    <div class="footer">Generated 2026-01-13 06:26 UTC</div>
+  </div>
+</body>
+</html>

@@ -1,17 +1,18 @@
 /**
- * @ts-nocheck
+ * @ts-nocheck - Legacy controller with complex typing that requires gradual migration
  * Controller for script management
  */
 import { Request, Response, NextFunction } from 'express';
 import { Script, ScriptAnalysis, Category, User, Tag, ScriptTag, ScriptVersion, ExecutionLog, sequelize } from '../models';
-import { Op, Sequelize, Transaction } from 'sequelize';
+import { Op, Transaction } from 'sequelize';
 import * as path from 'path';
 import fs from 'fs';
 import axios from 'axios';
+import PDFDocument from 'pdfkit';
 import logger from '../utils/logger';
 import { cache } from '../index';
 import { calculateBufferMD5, checkFileExists } from '../utils/fileIntegrity';
-import { generateEmbedding, findSimilarScripts as findSimilarScriptsByVector } from '../utils/vectorUtils';
+import { findSimilarScripts as findSimilarScriptsByVector } from '../utils/vectorUtils';
 import crypto from 'crypto'; // Import crypto properly
 
 // Determine AI service URL based on environment
@@ -540,7 +541,7 @@ class ScriptController {
   }
   
   // Delete a script with improved error handling and transaction management
-  async deleteScript(req: Request, res: Response, next: NextFunction) {
+  async deleteScript(req: Request, res: Response, _next: NextFunction) {
     let transaction;
     
     try {
@@ -799,35 +800,32 @@ class ScriptController {
   }
   
   // Upload a script file and store it in the database with enhanced error handling
-  async uploadScript(req: Request, res: Response, next: NextFunction) {
+  async uploadScript(req: Request, res: Response, _next: NextFunction) {
     let transaction;
-    
+
     try {
       // Set longer timeout for the request to handle network latency
       req.setTimeout(60000); // 60 seconds
-      
+
       // Start transaction with serializable isolation level for better consistency
       transaction = await sequelize.transaction({
         isolationLevel: Transaction.ISOLATION_LEVELS.SERIALIZABLE
       });
-      
+
+      // eslint-disable-next-line camelcase -- API request body uses snake_case
       const { title, description, category_id, tags: tagsJson, is_public, analyze_with_ai } = req.body;
-      
-      // Check if user with ID 1 exists, if not create it
-      let userId = req.user?.id || 1; // Default to user ID 1 if not authenticated
-      const user = await User.findByPk(1);
-      if (!user) {
-        // Create a default user
-        const newUser = await User.create({
-          id: 1,
-          username: 'admin',
-          email: 'admin@example.com',
-          password: 'password123',
-          role: 'admin'
-        }, { transaction });
-        userId = newUser.id;
-        logger.info('Created default user with ID 1');
+
+      // SECURITY: Require authentication for script uploads
+      // Never allow unauthenticated uploads or auto-create users with hardcoded credentials
+      if (!req.user?.id) {
+        if (transaction) await transaction.rollback();
+        return res.status(401).json({
+          error: 'authentication_required',
+          message: 'You must be logged in to upload scripts'
+        });
       }
+
+      const userId = req.user.id;
       
       // Get file content from the uploaded file
       if (!req.file) {
@@ -924,10 +922,10 @@ class ScriptController {
         description: description || 'No description provided',
         content: scriptContent,
         userId,
-        categoryId: category_id || null,
+        categoryId: category_id || null, // eslint-disable-line camelcase
         version: 1,
         executionCount: 0,
-        isPublic: is_public === 'true' || is_public === true,
+        isPublic: is_public === 'true' || is_public === true, // eslint-disable-line camelcase
         fileHash: fileHash // Save the file hash to the database
       }, { transaction });
       
@@ -1023,7 +1021,7 @@ class ScriptController {
       res.status(201).json(responseData);
       
       // Perform AI analysis asynchronously after response is sent
-      if (analyze_with_ai === 'true' || analyze_with_ai === true) {
+      if (analyze_with_ai === 'true' || analyze_with_ai === true) { // eslint-disable-line camelcase
         try {
           // Get OpenAI API key from request headers if available
           const openaiApiKey = req.headers['x-openai-api-key'] as string;
@@ -1073,7 +1071,7 @@ class ScriptController {
             }, { transaction: analysisTransaction });
             
             // Update the script with the determined category if not manually set
-            if (!category_id && analysis.category_id) {
+            if (!category_id && analysis.category_id) { // eslint-disable-line camelcase
               await script.update({ 
                 categoryId: analysis.category_id 
               }, { transaction: analysisTransaction });
@@ -1261,8 +1259,9 @@ class ScriptController {
   }
   
   // Analyze a script without saving
-  async analyzeScript(req: Request, res: Response, next: NextFunction) {
+  async analyzeScript(req: Request, res: Response, _next: NextFunction) {
     try {
+      // eslint-disable-next-line camelcase -- API request body uses snake_case
       const { content, script_id } = req.body;
       
       if (!content) {
@@ -1283,11 +1282,12 @@ class ScriptController {
           analysisConfig.headers['x-api-key'] = openaiApiKey;
         }
         
+        // eslint-disable-next-line camelcase -- API request/response uses snake_case
         logger.info(`Sending script for analysis${script_id ? ` (ID: ${script_id})` : ''}`);
-        
+
         // Set a timeout for the analysis request
         const analysisPromise = axios.post(`${AI_SERVICE_URL}/analyze`, {
-          script_id,
+          script_id, // eslint-disable-line camelcase
           content,
           include_command_details: true,
           fetch_ms_docs: true
@@ -1555,7 +1555,7 @@ class ScriptController {
   }
   
   // Analyze a script using OpenAI Assistant API with agentic workflows
-  async analyzeScriptWithAssistant(req: Request, res: Response, next: NextFunction) {
+  async analyzeScriptWithAssistant(req: Request, res: Response, _next: NextFunction) {
     const requestId = Math.random().toString(36).substring(2, 10);
     
     try {
@@ -1698,9 +1698,10 @@ class ScriptController {
    * Analyze script using LangGraph 1.0 production orchestrator
    * This leverages the multi-agent system with checkpointing and human-in-the-loop
    */
-  async analyzeLangGraph(req: Request, res: Response, next: NextFunction) {
+  async analyzeLangGraph(req: Request, res: Response, _next: NextFunction) {
     try {
       const scriptId = req.params.id;
+      // eslint-disable-next-line camelcase -- API request body uses snake_case
       const { require_human_review = false, thread_id, model = 'gpt-4o' } = req.body;
 
       logger.info(`[LangGraph] Starting analysis for script ${scriptId}`);
@@ -1727,12 +1728,13 @@ class ScriptController {
       }
 
       // Call LangGraph analysis endpoint
+      // eslint-disable-next-line camelcase -- API request uses snake_case
       const langgraphResponse = await axios.post(
         `${AI_SERVICE_URL}/langgraph/analyze`,
         {
           script_content: script.content,
-          thread_id: thread_id || `script_${scriptId}_${Date.now()}`,
-          require_human_review,
+          thread_id: thread_id || `script_${scriptId}_${Date.now()}`, // eslint-disable-line camelcase
+          require_human_review, // eslint-disable-line camelcase
           stream: false, // Non-streaming for this endpoint
           model,
           api_key: openaiApiKey
@@ -1821,9 +1823,10 @@ class ScriptController {
    * Stream analysis progress using Server-Sent Events (SSE)
    * Provides real-time updates as the LangGraph workflow executes
    */
-  async streamAnalysis(req: Request, res: Response, next: NextFunction) {
+  async streamAnalysis(req: Request, res: Response, _next: NextFunction) {
     try {
       const scriptId = req.params.id;
+      // eslint-disable-next-line camelcase -- API query params use snake_case
       const { require_human_review = false, thread_id, model = 'gpt-4o' } = req.query;
 
       logger.info(`[LangGraph] Starting streaming analysis for script ${scriptId}`);
@@ -1859,12 +1862,13 @@ class ScriptController {
         analysisConfig.headers['x-api-key'] = openaiApiKey;
       }
 
+      // eslint-disable-next-line camelcase -- API request uses snake_case
       const langgraphStream = await axios.post(
         `${AI_SERVICE_URL}/langgraph/analyze`,
         {
           script_content: script.content,
-          thread_id: thread_id || `script_${scriptId}_${Date.now()}`,
-          require_human_review: require_human_review === 'true',
+          thread_id: thread_id || `script_${scriptId}_${Date.now()}`, // eslint-disable-line camelcase
+          require_human_review: require_human_review === 'true', // eslint-disable-line camelcase
           stream: true,
           model,
           api_key: openaiApiKey
@@ -1888,7 +1892,7 @@ class ScriptController {
 
               // Forward to client
               res.write(`data: ${JSON.stringify(eventData)}\n\n`);
-            } catch (e) {
+            } catch (_e) {
               // Skip malformed events
               logger.warn('[LangGraph] Malformed event:', line);
             }
@@ -1935,19 +1939,20 @@ class ScriptController {
    * Provide human feedback for paused workflow
    * Allows continuation of human-in-the-loop analysis
    */
-  async provideFeedback(req: Request, res: Response, next: NextFunction) {
+  async provideFeedback(req: Request, res: Response, _next: NextFunction) {
     try {
       const scriptId = req.params.id;
+      // eslint-disable-next-line camelcase -- API request body uses snake_case
       const { thread_id, feedback } = req.body;
 
-      if (!thread_id || !feedback) {
+      if (!thread_id || !feedback) { // eslint-disable-line camelcase
         return res.status(400).json({
           success: false,
           message: 'thread_id and feedback are required'
         });
       }
 
-      logger.info(`[LangGraph] Providing feedback for script ${scriptId}, thread ${thread_id}`);
+      logger.info(`[LangGraph] Providing feedback for script ${scriptId}, thread ${thread_id}`); // eslint-disable-line camelcase
 
       // Get OpenAI API key from request headers
       const openaiApiKey = req.headers['x-openai-api-key'] as string;
@@ -1964,10 +1969,11 @@ class ScriptController {
       }
 
       // Call LangGraph feedback endpoint
+      // eslint-disable-next-line camelcase -- API request uses snake_case
       const feedbackResponse = await axios.post(
         `${AI_SERVICE_URL}/langgraph/feedback`,
         {
-          thread_id,
+          thread_id, // eslint-disable-line camelcase
           feedback
         },
         feedbackConfig
@@ -1975,7 +1981,7 @@ class ScriptController {
 
       const result = feedbackResponse.data;
 
-      logger.info(`[LangGraph] Feedback processed for thread ${thread_id}`);
+      logger.info(`[LangGraph] Feedback processed for thread ${thread_id}`); // eslint-disable-line camelcase
 
       // Save updated analysis if completed
       if (result.status === 'completed' && result.analysis_results) {
@@ -2020,6 +2026,621 @@ class ScriptController {
         message: 'Failed to process feedback',
         error: error.message
       });
+    }
+  }
+
+  // Export script analysis as a formatted PDF
+  async exportAnalysis(req: Request, res: Response, next: NextFunction) {
+    try {
+      const scriptId = req.params.id;
+
+      // Validate script ID is a number
+      if (!scriptId || isNaN(parseInt(scriptId, 10))) {
+        return res.status(400).json({ message: 'Invalid script ID' });
+      }
+
+      logger.info(`[ExportAnalysis] Generating PDF for script ${scriptId}`);
+
+      // Get the script
+      const script = await Script.findByPk(scriptId, {
+        include: [
+          { model: User, as: 'user', attributes: ['id', 'username'] },
+          { model: Category, as: 'category', attributes: ['id', 'name'] },
+          {
+            model: Tag,
+            as: 'tags',
+            attributes: ['id', 'name'],
+            through: { attributes: [] }
+          }
+        ]
+      });
+
+      if (!script) {
+        return res.status(404).json({ message: 'Script not found' });
+      }
+
+      // Get the analysis data
+      const analysis: any = await sequelize.query(
+        `SELECT * FROM script_analysis WHERE script_id = :scriptId LIMIT 1`,
+        {
+          replacements: { scriptId },
+          type: 'SELECT',
+          raw: true,
+          plain: true
+        }
+      );
+
+      // Create a new PDF document with buffered pages for footer
+      const doc = new PDFDocument({
+        size: 'A4',
+        bufferPages: true,
+        margins: { top: 50, bottom: 50, left: 50, right: 50 },
+        info: {
+          Title: `Script Analysis: ${script.title}`,
+          Author: 'PSScript AI Analysis System',
+          Subject: 'PowerShell Script Analysis Report',
+          Creator: 'PSScript Platform'
+        }
+      });
+
+      // Set response headers for PDF download
+      const filename = `${script.title.replace(/[^a-zA-Z0-9-_]/g, '_')}_analysis.pdf`;
+      res.setHeader('Content-Type', 'application/pdf');
+      res.setHeader('Content-Disposition', `attachment; filename="${filename}"`);
+
+      // Pipe the PDF to the response
+      doc.pipe(res);
+
+      // ===== PDF HEADER =====
+      doc.fontSize(24)
+         .fillColor('#4F46E5')
+         .text('PowerShell Script Analysis Report', { align: 'center' });
+
+      doc.moveDown(0.5);
+      doc.fontSize(10)
+         .fillColor('#666666')
+         .text(`Generated on: ${new Date().toLocaleString()}`, { align: 'center' });
+
+      doc.moveDown(1);
+
+      // ===== SCRIPT INFORMATION =====
+      doc.fontSize(16)
+         .fillColor('#1F2937')
+         .text('Script Information', { underline: true });
+
+      doc.moveDown(0.5);
+      doc.fontSize(11)
+         .fillColor('#374151');
+
+      // Title
+      doc.font('Helvetica-Bold').text('Title: ', { continued: true })
+         .font('Helvetica').text(script.title);
+
+      // Description
+      if (script.description) {
+        doc.font('Helvetica-Bold').text('Description: ', { continued: true })
+           .font('Helvetica').text(script.description);
+      }
+
+      // Category
+      if (script.category) {
+        doc.font('Helvetica-Bold').text('Category: ', { continued: true })
+           .font('Helvetica').text(script.category.name);
+      }
+
+      // Author
+      if (script.user) {
+        doc.font('Helvetica-Bold').text('Author: ', { continued: true })
+           .font('Helvetica').text(script.user.username);
+      }
+
+      // Tags
+      const scriptTags = (script as any).tags;
+      if (scriptTags && scriptTags.length > 0) {
+        doc.font('Helvetica-Bold').text('Tags: ', { continued: true })
+           .font('Helvetica').text(scriptTags.map((t: any) => t.name).join(', '));
+      }
+
+      // Version
+      doc.font('Helvetica-Bold').text('Version: ', { continued: true })
+         .font('Helvetica').text(script.version?.toString() || '1');
+
+      doc.moveDown(1.5);
+
+      // ===== AI ANALYSIS SECTION =====
+      if (analysis) {
+        doc.fontSize(16)
+           .fillColor('#1F2937')
+           .text('AI Analysis Summary', { underline: true });
+
+        doc.moveDown(0.5);
+
+        // Purpose
+        if (analysis.purpose) {
+          doc.fontSize(12)
+             .fillColor('#4F46E5')
+             .font('Helvetica-Bold')
+             .text('Purpose:');
+          doc.fontSize(11)
+             .fillColor('#374151')
+             .font('Helvetica')
+             .text(analysis.purpose);
+          doc.moveDown(0.5);
+        }
+
+        // Scores Section
+        doc.fontSize(12)
+           .fillColor('#4F46E5')
+           .font('Helvetica-Bold')
+           .text('Analysis Scores:');
+        doc.moveDown(0.3);
+
+        const scores = [
+          { label: 'Security Score', value: analysis.security_score, color: analysis.security_score >= 7 ? '#10B981' : analysis.security_score >= 5 ? '#F59E0B' : '#EF4444' },
+          { label: 'Code Quality Score', value: analysis.quality_score, color: analysis.quality_score >= 7 ? '#10B981' : analysis.quality_score >= 5 ? '#F59E0B' : '#EF4444' },
+          { label: 'Risk Score', value: analysis.risk_score, color: analysis.risk_score <= 3 ? '#10B981' : analysis.risk_score <= 6 ? '#F59E0B' : '#EF4444' }
+        ];
+
+        scores.forEach(score => {
+          if (score.value !== undefined && score.value !== null) {
+            doc.fontSize(11)
+               .fillColor('#374151')
+               .font('Helvetica')
+               .text(`  • ${score.label}: `, { continued: true })
+               .fillColor(score.color)
+               .font('Helvetica-Bold')
+               .text(`${parseFloat(score.value).toFixed(1)}/10`);
+          }
+        });
+
+        doc.moveDown(1);
+
+        // Optimization Suggestions
+        const suggestions = analysis.suggestions || [];
+        if (suggestions.length > 0) {
+          doc.fontSize(12)
+             .fillColor('#4F46E5')
+             .font('Helvetica-Bold')
+             .text('Optimization Suggestions:');
+          doc.moveDown(0.3);
+
+          suggestions.forEach((suggestion: string, index: number) => {
+            doc.fontSize(10)
+               .fillColor('#374151')
+               .font('Helvetica')
+               .text(`  ${index + 1}. ${suggestion}`);
+          });
+          doc.moveDown(1);
+        }
+
+        // Security Concerns
+        const securityConcerns = analysis.security_concerns || [];
+        if (securityConcerns.length > 0) {
+          doc.fontSize(12)
+             .fillColor('#EF4444')
+             .font('Helvetica-Bold')
+             .text('Security Concerns:');
+          doc.moveDown(0.3);
+
+          securityConcerns.forEach((concern: string, index: number) => {
+            doc.fontSize(10)
+               .fillColor('#374151')
+               .font('Helvetica')
+               .text(`  ${index + 1}. ${concern}`);
+          });
+          doc.moveDown(1);
+        }
+
+        // Command Details
+        const commandDetails = analysis.command_details;
+        if (commandDetails && typeof commandDetails === 'object' && Object.keys(commandDetails).length > 0) {
+          doc.fontSize(12)
+             .fillColor('#4F46E5')
+             .font('Helvetica-Bold')
+             .text('Command Analysis:');
+          doc.moveDown(0.3);
+
+          doc.fontSize(10)
+             .fillColor('#374151')
+             .font('Helvetica');
+
+          if (commandDetails.totalCommands !== undefined) {
+            doc.text(`  • Total Commands: ${commandDetails.totalCommands}`);
+          }
+          if (commandDetails.riskyCommands !== undefined) {
+            doc.text(`  • Risky Commands: ${commandDetails.riskyCommands}`);
+          }
+          if (commandDetails.networkCommands !== undefined) {
+            doc.text(`  • Network Commands: ${commandDetails.networkCommands}`);
+          }
+          if (commandDetails.fileSystemCommands !== undefined) {
+            doc.text(`  • File System Commands: ${commandDetails.fileSystemCommands}`);
+          }
+          doc.moveDown(1);
+        }
+
+        // MS Docs References
+        const msDocsRefs = analysis.ms_docs_references || [];
+        if (msDocsRefs.length > 0) {
+          doc.fontSize(12)
+             .fillColor('#4F46E5')
+             .font('Helvetica-Bold')
+             .text('Microsoft Documentation References:');
+          doc.moveDown(0.3);
+
+          msDocsRefs.forEach((ref: any, index: number) => {
+            const refText = typeof ref === 'string' ? ref : (ref.url || ref.command || JSON.stringify(ref));
+            doc.fontSize(9)
+               .fillColor('#3B82F6')
+               .font('Helvetica')
+               .text(`  ${index + 1}. ${refText}`, { link: refText.startsWith('http') ? refText : undefined });
+          });
+          doc.moveDown(1);
+        }
+      } else {
+        doc.fontSize(11)
+           .fillColor('#666666')
+           .font('Helvetica-Oblique')
+           .text('No AI analysis available for this script. Consider running an analysis to get detailed insights.');
+        doc.moveDown(1);
+      }
+
+      // ===== SCRIPT CONTENT SECTION =====
+      doc.addPage();
+
+      doc.fontSize(16)
+         .fillColor('#1F2937')
+         .text('Script Content', { underline: true });
+
+      doc.moveDown(0.5);
+
+      // Script content with code styling
+      if (script.content) {
+        // Draw a background box for the code
+        const startY = doc.y;
+        const pageWidth = doc.page.width - 100;
+
+        doc.fillColor('#F3F4F6')
+           .roundedRect(50, startY, pageWidth, 20, 5)
+           .fill();
+
+        doc.fontSize(8)
+           .fillColor('#6B7280')
+           .font('Helvetica')
+           .text('PowerShell Code:', 55, startY + 5);
+
+        doc.moveDown(1);
+
+        // Code content
+        doc.fontSize(9)
+           .fillColor('#1F2937')
+           .font('Courier');
+
+        // Split content into lines and handle pagination
+        const lines = script.content.split('\n');
+        let lineCount = 0;
+
+        for (const line of lines) {
+          // Check if we need a new page
+          if (doc.y > doc.page.height - 80) {
+            doc.addPage();
+            doc.fontSize(9)
+               .fillColor('#1F2937')
+               .font('Courier');
+          }
+
+          // Truncate very long lines
+          const displayLine = line.length > 100 ? line.substring(0, 97) + '...' : line;
+
+          // Add line number prefix
+          lineCount++;
+          const lineNum = lineCount.toString().padStart(4, ' ');
+
+          doc.fillColor('#9CA3AF')
+             .text(`${lineNum} | `, { continued: true })
+             .fillColor('#1F2937')
+             .text(displayLine || ' ');
+        }
+      }
+
+      // ===== FOOTER =====
+      const range = doc.bufferedPageRange();
+      const pageCount = range.count;
+      for (let i = 0; i < pageCount; i++) {
+        doc.switchToPage(i);
+        // Save the current y position (for potential future restoration)
+        const _savedY = doc.y;
+        doc.fontSize(8)
+           .fillColor('#9CA3AF')
+           .text(
+             `Page ${i + 1} of ${pageCount} | PSScript Analysis Platform`,
+             50,
+             doc.page.height - 30,
+             { align: 'center', lineBreak: false }
+           );
+      }
+
+      // Flush all pages after adding footers
+      doc.flushPages();
+
+      // Finalize the PDF
+      doc.end();
+
+      logger.info(`[ExportAnalysis] PDF generated successfully for script ${scriptId}`);
+
+    } catch (error) {
+      logger.error('[ExportAnalysis] Error generating PDF:', error);
+      next(error);
+    }
+  }
+
+  // ===== VERSION CONTROL ENDPOINTS =====
+
+  /**
+   * Get version history for a script
+   * GET /scripts/:id/versions
+   */
+  async getVersionHistory(req: Request, res: Response, next: NextFunction) {
+    try {
+      const scriptId = parseInt(req.params.id);
+
+      if (isNaN(scriptId)) {
+        return res.status(400).json({ error: 'Invalid script ID' });
+      }
+
+      // Verify script exists
+      const script = await Script.findByPk(scriptId, {
+        attributes: ['id', 'title', 'version']
+      });
+
+      if (!script) {
+        return res.status(404).json({ error: 'Script not found' });
+      }
+
+      // Fetch all versions for this script
+      const versions = await ScriptVersion.findAll({
+        where: { scriptId },
+        attributes: ['id', 'version', 'changelog', 'userId', 'createdAt'],
+        include: [
+          { model: User, as: 'user', attributes: ['id', 'username'] }
+        ],
+        order: [['version', 'DESC']]
+      });
+
+      // Calculate basic diff stats for each version (lines changed)
+      const versionsWithStats = await Promise.all(
+        versions.map(async (v, index) => {
+          const versionData = v.toJSON();
+
+          // Get content for this version and previous version
+          if (index < versions.length - 1) {
+            const currentContent = await ScriptVersion.findOne({
+              where: { scriptId, version: v.version },
+              attributes: ['content']
+            });
+            const previousContent = await ScriptVersion.findOne({
+              where: { scriptId, version: v.version - 1 },
+              attributes: ['content']
+            });
+
+            if (currentContent && previousContent) {
+              const currentLines = currentContent.content.split('\n').length;
+              const previousLines = previousContent.content.split('\n').length;
+              versionData.linesChanged = Math.abs(currentLines - previousLines);
+            }
+          }
+
+          return versionData;
+        })
+      );
+
+      logger.info(`[GetVersionHistory] Found ${versions.length} versions for script ${scriptId}`);
+
+      return res.json({
+        scriptId,
+        scriptTitle: script.title,
+        currentVersion: script.version,
+        totalVersions: versions.length,
+        versions: versionsWithStats
+      });
+    } catch (error) {
+      logger.error('[GetVersionHistory] Error:', error);
+      next(error);
+    }
+  }
+
+  /**
+   * Get specific version content
+   * GET /scripts/:id/versions/:versionNumber
+   */
+  async getVersion(req: Request, res: Response, next: NextFunction) {
+    try {
+      const scriptId = parseInt(req.params.id);
+      const versionNumber = parseInt(req.params.versionNumber);
+
+      if (isNaN(scriptId) || isNaN(versionNumber)) {
+        return res.status(400).json({ error: 'Invalid script ID or version number' });
+      }
+
+      const version = await ScriptVersion.findOne({
+        where: { scriptId, version: versionNumber },
+        include: [
+          { model: User, as: 'user', attributes: ['id', 'username'] }
+        ]
+      });
+
+      if (!version) {
+        return res.status(404).json({ error: 'Version not found' });
+      }
+
+      // Get the current script for comparison
+      const script = await Script.findByPk(scriptId, {
+        attributes: ['title', 'version', 'content']
+      });
+
+      logger.info(`[GetVersion] Retrieved version ${versionNumber} for script ${scriptId}`);
+
+      return res.json({
+        scriptId,
+        scriptTitle: script?.title,
+        currentVersion: script?.version,
+        version: version.toJSON(),
+        isCurrentVersion: version.version === script?.version
+      });
+    } catch (error) {
+      logger.error('[GetVersion] Error:', error);
+      next(error);
+    }
+  }
+
+  /**
+   * Revert script to a previous version
+   * POST /scripts/:id/revert/:versionNumber
+   */
+  async revertToVersion(req: Request, res: Response, next: NextFunction) {
+    try {
+      const scriptId = parseInt(req.params.id);
+      const targetVersion = parseInt(req.params.versionNumber);
+      const userId = (req as any).user?.id;
+
+      if (isNaN(scriptId) || isNaN(targetVersion)) {
+        return res.status(400).json({ error: 'Invalid script ID or version number' });
+      }
+
+      if (!userId) {
+        return res.status(401).json({ error: 'Authentication required' });
+      }
+
+      // Find the target version
+      const targetVersionRecord = await ScriptVersion.findOne({
+        where: { scriptId, version: targetVersion }
+      });
+
+      if (!targetVersionRecord) {
+        return res.status(404).json({ error: 'Target version not found' });
+      }
+
+      // Find the current script
+      const script = await Script.findByPk(scriptId);
+
+      if (!script) {
+        return res.status(404).json({ error: 'Script not found' });
+      }
+
+      // Don't revert if already at this version
+      if (script.version === targetVersion) {
+        return res.status(400).json({ error: 'Script is already at this version' });
+      }
+
+      // Start transaction for atomic operation
+      const transaction = await sequelize.transaction();
+
+      try {
+        // Increment version and update content
+        const newVersion = script.version + 1;
+
+        // Update script with reverted content
+        await script.update({
+          content: targetVersionRecord.content,
+          version: newVersion,
+          fileHash: calculateBufferMD5(Buffer.from(targetVersionRecord.content, 'utf-8'))
+        }, { transaction });
+
+        // Create new version record for the revert
+        await ScriptVersion.create({
+          scriptId,
+          version: newVersion,
+          content: targetVersionRecord.content,
+          changelog: `Reverted to version ${targetVersion}`,
+          userId
+        }, { transaction });
+
+        await transaction.commit();
+
+        logger.info(`[RevertToVersion] Script ${scriptId} reverted to version ${targetVersion}, now at version ${newVersion}`);
+
+        return res.json({
+          success: true,
+          message: `Script reverted to version ${targetVersion}`,
+          scriptId,
+          previousVersion: script.version - 1,
+          newVersion,
+          revertedFromVersion: targetVersion
+        });
+      } catch (error) {
+        await transaction.rollback();
+        throw error;
+      }
+    } catch (error) {
+      logger.error('[RevertToVersion] Error:', error);
+      next(error);
+    }
+  }
+
+  /**
+   * Compare two versions of a script
+   * GET /scripts/:id/versions/compare?from=1&to=2
+   */
+  async compareVersions(req: Request, res: Response, next: NextFunction) {
+    try {
+      const scriptId = parseInt(req.params.id);
+      const fromVersion = parseInt(req.query.from as string);
+      const toVersion = parseInt(req.query.to as string);
+
+      if (isNaN(scriptId) || isNaN(fromVersion) || isNaN(toVersion)) {
+        return res.status(400).json({ error: 'Invalid script ID or version numbers' });
+      }
+
+      // Fetch both versions
+      const [fromRecord, toRecord] = await Promise.all([
+        ScriptVersion.findOne({ where: { scriptId, version: fromVersion } }),
+        ScriptVersion.findOne({ where: { scriptId, version: toVersion } })
+      ]);
+
+      if (!fromRecord || !toRecord) {
+        return res.status(404).json({ error: 'One or both versions not found' });
+      }
+
+      // Simple line-by-line diff
+      const fromLines = fromRecord.content.split('\n');
+      const toLines = toRecord.content.split('\n');
+
+      const diff = {
+        fromVersion,
+        toVersion,
+        fromLineCount: fromLines.length,
+        toLineCount: toLines.length,
+        linesAdded: 0,
+        linesRemoved: 0,
+        changes: [] as Array<{ type: 'added' | 'removed' | 'unchanged'; line: number; content: string }>
+      };
+
+      // Basic diff algorithm
+      const maxLines = Math.max(fromLines.length, toLines.length);
+      for (let i = 0; i < maxLines; i++) {
+        const fromLine = fromLines[i];
+        const toLine = toLines[i];
+
+        if (fromLine === undefined && toLine !== undefined) {
+          diff.changes.push({ type: 'added', line: i + 1, content: toLine });
+          diff.linesAdded++;
+        } else if (fromLine !== undefined && toLine === undefined) {
+          diff.changes.push({ type: 'removed', line: i + 1, content: fromLine });
+          diff.linesRemoved++;
+        } else if (fromLine !== toLine) {
+          diff.changes.push({ type: 'removed', line: i + 1, content: fromLine || '' });
+          diff.changes.push({ type: 'added', line: i + 1, content: toLine || '' });
+          diff.linesAdded++;
+          diff.linesRemoved++;
+        }
+      }
+
+      logger.info(`[CompareVersions] Compared versions ${fromVersion} and ${toVersion} for script ${scriptId}`);
+
+      return res.json(diff);
+    } catch (error) {
+      logger.error('[CompareVersions] Error:', error);
+      next(error);
     }
   }
 

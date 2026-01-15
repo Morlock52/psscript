@@ -60,8 +60,14 @@ const upload = multer({
  * AsyncUploadController
  * Handles asynchronous file uploads and processing
  */
+// Queue item with userId for proper ownership tracking
+interface QueueItem {
+  uploadId: string;
+  userId: number;
+}
+
 export class AsyncUploadController {
-  private processingQueue: string[] = [];
+  private processingQueue: QueueItem[] = [];
   private isProcessing: boolean = false;
   private readonly AI_SERVICE_URL: string;
   private readonly USE_MOCK_SERVICES: boolean;
@@ -118,10 +124,10 @@ export class AsyncUploadController {
           });
         }
         
-        // Add files to processing queue
+        // Add files to processing queue with user context
         const uploadIds = files.map(file => {
           const uploadId = path.basename(file.path);
-          this.processingQueue.push(uploadId);
+          this.processingQueue.push({ uploadId, userId });
           return uploadId;
         });
         
@@ -164,7 +170,7 @@ export class AsyncUploadController {
       }
       
       // Check if file is in processing queue
-      if (this.processingQueue.includes(uploadId)) {
+      if (this.processingQueue.some(item => item.uploadId === uploadId)) {
         res.json({
           success: true,
           status: 'queued',
@@ -199,8 +205,8 @@ export class AsyncUploadController {
           scriptDetails: {
             title: script.title,
             description: script.description,
-            versions: // @ts-ignore
-                script.versions?.length || 1
+            // @ts-ignore - versions may not be loaded in all query contexts
+            versions: script.versions?.length || 1
           }
         });
         return;
@@ -234,13 +240,14 @@ export class AsyncUploadController {
     }
     
     this.isProcessing = true;
-    const uploadId = this.processingQueue.shift();
-    
-    if (!uploadId) {
+    const queueItem = this.processingQueue.shift();
+
+    if (!queueItem) {
       this.isProcessing = false;
       return;
     }
-    
+
+    const { uploadId, userId } = queueItem;
     const filePath = path.join(process.cwd(), 'uploads', 'temp', uploadId);
     
     try {
@@ -311,24 +318,24 @@ export class AsyncUploadController {
             }
           }
           
-          // Create script record
+          // Create script record with authenticated user's ID
           const script = await Script.create({
             title: analysisResult.title || originalFilename,
             description: analysisResult.description || 'PowerShell script',
             uploadId,
-            userId: 1, // Default user ID, should be replaced with actual user ID
+            userId, // Use the authenticated user's ID from queue context
             categoryId: analysisResult.category || null,
             isPublic: false,
             executionCount: 0
           }, { transaction });
-          
-          // Create script version
+
+          // Create script version with authenticated user's ID
           await ScriptVersion.create({
             scriptId: script.id,
             version: 1,
             content: fileContent,
             changes: 'Initial version',
-            userId: 1 // Default user ID, should be replaced with actual user ID
+            userId // Use the authenticated user's ID from queue context
           }, { transaction });
           
           // Add tags if available

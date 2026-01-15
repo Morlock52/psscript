@@ -2,10 +2,10 @@ import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import documentationApi, { DocItem } from '../services/documentationApi';
 
-// Mock data for demonstration purposes
+// Mock data for demonstration purposes (fallback)
 const mockRecentDocs: DocItem[] = [
   {
-    id: '1',
+    id: 1,
     title: 'Working with PowerShell Modules',
     url: 'https://learn.microsoft.com/en-us/powershell/scripting/developer/module/understanding-a-windows-powershell-module',
     content: 'A PowerShell module is a package that contains PowerShell commands, such as cmdlets, providers, functions, workflows, variables, and aliases...',
@@ -14,7 +14,7 @@ const mockRecentDocs: DocItem[] = [
     tags: ['modules', 'packages', 'basics']
   },
   {
-    id: '2',
+    id: 2,
     title: 'Error Handling Best Practices',
     url: 'https://learn.microsoft.com/en-us/powershell/scripting/learn/deep-dives/everything-about-exceptions',
     content: 'PowerShell has several ways to handle errors and exceptions. This article covers the different approaches and when to use each one...',
@@ -23,7 +23,7 @@ const mockRecentDocs: DocItem[] = [
     tags: ['error-handling', 'exceptions', 'best-practices']
   },
   {
-    id: '3',
+    id: 3,
     title: 'Advanced Function Parameters',
     url: 'https://learn.microsoft.com/en-us/powershell/scripting/learn/deep-dives/everything-about-parameter-binding',
     content: 'Parameter binding is how PowerShell maps command line parameters to the parameters in a function or cmdlet definition...',
@@ -33,10 +33,10 @@ const mockRecentDocs: DocItem[] = [
   }
 ];
 
-// Mock search results
+// Mock search results (fallback)
 const mockSearchResults: DocItem[] = [
   {
-    id: '4',
+    id: 4,
     title: 'Get-Process | Sort-Object -Property WS -Descending | Select-Object -First 5',
     url: 'https://learn.microsoft.com/en-us/powershell/module/microsoft.powershell.management/get-process',
     content: 'This PowerShell command gets all running processes, sorts them by working set (memory usage) in descending order, and selects the top 5 processes using the most memory.',
@@ -46,7 +46,7 @@ const mockSearchResults: DocItem[] = [
     tags: ['processes', 'memory', 'sorting']
   },
   {
-    id: '5',
+    id: 5,
     title: 'Get-Process | Where-Object {$_.WorkingSet -gt 50MB} | Sort-Object -Property WorkingSet -Descending',
     url: 'https://learn.microsoft.com/en-us/powershell/module/microsoft.powershell.core/where-object',
     content: 'This PowerShell command gets all processes with a working set (memory usage) greater than 50MB and sorts them by working set in descending order.',
@@ -56,7 +56,7 @@ const mockSearchResults: DocItem[] = [
     tags: ['processes', 'filtering', 'memory']
   },
   {
-    id: '6',
+    id: 6,
     title: 'Get-Process | Sort-Object CPU -Descending | Format-Table -Property ID,ProcessName,CPU,WS -AutoSize',
     url: 'https://learn.microsoft.com/en-us/powershell/module/microsoft.powershell.utility/format-table',
     content: 'This PowerShell command gets all processes, sorts them by CPU usage in descending order, and formats the output as a table showing ID, process name, CPU usage, and working set (memory usage).',
@@ -79,35 +79,36 @@ const PowerShellDocExplorer: React.FC = () => {
     const fetchRecentDocs = async () => {
       try {
         const docs = await documentationApi.getRecentDocumentation(3);
-        setRecentDocs(docs);
+        if (docs.length > 0) {
+          setRecentDocs(docs);
+        }
       } catch (error) {
         console.error('Error fetching recent documentation:', error);
         // Keep the mock data as fallback
       }
     };
-    
+
     fetchRecentDocs();
   }, []);
 
-  const handleSearch = (e: React.FormEvent) => {
+  const handleSearch = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!query.trim()) return;
 
     setIsSearching(true);
     setShowResults(true);
 
-    // Use the documentation API service
-    documentationApi.searchDocumentation({ query, limit: 5 })
-      .then(results => {
-        setSearchResults(results);
-        setIsSearching(false);
-      })
-      .catch(error => {
-        console.error('Error searching documentation:', error);
-        // Fallback to mock data in case of error
-        setSearchResults(mockSearchResults);
-        setIsSearching(false);
-      });
+    try {
+      // Use the documentation API service
+      const result = await documentationApi.searchDocumentation({ query, limit: 5 });
+      setSearchResults(result.items);
+    } catch (error) {
+      console.error('Error searching documentation:', error);
+      // Fallback to mock data in case of error
+      setSearchResults(mockSearchResults);
+    } finally {
+      setIsSearching(false);
+    }
   };
 
   return (
@@ -187,7 +188,7 @@ const PowerShellDocExplorer: React.FC = () => {
           </button>
         </div>
         <p className="text-xs text-gray-400 mt-1">
-          Powered by crawl4ai and vector search for semantic understanding of your query
+          Search documentation stored in the database
         </p>
       </form>
 
@@ -210,9 +211,11 @@ const PowerShellDocExplorer: React.FC = () => {
                     >
                       {result.title}
                     </a>
-                    <span className="text-sm text-gray-400">
-                      Similarity: {result.similarity?.toFixed(2)}
-                    </span>
+                    {result.similarity !== undefined && result.similarity > 0 && (
+                      <span className="text-sm text-gray-400">
+                        Similarity: {result.similarity.toFixed(2)}
+                      </span>
+                    )}
                   </div>
                   <p className="text-sm text-gray-300 mt-1">
                     Source: {result.source} • Crawled: {new Date(result.crawledAt).toLocaleDateString()}

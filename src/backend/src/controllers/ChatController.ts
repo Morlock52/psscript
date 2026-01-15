@@ -32,6 +32,7 @@ export class ChatController {
     const requestId = Math.random().toString(36).substring(2, 10);
     
     try {
+      // eslint-disable-next-line camelcase -- API request body uses snake_case
       const { messages, system_prompt, api_key, agent_type, session_id } = req.body;
       
       // Validate request parameters
@@ -42,7 +43,7 @@ export class ChatController {
       }
       
       // Use server API key if one is not provided by the client
-      const effectiveApiKey = api_key || process.env.OPENAI_API_KEY;
+      const effectiveApiKey = api_key || process.env.OPENAI_API_KEY; // eslint-disable-line camelcase
       
       if (!effectiveApiKey) {
         logger.warn(`[${requestId}] Invalid request: No API key provided and no server API key configured`);
@@ -66,12 +67,13 @@ export class ChatController {
       
       // Forward request to AI service with the effective API key
       const startTime = Date.now();
+      // eslint-disable-next-line camelcase -- API endpoint expects snake_case
       const response = await axios.post(`${this.aiServiceUrl}/chat`, {
         messages,
-        system_prompt,
-        api_key: effectiveApiKey, // Pass the effective API key to the AI service
-        agent_type, // Pass the agent type (e.g., "assistant" for OpenAI Assistants API)
-        session_id // Pass the session ID for persistent conversations
+        system_prompt, // eslint-disable-line camelcase
+        api_key: effectiveApiKey,
+        agent_type, // eslint-disable-line camelcase
+        session_id // eslint-disable-line camelcase
       }, {
         headers: {
           'Content-Type': 'application/json',

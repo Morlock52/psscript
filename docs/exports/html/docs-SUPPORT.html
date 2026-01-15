@@ -1,0 +1,232 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <base href="file:///Users/morlock/fun/psscript/" />
+  <title>docs-SUPPORT</title>
+  <style>
+:root {
+  color-scheme: light;
+}
+body {
+  font-family: "Segoe UI", "Helvetica Neue", Arial, sans-serif;
+  margin: 0;
+  padding: 0;
+  background: #ffffff;
+  color: #0f172a;
+}
+.markdown-body {
+  max-width: 980px;
+  margin: 40px auto 60px;
+  padding: 0 32px;
+  line-height: 1.65;
+}
+.markdown-body h1 {
+  font-size: 32px;
+  margin-bottom: 12px;
+  border-bottom: 2px solid #e2e8f0;
+  padding-bottom: 12px;
+}
+.markdown-body h2 {
+  font-size: 24px;
+  margin-top: 28px;
+  border-bottom: 1px solid #e2e8f0;
+  padding-bottom: 8px;
+}
+.markdown-body h3 {
+  font-size: 18px;
+  margin-top: 20px;
+}
+.markdown-body table {
+  width: 100%;
+  border-collapse: collapse;
+  margin: 16px 0;
+  font-size: 14px;
+}
+.markdown-body th,
+.markdown-body td {
+  border: 1px solid #e2e8f0;
+  padding: 8px 10px;
+  text-align: left;
+}
+.markdown-body th {
+  background: #f8fafc;
+}
+.markdown-body code {
+  background: #f1f5f9;
+  padding: 2px 4px;
+  border-radius: 4px;
+  font-family: "SFMono-Regular", Menlo, Consolas, monospace;
+  font-size: 0.92em;
+}
+.markdown-body pre {
+  background: #0f172a;
+  color: #e2e8f0;
+  padding: 16px;
+  border-radius: 8px;
+  overflow-x: auto;
+}
+.markdown-body pre code {
+  background: transparent;
+  color: inherit;
+}
+.markdown-body blockquote {
+  border-left: 4px solid #38bdf8;
+  margin: 16px 0;
+  padding: 8px 16px;
+  background: #f8fafc;
+  color: #334155;
+}
+.markdown-body img {
+  max-width: 100%;
+  height: auto;
+  display: block;
+  margin: 16px 0;
+  border-radius: 10px;
+  box-shadow: 0 8px 20px rgba(15, 23, 42, 0.12);
+}
+.footer {
+  margin-top: 40px;
+  font-size: 12px;
+  color: #64748b;
+}
+@page {
+  margin: 20mm 18mm;
+}
+</style>
+</head>
+<body>
+  <div class="markdown-body">
+    <h1 id="psscript-support-and-operations">PSScript Support and Operations</h1>
+<p>This guide defines how to get help, how issues are triaged, and what operational checks should be performed before escalation.</p>
+<h2 id="support-entry-points">Support entry points</h2>
+<table>
+<thead>
+<tr>
+<th>Channel</th>
+<th>Purpose</th>
+<th>Best for</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>GitHub Issues</td>
+<td>Bug reports and feature requests</td>
+<td>Product issues and reproducible defects</td>
+</tr>
+<tr>
+<td>Docs and Training</td>
+<td>Self-service guides</td>
+<td>Onboarding, workflows, and troubleshooting</td>
+</tr>
+<tr>
+<td>Logs and health checks</td>
+<td>Operational diagnostics</td>
+<td>Service availability and performance</td>
+</tr>
+</tbody>
+</table>
+<h2 id="before-you-open-an-issue">Before you open an issue</h2>
+<ul>
+<li>Confirm the problem is reproducible</li>
+<li>Capture steps, expected behavior, and actual behavior</li>
+<li>Include logs from backend and AI service</li>
+<li>Include screenshots if UI related</li>
+</ul>
+<h2 id="issue-triage-checklist">Issue triage checklist</h2>
+<table>
+<thead>
+<tr>
+<th>Step</th>
+<th>Owner</th>
+<th>Outcome</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Reproduce</td>
+<td>Reporter</td>
+<td>Clear reproduction steps</td>
+</tr>
+<tr>
+<td>Classify</td>
+<td>Maintainer</td>
+<td>Bug, feature, or support</td>
+</tr>
+<tr>
+<td>Assign</td>
+<td>Maintainer</td>
+<td>Owner and priority set</td>
+</tr>
+<tr>
+<td>Verify fix</td>
+<td>Maintainer</td>
+<td>Regression or unit test added</td>
+</tr>
+</tbody>
+</table>
+<h2 id="operational-checks">Operational checks</h2>
+<h3 id="health-endpoints">Health endpoints</h3>
+<ul>
+<li>Backend: http://localhost:4000/health</li>
+<li>Backend API: http://localhost:4000/api/health</li>
+<li>AI service: http://localhost:8000/health</li>
+</ul>
+<h3 id="log-locations">Log locations</h3>
+<ul>
+<li>Backend logs: <code>src/backend/logs/</code></li>
+<li>AI service logs: <code>src/ai/logs/</code> (if configured)</li>
+<li>Docker logs: <code>docker-compose logs -f</code></li>
+</ul>
+<h3 id="common-recovery-actions">Common recovery actions</h3>
+<pre><code class="language-bash"># Restart all services
+./restart-all.sh
+
+# Restart backend only
+./restart-backend.sh
+</code></pre>
+<h2 id="severity-guide">Severity guide</h2>
+<table>
+<thead>
+<tr>
+<th>Severity</th>
+<th>Description</th>
+<th>Example</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Sev 1</td>
+<td>Production down or data loss</td>
+<td>Cannot log in, data missing</td>
+</tr>
+<tr>
+<td>Sev 2</td>
+<td>Critical workflow blocked</td>
+<td>Upload or analysis failing</td>
+</tr>
+<tr>
+<td>Sev 3</td>
+<td>Degraded experience</td>
+<td>Slow responses, partial UI</td>
+</tr>
+<tr>
+<td>Sev 4</td>
+<td>Cosmetic or enhancement</td>
+<td>UI polish, copy changes</td>
+</tr>
+</tbody>
+</table>
+<h2 id="security-reporting">Security reporting</h2>
+<p>If you believe you have found a security issue, do not open a public issue. Share details privately with the project owner.</p>
+<h2 id="reference-docs">Reference docs</h2>
+<ul>
+<li><code>docs/GETTING-STARTED.md</code></li>
+<li><code>docs/training-suite/README.md</code></li>
+<li><code>docs/training-suite/TRAINING-GUIDE.md</code></li>
+</ul>
+    <div class="footer">Generated 2026-01-12 11:31 UTC</div>
+  </div>
+</body>
+</html>

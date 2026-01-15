@@ -14,8 +14,8 @@ interface ApiKey {
 }
 
 const ApiSettings: React.FC = () => {
-  const { theme } = useTheme();
-  const { isAuthenticated } = useAuth();
+  const { theme: _theme } = useTheme();
+  const { isAuthenticated: _isAuthenticated } = useAuth();
   const [isSaving, setIsSaving] = useState(false);
   const [saveMessage, setSaveMessage] = useState('');
   const [useEnvVariables, setUseEnvVariables] = useState(true);
@@ -91,6 +91,7 @@ const ApiSettings: React.FC = () => {
     };
     
     loadApiKeys();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [useEnvVariables]);
 
   // Handle input change
@@ -130,8 +131,8 @@ const ApiSettings: React.FC = () => {
     }
   };
 
-  // Display a padded version of the API key
-  const displayKey = (key: string) => {
+  // Display a padded version of the API key (kept for future use)
+  const _displayKey = (key: string) => {
     if (!key) return '';
     if (key.length <= 8) return '••••••••';
     return key.substring(0, 4) + '••••••••' + key.substring(key.length - 4);

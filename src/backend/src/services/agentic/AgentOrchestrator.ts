@@ -10,7 +10,7 @@
 
 import { v4 as uuidv4 } from 'uuid';
 import logger from '../../utils/logger';
-import { cache } from '../../index';
+import { cache as _cache } from '../../index';
 
 // Types for the orchestrator
 export interface Agent {
@@ -128,7 +128,7 @@ export class AgentOrchestrator {
             description: 'The PowerShell script content'
           }
         },
-        function: async (args: any) => {
+        function: async (_args: any) => {
           // Implementation would perform security analysis
           return {
             securityScore: 85,

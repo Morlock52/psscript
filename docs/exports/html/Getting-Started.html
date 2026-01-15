@@ -1,0 +1,359 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <base href="file:///Users/morlock/fun/psscript/" />
+  <title>Getting-Started</title>
+  <style>
+:root {
+  color-scheme: light;
+}
+body {
+  font-family: "Segoe UI", "Helvetica Neue", Arial, sans-serif;
+  margin: 0;
+  padding: 0;
+  background: #ffffff;
+  color: #0f172a;
+}
+.markdown-body {
+  max-width: 980px;
+  margin: 40px auto 60px;
+  padding: 0 32px;
+  line-height: 1.65;
+}
+.markdown-body h1 {
+  font-size: 32px;
+  margin-bottom: 12px;
+  border-bottom: 2px solid #e2e8f0;
+  padding-bottom: 12px;
+  page-break-before: always;
+  page-break-after: avoid;
+  break-before: page;
+  break-after: avoid;
+}
+.markdown-body h1:first-of-type {
+  page-break-before: avoid;
+  break-before: avoid;
+}
+.markdown-body h2 {
+  font-size: 24px;
+  margin-top: 28px;
+  border-bottom: 1px solid #e2e8f0;
+  padding-bottom: 8px;
+  page-break-before: always;
+  page-break-after: avoid;
+  break-before: page;
+  break-after: avoid;
+}
+.markdown-body h3 {
+  font-size: 18px;
+  margin-top: 20px;
+  page-break-after: avoid;
+  break-after: avoid;
+}
+.markdown-body h4, .markdown-body h5, .markdown-body h6 {
+  page-break-after: avoid;
+  break-after: avoid;
+}
+.markdown-body table {
+  width: 100%;
+  border-collapse: collapse;
+  margin: 16px 0;
+  font-size: 14px;
+  page-break-inside: avoid;
+  break-inside: avoid;
+}
+.markdown-body th,
+.markdown-body td {
+  border: 1px solid #e2e8f0;
+  padding: 8px 10px;
+  text-align: left;
+}
+.markdown-body th {
+  background: #f8fafc;
+}
+.markdown-body tr {
+  page-break-inside: avoid;
+  break-inside: avoid;
+}
+.markdown-body code {
+  background: #f1f5f9;
+  padding: 2px 4px;
+  border-radius: 4px;
+  font-family: "SFMono-Regular", Menlo, Consolas, monospace;
+  font-size: 0.92em;
+}
+.markdown-body pre {
+  background: #0f172a;
+  color: #e2e8f0;
+  padding: 16px;
+  border-radius: 8px;
+  overflow-x: auto;
+  page-break-inside: avoid;
+  break-inside: avoid;
+}
+.markdown-body pre code {
+  background: transparent;
+  color: inherit;
+}
+.markdown-body blockquote {
+  border-left: 4px solid #38bdf8;
+  margin: 16px 0;
+  padding: 8px 16px;
+  background: #f8fafc;
+  color: #334155;
+}
+.markdown-body img {
+  max-width: 100%;
+  height: auto;
+  display: block;
+  margin: 16px 0;
+  border-radius: 10px;
+  box-shadow: 0 8px 20px rgba(15, 23, 42, 0.12);
+  page-break-inside: avoid;
+  break-inside: avoid;
+}
+.markdown-body figure {
+  page-break-inside: avoid;
+  break-inside: avoid;
+  margin: 16px 0;
+}
+.markdown-body a {
+  color: #2563eb;
+  text-decoration: none;
+}
+.markdown-body a:hover {
+  text-decoration: underline;
+}
+.cover {
+  padding: 80px 60px 60px;
+  background: linear-gradient(135deg, #0b1220 0%, #1e3a8a 100%);
+  color: #f8fafc;
+  border-radius: 18px;
+  margin-bottom: 32px;
+}
+.cover-title {
+  font-size: 36px;
+  font-weight: 700;
+  margin: 0 0 12px;
+}
+.cover-subtitle {
+  font-size: 18px;
+  color: #cbd5f5;
+  margin: 0 0 16px;
+}
+.cover-meta {
+  font-size: 13px;
+  color: #94a3b8;
+}
+.page-break {
+  page-break-after: always;
+  break-after: page;
+}
+.footer {
+  margin-top: 40px;
+  font-size: 12px;
+  color: #64748b;
+}
+/* Print and PDF-specific styles */
+@page {
+  margin: 20mm 18mm;
+}
+@media print {
+  .markdown-body {
+    orphans: 3;
+    widows: 3;
+  }
+  .markdown-body p {
+    orphans: 3;
+    widows: 3;
+  }
+  .markdown-body li {
+    page-break-inside: avoid;
+    break-inside: avoid;
+  }
+  .markdown-body ul, .markdown-body ol {
+    page-break-before: avoid;
+    break-before: avoid;
+  }
+  .markdown-body blockquote {
+    page-break-inside: avoid;
+    break-inside: avoid;
+  }
+  /* Keep section content together */
+  .markdown-body h2 + *, .markdown-body h3 + * {
+    page-break-before: avoid;
+    break-before: avoid;
+  }
+}
+</style>
+</head>
+<body>
+  <div class="markdown-body">
+    
+  <section class="cover page-break">
+    <h1 class="cover-title">Getting Started</h1>
+    <p class="cover-subtitle">Setup steps and first-run workflow</p>
+    <p class="cover-meta">PSScript Manager Docs</p>
+  </section>
+  
+    <h1 id="psscript-getting-started-guide">PSScript - Getting Started Guide</h1>
+<p>This document provides a comprehensive guide to setting up and using the PSScript application.</p>
+<h2 id="system-overview">System Overview</h2>
+<p>PSScript is a PowerShell script management system that allows users to:
+- Upload and manage PowerShell scripts
+- Organize scripts by categories and tags
+- Search scripts using vector search capabilities
+- Analyze scripts for security and best practices
+- Chat with an AI assistant about PowerShell topics</p>
+<h2 id="prerequisites">Prerequisites</h2>
+<ul>
+<li>Node.js (v14+)</li>
+<li>PostgreSQL (v12+)</li>
+<li>Redis (optional, for enhanced caching)</li>
+</ul>
+<h2 id="quick-start">Quick Start</h2>
+<ol>
+<li>Clone the repository</li>
+<li>
+<p>Install dependencies:
+   <code>bash
+   npm install</code></p>
+</li>
+<li>
+<p>Set up the environment variables:
+   ```bash
+   # Copy the example environment file
+   cp .env.example .env</p>
+</li>
+</ol>
+<p># Edit the .env file with your configuration
+   ```</p>
+<ol>
+<li>
+<p>Initialize the database:
+   <code>bash
+   node setup-database.js</code></p>
+</li>
+<li>
+<p>Start the application:
+   ```bash
+   # Start all services
+   npm run start:all</p>
+</li>
+</ol>
+<p># Or start components individually
+   npm run start:backend
+   npm run start:frontend
+   npm run start:ai
+   ```</p>
+<ol>
+<li>Access the application:</li>
+<li>Frontend: http://localhost:3000</li>
+<li>Backend API: http://localhost:4001</li>
+<li>AI Service: http://localhost:5001</li>
+</ol>
+<h2 id="default-admin-account">Default Admin Account</h2>
+<p>The system comes with a default administrator account:
+- Email: <code>admin@psscript.com</code>
+- Password: <code>ChangeMe1!</code></p>
+<p>It's recommended to change the default password after first login.</p>
+<h2 id="database-setup">Database Setup</h2>
+<h3 id="postgresql-configuration">PostgreSQL Configuration</h3>
+<ol>
+<li>
+<p>Create a new database:
+   <code>sql
+   CREATE DATABASE psscript;</code></p>
+</li>
+<li>
+<p>Enable the pgvector extension (if using vector search):
+   <code>sql
+   \c psscript
+   CREATE EXTENSION IF NOT EXISTS vector;</code></p>
+</li>
+<li>
+<p>Run the database initialization script:
+   <code>bash
+   node setup-database.js</code></p>
+</li>
+</ol>
+<h3 id="redis-configuration-optional">Redis Configuration (Optional)</h3>
+<p>Configure Redis in the .env file:</p>
+<pre><code>REDIS_URL=redis://localhost:6379
+</code></pre>
+<p>The system will automatically fall back to in-memory caching if Redis is unavailable.</p>
+<h2 id="key-features">Key Features</h2>
+<h3 id="1-script-management">1. Script Management</h3>
+<ul>
+<li><strong>Upload Scripts</strong>: Upload PowerShell scripts through the web interface</li>
+<li><strong>Script Categories</strong>: Organize scripts by categories</li>
+<li><strong>Tagging</strong>: Apply tags to scripts for better organization</li>
+<li><strong>Version Control</strong>: Track changes to scripts over time</li>
+<li><strong>Bulk Operations</strong>: Perform actions on multiple scripts at once</li>
+</ul>
+<h3 id="2-script-analysis">2. Script Analysis</h3>
+<ul>
+<li><strong>Security Analysis</strong>: Automatically analyze scripts for security issues</li>
+<li><strong>Best Practices</strong>: Check scripts against PowerShell best practices</li>
+<li><strong>Syntax Validation</strong>: Verify script syntax is correct</li>
+<li><strong>Command Details</strong>: View detailed information about PowerShell commands used</li>
+</ul>
+<h3 id="3-ai-integration">3. AI Integration</h3>
+<ul>
+<li><strong>Chat Interface</strong>: Ask questions about PowerShell</li>
+<li><strong>Script Generation</strong>: Generate scripts based on natural language descriptions</li>
+<li><strong>Script Explanation</strong>: Get plain-language explanations of script functionality</li>
+<li><strong>Documentation Search</strong>: Search PowerShell documentation</li>
+</ul>
+<h3 id="4-search-capabilities">4. Search Capabilities</h3>
+<ul>
+<li><strong>Full-Text Search</strong>: Search script content and metadata</li>
+<li><strong>Vector Search</strong>: Find similar scripts using semantic search (requires pgvector)</li>
+<li><strong>Advanced Filters</strong>: Filter by category, tags, author, date, etc.</li>
+<li><strong>Sorting Options</strong>: Sort results by relevance, date, popularity, etc.</li>
+</ul>
+<h2 id="troubleshooting">Troubleshooting</h2>
+<h3 id="database-connectivity-issues">Database Connectivity Issues</h3>
+<p>If you experience database connection problems:</p>
+<ol>
+<li>Check your database credentials in the .env file</li>
+<li>Verify PostgreSQL is running:
+   <code>bash
+   pg_isready -h localhost -p 5432</code></li>
+<li>Run the database test script:
+   <code>bash
+   node src/backend/test-db.js</code></li>
+</ol>
+<h3 id="login-issues">Login Issues</h3>
+<p>If you're having trouble logging in:</p>
+<ol>
+<li>Verify the database is properly set up</li>
+<li>Reset the admin password:
+   <code>bash
+   node add-admin-user.js</code></li>
+<li>Check the auth logs:
+   <code>bash
+   tail -f logs/authentication.log</code></li>
+</ol>
+<h3 id="performance-issues">Performance Issues</h3>
+<p>If the application is running slowly:</p>
+<ol>
+<li>Ensure Redis is configured correctly for caching</li>
+<li>Check database indexes are created properly</li>
+<li>Verify pgvector extension is installed if using vector search</li>
+</ol>
+<h2 id="additional-resources">Additional Resources</h2>
+<ul>
+<li><strong>Database Documentation</strong>: See <a href="DATABASE-IMPROVEMENTS.md">DATABASE-IMPROVEMENTS.md</a></li>
+<li><strong>Authentication Documentation</strong>: See <a href="AUTHENTICATION-IMPROVEMENTS.md">AUTHENTICATION-IMPROVEMENTS.md</a></li>
+<li><strong>Vector Search</strong>: See <a href="README-VECTOR-SEARCH.md">README-VECTOR-SEARCH.md</a></li>
+<li><strong>Voice API Integration</strong>: See <a href="README-VOICE-API.md">README-VOICE-API.md</a></li>
+</ul>
+<h2 id="support">Support</h2>
+<p>For support, please open an issue in the GitHub repository or contact the development team.</p>
+    <div class="footer">Generated 2026-01-13 06:26 UTC</div>
+  </div>
+</body>
+</html>

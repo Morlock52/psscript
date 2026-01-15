@@ -3,28 +3,57 @@
   width: 100%;
   height: var(--editor-height, 500px);
   min-height: 300px;
-  border: 1px solid #e0e0e0;
-  border-radius: 4px;
+  border: 1px solid var(--color-border-default);
+  border-radius: 8px;
   overflow: hidden;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+  box-shadow: var(--shadow-sm);
+  transition: border-color 0.3s ease, box-shadow 0.3s ease;
 }
 
-/* Custom styles for monaco editor */
-.monaco-editor .margin {
+/* Light mode styles */
+.code-editor-container.light {
+  background-color: #ffffff;
+}
+
+.code-editor-container.light .monaco-editor .margin {
+  background-color: #f3f4f6;
+}
+
+.code-editor-container.light .monaco-editor .line-numbers {
+  color: #6b7280;
+}
+
+/* Dark mode styles */
+.code-editor-container.dark {
   background-color: #1e1e1e;
 }
 
-.monaco-editor .line-numbers {
+.code-editor-container.dark .monaco-editor .margin {
+  background-color: #1e1e1e;
+}
+
+.code-editor-container.dark .monaco-editor .line-numbers {
   color: #858585;
 }
 
-/* Enhance selection visibility */
+/* Enhance selection visibility for both modes */
 .monaco-editor .selected-text {
   background-color: rgba(73, 143, 226, 0.3);
 }
 
 /* Better visibility for the current line highlight */
-.monaco-editor .current-line {
+.code-editor-container.light .monaco-editor .current-line {
+  border: none;
+  background-color: rgba(0, 0, 0, 0.03);
+}
+
+.code-editor-container.dark .monaco-editor .current-line {
   border: none;
   background-color: rgba(255, 255, 255, 0.05);
+}
+
+/* Focus state */
+.code-editor-container:focus-within {
+  border-color: var(--color-primary);
+  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.2);
 }

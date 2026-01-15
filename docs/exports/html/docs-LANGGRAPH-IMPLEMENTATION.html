@@ -1,0 +1,894 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <base href="file:///Users/morlock/fun/psscript/" />
+  <title>docs-LANGGRAPH-IMPLEMENTATION</title>
+  <style>
+:root {
+  color-scheme: light;
+}
+body {
+  font-family: "Segoe UI", "Helvetica Neue", Arial, sans-serif;
+  margin: 0;
+  padding: 0;
+  background: #ffffff;
+  color: #0f172a;
+}
+.markdown-body {
+  max-width: 980px;
+  margin: 40px auto 60px;
+  padding: 0 32px;
+  line-height: 1.65;
+}
+.markdown-body h1 {
+  font-size: 32px;
+  margin-bottom: 12px;
+  border-bottom: 2px solid #e2e8f0;
+  padding-bottom: 12px;
+  page-break-before: always;
+  page-break-after: avoid;
+  break-before: page;
+  break-after: avoid;
+}
+.markdown-body h1:first-of-type {
+  page-break-before: avoid;
+  break-before: avoid;
+}
+.markdown-body h2 {
+  font-size: 24px;
+  margin-top: 28px;
+  border-bottom: 1px solid #e2e8f0;
+  padding-bottom: 8px;
+  page-break-before: always;
+  page-break-after: avoid;
+  break-before: page;
+  break-after: avoid;
+}
+.markdown-body h3 {
+  font-size: 18px;
+  margin-top: 20px;
+  page-break-after: avoid;
+  break-after: avoid;
+}
+.markdown-body h4, .markdown-body h5, .markdown-body h6 {
+  page-break-after: avoid;
+  break-after: avoid;
+}
+.markdown-body table {
+  width: 100%;
+  border-collapse: collapse;
+  margin: 16px 0;
+  font-size: 14px;
+  page-break-inside: avoid;
+  break-inside: avoid;
+}
+.markdown-body th,
+.markdown-body td {
+  border: 1px solid #e2e8f0;
+  padding: 8px 10px;
+  text-align: left;
+}
+.markdown-body th {
+  background: #f8fafc;
+}
+.markdown-body tr {
+  page-break-inside: avoid;
+  break-inside: avoid;
+}
+.markdown-body code {
+  background: #f1f5f9;
+  padding: 2px 4px;
+  border-radius: 4px;
+  font-family: "SFMono-Regular", Menlo, Consolas, monospace;
+  font-size: 0.92em;
+}
+.markdown-body pre {
+  background: #0f172a;
+  color: #e2e8f0;
+  padding: 16px;
+  border-radius: 8px;
+  overflow-x: auto;
+  page-break-inside: avoid;
+  break-inside: avoid;
+}
+.markdown-body pre code {
+  background: transparent;
+  color: inherit;
+}
+.markdown-body blockquote {
+  border-left: 4px solid #38bdf8;
+  margin: 16px 0;
+  padding: 8px 16px;
+  background: #f8fafc;
+  color: #334155;
+}
+.markdown-body img {
+  max-width: 100%;
+  height: auto;
+  display: block;
+  margin: 16px 0;
+  border-radius: 10px;
+  box-shadow: 0 8px 20px rgba(15, 23, 42, 0.12);
+  page-break-inside: avoid;
+  break-inside: avoid;
+}
+.markdown-body figure {
+  page-break-inside: avoid;
+  break-inside: avoid;
+  margin: 16px 0;
+}
+.markdown-body a {
+  color: #2563eb;
+  text-decoration: none;
+}
+.markdown-body a:hover {
+  text-decoration: underline;
+}
+.cover {
+  padding: 80px 60px 60px;
+  background: linear-gradient(135deg, #0b1220 0%, #1e3a8a 100%);
+  color: #f8fafc;
+  border-radius: 18px;
+  margin-bottom: 32px;
+}
+.cover-title {
+  font-size: 36px;
+  font-weight: 700;
+  margin: 0 0 12px;
+}
+.cover-subtitle {
+  font-size: 18px;
+  color: #cbd5f5;
+  margin: 0 0 16px;
+}
+.cover-meta {
+  font-size: 13px;
+  color: #94a3b8;
+}
+.page-break {
+  page-break-after: always;
+  break-after: page;
+}
+.footer {
+  margin-top: 40px;
+  font-size: 12px;
+  color: #64748b;
+}
+/* Print and PDF-specific styles */
+@page {
+  margin: 20mm 18mm;
+}
+@media print {
+  .markdown-body {
+    orphans: 3;
+    widows: 3;
+  }
+  .markdown-body p {
+    orphans: 3;
+    widows: 3;
+  }
+  .markdown-body li {
+    page-break-inside: avoid;
+    break-inside: avoid;
+  }
+  .markdown-body ul, .markdown-body ol {
+    page-break-before: avoid;
+    break-before: avoid;
+  }
+  .markdown-body blockquote {
+    page-break-inside: avoid;
+    break-inside: avoid;
+  }
+  /* Keep section content together */
+  .markdown-body h2 + *, .markdown-body h3 + * {
+    page-break-before: avoid;
+    break-before: avoid;
+  }
+}
+</style>
+</head>
+<body>
+  <div class="markdown-body">
+    
+    <h1 id="langgraph-10-production-implementation">LangGraph 1.0 Production Implementation</h1>
+<h2 id="overview">Overview</h2>
+<p>This document provides comprehensive information about the LangGraph 1.0 production orchestrator implementation for PowerShell script analysis.</p>
+<h2 id="architecture">Architecture</h2>
+<h3 id="components">Components</h3>
+<pre><code>┌─────────────────────────────────────────────────────────────┐
+│                     FastAPI Application                      │
+│  ┌───────────────────────────────────────────────────────┐  │
+│  │         LangGraph Endpoints (/langgraph/*)            │  │
+│  └───────────────────┬───────────────────────────────────┘  │
+│                      │                                       │
+│  ┌───────────────────▼───────────────────────────────────┐  │
+│  │      LangGraphProductionOrchestrator                  │  │
+│  │  ┌─────────────────────────────────────────────────┐  │  │
+│  │  │           StateGraph Workflow                   │  │  │
+│  │  │                                                  │  │  │
+│  │  │  START                                           │  │  │
+│  │  │    ↓                                             │  │  │
+│  │  │  [analyze]  ← feedback ─ [human_review]         │  │  │
+│  │  │    ↓                                             │  │  │
+│  │  │  [tools] → [analyze] → [synthesis] → END        │  │  │
+│  │  │                                                  │  │  │
+│  │  └─────────────────────────────────────────────────┘  │  │
+│  │                                                        │  │
+│  │  Tools:                                                │  │
+│  │  • analyze_powershell_script                          │  │
+│  │  • security_scan                                       │  │
+│  │  • quality_analysis                                    │  │
+│  │  • generate_optimizations                             │  │
+│  └────────────────────────────────────────────────────────┘  │
+│                      │                                       │
+│  ┌───────────────────▼───────────────────────────────────┐  │
+│  │              Checkpointer                             │  │
+│  │  • MemorySaver (dev)                                  │  │
+│  │  • PostgresSaver (prod)                               │  │
+│  └───────────────────────────────────────────────────────┘  │
+└─────────────────────────────────────────────────────────────┘
+</code></pre>
+<h3 id="state-schema">State Schema</h3>
+<pre><code class="language-python">class PowerShellAnalysisState(TypedDict):
+    # Message history with automatic deduplication
+    messages: Annotated[Sequence[BaseMessage], add_messages]
+
+    # Script content being analyzed
+    script_content: Optional[str]
+
+    # Analysis results from various stages
+    analysis_results: Dict[str, Any]
+
+    # Current workflow stage
+    current_stage: str
+
+    # Security findings
+    security_findings: List[Dict[str, Any]]
+
+    # Code quality metrics
+    quality_metrics: Dict[str, float]
+
+    # Optimization recommendations
+    optimizations: List[Dict[str, Any]]
+
+    # Error tracking
+    errors: List[Dict[str, Any]]
+
+    # Metadata
+    workflow_id: str
+    started_at: str
+    completed_at: Optional[str]
+
+    # Human-in-the-loop flags
+    requires_human_review: bool
+    human_feedback: Optional[str]
+
+    # Final output
+    final_response: Optional[str]
+</code></pre>
+<h2 id="api-reference">API Reference</h2>
+<h3 id="analyze-script">Analyze Script</h3>
+<p>Analyze a PowerShell script using the LangGraph orchestrator.</p>
+<p><strong>Endpoint</strong>: <code>POST /langgraph/analyze</code></p>
+<p><strong>Request Body</strong>:</p>
+<pre><code class="language-json">{
+  &quot;script_content&quot;: &quot;Get-Process | Where-Object CPU -gt 100&quot;,
+  &quot;thread_id&quot;: &quot;optional_thread_id&quot;,
+  &quot;require_human_review&quot;: false,
+  &quot;stream&quot;: false,
+  &quot;model&quot;: &quot;gpt-4&quot;,
+  &quot;api_key&quot;: &quot;optional_api_key&quot;
+}
+</code></pre>
+<p><strong>Response</strong>:</p>
+<pre><code class="language-json">{
+  &quot;workflow_id&quot;: &quot;analysis_1704649200.123&quot;,
+  &quot;status&quot;: &quot;completed&quot;,
+  &quot;final_response&quot;: &quot;This script retrieves processes with CPU usage above 100...&quot;,
+  &quot;analysis_results&quot;: {
+    &quot;analyze_powershell_script&quot;: {
+      &quot;purpose&quot;: &quot;Process monitoring&quot;,
+      &quot;complexity&quot;: &quot;Low&quot;,
+      &quot;line_count&quot;: 1
+    },
+    &quot;security_scan&quot;: {
+      &quot;risk_level&quot;: &quot;LOW&quot;,
+      &quot;risk_score&quot;: 0,
+      &quot;findings&quot;: []
+    },
+    &quot;quality_analysis&quot;: {
+      &quot;quality_score&quot;: 6.0,
+      &quot;metrics&quot;: {
+        &quot;total_lines&quot;: 1,
+        &quot;code_lines&quot;: 1
+      }
+    }
+  },
+  &quot;current_stage&quot;: &quot;completed&quot;,
+  &quot;started_at&quot;: &quot;2026-01-07T12:00:00.000Z&quot;,
+  &quot;completed_at&quot;: &quot;2026-01-07T12:00:04.523Z&quot;,
+  &quot;requires_human_review&quot;: false
+}
+</code></pre>
+<h3 id="provide-human-feedback">Provide Human Feedback</h3>
+<p>Continue a paused workflow with human feedback.</p>
+<p><strong>Endpoint</strong>: <code>POST /langgraph/feedback</code></p>
+<p><strong>Request Body</strong>:</p>
+<pre><code class="language-json">{
+  &quot;thread_id&quot;: &quot;analysis_1704649200.123&quot;,
+  &quot;feedback&quot;: &quot;The security analysis looks good. Please proceed with optimizations.&quot;
+}
+</code></pre>
+<p><strong>Response</strong>: Same format as analyze response</p>
+<h3 id="health-check">Health Check</h3>
+<p>Check the health of the LangGraph service.</p>
+<p><strong>Endpoint</strong>: <code>GET /langgraph/health</code></p>
+<p><strong>Response</strong>:</p>
+<pre><code class="language-json">{
+  &quot;status&quot;: &quot;healthy&quot;,
+  &quot;service&quot;: &quot;LangGraph Production Orchestrator&quot;,
+  &quot;version&quot;: &quot;1.0.5&quot;,
+  &quot;features&quot;: {
+    &quot;checkpointing&quot;: true,
+    &quot;human_in_the_loop&quot;: true,
+    &quot;streaming&quot;: true,
+    &quot;durable_execution&quot;: true
+  },
+  &quot;model&quot;: &quot;gpt-4&quot;,
+  &quot;checkpointer_type&quot;: &quot;MemorySaver&quot;
+}
+</code></pre>
+<h3 id="service-info">Service Info</h3>
+<p>Get detailed information about the orchestrator.</p>
+<p><strong>Endpoint</strong>: <code>GET /langgraph/info</code></p>
+<p><strong>Response</strong>:</p>
+<pre><code class="language-json">{
+  &quot;orchestrator&quot;: &quot;LangGraph Production Orchestrator&quot;,
+  &quot;version&quot;: &quot;1.0.5&quot;,
+  &quot;description&quot;: &quot;Production-grade PowerShell script analysis using LangGraph 1.0&quot;,
+  &quot;workflow_stages&quot;: [&quot;analyze&quot;, &quot;tools&quot;, &quot;synthesis&quot;, &quot;human_review&quot;],
+  &quot;available_tools&quot;: [
+    {
+      &quot;name&quot;: &quot;analyze_powershell_script&quot;,
+      &quot;description&quot;: &quot;Analyze script purpose, functionality, and metrics&quot;
+    },
+    {
+      &quot;name&quot;: &quot;security_scan&quot;,
+      &quot;description&quot;: &quot;Comprehensive security analysis and vulnerability detection&quot;
+    },
+    {
+      &quot;name&quot;: &quot;quality_analysis&quot;,
+      &quot;description&quot;: &quot;Code quality evaluation and best practices compliance&quot;
+    },
+    {
+      &quot;name&quot;: &quot;generate_optimizations&quot;,
+      &quot;description&quot;: &quot;Generate optimization recommendations&quot;
+    }
+  ],
+  &quot;supported_models&quot;: [&quot;gpt-4&quot;, &quot;gpt-4-turbo&quot;, &quot;gpt-3.5-turbo&quot;]
+}
+</code></pre>
+<h3 id="batch-analysis">Batch Analysis</h3>
+<p>Analyze multiple scripts concurrently.</p>
+<p><strong>Endpoint</strong>: <code>POST /langgraph/batch-analyze</code></p>
+<p><strong>Request Body</strong>:</p>
+<pre><code class="language-json">{
+  &quot;scripts&quot;: [
+    &quot;Get-Process&quot;,
+    &quot;Get-Service | Where-Object Status -eq 'Running'&quot;
+  ]
+}
+</code></pre>
+<p><strong>Response</strong>:</p>
+<pre><code class="language-json">{
+  &quot;total&quot;: 2,
+  &quot;successful&quot;: 2,
+  &quot;failed&quot;: 0,
+  &quot;results&quot;: [
+    {
+      &quot;index&quot;: 0,
+      &quot;workflow_id&quot;: &quot;analysis_1704649200.123&quot;,
+      &quot;status&quot;: &quot;completed&quot;
+    },
+    {
+      &quot;index&quot;: 1,
+      &quot;workflow_id&quot;: &quot;analysis_1704649200.456&quot;,
+      &quot;status&quot;: &quot;completed&quot;
+    }
+  ],
+  &quot;errors&quot;: []
+}
+</code></pre>
+<h3 id="test-orchestrator">Test Orchestrator</h3>
+<p>Test the orchestrator with a sample script.</p>
+<p><strong>Endpoint</strong>: <code>POST /langgraph/test</code></p>
+<p><strong>Response</strong>:</p>
+<pre><code class="language-json">{
+  &quot;test_status&quot;: &quot;passed&quot;,
+  &quot;result&quot;: {
+    &quot;workflow_id&quot;: &quot;...&quot;,
+    &quot;status&quot;: &quot;completed&quot;,
+    ...
+  }
+}
+</code></pre>
+<h2 id="tools">Tools</h2>
+<h3 id="analyze_powershell_script">analyze_powershell_script</h3>
+<p>Analyzes script purpose, structure, and basic metrics.</p>
+<p><strong>Input</strong>: Script content string</p>
+<p><strong>Output</strong>:</p>
+<pre><code class="language-json">{
+  &quot;purpose&quot;: &quot;File search and filtering&quot;,
+  &quot;complexity&quot;: &quot;Medium&quot;,
+  &quot;parameters&quot;: {&quot;Path&quot;: &quot;string&quot;},
+  &quot;functions&quot;: [],
+  &quot;line_count&quot;: 7,
+  &quot;timestamp&quot;: &quot;2026-01-07T12:00:00.000Z&quot;
+}
+</code></pre>
+<h3 id="security_scan">security_scan</h3>
+<p>Performs comprehensive security analysis.</p>
+<p><strong>Input</strong>: Script content string</p>
+<p><strong>Output</strong>:</p>
+<pre><code class="language-json">{
+  &quot;risk_level&quot;: &quot;MEDIUM&quot;,
+  &quot;risk_score&quot;: 12,
+  &quot;findings&quot;: [
+    {
+      &quot;category&quot;: &quot;Network Activity&quot;,
+      &quot;severity&quot;: 5,
+      &quot;pattern&quot;: &quot;invoke-webrequest&quot;,
+      &quot;description&quot;: &quot;Makes web requests&quot;
+    }
+  ],
+  &quot;findings_count&quot;: 1,
+  &quot;best_practices&quot;: [&quot;Uses error handling&quot;, &quot;Uses parameter validation&quot;],
+  &quot;timestamp&quot;: &quot;2026-01-07T12:00:00.000Z&quot;
+}
+</code></pre>
+<p><strong>Security Patterns Detected</strong>:
+- <code>invoke-expression</code> - Code injection risk (severity: 10)
+- <code>downloadstring</code> - Remote code execution (severity: 9)
+- <code>bypass</code> - Security control bypass (severity: 8)
+- <code>-encodedcommand</code> - Obfuscation (severity: 8)
+- <code>hidden</code> - Stealth execution (severity: 7)
+- <code>downloadfile</code> - Untrusted download (severity: 7)
+- <code>start-process</code> - Process creation (severity: 6)
+- <code>add-type</code> - Code compilation (severity: 6)
+- <code>invoke-webrequest</code> - Network activity (severity: 5)</p>
+<p><strong>Risk Levels</strong>:
+- CRITICAL: risk_score &gt; 30
+- HIGH: risk_score &gt; 20
+- MEDIUM: risk_score &gt; 10
+- LOW: risk_score ≤ 10</p>
+<h3 id="quality_analysis">quality_analysis</h3>
+<p>Evaluates code quality and best practices.</p>
+<p><strong>Input</strong>: Script content string</p>
+<p><strong>Output</strong>:</p>
+<pre><code class="language-json">{
+  &quot;quality_score&quot;: 7.5,
+  &quot;metrics&quot;: {
+    &quot;total_lines&quot;: 50,
+    &quot;comment_lines&quot;: 10,
+    &quot;empty_lines&quot;: 5,
+    &quot;code_lines&quot;: 35,
+    &quot;comment_ratio&quot;: 0.286
+  },
+  &quot;issues&quot;: [&quot;Script is very long - consider breaking into modules&quot;],
+  &quot;recommendations&quot;: [
+    &quot;Add comment-based help&quot;,
+    &quot;Implement try/catch error handling&quot;
+  ],
+  &quot;timestamp&quot;: &quot;2026-01-07T12:00:00.000Z&quot;
+}
+</code></pre>
+<p><strong>Quality Scoring</strong>:
+- Base score: 5.0
+- +1.0 for CmdletBinding
+- +0.5 for param block
+- +0.5 for comments (&gt;10% ratio)
+- +1.0 for try/catch blocks
+- -0.5 for very long scripts (&gt;500 lines)
+- -0.5 for many long lines (&gt;5 lines over 120 chars)</p>
+<h3 id="generate_optimizations">generate_optimizations</h3>
+<p>Generates optimization recommendations.</p>
+<p><strong>Input</strong>: Script content and quality metrics</p>
+<p><strong>Output</strong>:</p>
+<pre><code class="language-json">{
+  &quot;total_optimizations&quot;: 3,
+  &quot;optimizations&quot;: [
+    {
+      &quot;category&quot;: &quot;Performance&quot;,
+      &quot;priority&quot;: &quot;Medium&quot;,
+      &quot;recommendation&quot;: &quot;Use .ForEach() method instead of ForEach-Object&quot;,
+      &quot;impact&quot;: &quot;Can improve loop performance by 2-3x&quot;
+    },
+    {
+      &quot;category&quot;: &quot;Reliability&quot;,
+      &quot;priority&quot;: &quot;High&quot;,
+      &quot;recommendation&quot;: &quot;Add try/catch blocks for error handling&quot;,
+      &quot;impact&quot;: &quot;Prevents script failures and improves debugging&quot;
+    },
+    {
+      &quot;category&quot;: &quot;Documentation&quot;,
+      &quot;priority&quot;: &quot;Medium&quot;,
+      &quot;recommendation&quot;: &quot;Add comment-based help&quot;,
+      &quot;impact&quot;: &quot;Improves code understanding and maintenance&quot;
+    }
+  ],
+  &quot;timestamp&quot;: &quot;2026-01-07T12:00:00.000Z&quot;
+}
+</code></pre>
+<h2 id="workflow">Workflow</h2>
+<h3 id="standard-analysis-flow">Standard Analysis Flow</h3>
+<ol>
+<li><strong>START</strong> → Initial state created</li>
+<li><strong>analyze</strong> → LLM determines required analysis</li>
+<li><strong>tools</strong> → Execute requested tools (security_scan, quality_analysis, etc.)</li>
+<li><strong>analyze</strong> → LLM processes tool results</li>
+<li><strong>synthesis</strong> → Generate final comprehensive response</li>
+<li><strong>END</strong> → Workflow complete</li>
+</ol>
+<h3 id="human-in-the-loop-flow">Human-in-the-Loop Flow</h3>
+<ol>
+<li><strong>START</strong> → Initial state created with <code>requires_human_review=true</code></li>
+<li><strong>analyze</strong> → LLM determines required analysis</li>
+<li><strong>tools</strong> → Execute requested tools</li>
+<li><strong>human_review</strong> → Workflow pauses, waiting for feedback</li>
+<li><em>[Human provides feedback via <code>/feedback</code> endpoint]</em></li>
+<li><strong>analyze</strong> → Re-analyze with human input</li>
+<li><strong>synthesis</strong> → Generate final response</li>
+<li><strong>END</strong> → Workflow complete</li>
+</ol>
+<h2 id="checkpointing">Checkpointing</h2>
+<h3 id="development-memorysaver">Development (MemorySaver)</h3>
+<pre><code class="language-python">orchestrator = LangGraphProductionOrchestrator(
+    api_key=&quot;...&quot;,
+    use_postgres_checkpointing=False
+)
+</code></pre>
+<ul>
+<li>Stores state in memory</li>
+<li>Fast for development/testing</li>
+<li>No persistence across restarts</li>
+<li>Suitable for development environments</li>
+</ul>
+<h3 id="production-postgressaver">Production (PostgresSaver)</h3>
+<pre><code class="language-python">orchestrator = LangGraphProductionOrchestrator(
+    api_key=&quot;...&quot;,
+    use_postgres_checkpointing=True,
+    postgres_connection_string=&quot;postgresql://user:pass@host/db&quot;
+)
+</code></pre>
+<ul>
+<li>Stores state in PostgreSQL</li>
+<li>Durable across restarts</li>
+<li>Supports state recovery</li>
+<li>Required for production</li>
+</ul>
+<p><strong>Database Schema</strong>:</p>
+<pre><code class="language-sql">CREATE TABLE checkpoints (
+    thread_id TEXT PRIMARY KEY,
+    checkpoint_id TEXT NOT NULL,
+    parent_checkpoint_id TEXT,
+    checkpoint JSONB NOT NULL,
+    metadata JSONB,
+    created_at TIMESTAMP DEFAULT NOW()
+);
+
+CREATE INDEX idx_checkpoints_thread ON checkpoints(thread_id);
+CREATE INDEX idx_checkpoints_parent ON checkpoints(parent_checkpoint_id);
+</code></pre>
+<h2 id="configuration">Configuration</h2>
+<h3 id="environment-variables">Environment Variables</h3>
+<pre><code class="language-bash"># OpenAI API Key (required)
+OPENAI_API_KEY=sk-...
+
+# Model selection
+DEFAULT_MODEL=gpt-4
+
+# Checkpointing (production)
+USE_POSTGRES_CHECKPOINTING=true
+DATABASE_URL=postgresql://user:pass@host:5432/psscript
+
+# Logging
+LOG_LEVEL=INFO
+
+# Feature flags
+ENABLE_LANGGRAPH=true
+LANGGRAPH_TRAFFIC_PERCENTAGE=100
+</code></pre>
+<h3 id="code-configuration">Code Configuration</h3>
+<pre><code class="language-python"># Initialize orchestrator
+orchestrator = LangGraphProductionOrchestrator(
+    api_key=os.getenv(&quot;OPENAI_API_KEY&quot;),
+    model=&quot;gpt-4&quot;,
+    use_postgres_checkpointing=True,
+    postgres_connection_string=os.getenv(&quot;DATABASE_URL&quot;)
+)
+
+# Analyze with options
+result = await orchestrator.analyze_script(
+    script_content=script,
+    thread_id=&quot;my-session-id&quot;,
+    require_human_review=False,
+    stream=False
+)
+</code></pre>
+<h2 id="monitoring">Monitoring</h2>
+<h3 id="metrics-to-track">Metrics to Track</h3>
+<ol>
+<li><strong>Performance Metrics</strong></li>
+<li>Workflow duration (p50, p95, p99)</li>
+<li>Tool execution time</li>
+<li>LLM response time</li>
+<li>
+<p>Total analysis time</p>
+</li>
+<li>
+<p><strong>Reliability Metrics</strong></p>
+</li>
+<li>Success rate</li>
+<li>Error rate by type</li>
+<li>Retry count</li>
+<li>
+<p>Checkpoint recovery success</p>
+</li>
+<li>
+<p><strong>Resource Metrics</strong></p>
+</li>
+<li>Memory usage</li>
+<li>State size</li>
+<li>Database query count</li>
+<li>
+<p>API calls per analysis</p>
+</li>
+<li>
+<p><strong>Business Metrics</strong></p>
+</li>
+<li>Analyses per day</li>
+<li>Average tools used per analysis</li>
+<li>Human review request rate</li>
+<li>User satisfaction</li>
+</ol>
+<h3 id="logging">Logging</h3>
+<p>The orchestrator uses structured logging:</p>
+<pre><code class="language-python">logger.info(f&quot;Entering analyze_node for workflow {workflow_id}&quot;)
+logger.warning(&quot;Human review required - workflow paused&quot;)
+logger.error(f&quot;Error in analyze_script: {e}&quot;, exc_info=True)
+</code></pre>
+<p><strong>Log Levels</strong>:
+- <code>DEBUG</code>: Detailed state transitions
+- <code>INFO</code>: Workflow milestones
+- <code>WARNING</code>: Recoverable issues
+- <code>ERROR</code>: Failures requiring attention</p>
+<h2 id="error-handling">Error Handling</h2>
+<h3 id="automatic-recovery">Automatic Recovery</h3>
+<p>The orchestrator handles errors gracefully:</p>
+<pre><code class="language-python">try:
+    result = await orchestrator.analyze_script(script)
+except Exception as e:
+    # Error logged and returned in response
+    return {
+        &quot;error&quot;: str(e),
+        &quot;workflow_id&quot;: workflow_id,
+        &quot;status&quot;: &quot;failed&quot;
+    }
+</code></pre>
+<h3 id="retry-logic">Retry Logic</h3>
+<p>Tool execution includes automatic retries:</p>
+<pre><code class="language-python">@tool
+def security_scan(script_content: str) -&gt; str:
+    try:
+        # Analysis logic
+        return json.dumps(result)
+    except Exception as e:
+        logger.error(f&quot;Error in security_scan: {e}&quot;)
+        return json.dumps({&quot;error&quot;: str(e)})
+</code></pre>
+<h3 id="state-recovery">State Recovery</h3>
+<p>With checkpointing enabled, workflows can resume after failures:</p>
+<pre><code class="language-python"># Original execution fails
+result = await orchestrator.analyze_script(
+    script_content=script,
+    thread_id=&quot;session-123&quot;
+)
+
+# Resume from checkpoint after restart
+orchestrator = LangGraphProductionOrchestrator()
+result = await orchestrator.analyze_script(
+    script_content=script,
+    thread_id=&quot;session-123&quot;  # Same thread ID
+)
+# Continues from last checkpoint
+</code></pre>
+<h2 id="best-practices">Best Practices</h2>
+<h3 id="1-always-use-thread-ids-for-sessions">1. Always Use Thread IDs for Sessions</h3>
+<pre><code class="language-python"># Good
+result = await orchestrator.analyze_script(
+    script_content=script,
+    thread_id=user_session_id
+)
+
+# Bad - generates random ID
+result = await orchestrator.analyze_script(
+    script_content=script
+)
+</code></pre>
+<h3 id="2-enable-checkpointing-in-production">2. Enable Checkpointing in Production</h3>
+<pre><code class="language-python"># Production
+orchestrator = LangGraphProductionOrchestrator(
+    use_postgres_checkpointing=True,
+    postgres_connection_string=DATABASE_URL
+)
+
+# Development only
+orchestrator = LangGraphProductionOrchestrator()
+</code></pre>
+<h3 id="3-handle-streaming-properly">3. Handle Streaming Properly</h3>
+<pre><code class="language-python">if stream:
+    async for event in orchestrator.graph.astream(state, config):
+        # Process each event
+        yield event
+</code></pre>
+<h3 id="4-use-human-review-for-sensitive-scripts">4. Use Human Review for Sensitive Scripts</h3>
+<pre><code class="language-python"># For scripts with high risk scores
+result = await orchestrator.analyze_script(
+    script_content=script,
+    require_human_review=True if risk_score &gt; 50 else False
+)
+</code></pre>
+<h3 id="5-monitor-and-alert">5. Monitor and Alert</h3>
+<pre><code class="language-python"># Track metrics
+duration = result[&quot;completed_at&quot;] - result[&quot;started_at&quot;]
+if duration &gt; 10:  # seconds
+    alert(&quot;Slow analysis detected&quot;)
+
+# Track errors
+if result[&quot;status&quot;] == &quot;failed&quot;:
+    alert(f&quot;Analysis failed: {result['error']}&quot;)
+</code></pre>
+<h2 id="troubleshooting">Troubleshooting</h2>
+<h3 id="issue-workflow-hangs-in-tool-execution">Issue: Workflow hangs in tool execution</h3>
+<p><strong>Symptoms</strong>: Analysis doesn't complete, stuck in "tool_execution" stage</p>
+<p><strong>Diagnosis</strong>:</p>
+<pre><code class="language-python"># Check state
+logger.info(f&quot;Current stage: {state['current_stage']}&quot;)
+logger.info(f&quot;Last message: {state['messages'][-1]}&quot;)
+</code></pre>
+<p><strong>Solution</strong>: Increase timeout or check tool implementation</p>
+<h3 id="issue-checkpoint-not-found">Issue: Checkpoint not found</h3>
+<p><strong>Symptoms</strong>: <code>KeyError: 'checkpoint_id'</code></p>
+<p><strong>Diagnosis</strong>: Thread ID doesn't exist or checkpointing not enabled</p>
+<p><strong>Solution</strong>:</p>
+<pre><code class="language-python"># Ensure checkpointing is enabled
+orchestrator = LangGraphProductionOrchestrator(
+    use_postgres_checkpointing=True,
+    postgres_connection_string=DATABASE_URL
+)
+</code></pre>
+<h3 id="issue-high-memory-usage">Issue: High memory usage</h3>
+<p><strong>Symptoms</strong>: Memory grows during execution</p>
+<p><strong>Diagnosis</strong>: State accumulation in long-running workflows</p>
+<p><strong>Solution</strong>: Limit message history or use PostgreSQL checkpointing</p>
+<pre><code class="language-python"># Trim old messages from state
+state[&quot;messages&quot;] = state[&quot;messages&quot;][-10:]  # Keep last 10
+</code></pre>
+<h3 id="issue-tool-execution-errors">Issue: Tool execution errors</h3>
+<p><strong>Symptoms</strong>: Tools return error responses</p>
+<p><strong>Diagnosis</strong>: Check tool logs and input validation</p>
+<p><strong>Solution</strong>:</p>
+<pre><code class="language-python"># Add input validation
+@tool
+def analyze_powershell_script(script_content: str) -&gt; str:
+    if not script_content or len(script_content) &lt; 10:
+        return json.dumps({&quot;error&quot;: &quot;Invalid script content&quot;})
+    # Continue with analysis
+</code></pre>
+<h2 id="performance-optimization">Performance Optimization</h2>
+<h3 id="1-parallel-tool-execution">1. Parallel Tool Execution</h3>
+<p>Tools are executed sequentially by default. For independent tools:</p>
+<pre><code class="language-python"># Future enhancement: parallel tool execution
+results = await asyncio.gather(
+    security_scan(script),
+    quality_analysis(script)
+)
+</code></pre>
+<h3 id="2-caching">2. Caching</h3>
+<p>Cache frequent analysis results:</p>
+<pre><code class="language-python">from functools import lru_cache
+
+@lru_cache(maxsize=1000)
+def get_cached_analysis(script_hash: str) -&gt; Dict:
+    # Return cached result if available
+    pass
+</code></pre>
+<h3 id="3-model-selection">3. Model Selection</h3>
+<p>Use faster models for simple scripts:</p>
+<pre><code class="language-python"># Simple script - use faster model
+if len(script.split('\n')) &lt; 20:
+    model = &quot;gpt-3.5-turbo&quot;
+else:
+    model = &quot;gpt-4&quot;
+</code></pre>
+<h3 id="4-batch-processing">4. Batch Processing</h3>
+<p>Process multiple scripts together:</p>
+<pre><code class="language-python">results = await asyncio.gather(*[
+    orchestrator.analyze_script(script)
+    for script in scripts
+])
+</code></pre>
+<h2 id="testing">Testing</h2>
+<h3 id="unit-tests">Unit Tests</h3>
+<pre><code class="language-python">import pytest
+from agents.langgraph_production import (
+    analyze_powershell_script,
+    security_scan,
+    quality_analysis
+)
+
+def test_security_scan_dangerous_script():
+    script = &quot;Invoke-Expression $userInput&quot;
+    result = json.loads(security_scan(script))
+    assert result[&quot;risk_level&quot;] == &quot;CRITICAL&quot;
+    assert len(result[&quot;findings&quot;]) &gt; 0
+
+def test_quality_analysis():
+    script = &quot;[CmdletBinding()]\nparam($Path)\nGet-Item $Path&quot;
+    result = json.loads(quality_analysis(script))
+    assert result[&quot;quality_score&quot;] &gt;= 5.0
+</code></pre>
+<h3 id="integration-tests">Integration Tests</h3>
+<pre><code class="language-python">@pytest.mark.asyncio
+async def test_full_workflow():
+    orchestrator = LangGraphProductionOrchestrator()
+    script = &quot;Get-Process | Select-Object Name, CPU&quot;
+
+    result = await orchestrator.analyze_script(script)
+
+    assert result[&quot;status&quot;] == &quot;completed&quot;
+    assert result[&quot;final_response&quot;] is not None
+    assert &quot;analysis_results&quot; in result
+</code></pre>
+<h2 id="migration-from-legacy-agents">Migration from Legacy Agents</h2>
+<p>See <a href="./LANGGRAPH-MIGRATION-PLAN.md">LANGGRAPH-MIGRATION-PLAN.md</a> for comprehensive migration guide.</p>
+<p><strong>Quick Migration</strong>:</p>
+<pre><code class="language-python"># Old (legacy agent coordinator)
+from agents.agent_coordinator import AgentCoordinator
+coordinator = AgentCoordinator(api_key=api_key)
+result = await coordinator.analyze_script(script)
+
+# New (LangGraph orchestrator)
+from agents.langgraph_production import LangGraphProductionOrchestrator
+orchestrator = LangGraphProductionOrchestrator(api_key=api_key)
+result = await orchestrator.analyze_script(script_content=script)
+</code></pre>
+<h2 id="resources">Resources</h2>
+<h3 id="documentation">Documentation</h3>
+<ul>
+<li><a href="https://docs.langchain.com/oss/python/langgraph/">LangGraph Official Docs</a></li>
+<li><a href="https://python.langchain.com/">LangChain Documentation</a></li>
+<li><a href="./LANGGRAPH-MIGRATION-PLAN.md">Migration Plan</a></li>
+</ul>
+<h3 id="code-examples">Code Examples</h3>
+<ul>
+<li>Production orchestrator: <code>src/ai/agents/langgraph_production.py</code></li>
+<li>API endpoints: <code>src/ai/langgraph_endpoints.py</code></li>
+<li>Tests: <code>tests/test_langgraph_*.py</code></li>
+</ul>
+<h3 id="support">Support</h3>
+<ul>
+<li>GitHub Issues: <a href="https://github.com/your-org/psscript/issues">Repository Issues</a></li>
+<li>Team Chat: #ai-platform</li>
+<li>Documentation: <code>/docs</code></li>
+</ul>
+<hr />
+<p><strong>Document Version</strong>: 1.0
+<strong>Last Updated</strong>: 2026-01-07
+<strong>Maintainer</strong>: AI Platform Team</p>
+    <div class="footer">Generated 2026-01-13 06:26 UTC</div>
+  </div>
+</body>
+</html>

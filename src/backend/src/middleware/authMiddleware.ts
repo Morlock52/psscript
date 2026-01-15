@@ -1,7 +1,9 @@
 import { Request, Response, NextFunction } from 'express';
 import jwt, { JsonWebTokenError, TokenExpiredError, NotBeforeError } from 'jsonwebtoken';
+import crypto from 'crypto';
 import { User } from '../models';
 import logger from '../utils/logger';
+import { getAuthConfig, IS_PRODUCTION } from '../utils/envValidation';
 
 // Extend the Express Request interface to include user and auth info
 declare module 'express' {
@@ -18,10 +20,10 @@ declare module 'express' {
 }
 
 /**
- * Generate a unique request ID for tracking auth requests
+ * Generate a cryptographically secure request ID for tracking auth requests
  */
 const generateRequestId = (): string => {
-  return `auth-${Date.now()}-${Math.random().toString(36).substring(2, 10)}`;
+  return `auth-${Date.now()}-${crypto.randomUUID().slice(0, 8)}`;
 };
 
 /**
@@ -89,44 +91,39 @@ export const authenticateJWT = async (req: Request, res: Response, next: NextFun
   }
   
   // Update auth info with token type
-  req.authInfo.tokenType = token.startsWith('demo-token-') ? 'demo' : 'jwt';
-  
-  // Check if this is a demo token (starts with 'demo-token-')
+  req.authInfo.tokenType = 'jwt';
+
+  // SECURITY: Demo tokens have been removed entirely
+  // They were a security risk even in development mode because:
+  // 1. They bypass real authentication
+  // 2. Environment variables can be misconfigured
+  // 3. They create patterns of insecure authentication
   if (token.startsWith('demo-token-')) {
-    logger.info('Using demo token for authentication', {
+    logger.warn('Demo token authentication rejected - feature removed for security', {
       requestId,
-      demoToken: token,
-      path: req.path
+      path: req.path,
+      ipAddress,
+      environment: process.env.NODE_ENV
     });
-    
-    // For demo tokens, create a mock admin user
-    req.user = {
-      id: 1,
-      username: 'admin',
-      email: 'admin@example.com',
-      role: 'admin'
-    };
-    
-    const processingTime = Date.now() - startTime;
-    logger.debug('Demo authentication successful', {
-      requestId,
-      processingTime,
-      user: req.user.username
+    return res.status(401).json({
+      error: 'Demo tokens are no longer supported. Please use real authentication.',
+      message: 'Use proper JWT authentication. Create a user account and login.',
+      requestId
     });
-    
-    return next();
   }
-  
+
   try {
-    // Verify token
-    const jwtSecret = process.env.JWT_SECRET || 'development_secret';
-    logger.debug('Verifying JWT token', { 
+    // Get JWT secret from validated environment configuration
+    const authConfig = getAuthConfig();
+    const secret = authConfig.jwtSecret;
+
+    logger.debug('Verifying JWT token', {
       requestId,
-      usingDevSecret: !process.env.JWT_SECRET
+      isProduction: IS_PRODUCTION
     });
-    
-    const decoded: any = jwt.verify(token, jwtSecret);
-    
+
+    const decoded: any = jwt.verify(token, secret);
+
     // Get user from database
     logger.debug('JWT verified, fetching user', { 
       requestId,
@@ -301,9 +298,15 @@ export const optionalAuth = async (req: Request, res: Response, next: NextFuncti
   
   try {
     // Verify token
-    const jwtSecret = process.env.JWT_SECRET || 'development_secret';
-    const decoded: any = jwt.verify(token, jwtSecret);
-    
+    // SECURITY: Use same secret logic as main auth
+    const jwtSecret = process.env.JWT_SECRET;
+    if (!jwtSecret && IS_PRODUCTION) {
+      logger.error('CRITICAL: JWT_SECRET not set in production', { requestId });
+      return next(); // Continue without auth in optional middleware
+    }
+    const secret = jwtSecret || 'development_secret_INSECURE';
+    const decoded: any = jwt.verify(token, secret);
+
     // Get user from database
     const user = await User.findByPk(decoded.userId);
     

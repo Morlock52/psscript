@@ -191,7 +191,7 @@ const LandingPage: React.FC = () => {
                   </Link>
                 </div>
                 <div className="px-6 pt-6 pb-8">
-                  <h4 className="text-sm font-medium text-gray-900 dark:text-white">What's included:</h4>
+                  <h4 className="text-sm font-medium text-gray-900 dark:text-white">What&apos;s included:</h4>
                   <ul className="mt-6 space-y-4">
                     <li className="flex space-x-3">
                       <svg className="h-5 w-5 flex-shrink-0 text-green-500" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
@@ -232,7 +232,7 @@ const LandingPage: React.FC = () => {
                   </Link>
                 </div>
                 <div className="px-6 pt-6 pb-8">
-                  <h4 className="text-sm font-medium text-gray-900 dark:text-white">What's included:</h4>
+                  <h4 className="text-sm font-medium text-gray-900 dark:text-white">What&apos;s included:</h4>
                   <ul className="mt-6 space-y-4">
                     <li className="flex space-x-3">
                       <svg className="h-5 w-5 flex-shrink-0 text-green-500" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
@@ -285,7 +285,7 @@ const LandingPage: React.FC = () => {
                   </a>
                 </div>
                 <div className="px-6 pt-6 pb-8">
-                  <h4 className="text-sm font-medium text-gray-900 dark:text-white">What's included:</h4>
+                  <h4 className="text-sm font-medium text-gray-900 dark:text-white">What&apos;s included:</h4>
                   <ul className="mt-6 space-y-4">
                     <li className="flex space-x-3">
                       <svg className="h-5 w-5 flex-shrink-0 text-green-500" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
@@ -343,7 +343,7 @@ const LandingPage: React.FC = () => {
                   </div>
                 </div>
                 <p className="text-gray-600 dark:text-gray-200">
-                  "This tool has transformed how our IT team manages PowerShell scripts. The AI analysis has caught numerous potential issues before they became problems."
+                  &quot;This tool has transformed how our IT team manages PowerShell scripts. The AI analysis has caught numerous potential issues before they became problems.&quot;
                 </p>
               </div>
               
@@ -358,7 +358,7 @@ const LandingPage: React.FC = () => {
                   </div>
                 </div>
                 <p className="text-gray-600 dark:text-gray-200">
-                  "The version control and collaboration features have made it so much easier to work with my distributed team. We're much more productive now."
+                  &quot;The version control and collaboration features have made it so much easier to work with my distributed team. We&apos;re much more productive now.&quot;
                 </p>
               </div>
               
@@ -373,7 +373,7 @@ const LandingPage: React.FC = () => {
                   </div>
                 </div>
                 <p className="text-gray-600 dark:text-gray-200">
-                  "The AI chat assistant is like having a PowerShell expert on call 24/7. It's helped me learn and improve my scripts dramatically."
+                  &quot;The AI chat assistant is like having a PowerShell expert on call 24/7. It&apos;s helped me learn and improve my scripts dramatically.&quot;
                 </p>
               </div>
             </div>

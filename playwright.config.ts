@@ -30,7 +30,7 @@ export default defineConfig({
   // Shared settings for all the projects below
   use: {
     // Base URL for page.goto('/')
-    baseURL: 'http://localhost:3000',
+    baseURL: 'http://localhost:3002',
 
     // Collect trace when retrying the failed test
     trace: 'on-first-retry',
@@ -82,7 +82,7 @@ export default defineConfig({
   // webServer: [
   //   {
   //     command: 'cd src/frontend && npm run dev',
-  //     url: 'http://localhost:3000',
+  //     url: 'http://localhost:3002',
   //     reuseExistingServer: !process.env.CI,
   //     timeout: 120000,
   //     stdout: 'pipe',

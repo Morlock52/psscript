@@ -3,7 +3,7 @@
  * This provides helper methods for formatting AI analysis, fetching examples,
  * and handling the agentic workflow for script analysis
  */
-import { AIAnalysisRequest, AIAnalysisResult, analyzeScriptWithAgent, getSimilarScriptExamples } from '../api/aiAgent';
+import { AIAnalysisResult, analyzeScriptWithAgent } from '../api/aiAgent';
 
 /**
  * Helper interface for the AI Agent workflow state
@@ -162,7 +162,7 @@ export const generateCommandExplanations = async (
   script: string
 ): Promise<Record<string, string>> => {
   // Extract PowerShell commands from script
-  const commandRegex = /\b(Get-|Set-|New-|Remove-|Add-|Clear-|Export-|Import-|Out-|Start-|Stop-|[A-Z][a-z]+\-[A-Za-z]+)\b/g;
+  const commandRegex = /\b(Get-|Set-|New-|Remove-|Add-|Clear-|Export-|Import-|Out-|Start-|Stop-|[A-Z][a-z]+-[A-Za-z]+)\b/g;
   const matches = script.match(commandRegex) || [];
   const uniqueCommands = [...new Set(matches)];
   

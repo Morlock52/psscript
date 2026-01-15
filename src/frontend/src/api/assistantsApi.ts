@@ -1,7 +1,8 @@
 import axios from 'axios';
+import { getAssistantsApiUrl } from '../utils/apiUrl';
 
-// Get the hostname dynamically
-const API_BASE_URL = `http://${window.location.hostname}:4001/api`;
+// API URL is computed at runtime to support tunnels/proxies
+// Using a getter function ensures it's evaluated when called, not at build time
 
 /**
  * Types matching our backend models
@@ -234,96 +235,96 @@ interface ListResponse<T> {
 class AssistantsApiClient {
   // Assistants
   async createAssistant(params: CreateAssistantParams): Promise<Assistant> {
-    const response = await axios.post(`${API_BASE_URL}/assistants`, params);
+    const response = await axios.post(`${getAssistantsApiUrl()}/assistants`, params);
     return response.data;
   }
 
   async retrieveAssistant(assistantId: string): Promise<Assistant> {
-    const response = await axios.get(`${API_BASE_URL}/assistants/${assistantId}`);
+    const response = await axios.get(`${getAssistantsApiUrl()}/assistants/${assistantId}`);
     return response.data;
   }
 
   async updateAssistant(assistantId: string, params: UpdateAssistantParams): Promise<Assistant> {
-    const response = await axios.put(`${API_BASE_URL}/assistants/${assistantId}`, params);
+    const response = await axios.put(`${getAssistantsApiUrl()}/assistants/${assistantId}`, params);
     return response.data;
   }
 
   async deleteAssistant(assistantId: string): Promise<void> {
-    await axios.delete(`${API_BASE_URL}/assistants/${assistantId}`);
+    await axios.delete(`${getAssistantsApiUrl()}/assistants/${assistantId}`);
   }
 
   async listAssistants(): Promise<ListResponse<Assistant>> {
-    const response = await axios.get(`${API_BASE_URL}/assistants`);
+    const response = await axios.get(`${getAssistantsApiUrl()}/assistants`);
     return response.data;
   }
 
   // Threads
   async createThread(params: CreateThreadParams = {}): Promise<Thread> {
-    const response = await axios.post(`${API_BASE_URL}/assistants/threads`, params);
+    const response = await axios.post(`${getAssistantsApiUrl()}/assistants/threads`, params);
     return response.data;
   }
 
   async retrieveThread(threadId: string): Promise<Thread> {
-    const response = await axios.get(`${API_BASE_URL}/assistants/threads/${threadId}`);
+    const response = await axios.get(`${getAssistantsApiUrl()}/assistants/threads/${threadId}`);
     return response.data;
   }
 
   async updateThread(threadId: string, params: UpdateThreadParams): Promise<Thread> {
-    const response = await axios.put(`${API_BASE_URL}/assistants/threads/${threadId}`, params);
+    const response = await axios.put(`${getAssistantsApiUrl()}/assistants/threads/${threadId}`, params);
     return response.data;
   }
 
   async deleteThread(threadId: string): Promise<void> {
-    await axios.delete(`${API_BASE_URL}/assistants/threads/${threadId}`);
+    await axios.delete(`${getAssistantsApiUrl()}/assistants/threads/${threadId}`);
   }
 
   // Messages
   async createMessage(threadId: string, params: CreateMessageParams): Promise<Message> {
-    const response = await axios.post(`${API_BASE_URL}/assistants/threads/${threadId}/messages`, params);
+    const response = await axios.post(`${getAssistantsApiUrl()}/assistants/threads/${threadId}/messages`, params);
     return response.data;
   }
 
   async retrieveMessage(threadId: string, messageId: string): Promise<Message> {
-    const response = await axios.get(`${API_BASE_URL}/assistants/threads/${threadId}/messages/${messageId}`);
+    const response = await axios.get(`${getAssistantsApiUrl()}/assistants/threads/${threadId}/messages/${messageId}`);
     return response.data;
   }
 
   async listMessages(threadId: string): Promise<ListResponse<Message>> {
-    const response = await axios.get(`${API_BASE_URL}/assistants/threads/${threadId}/messages`);
+    const response = await axios.get(`${getAssistantsApiUrl()}/assistants/threads/${threadId}/messages`);
     return response.data;
   }
 
   // Runs
   async createRun(threadId: string, params: CreateRunParams): Promise<Run> {
-    const response = await axios.post(`${API_BASE_URL}/assistants/threads/${threadId}/runs`, params);
+    const response = await axios.post(`${getAssistantsApiUrl()}/assistants/threads/${threadId}/runs`, params);
     return response.data;
   }
 
   async retrieveRun(threadId: string, runId: string): Promise<Run> {
-    const response = await axios.get(`${API_BASE_URL}/assistants/threads/${threadId}/runs/${runId}`);
+    const response = await axios.get(`${getAssistantsApiUrl()}/assistants/threads/${threadId}/runs/${runId}`);
     return response.data;
   }
 
   async listRuns(threadId: string): Promise<ListResponse<Run>> {
-    const response = await axios.get(`${API_BASE_URL}/assistants/threads/${threadId}/runs`);
+    const response = await axios.get(`${getAssistantsApiUrl()}/assistants/threads/${threadId}/runs`);
     return response.data;
   }
 
   async cancelRun(threadId: string, runId: string): Promise<Run> {
-    const response = await axios.post(`${API_BASE_URL}/assistants/threads/${threadId}/runs/${runId}/cancel`);
+    const response = await axios.post(`${getAssistantsApiUrl()}/assistants/threads/${threadId}/runs/${runId}/cancel`);
     return response.data;
   }
 
   async submitToolOutputs(threadId: string, runId: string, params: SubmitToolOutputsParams): Promise<Run> {
     const response = await axios.post(
-      `${API_BASE_URL}/assistants/threads/${threadId}/runs/${runId}/submit_tool_outputs`,
+      `${getAssistantsApiUrl()}/assistants/threads/${threadId}/runs/${runId}/submit_tool_outputs`,
       params
     );
     return response.data;
   }
 
   async listRunSteps(threadId: string, runId: string): Promise<ListResponse<RunStep>> {
-    const response = await axios.get(`${API_BASE_URL}/assistants/threads/${threadId}/runs/${runId}/steps`);
+    const response = await axios.get(`${getAssistantsApiUrl()}/assistants/threads/${threadId}/runs/${runId}/steps`);
     return response.data;
   }
 

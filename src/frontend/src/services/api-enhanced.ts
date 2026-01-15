@@ -1,6 +1,5 @@
 // Enhanced API service with additional methods for the PSScript application
 import { scriptService as baseScriptService, categoryService, analyticsService } from './api';
-import { AxiosResponse } from 'axios';
 
 // Define types for the enhanced API
 interface Script {
@@ -23,7 +22,7 @@ interface Script {
   file_hash?: string;
 }
 
-interface Category {
+interface _Category {
   id: number;
   name: string;
   description: string;

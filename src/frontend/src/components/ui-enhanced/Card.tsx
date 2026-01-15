@@ -1,8 +1,7 @@
 import React, { HTMLAttributes, forwardRef, ReactNode } from 'react';
-import { useTheme } from '../../hooks/useTheme';
 
 // Define card variants
-export type CardVariant = 'default' | 'elevated' | 'outlined' | 'filled';
+export type CardVariant = 'default' | 'elevated' | 'outlined' | 'filled' | 'glass';
 
 // Define card props
 export interface CardProps extends HTMLAttributes<HTMLDivElement> {
@@ -12,7 +11,7 @@ export interface CardProps extends HTMLAttributes<HTMLDivElement> {
   clickable?: boolean;
   withBorder?: boolean;
   withShadow?: boolean;
-  rounded?: 'none' | 'sm' | 'md' | 'lg' | 'xl';
+  rounded?: 'none' | 'sm' | 'md' | 'lg' | 'xl' | '2xl';
   padding?: 'none' | 'sm' | 'md' | 'lg' | 'xl';
   header?: ReactNode;
   footer?: ReactNode;
@@ -31,7 +30,7 @@ export const Card = forwardRef<HTMLDivElement, CardProps>(
       clickable = false,
       withBorder = true,
       withShadow = true,
-      rounded = 'lg',
+      rounded = 'xl',
       padding = 'md',
       header,
       footer,
@@ -43,32 +42,21 @@ export const Card = forwardRef<HTMLDivElement, CardProps>(
     },
     ref
   ) => {
-    const { theme } = useTheme();
-    const isDark = theme === 'dark';
-
-    // Get variant styles
+    // Get variant styles using CSS variables
     const getVariantStyles = (): string => {
       switch (variant) {
         case 'default':
-          return isDark
-            ? 'bg-gray-800 text-white'
-            : 'bg-white text-gray-900';
+          return 'bg-[var(--color-bg-elevated)] text-[var(--color-text-primary)]';
         case 'elevated':
-          return isDark
-            ? 'bg-gray-800 text-white shadow-lg'
-            : 'bg-white text-gray-900 shadow-lg';
+          return 'bg-[var(--color-bg-elevated)] text-[var(--color-text-primary)] shadow-[var(--shadow-lg)]';
         case 'outlined':
-          return isDark
-            ? 'bg-transparent text-white border border-gray-700'
-            : 'bg-transparent text-gray-900 border border-gray-200';
+          return 'bg-transparent text-[var(--color-text-primary)] border border-[var(--color-border-default)]';
         case 'filled':
-          return isDark
-            ? 'bg-gray-700 text-white'
-            : 'bg-gray-100 text-gray-900';
+          return 'bg-[var(--color-bg-tertiary)] text-[var(--color-text-primary)]';
+        case 'glass':
+          return 'bg-[var(--color-bg-elevated)]/80 backdrop-blur-lg text-[var(--color-text-primary)]';
         default:
-          return isDark
-            ? 'bg-gray-800 text-white'
-            : 'bg-white text-gray-900';
+          return 'bg-[var(--color-bg-elevated)] text-[var(--color-text-primary)]';
       }
     };
 
@@ -85,8 +73,10 @@ export const Card = forwardRef<HTMLDivElement, CardProps>(
           return 'rounded-lg';
         case 'xl':
           return 'rounded-xl';
+        case '2xl':
+          return 'rounded-2xl';
         default:
-          return 'rounded-lg';
+          return 'rounded-xl';
       }
     };
 
@@ -147,7 +137,7 @@ export const Card = forwardRef<HTMLDivElement, CardProps>(
     // Get body padding styles
     const getBodyPaddingStyles = (): string => {
       if (padding === 'none') return 'p-0';
-      
+
       // If there's a header or footer, adjust padding
       if (header || footer) {
         switch (padding) {
@@ -163,7 +153,7 @@ export const Card = forwardRef<HTMLDivElement, CardProps>(
             return 'px-4 py-3';
         }
       }
-      
+
       // Default padding if no header or footer
       return getPaddingStyles();
     };
@@ -171,38 +161,31 @@ export const Card = forwardRef<HTMLDivElement, CardProps>(
     // Get border styles
     const getBorderStyles = (): string => {
       if (!withBorder) return '';
-      
-      return isDark
-        ? variant === 'outlined' ? '' : 'border border-gray-700'
-        : variant === 'outlined' ? '' : 'border border-gray-200';
+      if (variant === 'outlined') return '';
+
+      return 'border border-[var(--color-border-default)]';
     };
 
     // Get shadow styles
     const getShadowStyles = (): string => {
       if (!withShadow) return '';
       if (variant === 'elevated') return '';
-      
-      return isDark
-        ? 'shadow-md shadow-gray-900/20'
-        : 'shadow-md shadow-gray-200/50';
+
+      return 'shadow-[var(--shadow-md)]';
     };
 
     // Get hover styles
     const getHoverStyles = (): string => {
       if (!hoverable) return '';
-      
-      return isDark
-        ? 'transition-transform duration-200 hover:-translate-y-1 hover:shadow-lg'
-        : 'transition-transform duration-200 hover:-translate-y-1 hover:shadow-lg';
+
+      return 'transition-all duration-300 hover:-translate-y-1 hover:shadow-[var(--shadow-lg)]';
     };
 
     // Get clickable styles
     const getClickableStyles = (): string => {
       if (!clickable) return '';
-      
-      return isDark
-        ? 'cursor-pointer active:scale-95 transition-transform duration-200'
-        : 'cursor-pointer active:scale-95 transition-transform duration-200';
+
+      return 'cursor-pointer active:scale-[0.98] transition-transform duration-200';
     };
 
     return (
@@ -210,6 +193,7 @@ export const Card = forwardRef<HTMLDivElement, CardProps>(
         ref={ref}
         className={`
           overflow-hidden
+          transition-colors duration-300
           ${getVariantStyles()}
           ${getRoundedStyles()}
           ${getBorderStyles()}
@@ -225,7 +209,7 @@ export const Card = forwardRef<HTMLDivElement, CardProps>(
           <div
             className={`
               ${getHeaderPaddingStyles()}
-              ${isDark ? 'border-b border-gray-700' : 'border-b border-gray-200'}
+              border-b border-[var(--color-border-default)]
               ${headerClassName}
             `}
           >
@@ -248,7 +232,8 @@ export const Card = forwardRef<HTMLDivElement, CardProps>(
           <div
             className={`
               ${getFooterPaddingStyles()}
-              ${isDark ? 'border-t border-gray-700' : 'border-t border-gray-200'}
+              border-t border-[var(--color-border-default)]
+              bg-[var(--color-bg-tertiary)]/50
               ${footerClassName}
             `}
           >

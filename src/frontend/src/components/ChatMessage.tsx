@@ -4,18 +4,17 @@ import ReactMarkdown from 'react-markdown';
 
 interface ChatMessageProps {
   message: Message;
-  theme: string;
   onSaveScript?: () => void;
 }
 
-const ChatMessage: React.FC<ChatMessageProps> = ({ message, theme, onSaveScript }) => {
+const ChatMessage: React.FC<ChatMessageProps> = ({ message, onSaveScript }) => {
   const [showCopySuccess, setShowCopySuccess] = useState(false);
-  
+
   // Function to check if the message contains code blocks
   const hasCodeBlock = (content: string): boolean => {
     return content.includes('```');
   };
-  
+
   // Function to copy code to clipboard
   const copyCodeToClipboard = (code: string) => {
     navigator.clipboard.writeText(code).then(() => {
@@ -25,84 +24,74 @@ const ChatMessage: React.FC<ChatMessageProps> = ({ message, theme, onSaveScript 
       console.error('Failed to copy code: ', err);
     });
   };
-  
-  // Extract PowerShell code blocks from message
-  const extractCodeBlocks = (content: string): string[] => {
+
+  // Extract PowerShell code blocks from message (kept for future use)
+  const _extractCodeBlocks = (content: string): string[] => {
     const regex = /```(?:powershell)?\n([\s\S]*?)```/g;
     const matches = [];
     let match;
-    
+
     while ((match = regex.exec(content)) !== null) {
       matches.push(match[1]);
     }
-    
+
     return matches;
   };
-  
+
   // Render code blocks with syntax highlighting and copy button
   const renderCodeBlock = (props: any) => {
-    const { children, className, node, ...rest } = props;
+    const { children, className, ...rest } = props;
     const match = /language-(\w+)/.exec(className || '');
     const language = match ? match[1] : '';
     const isPs = !language || language === 'powershell';
-    
+
     return (
-      <div className={`relative rounded-md overflow-hidden ${theme === 'dark' ? 'bg-gray-800' : 'bg-gray-100'}`}>
-        <div className="flex justify-between items-center px-4 py-2 text-xs border-b border-gray-700">
-          <span>{isPs ? 'PowerShell' : language}</span>
+      <div className="relative rounded-md overflow-hidden bg-[var(--color-bg-tertiary)]">
+        <div className="flex justify-between items-center px-4 py-2 text-xs border-b border-[var(--color-border-default)] bg-[var(--color-bg-primary)]">
+          <span className="text-[var(--color-text-secondary)]">{isPs ? 'PowerShell' : language}</span>
           <div className="flex space-x-2">
             {showCopySuccess && (
-              <span className={`text-xs ${theme === 'dark' ? 'text-green-400' : 'text-green-600'}`}>
+              <span className="text-xs text-emerald-500">
                 Copied!
               </span>
             )}
             <button
               onClick={() => copyCodeToClipboard(children)}
-              className={`px-2 py-1 rounded text-xs ${
-                theme === 'dark'
-                  ? 'bg-gray-700 hover:bg-gray-600 text-gray-300'
-                  : 'bg-gray-200 hover:bg-gray-300 text-gray-700'
-              }`}
+              className="px-2 py-1 rounded text-xs bg-[var(--color-bg-tertiary)] hover:bg-[var(--color-bg-tertiary)]/80 text-[var(--color-text-secondary)] transition-colors"
             >
               Copy
             </button>
             {onSaveScript && isPs && (
               <button
                 onClick={onSaveScript}
-                className={`px-2 py-1 rounded text-xs ${
-                  theme === 'dark'
-                    ? 'bg-blue-700 hover:bg-blue-600 text-white'
-                    : 'bg-blue-600 hover:bg-blue-500 text-white'
-                }`}
+                className="px-2 py-1 rounded text-xs bg-blue-600 hover:bg-blue-500 text-white transition-colors"
               >
                 Save as Script
               </button>
             )}
           </div>
         </div>
-        <pre className={`p-4 overflow-x-auto ${className}`} {...rest}>
+        <pre className={`p-4 overflow-x-auto text-[var(--color-text-primary)] ${className}`} {...rest}>
           {children}
         </pre>
       </div>
     );
   };
-  
+
   // Custom components for ReactMarkdown
   const components = {
-    code({ node, inline, className, children, ...props }: any) {
-      const match = /language-(\w+)/.exec(className || '');
-      
+    code({ inline, className, children, ...props }: any) {
       if (inline) {
         return (
           <code
-            className={`${theme === 'dark' ? 'bg-gray-800 text-gray-200' : 'bg-gray-200 text-gray-800'} px-1 py-0.5 rounded text-sm font-mono`}
+            className="bg-[var(--color-bg-tertiary)] text-[var(--color-text-primary)] px-1 py-0.5 rounded text-sm font-mono"
             {...props}
           >
             {children}
           </code>
         );
       }
-      
+
       return renderCodeBlock({
         children: String(children).replace(/\n$/, ''),
         className,
@@ -132,11 +121,11 @@ const ChatMessage: React.FC<ChatMessageProps> = ({ message, theme, onSaveScript 
     },
     a({ href, children }: any) {
       return (
-        <a 
-          href={href} 
-          target="_blank" 
+        <a
+          href={href}
+          target="_blank"
           rel="noopener noreferrer"
-          className={`${theme === 'dark' ? 'text-blue-400' : 'text-blue-600'} hover:underline`}
+          className="text-blue-500 hover:text-blue-400 hover:underline"
         >
           {children}
         </a>
@@ -144,10 +133,8 @@ const ChatMessage: React.FC<ChatMessageProps> = ({ message, theme, onSaveScript 
     },
     blockquote({ children }: any) {
       return (
-        <blockquote 
-          className={`border-l-4 ${
-            theme === 'dark' ? 'border-gray-600 bg-gray-800' : 'border-gray-300 bg-gray-100'
-          } pl-4 py-2 mb-4 italic`}
+        <blockquote
+          className="border-l-4 border-[var(--color-border-default)] bg-[var(--color-bg-tertiary)] pl-4 py-2 mb-4 italic"
         >
           {children}
         </blockquote>
@@ -156,9 +143,7 @@ const ChatMessage: React.FC<ChatMessageProps> = ({ message, theme, onSaveScript 
     table({ children }: any) {
       return (
         <div className="overflow-x-auto mb-4">
-          <table className={`min-w-full ${
-            theme === 'dark' ? 'border-gray-700' : 'border-gray-300'
-          } border`}>
+          <table className="min-w-full border border-[var(--color-border-default)]">
             {children}
           </table>
         </div>
@@ -166,9 +151,7 @@ const ChatMessage: React.FC<ChatMessageProps> = ({ message, theme, onSaveScript 
     },
     thead({ children }: any) {
       return (
-        <thead className={`${
-          theme === 'dark' ? 'bg-gray-800' : 'bg-gray-200'
-        }`}>
+        <thead className="bg-[var(--color-bg-tertiary)]">
           {children}
         </thead>
       );
@@ -178,51 +161,39 @@ const ChatMessage: React.FC<ChatMessageProps> = ({ message, theme, onSaveScript 
     },
     tr({ children }: any) {
       return (
-        <tr className={`${
-          theme === 'dark' ? 'border-gray-700' : 'border-gray-300'
-        } border-t`}>
+        <tr className="border-t border-[var(--color-border-default)]">
           {children}
         </tr>
       );
     },
     th({ children }: any) {
       return (
-        <th className={`${
-          theme === 'dark' ? 'border-gray-700' : 'border-gray-300'
-        } border px-4 py-2 text-left font-semibold`}>
+        <th className="border border-[var(--color-border-default)] px-4 py-2 text-left font-semibold">
           {children}
         </th>
       );
     },
     td({ children }: any) {
       return (
-        <td className={`${
-          theme === 'dark' ? 'border-gray-700' : 'border-gray-300'
-        } border px-4 py-2`}>
+        <td className="border border-[var(--color-border-default)] px-4 py-2">
           {children}
         </td>
       );
     },
     hr() {
       return (
-        <hr className={`my-4 ${
-          theme === 'dark' ? 'border-gray-700' : 'border-gray-300'
-        }`} />
+        <hr className="my-4 border-[var(--color-border-default)]" />
       );
     }
   };
-  
+
   return (
     <div className={`mb-4 ${message.role === 'user' ? 'flex justify-end' : 'flex justify-start'}`}>
-      <div 
+      <div
         className={`max-w-3xl rounded-lg p-3 ${
           message.role === 'user'
-            ? theme === 'dark' 
-              ? 'bg-blue-700 text-white' 
-              : 'bg-blue-600 text-white'
-            : theme === 'dark'
-              ? 'bg-gray-800 text-gray-200'
-              : 'bg-white text-gray-800 border border-gray-300'
+            ? 'bg-[var(--color-primary)] text-white'
+            : 'bg-[var(--color-bg-elevated)] text-[var(--color-text-primary)] border border-[var(--color-border-default)]'
         }`}
       >
         {message.role === 'user' ? (
@@ -232,16 +203,12 @@ const ChatMessage: React.FC<ChatMessageProps> = ({ message, theme, onSaveScript 
             <ReactMarkdown components={components}>
               {message.content}
             </ReactMarkdown>
-            
+
             {hasCodeBlock(message.content) && onSaveScript && (
               <div className="mt-4 flex justify-end">
                 <button
                   onClick={onSaveScript}
-                  className={`px-3 py-1 rounded text-sm ${
-                    theme === 'dark'
-                      ? 'bg-blue-700 hover:bg-blue-600 text-white'
-                      : 'bg-blue-600 hover:bg-blue-500 text-white'
-                  }`}
+                  className="px-3 py-1 rounded text-sm bg-blue-600 hover:bg-blue-500 text-white transition-colors"
                 >
                   Save as Script
                 </button>
@@ -249,14 +216,12 @@ const ChatMessage: React.FC<ChatMessageProps> = ({ message, theme, onSaveScript 
             )}
           </div>
         )}
-        
+
         {message.timestamp && (
           <div className={`text-xs mt-2 text-right ${
             message.role === 'user'
-              ? 'text-blue-200'
-              : theme === 'dark'
-                ? 'text-gray-500'
-                : 'text-gray-500'
+              ? 'text-white/70'
+              : 'text-[var(--color-text-tertiary)]'
           }`}>
             {new Date(message.timestamp).toLocaleTimeString()}
           </div>

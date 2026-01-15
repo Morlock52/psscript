@@ -2,58 +2,29 @@ import React, { useState, useEffect, ReactNode } from 'react';
 import { Outlet } from 'react-router-dom';
 import Navbar from './Navbar';
 import Sidebar from './Sidebar';
-// DbToggle component removed
-
 interface LayoutProps {
   children?: ReactNode;
   hideSidebar?: boolean;
 }
 
 const Layout: React.FC<LayoutProps> = ({ children, hideSidebar = false }) => {
-  const [sidebarOpen, setSidebarOpen] = useState(
-    localStorage.getItem('sidebar-open') === 'false' ? false : true
-  );
-  
-  // Debug sidebar state
-  useEffect(() => {
-    console.log('DEBUG: Layout - Sidebar state:', sidebarOpen ? 'open' : 'closed');
-  }, [sidebarOpen]);
-  
-  const [theme, setTheme] = useState<'dark' | 'light'>(
-    (localStorage.getItem('color-theme') as 'dark' | 'light') || 'dark'
-  );
+  // Sidebar state with localStorage persistence
+  const [sidebarOpen, setSidebarOpen] = useState(() => {
+    const saved = localStorage.getItem('sidebar-open');
+    return saved === 'false' ? false : true;
+  });
 
   // Save sidebar state to localStorage
   useEffect(() => {
-    console.log('DEBUG: Layout - Saving sidebar state to localStorage:', sidebarOpen);
     localStorage.setItem('sidebar-open', String(sidebarOpen));
   }, [sidebarOpen]);
-  
-  // Initialize theme on mount
-  useEffect(() => {
-    console.log('DEBUG: Layout - Theme initialized:', theme);
-    if (theme === 'dark') {
-      document.documentElement.classList.add('dark');
-    } else {
-      document.documentElement.classList.remove('dark');
-    }
-  }, [theme]);
-  
+
   const toggleSidebar = () => {
-    console.log('DEBUG: Layout - Toggling sidebar from', sidebarOpen, 'to', !sidebarOpen);
     setSidebarOpen(!sidebarOpen);
   };
-  
-  const toggleTheme = () => {
-    const newTheme = theme === 'dark' ? 'light' : 'dark';
-    console.log('DEBUG: Layout - Toggling theme from', theme, 'to', newTheme);
-    setTheme(newTheme);
-    localStorage.setItem('color-theme', newTheme);
-  };
-  
+
   return (
-    <div className={`flex h-screen overflow-hidden transition-colors duration-300
-      ${theme === 'dark' ? 'bg-gray-900 text-white' : 'bg-gray-50 text-gray-900'}`}>
+    <div className="flex h-screen overflow-hidden bg-[var(--color-bg-primary)] text-[var(--color-text-primary)] transition-colors duration-300">
       {/* Sidebar with animation */}
       {!hideSidebar && (
         <Sidebar isOpen={sidebarOpen} onClose={() => setSidebarOpen(false)} />
@@ -62,9 +33,8 @@ const Layout: React.FC<LayoutProps> = ({ children, hideSidebar = false }) => {
       {/* Main content area */}
       <div className="flex flex-col flex-1 overflow-hidden">
         <Navbar onMenuClick={toggleSidebar} />
-        
-        <main className={`flex-1 overflow-y-auto p-4 transition-colors duration-300
-          ${theme === 'dark' ? 'bg-gray-800' : 'bg-white'}`}>
+
+        <main className="flex-1 overflow-y-auto p-4 md:p-6 bg-[var(--color-bg-secondary)] transition-colors duration-300">
           {children || <Outlet />}
         </main>
       </div>

@@ -7,9 +7,8 @@ internet data access.
 """
 
 import os
-import json
 import logging
-from typing import Dict, List, Any, Optional, Union
+from typing import Dict, List, Any, Optional
 
 # LangGraph 1.0 imports - January 2026
 from langgraph.prebuilt import create_react_agent
@@ -37,17 +36,21 @@ class LangChainAgent:
     planning, and execution with access to external data sources.
     """
 
-    def __init__(self, api_key: Optional[str] = None):
+    def __init__(self, api_key: Optional[str] = None, model: str = "gpt-4o"):
         """
         Initialize the LangGraph agent.
 
         Args:
             api_key: OpenAI API key (optional, will use environment variable if not provided)
+            model: The model to use for the agent (default: gpt-4o)
         """
         # Set API key
         self.api_key = api_key or os.getenv("OPENAI_API_KEY")
         if not self.api_key:
             raise ValueError("OpenAI API key is required")
+
+        # Set model
+        self.model = model
 
         # Initialize components
         self.llm = self._initialize_llm()
@@ -56,14 +59,14 @@ class LangChainAgent:
         self.agent = self._initialize_agent()
         self.thread_id = "default"  # For memory persistence
 
-        logger.info("LangGraph agent initialized")
+        logger.info(f"LangGraph agent initialized with model: {self.model}")
 
     def _initialize_llm(self) -> ChatOpenAI:
         """Initialize the language model."""
         return ChatOpenAI(
             api_key=self.api_key,
             temperature=0.7,
-            model="gpt-4o",
+            model=self.model,
             streaming=True,
         )
 
@@ -204,6 +207,78 @@ When you need to calculate something, use the calculator tool."""
         import uuid
         self.thread_id = str(uuid.uuid4())
         logger.info(f"Agent memory reset, new thread_id: {self.thread_id}")
+
+    async def analyze_script(self, script_id: str, content: str) -> Dict[str, Any]:
+        """
+        Analyze a PowerShell script using the LangGraph agent.
+
+        Args:
+            script_id: The ID of the script being analyzed
+            content: The PowerShell script content
+
+        Returns:
+            A dictionary containing the analysis results
+        """
+        try:
+            prompt = f"""You are a PowerShell security and code analysis expert.
+
+Analyze this PowerShell script and provide a comprehensive analysis including:
+
+1. **Purpose**: What does this script do? Provide a clear summary.
+2. **Security Analysis**:
+   - Identify potential vulnerabilities or security risks
+   - Rate the risk level (Low/Medium/High/Critical)
+   - Provide security recommendations
+3. **Code Quality**:
+   - Assess adherence to PowerShell best practices
+   - Identify potential bugs or issues
+   - Note any performance considerations
+4. **Commands Used**: List the main PowerShell cmdlets/commands used
+5. **Recommendations**: Provide specific improvements and suggestions
+
+Script ID: {script_id}
+
+Script Content:
+```powershell
+{content}
+```
+
+Provide your analysis in a structured, detailed format."""
+
+            # Process through the agent
+            messages = [{"role": "user", "content": prompt}]
+            response = await self.process_message(messages)
+
+            return {
+                "script_id": script_id,
+                "analysis": response,
+                "status": "completed",
+                "model": self.model
+            }
+        except Exception as e:
+            logger.error(f"Error analyzing script {script_id}: {e}")
+            return {
+                "script_id": script_id,
+                "error": str(e),
+                "status": "failed"
+            }
+
+    async def run_custom_prompt(self, prompt: str) -> str:
+        """
+        Run a custom prompt through the agent.
+
+        Args:
+            prompt: The prompt to process
+
+        Returns:
+            The agent's response as a string
+        """
+        try:
+            messages = [{"role": "user", "content": prompt}]
+            return await self.process_message(messages)
+        except Exception as e:
+            logger.error(f"Error running custom prompt: {e}")
+            return f"Error: {str(e)}"
 
 
 # Custom tool for weather data

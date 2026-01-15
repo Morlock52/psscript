@@ -1,0 +1,940 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <base href="file:///Users/morlock/fun/psscript/" />
+  <title>docs-UPDATES</title>
+  <style>
+:root {
+  color-scheme: light;
+}
+body {
+  font-family: "Segoe UI", "Helvetica Neue", Arial, sans-serif;
+  margin: 0;
+  padding: 0;
+  background: #ffffff;
+  color: #0f172a;
+}
+.markdown-body {
+  max-width: 980px;
+  margin: 40px auto 60px;
+  padding: 0 32px;
+  line-height: 1.65;
+}
+.markdown-body h1 {
+  font-size: 32px;
+  margin-bottom: 12px;
+  border-bottom: 2px solid #e2e8f0;
+  padding-bottom: 12px;
+  page-break-before: always;
+  page-break-after: avoid;
+  break-before: page;
+  break-after: avoid;
+}
+.markdown-body h1:first-of-type {
+  page-break-before: avoid;
+  break-before: avoid;
+}
+.markdown-body h2 {
+  font-size: 24px;
+  margin-top: 28px;
+  border-bottom: 1px solid #e2e8f0;
+  padding-bottom: 8px;
+  page-break-before: always;
+  page-break-after: avoid;
+  break-before: page;
+  break-after: avoid;
+}
+.markdown-body h3 {
+  font-size: 18px;
+  margin-top: 20px;
+  page-break-after: avoid;
+  break-after: avoid;
+}
+.markdown-body h4, .markdown-body h5, .markdown-body h6 {
+  page-break-after: avoid;
+  break-after: avoid;
+}
+.markdown-body table {
+  width: 100%;
+  border-collapse: collapse;
+  margin: 16px 0;
+  font-size: 14px;
+  page-break-inside: avoid;
+  break-inside: avoid;
+}
+.markdown-body th,
+.markdown-body td {
+  border: 1px solid #e2e8f0;
+  padding: 8px 10px;
+  text-align: left;
+}
+.markdown-body th {
+  background: #f8fafc;
+}
+.markdown-body tr {
+  page-break-inside: avoid;
+  break-inside: avoid;
+}
+.markdown-body code {
+  background: #f1f5f9;
+  padding: 2px 4px;
+  border-radius: 4px;
+  font-family: "SFMono-Regular", Menlo, Consolas, monospace;
+  font-size: 0.92em;
+}
+.markdown-body pre {
+  background: #0f172a;
+  color: #e2e8f0;
+  padding: 16px;
+  border-radius: 8px;
+  overflow-x: auto;
+  page-break-inside: avoid;
+  break-inside: avoid;
+}
+.markdown-body pre code {
+  background: transparent;
+  color: inherit;
+}
+.markdown-body blockquote {
+  border-left: 4px solid #38bdf8;
+  margin: 16px 0;
+  padding: 8px 16px;
+  background: #f8fafc;
+  color: #334155;
+}
+.markdown-body img {
+  max-width: 100%;
+  height: auto;
+  display: block;
+  margin: 16px 0;
+  border-radius: 10px;
+  box-shadow: 0 8px 20px rgba(15, 23, 42, 0.12);
+  page-break-inside: avoid;
+  break-inside: avoid;
+}
+.markdown-body figure {
+  page-break-inside: avoid;
+  break-inside: avoid;
+  margin: 16px 0;
+}
+.markdown-body a {
+  color: #2563eb;
+  text-decoration: none;
+}
+.markdown-body a:hover {
+  text-decoration: underline;
+}
+.cover {
+  padding: 80px 60px 60px;
+  background: linear-gradient(135deg, #0b1220 0%, #1e3a8a 100%);
+  color: #f8fafc;
+  border-radius: 18px;
+  margin-bottom: 32px;
+}
+.cover-title {
+  font-size: 36px;
+  font-weight: 700;
+  margin: 0 0 12px;
+}
+.cover-subtitle {
+  font-size: 18px;
+  color: #cbd5f5;
+  margin: 0 0 16px;
+}
+.cover-meta {
+  font-size: 13px;
+  color: #94a3b8;
+}
+.page-break {
+  page-break-after: always;
+  break-after: page;
+}
+.footer {
+  margin-top: 40px;
+  font-size: 12px;
+  color: #64748b;
+}
+/* Print and PDF-specific styles */
+@page {
+  margin: 20mm 18mm;
+}
+@media print {
+  .markdown-body {
+    orphans: 3;
+    widows: 3;
+  }
+  .markdown-body p {
+    orphans: 3;
+    widows: 3;
+  }
+  .markdown-body li {
+    page-break-inside: avoid;
+    break-inside: avoid;
+  }
+  .markdown-body ul, .markdown-body ol {
+    page-break-before: avoid;
+    break-before: avoid;
+  }
+  .markdown-body blockquote {
+    page-break-inside: avoid;
+    break-inside: avoid;
+  }
+  /* Keep section content together */
+  .markdown-body h2 + *, .markdown-body h3 + * {
+    page-break-before: avoid;
+    break-before: avoid;
+  }
+}
+</style>
+</head>
+<body>
+  <div class="markdown-body">
+    
+    <h1 id="application-updates-and-enhancements">Application Updates and Enhancements</h1>
+<p>This document outlines the significant updates and enhancements made to the PowerShell Script Analysis application, with a focus on incorporating agentic capabilities using LangGraph and Py-g frameworks.</p>
+<h2 id="agentic-capabilities-integration">Agentic Capabilities Integration</h2>
+<h3 id="1-langgraph-agent-implementation">1. LangGraph Agent Implementation</h3>
+<ul>
+<li>Created a new <code>LangGraphAgent</code> class that leverages LangGraph's explicit state management and multi-actor workflows</li>
+<li>Implemented a state-based graph structure with planning, execution, error handling, and response generation nodes</li>
+<li>Added support for stateful conversations with working memory persistence</li>
+<li>Integrated with existing script analysis pipeline</li>
+<li>Implemented explicit state transitions for more predictable agent behavior</li>
+<li>Added checkpoint capabilities for state persistence and recovery</li>
+</ul>
+<h3 id="2-py-g-declarative-agent-implementation">2. Py-g Declarative Agent Implementation</h3>
+<ul>
+<li>Created a new <code>PyGAgent</code> class that uses Py-g's declarative approach to agent definitions</li>
+<li>Implemented workflow-based execution with explicit state transitions</li>
+<li>Added support for structured planning and execution</li>
+<li>Integrated with existing script analysis pipeline</li>
+<li>Implemented task-based execution model with explicit task queues</li>
+<li>Added support for dynamic task generation based on context</li>
+</ul>
+<h3 id="3-agent-factory-enhancements">3. Agent Factory Enhancements</h3>
+<ul>
+<li>Updated the <code>AgentFactory</code> to support LangGraph and Py-g agent types</li>
+<li>Added dynamic agent selection based on task complexity and requirements</li>
+<li>Implemented graceful fallback mechanisms when specific agent types are unavailable</li>
+<li>Enhanced logging for better debugging and monitoring</li>
+<li>Added support for agent-specific configuration options</li>
+<li>Implemented agent caching for better performance</li>
+</ul>
+<h3 id="4-multi-turn-conversation-support">4. Multi-Turn Conversation Support</h3>
+<ul>
+<li>Enhanced the conversation system to maintain context across multiple turns</li>
+<li>Implemented state tracking for complex multi-step tasks</li>
+<li>Added support for conversation history in agent decision-making</li>
+<li>Improved context management for more coherent responses</li>
+<li>Added support for conversation branching and merging</li>
+<li>Implemented conversation summarization for long interactions</li>
+</ul>
+<h3 id="5-advanced-tool-use-framework">5. Advanced Tool Use Framework</h3>
+<ul>
+<li>Created a structured tool definition and execution system</li>
+<li>Implemented PowerShell-specific analysis tools for script evaluation</li>
+<li>Added security analysis tools for vulnerability detection</li>
+<li>Integrated documentation tools for command reference lookup</li>
+<li>Added support for tool composition and chaining</li>
+<li>Implemented tool result caching for better performance</li>
+</ul>
+<h3 id="6-planning-capabilities">6. Planning Capabilities</h3>
+<ul>
+<li>Implemented explicit planning nodes in the agent workflow</li>
+<li>Added support for plan creation, execution, and revision</li>
+<li>Enhanced error recovery with plan adaptation</li>
+<li>Improved task decomposition for complex requests</li>
+<li>Added support for hierarchical planning</li>
+<li>Implemented plan visualization for debugging</li>
+</ul>
+<h3 id="7-state-management-enhancements">7. State Management Enhancements</h3>
+<ul>
+<li>Added explicit state schemas for all agent types</li>
+<li>Implemented working memory for persistent information across turns</li>
+<li>Created state transition logic for workflow management</li>
+<li>Added state checkpointing for recovery and debugging</li>
+<li>Implemented state visualization tools</li>
+<li>Added support for state rollback in case of errors</li>
+</ul>
+<h3 id="8-error-handling-and-recovery">8. Error Handling and Recovery</h3>
+<ul>
+<li>Implemented comprehensive error detection and classification</li>
+<li>Added recovery strategies for different error types</li>
+<li>Created fallback mechanisms for graceful degradation</li>
+<li>Enhanced logging for error analysis and debugging</li>
+<li>Implemented automatic retry logic for transient errors</li>
+<li>Added support for human intervention in critical errors</li>
+</ul>
+<h3 id="9-external-api-integration">9. External API Integration</h3>
+<ul>
+<li>Added structured interfaces for OpenAI API interactions</li>
+<li>Implemented rate limiting and retry logic for API stability</li>
+<li>Enhanced error handling for API failures</li>
+<li>Added support for model switching based on task requirements</li>
+<li>Implemented API response caching for better performance</li>
+<li>Added support for streaming responses for better user experience</li>
+</ul>
+<h3 id="10-database-schema-verification">10. Database Schema Verification</h3>
+<ul>
+<li>Verified and enhanced the existing database schema</li>
+<li>Added support for storing agent state and conversation history</li>
+<li>Implemented efficient query patterns for script analysis retrieval</li>
+<li>Enhanced data integrity checks for analysis results</li>
+<li>Added support for vector embeddings for similarity search</li>
+<li>Implemented database migration tools for schema updates</li>
+</ul>
+<h3 id="11-testing-framework">11. Testing Framework</h3>
+<ul>
+<li>Created comprehensive test scripts for LangGraph and Py-g agents</li>
+<li>Implemented test cases for different script types and complexity levels</li>
+<li>Added support for automated testing of agent capabilities</li>
+<li>Enhanced test reporting for better debugging</li>
+<li>Implemented performance benchmarking for agent comparison</li>
+<li>Added support for regression testing</li>
+</ul>
+<h3 id="12-documentation-and-examples">12. Documentation and Examples</h3>
+<ul>
+<li>Created detailed documentation for agent capabilities and usage</li>
+<li>Added examples for different use cases and scenarios</li>
+<li>Implemented interactive examples for better understanding</li>
+<li>Enhanced API documentation for developers</li>
+<li>Added troubleshooting guides for common issues</li>
+<li>Implemented documentation generation from code comments</li>
+</ul>
+<h2 id="specific-technical-improvements">Specific Technical Improvements</h2>
+<h3 id="13-langgraph-graph-structure-implementation">13. LangGraph Graph Structure Implementation</h3>
+<pre><code class="language-python">def _build_graph(self) -&gt; StateGraph:
+    &quot;&quot;&quot;Build the agent workflow graph.&quot;&quot;&quot;
+    # Define the nodes
+    planner = self._create_planner_node()
+    tool_executor_node = ToolNode(self.tool_executor)
+    responder = self._create_responder_node()
+    error_handler = self._create_error_handler_node()
+
+    # Create the graph
+    workflow = StateGraph(AgentState)
+
+    # Add nodes
+    workflow.add_node(&quot;planner&quot;, planner)
+    workflow.add_node(&quot;tool_executor&quot;, tool_executor_node)
+    workflow.add_node(&quot;responder&quot;, responder)
+    workflow.add_node(&quot;error_handler&quot;, error_handler)
+
+    # Add edges
+    workflow.add_edge(&quot;planner&quot;, &quot;tool_executor&quot;)
+    workflow.add_edge(&quot;tool_executor&quot;, &quot;planner&quot;)
+    workflow.add_edge(&quot;planner&quot;, &quot;responder&quot;)
+    workflow.add_edge(&quot;responder&quot;, END)
+
+    # Add error handling
+    workflow.add_edge_from_exception(&quot;tool_executor&quot;, &quot;error_handler&quot;)
+    workflow.add_edge(&quot;error_handler&quot;, &quot;planner&quot;)
+
+    # Set the entry point
+    workflow.set_entry_point(&quot;planner&quot;)
+
+    # Compile the graph
+    return workflow.compile()
+</code></pre>
+<h3 id="14-py-g-declarative-agent-definition">14. Py-g Declarative Agent Definition</h3>
+<pre><code class="language-python">def _plan_tasks(self, user_request: str) -&gt; List[Tuple[str, Dict[str, Any]]]:
+    &quot;&quot;&quot;
+    Plan tasks based on the user's request.
+
+    Args:
+        user_request: The user's request
+
+    Returns:
+        A list of tasks to execute, where each task is a tuple of
+        (task_name, task_args)
+    &quot;&quot;&quot;
+    # Check if the request contains a PowerShell script
+    if &quot;```powershell&quot; in user_request or &quot;```ps1&quot; in user_request:
+        # Extract the script content
+        script_content = self._extract_script(user_request)
+
+        # Plan tasks for script analysis
+        return [
+            (&quot;script_analysis&quot;, {&quot;content&quot;: script_content}),
+            (&quot;security_analysis&quot;, {&quot;content&quot;: script_content}),
+            (&quot;categorization&quot;, {&quot;content&quot;: script_content}),
+            (&quot;code_improvement&quot;, {&quot;content&quot;: script_content})
+        ]
+    else:
+        # For general PowerShell questions, just use the LLM
+        return [
+            (&quot;documentation_lookup&quot;, {&quot;query&quot;: user_request})
+        ]
+</code></pre>
+<h3 id="15-enhanced-agent-selection-logic">15. Enhanced Agent Selection Logic</h3>
+<pre><code class="language-python">def determine_agent_type(self, message: str) -&gt; str:
+    &quot;&quot;&quot;
+    Determine the most appropriate agent type for a message.
+
+    Args:
+        message: The user's message
+
+    Returns:
+        The recommended agent type ('langchain', 'autogpt', 'hybrid', 'langgraph', or 'pyg')
+    &quot;&quot;&quot;
+    # Simple heuristic for now - could be replaced with a more sophisticated classifier
+    langgraph_task_indicators = [
+        &quot;multi-actor workflow&quot;,
+        &quot;state management&quot;,
+        &quot;explicit state&quot;,
+        &quot;workflow graph&quot;,
+        &quot;complex workflow&quot;,
+        &quot;state machine&quot;,
+        &quot;error recovery&quot;,
+        &quot;multi-step planning&quot;,
+        &quot;tool orchestration&quot;,
+        &quot;structured workflow&quot;
+    ]
+
+    pyg_task_indicators = [
+        &quot;declarative agent&quot;,
+        &quot;declarative definition&quot;,
+        &quot;agent definition&quot;,
+        &quot;workflow-based&quot;,
+        &quot;state-based agent&quot;,
+        &quot;explicit workflow&quot;,
+        &quot;agent workflow&quot;,
+        &quot;declarative approach&quot;,
+        &quot;structured agent&quot;,
+        &quot;agent orchestration&quot;
+    ]
+
+    # Additional indicators...
+
+    message_lower = message.lower()
+
+    # Check for LangGraph task indicators first (if available)
+    if LANGGRAPH_AVAILABLE:
+        for indicator in langgraph_task_indicators:
+            if indicator in message_lower:
+                logger.info(f&quot;Selected LangGraph agent based on indicator: '{indicator}'&quot;)
+                return &quot;langgraph&quot;
+
+    # Check for Py-g task indicators (if available)
+    if PYG_AVAILABLE:
+        for indicator in pyg_task_indicators:
+            if indicator in message_lower:
+                logger.info(f&quot;Selected Py-g agent based on indicator: '{indicator}'&quot;)
+                return &quot;pyg&quot;
+
+    # Additional checks...
+
+    # Default to LangChain for simpler queries
+    logger.info(&quot;Selected LangChain agent (default)&quot;)
+    return &quot;langchain&quot;
+</code></pre>
+<h3 id="16-powershell-analysis-tool-implementation">16. PowerShell Analysis Tool Implementation</h3>
+<pre><code class="language-python">class PowerShellAnalysisTool(BaseTool):
+    &quot;&quot;&quot;Tool for analyzing PowerShell scripts.&quot;&quot;&quot;
+
+    name = &quot;powershell_analysis&quot;
+    description = &quot;Analyze a PowerShell script to identify its purpose, security risks, and code quality&quot;
+
+    def _run(self, script_content: str, run_manager: Optional[CallbackManagerForToolRun] = None) -&gt; str:
+        &quot;&quot;&quot;
+        Analyze a PowerShell script.
+
+        Args:
+            script_content: The content of the PowerShell script to analyze
+
+        Returns:
+            A detailed analysis of the script
+        &quot;&quot;&quot;
+        try:
+            # Use the ScriptAnalyzer to analyze the script
+            script_analyzer = ScriptAnalyzer(use_cache=True)
+            analysis = script_analyzer.analyze_script_content(script_content)
+
+            # Format the analysis as a structured response
+            response = {
+                &quot;purpose&quot;: analysis.get(&quot;purpose&quot;, &quot;Unknown purpose&quot;),
+                &quot;security_score&quot;: analysis.get(&quot;security_score&quot;, 5.0),
+                &quot;code_quality_score&quot;: analysis.get(&quot;code_quality_score&quot;, 5.0),
+                &quot;risk_score&quot;: analysis.get(&quot;risk_score&quot;, 5.0),
+                &quot;security_analysis&quot;: analysis.get(&quot;security_analysis&quot;, &quot;No security analysis available&quot;),
+                &quot;optimization&quot;: analysis.get(&quot;optimization&quot;, []),
+                &quot;parameters&quot;: analysis.get(&quot;parameters&quot;, {})
+            }
+
+            return json.dumps(response, indent=2)
+        except Exception as e:
+            logger.error(f&quot;Error analyzing PowerShell script: {e}&quot;)
+            return f&quot;Error analyzing script: {str(e)}&quot;
+</code></pre>
+<h3 id="17-security-analysis-tool-implementation">17. Security Analysis Tool Implementation</h3>
+<pre><code class="language-python">class SecurityAnalysisTool(BaseTool):
+    &quot;&quot;&quot;Tool for analyzing security aspects of PowerShell scripts.&quot;&quot;&quot;
+
+    name = &quot;security_analysis&quot;
+    description = &quot;Analyze a PowerShell script for security vulnerabilities, risks, and best practices&quot;
+
+    def _run(self, script_content: str, run_manager: Optional[CallbackManagerForToolRun] = None) -&gt; str:
+        &quot;&quot;&quot;
+        Analyze a PowerShell script for security issues.
+
+        Args:
+            script_content: The content of the PowerShell script to analyze
+
+        Returns:
+            A detailed security analysis of the script
+        &quot;&quot;&quot;
+        script_lower = script_content.lower()
+        security_issues = []
+
+        # Check for common security issues
+        if &quot;invoke-expression&quot; in script_lower or &quot;iex &quot; in script_lower:
+            security_issues.append(&quot;Uses Invoke-Expression which can lead to code injection vulnerabilities if input is not properly sanitized&quot;)
+
+        if &quot;convertto-securestring&quot; in script_lower and &quot;key&quot; in script_lower and &quot;plaintext&quot; in script_lower:
+            security_issues.append(&quot;Uses ConvertTo-SecureString with plaintext key, which is not secure for production environments&quot;)
+
+        # Additional checks...
+
+        # Generate security score
+        base_score = 5.0
+        score_adjustment = min(len(security_issues) * -0.5, -4.0) + min(len(best_practices) * 0.3, 2.0)
+        security_score = max(1.0, min(10.0, base_score + score_adjustment))
+
+        # Format the response
+        response = {
+            &quot;security_score&quot;: round(security_score, 1),
+            &quot;security_issues&quot;: security_issues,
+            &quot;security_best_practices&quot;: best_practices,
+            &quot;recommendations&quot;: [
+                &quot;Use parameter validation attributes to restrict input values&quot;,
+                &quot;Implement proper error handling with try/catch blocks&quot;,
+                &quot;Avoid using Invoke-Expression with user input&quot;,
+                &quot;Use ShouldProcess for functions that make changes&quot;,
+                &quot;Implement logging for security-relevant actions&quot;
+            ]
+        }
+
+        return json.dumps(response, indent=2)
+</code></pre>
+<h3 id="18-script-categorization-tool-implementation">18. Script Categorization Tool Implementation</h3>
+<pre><code class="language-python">class ScriptCategorizationTool(BaseTool):
+    &quot;&quot;&quot;Tool for categorizing PowerShell scripts.&quot;&quot;&quot;
+
+    name = &quot;script_categorization&quot;
+    description = &quot;Categorize a PowerShell script into predefined categories based on its purpose and functionality&quot;
+
+    def _run(self, script_content: str, run_manager: Optional[CallbackManagerForToolRun] = None) -&gt; str:
+        &quot;&quot;&quot;
+        Categorize a PowerShell script.
+
+        Args:
+            script_content: The content of the PowerShell script to categorize
+
+        Returns:
+            The category of the script with explanation
+        &quot;&quot;&quot;
+        # Define categories
+        categories = {
+            &quot;System Administration&quot;: &quot;Scripts for managing Windows/Linux systems, including system configuration, maintenance, and monitoring.&quot;,
+            &quot;Security &amp; Compliance&quot;: &quot;Scripts for security auditing, hardening, compliance checks, vulnerability scanning, and implementing security best practices.&quot;,
+            # Additional categories...
+        }
+
+        script_lower = script_content.lower()
+
+        # Categorization logic
+        if &quot;get-process&quot; in script_lower or &quot;cpu&quot; in script_lower or &quot;memory&quot; in script_lower:
+            category = &quot;Monitoring &amp; Diagnostics&quot;
+        elif &quot;new-aduser&quot; in script_lower or &quot;get-aduser&quot; in script_lower:
+            category = &quot;Active Directory&quot;
+        # Additional categorization rules...
+
+        return f&quot;&quot;&quot;
+        Category: {category}
+
+        Explanation: This script appears to be a {category.lower()} script based on its content and functionality. 
+
+        {categories[category]}
+        &quot;&quot;&quot;
+</code></pre>
+<h3 id="19-asynchronous-processing-support">19. Asynchronous Processing Support</h3>
+<pre><code class="language-python">async def process_message(self, messages: List[Dict[str, str]]) -&gt; str:
+    &quot;&quot;&quot;
+    Process a message using the LangGraph agent.
+
+    Args:
+        messages: List of message dictionaries with 'role' and 'content' keys
+
+    Returns:
+        The agent's response as a string
+    &quot;&quot;&quot;
+    try:
+        # Initialize the state
+        initial_state: AgentState = {
+            &quot;messages&quot;: messages,
+            &quot;tools&quot;: [{&quot;name&quot;: tool.name, &quot;description&quot;: tool.description} for tool in self.tools],
+            &quot;tool_results&quot;: [],
+            &quot;current_plan&quot;: None,
+            &quot;working_memory&quot;: {},
+            &quot;errors&quot;: [],
+            &quot;final_response&quot;: None
+        }
+
+        # Run the graph
+        for event in self.graph.stream(initial_state, checkpointer=self.memory_saver):
+            if &quot;final_response&quot; in event:
+                return event[&quot;final_response&quot;]
+
+        # If we get here, something went wrong
+        return &quot;I apologize, but I couldn't process your request. Please try again.&quot;
+
+    except Exception as e:
+        logger.error(f&quot;Error processing message with LangGraph agent: {e}&quot;)
+        return f&quot;I encountered an error while processing your request: {str(e)}&quot;
+</code></pre>
+<h3 id="20-state-persistence-and-recovery">20. State Persistence and Recovery</h3>
+<pre><code class="language-python"># In LangGraphAgent.__init__
+self.memory_saver = MemorySaver()
+
+# In process_message method
+for event in self.graph.stream(initial_state, checkpointer=self.memory_saver):
+    if &quot;final_response&quot; in event:
+        return event[&quot;final_response&quot;]
+</code></pre>
+<h3 id="21-error-handling-implementation">21. Error Handling Implementation</h3>
+<pre><code class="language-python">def _create_error_handler_node(self) -&gt; Callable:
+    &quot;&quot;&quot;Create the error handler node for the graph.&quot;&quot;&quot;
+    def error_handler(state: AgentState, error: Exception) -&gt; Dict[str, Any]:
+        &quot;&quot;&quot;Handle errors that occur during tool execution.&quot;&quot;&quot;
+        # Log the error
+        logger.error(f&quot;Error during tool execution: {error}&quot;)
+
+        # Add the error to the state
+        errors = state.get(&quot;errors&quot;, [])
+        errors.append({&quot;error&quot;: str(error), &quot;timestamp&quot;: time.time()})
+
+        # Add a message about the error
+        messages = state.get(&quot;messages&quot;, [])
+        messages.append({&quot;role&quot;: &quot;system&quot;, &quot;content&quot;: f&quot;Error: {str(error)}. Please revise your plan and try again.&quot;})
+
+        # Return the updated state
+        return {&quot;errors&quot;: errors, &quot;messages&quot;: messages}
+
+    return error_handler
+</code></pre>
+<h3 id="22-agent-factory-update-for-new-agent-types">22. Agent Factory Update for New Agent Types</h3>
+<pre><code class="language-python"># Import new agent implementations
+try:
+    from .langgraph_agent import LangGraphAgent
+    LANGGRAPH_AVAILABLE = True
+except ImportError:
+    LANGGRAPH_AVAILABLE = False
+    logging.warning(&quot;LangGraph agent not available. Install with 'pip install langgraph'&quot;)
+
+try:
+    from .py_g_agent import PyGAgent
+    PYG_AVAILABLE = True
+except ImportError:
+    PYG_AVAILABLE = False
+    logging.warning(&quot;Py-g agent not available. Install with 'pip install pyg'&quot;)
+</code></pre>
+<h3 id="23-script-analysis-with-langgraph">23. Script Analysis with LangGraph</h3>
+<pre><code class="language-python">async def analyze_script(self, script_id: str, content: str, 
+                        include_command_details: bool = False,
+                        fetch_ms_docs: bool = False) -&gt; Dict[str, Any]:
+    &quot;&quot;&quot;
+    Analyze a PowerShell script using the LangGraph agent.
+
+    Args:
+        script_id: The ID of the script to analyze
+        content: The content of the script
+        include_command_details: Whether to include detailed command analysis
+        fetch_ms_docs: Whether to fetch Microsoft documentation references
+
+    Returns:
+        A dictionary containing the analysis results
+    &quot;&quot;&quot;
+    logger.info(f&quot;Starting LangGraph analysis for script {script_id}&quot;)
+
+    # Create a message for script analysis
+    messages = [
+        {&quot;role&quot;: &quot;system&quot;, &quot;content&quot;: &quot;You are an expert PowerShell script analyzer. Your task is to analyze the provided PowerShell script and extract key information about it.&quot;},
+        {&quot;role&quot;: &quot;user&quot;, &quot;content&quot;: f&quot;&quot;&quot;
+        Analyze the following PowerShell script and provide a detailed report with the following sections:
+
+        1. PURPOSE: Summarize what this script is designed to do in 1-2 sentences
+        2. SECURITY_ANALYSIS: Identify potential security vulnerabilities or risks
+        3. CODE_QUALITY: Evaluate code quality and best practices
+        4. PARAMETERS: Identify and document all parameters, including types and purposes
+        5. CATEGORY: Classify this script into an appropriate category
+        6. OPTIMIZATION: Provide specific suggestions for improving the script
+        7. RISK_ASSESSMENT: Evaluate the potential risk of executing this script
+
+        Script content:
+        ```powershell
+        {content}
+        ```
+        &quot;&quot;&quot;}
+    ]
+
+    # Initialize the state and run the graph
+    # ...
+
+    # Parse the final response to extract structured information
+    # ...
+
+    return analysis_results
+</code></pre>
+<h3 id="24-microsoft-documentation-reference-tool">24. Microsoft Documentation Reference Tool</h3>
+<pre><code class="language-python">def _fetch_ms_docs_references(self, content: str, state: Dict[str, Any]) -&gt; List[Dict[str, str]]:
+    &quot;&quot;&quot;Fetch Microsoft documentation references for PowerShell commands.&quot;&quot;&quot;
+    # Check if MS Docs references are in working memory
+    if &quot;working_memory&quot; in state and &quot;ms_docs_references&quot; in state[&quot;working_memory&quot;]:
+        return state[&quot;working_memory&quot;][&quot;ms_docs_references&quot;]
+
+    # Extract commands from the script
+    import re
+    command_pattern = r'((?:Get|Set|New|Remove|Add|Start|Stop|Import|Export|Install|Uninstall|Invoke|Test|Update|Write|Read|Format|Out|Select|Where|ForEach|Sort|Group|Measure|Compare|Find|Search|Convert|Join|Split|Copy|Move|Rename|Clear|Show|Hide|Enable|Disable|Suspend|Resume|Wait|Watch|Use|Enter|Exit|Push|Pop|Step|Continue|Break|Return|Throw|Try|Catch|Finally|Switch|If|Else|ElseIf|For|While|Do|Until|Begin|Process|End|Param|Function|Filter|Workflow|Configuration|Class|Enum|Interface|Namespace|Module|Assembly|Type|Property|Method|Constructor|Field|Event|Attribute|Variable|Constant|Parameter|Argument|Value|Object|Array|Collection|List|Dictionary|HashTable|Stack|Queue|Set|Map|Tree|Graph|Node|Edge|Vertex|Point|Line|Rectangle|Circle|Ellipse|Polygon|Path|Shape|Color|Font|Brush|Pen|Image|Bitmap|Icon|Cursor|Window|Form|Control|Button|TextBox|Label|CheckBox|RadioButton|ComboBox|ListBox|TreeView|ListView|DataGrid|DataTable|DataSet|DataRow|DataColumn|DataView|DataReader|DataAdapter|Connection|Command|Transaction|Parameter|Reader|Writer|Stream|File|Directory|Path|Uri|Url|WebClient|WebRequest|WebResponse|HttpClient|HttpRequest|HttpResponse|Socket|TcpClient|TcpListener|UdpClient|NetworkStream|IPAddress|IPEndPoint|DNS|Ping|TraceRoute|Telnet|SSH|FTP|SMTP|POP3|IMAP|LDAP|WMI|CIM|COM|DCOM|RPC|XML|JSON|CSV|HTML|CSS|JavaScript|PowerShell|Bash|CMD|SQL|RegEx|DateTime|TimeSpan|Timer|Stopwatch|Thread|Task|Process|Service|EventLog|Registry|Certificate|Credential|Identity|Principal|Role|Permission|Security|Encryption|Decryption|Hash|Signature|Key|Password|Token|Session|Cookie|Cache|Log|Trace|Debug|Info|Warn|Error|Fatal|Exception|Try|Catch|Finally|Throw|Assert|Test|Mock|Stub|Spy|Verify)-[A-Za-z]+)\b'
+
+    commands_found = re.findall(command_pattern, content)
+    unique_commands = list(set(commands_found))
+
+    # Create MS Docs references for each command
+    ms_docs_references = []
+    for cmd in unique_commands:
+        # Create a reference with a search URL
+        search_url = f&quot;https://learn.microsoft.com/en-us/search/?terms={cmd}&amp;scope=PowerShell&quot;
+        ms_docs_references.append({
+            &quot;title&quot;: f&quot;{cmd} Documentation&quot;,
+            &quot;url&quot;: search_url,
+            &quot;description&quot;: f&quot;Microsoft documentation for {cmd} PowerShell command&quot;
+        })
+
+    return ms_docs_references
+</code></pre>
+<h3 id="25-py-g-task-planning-implementation">25. Py-g Task Planning Implementation</h3>
+<pre><code class="language-python">async def _analyze_script(self, content: str) -&gt; Dict[str, Any]:
+    &quot;&quot;&quot;
+    Analyze a PowerShell script.
+
+    Args:
+        content: The content of the PowerShell script
+
+    Returns:
+        Analysis results
+    &quot;&quot;&quot;
+    try:
+        # Use the script analyzer to analyze the script
+        analysis = self.script_analyzer.analyze_script_content(content)
+
+        return {
+            &quot;section&quot;: &quot;Script Analysis&quot;,
+            &quot;content&quot;: f&quot;Purpose: {analysis.get('purpose', 'Unknown purpose')}\n\n&quot;
+                      f&quot;Code Quality Score: {analysis.get('code_quality_score', 5.0)}/10&quot;
+        }
+    except Exception as e:
+        logger.error(f&quot;Error analyzing script: {e}&quot;)
+        return {
+            &quot;section&quot;: &quot;Script Analysis&quot;,
+            &quot;content&quot;: f&quot;Error analyzing script: {str(e)}&quot;
+        }
+</code></pre>
+<h3 id="26-py-g-response-generation">26. Py-g Response Generation</h3>
+<pre><code class="language-python">def _generate_response(self, results: List[Dict[str, Any]]) -&gt; str:
+    &quot;&quot;&quot;
+    Generate a response based on task results.
+
+    Args:
+        results: List of task results
+
+    Returns:
+        The generated response
+    &quot;&quot;&quot;
+    # Combine results into a coherent response
+    if not results:
+        return &quot;I couldn't analyze your request. Please provide a PowerShell script or a specific question.&quot;
+
+    # Start with a header
+    response_parts = [&quot;Here's my analysis:&quot;]
+
+    # Add each result section
+    for result in results:
+        if &quot;section&quot; in result and &quot;content&quot; in result:
+            response_parts.append(f&quot;\n## {result['section']}&quot;)
+
+            if isinstance(result[&quot;content&quot;], list):
+                # For lists (like suggestions or issues)
+                for item in result[&quot;content&quot;]:
+                    response_parts.append(f&quot;- {item}&quot;)
+            else:
+                # For text content
+                response_parts.append(result[&quot;content&quot;])
+
+    # Join all parts
+    return &quot;\n&quot;.join(response_parts)
+</code></pre>
+<h3 id="27-testing-framework-implementation">27. Testing Framework Implementation</h3>
+<pre><code class="language-python">async def test_langgraph_agent():
+    &quot;&quot;&quot;Test the LangGraph agent.&quot;&quot;&quot;
+    print(&quot;Testing LangGraph agent...&quot;)
+
+    # Get the API key from the environment
+    api_key = os.environ.get(&quot;OPENAI_API_KEY&quot;)
+    if not api_key:
+        print(&quot;Error: OPENAI_API_KEY environment variable not set&quot;)
+        return
+
+    # Get the LangGraph agent
+    agent = agent_factory.get_agent(&quot;langgraph&quot;, api_key)
+
+    # Analyze the sample script
+    print(&quot;Analyzing sample PowerShell script...&quot;)
+    analysis = await agent.analyze_script(
+        &quot;test-script&quot;, 
+        SAMPLE_SCRIPT,
+        include_command_details=True,
+        fetch_ms_docs=True
+    )
+
+    # Print the analysis results
+    print(&quot;\nAnalysis Results:&quot;)
+    print(f&quot;Purpose: {analysis.get('purpose', 'Unknown')}&quot;)
+    print(f&quot;Security Score: {analysis.get('security_score', 0)}/10&quot;)
+    print(f&quot;Code Quality Score: {analysis.get('code_quality_score', 0)}/10&quot;)
+    print(f&quot;Risk Score: {analysis.get('risk_score', 0)}/10&quot;)
+    print(f&quot;Category: {analysis.get('category', 'Unknown')}&quot;)
+
+    # Additional tests...
+</code></pre>
+<h3 id="28-py-g-agent-testing">28. Py-g Agent Testing</h3>
+<pre><code class="language-python">async def test_pyg_agent():
+    &quot;&quot;&quot;Test the Py-g agent.&quot;&quot;&quot;
+    print(&quot;\nTesting Py-g agent...&quot;)
+
+    # Get the API key from the environment
+    api_key = os.environ.get(&quot;OPENAI_API_KEY&quot;)
+    if not api_key:
+        print(&quot;Error: OPENAI_API_KEY environment variable not set&quot;)
+        return
+
+    # Get the Py-g agent
+    agent = agent_factory.get_agent(&quot;pyg&quot;, api_key)
+
+    # Analyze the sample script
+    print(&quot;Analyzing sample PowerShell script...&quot;)
+    analysis = await agent.analyze_script(
+        &quot;test-script&quot;, 
+        SAMPLE_SCRIPT,
+        include_command_details=True,
+        fetch_ms_docs=True
+    )
+
+    # Print the analysis results
+    print(&quot;\nAnalysis Results:&quot;)
+    print(f&quot;Purpose: {analysis.get('purpose', 'Unknown')}&quot;)
+    print(f&quot;Security Score: {analysis.get('security_score', 0)}/10&quot;)
+    print(f&quot;Code Quality Score: {analysis.get('code_quality_score', 0)}/10&quot;)
+    print(f&quot;Risk Score: {analysis.get('risk_score', 0)}/10&quot;)
+    print(f&quot;Category: {analysis.get('category', 'Unknown')}&quot;)
+
+    # Test declarative workflow capabilities
+    print(&quot;\nTesting declarative workflow capabilities...&quot;)
+    messages = [
+        {&quot;role&quot;: &quot;user&quot;, &quot;content&quot;: &quot;Can you analyze this deployment script and suggest improvements for security and error handling?&quot;}
+    ]
+
+    response = await agent.process_message(messages)
+    print(f&quot;\nWorkflow Response:\n{response}&quot;)
+</code></pre>
+<h3 id="29-dependency-management">29. Dependency Management</h3>
+<pre><code class="language-python"># requirements.txt
+fastapi==0.98.0
+uvicorn==0.22.0
+openai==0.27.8
+numpy&gt;=1.26.0
+pandas&gt;=2.0.2
+scikit-learn&gt;=1.2.2
+pgvector==0.2.3
+psycopg2-binary==2.9.6
+pydantic==1.10.9
+python-dotenv==1.0.0
+httpx==0.24.1
+tenacity==8.2.2
+tiktoken==0.4.0
+redis==5.0.1
+diskcache==5.6.3
+
+# LangChain and related dependencies
+langchain==0.0.267
+langchain-openai==0.0.2
+langchain-community==0.0.10
+langchain-core==0.1.1
+
+# LangGraph and Py-g for agentic capabilities
+langgraph&gt;=0.0.20
+pyg&gt;=0.3.1
+networkx&gt;=3.1
+
+# Additional dependencies...
+</code></pre>
+<h3 id="30-database-schema-updates">30. Database Schema Updates</h3>
+<pre><code class="language-sql">-- Add support for storing agent state
+CREATE TABLE IF NOT EXISTS agent_state (
+    id SERIAL PRIMARY KEY,
+    agent_id VARCHAR(255) NOT NULL,
+    state JSONB NOT NULL,
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
+);
+
+-- Add support for storing conversation history
+CREATE TABLE IF NOT EXISTS conversation_history (
+    id SERIAL PRIMARY KEY,
+    conversation_id VARCHAR(255) NOT NULL,
+    messages JSONB NOT NULL,
+    agent_type VARCHAR(50) NOT NULL,
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
+);
+
+-- Add support for storing tool execution results
+CREATE TABLE IF NOT EXISTS tool_execution_results (
+    id SERIAL PRIMARY KEY,
+    tool_name VARCHAR(255) NOT NULL,
+    input JSONB NOT NULL,
+    output JSONB NOT NULL,
+    execution_time FLOAT NOT NULL,
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
+);
+</code></pre>
+<h2 id="summary-of-improvements">Summary of Improvements</h2>
+<p>The application has been significantly enhanced with advanced agentic capabilities through the integration of LangGraph and Py-g frameworks. These enhancements provide:</p>
+<ol>
+<li>More sophisticated script analysis with explicit state management</li>
+<li>Better handling of complex, multi-step tasks</li>
+<li>Improved error recovery and resilience</li>
+<li>Enhanced planning and reasoning capabilities</li>
+<li>More structured tool use for specialized tasks</li>
+<li>Better context management for multi-turn conversations</li>
+<li>More detailed security analysis of PowerShell scripts</li>
+<li>Improved categorization and documentation of scripts</li>
+<li>More efficient state persistence and recovery</li>
+<li>Better integration with external APIs and services</li>
+<li>Comprehensive testing framework for agent capabilities</li>
+<li>Detailed documentation and examples for developers</li>
+<li>Enhanced database schema for storing agent state and conversation history</li>
+<li>Improved performance through caching and optimization</li>
+<li>Better user experience through streaming responses and interactive examples</li>
+<li>Enhanced security through better error handling and validation</li>
+<li>More flexible agent selection based on task requirements</li>
+<li>Better debugging through state visualization and logging</li>
+<li>Improved deployment and scaling capabilities</li>
+<li>Enhanced monitoring and analytics for agent performance</li>
+</ol>
+<p>These improvements make the application more capable, reliable, and user-friendly, while also providing a foundation for future enhancements and extensions.</p>
+    <div class="footer">Generated 2026-01-13 06:26 UTC</div>
+  </div>
+</body>
+</html>

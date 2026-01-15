@@ -12,8 +12,7 @@ import os
 import json
 import time
 import logging
-import asyncio
-from typing import Dict, List, Any, Optional, Callable, TypedDict, Sequence, Annotated
+from typing import Dict, List, Any, Optional, Callable, TypedDict, Annotated
 from operator import add
 
 # LangGraph imports - Updated for LangGraph 1.0 stable (January 2026)
@@ -27,11 +26,17 @@ from langchain_core.messages import SystemMessage, HumanMessage, AIMessage, Base
 from langchain_core.tools import BaseTool
 from langchain_openai import ChatOpenAI
 from langchain_core.callbacks import CallbackManagerForToolRun
-from pydantic import BaseModel, Field
+from langchain.agents import create_agent
 
-# Local imports
-from .base_agent import BaseAgent
-from analysis.script_analyzer import ScriptAnalyzer
+# Compatibility wrapper for deprecated create_openai_tools_agent
+def create_openai_tools_agent(llm, tools, prompt):
+    """Legacy wrapper for create_openai_tools_agent - now uses create_agent from LangChain 1.x"""
+    system_prompt = prompt.messages[0].content if prompt.messages else None
+    return create_agent(model=llm, tools=tools, system_prompt=system_prompt)
+
+# Local imports (after wrapper function) - noqa: E402
+from .base_agent import BaseAgent  # noqa: E402
+from analysis.script_analyzer import ScriptAnalyzer  # noqa: E402
 
 # Configure logging
 logging.basicConfig(
@@ -487,7 +492,7 @@ If you have all the information you need to respond to the user, provide a final
                                 response_parts.append("\n## Documentation References")
                                 for ref in result_json["references"][:5]:  # Limit to 5 references
                                     response_parts.append(f"- [{ref['command']}]({ref['url']})")
-                        except:
+                        except (json.JSONDecodeError, KeyError, TypeError):
                             # If not JSON, just add the raw result
                             response_parts.append(f"\n{result}")
                     

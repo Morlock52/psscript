@@ -11,7 +11,7 @@ import logger from '../utils/logger';
 // It should be copied into the actual ScriptController.ts file
 export class ScriptControllerFix {
   // Delete a script with improved error handling and transaction management
-  async deleteScript(req: Request, res: Response, next: NextFunction) {
+  async deleteScript(req: Request, res: Response, _next: NextFunction) {
     let transaction;
     
     try {

@@ -1,10 +1,16 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { chatService } from '../services/api';
-import { useTheme } from '../hooks/useTheme';
 import { useAuth } from '../hooks/useAuth';
 import Layout from '../components/Layout';
 import ReactMarkdown from 'react-markdown';
+
+// Reusable style constants for theme-aware styling
+const sidebarStyles = "rounded-lg shadow-[var(--shadow-md)] p-4 bg-[var(--color-bg-elevated)] border border-[var(--color-border-default)]";
+const searchInputStyles = "w-full p-2 rounded bg-[var(--color-bg-primary)] border border-[var(--color-border-default)] text-[var(--color-text-primary)] focus:ring-2 focus:ring-[var(--color-primary)] focus:outline-none mb-3 placeholder:text-[var(--color-text-tertiary)]";
+const categorySelectStyles = "text-xs px-2 py-1 rounded bg-[var(--color-bg-primary)] border border-[var(--color-border-default)] text-[var(--color-text-primary)] focus:ring-2 focus:ring-[var(--color-primary)] focus:outline-none";
+const detailPanelStyles = "rounded-lg shadow-[var(--shadow-md)] bg-[var(--color-bg-elevated)] border border-[var(--color-border-default)]";
+const headerBorderStyles = "p-4 flex justify-between items-center border-b border-[var(--color-border-default)]";
 
 interface ChatSession {
   id: string;
@@ -18,17 +24,16 @@ interface ChatSession {
 }
 
 const ChatHistory: React.FC = () => {
-  const { theme } = useTheme();
-  const { isAuthenticated, user } = useAuth();
+  const { isAuthenticated, user: _user } = useAuth();
   const navigate = useNavigate();
-  
+
   const [chatSessions, setChatSessions] = useState<ChatSession[]>([]);
   const [categories, setCategories] = useState<string[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [selectedCategory, setSelectedCategory] = useState<string>('all');
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedSession, setSelectedSession] = useState<ChatSession | null>(null);
-  
+
   // Load chat history and categories
   useEffect(() => {
     if (!isAuthenticated) {
@@ -41,7 +46,7 @@ const ChatHistory: React.FC = () => {
       }
       return;
     }
-    
+
     const loadData = async () => {
       setIsLoading(true);
       try {
@@ -52,7 +57,7 @@ const ChatHistory: React.FC = () => {
           timestamp: new Date(session.timestamp || Date.now()).toLocaleString(),
         }));
         setChatSessions(sessions);
-        
+
         // Get categories
         const categoryList = await chatService.getChatCategories();
         setCategories(['all', 'uncategorized', ...categoryList]);
@@ -62,10 +67,10 @@ const ChatHistory: React.FC = () => {
         setIsLoading(false);
       }
     };
-    
+
     loadData();
   }, [isAuthenticated, navigate]);
-  
+
   // Filter chat sessions by category and search query
   const filteredSessions = chatSessions.filter(session => {
     // Filter by category
@@ -76,27 +81,27 @@ const ChatHistory: React.FC = () => {
         return false;
       }
     }
-    
+
     // Filter by search query
     if (searchQuery.trim()) {
       const query = searchQuery.toLowerCase();
-      const hasMatch = session.messages.some(msg => 
+      const hasMatch = session.messages.some(msg =>
         msg.content.toLowerCase().includes(query)
       );
       return hasMatch;
     }
-    
+
     return true;
   });
-  
+
   // Set category for a chat session
   const setChatCategory = async (sessionId: string, category: string) => {
     try {
       await chatService.setChatCategory(sessionId, category);
-      setChatSessions(prev => 
-        prev.map(session => 
-          session.id === sessionId 
-            ? { ...session, category } 
+      setChatSessions(prev =>
+        prev.map(session =>
+          session.id === sessionId
+            ? { ...session, category }
             : session
         )
       );
@@ -104,7 +109,7 @@ const ChatHistory: React.FC = () => {
       console.error('Error setting chat category:', error);
     }
   };
-  
+
   // Delete chat session
   const deleteSession = async (sessionId: string) => {
     if (window.confirm('Are you sure you want to delete this chat session?')) {
@@ -116,7 +121,7 @@ const ChatHistory: React.FC = () => {
           console.error('deleteChatSession method not available');
           throw new Error('Delete method not available');
         }
-        
+
         // Update UI regardless of whether the deletion was successful
         setChatSessions(prev => prev.filter(session => session.id !== sessionId));
         if (selectedSession?.id === sessionId) {
@@ -125,7 +130,7 @@ const ChatHistory: React.FC = () => {
       } catch (error) {
         console.error('Error deleting chat session:', error);
         alert('Failed to delete chat session. It will be removed from the view but may still exist on the server.');
-        
+
         // Still update UI even if the API call failed
         setChatSessions(prev => prev.filter(session => session.id !== sessionId));
         if (selectedSession?.id === sessionId) {
@@ -134,7 +139,7 @@ const ChatHistory: React.FC = () => {
       }
     }
   };
-  
+
   // Continue chat from a previous session
   const continueChat = (session: ChatSession) => {
     try {
@@ -157,33 +162,29 @@ const ChatHistory: React.FC = () => {
       try {
         localStorage.removeItem('psscript_chat_history');
         navigate('/chat');
-      } catch (e) {
+      } catch (_e) {
         window.location.href = '/chat';
       }
     }
   };
-  
+
   return (
     <Layout>
-      <div className={`min-h-screen ${theme === 'dark' ? 'bg-gray-900 text-gray-100' : 'bg-gray-50 text-gray-900'}`}>
+      <div className="min-h-screen bg-[var(--color-bg-secondary)] text-[var(--color-text-primary)]">
         <div className="container mx-auto py-6 px-4">
           <div className="flex justify-between items-center mb-6">
             <h1 className="text-2xl font-bold">Chat History</h1>
             <button
               onClick={() => navigate('/chat')}
-              className={`px-4 py-2 rounded font-medium ${
-                theme === 'dark'
-                  ? 'bg-blue-600 hover:bg-blue-500'
-                  : 'bg-blue-600 text-white hover:bg-blue-500'
-              }`}
+              className="px-4 py-2 rounded font-medium bg-[var(--color-primary)] hover:bg-[var(--color-primary-dark)] text-white"
             >
               New Chat
             </button>
           </div>
-          
+
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
             {/* Sidebar with filters and list */}
-            <div className={`lg:col-span-1 ${theme === 'dark' ? 'bg-gray-800' : 'bg-white'} rounded-lg shadow p-4`}>
+            <div className={`lg:col-span-1 ${sidebarStyles}`}>
               {/* Search and filters */}
               <div className="mb-4">
                 <input
@@ -191,26 +192,18 @@ const ChatHistory: React.FC = () => {
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
                   placeholder="Search chat history..."
-                  className={`w-full p-2 rounded ${
-                    theme === 'dark' 
-                      ? 'bg-gray-700 border-gray-600' 
-                      : 'bg-gray-100 border-gray-300'
-                  } border focus:ring-2 focus:ring-blue-500 focus:outline-none mb-3`}
+                  className={searchInputStyles}
                 />
-                
+
                 <div className="flex flex-wrap gap-2 mb-3">
                   {categories.map(category => (
                     <button
                       key={category}
                       onClick={() => setSelectedCategory(category)}
-                      className={`px-3 py-1 text-sm rounded-full ${
+                      className={`px-3 py-1 text-sm rounded-full transition-colors ${
                         selectedCategory === category
-                          ? theme === 'dark' 
-                            ? 'bg-blue-600 text-white' 
-                            : 'bg-blue-500 text-white'
-                          : theme === 'dark'
-                            ? 'bg-gray-700 hover:bg-gray-600'
-                            : 'bg-gray-200 hover:bg-gray-300'
+                          ? 'bg-[var(--color-primary)] text-white'
+                          : 'bg-[var(--color-bg-tertiary)] text-[var(--color-text-secondary)] hover:bg-[var(--color-bg-primary)]'
                       }`}
                     >
                       {category.charAt(0).toUpperCase() + category.slice(1)}
@@ -218,16 +211,16 @@ const ChatHistory: React.FC = () => {
                   ))}
                 </div>
               </div>
-              
+
               {/* Chat sessions list */}
               <div className="max-h-[calc(100vh-300px)] overflow-y-auto">
                 {isLoading ? (
                   <div className="py-10 text-center">
                     <div className="inline-block">
                       <div className="flex space-x-2">
-                        <div className="w-2 h-2 bg-blue-500 rounded-full animate-bounce"></div>
-                        <div className="w-2 h-2 bg-blue-500 rounded-full animate-bounce delay-150"></div>
-                        <div className="w-2 h-2 bg-blue-500 rounded-full animate-bounce delay-300"></div>
+                        <div className="w-2 h-2 bg-[var(--color-primary)] rounded-full animate-bounce"></div>
+                        <div className="w-2 h-2 bg-[var(--color-primary)] rounded-full animate-bounce delay-150"></div>
+                        <div className="w-2 h-2 bg-[var(--color-primary)] rounded-full animate-bounce delay-300"></div>
                       </div>
                     </div>
                   </div>
@@ -236,56 +229,46 @@ const ChatHistory: React.FC = () => {
                     <div
                       key={session.id}
                       onClick={() => setSelectedSession(session)}
-                      className={`p-3 mb-2 rounded cursor-pointer ${
+                      className={`p-3 mb-2 rounded cursor-pointer border transition-colors ${
                         selectedSession?.id === session.id
-                          ? theme === 'dark' 
-                            ? 'bg-blue-800 border-blue-700' 
-                            : 'bg-blue-100 border-blue-200'
-                          : theme === 'dark'
-                            ? 'bg-gray-700 hover:bg-gray-600 border-gray-600'
-                            : 'bg-white hover:bg-gray-100 border-gray-200'
-                      } border`}
+                          ? 'bg-[var(--color-primary)]/10 border-[var(--color-primary)]/30'
+                          : 'bg-[var(--color-bg-tertiary)] hover:bg-[var(--color-bg-primary)] border-[var(--color-border-default)]'
+                      }`}
                     >
                       <div className="flex justify-between">
-                        <span className="text-xs opacity-70">{session.timestamp}</span>
+                        <span className="text-xs text-[var(--color-text-tertiary)]">{session.timestamp}</span>
                         {session.category && (
-                          <span className={`text-xs px-2 py-0.5 rounded-full ${
-                            theme === 'dark' ? 'bg-blue-900 text-blue-200' : 'bg-blue-100 text-blue-800'
-                          }`}>
+                          <span className="text-xs px-2 py-0.5 rounded-full bg-[var(--color-primary)]/10 text-[var(--color-primary)]">
                             {session.category}
                           </span>
                         )}
                       </div>
-                      <div className="mt-1 text-sm truncate">
+                      <div className="mt-1 text-sm truncate text-[var(--color-text-secondary)]">
                         {session.messages[0]?.content.substring(0, 100) || 'No content'}...
                       </div>
                     </div>
                   ))
                 ) : (
-                  <div className="py-10 text-center text-gray-500">
+                  <div className="py-10 text-center text-[var(--color-text-tertiary)]">
                     No chat sessions found
                   </div>
                 )}
               </div>
             </div>
-            
+
             {/* Chat session detail view */}
-            <div className={`lg:col-span-2 ${theme === 'dark' ? 'bg-gray-800' : 'bg-white'} rounded-lg shadow`}>
+            <div className={`lg:col-span-2 ${detailPanelStyles}`}>
               {selectedSession ? (
                 <div className="h-full flex flex-col">
                   {/* Session header */}
-                  <div className={`p-4 flex justify-between items-center border-b ${
-                    theme === 'dark' ? 'border-gray-700' : 'border-gray-200'
-                  }`}>
+                  <div className={headerBorderStyles}>
                     <div>
-                      <span className="text-sm opacity-70">Session: {selectedSession.timestamp}</span>
+                      <span className="text-sm text-[var(--color-text-tertiary)]">Session: {selectedSession.timestamp}</span>
                       <div className="flex gap-2 mt-2">
                         <select
                           value={selectedSession.category || ''}
                           onChange={(e) => setChatCategory(selectedSession.id, e.target.value)}
-                          className={`text-xs px-2 py-1 rounded ${
-                            theme === 'dark' ? 'bg-gray-700 border-gray-600' : 'bg-gray-100 border-gray-300'
-                          } border focus:ring-2 focus:ring-blue-500 focus:outline-none`}
+                          className={categorySelectStyles}
                         >
                           <option value="">Uncategorized</option>
                           {categories.filter(c => c !== 'all' && c !== 'uncategorized').map(category => (
@@ -297,27 +280,19 @@ const ChatHistory: React.FC = () => {
                     <div className="flex gap-2">
                       <button
                         onClick={() => continueChat(selectedSession)}
-                        className={`px-3 py-1 text-sm rounded ${
-                          theme === 'dark'
-                            ? 'bg-green-700 hover:bg-green-600 text-white'
-                            : 'bg-green-600 hover:bg-green-500 text-white'
-                        }`}
+                        className="px-3 py-1 text-sm rounded bg-green-600 hover:bg-green-500 text-white"
                       >
                         Continue Chat
                       </button>
                       <button
                         onClick={() => deleteSession(selectedSession.id)}
-                        className={`px-3 py-1 text-sm rounded ${
-                          theme === 'dark'
-                            ? 'bg-red-700 hover:bg-red-600 text-white'
-                            : 'bg-red-600 hover:bg-red-500 text-white'
-                        }`}
+                        className="px-3 py-1 text-sm rounded bg-red-600 hover:bg-red-500 text-white"
                       >
                         Delete
                       </button>
                     </div>
                   </div>
-                  
+
                   {/* Session content */}
                   <div className="flex-1 overflow-y-auto p-4">
                     {selectedSession.messages.map((msg, idx) => (
@@ -328,13 +303,11 @@ const ChatHistory: React.FC = () => {
                         <div
                           className={`p-3 rounded-lg ${
                             msg.role === 'user'
-                              ? 'bg-blue-600 text-white'
-                              : theme === 'dark'
-                                ? 'bg-gray-700 border border-gray-600'
-                                : 'bg-gray-100 shadow'
+                              ? 'bg-[var(--color-primary)] text-white'
+                              : 'bg-[var(--color-bg-tertiary)] border border-[var(--color-border-default)] text-[var(--color-text-primary)]'
                           }`}
                         >
-                          <ReactMarkdown className="prose prose-sm max-w-none">
+                          <ReactMarkdown className="prose prose-sm max-w-none dark:prose-invert">
                             {msg.content}
                           </ReactMarkdown>
                         </div>
@@ -343,7 +316,7 @@ const ChatHistory: React.FC = () => {
                   </div>
                 </div>
               ) : (
-                <div className="h-full flex items-center justify-center p-10 text-center text-gray-500">
+                <div className="h-full flex items-center justify-center p-10 text-center text-[var(--color-text-tertiary)]">
                   <div>
                     <svg
                       xmlns="http://www.w3.org/2000/svg"
@@ -359,7 +332,7 @@ const ChatHistory: React.FC = () => {
                         d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z"
                       />
                     </svg>
-                    <h3 className="text-lg font-medium mb-2">No Chat Session Selected</h3>
+                    <h3 className="text-lg font-medium mb-2 text-[var(--color-text-secondary)]">No Chat Session Selected</h3>
                     <p>Select a chat session from the list to view its contents</p>
                   </div>
                 </div>

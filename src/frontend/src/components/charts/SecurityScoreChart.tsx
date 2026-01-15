@@ -1,5 +1,6 @@
 import React, { useEffect, useRef } from 'react';
 import Chart from 'chart.js/auto';
+import { useTheme } from '../../contexts/ThemeContext';
 
 interface SecurityScore {
   score: number;
@@ -9,10 +10,10 @@ interface SecurityScore {
 
 interface SecurityScoreChartProps {
   data: SecurityScore[];
-  theme: 'light' | 'dark';
 }
 
-const SecurityScoreChart: React.FC<SecurityScoreChartProps> = ({ data, theme }) => {
+const SecurityScoreChart: React.FC<SecurityScoreChartProps> = ({ data }) => {
+  const { isDark } = useTheme();
   const chartRef = useRef<HTMLCanvasElement>(null);
   const chartInstance = useRef<Chart | null>(null);
   
@@ -62,7 +63,7 @@ const SecurityScoreChart: React.FC<SecurityScoreChartProps> = ({ data, theme }) 
               label: 'Scripts',
               data: values,
               backgroundColor: colors,
-              borderColor: theme === 'dark' ? '#1A202C' : '#FFFFFF',
+              borderColor: isDark ? '#1A202C' : '#FFFFFF',
               borderWidth: 1,
               borderRadius: 4,
               barPercentage: 0.6,
@@ -79,10 +80,10 @@ const SecurityScoreChart: React.FC<SecurityScoreChartProps> = ({ data, theme }) 
               display: false,
             },
             tooltip: {
-              backgroundColor: theme === 'dark' ? '#4A5568' : '#FFFFFF',
-              titleColor: theme === 'dark' ? '#FFFFFF' : '#1A202C',
-              bodyColor: theme === 'dark' ? '#E2E8F0' : '#4A5568',
-              borderColor: theme === 'dark' ? '#2D3748' : '#E2E8F0',
+              backgroundColor: isDark ? '#4A5568' : '#FFFFFF',
+              titleColor: isDark ? '#FFFFFF' : '#1A202C',
+              bodyColor: isDark ? '#E2E8F0' : '#4A5568',
+              borderColor: isDark ? '#2D3748' : '#E2E8F0',
               borderWidth: 1,
               padding: 10,
               displayColors: true,
@@ -99,10 +100,10 @@ const SecurityScoreChart: React.FC<SecurityScoreChartProps> = ({ data, theme }) 
             x: {
               beginAtZero: true,
               grid: {
-                color: theme === 'dark' ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.1)',
+                color: isDark ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.1)',
               },
               ticks: {
-                color: theme === 'dark' ? '#CBD5E0' : '#4A5568',
+                color: isDark ? '#CBD5E0' : '#4A5568',
                 font: {
                   size: 10,
                 },
@@ -114,7 +115,7 @@ const SecurityScoreChart: React.FC<SecurityScoreChartProps> = ({ data, theme }) 
                 display: false,
               },
               ticks: {
-                color: theme === 'dark' ? '#CBD5E0' : '#4A5568',
+                color: isDark ? '#CBD5E0' : '#4A5568',
                 font: {
                   size: 10,
                 },
@@ -131,7 +132,7 @@ const SecurityScoreChart: React.FC<SecurityScoreChartProps> = ({ data, theme }) 
         chartInstance.current.destroy();
       }
     };
-  }, [data, theme]);
+  }, [data, isDark]);
   
   // Calculate overall score
   const overallScore = calculateOverallScore(data);
@@ -143,7 +144,7 @@ const SecurityScoreChart: React.FC<SecurityScoreChartProps> = ({ data, theme }) 
     <div className="w-full h-full">
       {!data || data.length === 0 ? (
         <div className="flex items-center justify-center h-full">
-          <p className={`text-sm ${theme === 'dark' ? 'text-gray-400' : 'text-gray-500'}`}>
+          <p className={`text-sm ${isDark ? 'text-gray-400' : 'text-gray-500'}`}>
             No security data available
           </p>
         </div>

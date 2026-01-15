@@ -41,7 +41,7 @@ async function loginAsTestUser(page: any, testInfo?: any) {
 
 test.describe('AI Analytics API', () => {
   test('Summary endpoint should return analytics data', async ({ request }) => {
-    const response = await request.get('http://localhost:4000/api/analytics/ai/summary');
+    const response = await request.get('http://localhost:4005/api/analytics/ai/summary');
 
     // Accept 200 (success) or 401/403 (auth required)
     expect([200, 401, 403]).toContain(response.status());
@@ -62,7 +62,7 @@ test.describe('AI Analytics API', () => {
   });
 
   test('Budget alerts endpoint should return alert data', async ({ request }) => {
-    const response = await request.get('http://localhost:4000/api/analytics/ai/budget-alerts');
+    const response = await request.get('http://localhost:4005/api/analytics/ai/budget-alerts');
 
     expect([200, 401, 403]).toContain(response.status());
 
@@ -87,7 +87,7 @@ test.describe('AI Analytics API', () => {
   });
 
   test('Full analytics endpoint should return comprehensive data', async ({ request }) => {
-    const response = await request.get('http://localhost:4000/api/analytics/ai');
+    const response = await request.get('http://localhost:4005/api/analytics/ai');
 
     expect([200, 401, 403]).toContain(response.status());
 
@@ -103,7 +103,7 @@ test.describe('AI Analytics API', () => {
 
   test('Should track token usage for AI requests', async ({ request }) => {
     // Make an AI request (if endpoint exists)
-    const aiResponse = await request.post('http://localhost:8000/api/analyze', {
+    const aiResponse = await request.post('http://localhost:8001/api/analyze', {
       data: {
         content: 'Test script for analysis',
         type: 'security'
@@ -117,7 +117,7 @@ test.describe('AI Analytics API', () => {
     await new Promise(resolve => setTimeout(resolve, 2000));
 
     // Check if analytics were recorded
-    const analyticsResponse = await request.get('http://localhost:4000/api/analytics/ai/summary');
+    const analyticsResponse = await request.get('http://localhost:4005/api/analytics/ai/summary');
 
     if (analyticsResponse.status() === 200) {
       const data = await analyticsResponse.json();
@@ -235,7 +235,7 @@ test.describe('AI Analytics Dashboard', () => {
 test.describe('Budget Alert System', () => {
   test('Should display budget warnings when threshold exceeded', async ({ page, request }) => {
     // Check if budget alerts are active
-    const response = await request.get('http://localhost:4000/api/analytics/ai/budget-alerts');
+    const response = await request.get('http://localhost:4005/api/analytics/ai/budget-alerts');
 
     if (response.status() === 200) {
       const data = await response.json();
@@ -258,7 +258,7 @@ test.describe('Budget Alert System', () => {
   test('Should support configurable budget thresholds', async ({ request }) => {
     // Test with custom budget parameters
     const response = await request.get(
-      'http://localhost:4000/api/analytics/ai/budget-alerts?dailyBudget=50&monthlyBudget=1000'
+      'http://localhost:4005/api/analytics/ai/budget-alerts?dailyBudget=50&monthlyBudget=1000'
     );
 
     expect([200, 401, 403, 400]).toContain(response.status());

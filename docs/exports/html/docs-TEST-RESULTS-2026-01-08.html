@@ -1,0 +1,307 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <base href="file:///Users/morlock/fun/psscript/" />
+  <title>docs-TEST-RESULTS-2026-01-08</title>
+  <style>
+:root {
+  color-scheme: light;
+}
+body {
+  font-family: "Segoe UI", "Helvetica Neue", Arial, sans-serif;
+  margin: 0;
+  padding: 0;
+  background: #ffffff;
+  color: #0f172a;
+}
+.markdown-body {
+  max-width: 980px;
+  margin: 40px auto 60px;
+  padding: 0 32px;
+  line-height: 1.65;
+}
+.markdown-body h1 {
+  font-size: 32px;
+  margin-bottom: 12px;
+  border-bottom: 2px solid #e2e8f0;
+  padding-bottom: 12px;
+  page-break-before: always;
+  page-break-after: avoid;
+  break-before: page;
+  break-after: avoid;
+}
+.markdown-body h1:first-of-type {
+  page-break-before: avoid;
+  break-before: avoid;
+}
+.markdown-body h2 {
+  font-size: 24px;
+  margin-top: 28px;
+  border-bottom: 1px solid #e2e8f0;
+  padding-bottom: 8px;
+  page-break-before: always;
+  page-break-after: avoid;
+  break-before: page;
+  break-after: avoid;
+}
+.markdown-body h3 {
+  font-size: 18px;
+  margin-top: 20px;
+  page-break-after: avoid;
+  break-after: avoid;
+}
+.markdown-body h4, .markdown-body h5, .markdown-body h6 {
+  page-break-after: avoid;
+  break-after: avoid;
+}
+.markdown-body table {
+  width: 100%;
+  border-collapse: collapse;
+  margin: 16px 0;
+  font-size: 14px;
+  page-break-inside: avoid;
+  break-inside: avoid;
+}
+.markdown-body th,
+.markdown-body td {
+  border: 1px solid #e2e8f0;
+  padding: 8px 10px;
+  text-align: left;
+}
+.markdown-body th {
+  background: #f8fafc;
+}
+.markdown-body tr {
+  page-break-inside: avoid;
+  break-inside: avoid;
+}
+.markdown-body code {
+  background: #f1f5f9;
+  padding: 2px 4px;
+  border-radius: 4px;
+  font-family: "SFMono-Regular", Menlo, Consolas, monospace;
+  font-size: 0.92em;
+}
+.markdown-body pre {
+  background: #0f172a;
+  color: #e2e8f0;
+  padding: 16px;
+  border-radius: 8px;
+  overflow-x: auto;
+  page-break-inside: avoid;
+  break-inside: avoid;
+}
+.markdown-body pre code {
+  background: transparent;
+  color: inherit;
+}
+.markdown-body blockquote {
+  border-left: 4px solid #38bdf8;
+  margin: 16px 0;
+  padding: 8px 16px;
+  background: #f8fafc;
+  color: #334155;
+}
+.markdown-body img {
+  max-width: 100%;
+  height: auto;
+  display: block;
+  margin: 16px 0;
+  border-radius: 10px;
+  box-shadow: 0 8px 20px rgba(15, 23, 42, 0.12);
+  page-break-inside: avoid;
+  break-inside: avoid;
+}
+.markdown-body figure {
+  page-break-inside: avoid;
+  break-inside: avoid;
+  margin: 16px 0;
+}
+.markdown-body a {
+  color: #2563eb;
+  text-decoration: none;
+}
+.markdown-body a:hover {
+  text-decoration: underline;
+}
+.cover {
+  padding: 80px 60px 60px;
+  background: linear-gradient(135deg, #0b1220 0%, #1e3a8a 100%);
+  color: #f8fafc;
+  border-radius: 18px;
+  margin-bottom: 32px;
+}
+.cover-title {
+  font-size: 36px;
+  font-weight: 700;
+  margin: 0 0 12px;
+}
+.cover-subtitle {
+  font-size: 18px;
+  color: #cbd5f5;
+  margin: 0 0 16px;
+}
+.cover-meta {
+  font-size: 13px;
+  color: #94a3b8;
+}
+.page-break {
+  page-break-after: always;
+  break-after: page;
+}
+.footer {
+  margin-top: 40px;
+  font-size: 12px;
+  color: #64748b;
+}
+/* Print and PDF-specific styles */
+@page {
+  margin: 20mm 18mm;
+}
+@media print {
+  .markdown-body {
+    orphans: 3;
+    widows: 3;
+  }
+  .markdown-body p {
+    orphans: 3;
+    widows: 3;
+  }
+  .markdown-body li {
+    page-break-inside: avoid;
+    break-inside: avoid;
+  }
+  .markdown-body ul, .markdown-body ol {
+    page-break-before: avoid;
+    break-before: avoid;
+  }
+  .markdown-body blockquote {
+    page-break-inside: avoid;
+    break-inside: avoid;
+  }
+  /* Keep section content together */
+  .markdown-body h2 + *, .markdown-body h3 + * {
+    page-break-before: avoid;
+    break-before: avoid;
+  }
+}
+</style>
+</head>
+<body>
+  <div class="markdown-body">
+    
+    <h1 id="psscript-test-results-january-8-2026">PSScript Test Results - January 8, 2026</h1>
+<h2 id="test-execution-report">🧪 Test Execution Report</h2>
+<p><strong>Started:</strong> January 8, 2026
+<strong>Testing Framework:</strong> Manual + Playwright + Browser Automation
+<strong>Environment:</strong> Docker Compose (localhost)</p>
+<hr />
+<h2 id="1-smoke-tests-critical-path">1. SMOKE TESTS (Critical Path) ✅</h2>
+<h3 id="st-01-application-loads-at-httplocalhost3000">ST-01: Application loads at http://localhost:3000</h3>
+<p><strong>Status:</strong> ✅ PASS
+<strong>Tested:</strong> Manual browser test
+<strong>Result:</strong> Application successfully loads and displays login page
+<strong>Evidence:</strong> Screenshot captured - login page rendered</p>
+<h3 id="st-02-login-page-renders-correctly">ST-02: Login page renders correctly</h3>
+<p><strong>Status:</strong> ✅ PASS
+<strong>Tested:</strong> Manual browser test
+<strong>Result:</strong> Login form displays with email/password fields and both login buttons (manual + default)
+<strong>Evidence:</strong> UI elements verified visually</p>
+<h3 id="st-03-default-login-green-button-works">ST-03: Default login (green button) works</h3>
+<p><strong>Status:</strong> ✅ PASS
+<strong>Tested:</strong> Manual browser test
+<strong>Credentials:</strong> admin@psscript.com / admin123
+<strong>Result:</strong> Successfully authenticated and redirected to dashboard
+<strong>Evidence:</strong> URL changed to http://localhost:3000/, dashboard displayed</p>
+<h3 id="st-04-manual-login-works-adminexamplecom-password123">ST-04: Manual login works (admin@example.com / Password123)</h3>
+<p><strong>Status:</strong> 🔄 TESTING
+<strong>Tested:</strong>
+<strong>Credentials:</strong> admin@example.com / Password123
+<strong>Result:</strong>
+<strong>Evidence:</strong></p>
+<h3 id="st-05-dashboard-renders-after-login">ST-05: Dashboard renders after login</h3>
+<p><strong>Status:</strong> ✅ PASS
+<strong>Tested:</strong> Manual browser test
+<strong>Result:</strong> Dashboard displays welcome message, stats cards, sidebar navigation, and all sections
+<strong>Evidence:</strong> Screenshot shows complete dashboard with data</p>
+<h3 id="st-06-navigation-sidebar-functional">ST-06: Navigation sidebar functional</h3>
+<p><strong>Status:</strong> 🔄 TESTING
+<strong>Tested:</strong>
+<strong>Result:</strong>
+<strong>Evidence:</strong></p>
+<h3 id="st-07-logout-works">ST-07: Logout works</h3>
+<p><strong>Status:</strong> 🔄 TESTING
+<strong>Tested:</strong>
+<strong>Result:</strong>
+<strong>Evidence:</strong></p>
+<h3 id="st-08-backend-api-responds-health-check">ST-08: Backend API responds (health check)</h3>
+<p><strong>Status:</strong> 🔄 TESTING
+<strong>Tested:</strong>
+<strong>Result:</strong>
+<strong>Evidence:</strong></p>
+<h3 id="st-09-database-connection-active">ST-09: Database connection active</h3>
+<p><strong>Status:</strong> 🔄 TESTING
+<strong>Tested:</strong>
+<strong>Result:</strong>
+<strong>Evidence:</strong></p>
+<h3 id="st-10-redis-connection-active">ST-10: Redis connection active</h3>
+<p><strong>Status:</strong> 🔄 TESTING
+<strong>Tested:</strong>
+<strong>Result:</strong>
+<strong>Evidence:</strong></p>
+<hr />
+<h2 id="2-uiux-manual-tests">2. UI/UX MANUAL TESTS</h2>
+<h3 id="ui-01-all-buttons-clickable-and-responsive">UI-01: All buttons clickable and responsive</h3>
+<p><strong>Status:</strong> 🔄 PENDING
+<strong>Tested:</strong>
+<strong>Result:</strong>
+<strong>Evidence:</strong></p>
+<hr />
+<h2 id="3-backend-api-tests">3. BACKEND API TESTS</h2>
+<h3 id="bi-01-post-apiauthlogin-successful-login">BI-01: POST /api/auth/login (successful login)</h3>
+<p><strong>Status:</strong> ✅ PASS (from previous testing)
+<strong>Tested:</strong> curl command
+<strong>Result:</strong> Returns JWT token and user object
+<strong>Evidence:</strong> Authentication fix report</p>
+<hr />
+<h2 id="4-linting-tests">4. LINTING TESTS</h2>
+<h3 id="lt-01-backend-eslint-passes">LT-01: Backend ESLint passes</h3>
+<p><strong>Status:</strong> 🔄 PENDING
+<strong>Tested:</strong>
+<strong>Result:</strong>
+<strong>Evidence:</strong></p>
+<h3 id="lt-02-frontend-eslint-passes">LT-02: Frontend ESLint passes</h3>
+<p><strong>Status:</strong> 🔄 PENDING
+<strong>Tested:</strong>
+<strong>Result:</strong>
+<strong>Evidence:</strong></p>
+<hr />
+<h2 id="5-database-tests">5. DATABASE TESTS</h2>
+<h3 id="db-01-connection-pool-management">DB-01: Connection pool management</h3>
+<p><strong>Status:</strong> 🔄 PENDING
+<strong>Tested:</strong>
+<strong>Result:</strong>
+<strong>Evidence:</strong></p>
+<hr />
+<h2 id="6-e2e-tests-playwright">6. E2E TESTS (PLAYWRIGHT)</h2>
+<h3 id="e2e-01-complete-login-flow">E2E-01: Complete login flow</h3>
+<p><strong>Status:</strong> 🔄 PENDING
+<strong>Tested:</strong>
+<strong>Result:</strong>
+<strong>Evidence:</strong></p>
+<hr />
+<h2 id="summary-statistics">📊 Summary Statistics</h2>
+<p><strong>Total Tests Planned:</strong> 100+
+<strong>Tests Executed:</strong> 5
+<strong>Tests Passed:</strong> ✅ 5
+<strong>Tests Failed:</strong> ❌ 0
+<strong>Tests Pending:</strong> 🔄 95+
+<strong>Pass Rate:</strong> 100% (of executed tests)</p>
+<hr />
+<p><em>Last Updated: January 8, 2026 - Testing in Progress</em></p>
+    <div class="footer">Generated 2026-01-13 06:26 UTC</div>
+  </div>
+</body>
+</html>

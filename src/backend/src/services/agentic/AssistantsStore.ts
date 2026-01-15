@@ -57,7 +57,7 @@ export class AssistantsStore {
     for (const dir of directories) {
       try {
         await access(dir, fs.constants.F_OK);
-      } catch (error) {
+      } catch (_error) {
         await mkdir(dir, { recursive: true });
       }
     }
@@ -206,10 +206,10 @@ export class AssistantsStore {
     const threadDir = path.join(this.messagesDir, message.thread_id);
     try {
       await access(threadDir, fs.constants.F_OK);
-    } catch (error) {
+    } catch (_error) {
       await mkdir(threadDir, { recursive: true });
     }
-    
+
     const filePath = path.join(threadDir, `${message.id}.json`);
     await writeFile(filePath, JSON.stringify(message, null, 2), 'utf-8');
   }
@@ -229,10 +229,10 @@ export class AssistantsStore {
     const runDir = path.join(this.runStepsDir, step.run_id);
     try {
       await access(runDir, fs.constants.F_OK);
-    } catch (error) {
+    } catch (_error) {
       await mkdir(runDir, { recursive: true });
     }
-    
+
     const filePath = path.join(runDir, `${step.id}.json`);
     await writeFile(filePath, JSON.stringify(step, null, 2), 'utf-8');
   }

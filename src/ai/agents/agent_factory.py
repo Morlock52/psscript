@@ -6,11 +6,8 @@ including LangChain, AutoGPT, Hybrid, LangGraph, Py-g agents, and OpenAI Assista
 It selects the appropriate agent based on the user's request and available API keys.
 """
 
-import os
-import json
 import logging
-import asyncio
-from typing import Dict, List, Any, Optional, Union, Type
+from typing import Dict, List, Any, Optional
 
 # Import agent implementations
 from .langchain_agent import LangChainAgent
@@ -40,6 +37,13 @@ except ImportError:
     ASSISTANT_AVAILABLE = False
     logging.warning("OpenAI Assistant agent not available. Ensure openai package is installed.")
 
+# Import Anthropic Claude agent - Added January 2026
+try:
+    from .anthropic_agent import AnthropicAgent, ANTHROPIC_AVAILABLE
+except ImportError:
+    ANTHROPIC_AVAILABLE = False
+    logging.warning("Anthropic agent not available. Install with 'pip install anthropic'")
+
 # Configure logging
 logging.basicConfig(
     level=logging.INFO,
@@ -66,6 +70,8 @@ class AgentFactory:
             available_agents.append("pyg")
         if ASSISTANT_AVAILABLE:
             available_agents.append("assistant")
+        if ANTHROPIC_AVAILABLE:
+            available_agents.append("anthropic")
         logger.info(f"Available agent types: {', '.join(available_agents)}")
     
     def get_agent(self, agent_type: str, api_key: Optional[str] = None) -> Any:
@@ -119,6 +125,12 @@ class AgentFactory:
                     return self.get_agent("hybrid", api_key)
                 logger.info("Creating new OpenAI Assistant agent")
                 agent = OpenAIAssistantAgent(api_key=api_key)
+            elif agent_type == "anthropic":
+                if not ANTHROPIC_AVAILABLE:
+                    logger.warning("Anthropic agent requested but not available, falling back to hybrid")
+                    return self.get_agent("hybrid", api_key)
+                logger.info("Creating new Anthropic Claude agent")
+                agent = AnthropicAgent(api_key=api_key)
             else:
                 logger.warning(f"Unknown agent type: {agent_type}, using default")
                 return self.get_agent(self.default_agent_type, api_key)
@@ -185,6 +197,20 @@ class AgentFactory:
             "agent orchestration"
         ]
         
+        # Anthropic Claude task indicators - Added January 2026
+        anthropic_task_indicators = [
+            "claude",
+            "anthropic",
+            "sonnet",
+            "opus",
+            "haiku",
+            "use claude",
+            "with claude",
+            "claude agent",
+            "claude model",
+            "claude analysis"
+        ]
+
         hybrid_task_indicators = [
             "complex analysis",
             "multi-step task",
@@ -212,13 +238,20 @@ class AgentFactory:
         
         message_lower = message.lower()
         
-        # Check for OpenAI Assistant task indicators first (if available)
+        # Check for Anthropic Claude task indicators first (if available)
+        if ANTHROPIC_AVAILABLE:
+            for indicator in anthropic_task_indicators:
+                if indicator in message_lower:
+                    logger.info(f"Selected Anthropic Claude agent based on indicator: '{indicator}'")
+                    return "anthropic"
+
+        # Check for OpenAI Assistant task indicators (if available)
         if ASSISTANT_AVAILABLE:
             for indicator in assistant_task_indicators:
                 if indicator in message_lower:
                     logger.info(f"Selected OpenAI Assistant agent based on indicator: '{indicator}'")
                     return "assistant"
-        
+
         # Check for LangGraph task indicators (if available)
         if LANGGRAPH_AVAILABLE:
             for indicator in langgraph_task_indicators:

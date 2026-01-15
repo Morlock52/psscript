@@ -18,7 +18,6 @@ import SendIcon from '@mui/icons-material/Send';
 import ContentCopyIcon from '@mui/icons-material/ContentCopy';
 import CodeIcon from '@mui/icons-material/Code';
 import SearchIcon from '@mui/icons-material/Search';
-import HelpOutlineIcon from '@mui/icons-material/HelpOutline';
 import LinkIcon from '@mui/icons-material/Link';
 import { askAgentQuestion } from '../../api/aiAgent';
 import ReactMarkdown from 'react-markdown';
@@ -202,13 +201,16 @@ const PleaseMethodAgent: React.FC<PleaseMethodAgentProps> = ({
       // Make API call to backend
       const response = await askAgentQuestion(input, activeScript);
 
+      // Ensure response is a string (defensive check)
+      const responseText = response ?? '';
+
       // Check if this is a script generation request
-      const isScriptGeneration = input.toLowerCase().includes('generate') && 
+      const isScriptGeneration = input.toLowerCase().includes('generate') &&
         input.toLowerCase().includes('script');
 
       // Extract any generated script if present
       const scriptRegex = /```powershell\n([\s\S]*?)```/;
-      const scriptMatch = response.match(scriptRegex);
+      const scriptMatch = responseText.match(scriptRegex);
       const generatedScript = scriptMatch ? scriptMatch[1] : null;
 
       // If a script was generated and we have a callback
@@ -222,11 +224,11 @@ const PleaseMethodAgent: React.FC<PleaseMethodAgentProps> = ({
           msg.id === assistantMessageId
             ? {
                 ...msg,
-                content: response,
+                content: responseText,
                 isLoading: false,
                 metadata: {
-                  internet: response.includes('Based on information from the internet') ||
-                    response.includes('According to online resources'),
+                  internet: responseText.includes('Based on information from the internet') ||
+                    responseText.includes('According to online resources'),
                   command: generatedScript || undefined,
                 },
               }
@@ -335,7 +337,7 @@ const PleaseMethodAgent: React.FC<PleaseMethodAgentProps> = ({
         <Box mb={message.metadata ? 2 : 0}>
           <ReactMarkdown
             components={{
-              code({ node, inline, className, children, ...props }) {
+              code({ inline, className, children, ...props }) {
                 const match = /language-(\w+)/.exec(className || '');
                 return !inline && match ? (
                   <CodeBlock
@@ -402,8 +404,8 @@ const PleaseMethodAgent: React.FC<PleaseMethodAgentProps> = ({
           PowerShell AI Assistant
         </Typography>
         <Typography variant="body2" color="text.secondary" paragraph>
-          Ask me anything about PowerShell scripting. I can create scripts, explain commands, 
-          suggest improvements, and provide examples. I'll use internet research when needed.
+          Ask me anything about PowerShell scripting. I can create scripts, explain commands,
+          suggest improvements, and provide examples. I&apos;ll use internet research when needed.
         </Typography>
         
         <Divider sx={{ mb: 3 }} />

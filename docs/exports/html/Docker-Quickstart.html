@@ -1,0 +1,584 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <base href="file:///Users/morlock/fun/psscript/" />
+  <title>Docker-Quickstart</title>
+  <style>
+:root {
+  color-scheme: light;
+}
+body {
+  font-family: "Segoe UI", "Helvetica Neue", Arial, sans-serif;
+  margin: 0;
+  padding: 0;
+  background: #ffffff;
+  color: #0f172a;
+}
+.markdown-body {
+  max-width: 980px;
+  margin: 40px auto 60px;
+  padding: 0 32px;
+  line-height: 1.65;
+}
+.markdown-body h1 {
+  font-size: 32px;
+  margin-bottom: 12px;
+  border-bottom: 2px solid #e2e8f0;
+  padding-bottom: 12px;
+  page-break-before: always;
+  page-break-after: avoid;
+  break-before: page;
+  break-after: avoid;
+}
+.markdown-body h1:first-of-type {
+  page-break-before: avoid;
+  break-before: avoid;
+}
+.markdown-body h2 {
+  font-size: 24px;
+  margin-top: 28px;
+  border-bottom: 1px solid #e2e8f0;
+  padding-bottom: 8px;
+  page-break-before: always;
+  page-break-after: avoid;
+  break-before: page;
+  break-after: avoid;
+}
+.markdown-body h3 {
+  font-size: 18px;
+  margin-top: 20px;
+  page-break-after: avoid;
+  break-after: avoid;
+}
+.markdown-body h4, .markdown-body h5, .markdown-body h6 {
+  page-break-after: avoid;
+  break-after: avoid;
+}
+.markdown-body table {
+  width: 100%;
+  border-collapse: collapse;
+  margin: 16px 0;
+  font-size: 14px;
+  page-break-inside: avoid;
+  break-inside: avoid;
+}
+.markdown-body th,
+.markdown-body td {
+  border: 1px solid #e2e8f0;
+  padding: 8px 10px;
+  text-align: left;
+}
+.markdown-body th {
+  background: #f8fafc;
+}
+.markdown-body tr {
+  page-break-inside: avoid;
+  break-inside: avoid;
+}
+.markdown-body code {
+  background: #f1f5f9;
+  padding: 2px 4px;
+  border-radius: 4px;
+  font-family: "SFMono-Regular", Menlo, Consolas, monospace;
+  font-size: 0.92em;
+}
+.markdown-body pre {
+  background: #0f172a;
+  color: #e2e8f0;
+  padding: 16px;
+  border-radius: 8px;
+  overflow-x: auto;
+  page-break-inside: avoid;
+  break-inside: avoid;
+}
+.markdown-body pre code {
+  background: transparent;
+  color: inherit;
+}
+.markdown-body blockquote {
+  border-left: 4px solid #38bdf8;
+  margin: 16px 0;
+  padding: 8px 16px;
+  background: #f8fafc;
+  color: #334155;
+}
+.markdown-body img {
+  max-width: 100%;
+  height: auto;
+  display: block;
+  margin: 16px 0;
+  border-radius: 10px;
+  box-shadow: 0 8px 20px rgba(15, 23, 42, 0.12);
+  page-break-inside: avoid;
+  break-inside: avoid;
+}
+.markdown-body figure {
+  page-break-inside: avoid;
+  break-inside: avoid;
+  margin: 16px 0;
+}
+.markdown-body a {
+  color: #2563eb;
+  text-decoration: none;
+}
+.markdown-body a:hover {
+  text-decoration: underline;
+}
+.cover {
+  padding: 80px 60px 60px;
+  background: linear-gradient(135deg, #0b1220 0%, #1e3a8a 100%);
+  color: #f8fafc;
+  border-radius: 18px;
+  margin-bottom: 32px;
+}
+.cover-title {
+  font-size: 36px;
+  font-weight: 700;
+  margin: 0 0 12px;
+}
+.cover-subtitle {
+  font-size: 18px;
+  color: #cbd5f5;
+  margin: 0 0 16px;
+}
+.cover-meta {
+  font-size: 13px;
+  color: #94a3b8;
+}
+.page-break {
+  page-break-after: always;
+  break-after: page;
+}
+.footer {
+  margin-top: 40px;
+  font-size: 12px;
+  color: #64748b;
+}
+/* Print and PDF-specific styles */
+@page {
+  margin: 20mm 18mm;
+}
+@media print {
+  .markdown-body {
+    orphans: 3;
+    widows: 3;
+  }
+  .markdown-body p {
+    orphans: 3;
+    widows: 3;
+  }
+  .markdown-body li {
+    page-break-inside: avoid;
+    break-inside: avoid;
+  }
+  .markdown-body ul, .markdown-body ol {
+    page-break-before: avoid;
+    break-before: avoid;
+  }
+  .markdown-body blockquote {
+    page-break-inside: avoid;
+    break-inside: avoid;
+  }
+  /* Keep section content together */
+  .markdown-body h2 + *, .markdown-body h3 + * {
+    page-break-before: avoid;
+    break-before: avoid;
+  }
+}
+</style>
+</head>
+<body>
+  <div class="markdown-body">
+    
+  <section class="cover page-break">
+    <h1 class="cover-title">Docker Quickstart</h1>
+    <p class="cover-subtitle">Infrastructure setup and service validation</p>
+    <p class="cover-meta">PSScript Manager Docs</p>
+  </section>
+  
+    <h1 id="docker-quick-start-guide">Docker Quick Start Guide</h1>
+<p>This guide will help you quickly get started with the enhanced Docker infrastructure including connection pooling, high availability, and automated backups.</p>
+<h2 id="prerequisites">Prerequisites</h2>
+<ul>
+<li>Docker Engine 20.10+</li>
+<li>Docker Compose 2.0+</li>
+<li>At least 4GB RAM available</li>
+<li>At least 20GB disk space</li>
+</ul>
+<h2 id="quick-start-5-minutes">Quick Start (5 Minutes)</h2>
+<h3 id="1-clone-and-configure">1. Clone and Configure</h3>
+<pre><code class="language-bash"># Copy environment file
+cp .env.example .env
+
+# Edit .env if needed (optional for development)
+# nano .env
+</code></pre>
+<h3 id="2-create-required-directories">2. Create Required Directories</h3>
+<pre><code class="language-bash"># Create backup directories
+mkdir -p backups/postgres backups/redis backups/logs
+</code></pre>
+<h3 id="3-start-all-services">3. Start All Services</h3>
+<pre><code class="language-bash"># Using docker-compose
+docker-compose up -d
+
+# OR using the management script
+chmod +x docker-manage.sh
+./docker-manage.sh start
+</code></pre>
+<h3 id="4-verify-services">4. Verify Services</h3>
+<pre><code class="language-bash"># Check all services are running
+docker-compose ps
+
+# Check health status
+./docker-manage.sh health
+</code></pre>
+<h3 id="5-access-services">5. Access Services</h3>
+<ul>
+<li><strong>Frontend</strong>: http://localhost:3000</li>
+<li><strong>Backend API</strong>: http://localhost:4000</li>
+<li><strong>AI Service</strong>: http://localhost:8000</li>
+<li><strong>PostgreSQL</strong> (direct): localhost:5432</li>
+<li><strong>PgBouncer</strong>: localhost:6432</li>
+<li><strong>Redis Master</strong>: localhost:6379</li>
+<li><strong>PgAdmin</strong> (dev): http://localhost:5050 (admin@example.com / admin)</li>
+<li><strong>Redis Commander</strong> (dev): http://localhost:8082</li>
+</ul>
+<h2 id="infrastructure-overview">Infrastructure Overview</h2>
+<h3 id="connection-pooling-pgbouncer">Connection Pooling (PgBouncer)</h3>
+<p><strong>What it does</strong>: Manages PostgreSQL connections efficiently
+<strong>Why you need it</strong>: Prevents connection exhaustion, improves performance
+<strong>How to use</strong>: Applications connect to port 6432 instead of 5432</p>
+<pre><code class="language-bash"># Check pool status
+./docker-manage.sh pgbouncer pools
+</code></pre>
+<h3 id="high-availability-redis-sentinel">High Availability (Redis Sentinel)</h3>
+<p><strong>What it does</strong>: Automatic failover for Redis
+<strong>Why you need it</strong>: Zero downtime for caching layer
+<strong>How it works</strong>: 3 sentinels monitor master, auto-promote replica on failure</p>
+<pre><code class="language-bash"># Check Redis status
+./docker-manage.sh redis sentinel
+</code></pre>
+<h3 id="automated-backups">Automated Backups</h3>
+<p><strong>What it does</strong>: Scheduled backups with retention management
+<strong>Why you need it</strong>: Disaster recovery and data protection
+<strong>Schedules</strong>:
+- PostgreSQL Full: Daily at 2 AM
+- PostgreSQL Incremental: Every 6 hours
+- Redis: Every 4 hours</p>
+<pre><code class="language-bash"># Manual backup
+./docker-manage.sh backup postgres-full
+
+# List backups
+ls -lh backups/postgres/
+</code></pre>
+<h2 id="common-operations">Common Operations</h2>
+<h3 id="view-logs">View Logs</h3>
+<pre><code class="language-bash"># All services
+docker-compose logs -f
+
+# Specific service
+docker-compose logs -f backend
+./docker-manage.sh logs backend
+</code></pre>
+<h3 id="restart-services">Restart Services</h3>
+<pre><code class="language-bash"># All services
+./docker-manage.sh restart
+
+# Single service
+docker-compose restart backend
+</code></pre>
+<h3 id="run-backups">Run Backups</h3>
+<pre><code class="language-bash"># PostgreSQL full backup
+./docker-manage.sh backup postgres-full
+
+# PostgreSQL incremental backup
+./docker-manage.sh backup postgres-incremental
+
+# Redis backup
+./docker-manage.sh backup redis
+</code></pre>
+<h3 id="check-health">Check Health</h3>
+<pre><code class="language-bash"># Comprehensive health check
+./docker-manage.sh health
+
+# Check specific service
+docker-compose exec postgres pg_isready
+docker-compose exec redis-master redis-cli ping
+</code></pre>
+<h3 id="access-database">Access Database</h3>
+<pre><code class="language-bash"># Via PgBouncer (recommended)
+docker-compose exec pgbouncer psql -h localhost -p 6432 -U postgres -d psscript
+
+# Direct PostgreSQL
+docker-compose exec postgres psql -U postgres -d psscript
+
+# Redis
+docker-compose exec redis-master redis-cli
+</code></pre>
+<h2 id="monitoring">Monitoring</h2>
+<h3 id="pgbouncer-statistics">PgBouncer Statistics</h3>
+<pre><code class="language-bash"># Connection pools
+./docker-manage.sh pgbouncer pools
+
+# Statistics
+./docker-manage.sh pgbouncer stats
+
+# Connected clients
+./docker-manage.sh pgbouncer clients
+</code></pre>
+<h3 id="redis-cluster-status">Redis Cluster Status</h3>
+<pre><code class="language-bash"># Master info
+./docker-manage.sh redis info
+
+# Sentinel status
+./docker-manage.sh redis sentinel
+
+# Replica status
+./docker-manage.sh redis replicas
+</code></pre>
+<h3 id="backup-status">Backup Status</h3>
+<pre><code class="language-bash"># View backup logs
+tail -f backups/logs/backup.log
+
+# View health logs
+tail -f backups/logs/health.log
+
+# List backups
+ls -lh backups/postgres/
+ls -lh backups/redis/
+</code></pre>
+<h2 id="troubleshooting">Troubleshooting</h2>
+<h3 id="services-wont-start">Services Won't Start</h3>
+<pre><code class="language-bash"># Check Docker status
+docker info
+
+# Check logs
+docker-compose logs
+
+# Rebuild services
+./docker-manage.sh rebuild
+./docker-manage.sh start
+</code></pre>
+<h3 id="connection-issues">Connection Issues</h3>
+<pre><code class="language-bash"># Verify network
+docker network ls
+docker network inspect psscript_psscript-network
+
+# Check service health
+./docker-manage.sh health
+
+# Test connectivity
+docker-compose exec backend ping postgres
+docker-compose exec backend ping pgbouncer
+docker-compose exec backend ping redis-master
+</code></pre>
+<h3 id="backup-failures">Backup Failures</h3>
+<pre><code class="language-bash"># Check disk space
+df -h
+
+# Check backup logs
+tail -100 backups/logs/backup.log
+
+# Manual backup test
+./docker-manage.sh backup postgres-full
+</code></pre>
+<h3 id="pgbouncer-issues">PgBouncer Issues</h3>
+<pre><code class="language-bash"># Check PgBouncer logs
+docker-compose logs pgbouncer
+
+# Verify configuration
+docker-compose exec pgbouncer cat /etc/pgbouncer/pgbouncer.ini
+
+# Test direct PostgreSQL connection
+docker-compose exec postgres psql -U postgres -d psscript -c &quot;SELECT 1;&quot;
+</code></pre>
+<h3 id="redis-failover-not-working">Redis Failover Not Working</h3>
+<pre><code class="language-bash"># Check sentinel logs
+docker-compose logs redis-sentinel-1
+
+# Verify sentinel configuration
+docker-compose exec redis-sentinel-1 redis-cli -p 26379 SENTINEL master mymaster
+
+# Check replica status
+docker-compose exec redis-master redis-cli INFO replication
+</code></pre>
+<h2 id="testing-disaster-recovery">Testing Disaster Recovery</h2>
+<h3 id="test-postgresql-restore">Test PostgreSQL Restore</h3>
+<pre><code class="language-bash"># Create test backup
+./docker-manage.sh backup postgres-full
+
+# List backups
+./docker-manage.sh restore postgres
+
+# Restore (this will ask for confirmation)
+./docker-manage.sh restore postgres /backups/postgres/psscript_full_YYYYMMDD_HHMMSS.sql.gz
+</code></pre>
+<h3 id="test-redis-failover">Test Redis Failover</h3>
+<pre><code class="language-bash"># Stop master
+docker-compose stop redis-master
+
+# Watch sentinel promote replica
+docker-compose logs -f redis-sentinel-1
+
+# Verify new master
+./docker-manage.sh redis sentinel
+
+# Restart original master (becomes replica)
+docker-compose start redis-master
+</code></pre>
+<h2 id="stopping-services">Stopping Services</h2>
+<h3 id="graceful-shutdown">Graceful Shutdown</h3>
+<pre><code class="language-bash"># Stop all services (keeps data)
+./docker-manage.sh stop
+
+# OR
+docker-compose down
+</code></pre>
+<h3 id="complete-cleanup">Complete Cleanup</h3>
+<pre><code class="language-bash"># Remove containers and volumes (DELETES ALL DATA)
+./docker-manage.sh clean
+
+# OR
+docker-compose down -v
+</code></pre>
+<h2 id="production-deployment">Production Deployment</h2>
+<h3 id="before-going-to-production">Before Going to Production</h3>
+<ol>
+<li><strong>Update passwords in .env</strong>:</li>
+<li>DB_PASSWORD</li>
+<li>JWT_SECRET</li>
+<li>
+<p>REFRESH_TOKEN_SECRET</p>
+</li>
+<li>
+<p><strong>Configure S3 backups</strong> (add to .env):
+   <code>bash
+   BACKUP_S3_BUCKET=your-production-bucket
+   AWS_ACCESS_KEY_ID=your-key
+   AWS_SECRET_ACCESS_KEY=your-secret</code></p>
+</li>
+<li>
+<p><strong>Enable Redis password</strong> (edit redis configs):</p>
+</li>
+<li>Uncomment <code>requirepass</code> in <code>/docker/redis/redis-master.conf</code></li>
+<li>Uncomment <code>masterauth</code> in <code>/docker/redis/redis-replica.conf</code></li>
+<li>
+<p>Update backend REDIS_URL to include password</p>
+</li>
+<li>
+<p><strong>Configure SSL/TLS</strong>:</p>
+</li>
+<li>Set up PostgreSQL SSL certificates</li>
+<li>Configure Redis TLS</li>
+<li>
+<p>Use HTTPS for frontend/backend</p>
+</li>
+<li>
+<p><strong>Adjust resource limits</strong>:</p>
+</li>
+<li>Edit <code>docker-compose.yml</code> to add resource limits</li>
+<li>Increase pool sizes for high traffic</li>
+<li>
+<p>Adjust memory limits for Redis/PostgreSQL</p>
+</li>
+<li>
+<p><strong>Set up monitoring</strong>:</p>
+</li>
+<li>Configure external monitoring</li>
+<li>Set up alerting for backup failures</li>
+<li>Monitor disk space and performance</li>
+</ol>
+<h3 id="production-docker-composeyml-additions">Production docker-compose.yml Additions</h3>
+<pre><code class="language-yaml">services:
+  backend:
+    deploy:
+      resources:
+        limits:
+          cpus: '2'
+          memory: 2G
+        reservations:
+          cpus: '1'
+          memory: 1G
+    restart: always
+</code></pre>
+<h2 id="next-steps">Next Steps</h2>
+<ol>
+<li><strong>Read full documentation</strong>: <code>docs/DOCKER-INFRASTRUCTURE.md</code></li>
+<li><strong>Review backup documentation</strong>: <code>docker/backup/README.md</code></li>
+<li><strong>Test backup and restore procedures</strong></li>
+<li><strong>Set up monitoring and alerting</strong></li>
+<li><strong>Configure S3 for cloud backups</strong></li>
+</ol>
+<h2 id="management-script-reference">Management Script Reference</h2>
+<pre><code class="language-bash"># Service management
+./docker-manage.sh start        # Start all services
+./docker-manage.sh stop         # Stop all services
+./docker-manage.sh restart      # Restart all services
+./docker-manage.sh status       # Show status
+
+# Monitoring
+./docker-manage.sh health       # Health check
+./docker-manage.sh logs [svc]   # View logs
+
+# Backups
+./docker-manage.sh backup postgres-full
+./docker-manage.sh backup redis
+./docker-manage.sh restore postgres [file]
+
+# PgBouncer
+./docker-manage.sh pgbouncer pools
+./docker-manage.sh pgbouncer stats
+
+# Redis
+./docker-manage.sh redis info
+./docker-manage.sh redis sentinel
+
+# Utilities
+./docker-manage.sh shell backend
+./docker-manage.sh rebuild
+./docker-manage.sh clean
+
+# Help
+./docker-manage.sh help
+</code></pre>
+<h2 id="support">Support</h2>
+<ul>
+<li>Full Documentation: <code>docs/DOCKER-INFRASTRUCTURE.md</code></li>
+<li>Backup Guide: <code>docker/backup/README.md</code></li>
+<li>Project Setup: <code>docs/DOCKER-SETUP.md</code></li>
+<li>Getting Started: <code>docs/GETTING-STARTED.md</code></li>
+</ul>
+<h2 id="useful-commands-cheat-sheet">Useful Commands Cheat Sheet</h2>
+<pre><code class="language-bash"># Start everything
+./docker-manage.sh start
+
+# Check if healthy
+./docker-manage.sh health
+
+# View backend logs
+./docker-manage.sh logs backend
+
+# Run backup
+./docker-manage.sh backup postgres-full
+
+# Check PgBouncer
+./docker-manage.sh pgbouncer pools
+
+# Check Redis
+./docker-manage.sh redis sentinel
+
+# Access PostgreSQL
+docker-compose exec postgres psql -U postgres -d psscript
+
+# Access Redis
+docker-compose exec redis-master redis-cli
+
+# Stop everything
+./docker-manage.sh stop
+</code></pre>
+    <div class="footer">Generated 2026-01-13 06:26 UTC</div>
+  </div>
+</body>
+</html>

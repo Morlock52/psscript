@@ -18,7 +18,7 @@ const SecuritySettings: React.FC = () => {
   const [errorMessage, setErrorMessage] = useState('');
   
   // Mocked verification code for demo purposes
-  const verificationCode = '123456';
+  const _verificationCode = '123456';
   const qrCodeUrl = 'https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=otpauth://totp/PSScriptApp:user@example.com?secret=GEZDGNBVGY3TQOJQGEZDGNBVGY3TQOJQ&issuer=PSScriptApp';
   
   // Handle form input change
@@ -316,7 +316,7 @@ const SecuritySettings: React.FC = () => {
       <div>
         <h2 className="text-xl font-semibold mb-4">Active Sessions</h2>
         <p className="text-gray-500 dark:text-gray-400 mb-4">
-          These are your active sessions across devices. You can revoke any session you don't recognize.
+          These are your active sessions across devices. You can revoke any session you don&apos;t recognize.
         </p>
         
         <div className="border border-gray-200 dark:border-gray-700 rounded-lg overflow-hidden">

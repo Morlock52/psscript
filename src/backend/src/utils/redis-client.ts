@@ -268,7 +268,7 @@ class UnifiedCacheService implements CacheService {
         } else if (process.env.NODE_ENV !== 'production') {
           logger.debug('Redis health check: OK');
         }
-      } catch (error) {
+      } catch (_error) {
         this.preferRedis = false;
         logger.warn('Redis health check failed, using memory cache fallback');
       }

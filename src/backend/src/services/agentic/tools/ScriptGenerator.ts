@@ -36,6 +36,37 @@ Guidelines for generating scripts:
 9. Avoid deprecated cmdlets and syntax
 10. Prioritize PowerShell 7+ compatible code unless otherwise specified
 
+CRITICAL - Remote Execution and Credential Handling:
+When scripts involve remote computers (Invoke-Command, Enter-PSSession, remoting), address the "double-hop" authentication problem:
+
+11. NEVER rely on -UseDefaultCredentials for remote sessions accessing network resources
+12. For remote execution needing network access, use one of these patterns:
+
+    Pattern A - Explicit Credential Passing (Recommended):
+    \`\`\`powershell
+    param([PSCredential]$Credential = (Get-Credential))
+    Invoke-Command -ComputerName $Server -Credential $Credential -ScriptBlock {
+        param($RemoteCred)
+        # Use $RemoteCred for nested resource access
+    } -ArgumentList $Credential
+    \`\`\`
+
+    Pattern B - CredSSP Authentication (requires pre-configuration):
+    \`\`\`powershell
+    # Requires: Enable-WSManCredSSP -Role Client/Server
+    Invoke-Command -ComputerName $Server -Credential $Cred -Authentication Credssp -ScriptBlock { }
+    \`\`\`
+
+    Pattern C - CIM Sessions with Credentials:
+    \`\`\`powershell
+    $session = New-CimSession -ComputerName $Server -Credential $Credential
+    Get-CimInstance -CimSession $session -ClassName Win32_Service
+    \`\`\`
+
+13. Always include a -Credential parameter for scripts that may run remotely
+14. Add comments explaining authentication requirements
+15. Include prerequisite checks for CredSSP if used
+
 Format your response as a complete, ready-to-run PowerShell script.`
         },
         {
@@ -80,6 +111,19 @@ async function analyzeScriptSecurity(script: string): Promise<string> {
     {
       pattern: /Set-ExecutionPolicy\s+Unrestricted|Set-ExecutionPolicy\s+Bypass/i,
       description: 'Lowering execution policy security settings',
+    },
+    // Remote credential handling patterns
+    {
+      pattern: /-UseDefaultCredentials.*(-ComputerName|Invoke-Command|Enter-PSSession)/i,
+      description: 'WARNING: -UseDefaultCredentials may fail on remote computers due to double-hop authentication. Use explicit -Credential parameter instead.',
+    },
+    {
+      pattern: /(Invoke-Command|Enter-PSSession).*-ComputerName(?!.*-Credential)(?!.*-Authentication)/i,
+      description: 'Remote command without explicit credential - may fail accessing network resources. Consider adding -Credential parameter.',
+    },
+    {
+      pattern: /Invoke-WebRequest.*-UseDefaultCredentials.*-Session|New-PSSession.*(?!-Credential)/i,
+      description: 'Web request or session with default credentials in remote context may fail. Use explicit credential passing.',
     },
   ];
   

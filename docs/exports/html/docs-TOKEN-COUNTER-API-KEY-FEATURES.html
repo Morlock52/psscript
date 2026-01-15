@@ -1,0 +1,520 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <base href="file:///Users/morlock/fun/psscript/" />
+  <title>docs-TOKEN-COUNTER-API-KEY-FEATURES</title>
+  <style>
+:root {
+  color-scheme: light;
+}
+body {
+  font-family: "Segoe UI", "Helvetica Neue", Arial, sans-serif;
+  margin: 0;
+  padding: 0;
+  background: #ffffff;
+  color: #0f172a;
+}
+.markdown-body {
+  max-width: 980px;
+  margin: 40px auto 60px;
+  padding: 0 32px;
+  line-height: 1.65;
+}
+.markdown-body h1 {
+  font-size: 32px;
+  margin-bottom: 12px;
+  border-bottom: 2px solid #e2e8f0;
+  padding-bottom: 12px;
+  page-break-before: always;
+  page-break-after: avoid;
+  break-before: page;
+  break-after: avoid;
+}
+.markdown-body h1:first-of-type {
+  page-break-before: avoid;
+  break-before: avoid;
+}
+.markdown-body h2 {
+  font-size: 24px;
+  margin-top: 28px;
+  border-bottom: 1px solid #e2e8f0;
+  padding-bottom: 8px;
+  page-break-before: always;
+  page-break-after: avoid;
+  break-before: page;
+  break-after: avoid;
+}
+.markdown-body h3 {
+  font-size: 18px;
+  margin-top: 20px;
+  page-break-after: avoid;
+  break-after: avoid;
+}
+.markdown-body h4, .markdown-body h5, .markdown-body h6 {
+  page-break-after: avoid;
+  break-after: avoid;
+}
+.markdown-body table {
+  width: 100%;
+  border-collapse: collapse;
+  margin: 16px 0;
+  font-size: 14px;
+  page-break-inside: avoid;
+  break-inside: avoid;
+}
+.markdown-body th,
+.markdown-body td {
+  border: 1px solid #e2e8f0;
+  padding: 8px 10px;
+  text-align: left;
+}
+.markdown-body th {
+  background: #f8fafc;
+}
+.markdown-body tr {
+  page-break-inside: avoid;
+  break-inside: avoid;
+}
+.markdown-body code {
+  background: #f1f5f9;
+  padding: 2px 4px;
+  border-radius: 4px;
+  font-family: "SFMono-Regular", Menlo, Consolas, monospace;
+  font-size: 0.92em;
+}
+.markdown-body pre {
+  background: #0f172a;
+  color: #e2e8f0;
+  padding: 16px;
+  border-radius: 8px;
+  overflow-x: auto;
+  page-break-inside: avoid;
+  break-inside: avoid;
+}
+.markdown-body pre code {
+  background: transparent;
+  color: inherit;
+}
+.markdown-body blockquote {
+  border-left: 4px solid #38bdf8;
+  margin: 16px 0;
+  padding: 8px 16px;
+  background: #f8fafc;
+  color: #334155;
+}
+.markdown-body img {
+  max-width: 100%;
+  height: auto;
+  display: block;
+  margin: 16px 0;
+  border-radius: 10px;
+  box-shadow: 0 8px 20px rgba(15, 23, 42, 0.12);
+  page-break-inside: avoid;
+  break-inside: avoid;
+}
+.markdown-body figure {
+  page-break-inside: avoid;
+  break-inside: avoid;
+  margin: 16px 0;
+}
+.markdown-body a {
+  color: #2563eb;
+  text-decoration: none;
+}
+.markdown-body a:hover {
+  text-decoration: underline;
+}
+.cover {
+  padding: 80px 60px 60px;
+  background: linear-gradient(135deg, #0b1220 0%, #1e3a8a 100%);
+  color: #f8fafc;
+  border-radius: 18px;
+  margin-bottom: 32px;
+}
+.cover-title {
+  font-size: 36px;
+  font-weight: 700;
+  margin: 0 0 12px;
+}
+.cover-subtitle {
+  font-size: 18px;
+  color: #cbd5f5;
+  margin: 0 0 16px;
+}
+.cover-meta {
+  font-size: 13px;
+  color: #94a3b8;
+}
+.page-break {
+  page-break-after: always;
+  break-after: page;
+}
+.footer {
+  margin-top: 40px;
+  font-size: 12px;
+  color: #64748b;
+}
+/* Print and PDF-specific styles */
+@page {
+  margin: 20mm 18mm;
+}
+@media print {
+  .markdown-body {
+    orphans: 3;
+    widows: 3;
+  }
+  .markdown-body p {
+    orphans: 3;
+    widows: 3;
+  }
+  .markdown-body li {
+    page-break-inside: avoid;
+    break-inside: avoid;
+  }
+  .markdown-body ul, .markdown-body ol {
+    page-break-before: avoid;
+    break-before: avoid;
+  }
+  .markdown-body blockquote {
+    page-break-inside: avoid;
+    break-inside: avoid;
+  }
+  /* Keep section content together */
+  .markdown-body h2 + *, .markdown-body h3 + * {
+    page-break-before: avoid;
+    break-before: avoid;
+  }
+}
+</style>
+</head>
+<body>
+  <div class="markdown-body">
+    
+    <h1 id="token-counter-and-api-key-management-features">Token Counter and API Key Management Features</h1>
+<h2 id="overview">Overview</h2>
+<p>Added comprehensive token usage tracking, cost estimation, and API key management to the PSScript AI service.</p>
+<h2 id="features">Features</h2>
+<h3 id="1-token-counter-price-estimator">1. Token Counter &amp; Price Estimator</h3>
+<h4 id="real-time-token-tracking">Real-Time Token Tracking</h4>
+<ul>
+<li>Tracks all AI API calls automatically</li>
+<li>Records input tokens, output tokens, and total usage</li>
+<li>Calculates costs based on model pricing</li>
+</ul>
+<h4 id="pricing-support-january-2026">Pricing Support (January 2026)</h4>
+<p>Supports all current OpenAI models with accurate pricing:</p>
+<table>
+<thead>
+<tr>
+<th>Model</th>
+<th>Input (per 1M)</th>
+<th>Output (per 1M)</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>GPT-5.2-Codex</td>
+<td>$35</td>
+<td>$70</td>
+</tr>
+<tr>
+<td>GPT-5.2</td>
+<td>$30</td>
+<td>$60</td>
+</tr>
+<tr>
+<td>GPT-5.2-Instant</td>
+<td>$15</td>
+<td>$30</td>
+</tr>
+<tr>
+<td>GPT-4o</td>
+<td>$2.50</td>
+<td>$10</td>
+</tr>
+<tr>
+<td>text-embedding-3-large</td>
+<td>$0.13</td>
+<td>-</td>
+</tr>
+<tr>
+<td>text-embedding-3-small</td>
+<td>$0.02</td>
+<td>-</td>
+</tr>
+</tbody>
+</table>
+<h4 id="usage-analytics">Usage Analytics</h4>
+<ul>
+<li>Total tokens used across all sessions</li>
+<li>Total cost in USD</li>
+<li>Breakdown by model</li>
+<li>Recent session history (last 1000 sessions)</li>
+<li>Persistent storage (survives restarts)</li>
+</ul>
+<h3 id="2-api-key-management">2. API Key Management</h3>
+<h4 id="interactive-prompts">Interactive Prompts</h4>
+<ul>
+<li>Automatically prompts for API key if not found</li>
+<li>User-friendly setup wizard with instructions</li>
+<li>Validates key format (sk-prefix)</li>
+<li>Saves to <code>.env</code> file automatically</li>
+</ul>
+<h4 id="secure-storage">Secure Storage</h4>
+<ul>
+<li>Keys saved to <code>.env</code> file in project root</li>
+<li>File permissions set to 600 (owner read/write only)</li>
+<li>Never logged or displayed in full</li>
+</ul>
+<h4 id="key-operations">Key Operations</h4>
+<ul>
+<li>Set new key</li>
+<li>Update existing key</li>
+<li>Test key validity</li>
+<li>Check key status</li>
+<li>Remove key</li>
+</ul>
+<h2 id="api-endpoints">API Endpoints</h2>
+<h3 id="token-usage-endpoints">Token Usage Endpoints</h3>
+<h4 id="get-apitoken-usagesummary">GET <code>/api/token-usage/summary</code></h4>
+<p>Get summary of all token usage and costs.</p>
+<p><strong>Response:</strong></p>
+<pre><code class="language-json">{
+  &quot;total_tokens&quot;: 15230,
+  &quot;total_cost&quot;: 1.25,
+  &quot;formatted_cost&quot;: &quot;$1.25&quot;,
+  &quot;by_model&quot;: {
+    &quot;gpt-5.2-codex&quot;: {
+      &quot;total_tokens&quot;: 15230,
+      &quot;total_cost&quot;: 1.25,
+      &quot;input_tokens&quot;: 10230,
+      &quot;output_tokens&quot;: 5000,
+      &quot;calls&quot;: 42
+    }
+  },
+  &quot;last_updated&quot;: &quot;2026-01-09T09:51:53.946022&quot;,
+  &quot;session_count&quot;: 42
+}
+</code></pre>
+<h4 id="get-apitoken-usagerecentlimit10">GET <code>/api/token-usage/recent?limit=10</code></h4>
+<p>Get recent token usage sessions.</p>
+<p><strong>Query Parameters:</strong>
+- <code>limit</code> (optional): Number of sessions to return (1-100, default 10)</p>
+<p><strong>Response:</strong></p>
+<pre><code class="language-json">{
+  &quot;sessions&quot;: [
+    {
+      &quot;timestamp&quot;: &quot;2026-01-09T09:45:32.123456&quot;,
+      &quot;model&quot;: &quot;gpt-5.2-codex&quot;,
+      &quot;operation&quot;: &quot;PowerShell analysis&quot;,
+      &quot;input_tokens&quot;: 1000,
+      &quot;output_tokens&quot;: 500,
+      &quot;total_tokens&quot;: 1500,
+      &quot;cost&quot;: 0.0395
+    }
+  ]
+}
+</code></pre>
+<h4 id="post-apitoken-usageestimate">POST <code>/api/token-usage/estimate</code></h4>
+<p>Estimate cost before making an API call.</p>
+<p><strong>Request:</strong></p>
+<pre><code class="language-json">{
+  &quot;model&quot;: &quot;gpt-5.2-codex&quot;,
+  &quot;input_text&quot;: &quot;Your PowerShell script or prompt text&quot;,
+  &quot;estimated_output_tokens&quot;: 500
+}
+</code></pre>
+<p><strong>Response:</strong></p>
+<pre><code class="language-json">{
+  &quot;model&quot;: &quot;gpt-5.2-codex&quot;,
+  &quot;estimated_input_tokens&quot;: 13,
+  &quot;estimated_output_tokens&quot;: 500,
+  &quot;estimated_total_tokens&quot;: 513,
+  &quot;estimated_cost&quot;: 0.03039,
+  &quot;formatted_cost&quot;: &quot;$0.0304&quot;
+}
+</code></pre>
+<h4 id="post-apitoken-usagereset">POST <code>/api/token-usage/reset</code></h4>
+<p>Reset all token usage data (use with caution).</p>
+<p><strong>Response:</strong></p>
+<pre><code class="language-json">{
+  &quot;message&quot;: &quot;Token usage data reset successfully&quot;
+}
+</code></pre>
+<h3 id="api-key-management-endpoints">API Key Management Endpoints</h3>
+<h4 id="get-apikeystatus">GET <code>/api/key/status</code></h4>
+<p>Check if API key is configured.</p>
+<p><strong>Response:</strong></p>
+<pre><code class="language-json">{
+  &quot;configured&quot;: true,
+  &quot;masked_key&quot;: &quot;sk-proj...zqAA&quot;,
+  &quot;mock_mode&quot;: false
+}
+</code></pre>
+<h4 id="post-apikeyset">POST <code>/api/key/set</code></h4>
+<p>Set or update the OpenAI API key.</p>
+<p><strong>Request:</strong></p>
+<pre><code class="language-json">{
+  &quot;api_key&quot;: &quot;sk-proj-your-api-key-here&quot;
+}
+</code></pre>
+<p><strong>Response:</strong></p>
+<pre><code class="language-json">{
+  &quot;message&quot;: &quot;API key saved successfully&quot;,
+  &quot;masked_key&quot;: &quot;sk-proj...here&quot;
+}
+</code></pre>
+<h4 id="post-apikeytest">POST <code>/api/key/test</code></h4>
+<p>Test if the current API key is valid.</p>
+<p><strong>Response:</strong></p>
+<pre><code class="language-json">{
+  &quot;valid&quot;: true,
+  &quot;message&quot;: &quot;API key is valid&quot;
+}
+</code></pre>
+<h2 id="command-line-usage">Command-Line Usage</h2>
+<h3 id="api-key-management">API Key Management</h3>
+<pre><code class="language-bash"># Set API key interactively
+python src/ai/utils/api_key_manager.py set
+
+# Test API key
+python src/ai/utils/api_key_manager.py test
+
+# Update API key
+python src/ai/utils/api_key_manager.py update
+
+# Remove API key
+python src/ai/utils/api_key_manager.py remove
+</code></pre>
+<h3 id="token-counter">Token Counter</h3>
+<pre><code class="language-python">from utils.token_counter import token_counter
+
+# Track usage
+tokens, cost = token_counter.track_usage(
+    model=&quot;gpt-5.2-codex&quot;,
+    input_tokens=1000,
+    output_tokens=500,
+    operation=&quot;PowerShell analysis&quot;
+)
+
+# Estimate cost
+estimate = token_counter.estimate_cost(
+    model=&quot;gpt-5.2-codex&quot;,
+    estimated_input_tokens=2000,
+    estimated_output_tokens=1000
+)
+
+# Get summary
+summary = token_counter.get_usage_summary()
+</code></pre>
+<h2 id="files-created">Files Created</h2>
+<ol>
+<li><strong><code>src/ai/utils/token_counter.py</code></strong></li>
+<li>TokenCounter class</li>
+<li>Cost calculation logic</li>
+<li>
+<p>Usage tracking and analytics</p>
+</li>
+<li>
+<p><strong><code>src/ai/utils/api_key_manager.py</code></strong></p>
+</li>
+<li>APIKeyManager class</li>
+<li>Interactive prompts</li>
+<li>
+<p>.env file management</p>
+</li>
+<li>
+<p><strong><code>src/ai/utils/__init__.py</code></strong></p>
+</li>
+<li>Package initialization</li>
+<li>Convenience exports</li>
+</ol>
+<h2 id="integration">Integration</h2>
+<p>The features are automatically integrated into the AI service:</p>
+<ol>
+<li><strong>Startup</strong>:</li>
+<li>API key manager checks for key on startup</li>
+<li>Prompts interactively if missing (terminal mode)</li>
+<li>
+<p>Falls back to mock mode if no key provided</p>
+</li>
+<li>
+<p><strong>Token Tracking</strong>:</p>
+</li>
+<li>All AI API calls are automatically tracked</li>
+<li>Usage data persisted to <code>token_usage.json</code></li>
+<li>
+<p>No manual intervention required</p>
+</li>
+<li>
+<p><strong>Web Interface</strong>:</p>
+</li>
+<li>API endpoints available for frontend integration</li>
+<li>Real-time usage monitoring</li>
+<li>Cost estimation before expensive operations</li>
+</ol>
+<h2 id="benefits">Benefits</h2>
+<h3 id="cost-control">Cost Control</h3>
+<ul>
+<li>Know exactly how much each operation costs</li>
+<li>Estimate before running expensive queries</li>
+<li>Track spending over time</li>
+<li>Set budgets and alerts (future feature)</li>
+</ul>
+<h3 id="easy-setup">Easy Setup</h3>
+<ul>
+<li>No manual .env editing required</li>
+<li>Interactive setup wizard</li>
+<li>Clear instructions for obtaining API keys</li>
+<li>Validation to prevent mistakes</li>
+</ul>
+<h3 id="visibility">Visibility</h3>
+<ul>
+<li>See which models cost the most</li>
+<li>Identify expensive operations</li>
+<li>Optimize based on actual usage</li>
+<li>Historical tracking for analysis</li>
+</ul>
+<h2 id="future-enhancements">Future Enhancements</h2>
+<ol>
+<li><strong>Budget Alerts</strong></li>
+<li>Set spending limits</li>
+<li>Email/webhook notifications</li>
+<li>
+<p>Automatic throttling</p>
+</li>
+<li>
+<p><strong>Advanced Analytics</strong></p>
+</li>
+<li>Cost per user/session</li>
+<li>Time-based analysis</li>
+<li>Model comparison charts</li>
+<li>
+<p>Optimization recommendations</p>
+</li>
+<li>
+<p><strong>Frontend Integration</strong></p>
+</li>
+<li>Usage dashboard in web UI</li>
+<li>Real-time cost display</li>
+<li>Historical graphs</li>
+<li>
+<p>Budget management UI</p>
+</li>
+<li>
+<p><strong>Rate Limiting</strong></p>
+</li>
+<li>Prevent runaway costs</li>
+<li>Per-user/per-session limits</li>
+<li>Graceful degradation</li>
+</ol>
+<hr />
+<p><strong>Created</strong>: January 9, 2026
+<strong>Status</strong>: ✅ Deployed and Tested
+<strong>Version</strong>: 1.0.0</p>
+    <div class="footer">Generated 2026-01-13 06:26 UTC</div>
+  </div>
+</body>
+</html>

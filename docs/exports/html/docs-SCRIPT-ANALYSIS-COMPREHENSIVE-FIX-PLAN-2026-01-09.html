@@ -1,0 +1,1272 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <base href="file:///Users/morlock/fun/psscript/" />
+  <title>docs-SCRIPT-ANALYSIS-COMPREHENSIVE-FIX-PLAN-2026-01-09</title>
+  <style>
+:root {
+  color-scheme: light;
+}
+body {
+  font-family: "Segoe UI", "Helvetica Neue", Arial, sans-serif;
+  margin: 0;
+  padding: 0;
+  background: #ffffff;
+  color: #0f172a;
+}
+.markdown-body {
+  max-width: 980px;
+  margin: 40px auto 60px;
+  padding: 0 32px;
+  line-height: 1.65;
+}
+.markdown-body h1 {
+  font-size: 32px;
+  margin-bottom: 12px;
+  border-bottom: 2px solid #e2e8f0;
+  padding-bottom: 12px;
+  page-break-before: always;
+  page-break-after: avoid;
+  break-before: page;
+  break-after: avoid;
+}
+.markdown-body h1:first-of-type {
+  page-break-before: avoid;
+  break-before: avoid;
+}
+.markdown-body h2 {
+  font-size: 24px;
+  margin-top: 28px;
+  border-bottom: 1px solid #e2e8f0;
+  padding-bottom: 8px;
+  page-break-before: always;
+  page-break-after: avoid;
+  break-before: page;
+  break-after: avoid;
+}
+.markdown-body h3 {
+  font-size: 18px;
+  margin-top: 20px;
+  page-break-after: avoid;
+  break-after: avoid;
+}
+.markdown-body h4, .markdown-body h5, .markdown-body h6 {
+  page-break-after: avoid;
+  break-after: avoid;
+}
+.markdown-body table {
+  width: 100%;
+  border-collapse: collapse;
+  margin: 16px 0;
+  font-size: 14px;
+  page-break-inside: avoid;
+  break-inside: avoid;
+}
+.markdown-body th,
+.markdown-body td {
+  border: 1px solid #e2e8f0;
+  padding: 8px 10px;
+  text-align: left;
+}
+.markdown-body th {
+  background: #f8fafc;
+}
+.markdown-body tr {
+  page-break-inside: avoid;
+  break-inside: avoid;
+}
+.markdown-body code {
+  background: #f1f5f9;
+  padding: 2px 4px;
+  border-radius: 4px;
+  font-family: "SFMono-Regular", Menlo, Consolas, monospace;
+  font-size: 0.92em;
+}
+.markdown-body pre {
+  background: #0f172a;
+  color: #e2e8f0;
+  padding: 16px;
+  border-radius: 8px;
+  overflow-x: auto;
+  page-break-inside: avoid;
+  break-inside: avoid;
+}
+.markdown-body pre code {
+  background: transparent;
+  color: inherit;
+}
+.markdown-body blockquote {
+  border-left: 4px solid #38bdf8;
+  margin: 16px 0;
+  padding: 8px 16px;
+  background: #f8fafc;
+  color: #334155;
+}
+.markdown-body img {
+  max-width: 100%;
+  height: auto;
+  display: block;
+  margin: 16px 0;
+  border-radius: 10px;
+  box-shadow: 0 8px 20px rgba(15, 23, 42, 0.12);
+  page-break-inside: avoid;
+  break-inside: avoid;
+}
+.markdown-body figure {
+  page-break-inside: avoid;
+  break-inside: avoid;
+  margin: 16px 0;
+}
+.markdown-body a {
+  color: #2563eb;
+  text-decoration: none;
+}
+.markdown-body a:hover {
+  text-decoration: underline;
+}
+.cover {
+  padding: 80px 60px 60px;
+  background: linear-gradient(135deg, #0b1220 0%, #1e3a8a 100%);
+  color: #f8fafc;
+  border-radius: 18px;
+  margin-bottom: 32px;
+}
+.cover-title {
+  font-size: 36px;
+  font-weight: 700;
+  margin: 0 0 12px;
+}
+.cover-subtitle {
+  font-size: 18px;
+  color: #cbd5f5;
+  margin: 0 0 16px;
+}
+.cover-meta {
+  font-size: 13px;
+  color: #94a3b8;
+}
+.page-break {
+  page-break-after: always;
+  break-after: page;
+}
+.footer {
+  margin-top: 40px;
+  font-size: 12px;
+  color: #64748b;
+}
+/* Print and PDF-specific styles */
+@page {
+  margin: 20mm 18mm;
+}
+@media print {
+  .markdown-body {
+    orphans: 3;
+    widows: 3;
+  }
+  .markdown-body p {
+    orphans: 3;
+    widows: 3;
+  }
+  .markdown-body li {
+    page-break-inside: avoid;
+    break-inside: avoid;
+  }
+  .markdown-body ul, .markdown-body ol {
+    page-break-before: avoid;
+    break-before: avoid;
+  }
+  .markdown-body blockquote {
+    page-break-inside: avoid;
+    break-inside: avoid;
+  }
+  /* Keep section content together */
+  .markdown-body h2 + *, .markdown-body h3 + * {
+    page-break-before: avoid;
+    break-before: avoid;
+  }
+}
+</style>
+</head>
+<body>
+  <div class="markdown-body">
+    
+    <h1 id="script-analysis-comprehensive-fix-enhancement-plan">Script Analysis Comprehensive Fix &amp; Enhancement Plan</h1>
+<p><strong>Date</strong>: January 9, 2026
+<strong>Status</strong>: Planning Complete - Ready for Implementation
+<strong>Priority</strong>: High - Core Feature Enhancement</p>
+<hr />
+<h2 id="executive-summary">Executive Summary</h2>
+<p>This document outlines a comprehensive plan to transform the Script Analysis feature from a basic chatbot interface into a <strong>production-grade, agentic AI-powered analysis system</strong> that leverages LangGraph 1.0, Model Context Protocol (MCP), multi-agent orchestration, and 2026 best practices.</p>
+<h3 id="key-goals">Key Goals</h3>
+<ol>
+<li><strong>Connect frontend to LangGraph backend</strong> for true multi-agent analysis</li>
+<li><strong>Implement streaming analysis</strong> with real-time progress updates</li>
+<li><strong>Add human-in-the-loop workflows</strong> for critical reviews</li>
+<li><strong>Integrate MCP servers</strong> for external tool access</li>
+<li><strong>Enable internet research</strong> during analysis</li>
+<li><strong>Visualize agent orchestration</strong> for transparency</li>
+<li><strong>Add state persistence</strong> for resumable workflows</li>
+</ol>
+<hr />
+<h2 id="current-state-analysis">Current State Analysis</h2>
+<h3 id="what-we-have">✅ <strong>What We Have</strong></h3>
+<h4 id="backend-ai-service">Backend (AI Service)</h4>
+<ul>
+<li><strong>LangGraph 1.0 Production Orchestrator</strong> (<code>langgraph_production.py</code>)</li>
+<li>StateGraph workflow with checkpointing</li>
+<li>Four production tools: analyze_powershell_script, security_scan, quality_analysis, generate_optimizations</li>
+<li>Human-in-the-loop support</li>
+<li>PostgreSQL checkpointing capability</li>
+<li>
+<p>Latest GPT-5.2-codex model integration</p>
+</li>
+<li>
+<p><strong>LangGraph API Endpoints</strong> (<code>langgraph_endpoints.py</code>)</p>
+</li>
+<li><code>/langgraph/analyze</code> - Full script analysis</li>
+<li><code>/langgraph/feedback</code> - Human feedback integration</li>
+<li><code>/langgraph/health</code> - Service health check</li>
+<li><code>/langgraph/info</code> - Orchestrator metadata</li>
+<li>
+<p><code>/langgraph/batch-analyze</code> - Batch processing</p>
+</li>
+<li>
+<p><strong>Legacy Analyzer</strong> (<code>script_analyzer.py</code>)</p>
+</li>
+<li>OpenAI API integration</li>
+<li>Caching with Redis/Disk</li>
+<li>Vector embeddings (text-embedding-3-large)</li>
+<li>Async/concurrent processing</li>
+</ul>
+<h4 id="frontend">Frontend</h4>
+<ul>
+<li><strong>ScriptAnalysis.tsx</strong> - Basic analysis UI</li>
+<li>Tabs: Overview, Security, Quality, Performance, Parameters, AI Assistant</li>
+<li>Simple AI chat using <code>/chat</code> endpoint</li>
+<li>Static analysis display</li>
+<li>Score visualizations</li>
+</ul>
+<h4 id="infrastructure">Infrastructure</h4>
+<ul>
+<li>Docker Compose setup with all services</li>
+<li>PostgreSQL with pgvector extension</li>
+<li>Redis caching layer</li>
+<li>All services running and healthy</li>
+</ul>
+<h3 id="critical-gaps-identified">❌ <strong>Critical Gaps Identified</strong></h3>
+<h4 id="1-frontend-backend-disconnection">1. <strong>Frontend-Backend Disconnection</strong></h4>
+<ul>
+<li><strong>Problem</strong>: Frontend calls legacy <code>/chat</code> endpoint instead of <code>/langgraph/analyze</code></li>
+<li><strong>Impact</strong>: Missing LangGraph multi-agent orchestration, tool execution, checkpointing</li>
+<li><strong>Evidence</strong>: <code>grep "langgraph" frontend/src --include="*.tsx"</code> returns zero results</li>
+</ul>
+<h4 id="2-no-streaming-support">2. <strong>No Streaming Support</strong></h4>
+<ul>
+<li><strong>Problem</strong>: Analysis runs in black box, no progress updates</li>
+<li><strong>Impact</strong>: Poor UX for long-running analysis (can take 30-60 seconds)</li>
+<li><strong>Missing</strong>: Real-time tool execution updates, agent reasoning visibility</li>
+</ul>
+<h4 id="3-no-human-in-the-loop-ui">3. <strong>No Human-in-the-Loop UI</strong></h4>
+<ul>
+<li><strong>Problem</strong>: Backend supports human review, frontend doesn't</li>
+<li><strong>Impact</strong>: Can't leverage collaborative analysis workflows</li>
+<li><strong>Missing</strong>: Review pause UI, feedback input, workflow resumption</li>
+</ul>
+<h4 id="4-no-tool-execution-visibility">4. <strong>No Tool Execution Visibility</strong></h4>
+<ul>
+<li><strong>Problem</strong>: Users don't see which tools are running</li>
+<li><strong>Impact</strong>: Analysis feels like magic, no transparency</li>
+<li><strong>Missing</strong>: Tool progress indicators, intermediate results display</li>
+</ul>
+<h4 id="5-missing-mcp-integration">5. <strong>Missing MCP Integration</strong></h4>
+<ul>
+<li><strong>Problem</strong>: No Model Context Protocol servers connected</li>
+<li><strong>Impact</strong>: Can't access external tools (GitHub, docs, internet)</li>
+<li><strong>Missing</strong>: MCP client, server configurations, tool discovery</li>
+</ul>
+<h4 id="6-no-internet-research-capability">6. <strong>No Internet Research Capability</strong></h4>
+<ul>
+<li><strong>Problem</strong>: Analysis is limited to LLM knowledge</li>
+<li><strong>Impact</strong>: Can't verify latest security vulnerabilities, best practices</li>
+<li><strong>Missing</strong>: Web search tool, documentation fetching, trend analysis</li>
+</ul>
+<h4 id="7-limited-analysis-depth">7. <strong>Limited Analysis Depth</strong></h4>
+<ul>
+<li><strong>Problem</strong>: Basic security patterns, simple quality checks</li>
+<li><strong>Impact</strong>: Misses complex vulnerabilities, advanced optimizations</li>
+<li><strong>Missing</strong>: Deep code path analysis, dependency scanning, performance profiling</li>
+</ul>
+<h4 id="8-no-multi-agent-visualization">8. <strong>No Multi-Agent Visualization</strong></h4>
+<ul>
+<li><strong>Problem</strong>: Users don't see orchestration happening</li>
+<li><strong>Impact</strong>: No trust in agentic system, appears as single AI</li>
+<li><strong>Missing</strong>: Agent activity timeline, tool call logs, reasoning chains</li>
+</ul>
+<h4 id="9-no-state-persistence-ui">9. <strong>No State Persistence UI</strong></h4>
+<ul>
+<li><strong>Problem</strong>: Can't resume interrupted analysis</li>
+<li><strong>Impact</strong>: Lost work if browser closes, no session continuity</li>
+<li><strong>Missing</strong>: Thread ID management, checkpoint recovery UI</li>
+</ul>
+<h4 id="10-missing-agent-collaboration-features">10. <strong>Missing Agent Collaboration Features</strong></h4>
+<ul>
+<li><strong>Problem</strong>: No coordination between specialized agents</li>
+<li><strong>Impact</strong>: Analysis lacks depth from multiple perspectives</li>
+<li><strong>Missing</strong>: Security specialist, performance expert, best practices auditor agents</li>
+</ul>
+<hr />
+<h2 id="2026-best-practices-research-summary">2026 Best Practices Research Summary</h2>
+<h3 id="key-findings-from-industry-research">Key Findings from Industry Research</h3>
+<h4 id="agent-orchestration-langgraph"><strong>Agent Orchestration (LangGraph)</strong></h4>
+<ul>
+<li><a href="https://www.langchain.com/langgraph">LangGraph is the leading production framework</a> for agentic workflows in 2026</li>
+<li><a href="https://docs.langchain.com/oss/python/langgraph/workflows-agents">86% of copilot spending going to agent-based systems</a></li>
+<li><a href="https://www.langchain.com/state-of-agent-engineering">57% of organizations have agents in production</a></li>
+<li><a href="https://www.datacamp.com/blog/best-ai-agents">89% implement observability</a> - critical for debugging and trust</li>
+</ul>
+<p><strong>Key Capabilities:</strong>
+- Graph-based state machines for complex workflows
+- Checkpointing for durable execution
+- Tool calling with automatic retries
+- Human-in-the-loop pause/resume
+- Streaming for real-time updates</p>
+<h4 id="model-context-protocol-mcp"><strong>Model Context Protocol (MCP)</strong></h4>
+<ul>
+<li><a href="https://www.anthropic.com/news/model-context-protocol">Open standard introduced by Anthropic</a>, donated to Linux Foundation December 2025</li>
+<li><a href="https://blogs.perficient.com/2026/01/08/model-context-protocol-mcp-simplified/">Adopted by OpenAI</a> in March 2025 across all products</li>
+<li><a href="https://modelcontextprotocol.io/">Standardizes AI-to-tool integration</a></li>
+<li><a href="https://github.com/modelcontextprotocol/servers">Hundreds of community servers available</a></li>
+</ul>
+<p><strong>Core Primitives:</strong>
+- <strong>Tools</strong>: Functions AI can call
+- <strong>Resources</strong>: Data sources to read
+- <strong>Prompts</strong>: Reusable prompt templates</p>
+<h4 id="security-analysis-best-practices"><strong>Security Analysis Best Practices</strong></h4>
+<ul>
+<li><a href="https://www.darkreading.com/application-security/coders-adopt-ai-agents-security-pitfalls-lurk-2026">Treat AI code as potentially vulnerable</a></li>
+<li><a href="https://slashdot.org/software/ai-coding-agents/for-powershell/">Automated security testing pipelines required</a></li>
+<li><a href="https://www.insentragroup.com/us/insights/geek-speak/professional-services/using-ai-to-standardise-scripts/">AI should suggest secure alternatives automatically</a></li>
+<li>Integration with PSScriptAnalyzer and other tools</li>
+</ul>
+<h4 id="agentic-workflows"><strong>Agentic Workflows</strong></h4>
+<ul>
+<li><a href="https://neo4j.com/blog/developer/function-calling-agentic-workflows/">Function calling reduces complexity</a></li>
+<li><a href="https://www.marktechpost.com/2026/01/06/how-to-design-an-agentic-ai-architecture-with-langgraph-and-openai-using-adaptive-deliberation-memory-graphs-and-reflexion-loops/">Adaptive deliberation</a> - agents decide between fast and deep reasoning</li>
+<li><a href="https://www.ibm.com/think/tutorials/build-agentic-workflows-langgraph-granite">Memory graphs</a> for knowledge persistence</li>
+<li><a href="https://cobusgreyling.medium.com/agentic-workflows-034d2df458d3">Tool governance</a> to enforce constraints</li>
+</ul>
+<hr />
+<h2 id="proposed-architecture">Proposed Architecture</h2>
+<h3 id="high-level-system-design"><strong>High-Level System Design</strong></h3>
+<pre><code>┌─────────────────────────────────────────────────────────────────────────┐
+│                           Browser (Frontend)                             │
+│  ┌────────────────────────────────────────────────────────────────────┐ │
+│  │                    ScriptAnalysisEnhanced.tsx                       │ │
+│  │  ┌──────────────┐  ┌──────────────┐  ┌──────────────────────────┐ │ │
+│  │  │ Analysis Tab │  │  Tools Tab   │  │   Human Review Tab      │ │ │
+│  │  │ - Streaming  │  │ - Execution  │  │ - Feedback Input        │ │ │
+│  │  │ - Progress   │  │ - Results    │  │ - Approval Actions      │ │ │
+│  │  └──────────────┘  └──────────────┘  └──────────────────────────┘ │ │
+│  │                                                                     │ │
+│  │  ┌────────────────────────────────────────────────────────────────┐ │ │
+│  │  │              Real-time Event Stream (SSE/WebSocket)            │ │ │
+│  │  │  - Tool execution started/completed                            │ │ │
+│  │  │  - Agent reasoning updates                                     │ │ │
+│  │  │  - Security findings as discovered                             │ │ │
+│  │  └────────────────────────────────────────────────────────────────┘ │ │
+│  └─────────────────────────────────────────────────────────────────────┘ │
+└───────────────────────────────────────────┬─────────────────────────────┘
+                                            │ HTTP/SSE
+┌───────────────────────────────────────────▼─────────────────────────────┐
+│                         Backend API (Express)                            │
+│  ┌────────────────────────────────────────────────────────────────────┐ │
+│  │                 ScriptController (Enhanced)                        │ │
+│  │  - /api/scripts/:id/analyze-langgraph (NEW)                       │ │
+│  │  - /api/scripts/:id/analysis-stream (NEW)                         │ │
+│  │  - /api/scripts/:id/provide-feedback (NEW)                        │ │
+│  │  - /api/scripts/:id/resume-analysis (NEW)                         │ │
+│  └────────────────────────────────────────────────────────────────────┘ │
+└───────────────────────────────────────────┬─────────────────────────────┘
+                                            │ HTTP
+┌───────────────────────────────────────────▼─────────────────────────────┐
+│                    AI Service (FastAPI/Python)                           │
+│  ┌────────────────────────────────────────────────────────────────────┐ │
+│  │              LangGraph Production Orchestrator                     │ │
+│  │  ┌─────────────────────────────────────────────────────────────┐  │ │
+│  │  │                    StateGraph Workflow                       │  │ │
+│  │  │                                                              │  │ │
+│  │  │  START → [analyze] ↔ [tools] ↔ [research] → [synthesis]    │  │ │
+│  │  │             ↓                                    ↓           │  │ │
+│  │  │        [human_review]  ←──────────────→     [END]          │  │ │
+│  │  │                                                              │  │ │
+│  │  └─────────────────────────────────────────────────────────────┘  │ │
+│  │                                                                    │ │
+│  │  Tools:                                                            │ │
+│  │  ┌──────────────────────┐  ┌────────────────────────────────┐   │ │
+│  │  │ Core Analysis        │  │  Research &amp; External           │   │ │
+│  │  │ - Script parsing     │  │  - Internet search (NEW)       │   │ │
+│  │  │ - Security scan      │  │  - MS Docs fetching (NEW)      │   │ │
+│  │  │ - Quality analysis   │  │  - GitHub vulnerability DB     │   │ │
+│  │  │ - Optimizations      │  │  - PowerShell Gallery API      │   │ │
+│  │  └──────────────────────┘  └────────────────────────────────┘   │ │
+│  │                                                                    │ │
+│  │  MCP Integrations:                                                 │ │
+│  │  ┌──────────────────────────────────────────────────────────┐    │ │
+│  │  │  - Web Search MCP Server (Brave/Google)                  │    │ │
+│  │  │  - GitHub MCP Server (vulnerability database)            │    │ │
+│  │  │  - Filesystem MCP Server (script analysis)               │    │ │
+│  │  │  - Database MCP Server (historical analysis)             │    │ │
+│  │  └──────────────────────────────────────────────────────────┘    │ │
+│  └────────────────────────────────────────────────────────────────────┘ │
+│                                                                          │
+│  Checkpointing:                                                          │
+│  ┌────────────────────────────────────────────────────────────────────┐ │
+│  │  PostgresSaver → stores workflow state for recovery               │ │
+│  └────────────────────────────────────────────────────────────────────┘ │
+└──────────────────────────────────────────────────────────────────────────┘
+</code></pre>
+<hr />
+<h2 id="implementation-plan">Implementation Plan</h2>
+<h3 id="phase-1-core-integration-days-1-2"><strong>Phase 1: Core Integration (Days 1-2)</strong></h3>
+<p><strong>Priority: Critical - Foundation for all other features</strong></p>
+<h4 id="11-backend-api-enhancement">1.1 Backend API Enhancement</h4>
+<ul>
+<li>[ ] Create new endpoint <code>/api/scripts/:id/analyze-langgraph</code></li>
+<li>Call <code>AI_SERVICE_URL/langgraph/analyze</code></li>
+<li>Pass script content, thread_id, require_human_review flag</li>
+<li>
+<p>Return workflow_id, status, analysis_results</p>
+</li>
+<li>
+<p>[ ] Create streaming endpoint <code>/api/scripts/:id/analysis-stream</code></p>
+</li>
+<li>Use Server-Sent Events (SSE) for real-time updates</li>
+<li>Stream tool execution events</li>
+<li>
+<p>Stream agent reasoning steps</p>
+</li>
+<li>
+<p>[ ] Create feedback endpoint <code>/api/scripts/:id/provide-feedback</code></p>
+</li>
+<li>Accept thread_id and feedback text</li>
+<li>Forward to <code>/langgraph/feedback</code></li>
+<li>Return updated analysis state</li>
+</ul>
+<p><strong>Files to Modify:</strong>
+- <code>src/backend/src/controllers/ScriptController.ts</code>
+- <code>src/backend/src/routes/scripts.ts</code></p>
+<h4 id="12-frontend-service-layer">1.2 Frontend Service Layer</h4>
+<ul>
+<li>[ ] Create <code>langgraphService.ts</code> in <code>src/frontend/src/services/</code></li>
+<li><code>analyzeLangGraph(scriptId, options)</code> - Start analysis</li>
+<li><code>streamAnalysis(scriptId, onEvent)</code> - Subscribe to SSE</li>
+<li><code>provideFeedback(scriptId, threadId, feedback)</code> - Send feedback</li>
+<li><code>getAnalysisStatus(threadId)</code> - Poll status</li>
+<li><code>resumeAnalysis(threadId)</code> - Continue from checkpoint</li>
+</ul>
+<p><strong>New File:</strong>
+- <code>src/frontend/src/services/langgraphService.ts</code></p>
+<h4 id="13-update-scriptanalysistsx">1.3 Update ScriptAnalysis.tsx</h4>
+<ul>
+<li>[ ] Add LangGraph analysis trigger button</li>
+<li>[ ] Show "Analyzing with AI Agents..." state</li>
+<li>[ ] Display basic streaming progress</li>
+<li>[ ] Maintain backward compatibility with old analysis</li>
+</ul>
+<p><strong>Testing:</strong>
+- [ ] Verify frontend can call new endpoint
+- [ ] Confirm LangGraph workflow executes
+- [ ] Check analysis results are returned correctly</p>
+<hr />
+<h3 id="phase-2-streaming-real-time-updates-days-3-4"><strong>Phase 2: Streaming &amp; Real-time Updates (Days 3-4)</strong></h3>
+<p><strong>Priority: High - Critical for UX</strong></p>
+<h4 id="21-enhanced-ui-components">2.1 Enhanced UI Components</h4>
+<h5 id="analysisprogresspaneltsx-new"><strong>AnalysisProgressPanel.tsx</strong> (NEW)</h5>
+<pre><code class="language-tsx">interface AnalysisProgressPanelProps {
+  workflowId: string;
+  onComplete: (results) =&gt; void;
+}
+
+// Features:
+// - Real-time progress bar
+// - Current stage indicator (analyze, tools, synthesis)
+// - Tool execution timeline
+// - Agent reasoning display
+// - Error messages if failures occur
+</code></pre>
+<h5 id="toolexecutionlogtsx-new"><strong>ToolExecutionLog.tsx</strong> (NEW)</h5>
+<pre><code class="language-tsx">interface ToolExecutionLogProps {
+  tools: ToolExecution[];
+  expandable: boolean;
+}
+
+// Shows:
+// - Tool name (e.g., &quot;security_scan&quot;)
+// - Start/end time
+// - Status (running, completed, failed)
+// - Results preview
+// - Expand for full JSON output
+</code></pre>
+<h4 id="22-event-stream-integration">2.2 Event Stream Integration</h4>
+<ul>
+<li>[ ] Create <code>useAnalysisStream</code> custom hook</li>
+<li>[ ] Handle SSE connection lifecycle</li>
+<li>[ ] Parse and categorize events (tool, reasoning, finding, error)</li>
+<li>[ ] Update UI state reactively as events arrive</li>
+<li>[ ] Auto-reconnect on connection drop</li>
+</ul>
+<p><strong>New Files:</strong>
+- <code>src/frontend/src/components/Analysis/AnalysisProgressPanel.tsx</code>
+- <code>src/frontend/src/components/Analysis/ToolExecutionLog.tsx</code>
+- <code>src/frontend/src/hooks/useAnalysisStream.ts</code></p>
+<h4 id="23-visual-enhancements">2.3 Visual Enhancements</h4>
+<ul>
+<li>[ ] Add animated progress indicators</li>
+<li>[ ] Tool icons (security shield, quality checkmark, optimization lightbulb)</li>
+<li>[ ] Color-coded severity indicators</li>
+<li>[ ] Loading skeleton for streaming content</li>
+</ul>
+<p><strong>Testing:</strong>
+- [ ] Verify events arrive in real-time
+- [ ] Test UI updates during 30+ second analysis
+- [ ] Confirm reconnection after network interruption
+- [ ] Test with multiple concurrent analyses</p>
+<hr />
+<h3 id="phase-3-human-in-the-loop-workflows-days-5-6"><strong>Phase 3: Human-in-the-Loop Workflows (Days 5-6)</strong></h3>
+<p><strong>Priority: High - Differentiating feature</strong></p>
+<h4 id="31-review-ui-components">3.1 Review UI Components</h4>
+<h5 id="humanreviewpaneltsx-new"><strong>HumanReviewPanel.tsx</strong> (NEW)</h5>
+<pre><code class="language-tsx">interface HumanReviewPanelProps {
+  workflowId: string;
+  threadId: string;
+  analysisResults: AnalysisResults;
+  onApprove: (feedback?) =&gt; void;
+  onReject: (feedback) =&gt; void;
+  onRequestChanges: (feedback) =&gt; void;
+}
+
+// Features:
+// - Display all findings for review
+// - Highlight critical security issues
+// - Accept/Reject/Request Changes buttons
+// - Feedback textarea for specific guidance
+// - Show AI's reasoning for transparency
+</code></pre>
+<h4 id="32-workflow-pauseresume">3.2 Workflow Pause/Resume</h4>
+<ul>
+<li>[ ] Detect when workflow enters human_review state</li>
+<li>[ ] Pause UI with clear "Review Required" indicator</li>
+<li>[ ] Save thread_id for session persistence</li>
+<li>[ ] Provide feedback and resume workflow</li>
+<li>[ ] Show updated results after review</li>
+</ul>
+<h4 id="33-review-triggers">3.3 Review Triggers</h4>
+<ul>
+<li>[ ] Auto-trigger review for risk_score &gt; 20</li>
+<li>[ ] Manual review checkbox before analysis</li>
+<li>[ ] Configurable review policies in settings</li>
+</ul>
+<p><strong>New Files:</strong>
+- <code>src/frontend/src/components/Analysis/HumanReviewPanel.tsx</code>
+- <code>src/frontend/src/components/Analysis/ReviewDecisionButtons.tsx</code></p>
+<p><strong>Testing:</strong>
+- [ ] Test auto-pause on high-risk scripts
+- [ ] Verify feedback is incorporated correctly
+- [ ] Test workflow resumption after browser refresh
+- [ ] Confirm state persistence with thread_id</p>
+<hr />
+<h3 id="phase-4-mcp-integration-days-7-9"><strong>Phase 4: MCP Integration (Days 7-9)</strong></h3>
+<p><strong>Priority: Medium-High - Extends capabilities significantly</strong></p>
+<h4 id="41-backend-mcp-setup">4.1 Backend MCP Setup</h4>
+<ul>
+<li>[ ] Install MCP Python SDK: <code>pip install anthropic-mcp</code></li>
+<li>[ ] Configure MCP servers in <code>src/ai/mcp_config.json</code></li>
+<li>[ ] Initialize MCP client in orchestrator</li>
+<li>[ ] Create MCP tool wrappers for LangGraph</li>
+</ul>
+<p><strong>MCP Servers to Configure:</strong>
+1. <strong>Web Search</strong> - Brave or Google search API
+   <code>json
+   {
+     "name": "web-search",
+     "command": "npx",
+     "args": ["-y", "@modelcontextprotocol/server-brave-search"],
+     "env": {"BRAVE_API_KEY": "..."}
+   }</code></p>
+<ol>
+<li>
+<p><strong>GitHub</strong> - Access vulnerability database
+   <code>json
+   {
+     "name": "github",
+     "command": "npx",
+     "args": ["-y", "@modelcontextprotocol/server-github"],
+     "env": {"GITHUB_TOKEN": "..."}
+   }</code></p>
+</li>
+<li>
+<p><strong>Filesystem</strong> - Safe script reading
+   <code>json
+   {
+     "name": "filesystem",
+     "command": "npx",
+     "args": ["-y", "@modelcontextprotocol/server-filesystem", "/allowed/paths"]
+   }</code></p>
+</li>
+</ol>
+<h4 id="42-new-analysis-tools">4.2 New Analysis Tools</h4>
+<h5 id="internet_research_tool-new"><strong>internet_research_tool</strong> (NEW)</h5>
+<pre><code class="language-python">@tool
+def internet_research(query: str, focus: str) -&gt; str:
+    &quot;&quot;&quot;
+    Search the internet for PowerShell security vulnerabilities,
+    best practices, and current recommendations.
+
+    Args:
+        query: Search query (e.g., &quot;Invoke-Expression security risks 2026&quot;)
+        focus: Area of focus (security, performance, best_practices)
+
+    Returns:
+        JSON with search results, relevant links, and key findings
+    &quot;&quot;&quot;
+    # Use MCP web search server
+    # Parse and summarize results
+    # Return actionable insights
+</code></pre>
+<h5 id="fetch_ms_docs_tool-new"><strong>fetch_ms_docs_tool</strong> (NEW)</h5>
+<pre><code class="language-python">@tool
+def fetch_powershell_docs(cmdlet: str) -&gt; str:
+    &quot;&quot;&quot;
+    Fetch official Microsoft PowerShell documentation for a cmdlet.
+
+    Args:
+        cmdlet: PowerShell cmdlet name (e.g., &quot;Get-Process&quot;)
+
+    Returns:
+        Documentation summary including parameters, examples, and notes
+    &quot;&quot;&quot;
+    # Fetch from learn.microsoft.com
+    # Parse and extract key information
+    # Return structured documentation
+</code></pre>
+<h5 id="vulnerability_check_tool-new"><strong>vulnerability_check_tool</strong> (NEW)</h5>
+<pre><code class="language-python">@tool
+def check_vulnerabilities(script_patterns: List[str]) -&gt; str:
+    &quot;&quot;&quot;
+    Check identified patterns against known vulnerability databases.
+
+    Args:
+        script_patterns: List of suspicious patterns found in script
+
+    Returns:
+        CVE information, severity ratings, and mitigation strategies
+    &quot;&quot;&quot;
+    # Query GitHub security advisories via MCP
+    # Cross-reference with NVD database
+    # Return vulnerability details
+</code></pre>
+<h4 id="43-integration-testing">4.3 Integration Testing</h4>
+<ul>
+<li>[ ] Test each MCP server independently</li>
+<li>[ ] Verify tool calls work through LangGraph</li>
+<li>[ ] Measure performance impact (latency)</li>
+<li>[ ] Test rate limiting and error handling</li>
+</ul>
+<p><strong>Testing:</strong>
+- [ ] Analyze script that uses <code>Invoke-Expression</code>
+  - Verify web search finds security articles
+  - Confirm vulnerability check flags CVEs
+- [ ] Test MS Docs fetching for standard cmdlets
+- [ ] Verify graceful degradation if MCP unavailable</p>
+<hr />
+<h3 id="phase-5-advanced-visualization-days-10-11"><strong>Phase 5: Advanced Visualization (Days 10-11)</strong></h3>
+<p><strong>Priority: Medium - Enhances trust and transparency</strong></p>
+<h4 id="51-agent-orchestration-timeline">5.1 Agent Orchestration Timeline</h4>
+<h5 id="agentactivitytimelinetsx-new"><strong>AgentActivityTimeline.tsx</strong> (NEW)</h5>
+<pre><code class="language-tsx">interface AgentActivityTimelineProps {
+  events: AgentEvent[];
+  highlightActive: boolean;
+}
+
+// Visualizes:
+// - Sequential flow of agent actions
+// - Parallel tool executions
+// - Decision points (routing)
+// - Human review interruptions
+// - Time elapsed per stage
+</code></pre>
+<h4 id="52-reasoning-chain-display">5.2 Reasoning Chain Display</h4>
+<ul>
+<li>[ ] Show LLM reasoning for each decision</li>
+<li>[ ] Display tool selection rationale</li>
+<li>[ ] Highlight key findings as discovered</li>
+<li>[ ] Expandable reasoning details</li>
+</ul>
+<h5 id="reasoningchainviewtsx-new"><strong>ReasoningChainView.tsx</strong> (NEW)</h5>
+<pre><code class="language-tsx">// Shows:
+// - &quot;Analyzing script structure...&quot;
+// - &quot;Detected potential security risk in line 45&quot;
+// - &quot;Running security_scan tool to verify...&quot;
+// - &quot;Tool result: CRITICAL - Code injection risk&quot;
+// - &quot;Generating mitigation recommendations...&quot;
+</code></pre>
+<h4 id="53-interactive-state-graph">5.3 Interactive State Graph</h4>
+<ul>
+<li>[ ] Visual representation of StateGraph workflow</li>
+<li>[ ] Highlight current node</li>
+<li>[ ] Show completed/pending nodes</li>
+<li>[ ] Click nodes to see details</li>
+</ul>
+<p><strong>New Files:</strong>
+- <code>src/frontend/src/components/Analysis/AgentActivityTimeline.tsx</code>
+- <code>src/frontend/src/components/Analysis/ReasoningChainView.tsx</code>
+- <code>src/frontend/src/components/Analysis/WorkflowStateGraph.tsx</code></p>
+<p><strong>Testing:</strong>
+- [ ] Test with complex multi-tool analysis
+- [ ] Verify timeline updates in real-time
+- [ ] Test reasoning chain with security findings
+- [ ] Confirm state graph reflects actual workflow</p>
+<hr />
+<h3 id="phase-6-enhanced-analysis-capabilities-days-12-14"><strong>Phase 6: Enhanced Analysis Capabilities (Days 12-14)</strong></h3>
+<p><strong>Priority: Medium - Deepens analysis quality</strong></p>
+<h4 id="61-advanced-security-analysis">6.1 Advanced Security Analysis</h4>
+<h5 id="deep-code-path-analysis"><strong>Deep Code Path Analysis</strong></h5>
+<pre><code class="language-python">@tool
+def analyze_code_paths(script_content: str) -&gt; str:
+    &quot;&quot;&quot;
+    Analyze all possible execution paths in the script.
+    Identifies:
+    - Conditional branches
+    - Loop structures
+    - Error handling paths
+    - Dead code
+    - Unreachable statements
+    &quot;&quot;&quot;
+</code></pre>
+<h5 id="dependency-vulnerability-scan"><strong>Dependency Vulnerability Scan</strong></h5>
+<pre><code class="language-python">@tool
+def scan_dependencies(script_content: str) -&gt; str:
+    &quot;&quot;&quot;
+    Extract and analyze script dependencies.
+    Checks:
+    - Module import statements
+    - Version requirements
+    - Known vulnerabilities in versions
+    - Deprecated modules
+    &quot;&quot;&quot;
+</code></pre>
+<h4 id="62-performance-profiling">6.2 Performance Profiling</h4>
+<pre><code class="language-python">@tool
+def profile_performance(script_content: str) -&gt; str:
+    &quot;&quot;&quot;
+    Estimate performance characteristics.
+    Analyzes:
+    - Loop complexity (O-notation)
+    - Pipeline efficiency
+    - Memory allocation patterns
+    - Network I/O operations
+    - Potential bottlenecks
+    &quot;&quot;&quot;
+</code></pre>
+<h4 id="63-compliance-checking">6.3 Compliance Checking</h4>
+<pre><code class="language-python">@tool
+def check_compliance(script_content: str, standard: str) -&gt; str:
+    &quot;&quot;&quot;
+    Verify compliance with coding standards.
+    Supports:
+    - PSScriptAnalyzer rules
+    - Custom organizational policies
+    - Industry best practices
+    - Security baseline requirements
+    &quot;&quot;&quot;
+</code></pre>
+<p><strong>Files to Update:</strong>
+- <code>src/ai/agents/langgraph_production.py</code> - Add new tools
+- <code>src/ai/tools/</code> (NEW) - Separate tool implementations</p>
+<p><strong>Testing:</strong>
+- [ ] Test code path analysis with complex conditionals
+- [ ] Verify dependency scan detects outdated modules
+- [ ] Confirm performance profiling identifies inefficiencies
+- [ ] Test compliance checking against PSScriptAnalyzer</p>
+<hr />
+<h3 id="phase-7-state-persistence-recovery-days-15-16"><strong>Phase 7: State Persistence &amp; Recovery (Days 15-16)</strong></h3>
+<p><strong>Priority: Medium - Improves reliability</strong></p>
+<h4 id="71-frontend-state-management">7.1 Frontend State Management</h4>
+<ul>
+<li>[ ] Store thread_id in localStorage</li>
+<li>[ ] Save analysis progress in React state</li>
+<li>[ ] Persist across browser refreshes</li>
+<li>[ ] Clear on successful completion</li>
+</ul>
+<h5 id="useanalysisstate-hook-new"><strong>useAnalysisState Hook</strong> (NEW)</h5>
+<pre><code class="language-typescript">interface AnalysisState {
+  threadId: string | null;
+  workflowId: string | null;
+  status: 'idle' | 'running' | 'paused' | 'completed' | 'failed';
+  currentStage: string;
+  results: Partial&lt;AnalysisResults&gt;;
+  canResume: boolean;
+}
+
+export function useAnalysisState(scriptId: string): {
+  state: AnalysisState;
+  resume: () =&gt; Promise&lt;void&gt;;
+  clear: () =&gt; void;
+}
+</code></pre>
+<h4 id="72-recovery-ui">7.2 Recovery UI</h4>
+<ul>
+<li>[ ] Show "Resume Analysis" button if interrupted</li>
+<li>[ ] Display last known stage</li>
+<li>[ ] Warn if checkpoint is stale (&gt;24h)</li>
+<li>[ ] Confirm before resuming</li>
+</ul>
+<h5 id="analysisrecoverybannertsx-new"><strong>AnalysisRecoveryBanner.tsx</strong> (NEW)</h5>
+<pre><code class="language-tsx">// Shows when thread_id exists but analysis incomplete:
+// &quot;You have an interrupted analysis. Resume from [Stage Name]?&quot;
+// [Resume] [Start Fresh]
+</code></pre>
+<h4 id="73-backend-checkpoint-management">7.3 Backend Checkpoint Management</h4>
+<ul>
+<li>[ ] Enable PostgreSQL checkpointing in production</li>
+<li>[ ] Implement checkpoint expiration (7 days)</li>
+<li>[ ] Add checkpoint cleanup background job</li>
+</ul>
+<p><strong>New Files:</strong>
+- <code>src/frontend/src/hooks/useAnalysisState.ts</code>
+- <code>src/frontend/src/components/Analysis/AnalysisRecoveryBanner.tsx</code></p>
+<p><strong>Testing:</strong>
+- [ ] Refresh browser mid-analysis, verify resume works
+- [ ] Test resume after 1 hour delay
+- [ ] Verify expired checkpoints are handled gracefully
+- [ ] Test with PostgreSQL checkpointing enabled</p>
+<hr />
+<h3 id="phase-8-multi-agent-coordination-days-17-18"><strong>Phase 8: Multi-Agent Coordination (Days 17-18)</strong></h3>
+<p><strong>Priority: Low-Medium - Advanced feature</strong></p>
+<h4 id="81-specialized-agent-roles">8.1 Specialized Agent Roles</h4>
+<p>Create dedicated agents for different analysis aspects:</p>
+<h5 id="security-specialist-agent"><strong>Security Specialist Agent</strong></h5>
+<ul>
+<li>Focus: Vulnerability detection, threat analysis</li>
+<li>Tools: Deep security scan, CVE lookup, exploit detection</li>
+<li>Prompts: Security-focused system prompts</li>
+</ul>
+<h5 id="performance-expert-agent"><strong>Performance Expert Agent</strong></h5>
+<ul>
+<li>Focus: Optimization opportunities, efficiency analysis</li>
+<li>Tools: Performance profiling, benchmark comparison</li>
+<li>Prompts: Performance-tuned analysis</li>
+</ul>
+<h5 id="best-practices-auditor-agent"><strong>Best Practices Auditor Agent</strong></h5>
+<ul>
+<li>Focus: Code quality, maintainability, standards</li>
+<li>Tools: Style checking, documentation analysis</li>
+<li>Prompts: Best practices verification</li>
+</ul>
+<h4 id="82-agent-coordination-layer">8.2 Agent Coordination Layer</h4>
+<ul>
+<li>[ ] Route analysis to appropriate specialist agents</li>
+<li>[ ] Aggregate results from multiple agents</li>
+<li>[ ] Resolve conflicting recommendations</li>
+<li>[ ] Synthesize comprehensive report</li>
+</ul>
+<h5 id="multi-agent-orchestrator-enhancement"><strong>Multi-Agent Orchestrator Enhancement</strong></h5>
+<pre><code class="language-python"># Enhance StateGraph with agent routing
+def route_to_specialists(state: PowerShellAnalysisState) -&gt; List[str]:
+    &quot;&quot;&quot;Determine which specialist agents to invoke.&quot;&quot;&quot;
+    agents_needed = []
+
+    if has_security_concerns(state):
+        agents_needed.append(&quot;security_specialist&quot;)
+    if has_performance_issues(state):
+        agents_needed.append(&quot;performance_expert&quot;)
+    if needs_best_practices_review(state):
+        agents_needed.append(&quot;best_practices_auditor&quot;)
+
+    return agents_needed
+</code></pre>
+<h4 id="83-collaboration-visualization">8.3 Collaboration Visualization</h4>
+<ul>
+<li>[ ] Show which agents are active</li>
+<li>[ ] Display agent-specific findings</li>
+<li>[ ] Highlight consensus recommendations</li>
+<li>[ ] Flag disagreements for human review</li>
+</ul>
+<p><strong>Files to Create:</strong>
+- <code>src/ai/agents/specialists/security_specialist.py</code>
+- <code>src/ai/agents/specialists/performance_expert.py</code>
+- <code>src/ai/agents/specialists/best_practices_auditor.py</code>
+- <code>src/ai/agents/multi_agent_coordinator.py</code></p>
+<p><strong>Testing:</strong>
+- [ ] Test routing logic for different script types
+- [ ] Verify each specialist agent produces unique insights
+- [ ] Test aggregation and conflict resolution
+- [ ] Confirm UI shows multi-agent activity correctly</p>
+<hr />
+<h3 id="phase-9-testing-quality-assurance-days-19-20"><strong>Phase 9: Testing &amp; Quality Assurance (Days 19-20)</strong></h3>
+<p><strong>Priority: Critical - Must validate all changes</strong></p>
+<h4 id="91-unit-tests">9.1 Unit Tests</h4>
+<ul>
+<li>[ ] Backend API endpoints (ScriptController)</li>
+<li>[ ] LangGraph tools (security_scan, quality_analysis, etc.)</li>
+<li>[ ] MCP integrations (web search, docs fetching)</li>
+<li>[ ] Frontend service layer (langgraphService.ts)</li>
+<li>[ ] React components (AnalysisProgressPanel, etc.)</li>
+</ul>
+<h4 id="92-integration-tests">9.2 Integration Tests</h4>
+<ul>
+<li>[ ] End-to-end analysis workflow</li>
+<li>[ ] Streaming event delivery</li>
+<li>[ ] Human-in-the-loop pause/resume</li>
+<li>[ ] State persistence and recovery</li>
+<li>[ ] MCP tool execution</li>
+</ul>
+<h4 id="93-performance-tests">9.3 Performance Tests</h4>
+<ul>
+<li>[ ] Analysis time for scripts of varying sizes (10, 100, 1000 lines)</li>
+<li>[ ] Concurrent analysis handling (5, 10, 20 users)</li>
+<li>[ ] Streaming event throughput</li>
+<li>[ ] Database checkpoint overhead</li>
+<li>[ ] MCP tool latency</li>
+</ul>
+<h4 id="94-user-acceptance-testing">9.4 User Acceptance Testing</h4>
+<ul>
+<li>[ ] Internal team testing with real scripts</li>
+<li>[ ] Beta users for feedback</li>
+<li>[ ] Security team review of vulnerability detection</li>
+<li>[ ] Performance team review of optimization suggestions</li>
+</ul>
+<p><strong>Testing Scenarios:</strong>
+1. <strong>Simple Script</strong> (10 lines, no issues)
+   - Expected: Fast analysis (&lt;5s), green scores, no recommendations</p>
+<ol>
+<li><strong>Complex Script</strong> (500 lines, multiple functions)</li>
+<li>
+<p>Expected: Deep analysis (30-60s), multiple tool calls, detailed findings</p>
+</li>
+<li>
+<p><strong>Malicious Script</strong> (Invoke-Expression, downloadstring)</p>
+</li>
+<li>
+<p>Expected: CRITICAL risk score, human review triggered, clear warnings</p>
+</li>
+<li>
+<p><strong>Interrupted Analysis</strong></p>
+</li>
+<li>Expected: Resume from checkpoint works, no data loss</li>
+</ol>
+<hr />
+<h3 id="phase-10-documentation-deployment-days-21-22"><strong>Phase 10: Documentation &amp; Deployment (Days 21-22)</strong></h3>
+<p><strong>Priority: High - Enable adoption</strong></p>
+<h4 id="101-user-documentation">10.1 User Documentation</h4>
+<ul>
+<li>[ ] <strong>User Guide</strong>: How to use enhanced Script Analysis</li>
+<li>[ ] <strong>Video Tutorial</strong>: Walkthrough of new features</li>
+<li>[ ] <strong>FAQ</strong>: Common questions about analysis results</li>
+<li>[ ] <strong>Troubleshooting</strong>: What to do if analysis fails</li>
+</ul>
+<h4 id="102-developer-documentation">10.2 Developer Documentation</h4>
+<ul>
+<li>[ ] <strong>Architecture Diagram</strong>: Updated with LangGraph integration</li>
+<li>[ ] <strong>API Documentation</strong>: New endpoints and parameters</li>
+<li>[ ] <strong>MCP Setup Guide</strong>: How to configure MCP servers</li>
+<li>[ ] <strong>Contributing Guide</strong>: How to add new tools/agents</li>
+</ul>
+<h4 id="103-deployment-checklist">10.3 Deployment Checklist</h4>
+<ul>
+<li>[ ] Environment variables configured</li>
+<li><code>OPENAI_API_KEY</code> for GPT-5.2-codex</li>
+<li><code>BRAVE_API_KEY</code> for web search</li>
+<li><code>GITHUB_TOKEN</code> for vulnerability DB</li>
+<li><code>DATABASE_URL</code> for checkpointing</li>
+<li>[ ] Database migrations applied</li>
+<li>[ ] Redis cache cleared</li>
+<li>[ ] Docker images rebuilt</li>
+<li>[ ] Health checks passing</li>
+<li>[ ] Monitoring/alerting configured</li>
+</ul>
+<h4 id="104-rollout-strategy">10.4 Rollout Strategy</h4>
+<p><strong>Phase 1: Internal Testing</strong> (Day 21)
+- Deploy to staging environment
+- Team testing with real scripts
+- Fix critical bugs</p>
+<p><strong>Phase 2: Beta Release</strong> (Day 22 morning)
+- Enable for 10% of users
+- Monitor performance metrics
+- Collect feedback</p>
+<p><strong>Phase 3: Full Release</strong> (Day 22 afternoon)
+- Enable for all users
+- Announce new features
+- Monitor for issues</p>
+<hr />
+<h2 id="success-metrics">Success Metrics</h2>
+<h3 id="performance"><strong>Performance</strong></h3>
+<ul>
+<li>[ ] Analysis completion time &lt; 60 seconds for 95% of scripts</li>
+<li>[ ] Streaming latency &lt; 500ms per event</li>
+<li>[ ] Frontend responsiveness maintained during analysis</li>
+<li>[ ] No memory leaks during long-running analyses</li>
+</ul>
+<h3 id="quality"><strong>Quality</strong></h3>
+<ul>
+<li>[ ] Security vulnerability detection rate &gt; 95%</li>
+<li>[ ] False positive rate &lt; 5%</li>
+<li>[ ] User satisfaction score &gt; 4.0/5.0</li>
+<li>[ ] Recommendation acceptance rate &gt; 60%</li>
+</ul>
+<h3 id="reliability"><strong>Reliability</strong></h3>
+<ul>
+<li>[ ] Analysis success rate &gt; 99%</li>
+<li>[ ] Recovery from checkpoint success rate &gt; 95%</li>
+<li>[ ] Uptime &gt; 99.5%</li>
+<li>[ ] Error rate &lt; 0.5%</li>
+</ul>
+<h3 id="adoption"><strong>Adoption</strong></h3>
+<ul>
+<li>[ ] 80% of script uploads trigger analysis within first week</li>
+<li>[ ] Human review feature used for 30%+ of critical scripts</li>
+<li>[ ] Average analysis per user increases by 50%</li>
+</ul>
+<hr />
+<h2 id="risk-mitigation">Risk Mitigation</h2>
+<h3 id="technical-risks"><strong>Technical Risks</strong></h3>
+<h4 id="risk-langgraph-analysis-timeout">Risk: LangGraph analysis timeout</h4>
+<ul>
+<li><strong>Mitigation</strong>: Implement 60s timeout, fallback to basic analysis</li>
+<li><strong>Monitoring</strong>: Track timeout rate, alert if &gt;5%</li>
+</ul>
+<h4 id="risk-mcp-server-unavailability">Risk: MCP server unavailability</h4>
+<ul>
+<li><strong>Mitigation</strong>: Graceful degradation, continue without external tools</li>
+<li><strong>Monitoring</strong>: Health checks every 60s, log failures</li>
+</ul>
+<h4 id="risk-frontend-performance-degradation">Risk: Frontend performance degradation</h4>
+<ul>
+<li><strong>Mitigation</strong>: Virtual scrolling for long logs, debounce updates</li>
+<li><strong>Monitoring</strong>: Measure frame rate, optimize if &lt;30 FPS</li>
+</ul>
+<h4 id="risk-database-checkpoint-storage-growth">Risk: Database checkpoint storage growth</h4>
+<ul>
+<li><strong>Mitigation</strong>: 7-day expiration policy, archival to S3</li>
+<li><strong>Monitoring</strong>: Alert if DB size &gt; 10GB</li>
+</ul>
+<h3 id="user-experience-risks"><strong>User Experience Risks</strong></h3>
+<h4 id="risk-analysis-too-slow-users-abandon">Risk: Analysis too slow, users abandon</h4>
+<ul>
+<li><strong>Mitigation</strong>: Show immediate progress, estimate time remaining</li>
+<li><strong>Solution</strong>: "Quick scan" option for preliminary results</li>
+</ul>
+<h4 id="risk-too-much-information-overwhelming">Risk: Too much information, overwhelming</h4>
+<ul>
+<li><strong>Mitigation</strong>: Collapsible sections, progressive disclosure</li>
+<li><strong>Solution</strong>: "Summary" view by default, "Details" on demand</li>
+</ul>
+<h4 id="risk-false-positives-erode-trust">Risk: False positives erode trust</h4>
+<ul>
+<li><strong>Mitigation</strong>: Explain reasoning, allow user feedback</li>
+<li><strong>Solution</strong>: "Report incorrect finding" button</li>
+</ul>
+<h3 id="security-risks"><strong>Security Risks</strong></h3>
+<h4 id="risk-api-key-exposure-in-frontend">Risk: API key exposure in frontend</h4>
+<ul>
+<li><strong>Mitigation</strong>: All AI calls go through backend proxy</li>
+<li><strong>Validation</strong>: Code review, security audit</li>
+</ul>
+<h4 id="risk-malicious-scripts-exploit-analysis">Risk: Malicious scripts exploit analysis</h4>
+<ul>
+<li><strong>Mitigation</strong>: Sandboxed execution, input validation</li>
+<li><strong>Validation</strong>: Penetration testing</li>
+</ul>
+<hr />
+<h2 id="resource-requirements">Resource Requirements</h2>
+<h3 id="team"><strong>Team</strong></h3>
+<ul>
+<li><strong>Frontend Developer</strong> (Full-time, Days 1-20): React/TypeScript, SSE</li>
+<li><strong>Backend Developer</strong> (Full-time, Days 1-20): Node.js/Express, API design</li>
+<li><strong>AI/ML Engineer</strong> (Full-time, Days 1-20): LangGraph, OpenAI API, MCP</li>
+<li><strong>QA Engineer</strong> (Full-time, Days 15-22): Testing, automation</li>
+<li><strong>DevOps Engineer</strong> (Part-time, Days 20-22): Deployment, monitoring</li>
+</ul>
+<h3 id="infrastructure_1"><strong>Infrastructure</strong></h3>
+<ul>
+<li><strong>Compute</strong>: Increase AI service CPU by 2x (for concurrent analyses)</li>
+<li><strong>Database</strong>: Add 50GB storage for checkpoints</li>
+<li><strong>API Costs</strong>: Estimate $500/month additional for GPT-5.2-codex + web search</li>
+</ul>
+<h3 id="external-services"><strong>External Services</strong></h3>
+<ul>
+<li><strong>Brave Search API</strong>: $5/month (free tier may suffice initially)</li>
+<li><strong>GitHub API</strong>: Free for personal/organization use</li>
+<li><strong>OpenAI API</strong>: Pay-as-you-go (GPT-5.2-codex pricing TBD)</li>
+</ul>
+<hr />
+<h2 id="next-steps-immediate-actions">Next Steps - Immediate Actions</h2>
+<h3 id="today-january-9-2026"><strong>Today (January 9, 2026)</strong></h3>
+<ol>
+<li><strong>Review this plan</strong> with team for approval</li>
+<li><strong>Set up project tracking</strong> (GitHub Project, Jira, etc.)</li>
+<li><strong>Assign Phase 1 tasks</strong> to team members</li>
+<li><strong>Configure development environment</strong> (API keys, MCP servers)</li>
+<li><strong>Create feature branch</strong> <code>feature/enhanced-script-analysis</code></li>
+</ol>
+<h3 id="tomorrow-january-10-2026"><strong>Tomorrow (January 10, 2026)</strong></h3>
+<ol>
+<li><strong>Start Phase 1</strong> - Core integration</li>
+<li><strong>Create backend API endpoints</strong></li>
+<li><strong>Build frontend service layer</strong></li>
+<li><strong>Test basic LangGraph connectivity</strong></li>
+</ol>
+<h3 id="end-of-week-1"><strong>End of Week 1</strong></h3>
+<ul>
+<li><strong>Complete Phases 1-3</strong></li>
+<li><strong>Demo streaming analysis and human-in-the-loop</strong></li>
+<li><strong>Gather team feedback, adjust plan if needed</strong></li>
+</ul>
+<hr />
+<h2 id="research-sources">Research Sources</h2>
+<h3 id="agent-orchestration-langgraph_1">Agent Orchestration &amp; LangGraph</h3>
+<ul>
+<li><a href="https://www.langchain.com/langgraph">LangGraph Documentation</a></li>
+<li><a href="https://www.langchain.com/state-of-agent-engineering">State of Agent Engineering 2026</a></li>
+<li><a href="https://docs.langchain.com/oss/python/langgraph/workflows-agents">Workflows and Agents Guide</a></li>
+<li><a href="https://www.datacamp.com/blog/best-ai-agents">Top AI Agents in 2026</a></li>
+<li><a href="https://iterathon.tech/blog/ai-agent-orchestration-frameworks-2026">Agent Orchestration Frameworks Comparison</a></li>
+<li><a href="https://www.multimodal.dev/post/best-multi-agent-ai-frameworks">Multi-Agent AI Frameworks</a></li>
+<li><a href="https://www.analyticsvidhya.com/blog/2024/07/ai-agent-frameworks/">AI Agent Frameworks Guide</a></li>
+<li><a href="https://www.ibm.com/think/tutorials/build-agentic-workflows-langgraph-granite">Building Agentic Workflows with LangGraph</a></li>
+<li><a href="https://www.marktechpost.com/2026/01/06/how-to-design-an-agentic-ai-architecture-with-langgraph-and-openai-using-adaptive-deliberation-memory-graphs-and-reflexion-loops/">Agentic AI Architecture Design</a></li>
+<li><a href="https://towardsdatascience.com/how-to-build-effective-agentic-systems-with-langgraph/">Building Effective Agentic Systems</a></li>
+</ul>
+<h3 id="model-context-protocol-mcp_1">Model Context Protocol (MCP)</h3>
+<ul>
+<li><a href="https://www.anthropic.com/news/model-context-protocol">Introducing Model Context Protocol</a></li>
+<li><a href="https://blogs.perficient.com/2026/01/08/model-context-protocol-mcp-simplified/">MCP Simplified Guide</a></li>
+<li><a href="https://anthropic.skilljar.com/introduction-to-model-context-protocol">Introduction to Model Context Protocol</a></li>
+<li><a href="https://www.descope.com/learn/post/mcp">What is MCP and How It Works</a></li>
+<li><a href="https://www.codecademy.com/article/how-to-use-model-context-protocol-mcp-with-claude-step-by-step-guide-with-examples">How to Use MCP with Claude</a></li>
+<li><a href="https://github.com/modelcontextprotocol/servers">MCP Servers Repository</a></li>
+<li><a href="https://modelcontextprotocol.io/">Model Context Protocol Official Site</a></li>
+</ul>
+<h3 id="powershell-security-best-practices">PowerShell Security &amp; Best Practices</h3>
+<ul>
+<li><a href="https://slashdot.org/software/ai-coding-agents/for-powershell/">AI Coding Agents for PowerShell</a></li>
+<li><a href="https://www.insentragroup.com/us/insights/geek-speak/professional-services/using-ai-to-standardise-scripts/">AI for PowerShell Script Standardization</a></li>
+<li><a href="https://github.com/PowerShell/AIShell">PowerShell AIShell</a></li>
+<li><a href="https://www.darkreading.com/application-security/coders-adopt-ai-agents-security-pitfalls-lurk-2026">AI Security Pitfalls in 2026</a></li>
+<li><a href="https://www.oreateai.com/blog/comprehensive-analysis-and-configuration-guide-for-powershell-script-execution-policies/500b21117e4c78384b98018e759c2893">PowerShell Script Execution Policies</a></li>
+</ul>
+<h3 id="function-calling-agentic-workflows">Function Calling &amp; Agentic Workflows</h3>
+<ul>
+<li><a href="https://neo4j.com/blog/developer/function-calling-agentic-workflows/">Function Calling in Agentic Workflows</a></li>
+<li><a href="https://www.codecademy.com/article/agentic-ai-with-langchain-langgraph">Building Agentic AI with LangChain</a></li>
+<li><a href="https://cobusgreyling.medium.com/agentic-workflows-034d2df458d3">Agentic Workflows Overview</a></li>
+<li><a href="https://adspyder.io/blog/top-7-agentic-ai-tools/">Top Agentic AI Tools for 2026</a></li>
+</ul>
+<hr />
+<h2 id="appendix">Appendix</h2>
+<h3 id="a-technology-stack"><strong>A. Technology Stack</strong></h3>
+<p><strong>Frontend</strong>
+- React 18+ with TypeScript
+- TanStack Query v5 for data fetching
+- Server-Sent Events (SSE) for streaming
+- Tailwind CSS for styling</p>
+<p><strong>Backend</strong>
+- Node.js with Express/TypeScript
+- Sequelize ORM for PostgreSQL
+- Redis for caching
+- SSE middleware for event streaming</p>
+<p><strong>AI Service</strong>
+- Python 3.10+ with FastAPI
+- LangGraph 1.0.5 for orchestration
+- LangChain for tool integration
+- OpenAI API (GPT-5.2-codex)
+- Anthropic MCP SDK</p>
+<p><strong>Infrastructure</strong>
+- Docker Compose for local development
+- PostgreSQL 15 with pgvector
+- Redis 7.0
+- Nginx (production proxy)</p>
+<h3 id="b-key-files-reference"><strong>B. Key Files Reference</strong></h3>
+<p><strong>Backend</strong>
+- <code>src/backend/src/controllers/ScriptController.ts</code> - API endpoints
+- <code>src/backend/src/routes/scripts.ts</code> - Route definitions
+- <code>src/backend/src/middleware/sse.ts</code> (NEW) - SSE support</p>
+<p><strong>Frontend</strong>
+- <code>src/frontend/src/pages/ScriptAnalysis.tsx</code> - Main analysis UI
+- <code>src/frontend/src/services/langgraphService.ts</code> (NEW) - API client
+- <code>src/frontend/src/hooks/useAnalysisStream.ts</code> (NEW) - Streaming hook
+- <code>src/frontend/src/components/Analysis/</code> (NEW) - Analysis components</p>
+<p><strong>AI Service</strong>
+- <code>src/ai/agents/langgraph_production.py</code> - LangGraph orchestrator
+- <code>src/ai/langgraph_endpoints.py</code> - FastAPI endpoints
+- <code>src/ai/mcp_config.json</code> (NEW) - MCP server configuration
+- <code>src/ai/tools/</code> (NEW) - Custom tool implementations</p>
+<h3 id="c-environment-variables"><strong>C. Environment Variables</strong></h3>
+<pre><code class="language-bash"># Backend
+AI_SERVICE_URL=http://ai-service:8000
+DATABASE_URL=postgresql://user:pass@postgres:5432/psscript
+REDIS_URL=redis://redis:6379
+
+# AI Service
+OPENAI_API_KEY=sk-proj-...
+DEFAULT_MODEL=gpt-5.2-codex
+USE_POSTGRES_CHECKPOINTING=true
+
+# MCP Integrations (NEW)
+BRAVE_API_KEY=...
+GITHUB_TOKEN=...
+ENABLE_WEB_SEARCH=true
+ENABLE_VULNERABILITY_CHECK=true
+</code></pre>
+<h3 id="d-rollback-plan"><strong>D. Rollback Plan</strong></h3>
+<p>If critical issues arise post-deployment:</p>
+<ol>
+<li><strong>Immediate Rollback</strong> (&lt; 5 minutes)</li>
+<li>Revert frontend to previous version via Git</li>
+<li>Disable <code>/langgraph/analyze</code> endpoint via feature flag</li>
+<li>
+<p>Fall back to legacy <code>/chat</code> endpoint</p>
+</li>
+<li>
+<p><strong>Data Preservation</strong></p>
+</li>
+<li>Keep PostgreSQL checkpoints for 7 days</li>
+<li>Export analysis results before rollback</li>
+<li>
+<p>Preserve thread_id mappings</p>
+</li>
+<li>
+<p><strong>Communication</strong></p>
+</li>
+<li>Notify users via in-app banner</li>
+<li>Post incident report within 24 hours</li>
+<li>Provide timeline for re-enabling feature</li>
+</ol>
+<hr />
+<h2 id="conclusion">Conclusion</h2>
+<p>This comprehensive plan transforms Script Analysis from a basic chatbot into a <strong>production-grade, multi-agent, agentic AI system</strong> that leverages the latest 2026 technologies:</p>
+<ul>
+<li>✅ <strong>LangGraph 1.0</strong> for robust orchestration</li>
+<li>✅ <strong>Model Context Protocol</strong> for external tool access</li>
+<li>✅ <strong>Human-in-the-loop</strong> for collaborative analysis</li>
+<li>✅ <strong>Real-time streaming</strong> for transparency</li>
+<li>✅ <strong>State persistence</strong> for reliability</li>
+<li>✅ <strong>Internet research</strong> for up-to-date findings</li>
+<li>✅ <strong>Multi-agent coordination</strong> for depth</li>
+</ul>
+<p><strong>Estimated Timeline:</strong> 22 days (4.4 weeks)
+<strong>Team Size:</strong> 4-5 engineers
+<strong>Risk Level:</strong> Medium (well-researched, proven technologies)
+<strong>Impact:</strong> High (significant UX improvement, competitive differentiation)</p>
+<p><strong>Status:</strong> ✅ Ready for team review and approval</p>
+<hr />
+<p><strong>Document prepared by</strong>: Claude (claude-sonnet-4-5)
+<strong>Date</strong>: January 9, 2026
+<strong>Version</strong>: 1.0
+<strong>Next Review</strong>: After Phase 3 completion (Day 6)</p>
+    <div class="footer">Generated 2026-01-13 06:26 UTC</div>
+  </div>
+</body>
+</html>

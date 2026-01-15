@@ -10,7 +10,7 @@ import os
 import json
 import logging
 import time
-from typing import Dict, List, Any, Optional, Union, Tuple
+from typing import Dict, List, Any, Optional
 from enum import Enum
 
 import openai

@@ -71,8 +71,9 @@ const ChatHistory = function(sequelize: Sequelize) {
   );
 
   // Add associate method
-  // @ts-ignore
-      ChatHistoryModel.associate = function() {
+  // @ts-ignore - Dynamic association assignment pattern
+  ChatHistoryModel.associate = function() {
+    // eslint-disable-next-line @typescript-eslint/no-require-imports
     const { User } = require('./index');
     ChatHistoryModel.belongsTo(User, {
       foreignKey: 'userId',

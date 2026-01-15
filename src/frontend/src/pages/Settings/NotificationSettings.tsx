@@ -299,7 +299,7 @@ const NotificationSettings: React.FC = () => {
           
           <div className="mt-4 text-sm text-gray-500 dark:text-gray-400">
             <p>
-              Note: You'll need to grant permission in your browser to receive notifications.
+              Note: You&apos;ll need to grant permission in your browser to receive notifications.
             </p>
           </div>
         </div>

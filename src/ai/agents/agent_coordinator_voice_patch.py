@@ -5,7 +5,6 @@ This file contains the code that should be added to agent_coordinator.py to inte
 """
 
 # Add this import at the top of agent_coordinator.py
-from .voice_agent import VoiceAgent
 
 # Add these lines to the AgentCapability enum in multi_agent_system.py
 # VOICE_SYNTHESIS = "voice_synthesis"

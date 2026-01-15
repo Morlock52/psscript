@@ -52,6 +52,7 @@ const FullScreenEditor: React.FC<FullScreenEditorProps> = ({
       document.removeEventListener('keydown', handleEscape);
       document.removeEventListener('keydown', handleSaveShortcut);
     };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isOpen, initialContent, onClose, content]);
 
   // Handle click outside to close
@@ -91,8 +92,8 @@ const FullScreenEditor: React.FC<FullScreenEditorProps> = ({
     }
   };
 
-  // Define Monaco type
-  interface Monaco {
+  // Define Monaco type (used for type reference)
+  interface _Monaco {
     KeyMod: any;
     KeyCode: any;
   }

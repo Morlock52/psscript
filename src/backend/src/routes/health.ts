@@ -23,18 +23,17 @@ const dbConnectionInfo = {
   }),
   validateConnection: async () => true
 };
-const connectionEvents = {};
+const _connectionEvents = {};
 import dns from 'dns';
 import net from 'net';
 import os from 'os';
 import { cache } from '../index';
-import { 
-  getCache, 
-  setCache, 
-  deleteCache, 
-  invalidateByPattern, 
-  persistCache, 
-  loadCache 
+import {
+  getCache,
+  setCache,
+  deleteCache,
+  persistCache,
+  loadCache
 } from '../utils/redis';
 
 // Constants for cache health checks
@@ -649,6 +648,7 @@ router.get('/cache/persistence', async (req, res) => {
     
     // Try to clean up the test file
     try {
+      // eslint-disable-next-line @typescript-eslint/no-require-imports
       const fs = require('fs');
       if (fs.existsSync(filePath)) {
         fs.unlinkSync(filePath);

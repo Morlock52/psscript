@@ -7,22 +7,18 @@ internet data access.
 """
 
 import os
-import json
 import logging
-from typing import Dict, List, Any, Optional, Union
+from typing import Dict, List, Optional
 
 from langchain.agents.agent import AgentType, initialize_agent, load_tools
 from langchain.agents.agent import AgentExecutor
 from langchain.memory import ConversationBufferMemory
 from langchain.chat_models import ChatOpenAI
-from langchain.schema import SystemMessage, HumanMessage, AIMessage
 from langchain.tools import BaseTool
 from langchain.callbacks.manager import CallbackManager
 from langchain.callbacks.streaming_stdout import StreamingStdOutCallbackHandler
-from langchain.utilities import GoogleSearchAPIWrapper, WikipediaAPIWrapper
+from langchain.utilities import GoogleSearchAPIWrapper
 from langchain.tools import DuckDuckGoSearchRun
-from langchain.chains import LLMChain
-from langchain.prompts import PromptTemplate
 
 # Configure logging
 logging.basicConfig(
@@ -135,7 +131,6 @@ class LangChainAgent:
         """
         try:
             # Convert messages to LangChain format
-            langchain_messages = []
             
             # Extract the last user message
             user_message = None

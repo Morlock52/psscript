@@ -1,5 +1,6 @@
 import { Model, DataTypes, Sequelize } from 'sequelize';
 import Script from './Script';
+import User from './User';
 
 export default class ScriptVersion extends Model {
   public id!: number;
@@ -8,12 +9,13 @@ export default class ScriptVersion extends Model {
   public content!: string;
   public changelog!: string | null;
   public userId!: number;
-  
+
   public readonly createdAt!: Date;
   public readonly updatedAt!: Date;
 
   // References
   public readonly script?: Script;
+  public readonly user?: User;
 
   static initialize(sequelize: Sequelize) {
     ScriptVersion.init({
@@ -69,5 +71,6 @@ export default class ScriptVersion extends Model {
 
   static associate() {
     ScriptVersion.belongsTo(Script, { foreignKey: 'scriptId', as: 'script' });
+    ScriptVersion.belongsTo(User, { foreignKey: 'userId', as: 'user' });
   }
 }

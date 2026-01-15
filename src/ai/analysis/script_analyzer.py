@@ -11,9 +11,8 @@ import time
 import logging
 import asyncio
 import hashlib
-from functools import lru_cache
 from concurrent.futures import ThreadPoolExecutor
-from typing import Dict, List, Optional, Tuple, Any, Union, Callable
+from typing import Dict, List, Optional, Tuple, Any
 
 from openai import OpenAI, AsyncOpenAI
 import numpy as np
@@ -32,6 +31,9 @@ logger = logging.getLogger("script_analyzer")
 # Load environment variables
 load_dotenv()
 
+# Constants for API timeouts
+REQUEST_TIMEOUT = 60  # seconds
+
 # Initialize OpenAI clients with graceful fallback
 api_key = os.getenv("OPENAI_API_KEY")
 MOCK_MODE = False
@@ -43,8 +45,8 @@ if not api_key:
     async_client = None
 else:
     try:
-        client = OpenAI(api_key=api_key, timeout=REQUEST_TIMEOUT if 'REQUEST_TIMEOUT' in dir() else 60)
-        async_client = AsyncOpenAI(api_key=api_key, timeout=REQUEST_TIMEOUT if 'REQUEST_TIMEOUT' in dir() else 60)
+        client = OpenAI(api_key=api_key, timeout=REQUEST_TIMEOUT)
+        async_client = AsyncOpenAI(api_key=api_key, timeout=REQUEST_TIMEOUT)
         logger.info("OpenAI clients initialized successfully")
     except Exception as e:
         logger.error(f"Failed to initialize OpenAI clients: {e}")
@@ -57,11 +59,8 @@ disk_cache = Cache('./analysis_cache')
 redis_client = None
 if os.getenv("REDIS_URL"):
     try:
-        from redis import Redis
         redis_client = Redis.from_url(os.getenv("REDIS_URL"), decode_responses=True)
         logger.info("Redis cache initialized")
-    except ImportError:
-        logger.warning("Redis package not installed, falling back to disk cache")
     except Exception as e:
         logger.warning(f"Failed to connect to Redis: {e}, falling back to disk cache")
 
@@ -182,7 +181,7 @@ class ScriptAnalyzer:
         
         # Handle existing event loop
         try:
-            loop = asyncio.get_running_loop()
+            asyncio.get_running_loop()
             # If we're already in an async context, create a task
             import concurrent.futures
             with concurrent.futures.ThreadPoolExecutor() as pool:
@@ -342,7 +341,7 @@ class ScriptAnalyzer:
         """Synchronous wrapper for script analysis."""
         # Handle existing event loop
         try:
-            loop = asyncio.get_running_loop()
+            asyncio.get_running_loop()
             # If we're already in an async context, create a task
             import concurrent.futures
             with concurrent.futures.ThreadPoolExecutor() as pool:
@@ -395,7 +394,7 @@ class ScriptAnalyzer:
         """Synchronous wrapper for finding similar scripts."""
         # Handle existing event loop
         try:
-            loop = asyncio.get_running_loop()
+            asyncio.get_running_loop()
             # If we're already in an async context, create a task
             import concurrent.futures
             with concurrent.futures.ThreadPoolExecutor() as pool:
@@ -432,7 +431,7 @@ class ScriptAnalyzer:
         """Synchronous wrapper for complete script analysis with embedding."""
         # Handle existing event loop
         try:
-            loop = asyncio.get_running_loop()
+            asyncio.get_running_loop()
             # If we're already in an async context, create a task
             import concurrent.futures
             with concurrent.futures.ThreadPoolExecutor() as pool:
@@ -466,7 +465,7 @@ class ScriptAnalyzer:
         """Synchronous wrapper for batch script analysis."""
         # Handle existing event loop
         try:
-            loop = asyncio.get_running_loop()
+            asyncio.get_running_loop()
             # If we're already in an async context, create a task
             import concurrent.futures
             with concurrent.futures.ThreadPoolExecutor() as pool:

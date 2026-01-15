@@ -73,44 +73,44 @@ const StatCard: React.FC<StatCardProps> = ({
       case 'script':
         return 'text-blue-500';
       case 'category':
-        return 'text-purple-500';
+        return 'text-violet-500';
       case 'security':
-        return 'text-green-500';
+        return 'text-emerald-500';
       case 'analysis':
         return 'text-orange-500';
       case 'user':
         return 'text-indigo-500';
       case 'execution':
-        return 'text-yellow-500';
+        return 'text-amber-500';
       default:
-        return 'text-gray-500';
+        return 'text-[var(--color-text-tertiary)]';
     }
   };
 
-  // Get background color based on icon type
+  // Get background color based on icon type - using transparent overlays that work in both modes
   const getIconBgColor = () => {
     switch (icon) {
       case 'script':
-        return 'bg-blue-100 dark:bg-blue-900';
+        return 'bg-blue-500/10';
       case 'category':
-        return 'bg-purple-100 dark:bg-purple-900';
+        return 'bg-violet-500/10';
       case 'security':
-        return 'bg-green-100 dark:bg-green-900';
+        return 'bg-emerald-500/10';
       case 'analysis':
-        return 'bg-orange-100 dark:bg-orange-900';
+        return 'bg-orange-500/10';
       case 'user':
-        return 'bg-indigo-100 dark:bg-indigo-900';
+        return 'bg-indigo-500/10';
       case 'execution':
-        return 'bg-yellow-100 dark:bg-yellow-900';
+        return 'bg-amber-500/10';
       default:
-        return 'bg-gray-100 dark:bg-gray-800';
+        return 'bg-[var(--color-bg-tertiary)]';
     }
   };
 
   // Get change indicator color
   const getChangeColor = () => {
-    if (!change) return 'text-gray-500';
-    return change > 0 ? 'text-green-500' : 'text-red-500';
+    if (!change) return 'text-[var(--color-text-tertiary)]';
+    return change > 0 ? 'text-emerald-500' : 'text-red-500';
   };
 
   // Get change indicator icon
@@ -128,13 +128,13 @@ const StatCard: React.FC<StatCardProps> = ({
   };
 
   return (
-    <div className="p-6 rounded-lg shadow-md bg-white dark:bg-gray-800">
+    <div className="p-6 rounded-xl shadow-[var(--shadow-md)] bg-[var(--color-bg-elevated)] border border-[var(--color-border-default)] transition-colors duration-300">
       <div className="flex items-center justify-between mb-4">
         <div className="flex items-center">
           <div className={`p-3 rounded-full ${getIconBgColor()}`}>
             <div className={getIconColor()}>{getIcon()}</div>
           </div>
-          <h3 className="ml-3 text-lg font-medium text-gray-700 dark:text-gray-300">{title}</h3>
+          <h3 className="ml-3 text-lg font-medium text-[var(--color-text-secondary)]">{title}</h3>
         </div>
         {change !== undefined && (
           <div className={`flex items-center ${getChangeColor()}`}>
@@ -143,15 +143,15 @@ const StatCard: React.FC<StatCardProps> = ({
           </div>
         )}
       </div>
-      
+
       {isLoading ? (
         <div className="flex justify-center py-2">
           <LoadingSpinner size="sm" />
         </div>
       ) : (
         <div className="flex items-baseline">
-          <span className="text-3xl font-bold text-gray-900 dark:text-white">{value}</span>
-          {suffix && <span className="ml-1 text-lg text-gray-500 dark:text-gray-400">{suffix}</span>}
+          <span className="text-3xl font-bold text-[var(--color-text-primary)]">{value}</span>
+          {suffix && <span className="ml-1 text-lg text-[var(--color-text-tertiary)]">{suffix}</span>}
         </div>
       )}
     </div>

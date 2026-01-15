@@ -13,6 +13,7 @@ if [ ! -f ./src/frontend/.env ]; then
 VITE_API_URL=http://localhost:4000/api
 VITE_USE_MOCKS=true
 VITE_AI_SERVICE_URL=http://localhost:8000
+VITE_DOCS_URL=http://localhost:4000
 EOL
   echo "Created frontend .env file"
 fi

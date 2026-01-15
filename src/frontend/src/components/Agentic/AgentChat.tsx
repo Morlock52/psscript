@@ -6,15 +6,11 @@ import {
   TextField,
   Button,
   CircularProgress,
-  List,
-  ListItem,
-  Divider,
   IconButton,
   Chip,
   Avatar,
   Grid,
   Card,
-  CardContent,
   LinearProgress,
   Alert,
   Snackbar,
@@ -23,7 +19,6 @@ import {
 import SendIcon from '@mui/icons-material/Send';
 import SmartToyIcon from '@mui/icons-material/SmartToy';
 import PersonIcon from '@mui/icons-material/Person';
-import CodeIcon from '@mui/icons-material/Code';
 import ReplayIcon from '@mui/icons-material/Replay';
 import InfoIcon from '@mui/icons-material/Info';
 import { Prism as SyntaxHighlighter } from 'react-syntax-highlighter';
@@ -32,17 +27,16 @@ import { useAuth } from '../../hooks/useAuth';
 import ReactMarkdown from 'react-markdown';
 
 // Import agentic framework
-import { 
-  Agent, 
-  Thread, 
-  Message, 
-  Run, 
-  createAgent, 
-  createThread, 
-  addMessage, 
-  createRun, 
-  getThread, 
-  getThreadMessages, 
+import {
+  Agent,
+  Thread,
+  Message,
+  createAgent,
+  createThread,
+  addMessage,
+  createRun,
+  getThread,
+  getThreadMessages,
   waitForRun
 } from '../../api/agentOrchestrator';
 
@@ -55,13 +49,29 @@ interface AgentChatProps {
 
 const AgentChat: React.FC<AgentChatProps> = ({
   agentConfig = {
-    name: 'PowerShell Assistant',
-    description: 'I can help you with PowerShell scripting and automation',
-    capabilities: ['script_analysis', 'code_generation', 'security_review'],
+    name: 'PSScript AI Assistant',
+    description: 'Specialized PowerShell expert with script generation and analysis capabilities',
+    capabilities: [
+      'script_analysis',
+      'script_generation',
+      'code_review',
+      'security_analysis',
+      'debugging',
+      'automation'
+    ],
     model: 'gpt-4o'
   },
-  initialMessage = 'Hello! I\'m your PowerShell scripting assistant. How can I help you today?',
-  placeholder = 'Ask anything about PowerShell scripting...',
+  initialMessage = `Hello! I'm your **PSScript AI Assistant** - specialized in PowerShell and scripting.
+
+I can help you with:
+- 📝 **Writing new scripts** - "Create a script that backs up files to Azure"
+- 🔍 **Analyzing scripts** - "Explain what this script does"
+- 🔒 **Security reviews** - "Check this script for vulnerabilities"
+- 🐛 **Debugging** - "Why isn't my Get-ChildItem working?"
+- ⚡ **Optimization** - "How can I make this script faster?"
+
+What PowerShell challenge can I help you with today?`,
+  placeholder = 'Ask about PowerShell scripting, request a new script, or get help debugging...',
   showToolbar = true
 }) => {
   const theme = useTheme();
@@ -259,18 +269,18 @@ const AgentChat: React.FC<AgentChatProps> = ({
             ) : (
               <Box>
                 <ReactMarkdown
-                  children={message.content || ''}
                   components={{
-                    code({node, inline, className, children, ...props}) {
+                    code({inline, className, children, ...props}) {
                       const match = /language-(\w+)/.exec(className || '');
                       return !inline && match ? (
                         <SyntaxHighlighter
-                          children={String(children).replace(/\n$/, '')}
                           style={atomDark}
                           language={match[1]}
                           PreTag="div"
                           {...props}
-                        />
+                        >
+                          {String(children).replace(/\n$/, '')}
+                        </SyntaxHighlighter>
                       ) : (
                         <code className={className} {...props}>
                           {children}
@@ -278,7 +288,9 @@ const AgentChat: React.FC<AgentChatProps> = ({
                       );
                     }
                   }}
-                />
+                >
+                  {message.content || ''}
+                </ReactMarkdown>
               </Box>
             )}
           </Paper>

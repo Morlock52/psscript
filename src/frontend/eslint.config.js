@@ -1,58 +1,123 @@
-import js from '@eslint/js';
+import eslint from '@eslint/js';
 import tseslint from 'typescript-eslint';
-import reactPlugin from 'eslint-plugin-react';
-import reactHooksPlugin from 'eslint-plugin-react-hooks';
+import react from 'eslint-plugin-react';
+import reactHooks from 'eslint-plugin-react-hooks';
+import globals from 'globals';
 
-export default [
+export default tseslint.config(
+  // Global ignores
   {
-    ignores: ['dist/**/*', 'node_modules/**/*']
+    ignores: [
+      '**/*.jsx',
+      '**/*.cjs',
+      'dist/',
+      'node_modules/',
+    ],
   },
-  js.configs.recommended,
+
+  // Base ESLint recommended
+  eslint.configs.recommended,
+
+  // TypeScript-ESLint recommended
   ...tseslint.configs.recommended,
+
+  // Main configuration for TypeScript/React files
   {
-    files: ['**/*.{js,jsx,ts,tsx}'],
+    files: ['**/*.{ts,tsx}'],
+    plugins: {
+      react,
+      'react-hooks': reactHooks,
+    },
     languageOptions: {
-      ecmaVersion: 2022,
+      ecmaVersion: 2021,
       sourceType: 'module',
+      globals: {
+        ...globals.browser,
+        ...globals.es2021,
+        clearInterval: 'readonly',
+        setInterval: 'readonly',
+        setTimeout: 'readonly',
+        clearTimeout: 'readonly',
+        navigator: 'readonly',
+        MediaRecorder: 'readonly',
+        Blob: 'readonly',
+        FileReader: 'readonly',
+        atob: 'readonly',
+        btoa: 'readonly',
+        fetch: 'readonly',
+        window: 'readonly',
+        document: 'readonly',
+        URL: 'readonly',
+        Audio: 'readonly',
+      },
       parserOptions: {
         ecmaFeatures: {
           jsx: true,
         },
       },
-      globals: {
-        document: 'readonly',
-        window: 'readonly',
-        console: 'readonly',
-        localStorage: 'readonly',
-        setTimeout: 'readonly',
-        clearTimeout: 'readonly',
-        alert: 'readonly',
-        URL: 'readonly'
-      }
     },
     settings: {
       react: {
         version: 'detect',
       },
     },
-    plugins: {
-      react: reactPlugin,
-      'react-hooks': reactHooksPlugin,
-    },
     rules: {
+      // TypeScript rules
       'no-unused-vars': 'off',
-      '@typescript-eslint/no-unused-vars': ['warn', { argsIgnorePattern: '^_' }],
+      '@typescript-eslint/no-unused-vars': [
+        'warn',
+        {
+          argsIgnorePattern: '^_',
+          varsIgnorePattern: '^_',
+          caughtErrorsIgnorePattern: '^_',
+        },
+      ],
       '@typescript-eslint/explicit-module-boundary-types': 'off',
       '@typescript-eslint/no-explicit-any': 'off',
-      '@typescript-eslint/no-unused-expressions': 'warn',
       '@typescript-eslint/ban-ts-comment': 'warn',
+
+      // React rules
+      'react/react-in-jsx-scope': 'off',
+      'react/no-children-prop': 'warn',
+      'react/no-unescaped-entities': 'warn',
+
+      // React Hooks rules
+      'react-hooks/rules-of-hooks': 'error',
+      'react-hooks/exhaustive-deps': 'warn',
+
+      // General rules
       'no-useless-escape': 'warn',
       'no-control-regex': 'warn',
-      'no-constant-binary-expression': 'warn',
-      'no-constant-condition': 'warn',
-      'react/react-in-jsx-scope': 'off',
-      'react-hooks/rules-of-hooks': 'warn',
-      'react-hooks/exhaustive-deps': 'warn',
     },
   },
-];
+
+  // Override for .js files (Node.js scripts like server.js)
+  {
+    files: ['**/*.js'],
+    languageOptions: {
+      sourceType: 'module',
+      globals: {
+        ...globals.node,
+        ...globals.es2021,
+      },
+    },
+    rules: {
+      '@typescript-eslint/no-require-imports': 'off',
+    },
+  },
+
+  // Override for .cjs files
+  {
+    files: ['**/*.cjs'],
+    languageOptions: {
+      sourceType: 'commonjs',
+      globals: {
+        ...globals.node,
+        ...globals.commonjs,
+      },
+    },
+    rules: {
+      '@typescript-eslint/no-require-imports': 'off',
+    },
+  },
+);

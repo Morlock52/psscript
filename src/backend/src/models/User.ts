@@ -1,6 +1,18 @@
 import { Model, DataTypes, Sequelize } from 'sequelize';
 import bcrypt from 'bcrypt';
 import logger from '../utils/logger';
+import { getAuthConfig } from '../utils/envValidation';
+
+// Get bcrypt rounds from environment config (default 12 per OWASP recommendations)
+const getBcryptRounds = (): number => {
+  try {
+    const config = getAuthConfig();
+    return config.bcryptRounds;
+  } catch {
+    // Fallback if config not available during initialization
+    return parseInt(process.env.BCRYPT_ROUNDS || '12');
+  }
+};
 
 export default class User extends Model {
   public id!: number;
@@ -10,9 +22,27 @@ export default class User extends Model {
   public role!: string;
   public lastLoginAt?: Date;
   public loginAttempts?: number;
-  
+  public lockedUntil?: Date | null;
+
   public readonly createdAt!: Date;
   public readonly updatedAt!: Date;
+
+  /**
+   * Check if the account is currently locked
+   */
+  public isLocked(): boolean {
+    if (!this.lockedUntil) return false;
+    return new Date() < new Date(this.lockedUntil);
+  }
+
+  /**
+   * Get remaining lockout time in seconds
+   */
+  public getLockoutRemaining(): number {
+    if (!this.lockedUntil) return 0;
+    const remaining = new Date(this.lockedUntil).getTime() - Date.now();
+    return remaining > 0 ? Math.ceil(remaining / 1000) : 0;
+  }
 
   /**
    * Validate a password against the stored hash
@@ -97,35 +127,69 @@ export default class User extends Model {
   }
   
   /**
-   * Track login attempts for this user
+   * Track login attempts for this user and implement account lockout
    * @param success Whether the login attempt was successful
    * @param requestId Optional request ID for logging
+   * @returns true if account is now locked
    */
-  public async trackLoginAttempt(success: boolean, requestId?: string): Promise<void> {
+  public async trackLoginAttempt(success: boolean, requestId?: string): Promise<boolean> {
     try {
+      const config = getAuthConfig();
+      const maxAttempts = config.accountLockoutAttempts;
+      const lockoutMinutes = config.accountLockoutDurationMinutes;
+
       // Initialize login attempts if not set
       if (this.loginAttempts === undefined) {
         this.loginAttempts = 0;
       }
-      
+
       if (success) {
-        // Reset login attempts on successful login
+        // Reset login attempts and lockout on successful login
         this.loginAttempts = 0;
+        this.lockedUntil = null;
         await this.updateLoginTimestamp(requestId);
-      } else {
-        // Increment login attempts on failed login
-        this.loginAttempts += 1;
+        await this.save();
+
+        logger.debug('Tracked successful login attempt', {
+          userId: this.id,
+          username: this.username,
+          requestId
+        });
+        return false;
       }
-      
+
+      // Increment login attempts on failed login
+      this.loginAttempts += 1;
+
+      // Check if account should be locked
+      if (this.loginAttempts >= maxAttempts) {
+        this.lockedUntil = new Date(Date.now() + lockoutMinutes * 60 * 1000);
+
+        logger.warn('Account locked due to excessive failed login attempts', {
+          userId: this.id,
+          username: this.username,
+          loginAttempts: this.loginAttempts,
+          lockedUntil: this.lockedUntil,
+          lockoutMinutes,
+          requestId
+        });
+
+        await this.save();
+        return true;
+      }
+
       await this.save();
-      
-      logger.debug('Tracked user login attempt', {
+
+      logger.debug('Tracked failed login attempt', {
         userId: this.id,
         username: this.username,
-        success,
         loginAttempts: this.loginAttempts,
+        maxAttempts,
+        attemptsRemaining: maxAttempts - this.loginAttempts,
         requestId
       });
+
+      return false;
     } catch (error) {
       logger.error('Failed to track login attempt:', {
         userId: this.id,
@@ -134,6 +198,7 @@ export default class User extends Model {
         error: error instanceof Error ? error.message : 'Unknown error',
         requestId
       });
+      return false;
     }
   }
 
@@ -176,6 +241,11 @@ export default class User extends Model {
         allowNull: true,
         defaultValue: 0,
         field: 'login_attempts'
+      },
+      lockedUntil: {
+        type: DataTypes.DATE,
+        allowNull: true,
+        field: 'lockout_until'
       }
     }, { 
       sequelize,
@@ -184,11 +254,13 @@ export default class User extends Model {
       hooks: {
         beforeCreate: async (user: User) => {
           try {
-            const salt = await bcrypt.genSalt(10);
+            const rounds = getBcryptRounds();
+            const salt = await bcrypt.genSalt(rounds);
             user.password = await bcrypt.hash(user.password, salt);
             logger.debug('User password hashed for new user', {
               username: user.username,
-              email: user.email
+              email: user.email,
+              bcryptRounds: rounds
             });
           } catch (error) {
             logger.error('Error hashing password during user creation:', {
@@ -202,7 +274,8 @@ export default class User extends Model {
         beforeUpdate: async (user: User) => {
           if (user.changed('password')) {
             try {
-              const salt = await bcrypt.genSalt(10);
+              const rounds = getBcryptRounds();
+              const salt = await bcrypt.genSalt(rounds);
               user.password = await bcrypt.hash(user.password, salt);
               logger.debug('User password updated and hashed', {
                 userId: user.id,

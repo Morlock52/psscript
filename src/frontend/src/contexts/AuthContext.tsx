@@ -1,5 +1,6 @@
 import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
 import axios from 'axios';
+import { getApiUrl } from '../utils/apiUrl';
 
 // Define user type
 interface User {
@@ -49,12 +50,8 @@ interface AuthProviderProps {
   children: ReactNode;
 }
 
-// API URL from environment variable or default
-const API_URL = import.meta.env.VITE_API_URL || 
-  `http://${window.location.hostname}:4001/api`; // Dynamic hostname to work with Docker
-
-// Force log the API URL to ensure it's correct
-console.log('AuthContext API URL is set to:', API_URL);
+// API URL is now imported from centralized utils/apiUrl.ts
+// This ensures runtime URL detection works correctly with tunnels/proxies
 
 // Create AuthProvider component
 export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
@@ -80,7 +77,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
         }
 
         // Validate token and get user data
-        const response = await axios.get(`${API_URL}/auth/me`, {
+        const response = await axios.get(`${getApiUrl()}/auth/me`, {
           headers: {
             Authorization: `Bearer ${token}`,
           },
@@ -90,13 +87,23 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
         if (response.data && response.data.user) {
           setUser(response.data.user);
         }
-      } catch (err) {
+      } catch (err: any) {
         // Clear token if invalid
         localStorage.removeItem('auth_token');
         localStorage.removeItem('refresh_token');
         localStorage.removeItem('ps_user');
         localStorage.removeItem('ps_token');
-        console.error('Error loading user:', err);
+
+        // Only log as error for unexpected issues, not for expired/invalid tokens
+        const isTokenError = err?.response?.status === 401 ||
+                            err?.response?.data?.error === 'invalid_token';
+        if (isTokenError) {
+          // Expected scenario - token expired or invalid, user will need to login again
+          console.debug('[Auth] Token validation failed, user logged out');
+        } else {
+          // Unexpected error - network issues, server down, etc.
+          console.warn('[Auth] Could not validate session:', err?.message || err);
+        }
       } finally {
         setIsLoading(false);
       }
@@ -105,13 +112,18 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     loadUser();
   }, []);
 
-  // Default login credentials
-  const DEFAULT_EMAIL = "admin@psscript.com";
-  const DEFAULT_PASSWORD = "admin123";
-
-  // Default login function
+  // Demo login function - uses actual API authentication with demo credentials
+  // This ensures proper token validation and persistence across page refreshes
   const defaultLogin = async () => {
-    return login(DEFAULT_EMAIL, DEFAULT_PASSWORD);
+    // Demo mode only works in development
+    const isDevelopment = import.meta.env.DEV || window.location.hostname === 'localhost';
+    if (!isDevelopment) {
+      throw new Error('Demo login is not available in production');
+    }
+
+    // Use actual API login with demo admin credentials
+    // This ensures the token is valid and will persist across page refreshes
+    await login('admin@psscript.com', 'admin123');
   };
 
   // Login function
@@ -127,8 +139,10 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
         throw new Error('Invalid email or password');
       }
 
-      // Send login request
-      const response = await axios.post(`${API_URL}/auth/login`, {
+      // Send login request - use getApiUrl() to ensure runtime URL detection
+      const apiUrl = getApiUrl();
+      console.log('Making login request to:', `${apiUrl}/auth/login`);
+      const response = await axios.post(`${apiUrl}/auth/login`, {
         email,
         password,
       });
@@ -151,22 +165,29 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     } catch (err: any) {
       // Handle error with more detailed logging
       console.error('Login error details:', err);
-      
+      console.error('API_URL used:', getApiUrl());
+      console.error('Request config:', err.config);
+
       // Extract the most useful error message
       let errorMessage = 'Login failed';
-      
+
       if (err.response) {
         // The request was made and the server responded with a status code outside of 2xx
         errorMessage = err.response.data?.message || `Server error: ${err.response.status}`;
         console.error('Server response:', err.response.data);
       } else if (err.request) {
         // The request was made but no response was received
-        errorMessage = 'No response from server. Please check your connection.';
+        // This usually means CORS blocked, network error, or timeout
+        const requestUrl = err.config?.url || getApiUrl();
+        errorMessage = `No response from server (${requestUrl}). This may be a CORS or network issue.`;
+        console.error('Request made but no response. URL:', requestUrl);
+        console.error('Error code:', err.code);
+        console.error('Error message:', err.message);
       } else {
         // Something happened in setting up the request
         errorMessage = err.message || 'Login request failed';
       }
-      
+
       setError(errorMessage);
       throw new Error(errorMessage);
     } finally {
@@ -181,7 +202,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       clearError();
 
       // Send register request
-      const response = await axios.post(`${API_URL}/auth/register`, {
+      const response = await axios.post(`${getApiUrl()}/auth/register`, {
         username,
         email,
         password,
@@ -254,7 +275,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
 
       // Send update request
       const response = await axios.put(
-        `${API_URL}/auth/user`,
+        `${getApiUrl()}/auth/user`,
         userData,
         {
           headers: {

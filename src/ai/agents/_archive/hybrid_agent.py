@@ -8,7 +8,7 @@ LangChain and AutoGPT approaches for enhanced script analysis.
 import os
 import json
 import logging
-from typing import Dict, List, Any, Optional, Union
+from typing import Dict, List, Any, Optional
 
 # Import base agent classes
 from .langchain_agent import LangChainAgent
@@ -234,7 +234,7 @@ class HybridAgent:
                 logger.warning(f"Failed to parse JSON for command {cmd_name}, using simplified analysis")
                 detailed_commands.append({
                     "name": cmd_name,
-                    "description": f"PowerShell command used in the script",
+                    "description": "PowerShell command used in the script",
                     "purpose": f"Used in context: {cmd_context}",
                     "example": cmd_context
                 })

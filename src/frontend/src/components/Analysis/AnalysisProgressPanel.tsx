@@ -59,7 +59,7 @@ const STAGE_LABELS: Record<string, string> = {
   failed: 'Analysis Failed',
 };
 
-const TOOL_ICONS: Record<string, React.ReactNode> = {
+const _TOOL_ICONS: Record<string, React.ReactNode> = {
   analyze_powershell_script: <PsychologyIcon fontSize="small" />,
   security_scan: <SecurityIcon fontSize="small" />,
   quality_analysis: <CodeIcon fontSize="small" />,
@@ -71,7 +71,7 @@ export const AnalysisProgressPanel: React.FC<AnalysisProgressPanelProps> = ({
   currentStage,
   status,
   events,
-  onCancel,
+  onCancel: _onCancel,
 }) => {
   const [tools, setTools] = useState<ToolProgress[]>([]);
   const [expanded, setExpanded] = useState(true);

@@ -16,7 +16,7 @@ router.use(corsMiddleware);
  */
 router.post('/please', async (req, res) => {
   try {
-    const { question, context, useAgent = false } = req.body;
+    const { question, context, useAgent: _useAgent = false } = req.body;
     
     if (!question) {
       return res.status(400).json({ 
@@ -332,7 +332,7 @@ Main
  */
 router.post('/analyze/assistant', async (req, res) => {
   try {
-    const { content, filename, requestType = 'standard', analysisOptions } = req.body;
+    const { content, filename, requestType: _requestType = 'standard', analysisOptions: _analysisOptions } = req.body;
     
     if (!content) {
       return res.status(400).json({ 

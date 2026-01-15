@@ -1,5 +1,4 @@
 // @ts-nocheck - Required for circular model references and association handling
-import { Sequelize } from 'sequelize';
 import User from './User';
 import Script from './Script';
 import Category from './Category';
@@ -10,6 +9,7 @@ import ScriptVersion from './ScriptVersion';
 import ScriptEmbedding from './ScriptEmbedding';
 import ExecutionLog from './ExecutionLog';
 import ChatHistory from './ChatHistory';
+import Documentation from './Documentation';
 
 import dotenv from 'dotenv';
 dotenv.config();
@@ -28,6 +28,7 @@ ScriptVersion.initialize(sequelize);
 ScriptEmbedding.initialize(sequelize);
 ExecutionLog.initialize(sequelize);
 ChatHistory.initialize(sequelize);
+Documentation.initialize(sequelize);
 
 // Set up associations - check if method exists first
 function safeAssociate(model) {
@@ -51,6 +52,7 @@ safeAssociate(ScriptVersion);
 safeAssociate(ScriptEmbedding);
 safeAssociate(ExecutionLog);
 safeAssociate(ChatHistory);
+safeAssociate(Documentation);
 
 // Track connection events and diagnostics
 import { dbConnectionInfo, connectionEvents } from '../database/connection';
@@ -68,5 +70,6 @@ export {
   ScriptVersion,
   ScriptEmbedding,
   ExecutionLog,
-  ChatHistory
+  ChatHistory,
+  Documentation
 };

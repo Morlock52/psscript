@@ -12,12 +12,11 @@ import logging
 import asyncio
 import time
 import backoff
-from typing import Dict, List, Any, Optional, Union, Tuple
+from typing import Dict, List, Any, Optional
 import uuid
 
 from openai import OpenAI, AsyncOpenAI
 from openai.types.beta.threads import Run, ThreadMessage
-from openai.types.beta.assistant import Assistant
 
 # Configure logging
 logging.basicConfig(
@@ -463,7 +462,7 @@ class OpenAIAssistantAgent:
                 # Handle different function types
                 if function_name == "search_powershell_docs":
                     # Example implementation for searching PowerShell docs
-                    query = function_args.get("query", "")
+                    function_args.get("query", "")
                     result = {"results": [{"title": "Example PowerShell Doc", "url": "https://docs.microsoft.com/powershell", "snippet": "This is an example result."}]}
                     tool_outputs.append({
                         "tool_call_id": tool_call.id,
@@ -472,7 +471,7 @@ class OpenAIAssistantAgent:
                 
                 elif function_name == "analyze_script_security":
                     # Example implementation for script security analysis
-                    script = function_args.get("script", "")
+                    function_args.get("script", "")
                     # In a real implementation, you would analyze the script
                     result = {"security_score": 7.5, "issues": ["Example security issue"]}
                     tool_outputs.append({

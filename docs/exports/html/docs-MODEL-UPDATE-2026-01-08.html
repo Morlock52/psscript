@@ -1,0 +1,295 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <base href="file:///Users/morlock/fun/psscript/" />
+  <title>docs-MODEL-UPDATE-2026-01-08</title>
+  <style>
+:root {
+  color-scheme: light;
+}
+body {
+  font-family: "Segoe UI", "Helvetica Neue", Arial, sans-serif;
+  margin: 0;
+  padding: 0;
+  background: #ffffff;
+  color: #0f172a;
+}
+.markdown-body {
+  max-width: 980px;
+  margin: 40px auto 60px;
+  padding: 0 32px;
+  line-height: 1.65;
+}
+.markdown-body h1 {
+  font-size: 32px;
+  margin-bottom: 12px;
+  border-bottom: 2px solid #e2e8f0;
+  padding-bottom: 12px;
+  page-break-before: always;
+  page-break-after: avoid;
+  break-before: page;
+  break-after: avoid;
+}
+.markdown-body h1:first-of-type {
+  page-break-before: avoid;
+  break-before: avoid;
+}
+.markdown-body h2 {
+  font-size: 24px;
+  margin-top: 28px;
+  border-bottom: 1px solid #e2e8f0;
+  padding-bottom: 8px;
+  page-break-before: always;
+  page-break-after: avoid;
+  break-before: page;
+  break-after: avoid;
+}
+.markdown-body h3 {
+  font-size: 18px;
+  margin-top: 20px;
+  page-break-after: avoid;
+  break-after: avoid;
+}
+.markdown-body h4, .markdown-body h5, .markdown-body h6 {
+  page-break-after: avoid;
+  break-after: avoid;
+}
+.markdown-body table {
+  width: 100%;
+  border-collapse: collapse;
+  margin: 16px 0;
+  font-size: 14px;
+  page-break-inside: avoid;
+  break-inside: avoid;
+}
+.markdown-body th,
+.markdown-body td {
+  border: 1px solid #e2e8f0;
+  padding: 8px 10px;
+  text-align: left;
+}
+.markdown-body th {
+  background: #f8fafc;
+}
+.markdown-body tr {
+  page-break-inside: avoid;
+  break-inside: avoid;
+}
+.markdown-body code {
+  background: #f1f5f9;
+  padding: 2px 4px;
+  border-radius: 4px;
+  font-family: "SFMono-Regular", Menlo, Consolas, monospace;
+  font-size: 0.92em;
+}
+.markdown-body pre {
+  background: #0f172a;
+  color: #e2e8f0;
+  padding: 16px;
+  border-radius: 8px;
+  overflow-x: auto;
+  page-break-inside: avoid;
+  break-inside: avoid;
+}
+.markdown-body pre code {
+  background: transparent;
+  color: inherit;
+}
+.markdown-body blockquote {
+  border-left: 4px solid #38bdf8;
+  margin: 16px 0;
+  padding: 8px 16px;
+  background: #f8fafc;
+  color: #334155;
+}
+.markdown-body img {
+  max-width: 100%;
+  height: auto;
+  display: block;
+  margin: 16px 0;
+  border-radius: 10px;
+  box-shadow: 0 8px 20px rgba(15, 23, 42, 0.12);
+  page-break-inside: avoid;
+  break-inside: avoid;
+}
+.markdown-body figure {
+  page-break-inside: avoid;
+  break-inside: avoid;
+  margin: 16px 0;
+}
+.markdown-body a {
+  color: #2563eb;
+  text-decoration: none;
+}
+.markdown-body a:hover {
+  text-decoration: underline;
+}
+.cover {
+  padding: 80px 60px 60px;
+  background: linear-gradient(135deg, #0b1220 0%, #1e3a8a 100%);
+  color: #f8fafc;
+  border-radius: 18px;
+  margin-bottom: 32px;
+}
+.cover-title {
+  font-size: 36px;
+  font-weight: 700;
+  margin: 0 0 12px;
+}
+.cover-subtitle {
+  font-size: 18px;
+  color: #cbd5f5;
+  margin: 0 0 16px;
+}
+.cover-meta {
+  font-size: 13px;
+  color: #94a3b8;
+}
+.page-break {
+  page-break-after: always;
+  break-after: page;
+}
+.footer {
+  margin-top: 40px;
+  font-size: 12px;
+  color: #64748b;
+}
+/* Print and PDF-specific styles */
+@page {
+  margin: 20mm 18mm;
+}
+@media print {
+  .markdown-body {
+    orphans: 3;
+    widows: 3;
+  }
+  .markdown-body p {
+    orphans: 3;
+    widows: 3;
+  }
+  .markdown-body li {
+    page-break-inside: avoid;
+    break-inside: avoid;
+  }
+  .markdown-body ul, .markdown-body ol {
+    page-break-before: avoid;
+    break-before: avoid;
+  }
+  .markdown-body blockquote {
+    page-break-inside: avoid;
+    break-inside: avoid;
+  }
+  /* Keep section content together */
+  .markdown-body h2 + *, .markdown-body h3 + * {
+    page-break-before: avoid;
+    break-before: avoid;
+  }
+}
+</style>
+</head>
+<body>
+  <div class="markdown-body">
+    
+    <h1 id="model-configuration-update-january-8-2026">Model Configuration Update - January 8, 2026</h1>
+<h2 id="summary">Summary</h2>
+<p>Updated PSScript AI service to use the latest and most capable OpenAI models available as of January 8, 2026.</p>
+<h2 id="models-updated">Models Updated</h2>
+<h3 id="primary-analysis-model">Primary Analysis Model</h3>
+<ul>
+<li><strong>Previous</strong>: <code>gpt-4o</code> / <code>o3-mini</code></li>
+<li><strong>Updated to</strong>: <code>gpt-5.2-codex</code></li>
+<li><strong>Reason</strong>: GPT-5.2-Codex is OpenAI's most advanced agentic coding model for complex, real-world software engineering tasks</li>
+<li><strong>Performance</strong>: 74.9% on SWE-bench Verified, 88% on Aider Polyglot</li>
+</ul>
+<h3 id="reasoning-model-new">Reasoning Model (New)</h3>
+<ul>
+<li><strong>Added</strong>: <code>gpt-5.2</code></li>
+<li><strong>Purpose</strong>: For complex reasoning and analysis tasks</li>
+<li><strong>Performance</strong>: 94.6% on AIME 2025 (math), 84.2% on MMMU (multimodal understanding)</li>
+</ul>
+<h3 id="embedding-model">Embedding Model</h3>
+<ul>
+<li><strong>Previous</strong>: <code>text-embedding-ada-002</code> (1536 dimensions)</li>
+<li><strong>Updated to</strong>: <code>text-embedding-3-large</code> (3072 dimensions)</li>
+<li><strong>Reason</strong>: Most capable embedding model for semantic search and similarity</li>
+<li><strong>Performance</strong>: MIRACL scores increased from 31.4% to 54.9%, MTEB scores from 61.0% to 64.6%</li>
+<li><strong>Cost</strong>: $0.13 per million tokens (vs $0.10 for ada-002)</li>
+</ul>
+<h2 id="files-modified">Files Modified</h2>
+<ol>
+<li><strong>src/ai/config.py</strong></li>
+<li>Updated <code>AgentConfig.default_model</code> to <code>gpt-5.2-codex</code></li>
+<li>Added <code>AgentConfig.reasoning_model</code> set to <code>gpt-5.2</code></li>
+<li>
+<p>Modified model initialization logic</p>
+</li>
+<li>
+<p><strong>src/ai/analysis/script_analyzer.py</strong></p>
+</li>
+<li>Updated <code>ANALYSIS_MODEL</code> to <code>gpt-5.2-codex</code></li>
+<li>Updated <code>EMBEDDING_MODEL</code> to <code>text-embedding-3-large</code></li>
+<li>
+<p>Updated <code>EMBEDDING_DIMENSION</code> to 3072</p>
+</li>
+<li>
+<p><strong>src/ai/agents/langchain_agent.py</strong></p>
+</li>
+<li>
+<p>Updated model_name to <code>gpt-5.2-codex</code></p>
+</li>
+<li>
+<p><strong>src/ai/agents/langgraph_production.py</strong></p>
+</li>
+<li>Updated all model defaults to <code>gpt-5.2-codex</code></li>
+</ol>
+<h2 id="model-comparison">Model Comparison</h2>
+<h3 id="gpt-52-vs-gpt-4">GPT-5.2 vs GPT-4</h3>
+<p>GPT-5.2 represents a significant leap forward from GPT-4:
+- <strong>Math</strong>: 94.6% on AIME 2025 (without tools)
+- <strong>Coding</strong>: 74.9% on SWE-bench Verified
+- <strong>Multimodal</strong>: 84.2% on MMMU
+- <strong>Healthcare</strong>: 46.2% on HealthBench Hard</p>
+<h3 id="gpt-52-variants">GPT-5.2 Variants</h3>
+<ul>
+<li><strong>GPT-5.2 Thinking</strong>: Most advanced for professional work and long-running agents</li>
+<li><strong>GPT-5.2 Instant</strong>: Faster version for everyday tasks</li>
+<li><strong>GPT-5.2-Codex</strong>: Specialized for complex software engineering (selected for this project)</li>
+</ul>
+<h2 id="configuration">Configuration</h2>
+<p>The models can be overridden via environment variables:</p>
+<pre><code class="language-bash">ANALYSIS_MODEL=gpt-5.2-codex
+EMBEDDING_MODEL=text-embedding-3-large
+</code></pre>
+<h2 id="verification">Verification</h2>
+<p>Service logs confirm the update:</p>
+<pre><code>ScriptAnalyzer initialized with model gpt-5.2-codex
+</code></pre>
+<h2 id="cost-implications">Cost Implications</h2>
+<ul>
+<li><strong>GPT-5.2-Codex</strong>: Pricing not yet publicly available (Pro/Enterprise tier)</li>
+<li><strong>text-embedding-3-large</strong>: $0.13/1M tokens (30% increase from ada-002)</li>
+<li><strong>Mock mode</strong> remains enabled by default to avoid unexpected costs during development</li>
+</ul>
+<h2 id="references">References</h2>
+<ul>
+<li><a href="https://openai.com/index/introducing-gpt-5-2/">OpenAI GPT-5.2 Announcement</a></li>
+<li><a href="https://openai.com/index/introducing-gpt-5-2-codex/">OpenAI GPT-5.2-Codex</a></li>
+<li><a href="https://platform.openai.com/docs/models/text-embedding-3-large">OpenAI Embedding Models</a></li>
+<li><a href="https://elephas.app/blog/best-embedding-models">Embedding Models Guide</a></li>
+</ul>
+<h2 id="next-steps">Next Steps</h2>
+<ol>
+<li>Test the updated models with real PowerShell script analysis</li>
+<li>Monitor performance and cost</li>
+<li>Consider enabling GPT-5.2 Thinking for complex analysis tasks</li>
+<li>Evaluate GPT-5.2 Instant for faster, lower-cost operations</li>
+</ol>
+<hr />
+<p><strong>Updated</strong>: January 8, 2026
+<strong>Status</strong>: ✅ Deployed and Verified</p>
+    <div class="footer">Generated 2026-01-13 06:26 UTC</div>
+  </div>
+</body>
+</html>

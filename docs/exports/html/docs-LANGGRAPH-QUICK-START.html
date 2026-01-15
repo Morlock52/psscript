@@ -1,0 +1,395 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <base href="file:///Users/morlock/fun/psscript/" />
+  <title>docs-LANGGRAPH-QUICK-START</title>
+  <style>
+:root {
+  color-scheme: light;
+}
+body {
+  font-family: "Segoe UI", "Helvetica Neue", Arial, sans-serif;
+  margin: 0;
+  padding: 0;
+  background: #ffffff;
+  color: #0f172a;
+}
+.markdown-body {
+  max-width: 980px;
+  margin: 40px auto 60px;
+  padding: 0 32px;
+  line-height: 1.65;
+}
+.markdown-body h1 {
+  font-size: 32px;
+  margin-bottom: 12px;
+  border-bottom: 2px solid #e2e8f0;
+  padding-bottom: 12px;
+  page-break-before: always;
+  page-break-after: avoid;
+  break-before: page;
+  break-after: avoid;
+}
+.markdown-body h1:first-of-type {
+  page-break-before: avoid;
+  break-before: avoid;
+}
+.markdown-body h2 {
+  font-size: 24px;
+  margin-top: 28px;
+  border-bottom: 1px solid #e2e8f0;
+  padding-bottom: 8px;
+  page-break-before: always;
+  page-break-after: avoid;
+  break-before: page;
+  break-after: avoid;
+}
+.markdown-body h3 {
+  font-size: 18px;
+  margin-top: 20px;
+  page-break-after: avoid;
+  break-after: avoid;
+}
+.markdown-body h4, .markdown-body h5, .markdown-body h6 {
+  page-break-after: avoid;
+  break-after: avoid;
+}
+.markdown-body table {
+  width: 100%;
+  border-collapse: collapse;
+  margin: 16px 0;
+  font-size: 14px;
+  page-break-inside: avoid;
+  break-inside: avoid;
+}
+.markdown-body th,
+.markdown-body td {
+  border: 1px solid #e2e8f0;
+  padding: 8px 10px;
+  text-align: left;
+}
+.markdown-body th {
+  background: #f8fafc;
+}
+.markdown-body tr {
+  page-break-inside: avoid;
+  break-inside: avoid;
+}
+.markdown-body code {
+  background: #f1f5f9;
+  padding: 2px 4px;
+  border-radius: 4px;
+  font-family: "SFMono-Regular", Menlo, Consolas, monospace;
+  font-size: 0.92em;
+}
+.markdown-body pre {
+  background: #0f172a;
+  color: #e2e8f0;
+  padding: 16px;
+  border-radius: 8px;
+  overflow-x: auto;
+  page-break-inside: avoid;
+  break-inside: avoid;
+}
+.markdown-body pre code {
+  background: transparent;
+  color: inherit;
+}
+.markdown-body blockquote {
+  border-left: 4px solid #38bdf8;
+  margin: 16px 0;
+  padding: 8px 16px;
+  background: #f8fafc;
+  color: #334155;
+}
+.markdown-body img {
+  max-width: 100%;
+  height: auto;
+  display: block;
+  margin: 16px 0;
+  border-radius: 10px;
+  box-shadow: 0 8px 20px rgba(15, 23, 42, 0.12);
+  page-break-inside: avoid;
+  break-inside: avoid;
+}
+.markdown-body figure {
+  page-break-inside: avoid;
+  break-inside: avoid;
+  margin: 16px 0;
+}
+.markdown-body a {
+  color: #2563eb;
+  text-decoration: none;
+}
+.markdown-body a:hover {
+  text-decoration: underline;
+}
+.cover {
+  padding: 80px 60px 60px;
+  background: linear-gradient(135deg, #0b1220 0%, #1e3a8a 100%);
+  color: #f8fafc;
+  border-radius: 18px;
+  margin-bottom: 32px;
+}
+.cover-title {
+  font-size: 36px;
+  font-weight: 700;
+  margin: 0 0 12px;
+}
+.cover-subtitle {
+  font-size: 18px;
+  color: #cbd5f5;
+  margin: 0 0 16px;
+}
+.cover-meta {
+  font-size: 13px;
+  color: #94a3b8;
+}
+.page-break {
+  page-break-after: always;
+  break-after: page;
+}
+.footer {
+  margin-top: 40px;
+  font-size: 12px;
+  color: #64748b;
+}
+/* Print and PDF-specific styles */
+@page {
+  margin: 20mm 18mm;
+}
+@media print {
+  .markdown-body {
+    orphans: 3;
+    widows: 3;
+  }
+  .markdown-body p {
+    orphans: 3;
+    widows: 3;
+  }
+  .markdown-body li {
+    page-break-inside: avoid;
+    break-inside: avoid;
+  }
+  .markdown-body ul, .markdown-body ol {
+    page-break-before: avoid;
+    break-before: avoid;
+  }
+  .markdown-body blockquote {
+    page-break-inside: avoid;
+    break-inside: avoid;
+  }
+  /* Keep section content together */
+  .markdown-body h2 + *, .markdown-body h3 + * {
+    page-break-before: avoid;
+    break-before: avoid;
+  }
+}
+</style>
+</head>
+<body>
+  <div class="markdown-body">
+    
+    <h1 id="langgraph-10-quick-start-guide">LangGraph 1.0 - Quick Start Guide</h1>
+<h2 id="installation-5-minutes">Installation (5 minutes)</h2>
+<pre><code class="language-bash"># 1. Navigate to AI service directory
+cd /Users/morlock/fun/psscript/src/ai
+
+# 2. Install dependencies
+pip install -r requirements.txt
+
+# 3. Set API key
+export OPENAI_API_KEY=sk-your-key-here
+
+# 4. Test the setup
+python test_langgraph_setup.py
+</code></pre>
+<h2 id="start-the-service">Start the Service</h2>
+<pre><code class="language-bash"># Start FastAPI server
+cd /Users/morlock/fun/psscript/src/ai
+python main.py
+
+# Server runs on: http://localhost:8001
+</code></pre>
+<h2 id="test-endpoints">Test Endpoints</h2>
+<pre><code class="language-bash"># Health check
+curl http://localhost:8001/langgraph/health
+
+# Service info
+curl http://localhost:8001/langgraph/info
+
+# Test analysis
+curl -X POST http://localhost:8001/langgraph/test
+
+# Analyze your script
+curl -X POST http://localhost:8001/langgraph/analyze \
+  -H &quot;Content-Type: application/json&quot; \
+  -d '{
+    &quot;script_content&quot;: &quot;Get-Process | Select-Object Name, CPU&quot;
+  }'
+</code></pre>
+<h2 id="python-usage">Python Usage</h2>
+<pre><code class="language-python">from agents.langgraph_production import LangGraphProductionOrchestrator
+import asyncio
+
+async def main():
+    orchestrator = LangGraphProductionOrchestrator()
+
+    result = await orchestrator.analyze_script(
+        script_content=&quot;Get-Service | Where-Object Status -eq 'Running'&quot;
+    )
+
+    print(&quot;Status:&quot;, result[&quot;status&quot;])
+    print(&quot;Response:&quot;, result[&quot;final_response&quot;])
+
+asyncio.run(main())
+</code></pre>
+<h2 id="key-files">Key Files</h2>
+<table>
+<thead>
+<tr>
+<th>File</th>
+<th>Purpose</th>
+<th>Location</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Production Orchestrator</td>
+<td>Main LangGraph implementation</td>
+<td><code>src/ai/agents/langgraph_production.py</code></td>
+</tr>
+<tr>
+<td>API Endpoints</td>
+<td>REST API routes</td>
+<td><code>src/ai/langgraph_endpoints.py</code></td>
+</tr>
+<tr>
+<td>Main Integration</td>
+<td>FastAPI app</td>
+<td><code>src/ai/main.py</code></td>
+</tr>
+<tr>
+<td>Test Script</td>
+<td>Verification</td>
+<td><code>src/ai/test_langgraph_setup.py</code></td>
+</tr>
+<tr>
+<td>Requirements</td>
+<td>Dependencies</td>
+<td><code>src/ai/requirements.txt</code></td>
+</tr>
+</tbody>
+</table>
+<h2 id="documentation">Documentation</h2>
+<ul>
+<li><strong>Setup Summary</strong>: <a href="./LANGGRAPH-SETUP-SUMMARY.md">LANGGRAPH-SETUP-SUMMARY.md</a></li>
+<li><strong>Implementation Guide</strong>: <a href="./LANGGRAPH-IMPLEMENTATION.md">LANGGRAPH-IMPLEMENTATION.md</a></li>
+<li><strong>Migration Plan</strong>: <a href="./LANGGRAPH-MIGRATION-PLAN.md">LANGGRAPH-MIGRATION-PLAN.md</a></li>
+</ul>
+<h2 id="api-endpoints">API Endpoints</h2>
+<table>
+<thead>
+<tr>
+<th>Method</th>
+<th>Endpoint</th>
+<th>Purpose</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>POST</td>
+<td><code>/langgraph/analyze</code></td>
+<td>Analyze PowerShell script</td>
+</tr>
+<tr>
+<td>POST</td>
+<td><code>/langgraph/feedback</code></td>
+<td>Provide human feedback</td>
+</tr>
+<tr>
+<td>GET</td>
+<td><code>/langgraph/health</code></td>
+<td>Health check</td>
+</tr>
+<tr>
+<td>GET</td>
+<td><code>/langgraph/info</code></td>
+<td>Service information</td>
+</tr>
+<tr>
+<td>POST</td>
+<td><code>/langgraph/batch-analyze</code></td>
+<td>Batch analysis</td>
+</tr>
+<tr>
+<td>POST</td>
+<td><code>/langgraph/test</code></td>
+<td>Test endpoint</td>
+</tr>
+</tbody>
+</table>
+<h2 id="example-analysis">Example Analysis</h2>
+<pre><code class="language-bash">curl -X POST http://localhost:8001/langgraph/analyze \
+  -H &quot;Content-Type: application/json&quot; \
+  -d '{
+    &quot;script_content&quot;: &quot;param([string]$Path)\nGet-ChildItem -Path $Path -Recurse&quot;
+  }' | jq '.'
+</code></pre>
+<p>Response:</p>
+<pre><code class="language-json">{
+  &quot;workflow_id&quot;: &quot;analysis_1704649200.123&quot;,
+  &quot;status&quot;: &quot;completed&quot;,
+  &quot;final_response&quot;: &quot;This script lists all files and folders...&quot;,
+  &quot;analysis_results&quot;: {
+    &quot;analyze_powershell_script&quot;: {...},
+    &quot;security_scan&quot;: {...},
+    &quot;quality_analysis&quot;: {...}
+  }
+}
+</code></pre>
+<h2 id="features">Features</h2>
+<ul>
+<li>✅ Type-safe state management</li>
+<li>✅ Production checkpointing</li>
+<li>✅ Human-in-the-loop support</li>
+<li>✅ Streaming responses</li>
+<li>✅ Error recovery</li>
+<li>✅ Security scanning</li>
+<li>✅ Quality analysis</li>
+<li>✅ Optimization recommendations</li>
+</ul>
+<h2 id="troubleshooting">Troubleshooting</h2>
+<p><strong>Import errors?</strong></p>
+<pre><code class="language-bash">pip install --upgrade langgraph langchain langchain-openai
+</code></pre>
+<p><strong>API key not working?</strong></p>
+<pre><code class="language-bash">echo $OPENAI_API_KEY  # Should show sk-...
+export OPENAI_API_KEY=sk-your-key-here
+</code></pre>
+<p><strong>Service won't start?</strong></p>
+<pre><code class="language-bash"># Check if port is in use
+lsof -i :8001
+
+# Use different port
+uvicorn main:app --port 8002
+</code></pre>
+<h2 id="next-steps">Next Steps</h2>
+<ol>
+<li>✅ Run <code>test_langgraph_setup.py</code></li>
+<li>🔲 Read <a href="./LANGGRAPH-IMPLEMENTATION.md">LANGGRAPH-IMPLEMENTATION.md</a></li>
+<li>🔲 Review <a href="./LANGGRAPH-MIGRATION-PLAN.md">LANGGRAPH-MIGRATION-PLAN.md</a></li>
+<li>🔲 Test with your PowerShell scripts</li>
+<li>🔲 Deploy to staging</li>
+</ol>
+<hr />
+<p><strong>Need Help?</strong>
+- Documentation: <code>/docs/LANGGRAPH-*.md</code>
+- Code: <code>src/ai/agents/langgraph_production.py</code>
+- Tests: <code>src/ai/test_langgraph_setup.py</code></p>
+    <div class="footer">Generated 2026-01-13 06:26 UTC</div>
+  </div>
+</body>
+</html>

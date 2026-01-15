@@ -5,10 +5,20 @@
 import express from 'express';
 import cors from 'cors';
 import dotenv from 'dotenv';
-import helmet from 'helmet';
 import compression from 'compression';
-import rateLimit from 'express-rate-limit';
 import morgan from 'morgan';
+// Enhanced security middleware with helmet, rate limiting, input sanitization, and CSRF protection
+import {
+  securityHeaders,
+  authLimiter,
+  aiLimiter,
+  uploadLimiter,
+  scriptLimiter,
+  sanitizeInput,
+  securityLogger,
+  validateRequestSize,
+  csrfProtection,
+} from './middleware/security';
 import logger from './utils/logger';
 import authRoutes from './routes/auth';
 import scriptRoutes from './routes/scripts';
@@ -22,9 +32,11 @@ import chatRoutes from './routes/chat';
 // import voiceRoutes from './routes/voiceRoutes';
 import aiAgentRoutes from './routes/ai-agent';
 import assistantsRoutes from './routes/assistants';
+import documentationRoutes from './routes/documentation';
 import { errorHandler } from './middleware/errorHandler';
 import { setupSwagger } from './utils/swagger';
 import path from 'path';
+import { existsSync } from 'fs';
 
 // Load environment variables
 dotenv.config();
@@ -32,13 +44,33 @@ dotenv.config();
 // Create Express app
 const app = express();
 app.use(express.static(path.join(process.cwd(), 'src', 'backend', 'src', 'public')));
+
+// Serve documentation files - handle both Docker (mounted at /docs) and local development
+const isDocker = process.env.DOCKER_ENV === 'true' || existsSync('/docs/exports');
+const docsExportsDir = isDocker
+  ? '/docs/exports'
+  : path.resolve(__dirname, '../../../docs/exports');
+console.log(`Docs exports directory: ${docsExportsDir} (Docker: ${isDocker})`);
+app.use('/docs/exports', express.static(docsExportsDir));
 const port = process.env.PORT ? parseInt(process.env.PORT, 10) : 4001;
-const isProduction = process.env.NODE_ENV === 'production';
+const _isProduction = process.env.NODE_ENV === 'production';
 
 // Log startup details
 console.log(`Starting server: PORT=${port}, ENV=${process.env.NODE_ENV || 'development'}, DOCKER=${process.env.DOCKER_ENV || 'false'}`);
 
 import db from './database/connection';
+import { validateTlsConfiguration } from './utils/secureHttpClient';
+
+// SECURITY: Validate SSL/TLS configuration at startup
+// This ensures certificate validation is properly enforced
+try {
+  validateTlsConfiguration();
+} catch (error) {
+  logger.error('TLS configuration validation failed:', error);
+  if (process.env.NODE_ENV === 'production') {
+    process.exit(1); // Exit in production if TLS is misconfigured
+  }
+}
 
 // Set up environment-specific configuration
 const isDevelopment = process.env.NODE_ENV !== 'production';
@@ -75,7 +107,7 @@ const getObjectSize = (obj: any): number => {
     // Serialize and measure for complex objects
     const serialized = JSON.stringify(obj);
     return serialized.length * 2; // Unicode chars are 2 bytes
-  } catch (error) {
+  } catch (_error) {
     // If serialization fails, make a conservative estimate
     return 1000;
   }
@@ -171,6 +203,7 @@ const persistenceHelpers = {
   saveToFile: (filePath: string): Promise<boolean> => {
     return new Promise((resolve) => {
       try {
+        // eslint-disable-next-line @typescript-eslint/no-require-imports
         const fs = require('fs');
         const persistData = {
           timestamp: Date.now(),
@@ -192,6 +225,7 @@ const persistenceHelpers = {
   loadFromFile: (filePath: string): Promise<boolean> => {
     return new Promise((resolve) => {
       try {
+        // eslint-disable-next-line @typescript-eslint/no-require-imports
         const fs = require('fs');
         if (!fs.existsSync(filePath)) {
           logger.warn(`Cache file ${filePath} does not exist`);
@@ -401,12 +435,18 @@ export const cache = {
   persistence: persistenceHelpers
 };
 
-// Security middleware with more permissive settings for file uploads
-app.use(helmet({
-  crossOriginResourcePolicy: { policy: "cross-origin" },
-  contentSecurityPolicy: false,
-  crossOriginEmbedderPolicy: false
-}));
+// Enhanced security middleware with CSP, XSS protection, and more
+// Configured for Monaco editor compatibility while still providing robust protection
+app.use(securityHeaders);
+
+// Input sanitization - removes potentially dangerous control characters
+app.use(sanitizeInput);
+
+// Security event logging - detects and logs suspicious patterns
+app.use(securityLogger);
+
+// CSRF protection - validates Origin headers for state-changing requests
+app.use(csrfProtection());
 
 // Enable CORS - configure for both development and production with more permissive settings
 // Supports Server-Sent Events (SSE) for real-time streaming
@@ -454,15 +494,23 @@ if (process.env.NODE_ENV !== 'test') {
 // Compression middleware to reduce response size
 app.use(compression());
 
-// Rate limiting to prevent abuse
-const apiLimiter = rateLimit({
-  windowMs: 15 * 60 * 1000, // 15 minutes
-  max: 100, // limit each IP to 100 requests per windowMs
-  message: 'Too many requests from this IP, please try again later'
-});
+// Apply endpoint-specific rate limiting for enhanced protection
+// Auth: Stricter limits to prevent brute force (10 attempts per 15 min, successful requests don't count)
+app.use('/api/auth', authLimiter);
 
-// Apply rate limiting to authentication endpoints
-app.use('/api/auth', apiLimiter);
+// AI endpoints: 20 requests per minute (AI operations are expensive)
+app.use('/api/ai-agent', aiLimiter);
+app.use('/api/assistants', aiLimiter);
+app.use('/api/chat', aiLimiter);
+
+// Script operations: 30 requests per 5 minutes
+app.use('/api/scripts', scriptLimiter);
+
+// Upload endpoints: 10 uploads per 5 minutes
+app.use('/api/scripts/upload', uploadLimiter);
+
+// Request size validation - rejects requests exceeding 50MB before parsing
+app.use(validateRequestSize(50));
 
 // Body parsing middleware with increased limits for script content
 app.use(express.json({ limit: '50mb' }));
@@ -476,10 +524,12 @@ const cacheMiddleware = (req: express.Request, res: express.Response, next: expr
   }
 
   // Skip authentication routes and other non-cacheable endpoints
+  // SECURITY: User management endpoints must NOT be cached to prevent
+  // authorization bypass (admin responses being served to non-admin users)
   const skipRoutes = [
-    '/api/auth', 
-    '/api/health', 
-    '/api/users/me'
+    '/api/auth',
+    '/api/health',
+    '/api/users'  // All user management endpoints - role-based access control
   ];
   
   if (skipRoutes.some(route => req.path.startsWith(route))) {
@@ -558,6 +608,7 @@ app.use('/api/chat', chatRoutes);
 // app.use('/api/voice', voiceRoutes);
 app.use('/api/ai-agent', aiAgentRoutes);
 app.use('/api/assistants', assistantsRoutes);
+app.use('/api/documentation', documentationRoutes);
 
 // Create proxy routes for the frontend to use
 // This ensures the frontend can directly call /scripts/please instead of /api/ai-agent/please
@@ -603,7 +654,7 @@ app.get('/', (req, res) => {
 });
 
 // 404 handler - must be before the error handler
-app.use((req, res, next) => {
+app.use((req, res, _next) => {
   res.status(404).json({
     error: 'Not Found',
     message: `The requested resource at ${req.originalUrl} was not found`
@@ -781,6 +832,7 @@ const startServer = async () => {
     
     // Initialize default categories
     try {
+      // eslint-disable-next-line @typescript-eslint/no-require-imports
       const CategoryController = require('./controllers/CategoryController').default;
       await CategoryController.initializeDefaultCategories();
       logger.info('Default categories initialized');
@@ -861,7 +913,7 @@ process.on('uncaughtException', (error) => {
   }
 });
 
-process.on('unhandledRejection', (reason, promise) => {
+process.on('unhandledRejection', (reason, _promise) => {
   logger.error('Unhandled promise rejection:', reason);
   // Log but don't crash in production
 });

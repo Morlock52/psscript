@@ -66,7 +66,7 @@ export function CommandPalette({ recentScripts = [] }: CommandPaletteProps) {
 
       <Command.List className="command-list">
         <Command.Empty className="command-empty">
-          No results found for "{search}"
+          No results found for &quot;{search}&quot;
         </Command.Empty>
 
         {/* Actions Group */}

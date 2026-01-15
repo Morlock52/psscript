@@ -38,15 +38,15 @@ def test_imports():
         return False
 
     try:
-        import langchain_openai
-        print(f"✓ langchain_openai imported successfully")
+        import langchain_openai  # noqa: F401 - Import check only
+        print("✓ langchain_openai imported successfully")
     except ImportError as e:
         print(f"✗ Failed to import langchain_openai: {e}")
         return False
 
     try:
-        import langchain_core
-        print(f"✓ langchain_core imported successfully")
+        import langchain_core  # noqa: F401 - Import check only
+        print("✓ langchain_core imported successfully")
     except ImportError as e:
         print(f"✗ Failed to import langchain_core: {e}")
         return False
@@ -135,7 +135,7 @@ def test_graph_construction():
             print("\nGraph structure:")
             print(f"  Nodes: {list(graph.nodes.keys()) if hasattr(graph, 'nodes') else 'N/A'}")
             print(f"  Entry point: {graph.entry_point if hasattr(graph, 'entry_point') else 'N/A'}")
-        except:
+        except Exception:
             print("  (Structure details not available)")
 
         print("\nGraph construction successful!\n")
@@ -186,7 +186,7 @@ async def test_orchestrator():
         print(f"  Stages completed: {result.get('current_stage')}")
 
         if result.get('final_response'):
-            print(f"\nFinal response preview:")
+            print("\nFinal response preview:")
             preview = result['final_response'][:200]
             print(f"  {preview}..." if len(result['final_response']) > 200 else f"  {preview}")
 

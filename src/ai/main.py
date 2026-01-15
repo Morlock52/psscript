@@ -7,14 +7,20 @@ Uses psycopg3 async connection pooling and LangGraph 1.0 agents.
 
 import os
 import json
-import asyncio
 import time
 import logging
 from typing import Dict, List, Optional, Any
 from contextlib import asynccontextmanager
+from pathlib import Path
 
-from fastapi import FastAPI, HTTPException, Header, Query, Depends
-from fastapi.responses import JSONResponse
+# Load environment variables from root .env file
+from dotenv import load_dotenv
+env_path = Path(__file__).resolve().parent.parent.parent / '.env'
+load_dotenv(dotenv_path=env_path)
+logging.info(f"Loaded environment from: {env_path}")
+
+from fastapi import FastAPI, HTTPException, Header, Query
+from fastapi.responses import JSONResponse, StreamingResponse
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel, Field
 import numpy as np
@@ -22,7 +28,7 @@ import numpy as np
 # psycopg3 for async connection pooling (2026 best practice)
 try:
     from psycopg_pool import AsyncConnectionPool
-    from psycopg.rows import dict_row
+    from psycopg.rows import dict_row  # noqa: F401 - Reserved for future use
     PSYCOPG3_AVAILABLE = True
 except ImportError:
     PSYCOPG3_AVAILABLE = False
@@ -37,13 +43,23 @@ from langgraph_endpoints import router as langgraph_router
 
 # Import configuration
 from config import config
-# Import guardrails for topic validation (January 2026 best practices)
+# Import guardrails for topic validation and security (January 2026 best practices)
+# Implements THREE-LAYER GUARDRAIL ARCHITECTURE:
+# Layer 1: Input validation (topic_validator)
+# Layer 2: Context construction (security prompts)
+# Layer 3: Output validation (validate_generated_output)
 from guardrails import (
-    TopicValidator,
+    # Layer 1: Topic validation
     validate_powershell_topic,
     is_script_generation_request,
     extract_script_requirements,
-    TopicCategory
+    # Layer 2 & 3: Security guardrails
+    PowerShellSecurityGuard,
+    scan_powershell_code,
+    sanitize_script_request,
+    get_security_prompt_injection,
+    validate_generated_output,  # NEW: Output layer validation
+    SecurityLevel
 )
 # Import our agent system
 from agents.agent_coordinator import AgentCoordinator
@@ -52,10 +68,39 @@ from analysis.script_analyzer import ScriptAnalyzer
 # Import utilities
 from utils.token_counter import token_counter, estimate_tokens
 from utils.api_key_manager import api_key_manager, ensure_api_key
+# Import error handling and logging
+from utils.error_handler import (
+    PSScriptError,
+    OpenAIError,
+    ModelError,
+    ValidationError,
+    SecurityError,
+    RateLimitError,
+    error_tracker,
+    with_error_handling,
+    retry_with_backoff,
+    format_error_for_user,
+    ErrorCategory
+)
+from utils.logging_config import (
+    setup_logging,
+    get_logger,
+    set_request_context,
+    clear_request_context,
+    LogContext,
+    LoggingMiddleware
+)
 
-# Configure logging
-logging.basicConfig(level=logging.INFO)
-logger = logging.getLogger("psscript_api")
+# Configure structured logging
+log_level = os.getenv('LOG_LEVEL', 'INFO')
+log_json = os.getenv('LOG_FORMAT', 'text').lower() == 'json'
+log_file = os.getenv('LOG_FILE', None)
+setup_logging(level=log_level, json_format=log_json, log_file=log_file)
+
+logger = get_logger("psscript_api")
+
+# Initialize security guard (singleton)
+security_guard = PowerShellSecurityGuard(strict_mode=os.getenv('STRICT_SECURITY', 'false').lower() == 'true')
 
 # Global async connection pool (psycopg3)
 db_pool: Optional[AsyncConnectionPool] = None
@@ -177,7 +222,7 @@ else:
 print(f"Mock mode enabled: {MOCK_MODE}")
 print(f"Default agent: {config.agent.default_agent}")
 print(f"Default model: {config.agent.default_model} (January 2026)")
-print(f"Token tracking: Enabled")
+print("Token tracking: Enabled")
 print(f"Vector operations enabled: {hasattr(config, 'vector_db_enabled') and config.vector_db_enabled}")
 
 
@@ -390,7 +435,7 @@ async def execute_agent(request: dict):
 
         agent_type = request.get("agent")
         task = request.get("task")
-        timeout = request.get("timeout", 30000)  # Default 30 second timeout
+        request.get("timeout", 30000)  # Default 30 second timeout
 
         # Validate agent type
         valid_agents = ["coordinator", "analyzer", "generator", "security"]
@@ -468,49 +513,58 @@ async def analyze_script(
                 metadata=metadata
             )
             
-            # Extract the analysis results
+            # Extract the analysis results (agent_coordinator returns flat structure)
+            # Normalize types to match the response model
+            security_analysis = analysis_results.get("security_analysis", "No security analysis available")
+            if isinstance(security_analysis, list):
+                security_analysis = "\n".join(str(item) for item in security_analysis)
+
+            parameters = analysis_results.get("parameters", {})
+            if isinstance(parameters, str):
+                parameters = {"description": parameters}
+            elif isinstance(parameters, list):
+                parameters = {"items": parameters} if parameters else {}
+
+            optimization = analysis_results.get("optimization", [])
+            if isinstance(optimization, str):
+                optimization = [optimization] if optimization else []
+
             analysis = {
-                "purpose": analysis_results.get("analysis", {}).get("purpose", 
-                                                                   "Unknown purpose"),
-                "security_analysis": analysis_results.get("security", {}).get(
-                    "security_analysis", "No security analysis available"),
-                "security_score": analysis_results.get("security", {}).get(
-                    "security_score", 5.0),
-                "code_quality_score": analysis_results.get("analysis", {}).get(
-                    "code_quality_score", 5.0),
-                "parameters": analysis_results.get("analysis", {}).get("parameters", {}),
-                "category": analysis_results.get("categorization", {}).get(
-                    "category", "Utilities & Helpers"),
-                "category_id": None,  # Will be set below
-                "optimization": analysis_results.get("optimization", {}).get(
-                    "recommendations", []),
-                "risk_score": analysis_results.get("security", {}).get("risk_score", 5.0)
+                "purpose": str(analysis_results.get("purpose", "Unknown purpose")),
+                "security_analysis": security_analysis,
+                "security_score": float(analysis_results.get("security_score", 5.0)),
+                "code_quality_score": float(analysis_results.get("code_quality_score", 5.0)),
+                "parameters": parameters,
+                "category": str(analysis_results.get("category", "Utilities & Helpers")),
+                "category_id": analysis_results.get("category_id"),  # May already be set
+                "optimization": optimization,
+                "risk_score": float(analysis_results.get("risk_score", 5.0))
             }
-            
+
             # Add command details if requested
             if include_command_details:
-                analysis["command_details"] = analysis_results.get(
-                    "analysis", {}).get("command_details", [])
-            
+                analysis["command_details"] = analysis_results.get("command_details", [])
+
             # Add MS Docs references if requested
             if fetch_ms_docs:
                 analysis["ms_docs_references"] = analysis_results.get(
-                    "documentation", {}).get("references", [])
+                    "ms_docs_references", [])
             
-            # Map category to category_id
-            category_mapping = {
-                "System Administration": 1,
-                "Security & Compliance": 2,
-                "Automation & DevOps": 3,
-                "Cloud Management": 4,
-                "Network Management": 5,
-                "Data Management": 6,
-                "Active Directory": 7,
-                "Monitoring & Diagnostics": 8,
-                "Backup & Recovery": 9,
-                "Utilities & Helpers": 10
-            }
-            analysis["category_id"] = category_mapping.get(analysis["category"], 10)
+            # Map category to category_id if not already set
+            if analysis["category_id"] is None:
+                category_mapping = {
+                    "System Administration": 1,
+                    "Security & Compliance": 2,
+                    "Automation & DevOps": 3,
+                    "Cloud Management": 4,
+                    "Network Management": 5,
+                    "Data Management": 6,
+                    "Active Directory": 7,
+                    "Monitoring & Diagnostics": 8,
+                    "Backup & Recovery": 9,
+                    "Utilities & Helpers": 10
+                }
+                analysis["category_id"] = category_mapping.get(analysis["category"], 10)
         else:
             # Fall back to the legacy agent system
             agent = agent_factory.get_agent("hybrid", api_key or config.api_keys.openai)
@@ -713,8 +767,786 @@ async def find_documentation_references(
             }
     
     except Exception as e:
-        raise HTTPException(status_code=500, 
+        raise HTTPException(status_code=500,
                            detail=f"Documentation search failed: {str(e)}")
+
+
+# PSScriptAnalyzer Integration - January 2026
+class PSScriptAnalyzerRequest(BaseModel):
+    """Request model for PSScriptAnalyzer analysis."""
+    content: str = Field(..., description="PowerShell script content to analyze")
+    format: Optional[str] = Field("markdown", description="Output format: markdown, text, or json")
+
+
+class PSScriptAnalyzerResponse(BaseModel):
+    """Response model for PSScriptAnalyzer analysis."""
+    available: bool = Field(..., description="Whether PSScriptAnalyzer is available")
+    status: str = Field(..., description="Status message")
+    results: Optional[str] = Field(None, description="Formatted analysis results")
+    issue_count: int = Field(0, description="Number of issues found")
+    errors: int = Field(0, description="Number of errors")
+    warnings: int = Field(0, description="Number of warnings")
+    info: int = Field(0, description="Number of informational messages")
+
+
+@app.post("/lint", response_model=PSScriptAnalyzerResponse, tags=["Analysis"])
+async def lint_powershell_script(request: PSScriptAnalyzerRequest):
+    """
+    Analyze PowerShell script using PSScriptAnalyzer (January 2026).
+
+    Performs real static code analysis using Microsoft's PSScriptAnalyzer.
+    Requires PowerShell 7+ and PSScriptAnalyzer module to be installed.
+
+    Returns:
+        - Errors, warnings, and informational messages
+        - Best practice violations
+        - Security concerns
+        - Suggestions for improvement
+    """
+    try:
+        from utils.psscriptanalyzer import (
+            PSScriptAnalyzer,
+            Severity,
+            check_availability
+        )
+
+        # Check if PSScriptAnalyzer is available
+        available, status = check_availability()
+
+        if not available:
+            return PSScriptAnalyzerResponse(
+                available=False,
+                status=status,
+                results=None,
+                issue_count=0,
+                errors=0,
+                warnings=0,
+                info=0
+            )
+
+        # Run analysis
+        analyzer = PSScriptAnalyzer()
+        results = analyzer.analyze_script(request.content)
+
+        # Count by severity
+        errors = len([r for r in results if r.severity == Severity.ERROR])
+        warnings = len([r for r in results if r.severity == Severity.WARNING])
+        info = len([r for r in results if r.severity == Severity.INFORMATION])
+
+        # Format results
+        formatted = analyzer.format_results(results, request.format)
+
+        return PSScriptAnalyzerResponse(
+            available=True,
+            status="Analysis complete",
+            results=formatted,
+            issue_count=len(results),
+            errors=errors,
+            warnings=warnings,
+            info=info
+        )
+
+    except Exception as e:
+        logger.error(f"PSScriptAnalyzer error: {str(e)}")
+        return PSScriptAnalyzerResponse(
+            available=False,
+            status=f"Analysis failed: {str(e)}",
+            results=None,
+            issue_count=0,
+            errors=0,
+            warnings=0,
+            info=0
+        )
+
+
+@app.get("/lint/status", tags=["Analysis"])
+async def get_psscriptanalyzer_status():
+    """
+    Check if PSScriptAnalyzer is available and configured.
+    """
+    try:
+        from utils.psscriptanalyzer import check_availability
+
+        available, status = check_availability()
+        return {
+            "available": available,
+            "status": status,
+            "instructions": (
+                "Install PSScriptAnalyzer: Install-Module PSScriptAnalyzer -Scope CurrentUser"
+                if not available else None
+            )
+        }
+    except Exception as e:
+        return {
+            "available": False,
+            "status": f"Error: {str(e)}",
+            "instructions": "Ensure PowerShell 7+ is installed"
+        }
+
+
+# Pester Test Generation - January 2026
+class PesterGenerationRequest(BaseModel):
+    """Request model for Pester test generation."""
+    content: str = Field(..., description="PowerShell script content")
+    script_name: str = Field("Script.ps1", description="Name of the script file")
+    coverage: Optional[str] = Field("standard", description="Test coverage: minimal, standard, comprehensive")
+
+
+class PesterGenerationResponse(BaseModel):
+    """Response model for Pester test generation."""
+    success: bool
+    test_content: Optional[str] = None
+    functions_found: int = 0
+    tests_generated: int = 0
+    error: Optional[str] = None
+
+
+@app.post("/generate-tests", response_model=PesterGenerationResponse, tags=["Generation"])
+async def generate_pester_tests(request: PesterGenerationRequest):
+    """
+    Generate Pester 5.x unit tests for a PowerShell script (January 2026).
+
+    Analyzes the script to detect functions and generates appropriate
+    test cases including:
+    - Parameter validation tests
+    - Output type verification
+    - Error handling tests
+    - ShouldProcess (-WhatIf) tests
+    """
+    try:
+        from utils.pester_generator import PesterGenerator
+
+        generator = PesterGenerator(
+            include_mocks=True,
+            test_coverage=request.coverage
+        )
+
+        # Parse functions from script
+        functions = generator.parse_functions(request.content)
+
+        if not functions:
+            return PesterGenerationResponse(
+                success=True,
+                test_content=f"""# No functions found in {request.script_name}
+# Pester tests are generated for PowerShell functions.
+# Add function definitions to generate tests.
+
+Describe "Script Tests" {{
+    It "Script exists" {{
+        Test-Path $PSScriptRoot/{request.script_name} | Should -BeTrue
+    }}
+}}
+""",
+                functions_found=0,
+                tests_generated=1
+            )
+
+        # Generate tests
+        tests = generator.generate_tests(functions)
+
+        # Create test file content
+        test_content = generator.create_test_file(tests, request.script_name)
+
+        return PesterGenerationResponse(
+            success=True,
+            test_content=test_content,
+            functions_found=len(functions),
+            tests_generated=len(tests)
+        )
+
+    except Exception as e:
+        logger.error(f"Pester generation error: {str(e)}")
+        return PesterGenerationResponse(
+            success=False,
+            error=str(e)
+        )
+
+
+@app.get("/generate-tests/info", tags=["Generation"])
+async def get_pester_generator_info():
+    """
+    Get information about Pester test generation capabilities.
+    """
+    return {
+        "pester_version": "5.x",
+        "test_types": ["Unit", "Integration", "Acceptance"],
+        "coverage_levels": ["minimal", "standard", "comprehensive"],
+        "features": [
+            "Automatic function detection",
+            "Parameter validation tests",
+            "Output type verification",
+            "Error handling tests",
+            "ShouldProcess (-WhatIf) support",
+            "Mock generation"
+        ]
+    }
+
+
+# Script Sandbox Execution - January 2026
+class SandboxRequest(BaseModel):
+    """Request model for sandboxed script execution."""
+    script: str = Field(..., description="PowerShell script to execute")
+    timeout: int = Field(30, description="Maximum execution time in seconds", ge=1, le=300)
+    validate_only: bool = Field(False, description="Only validate, don't execute")
+
+
+class SandboxResponse(BaseModel):
+    """Response model for sandboxed execution."""
+    status: str
+    stdout: Optional[str] = None
+    stderr: Optional[str] = None
+    exit_code: int = 0
+    execution_time: float = 0
+    warnings: List[str] = []
+    blocked_commands: List[str] = []
+
+
+@app.post("/execute", response_model=SandboxResponse, tags=["Execution"])
+async def execute_script_sandbox(request: SandboxRequest):
+    """
+    Execute PowerShell script in a secure sandbox (January 2026).
+
+    Security features:
+    - Command whitelisting/blacklisting
+    - Execution timeout
+    - Output truncation
+    - Environment isolation
+    - No network access by default
+
+    WARNING: Even sandboxed execution carries risk. Use at your own discretion.
+    """
+    try:
+        from utils.script_sandbox import ScriptSandbox, ExecutionStatus
+
+        sandbox = ScriptSandbox(timeout_seconds=request.timeout)
+
+        if request.validate_only:
+            is_valid, warnings, blocked = sandbox.validate_script(request.script)
+            return SandboxResponse(
+                status="valid" if is_valid else "blocked",
+                warnings=warnings,
+                blocked_commands=blocked
+            )
+
+        result = sandbox.execute(request.script)
+
+        return SandboxResponse(
+            status=result.status.value,
+            stdout=result.stdout,
+            stderr=result.stderr,
+            exit_code=result.exit_code,
+            execution_time=result.execution_time,
+            warnings=result.warnings,
+            blocked_commands=result.blocked_commands
+        )
+
+    except Exception as e:
+        logger.error(f"Sandbox error: {str(e)}")
+        return SandboxResponse(
+            status="error",
+            stderr=str(e),
+            exit_code=-1
+        )
+
+
+@app.post("/validate-script", tags=["Execution"])
+async def validate_script_safety(request: SandboxRequest):
+    """
+    Validate a PowerShell script for safety without executing it.
+    """
+    try:
+        from utils.script_sandbox import validate_script
+
+        is_valid, warnings, blocked = validate_script(request.script)
+
+        return {
+            "valid": is_valid,
+            "safe_to_execute": is_valid and len(warnings) == 0,
+            "warnings": warnings,
+            "blocked_commands": blocked,
+            "recommendation": (
+                "Script is safe to execute" if is_valid and len(warnings) == 0
+                else "Review warnings before execution" if is_valid
+                else "Script contains blocked commands and cannot be executed"
+            )
+        }
+
+    except Exception as e:
+        logger.error(f"Validation error: {str(e)}")
+        return {
+            "valid": False,
+            "safe_to_execute": False,
+            "error": str(e)
+        }
+
+
+# Multi-Model Routing - January 2026
+class RouteRequest(BaseModel):
+    """Request model for model routing."""
+    query: str = Field(..., description="The query to route")
+    context: Optional[List[Dict[str, Any]]] = Field(None, description="Conversation context")
+    cost_sensitive: bool = Field(False, description="Prefer cheaper models")
+
+
+class RouteResponse(BaseModel):
+    """Response model for model routing decision."""
+    model_id: str
+    model_name: str
+    reason: str
+    task_type: str
+    complexity: str
+    estimated_cost: float
+    estimated_latency_ms: int
+    alternative_model: Optional[str] = None
+
+
+@app.post("/route", response_model=RouteResponse, tags=["Routing"])
+async def route_to_model(request: RouteRequest):
+    """
+    Route a query to the most appropriate AI model (January 2026).
+
+    Intelligently selects the best model based on:
+    - Task type (code generation, debugging, explanation, etc.)
+    - Query complexity
+    - Cost optimization preferences
+    - Performance requirements
+    """
+    try:
+        from utils.model_router import ModelRouter
+
+        router = ModelRouter(cost_sensitive=request.cost_sensitive)
+        decision = router.route(request.query, request.context)
+
+        return RouteResponse(
+            model_id=decision.model_id,
+            model_name=decision.model_name,
+            reason=decision.reason,
+            task_type=decision.task_type.value,
+            complexity=decision.complexity.value,
+            estimated_cost=round(decision.estimated_cost, 6),
+            estimated_latency_ms=decision.estimated_latency_ms,
+            alternative_model=decision.alternative_model
+        )
+
+    except Exception as e:
+        logger.error(f"Routing error: {str(e)}")
+        # Fallback to default model
+        return RouteResponse(
+            model_id="gpt-4.1",
+            model_name="GPT-4.1 (Fallback)",
+            reason=f"Routing failed, using default: {str(e)}",
+            task_type="chat",
+            complexity="moderate",
+            estimated_cost=0.015,
+            estimated_latency_ms=2000
+        )
+
+
+@app.get("/models", tags=["Routing"])
+async def list_available_models():
+    """
+    List all available AI models and their capabilities.
+    """
+    from utils.model_router import ModelRouter
+
+    router = ModelRouter()
+    return {
+        "models": [
+            {
+                "id": model.model_id,
+                "name": model.name,
+                "max_tokens": model.max_tokens,
+                "cost_per_1k_input": model.cost_per_1k_input,
+                "cost_per_1k_output": model.cost_per_1k_output,
+                "avg_latency_ms": model.avg_latency_ms,
+                "strengths": model.strengths,
+                "weaknesses": model.weaknesses
+            }
+            for model in router.MODELS.values()
+        ],
+        "default": "gpt-4.1"
+    }
+
+
+# User Memory and Preferences - January 2026
+class PreferencesUpdate(BaseModel):
+    """Request model for updating user preferences."""
+    skill_level: Optional[str] = None
+    powershell_version: Optional[str] = None
+    preferred_style: Optional[str] = None
+    include_comments: Optional[bool] = None
+    include_error_handling: Optional[bool] = None
+    environment: Optional[str] = None
+
+
+class MemoryEntry(BaseModel):
+    """Request model for storing a memory."""
+    key: str
+    value: Any
+    category: str = "general"
+    ttl_hours: Optional[int] = None
+
+
+@app.get("/preferences/{user_id}", tags=["Memory"])
+async def get_user_preferences(user_id: str = "default"):
+    """
+    Get user preferences for personalized AI responses.
+    """
+    try:
+        from utils.user_memory import get_user_memory
+
+        memory = get_user_memory(user_id)
+        prefs = memory.get_preferences()
+
+        return {
+            "user_id": user_id,
+            "preferences": {
+                "skill_level": prefs.skill_level.value,
+                "powershell_version": prefs.powershell_version.value,
+                "preferred_style": prefs.preferred_style,
+                "include_comments": prefs.include_comments,
+                "include_error_handling": prefs.include_error_handling,
+                "prefer_modules": prefs.prefer_modules,
+                "avoid_patterns": prefs.avoid_patterns,
+                "common_tasks": prefs.common_tasks,
+                "environment": prefs.environment,
+                "response_language": prefs.response_language
+            }
+        }
+
+    except Exception as e:
+        logger.error(f"Error getting preferences: {str(e)}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@app.put("/preferences/{user_id}", tags=["Memory"])
+async def update_user_preferences(user_id: str, update: PreferencesUpdate):
+    """
+    Update user preferences for personalized responses.
+    """
+    try:
+        from utils.user_memory import get_user_memory, SkillLevel, PowerShellVersion
+
+        memory = get_user_memory(user_id)
+
+        # Update only provided fields
+        if update.skill_level:
+            memory.set_preference("skill_level", SkillLevel(update.skill_level))
+        if update.powershell_version:
+            memory.set_preference("powershell_version", PowerShellVersion(update.powershell_version))
+        if update.preferred_style:
+            memory.set_preference("preferred_style", update.preferred_style)
+        if update.include_comments is not None:
+            memory.set_preference("include_comments", update.include_comments)
+        if update.include_error_handling is not None:
+            memory.set_preference("include_error_handling", update.include_error_handling)
+        if update.environment:
+            memory.set_preference("environment", update.environment)
+
+        return {"status": "success", "message": "Preferences updated"}
+
+    except Exception as e:
+        logger.error(f"Error updating preferences: {str(e)}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@app.post("/memory/{user_id}", tags=["Memory"])
+async def store_memory(user_id: str, entry: MemoryEntry):
+    """
+    Store something in user memory.
+    """
+    try:
+        from utils.user_memory import get_user_memory
+
+        memory = get_user_memory(user_id)
+        memory.remember(entry.key, entry.value, entry.category, entry.ttl_hours)
+
+        return {"status": "success", "key": entry.key}
+
+    except Exception as e:
+        logger.error(f"Error storing memory: {str(e)}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@app.get("/memory/{user_id}/{key}", tags=["Memory"])
+async def recall_memory(user_id: str, key: str):
+    """
+    Recall something from user memory.
+    """
+    try:
+        from utils.user_memory import get_user_memory
+
+        memory = get_user_memory(user_id)
+        value = memory.recall(key)
+
+        if value is None:
+            raise HTTPException(status_code=404, detail=f"Memory key '{key}' not found")
+
+        return {"key": key, "value": value}
+
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Error recalling memory: {str(e)}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@app.get("/context/{user_id}", tags=["Memory"])
+async def get_user_context(user_id: str, session_id: Optional[str] = None):
+    """
+    Get personalized context string for AI prompts.
+
+    This context can be injected into system prompts to personalize responses.
+    """
+    try:
+        from utils.user_memory import get_user_memory
+
+        memory = get_user_memory(user_id)
+        context = memory.get_context_for_prompt(session_id)
+
+        return {
+            "user_id": user_id,
+            "context": context
+        }
+
+    except Exception as e:
+        logger.error(f"Error getting context: {str(e)}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@app.post("/feedback/{user_id}", tags=["Memory"])
+async def submit_feedback(user_id: str, feedback_type: str, details: Dict[str, Any]):
+    """
+    Submit feedback to help the AI learn user preferences.
+
+    feedback_type: "correction", "preference", or "task"
+    """
+    try:
+        from utils.user_memory import get_user_memory
+
+        memory = get_user_memory(user_id)
+        memory.learn_from_feedback(feedback_type, details)
+
+        return {"status": "success", "message": "Feedback recorded"}
+
+    except Exception as e:
+        logger.error(f"Error processing feedback: {str(e)}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+# ============================================================================
+# CODE DIFF ENDPOINTS - Compare original and improved scripts
+# ============================================================================
+
+class DiffRequest(BaseModel):
+    """Request model for diff generation."""
+    original: str = Field(..., description="Original PowerShell code")
+    improved: str = Field(..., description="Improved PowerShell code")
+    detect_improvements: bool = Field(True, description="Auto-detect improvement categories")
+
+
+class DiffLineModel(BaseModel):
+    """A single line in the diff."""
+    line_number_old: Optional[int] = None
+    line_number_new: Optional[int] = None
+    content_old: Optional[str] = None
+    content_new: Optional[str] = None
+    change_type: str
+
+
+class DiffHunkModel(BaseModel):
+    """A contiguous section of changes."""
+    start_line_old: int
+    start_line_new: int
+    lines: List[DiffLineModel]
+    context_before: List[str]
+    context_after: List[str]
+
+
+class ImprovementModel(BaseModel):
+    """Describes a specific improvement made."""
+    category: str
+    description: str
+    line_range: List[int]
+    original_code: str
+    improved_code: str
+
+
+class DiffResponse(BaseModel):
+    """Response model for diff generation."""
+    original_lines: int
+    improved_lines: int
+    lines_added: int
+    lines_removed: int
+    lines_modified: int
+    hunks: List[DiffHunkModel]
+    improvements: List[ImprovementModel]
+    unified_diff: str
+    html_diff: str
+    similarity_ratio: float
+    summary: str
+
+
+@app.post("/diff", response_model=DiffResponse, tags=["Code Diff"])
+async def generate_code_diff(request: DiffRequest):
+    """
+    Generate a diff between original and improved PowerShell code.
+
+    Returns detailed diff information including:
+    - Line-by-line changes
+    - Change statistics
+    - Auto-detected improvement categories
+    - Unified diff format
+    - HTML diff for rich display
+    """
+    try:
+        from utils.code_diff import CodeDiffGenerator
+
+        generator = CodeDiffGenerator()
+        result = generator.generate_diff(
+            request.original,
+            request.improved,
+            detect_improvements=request.detect_improvements
+        )
+
+        # Convert to response format
+        hunks = []
+        for hunk in result.hunks:
+            lines = [
+                DiffLineModel(
+                    line_number_old=line.line_number_old,
+                    line_number_new=line.line_number_new,
+                    content_old=line.content_old,
+                    content_new=line.content_new,
+                    change_type=line.change_type.value
+                )
+                for line in hunk.lines
+            ]
+            hunks.append(DiffHunkModel(
+                start_line_old=hunk.start_line_old,
+                start_line_new=hunk.start_line_new,
+                lines=lines,
+                context_before=hunk.context_before,
+                context_after=hunk.context_after
+            ))
+
+        improvements = [
+            ImprovementModel(
+                category=imp.category.value,
+                description=imp.description,
+                line_range=list(imp.line_range),
+                original_code=imp.original_code,
+                improved_code=imp.improved_code
+            )
+            for imp in result.improvements
+        ]
+
+        summary = generator.get_change_summary(result)
+
+        return DiffResponse(
+            original_lines=result.original_lines,
+            improved_lines=result.improved_lines,
+            lines_added=result.lines_added,
+            lines_removed=result.lines_removed,
+            lines_modified=result.lines_modified,
+            hunks=hunks,
+            improvements=improvements,
+            unified_diff=result.unified_diff,
+            html_diff=result.html_diff,
+            similarity_ratio=result.similarity_ratio,
+            summary=summary
+        )
+
+    except Exception as e:
+        logger.error(f"Error generating diff: {str(e)}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@app.post("/improve", tags=["Code Diff"])
+async def improve_script_with_diff(request: ChatRequest):
+    """
+    Improve a PowerShell script and return the diff.
+
+    Takes a script via the message field and returns both the improved version
+    and a detailed diff showing what changed.
+    """
+    try:
+        from utils.code_diff import CodeDiffGenerator
+
+        # Get the script from the latest message
+        original_script = ""
+        for msg in reversed(request.messages):
+            if msg.role == "user":
+                original_script = msg.content
+                break
+
+        if not original_script:
+            raise HTTPException(status_code=400, detail="No script content found in messages")
+
+        # Use AI to improve the script
+        improvement_prompt = f"""You are a PowerShell expert. Improve the following script with:
+- Better error handling
+- Security best practices
+- Performance optimizations
+- Code readability improvements
+- Proper documentation
+
+Return ONLY the improved PowerShell code, no explanations.
+
+Original script:
+```powershell
+{original_script}
+```
+
+Improved script:"""
+
+        client = get_openai_client()
+        response = await client.chat.completions.create(
+            model=config.agent.default_model,
+            messages=[{"role": "user", "content": improvement_prompt}],
+            temperature=0.3,
+            max_tokens=4096
+        )
+
+        improved_script = response.choices[0].message.content.strip()
+
+        # Extract code from markdown if present
+        if "```powershell" in improved_script:
+            improved_script = improved_script.split("```powershell")[1].split("```")[0].strip()
+        elif "```" in improved_script:
+            improved_script = improved_script.split("```")[1].split("```")[0].strip()
+
+        # Generate diff
+        generator = CodeDiffGenerator()
+        diff_result = generator.generate_diff(original_script, improved_script)
+        summary = generator.get_change_summary(diff_result)
+
+        return {
+            "original": original_script,
+            "improved": improved_script,
+            "diff": {
+                "unified_diff": diff_result.unified_diff,
+                "lines_added": diff_result.lines_added,
+                "lines_removed": diff_result.lines_removed,
+                "lines_modified": diff_result.lines_modified,
+                "similarity_ratio": diff_result.similarity_ratio,
+                "improvements": [
+                    {
+                        "category": imp.category.value,
+                        "description": imp.description,
+                        "line_range": list(imp.line_range)
+                    }
+                    for imp in diff_result.improvements
+                ]
+            },
+            "summary": summary
+        }
+
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Error improving script: {str(e)}")
+        raise HTTPException(status_code=500, detail=str(e))
 
 
 @app.post("/embedding", response_model=EmbeddingResponse, tags=["Embeddings"])
@@ -1113,60 +1945,163 @@ async def chat_with_powershell_expert(request: ChatRequest):
             script_requirements = extract_script_requirements(latest_user_message)
             logger.info(f"Script generation request detected: {script_requirements}")
 
+        # =====================================================
+        # SECURITY: Sanitize request for dangerous patterns
+        # =====================================================
+        is_valid_request, sanitized_request, removed_patterns = security_guard.validate_request(latest_user_message)
+        if removed_patterns:
+            logger.log_security_event(
+                event_type="request_sanitized",
+                details=f"Removed patterns: {removed_patterns}",
+                severity="warning"
+            )
+            if not is_valid_request:
+                return {
+                    "response": f"Your request contained potentially dangerous patterns that were blocked: {', '.join(removed_patterns)}. Please rephrase your request without asking for harmful functionality.",
+                    "session_id": request.session_id
+                }
+
+        # Get security prompt injection for safe code generation
+        security_guidelines = get_security_prompt_injection()
+
         # Build the appropriate system prompt
         if is_script_request:
             system_prompt = f"""You are PSScriptGPT, an expert PowerShell script generator.
-You create professional, production-ready PowerShell scripts following 2026 best practices.
+You create professional, production-ready PowerShell scripts following January 2026 best practices.
 
-SCRIPT GENERATION GUIDELINES:
-1. Always include comprehensive comment-based help (<# .SYNOPSIS, .DESCRIPTION, .PARAMETER, .EXAMPLE #>)
-2. Use [CmdletBinding()] for advanced function features
-3. Implement proper parameter validation with [ValidateNotNullOrEmpty()], [ValidateRange()], etc.
-4. Include error handling with try/catch blocks
-5. Use Write-Verbose for progress messages, Write-Warning for warnings
-6. Follow PowerShell naming conventions (Verb-Noun)
-7. Support -WhatIf and -Confirm for destructive operations
-8. Return proper objects, not formatted text
-9. Include examples in the help section
+═══════════════════════════════════════════════════════════════════
+SCRIPT GENERATION GUIDELINES (January 2026 Best Practices)
+═══════════════════════════════════════════════════════════════════
+
+**STRUCTURE & DOCUMENTATION:**
+1. Always include comprehensive comment-based help:
+   <# .SYNOPSIS, .DESCRIPTION, .PARAMETER, .EXAMPLE, .NOTES, .LINK #>
+2. Use [CmdletBinding(SupportsShouldProcess)] for functions with side effects
+3. Add #Requires statements for module dependencies and PowerShell version
+
+**MODERN POWERSHELL PATTERNS:**
+4. Use Get-CimInstance instead of Get-WmiObject (deprecated)
+5. Prefer splatting for commands with many parameters
+6. Use $PSScriptRoot for script-relative paths
+7. Implement PowerShell 7+ features when appropriate:
+   - Ternary operator: $result = $condition ? $true : $false
+   - Null-coalescing: $value ?? 'default'
+   - Pipeline parallelization: ForEach-Object -Parallel
+
+**PARAMETER VALIDATION:**
+8. Use comprehensive validation attributes:
+   [ValidateNotNullOrEmpty()], [ValidateRange()], [ValidatePattern()],
+   [ValidateSet()], [ValidateScript()], [ValidatePath()] (PS 7.4+)
+9. Declare parameter types explicitly
+10. Use [Parameter(Mandatory, ValueFromPipeline, etc.)]
+
+**ERROR HANDLING & LOGGING:**
+11. Implement structured error handling with try/catch/finally
+12. Use Write-Verbose -Message for progress (not Write-Host)
+13. Use Write-Warning for non-fatal issues
+14. Use Write-Error -ErrorAction Stop for fatal errors
+15. Consider $ErrorActionPreference = 'Stop' for strict mode
+
+**SAFETY & TESTING:**
+16. Support -WhatIf and -Confirm for destructive operations
+17. Design for testability with Pester
+18. Add PSScriptAnalyzer compatibility comments if needed
+19. Return proper objects, not formatted text
+
+{security_guidelines}
+
+═══════════════════════════════════════════════════════════════════
+CHAIN-OF-THOUGHT SECURITY REVIEW (Before generating):
+═══════════════════════════════════════════════════════════════════
+Before generating any script, internally review:
+1. Could this script cause unintended data loss?
+2. Does it handle credentials securely (Get-Credential, not plaintext)?
+3. Are file/registry operations properly guarded with -WhatIf?
+4. Does it follow least-privilege principles?
+5. Are there any injection vulnerabilities in dynamic code?
 
 TARGET SYSTEM: {script_requirements.get('target_system', 'windows') if script_requirements else 'windows'}
 COMPLEXITY LEVEL: {script_requirements.get('complexity', 'medium') if script_requirements else 'medium'}
 REQUESTED FEATURES: {', '.join(script_requirements.get('features', [])) if script_requirements else 'standard'}
 
-When generating scripts:
-- Start with the script purpose and requirements analysis
-- Provide the complete, runnable script
-- Explain key sections of the code
-- Include usage examples
-- Mention any prerequisites or dependencies"""
+═══════════════════════════════════════════════════════════════════
+OUTPUT FORMAT:
+═══════════════════════════════════════════════════════════════════
+1. **Purpose & Requirements Analysis** - Brief overview of what the script does
+2. **Prerequisites** - Required modules, permissions, PowerShell version
+3. **Complete Script** - Full, runnable code in ```powershell blocks
+4. **Key Features Explained** - Brief explanation of important sections
+5. **Usage Examples** - How to run the script with sample parameters
+6. **Testing Notes** - How to safely test (use -WhatIf first!)"""
         else:
-            # Standard PowerShell assistant prompt
-            system_prompt = request.system_prompt or """You are PSScriptGPT, a specialized PowerShell expert assistant.
+            # Standard PowerShell assistant prompt (January 2026)
+            system_prompt = request.system_prompt or f"""You are PSScriptGPT, a specialized PowerShell expert assistant (January 2026).
 
-EXPERTISE AREAS:
-- PowerShell scripting and automation (Windows PowerShell 5.1 & PowerShell 7+)
+═══════════════════════════════════════════════════════════════════
+EXPERTISE AREAS
+═══════════════════════════════════════════════════════════════════
+- PowerShell scripting and automation (Windows PowerShell 5.1 & PowerShell 7.4+)
 - Script analysis, debugging, and optimization
 - Security best practices and vulnerability assessment
-- DevOps and CI/CD pipeline automation
+- DevOps and CI/CD pipeline automation (GitHub Actions, Azure DevOps)
 - System administration and Active Directory
-- Cloud scripting (Azure, AWS, GCP)
-- Cross-platform scripting
+- Cloud scripting (Azure Az module, AWS Tools, GCP SDK)
+- Cross-platform scripting (Windows, Linux, macOS)
+- Desired State Configuration (DSC v3)
 
-RESPONSE GUIDELINES:
+═══════════════════════════════════════════════════════════════════
+JANUARY 2026 BEST PRACTICES
+═══════════════════════════════════════════════════════════════════
+When providing code examples, always follow these modern patterns:
+
+**Modern Cmdlets:**
+- Use Get-CimInstance instead of Get-WmiObject (deprecated)
+- Use Invoke-RestMethod instead of Invoke-WebRequest for APIs
+- Use Test-Json for JSON validation (PS 7+)
+
+**PowerShell 7+ Features:**
+- Ternary operator: $result = $condition ? $true : $false
+- Null-coalescing: $value ?? 'default'
+- Pipeline parallelization: ForEach-Object -Parallel {{}}
+- ErrorView 'ConciseView' for cleaner errors
+- $PSStyle for ANSI color formatting
+
+**Security:**
+- Always recommend Get-Credential over plaintext passwords
+- Suggest SecretManagement module for secrets
+- Mention -WhatIf for any destructive operations
+- Warn about common security pitfalls
+
+**Testing & Quality:**
+- Reference PSScriptAnalyzer for linting
+- Mention Pester for unit testing
+- Suggest proper error handling patterns
+
+{security_guidelines}
+
+═══════════════════════════════════════════════════════════════════
+RESPONSE GUIDELINES
+═══════════════════════════════════════════════════════════════════
 1. Provide accurate, tested code examples when relevant
 2. Explain concepts clearly with practical examples
 3. Highlight security considerations and best practices
 4. Suggest improvements and optimizations
 5. Reference official Microsoft documentation when helpful
 6. Use markdown code blocks with 'powershell' syntax highlighting
+7. For complex topics, break down the explanation step-by-step
+8. Always consider cross-platform compatibility when relevant
 
-You can help with:
-- Writing new scripts
-- Debugging existing scripts
-- Explaining PowerShell concepts
+═══════════════════════════════════════════════════════════════════
+I CAN HELP WITH:
+═══════════════════════════════════════════════════════════════════
+- Writing new scripts with production-ready patterns
+- Debugging existing scripts and error analysis
+- Explaining PowerShell concepts at any level
 - Reviewing code for security issues
-- Optimizing performance
-- Converting scripts between platforms"""
+- Optimizing performance and memory usage
+- Converting scripts between platforms
+- Migrating from Windows PowerShell to PowerShell 7+
+- Setting up CI/CD pipelines for PowerShell projects"""
 
         # Check if we have a valid API key
         if not api_key and MOCK_MODE:
@@ -1236,6 +2171,149 @@ You can help with:
     except Exception as e:
         logger.error(f"Chat processing failed: {str(e)}")
         raise HTTPException(status_code=500, detail=f"Chat processing failed: {str(e)}")
+
+
+@app.post("/chat/stream", tags=["Chat"])
+async def stream_chat_with_powershell_expert(request: ChatRequest):
+    """
+    Stream chat responses using Server-Sent Events (SSE).
+
+    January 2026 Feature: Real-time token streaming for improved UX.
+    Returns tokens as they're generated, reducing perceived latency.
+
+    SSE Event Types:
+    - token: Individual token in the stream
+    - error: Error message
+    - done: Stream complete with metadata
+    """
+    import asyncio
+
+    async def generate_stream():
+        """Async generator for SSE streaming."""
+        try:
+            # Import OpenAI client for streaming
+            from openai import AsyncOpenAI
+
+            api_key = getattr(request, 'api_key', None) or config.api_keys.openai
+            if not api_key:
+                yield f"data: {json.dumps({'type': 'error', 'content': 'No API key configured'})}\n\n"
+                return
+
+            client = AsyncOpenAI(api_key=api_key)
+
+            # Get the latest user message for guardrail validation
+            latest_user_message = ""
+            conversation_history = []
+            for msg in request.messages:
+                msg_dict = msg.dict() if hasattr(msg, 'dict') else msg
+                conversation_history.append(msg_dict)
+                if msg_dict.get('role') == 'user':
+                    latest_user_message = msg_dict.get('content', '')
+
+            # =====================================================
+            # GUARDRAIL: Topic Validation
+            # =====================================================
+            validation_result = validate_powershell_topic(
+                latest_user_message,
+                conversation_history[:-1] if len(conversation_history) > 1 else None
+            )
+
+            if not validation_result.is_valid:
+                yield f"data: {json.dumps({'type': 'token', 'content': validation_result.suggested_response})}\n\n"
+                yield f"data: {json.dumps({'type': 'done', 'session_id': request.session_id})}\n\n"
+                return
+
+            # =====================================================
+            # SECURITY: Validate request
+            # =====================================================
+            is_valid_request, _, removed_patterns = security_guard.validate_request(latest_user_message)
+            if not is_valid_request:
+                error_msg = f"Your request contained potentially dangerous patterns that were blocked: {', '.join(removed_patterns)}"
+                yield f"data: {json.dumps({'type': 'token', 'content': error_msg})}\n\n"
+                yield f"data: {json.dumps({'type': 'done', 'session_id': request.session_id})}\n\n"
+                return
+
+            # Build system prompt (same logic as /chat endpoint)
+            is_script_request = is_script_generation_request(latest_user_message)
+            script_requirements = extract_script_requirements(latest_user_message) if is_script_request else None
+            security_guidelines = get_security_prompt_injection()
+
+            if is_script_request:
+                system_prompt = f"""You are PSScriptGPT, an expert PowerShell script generator.
+You create professional, production-ready PowerShell scripts following January 2026 best practices.
+
+**KEY GUIDELINES:**
+1. Use Get-CimInstance instead of Get-WmiObject (deprecated)
+2. Include comprehensive comment-based help
+3. Use [CmdletBinding(SupportsShouldProcess)] for side effects
+4. Implement proper error handling with try/catch
+5. Support -WhatIf and -Confirm for destructive operations
+6. Use modern PowerShell 7+ features when appropriate
+
+{security_guidelines}
+
+TARGET: {script_requirements.get('target_system', 'windows') if script_requirements else 'windows'}"""
+            else:
+                system_prompt = f"""You are PSScriptGPT, a specialized PowerShell expert assistant (January 2026).
+
+**EXPERTISE:** PowerShell scripting, automation, security, DevOps, cloud (Azure, AWS, GCP).
+
+**MODERN PATTERNS:**
+- Get-CimInstance over Get-WmiObject
+- PowerShell 7+ features (ternary, null-coalescing, parallel)
+- PSScriptAnalyzer and Pester for quality
+
+{security_guidelines}"""
+
+            # Build messages for OpenAI
+            messages = [{"role": "system", "content": system_prompt}]
+            for msg in request.messages:
+                msg_dict = msg.dict() if hasattr(msg, 'dict') else msg
+                messages.append({"role": msg_dict.get('role'), "content": msg_dict.get('content')})
+
+            # Stream from OpenAI
+            start_time = time.time()
+            total_tokens = 0
+            full_response = ""
+
+            stream = await client.chat.completions.create(
+                model=config.agent.default_model,
+                messages=messages,
+                stream=True,
+                temperature=0.7,
+                max_tokens=4096
+            )
+
+            async for chunk in stream:
+                if chunk.choices and len(chunk.choices) > 0:
+                    delta = chunk.choices[0].delta
+                    if delta.content:
+                        content = delta.content
+                        full_response += content
+                        total_tokens += 1
+                        # Escape the content for JSON
+                        yield f"data: {json.dumps({'type': 'token', 'content': content})}\n\n"
+
+            # Stream complete - send done event with metadata
+            processing_time = time.time() - start_time
+            logger.info(f"Streaming chat completed in {processing_time:.2f}s, ~{total_tokens} tokens")
+
+            yield f"data: {json.dumps({'type': 'done', 'session_id': request.session_id, 'tokens': total_tokens, 'time': round(processing_time, 2)})}\n\n"
+
+        except Exception as e:
+            logger.error(f"Streaming error: {str(e)}")
+            yield f"data: {json.dumps({'type': 'error', 'content': str(e)})}\n\n"
+
+    return StreamingResponse(
+        generate_stream(),
+        media_type="text/event-stream",
+        headers={
+            "Cache-Control": "no-cache",
+            "Connection": "keep-alive",
+            "X-Accel-Buffering": "no",  # Disable nginx buffering
+            "Access-Control-Allow-Origin": "*"
+        }
+    )
 
 
 # Token Usage and Cost Endpoints
@@ -1352,3 +2430,160 @@ async def test_api_key():
             "valid": False,
             "message": f"Error testing API key: {str(e)}"
         }
+
+
+# =====================================================
+# SECURITY ENDPOINTS - January 2026
+# =====================================================
+
+class ScriptScanRequest(BaseModel):
+    """Request model for script security scanning."""
+    script: str = Field(..., description="PowerShell script to scan")
+    strict_mode: bool = Field(False, description="Use strict security mode")
+
+
+@app.post("/api/security/scan", tags=["Security"])
+async def scan_script_security(request: ScriptScanRequest):
+    """
+    Scan a PowerShell script for security issues.
+
+    Returns security findings including:
+    - Dangerous command detection
+    - Credential exposure risks
+    - Obfuscation patterns
+    - Best practice recommendations
+    """
+    try:
+        set_request_context()
+        logger.info(f"Scanning script ({len(request.script)} chars) for security issues")
+
+        result = security_guard.scan(request.script)
+
+        # Log security findings
+        if not result.is_safe:
+            logger.log_security_event(
+                event_type="dangerous_script_detected",
+                details=f"Level: {result.overall_level.value}, Findings: {len(result.findings)}",
+                severity="warning"
+            )
+
+        return {
+            "is_safe": result.is_safe,
+            "security_level": result.overall_level.value,
+            "findings": [
+                {
+                    "level": f.level.value,
+                    "category": f.category.value,
+                    "message": f.message,
+                    "line": f.line_number,
+                    "recommendation": f.recommendation
+                }
+                for f in result.findings[:20]  # Limit to 20 findings
+            ],
+            "blocked_operations": result.blocked_operations,
+            "warnings": result.warnings[:10],
+            "recommendations": result.recommendations[:10]
+        }
+    except Exception as e:
+        logger.error(f"Security scan failed: {str(e)}")
+        raise HTTPException(status_code=500, detail=f"Security scan failed: {str(e)}")
+    finally:
+        clear_request_context()
+
+
+@app.get("/api/security/stats", tags=["Security"])
+async def get_security_stats():
+    """Get security scanning statistics."""
+    try:
+        stats = security_guard.get_stats()
+        return {
+            "security_stats": stats,
+            "strict_mode": security_guard.strict_mode
+        }
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Failed to get security stats: {str(e)}")
+
+
+# =====================================================
+# ERROR TRACKING ENDPOINTS - January 2026
+# =====================================================
+
+@app.get("/api/errors/stats", tags=["Monitoring"])
+async def get_error_stats():
+    """Get error tracking statistics."""
+    try:
+        stats = error_tracker.get_stats()
+        return {
+            "error_stats": stats
+        }
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Failed to get error stats: {str(e)}")
+
+
+@app.get("/api/health/detailed", tags=["Health"])
+async def detailed_health_check():
+    """
+    Detailed health check with component status.
+
+    Returns status of:
+    - Database connection
+    - Redis connection
+    - AI model availability
+    - Security guard status
+    - Error tracker status
+    """
+    health = {
+        "status": "healthy",
+        "timestamp": time.strftime("%Y-%m-%dT%H:%M:%SZ"),
+        "components": {}
+    }
+
+    # Check database
+    try:
+        if db_pool:
+            async with db_pool.connection() as conn:
+                await conn.execute("SELECT 1")
+            health["components"]["database"] = {"status": "healthy", "type": "psycopg3"}
+        else:
+            health["components"]["database"] = {"status": "degraded", "type": "psycopg2"}
+    except Exception as e:
+        health["components"]["database"] = {"status": "unhealthy", "error": str(e)}
+        health["status"] = "degraded"
+
+    # Check AI configuration
+    health["components"]["ai"] = {
+        "status": "healthy" if config.api_keys.openai else "not_configured",
+        "mock_mode": config.mock_mode,
+        "model": config.agent.powershell_model
+    }
+
+    # Check security guard
+    health["components"]["security"] = {
+        "status": "healthy",
+        "strict_mode": security_guard.strict_mode,
+        "scans_performed": len(security_guard.scan_history)
+    }
+
+    # Check error tracker
+    error_stats = error_tracker.get_stats()
+    health["components"]["errors"] = {
+        "total_errors": error_stats["total_errors"],
+        "recent_errors": len(error_stats.get("recent_errors", []))
+    }
+
+    return health
+
+
+@app.get("/api/config/models", tags=["Configuration"])
+async def get_model_configuration():
+    """Get current model configuration."""
+    return {
+        "default_model": config.agent.default_model,
+        "powershell_model": config.agent.powershell_model,
+        "reasoning_model": config.agent.reasoning_model,
+        "fast_model": config.agent.fast_model,
+        "fallback_model": config.agent.fallback_model,
+        "embedding_model": config.agent.embedding_model,
+        "temperature": config.agent.temperature,
+        "max_tokens": config.agent.max_tokens
+    }

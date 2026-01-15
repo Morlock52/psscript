@@ -13,6 +13,7 @@ import { Sequelize, Options } from 'sequelize';
 import winston from 'winston';
 import fs from 'fs';
 import path from 'path';
+import { IS_PRODUCTION, IS_DEVELOPMENT } from '../utils/envValidation';
 
 // Configure logger
 const logger = winston.createLogger({
@@ -122,22 +123,58 @@ class Database {
   private connected: boolean = false;
   
   /**
+   * Get SSL configuration based on environment
+   * - Production: Require SSL with certificate validation
+   * - Development: SSL optional, can use self-signed certs
+   */
+  private getSSLConfig(): object | undefined {
+    const useSSL = process.env.DB_SSL === 'true';
+
+    if (!useSSL) {
+      return undefined;
+    }
+
+    // In production, ALWAYS validate SSL certificates
+    // This prevents man-in-the-middle attacks
+    if (IS_PRODUCTION) {
+      const caPath = process.env.DB_SSL_CA_PATH;
+      return {
+        require: true,
+        rejectUnauthorized: true, // CRITICAL: Always verify certs in production
+        ca: caPath ? fs.readFileSync(caPath).toString() : undefined
+      };
+    }
+
+    // In development, allow self-signed certificates with warning
+    if (IS_DEVELOPMENT) {
+      logger.warn('⚠️  SSL certificate validation disabled in development mode');
+      return {
+        require: true,
+        rejectUnauthorized: false // Only acceptable in development
+      };
+    }
+
+    // Default: require validation
+    return {
+      require: true,
+      rejectUnauthorized: true
+    };
+  }
+
+  /**
    * Get database configuration from environment variables
    */
   private getConfig(): Options {
     const databaseUrl = process.env.DATABASE_URL;
-    const useSSL = process.env.DB_SSL === 'true';
-    
+    const sslConfig = this.getSSLConfig();
+
     // Use DATABASE_URL if available
     if (databaseUrl) {
       return {
         dialect: 'postgres',
         logging: (msg) => logger.debug(msg),
         dialectOptions: {
-          ssl: useSSL ? {
-            require: true,
-            rejectUnauthorized: false
-          } : undefined,
+          ssl: sslConfig,
           connectTimeout: CONNECTION_TIMEOUT_MS
         },
         pool: {
@@ -152,21 +189,30 @@ class Database {
         }
       };
     }
-    
+
     // Otherwise use individual connection parameters
+    // Log connection details (password obfuscated for security)
+    const host = process.env.DB_HOST || 'localhost';
+    const port = parseInt(process.env.DB_PORT || '5432');
+    const database = process.env.DB_NAME || 'psscript';
+    const username = process.env.DB_USER || 'postgres';
+    const password = process.env.DB_PASSWORD || 'postgres';
+
+    logger.info(`Database config: ${username}@${host}:${port}/${database}`);
+    if (IS_DEVELOPMENT && password === 'postgres') {
+      logger.warn('⚠️  Using default database password in development');
+    }
+
     return {
-      host: process.env.DB_HOST || 'localhost',
-      port: parseInt(process.env.DB_PORT || '5432'),
-      database: process.env.DB_NAME || 'psscript',
-      username: process.env.DB_USER || 'postgres',
-      password: process.env.DB_PASSWORD || 'postgres',
+      host,
+      port,
+      database,
+      username,
+      password,
       dialect: 'postgres',
       logging: (msg) => logger.debug(msg),
       dialectOptions: {
-        ssl: useSSL ? {
-          require: true,
-          rejectUnauthorized: false
-        } : undefined,
+        ssl: sslConfig,
         connectTimeout: CONNECTION_TIMEOUT_MS
       },
       pool: {

@@ -1,5 +1,6 @@
 import React, { useEffect, useRef } from 'react';
 import MonacoEditor from 'react-monaco-editor';
+import { useTheme } from '../contexts/ThemeContext';
 import './CodeEditor.css';
 
 interface CodeEditorProps {
@@ -13,6 +14,7 @@ interface CodeEditorProps {
 /**
  * CodeEditor component for editing code with syntax highlighting
  * Uses Monaco Editor under the hood for advanced editing features
+ * Theme-aware: automatically switches between light and dark themes
  */
 const CodeEditor: React.FC<CodeEditorProps> = ({
   value,
@@ -21,12 +23,14 @@ const CodeEditor: React.FC<CodeEditorProps> = ({
   height = '500px',
   readOnly = false
 }) => {
+  const { isDark } = useTheme();
+
   // Editor options
   const editorOptions = {
     selectOnLineNumbers: true,
     roundedSelection: true,
     readOnly: readOnly,
-    cursorStyle: 'line' as 'line', // Type assertion to valid cursorStyle
+    cursorStyle: 'line' as const,
     automaticLayout: true,
     minimap: {
       enabled: true
@@ -41,7 +45,7 @@ const CodeEditor: React.FC<CodeEditorProps> = ({
   // Handle editor mount
   const handleEditorDidMount = (editor: any) => {
     editor.focus();
-    
+
     // Add Powershell specific configuration if needed
     if (language === 'powershell') {
       // Monaco has built-in PowerShell support
@@ -51,24 +55,30 @@ const CodeEditor: React.FC<CodeEditorProps> = ({
 
   // Create a reference to the container element
   const containerRef = useRef<HTMLDivElement>(null);
-  
+
   // Set the height using a CSS custom property
   useEffect(() => {
     if (containerRef.current) {
       containerRef.current.style.setProperty(
-        '--editor-height', 
+        '--editor-height',
         typeof height === 'string' ? height : `${height}px`
       );
     }
   }, [height]);
 
+  // Monaco theme based on app theme
+  const monacoTheme = isDark ? 'vs-dark' : 'vs';
+
   return (
-    <div className="code-editor-container" ref={containerRef}>
+    <div
+      className={`code-editor-container ${isDark ? 'dark' : 'light'}`}
+      ref={containerRef}
+    >
       <MonacoEditor
         width="100%"
         height="100%"
         language={language}
-        theme="vs-dark"
+        theme={monacoTheme}
         value={value}
         options={editorOptions}
         onChange={onChange}

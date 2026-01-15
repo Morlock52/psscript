@@ -1,0 +1,37 @@
+<svg width="1200" height="360" viewBox="0 0 1200 360" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1200" y2="360" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#0b1220"/>
+      <stop offset="1" stop-color="#1e3a8a"/>
+    </linearGradient>
+    <linearGradient id="accent" x1="0" y1="0" x2="400" y2="0" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#38bdf8"/>
+      <stop offset="1" stop-color="#22c55e"/>
+    </linearGradient>
+  </defs>
+
+  <rect width="1200" height="360" fill="url(#bg)"/>
+  <rect x="40" y="40" width="1120" height="280" rx="28" fill="#0f172a" opacity="0.88"/>
+
+  <rect x="86" y="92" width="180" height="10" rx="5" fill="url(#accent)"/>
+
+  <text x="90" y="160" fill="#f8fafc" font-family="Segoe UI, Arial, sans-serif" font-size="48" font-weight="700">
+    PSScript Manager
+  </text>
+  <text x="90" y="205" fill="#cbd5f5" font-family="Segoe UI, Arial, sans-serif" font-size="22">
+    AI-powered PowerShell script management and analysis platform
+  </text>
+  <text x="90" y="245" fill="#94a3b8" font-family="Segoe UI, Arial, sans-serif" font-size="16">
+    Frontend - Backend - AI Service - pgvector - Analytics - Voice
+  </text>
+
+  <g opacity="0.7">
+    <circle cx="980" cy="130" r="48" fill="#1e293b" stroke="#38bdf8" stroke-width="2"/>
+    <circle cx="1040" cy="200" r="36" fill="#1e293b" stroke="#22c55e" stroke-width="2"/>
+    <circle cx="920" cy="220" r="28" fill="#1e293b" stroke="#818cf8" stroke-width="2"/>
+  </g>
+
+  <text x="930" y="136" fill="#e2e8f0" font-family="Segoe UI, Arial, sans-serif" font-size="12">AI</text>
+  <text x="1030" y="206" fill="#e2e8f0" font-family="Segoe UI, Arial, sans-serif" font-size="12">DB</text>
+  <text x="910" y="226" fill="#e2e8f0" font-family="Segoe UI, Arial, sans-serif" font-size="12">API</text>
+</svg>

@@ -7,7 +7,7 @@ import { test, expect } from '@playwright/test';
 
 test.describe('Agent System Health', () => {
   test('Agent coordinator should be available', async ({ request }) => {
-    const response = await request.get('http://localhost:8000/api/agents');
+    const response = await request.get('http://localhost:8001/api/agents');
 
     // Agent endpoint might require specific structure
     expect([200, 404, 401, 405]).toContain(response.status());
@@ -20,7 +20,7 @@ test.describe('Agent System Health', () => {
   });
 
   test('Should list available agents', async ({ request }) => {
-    const response = await request.get('http://localhost:8000/api/agents/list');
+    const response = await request.get('http://localhost:8001/api/agents/list');
 
     expect([200, 404, 401, 405]).toContain(response.status());
 
@@ -51,7 +51,7 @@ test.describe('Agent System Health', () => {
       'agent_factory'
     ];
 
-    const response = await request.get('http://localhost:8000/api/agents/list');
+    const response = await request.get('http://localhost:8001/api/agents/list');
 
     if (response.status() === 200) {
       const data = await response.json();
@@ -71,7 +71,7 @@ test.describe('Agent System Health', () => {
 
 test.describe('LangGraph Integration', () => {
   test('Should support LangGraph workflow execution', async ({ request }) => {
-    const response = await request.post('http://localhost:8000/api/agents/execute', {
+    const response = await request.post('http://localhost:8001/api/agents/execute', {
       data: {
         agent: 'langgraph',
         task: 'Analyze this PowerShell script for security issues',
@@ -93,7 +93,7 @@ test.describe('LangGraph Integration', () => {
 
   test('Should support checkpointing and state management', async ({ request }) => {
     // LangGraph uses PostgreSQL checkpointer for state persistence
-    const response = await request.get('http://localhost:8000/api/agents/state');
+    const response = await request.get('http://localhost:8001/api/agents/state');
 
     expect([200, 404, 401, 405]).toContain(response.status());
 
@@ -106,7 +106,7 @@ test.describe('LangGraph Integration', () => {
   });
 
   test('Should handle multi-step workflows', async ({ request }) => {
-    const response = await request.post('http://localhost:8000/api/agents/workflow', {
+    const response = await request.post('http://localhost:8001/api/agents/workflow', {
       data: {
         steps: [
           { type: 'analyze', input: 'script content' },
@@ -124,7 +124,7 @@ test.describe('Agent Performance', () => {
   test('Agent response time should be acceptable', async ({ request }) => {
     const startTime = Date.now();
 
-    const response = await request.post('http://localhost:8000/api/agents/execute', {
+    const response = await request.post('http://localhost:8001/api/agents/execute', {
       data: {
         agent: 'coordinator',
         task: 'Simple health check task'
@@ -145,7 +145,7 @@ test.describe('Agent Performance', () => {
   test('Should support parallel agent execution', async ({ request }) => {
     // Execute multiple agent requests in parallel (2026 best practice: use Promise.all for concurrent ops)
     const requests = Array(3).fill(null).map((_, i) =>
-      request.post('http://localhost:8000/api/agents/execute', {
+      request.post('http://localhost:8001/api/agents/execute', {
         data: {
           agent: 'coordinator',
           task: `Parallel task ${i + 1}`
@@ -172,7 +172,7 @@ test.describe('Agent Performance', () => {
 test.describe('Agent Memory and Context', () => {
   test('Should persist conversation context', async ({ request }) => {
     // First message
-    const firstResponse = await request.post('http://localhost:8000/api/agents/chat', {
+    const firstResponse = await request.post('http://localhost:8001/api/agents/chat', {
       data: {
         message: 'My name is TestUser',
         sessionId: 'test-session-001'
@@ -181,7 +181,7 @@ test.describe('Agent Memory and Context', () => {
 
     if (firstResponse.status() === 200 || firstResponse.status() === 201) {
       // Second message referencing first
-      const secondResponse = await request.post('http://localhost:8000/api/agents/chat', {
+      const secondResponse = await request.post('http://localhost:8001/api/agents/chat', {
         data: {
           message: 'What is my name?',
           sessionId: 'test-session-001'
@@ -199,7 +199,7 @@ test.describe('Agent Memory and Context', () => {
   });
 
   test('Should support memory retrieval', async ({ request }) => {
-    const response = await request.get('http://localhost:8000/api/agents/memory/test-session-001');
+    const response = await request.get('http://localhost:8001/api/agents/memory/test-session-001');
 
     expect([200, 404, 401, 405]).toContain(response.status());
 
@@ -214,7 +214,7 @@ test.describe('Agent Memory and Context', () => {
 
 test.describe('Error Handling', () => {
   test('Should handle invalid agent requests gracefully', async ({ request }) => {
-    const response = await request.post('http://localhost:8000/api/agents/execute', {
+    const response = await request.post('http://localhost:8001/api/agents/execute', {
       data: {
         agent: 'nonexistent_agent',
         task: 'This should fail'
@@ -233,7 +233,7 @@ test.describe('Error Handling', () => {
   });
 
   test('Should handle malformed requests', async ({ request }) => {
-    const response = await request.post('http://localhost:8000/api/agents/execute', {
+    const response = await request.post('http://localhost:8001/api/agents/execute', {
       data: {
         // Missing required fields
         invalid: 'data'
@@ -247,7 +247,7 @@ test.describe('Error Handling', () => {
   test('Should handle timeout scenarios', async ({ request }) => {
     // Request with very long processing requirement (2026 best practice: graceful timeout handling)
     try {
-      const response = await request.post('http://localhost:8000/api/agents/execute', {
+      const response = await request.post('http://localhost:8001/api/agents/execute', {
         data: {
           agent: 'coordinator',
           task: 'Analyze this extremely long script: ' + 'x'.repeat(10000),

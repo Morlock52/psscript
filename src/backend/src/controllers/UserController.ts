@@ -1,8 +1,11 @@
 import { Request, Response, NextFunction } from 'express';
-import bcrypt from 'bcrypt';
 import { User } from '../models';
 import { Op } from 'sequelize';
 import logger from '../utils/logger';
+import { cache } from '../index';
+
+// Cache key for user list
+const USER_LIST_CACHE_KEY = 'api:cache:/api/users';
 
 class UserController {
   // Get all users
@@ -84,7 +87,11 @@ class UserController {
         password, // Hashed by the model hook
         role: role || 'user'
       });
-      
+
+      // Invalidate user list cache so new user appears immediately
+      cache.del(USER_LIST_CACHE_KEY);
+      logger.debug('User list cache invalidated after create');
+
       // Return user without password
       res.status(201).json({
         id: user.id,
@@ -163,7 +170,11 @@ class UserController {
       
       // Save user
       await user.save();
-      
+
+      // Invalidate user list cache so updates appear immediately
+      cache.del(USER_LIST_CACHE_KEY);
+      logger.debug('User list cache invalidated after update');
+
       // Return updated user without password
       res.json({
         id: user.id,
@@ -199,7 +210,11 @@ class UserController {
       }
       
       await user.destroy();
-      
+
+      // Invalidate user list cache so deletion is reflected immediately
+      cache.del(USER_LIST_CACHE_KEY);
+      logger.debug('User list cache invalidated after delete');
+
       res.json({ message: 'User deleted successfully' });
     } catch (error) {
       logger.error('Error deleting user:', error);

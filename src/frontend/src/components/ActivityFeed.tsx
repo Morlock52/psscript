@@ -13,10 +13,9 @@ interface Activity {
 
 interface ActivityFeedProps {
   activities: Activity[];
-  theme: 'light' | 'dark';
 }
 
-const ActivityFeed: React.FC<ActivityFeedProps> = ({ activities, theme }) => {
+const ActivityFeed: React.FC<ActivityFeedProps> = ({ activities }) => {
   // Format timestamp to relative time (e.g., "2 hours ago")
   const formatRelativeTime = (timestamp: string) => {
     const date = new Date(timestamp);
@@ -26,7 +25,7 @@ const ActivityFeed: React.FC<ActivityFeedProps> = ({ activities, theme }) => {
     const diffMin = Math.floor(diffSec / 60);
     const diffHour = Math.floor(diffMin / 60);
     const diffDay = Math.floor(diffHour / 24);
-    
+
     if (diffDay > 0) {
       return diffDay === 1 ? 'yesterday' : `${diffDay} days ago`;
     } else if (diffHour > 0) {
@@ -37,13 +36,13 @@ const ActivityFeed: React.FC<ActivityFeedProps> = ({ activities, theme }) => {
       return 'just now';
     }
   };
-  
+
   // Get icon based on activity type
   const getActivityIcon = (type: Activity['type']) => {
     switch (type) {
       case 'create':
         return (
-          <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 text-green-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 text-emerald-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
           </svg>
         );
@@ -55,14 +54,14 @@ const ActivityFeed: React.FC<ActivityFeedProps> = ({ activities, theme }) => {
         );
       case 'execute':
         return (
-          <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 text-yellow-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 text-amber-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z" />
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
           </svg>
         );
       case 'analyze':
         return (
-          <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 text-purple-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 text-violet-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
           </svg>
         );
@@ -74,17 +73,17 @@ const ActivityFeed: React.FC<ActivityFeedProps> = ({ activities, theme }) => {
         );
       default:
         return (
-          <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 text-gray-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 text-[var(--color-text-tertiary)]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
           </svg>
         );
     }
   };
-  
+
   // Get activity description based on type
   const getActivityDescription = (activity: Activity) => {
     const scriptTitle = activity.script_title || 'a script';
-    
+
     switch (activity.type) {
       case 'create':
         return `created ${scriptTitle}`;
@@ -100,43 +99,39 @@ const ActivityFeed: React.FC<ActivityFeedProps> = ({ activities, theme }) => {
         return `interacted with ${scriptTitle}`;
     }
   };
-  
+
   return (
     <div className={`space-y-4 ${activities.length === 0 ? 'flex justify-center items-center h-40' : ''}`}>
       {activities.length === 0 ? (
-        <p className={`text-sm ${theme === 'dark' ? 'text-gray-400' : 'text-gray-500'}`}>
+        <p className="text-sm text-[var(--color-text-tertiary)]">
           No recent activity
         </p>
       ) : (
         activities.map((activity) => (
-          <div 
+          <div
             key={activity.id}
-            className={`flex items-start space-x-3 p-3 rounded-lg ${
-              theme === 'dark' ? 'bg-gray-700 hover:bg-gray-600' : 'bg-gray-100 hover:bg-gray-200'
-            } transition-colors duration-150`}
+            className="flex items-start space-x-3 p-3 rounded-lg bg-[var(--color-bg-tertiary)] hover:bg-[var(--color-bg-tertiary)]/80 transition-colors duration-150"
           >
-            <div className={`p-2 rounded-full ${
-              theme === 'dark' ? 'bg-gray-600' : 'bg-white'
-            }`}>
+            <div className="p-2 rounded-full bg-[var(--color-bg-elevated)]">
               {getActivityIcon(activity.type)}
             </div>
-            
+
             <div className="flex-1 min-w-0">
               <div className="flex justify-between items-start">
-                <p className="font-medium truncate">
+                <p className="font-medium text-[var(--color-text-primary)] truncate">
                   {activity.username}
                 </p>
-                <span className={`text-xs ${theme === 'dark' ? 'text-gray-400' : 'text-gray-500'}`}>
+                <span className="text-xs text-[var(--color-text-tertiary)]">
                   {formatRelativeTime(activity.timestamp)}
                 </span>
               </div>
-              
-              <p className={`text-sm ${theme === 'dark' ? 'text-gray-300' : 'text-gray-600'}`}>
+
+              <p className="text-sm text-[var(--color-text-secondary)]">
                 {getActivityDescription(activity)}
               </p>
-              
+
               {activity.details && activity.details.message && (
-                <p className={`text-xs mt-1 ${theme === 'dark' ? 'text-gray-400' : 'text-gray-500'}`}>
+                <p className="text-xs mt-1 text-[var(--color-text-tertiary)]">
                   {activity.details.message}
                 </p>
               )}

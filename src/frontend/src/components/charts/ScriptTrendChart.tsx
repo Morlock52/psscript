@@ -1,5 +1,6 @@
 import React, { useEffect, useRef } from 'react';
 import Chart from 'chart.js/auto';
+import { useTheme } from '../../contexts/ThemeContext';
 
 interface TrendData {
   uploads: { date: string; count: number }[];
@@ -9,11 +10,11 @@ interface TrendData {
 
 interface ScriptTrendChartProps {
   data: TrendData;
-  theme: 'light' | 'dark';
   period: 'week' | 'month' | 'year';
 }
 
-const ScriptTrendChart: React.FC<ScriptTrendChartProps> = ({ data, theme, period }) => {
+const ScriptTrendChart: React.FC<ScriptTrendChartProps> = ({ data, period }) => {
+  const { isDark } = useTheme();
   const chartRef = useRef<HTMLCanvasElement>(null);
   const chartInstance = useRef<Chart | null>(null);
   
@@ -95,17 +96,17 @@ const ScriptTrendChart: React.FC<ScriptTrendChartProps> = ({ data, theme, period
             legend: {
               position: 'top',
               labels: {
-                color: theme === 'dark' ? '#CBD5E0' : '#4A5568',
+                color: isDark ? '#CBD5E0' : '#4A5568',
                 padding: 10,
                 usePointStyle: true,
                 pointStyle: 'circle',
               },
             },
             tooltip: {
-              backgroundColor: theme === 'dark' ? '#4A5568' : '#FFFFFF',
-              titleColor: theme === 'dark' ? '#FFFFFF' : '#1A202C',
-              bodyColor: theme === 'dark' ? '#E2E8F0' : '#4A5568',
-              borderColor: theme === 'dark' ? '#2D3748' : '#E2E8F0',
+              backgroundColor: isDark ? '#4A5568' : '#FFFFFF',
+              titleColor: isDark ? '#FFFFFF' : '#1A202C',
+              bodyColor: isDark ? '#E2E8F0' : '#4A5568',
+              borderColor: isDark ? '#2D3748' : '#E2E8F0',
               borderWidth: 1,
               padding: 10,
               displayColors: true,
@@ -120,10 +121,10 @@ const ScriptTrendChart: React.FC<ScriptTrendChartProps> = ({ data, theme, period
           scales: {
             x: {
               grid: {
-                color: theme === 'dark' ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.1)',
+                color: isDark ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.1)',
               },
               ticks: {
-                color: theme === 'dark' ? '#CBD5E0' : '#4A5568',
+                color: isDark ? '#CBD5E0' : '#4A5568',
                 font: {
                   size: 10,
                 },
@@ -132,10 +133,10 @@ const ScriptTrendChart: React.FC<ScriptTrendChartProps> = ({ data, theme, period
             y: {
               beginAtZero: true,
               grid: {
-                color: theme === 'dark' ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.1)',
+                color: isDark ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.1)',
               },
               ticks: {
-                color: theme === 'dark' ? '#CBD5E0' : '#4A5568',
+                color: isDark ? '#CBD5E0' : '#4A5568',
                 font: {
                   size: 10,
                 },
@@ -153,13 +154,14 @@ const ScriptTrendChart: React.FC<ScriptTrendChartProps> = ({ data, theme, period
         chartInstance.current.destroy();
       }
     };
-  }, [data, theme, period]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [data, isDark, period]);
   
   return (
     <div className="w-full h-full">
       {!data || (data.uploads.length === 0 && data.executions.length === 0 && data.analyses.length === 0) ? (
         <div className="flex items-center justify-center h-full">
-          <p className={`text-sm ${theme === 'dark' ? 'text-gray-400' : 'text-gray-500'}`}>
+          <p className={`text-sm ${isDark ? 'text-gray-400' : 'text-gray-500'}`}>
             No trend data available
           </p>
         </div>

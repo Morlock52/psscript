@@ -1,0 +1,637 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <base href="file:///Users/morlock/fun/psscript/" />
+  <title>docs-DOCKER-INFRASTRUCTURE</title>
+  <style>
+:root {
+  color-scheme: light;
+}
+body {
+  font-family: "Segoe UI", "Helvetica Neue", Arial, sans-serif;
+  margin: 0;
+  padding: 0;
+  background: #ffffff;
+  color: #0f172a;
+}
+.markdown-body {
+  max-width: 980px;
+  margin: 40px auto 60px;
+  padding: 0 32px;
+  line-height: 1.65;
+}
+.markdown-body h1 {
+  font-size: 32px;
+  margin-bottom: 12px;
+  border-bottom: 2px solid #e2e8f0;
+  padding-bottom: 12px;
+  page-break-before: always;
+  page-break-after: avoid;
+  break-before: page;
+  break-after: avoid;
+}
+.markdown-body h1:first-of-type {
+  page-break-before: avoid;
+  break-before: avoid;
+}
+.markdown-body h2 {
+  font-size: 24px;
+  margin-top: 28px;
+  border-bottom: 1px solid #e2e8f0;
+  padding-bottom: 8px;
+  page-break-before: always;
+  page-break-after: avoid;
+  break-before: page;
+  break-after: avoid;
+}
+.markdown-body h3 {
+  font-size: 18px;
+  margin-top: 20px;
+  page-break-after: avoid;
+  break-after: avoid;
+}
+.markdown-body h4, .markdown-body h5, .markdown-body h6 {
+  page-break-after: avoid;
+  break-after: avoid;
+}
+.markdown-body table {
+  width: 100%;
+  border-collapse: collapse;
+  margin: 16px 0;
+  font-size: 14px;
+  page-break-inside: avoid;
+  break-inside: avoid;
+}
+.markdown-body th,
+.markdown-body td {
+  border: 1px solid #e2e8f0;
+  padding: 8px 10px;
+  text-align: left;
+}
+.markdown-body th {
+  background: #f8fafc;
+}
+.markdown-body tr {
+  page-break-inside: avoid;
+  break-inside: avoid;
+}
+.markdown-body code {
+  background: #f1f5f9;
+  padding: 2px 4px;
+  border-radius: 4px;
+  font-family: "SFMono-Regular", Menlo, Consolas, monospace;
+  font-size: 0.92em;
+}
+.markdown-body pre {
+  background: #0f172a;
+  color: #e2e8f0;
+  padding: 16px;
+  border-radius: 8px;
+  overflow-x: auto;
+  page-break-inside: avoid;
+  break-inside: avoid;
+}
+.markdown-body pre code {
+  background: transparent;
+  color: inherit;
+}
+.markdown-body blockquote {
+  border-left: 4px solid #38bdf8;
+  margin: 16px 0;
+  padding: 8px 16px;
+  background: #f8fafc;
+  color: #334155;
+}
+.markdown-body img {
+  max-width: 100%;
+  height: auto;
+  display: block;
+  margin: 16px 0;
+  border-radius: 10px;
+  box-shadow: 0 8px 20px rgba(15, 23, 42, 0.12);
+  page-break-inside: avoid;
+  break-inside: avoid;
+}
+.markdown-body figure {
+  page-break-inside: avoid;
+  break-inside: avoid;
+  margin: 16px 0;
+}
+.markdown-body a {
+  color: #2563eb;
+  text-decoration: none;
+}
+.markdown-body a:hover {
+  text-decoration: underline;
+}
+.cover {
+  padding: 80px 60px 60px;
+  background: linear-gradient(135deg, #0b1220 0%, #1e3a8a 100%);
+  color: #f8fafc;
+  border-radius: 18px;
+  margin-bottom: 32px;
+}
+.cover-title {
+  font-size: 36px;
+  font-weight: 700;
+  margin: 0 0 12px;
+}
+.cover-subtitle {
+  font-size: 18px;
+  color: #cbd5f5;
+  margin: 0 0 16px;
+}
+.cover-meta {
+  font-size: 13px;
+  color: #94a3b8;
+}
+.page-break {
+  page-break-after: always;
+  break-after: page;
+}
+.footer {
+  margin-top: 40px;
+  font-size: 12px;
+  color: #64748b;
+}
+/* Print and PDF-specific styles */
+@page {
+  margin: 20mm 18mm;
+}
+@media print {
+  .markdown-body {
+    orphans: 3;
+    widows: 3;
+  }
+  .markdown-body p {
+    orphans: 3;
+    widows: 3;
+  }
+  .markdown-body li {
+    page-break-inside: avoid;
+    break-inside: avoid;
+  }
+  .markdown-body ul, .markdown-body ol {
+    page-break-before: avoid;
+    break-before: avoid;
+  }
+  .markdown-body blockquote {
+    page-break-inside: avoid;
+    break-inside: avoid;
+  }
+  /* Keep section content together */
+  .markdown-body h2 + *, .markdown-body h3 + * {
+    page-break-before: avoid;
+    break-before: avoid;
+  }
+}
+</style>
+</head>
+<body>
+  <div class="markdown-body">
+    
+    <h1 id="docker-infrastructure-documentation">Docker Infrastructure Documentation</h1>
+<h2 id="overview">Overview</h2>
+<p>This document describes the enhanced Docker infrastructure setup for the PowerShell Script Analysis Platform, including connection pooling, high availability, and automated backups.</p>
+<h2 id="architecture-components">Architecture Components</h2>
+<h3 id="1-pgbouncer-connection-pooling">1. PgBouncer Connection Pooling</h3>
+<p><strong>Purpose</strong>: Manages PostgreSQL connections efficiently to prevent connection exhaustion and improve performance.</p>
+<p><strong>Configuration</strong>:
+- Port: 6432
+- Pool Mode: Transaction
+- Max Client Connections: 1000
+- Default Pool Size: 25 connections per database
+- Reserve Pool: 5 connections</p>
+<p><strong>Configuration Files</strong>:
+- <code>/docker/pgbouncer/pgbouncer.ini</code> - Main configuration
+- <code>/docker/pgbouncer/userlist.txt</code> - User authentication</p>
+<p><strong>Benefits</strong>:
+- Reduces database connection overhead
+- Prevents connection exhaustion
+- Improves application scalability
+- Faster connection establishment</p>
+<p><strong>Usage</strong>:</p>
+<pre><code class="language-bash"># Connect via pgBouncer instead of direct PostgreSQL
+DB_HOST=pgbouncer
+DB_PORT=6432
+</code></pre>
+<h3 id="2-redis-cluster-with-sentinel">2. Redis Cluster with Sentinel</h3>
+<p><strong>Purpose</strong>: Provides high availability for caching and session storage with automatic failover.</p>
+<p><strong>Architecture</strong>:
+- 1 Redis Master (port 6379)
+- 2 Redis Replicas (ports 6380, 6381)
+- 3 Redis Sentinels (ports 26379, 26380, 26381)</p>
+<p><strong>Features</strong>:
+- Automatic failover detection
+- Master election on failure
+- Data replication across replicas
+- Quorum-based decision making (2/3 sentinels)</p>
+<p><strong>Configuration Files</strong>:
+- <code>/docker/redis/redis-master.conf</code> - Master configuration
+- <code>/docker/redis/redis-replica.conf</code> - Replica configuration
+- <code>/docker/redis/sentinel.conf</code> - Sentinel monitoring configuration</p>
+<p><strong>Failover Process</strong>:
+1. Sentinel detects master failure (5 second timeout)
+2. Quorum agreement among sentinels (2 out of 3)
+3. Automatic promotion of replica to master
+4. Client reconnection to new master</p>
+<h3 id="3-backup-automation-service">3. Backup Automation Service</h3>
+<p><strong>Purpose</strong>: Automated backup, retention, and disaster recovery for PostgreSQL and Redis.</p>
+<p><strong>Features</strong>:
+- Scheduled full and incremental backups
+- Automated cleanup based on retention policy
+- Optional S3 cloud storage integration
+- Health monitoring and alerting
+- Backup verification and metadata tracking</p>
+<p><strong>Backup Schedules</strong> (configurable via environment variables):
+- PostgreSQL Full Backup: Daily at 2 AM
+- PostgreSQL Incremental: Every 6 hours
+- Redis Snapshot: Every 4 hours
+- Cleanup Old Backups: Daily at 3 AM
+- Health Checks: Every 5 minutes</p>
+<p><strong>Backup Scripts</strong>:
+- <code>postgres-backup.sh</code> - PostgreSQL backup (full/incremental)
+- <code>redis-backup.sh</code> - Redis snapshot backup
+- <code>cleanup-backups.sh</code> - Remove old backups based on retention policy
+- <code>health-check.sh</code> - Monitor service health
+- <code>restore-postgres.sh</code> - Restore PostgreSQL from backup
+- <code>restore-redis.sh</code> - Restore Redis from backup</p>
+<p><strong>Backup Location</strong>:
+- Local: <code>/backups/postgres</code> and <code>/backups/redis</code>
+- Cloud (optional): S3 bucket (configurable)</p>
+<h2 id="services-overview">Services Overview</h2>
+<table>
+<thead>
+<tr>
+<th>Service</th>
+<th>Port(s)</th>
+<th>Purpose</th>
+<th>Health Check</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>frontend</td>
+<td>3000</td>
+<td>React UI</td>
+<td>HTTP GET /</td>
+</tr>
+<tr>
+<td>backend</td>
+<td>4000</td>
+<td>API Server</td>
+<td>HTTP GET /health</td>
+</tr>
+<tr>
+<td>ai-service</td>
+<td>8000</td>
+<td>AI Analysis</td>
+<td>TCP</td>
+</tr>
+<tr>
+<td>postgres</td>
+<td>5432</td>
+<td>Database</td>
+<td>pg_isready</td>
+</tr>
+<tr>
+<td>pgbouncer</td>
+<td>6432</td>
+<td>Connection Pool</td>
+<td>pg_isready</td>
+</tr>
+<tr>
+<td>redis-master</td>
+<td>6379</td>
+<td>Cache Master</td>
+<td>PING</td>
+</tr>
+<tr>
+<td>redis-replica-1</td>
+<td>6380</td>
+<td>Cache Replica</td>
+<td>PING</td>
+</tr>
+<tr>
+<td>redis-replica-2</td>
+<td>6381</td>
+<td>Cache Replica</td>
+<td>PING</td>
+</tr>
+<tr>
+<td>redis-sentinel-1</td>
+<td>26379</td>
+<td>Failover Monitor</td>
+<td>TCP</td>
+</tr>
+<tr>
+<td>redis-sentinel-2</td>
+<td>26380</td>
+<td>Failover Monitor</td>
+<td>TCP</td>
+</tr>
+<tr>
+<td>redis-sentinel-3</td>
+<td>26381</td>
+<td>Failover Monitor</td>
+<td>TCP</td>
+</tr>
+<tr>
+<td>backup-service</td>
+<td>-</td>
+<td>Backup Automation</td>
+<td>Internal</td>
+</tr>
+</tbody>
+</table>
+<h2 id="network-configuration">Network Configuration</h2>
+<p><strong>Network</strong>: <code>psscript-network</code>
+- Type: Bridge
+- Subnet: 172.25.0.0/16
+- DNS: Automatic service discovery by name</p>
+<h2 id="volume-management">Volume Management</h2>
+<p><strong>Persistent Volumes</strong>:
+- <code>postgres_data</code> - PostgreSQL data directory
+- <code>redis_master_data</code> - Redis master data
+- <code>redis_replica_1_data</code> - Redis replica 1 data
+- <code>redis_replica_2_data</code> - Redis replica 2 data
+- <code>redis_sentinel_1_data</code> - Sentinel 1 configuration
+- <code>redis_sentinel_2_data</code> - Sentinel 2 configuration
+- <code>redis_sentinel_3_data</code> - Sentinel 3 configuration</p>
+<p><strong>Bind Mounts</strong>:
+- <code>./backups</code> - Backup storage directory
+- <code>./docker/pgbouncer</code> - PgBouncer configuration
+- <code>./docker/redis</code> - Redis configuration
+- <code>./docker/postgres</code> - PostgreSQL configuration</p>
+<h2 id="getting-started">Getting Started</h2>
+<h3 id="initial-setup">Initial Setup</h3>
+<ol>
+<li><strong>Copy environment file</strong>:</li>
+</ol>
+<pre><code class="language-bash">cp .env.example .env
+# Edit .env with your configuration
+</code></pre>
+<ol>
+<li><strong>Create required directories</strong>:</li>
+</ol>
+<pre><code class="language-bash">mkdir -p backups/postgres backups/redis backups/logs
+</code></pre>
+<ol>
+<li><strong>Start all services</strong>:</li>
+</ol>
+<pre><code class="language-bash">docker-compose up -d
+</code></pre>
+<ol>
+<li><strong>Verify services are running</strong>:</li>
+</ol>
+<pre><code class="language-bash">docker-compose ps
+</code></pre>
+<h3 id="service-management">Service Management</h3>
+<p><strong>Start all services</strong>:</p>
+<pre><code class="language-bash">docker-compose up -d
+</code></pre>
+<p><strong>Stop all services</strong>:</p>
+<pre><code class="language-bash">docker-compose down
+</code></pre>
+<p><strong>View logs</strong>:</p>
+<pre><code class="language-bash"># All services
+docker-compose logs -f
+
+# Specific service
+docker-compose logs -f backend
+docker-compose logs -f redis-master
+docker-compose logs -f pgbouncer
+</code></pre>
+<p><strong>Restart a service</strong>:</p>
+<pre><code class="language-bash">docker-compose restart backend
+</code></pre>
+<p><strong>Scale replica count</strong> (if needed):</p>
+<pre><code class="language-bash">docker-compose up -d --scale redis-replica=3
+</code></pre>
+<h3 id="monitoring">Monitoring</h3>
+<p><strong>Check PgBouncer status</strong>:</p>
+<pre><code class="language-bash">docker-compose exec pgbouncer psql -h localhost -p 6432 -U postgres -d pgbouncer -c &quot;SHOW POOLS&quot;
+docker-compose exec pgbouncer psql -h localhost -p 6432 -U postgres -d pgbouncer -c &quot;SHOW STATS&quot;
+</code></pre>
+<p><strong>Check Redis Sentinel status</strong>:</p>
+<pre><code class="language-bash">docker-compose exec redis-sentinel-1 redis-cli -p 26379 SENTINEL master mymaster
+docker-compose exec redis-sentinel-1 redis-cli -p 26379 SENTINEL replicas mymaster
+</code></pre>
+<p><strong>Check Redis replication</strong>:</p>
+<pre><code class="language-bash">docker-compose exec redis-master redis-cli INFO replication
+docker-compose exec redis-replica-1 redis-cli INFO replication
+</code></pre>
+<p><strong>View backup status</strong>:</p>
+<pre><code class="language-bash"># Check backup logs
+tail -f backups/logs/backup.log
+
+# View backup inventory
+ls -lh backups/postgres/
+ls -lh backups/redis/
+
+# Check health status
+tail -f backups/logs/health.log
+</code></pre>
+<h2 id="backup-and-recovery">Backup and Recovery</h2>
+<h3 id="manual-backups">Manual Backups</h3>
+<p><strong>PostgreSQL Full Backup</strong>:</p>
+<pre><code class="language-bash">docker-compose exec backup-service /scripts/postgres-backup.sh full
+</code></pre>
+<p><strong>PostgreSQL Incremental Backup</strong>:</p>
+<pre><code class="language-bash">docker-compose exec backup-service /scripts/postgres-backup.sh incremental
+</code></pre>
+<p><strong>Redis Backup</strong>:</p>
+<pre><code class="language-bash">docker-compose exec backup-service /scripts/redis-backup.sh
+</code></pre>
+<h3 id="restore-operations">Restore Operations</h3>
+<p><strong>Restore PostgreSQL</strong>:</p>
+<pre><code class="language-bash"># List available backups
+docker-compose exec backup-service ls -lh /backups/postgres/
+
+# Restore from backup
+docker-compose exec backup-service /scripts/restore-postgres.sh /backups/postgres/psscript_full_YYYYMMDD_HHMMSS.sql.gz
+</code></pre>
+<p><strong>Restore Redis</strong>:</p>
+<pre><code class="language-bash"># List available backups
+docker-compose exec backup-service ls -lh /backups/redis/
+
+# Restore from backup
+docker-compose exec backup-service /scripts/restore-redis.sh /backups/redis/redis_YYYYMMDD_HHMMSS.rdb.gz
+</code></pre>
+<h3 id="s3-cloud-backup-configuration">S3 Cloud Backup Configuration</h3>
+<p>Add to your <code>.env</code> file:</p>
+<pre><code class="language-bash">BACKUP_S3_BUCKET=your-bucket-name
+BACKUP_S3_REGION=us-east-1
+AWS_ACCESS_KEY_ID=your-access-key
+AWS_SECRET_ACCESS_KEY=your-secret-key
+</code></pre>
+<p>Backups will automatically upload to S3 after local backup completes.</p>
+<h2 id="disaster-recovery">Disaster Recovery</h2>
+<h3 id="complete-system-recovery">Complete System Recovery</h3>
+<ol>
+<li><strong>Stop all services</strong>:</li>
+</ol>
+<pre><code class="language-bash">docker-compose down
+</code></pre>
+<ol>
+<li><strong>Restore PostgreSQL</strong>:</li>
+</ol>
+<pre><code class="language-bash">docker-compose up -d postgres pgbouncer backup-service
+docker-compose exec backup-service /scripts/restore-postgres.sh /backups/postgres/psscript_full_LATEST.sql.gz
+</code></pre>
+<ol>
+<li><strong>Restore Redis</strong>:</li>
+</ol>
+<pre><code class="language-bash">docker-compose up -d redis-master
+docker-compose exec backup-service /scripts/restore-redis.sh /backups/redis/redis_LATEST.rdb.gz
+</code></pre>
+<ol>
+<li><strong>Start remaining services</strong>:</li>
+</ol>
+<pre><code class="language-bash">docker-compose up -d
+</code></pre>
+<h3 id="testing-failover">Testing Failover</h3>
+<p><strong>Test Redis Failover</strong>:</p>
+<pre><code class="language-bash"># Stop master
+docker-compose stop redis-master
+
+# Watch sentinel logs
+docker-compose logs -f redis-sentinel-1
+
+# Verify new master
+docker-compose exec redis-sentinel-1 redis-cli -p 26379 SENTINEL master mymaster
+
+# Restart original master (becomes replica)
+docker-compose start redis-master
+</code></pre>
+<h2 id="performance-tuning">Performance Tuning</h2>
+<h3 id="pgbouncer-optimization">PgBouncer Optimization</h3>
+<p>Edit <code>/docker/pgbouncer/pgbouncer.ini</code>:</p>
+<pre><code class="language-ini"># Increase pool sizes for high-traffic applications
+default_pool_size = 50
+max_client_conn = 2000
+
+# Adjust timeouts
+query_wait_timeout = 60
+</code></pre>
+<h3 id="postgresql-optimization">PostgreSQL Optimization</h3>
+<p>Edit <code>/docker/postgres/postgresql.conf</code>:</p>
+<pre><code class="language-conf"># Increase memory for better performance
+shared_buffers = 512MB
+effective_cache_size = 2GB
+work_mem = 32MB
+</code></pre>
+<h3 id="redis-optimization">Redis Optimization</h3>
+<p>Edit <code>/docker/redis/redis-master.conf</code>:</p>
+<pre><code class="language-conf"># Increase memory limit
+maxmemory 1gb
+
+# Adjust eviction policy
+maxmemory-policy allkeys-lfu
+</code></pre>
+<h2 id="troubleshooting">Troubleshooting</h2>
+<h3 id="pgbouncer-connection-issues">PgBouncer Connection Issues</h3>
+<pre><code class="language-bash"># Check PgBouncer logs
+docker-compose logs pgbouncer
+
+# Test direct connection
+docker-compose exec pgbouncer psql -h postgres -p 5432 -U postgres -d psscript
+
+# Check pool status
+docker-compose exec pgbouncer psql -h localhost -p 6432 -U postgres -d pgbouncer -c &quot;SHOW POOLS&quot;
+</code></pre>
+<h3 id="redis-failover-not-working">Redis Failover Not Working</h3>
+<pre><code class="language-bash"># Check sentinel logs
+docker-compose logs redis-sentinel-1
+
+# Verify sentinel configuration
+docker-compose exec redis-sentinel-1 cat /usr/local/etc/redis/sentinel.conf
+
+# Check master status
+docker-compose exec redis-sentinel-1 redis-cli -p 26379 SENTINEL master mymaster
+</code></pre>
+<h3 id="backup-failures">Backup Failures</h3>
+<pre><code class="language-bash"># Check backup service logs
+docker-compose logs backup-service
+tail -f backups/logs/backup.log
+
+# Verify disk space
+df -h
+
+# Test manual backup
+docker-compose exec backup-service /scripts/postgres-backup.sh full
+</code></pre>
+<h2 id="security-considerations">Security Considerations</h2>
+<ol>
+<li><strong>Change default passwords</strong> in production:</li>
+<li>PostgreSQL password</li>
+<li>Redis password (uncomment in redis configs)</li>
+<li>
+<p>PgBouncer user password</p>
+</li>
+<li>
+<p><strong>Enable SSL/TLS</strong>:</p>
+</li>
+<li>Configure PostgreSQL SSL</li>
+<li>Configure Redis TLS</li>
+<li>
+<p>Use encrypted connections in pgBouncer</p>
+</li>
+<li>
+<p><strong>Restrict network access</strong>:</p>
+</li>
+<li>Use firewall rules</li>
+<li>Limit exposed ports</li>
+<li>
+<p>Use VPN for remote access</p>
+</li>
+<li>
+<p><strong>Encrypt backups</strong>:</p>
+</li>
+<li>Enable S3 encryption</li>
+<li>Use encrypted volumes</li>
+<li>Secure backup transfer channels</li>
+</ol>
+<h2 id="maintenance">Maintenance</h2>
+<h3 id="regular-maintenance-tasks">Regular Maintenance Tasks</h3>
+<ol>
+<li><strong>Monitor disk usage</strong>:</li>
+</ol>
+<pre><code class="language-bash">docker-compose exec backup-service df -h /backups
+</code></pre>
+<ol>
+<li><strong>Check service health</strong>:</li>
+</ol>
+<pre><code class="language-bash">docker-compose ps
+docker-compose exec backup-service /scripts/health-check.sh
+</code></pre>
+<ol>
+<li><strong>Review logs</strong>:</li>
+</ol>
+<pre><code class="language-bash">docker-compose logs --tail=100 postgres
+docker-compose logs --tail=100 redis-master
+</code></pre>
+<ol>
+<li><strong>Update Docker images</strong>:</li>
+</ol>
+<pre><code class="language-bash">docker-compose pull
+docker-compose up -d
+</code></pre>
+<ol>
+<li><strong>Vacuum PostgreSQL</strong>:</li>
+</ol>
+<pre><code class="language-bash">docker-compose exec postgres vacuumdb -U postgres -d psscript --analyze
+</code></pre>
+<h2 id="support-and-resources">Support and Resources</h2>
+<ul>
+<li>Docker Compose Documentation: https://docs.docker.com/compose/</li>
+<li>PgBouncer Documentation: https://www.pgbouncer.org/</li>
+<li>Redis Sentinel Documentation: https://redis.io/topics/sentinel</li>
+<li>PostgreSQL Documentation: https://www.postgresql.org/docs/</li>
+</ul>
+    <div class="footer">Generated 2026-01-13 06:26 UTC</div>
+  </div>
+</body>
+</html>

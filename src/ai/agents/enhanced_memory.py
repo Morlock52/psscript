@@ -9,8 +9,7 @@ import os
 import json
 import time
 import logging
-from typing import Dict, List, Any, Optional, Union, Tuple
-from datetime import datetime
+from typing import Dict, List, Any, Optional, Tuple
 import hashlib
 
 # Configure logging
@@ -480,37 +479,55 @@ class LongTermMemory:
     def save(self) -> None:
         """Save long-term memory to disk."""
         if self.storage_path:
+            # Determine actual path (handle directory case)
+            actual_path = self.storage_path
+            if os.path.isdir(self.storage_path):
+                actual_path = os.path.join(self.storage_path, "long_term_memory.json")
+
             # Create directory if it doesn't exist
-            os.makedirs(os.path.dirname(self.storage_path), exist_ok=True)
-            
+            parent_dir = os.path.dirname(actual_path)
+            if parent_dir:
+                os.makedirs(parent_dir, exist_ok=True)
+
             # Convert to dictionary
             data = {
                 "memories": {mid: entry.to_dict() for mid, entry in self.memories.items()},
                 "embeddings": self.embeddings
             }
-            
+
             # Save to disk
-            with open(self.storage_path, 'w') as f:
+            with open(actual_path, 'w') as f:
                 json.dump(data, f)
-            
+
             self.last_save_time = time.time()
+            logger.info(f"Saved {len(self.memories)} memories to {actual_path}")
     
     def load(self) -> None:
         """Load long-term memory from disk."""
         if self.storage_path and os.path.exists(self.storage_path):
             try:
+                # Handle case where storage_path is a directory
+                actual_path = self.storage_path
+                if os.path.isdir(self.storage_path):
+                    # If it's a directory, look for long_term_memory.json inside
+                    actual_path = os.path.join(self.storage_path, "long_term_memory.json")
+                    if not os.path.exists(actual_path):
+                        logger.info(f"No memory file found at {actual_path}, starting fresh")
+                        return
+
                 # Load from disk
-                with open(self.storage_path, 'r') as f:
+                with open(actual_path, 'r') as f:
                     data = json.load(f)
-                
+
                 # Convert to memory entries
                 self.memories = {
-                    mid: MemoryEntry.from_dict(entry_data) 
+                    mid: MemoryEntry.from_dict(entry_data)
                     for mid, entry_data in data["memories"].items()
                 }
-                
+
                 # Load embeddings
                 self.embeddings = data.get("embeddings", {})
+                logger.info(f"Loaded {len(self.memories)} memories from {actual_path}")
             except Exception as e:
                 logger.error(f"Error loading long-term memory: {e}")
     

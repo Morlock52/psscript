@@ -14,7 +14,6 @@ import {
   Alert,
   Snackbar,
   IconButton,
-  Link as MuiLink,
 } from '@mui/material';
 import { styled } from '@mui/material/styles';
 import CloseIcon from '@mui/icons-material/Close';
@@ -22,7 +21,6 @@ import SearchIcon from '@mui/icons-material/Search';
 import CodeIcon from '@mui/icons-material/Code';
 import HelpIcon from '@mui/icons-material/Help';
 import PsychologyIcon from '@mui/icons-material/Psychology';
-import CloudUploadIcon from '@mui/icons-material/CloudUpload';
 import FileUploadIcon from '@mui/icons-material/FileUpload';
 import { Link as RouterLink } from 'react-router-dom';
 
@@ -35,8 +33,8 @@ import PleaseMethodAgent from '../components/Agentic/PleaseMethodAgent';
 import ScriptExamplesViewer, { ScriptExample } from '../components/Agentic/ScriptExamplesViewer';
 import CodeEditor from '../components/CodeEditor'; // Correct import path
 
-// Import API utilities 
-import { AIAnalysisResult, analyzeScriptWithAgent, generateScript } from '../api/aiAgent';
+// Import API utilities
+import { AIAnalysisResult, generateScript } from '../api/aiAgent';
 import { runAIAgentWorkflow } from '../utils/aiAgentUtils';
 
 // Tab panel component
@@ -215,7 +213,7 @@ const AgenticAIPage: React.FC = () => {
   
   // State for script examples
   const [scriptExamples, setScriptExamples] = useState<ScriptExample[]>([]);
-  const [isLoadingExamples, setIsLoadingExamples] = useState(false);
+  const [isLoadingExamples, setIsLoadingExamples] = useState(false); // eslint-disable-line @typescript-eslint/no-unused-vars
   
   // State for generation
   const [generationPrompt, setGenerationPrompt] = useState('');
@@ -230,7 +228,7 @@ const AgenticAIPage: React.FC = () => {
   
   // OpenAI API key (check environment variable first, otherwise empty string)
   const [apiKey, setApiKey] = useState('');
-  const [hasEnvApiKey, setHasEnvApiKey] = useState(false);
+  const [hasEnvApiKey, setHasEnvApiKey] = useState(false); // eslint-disable-line @typescript-eslint/no-unused-vars
   
   // Load saved API key and examples on component mount
   useEffect(() => {
@@ -337,19 +335,21 @@ const AgenticAIPage: React.FC = () => {
       });
       return;
     }
-    
+
     setIsGenerating(true);
-    
+
     try {
-      const generatedCode = await generateScript(generationPrompt, getEffectiveApiKey());
-      
+      // API key is optional - backend has its own configured key
+      const effectiveApiKey = getEffectiveApiKey();
+      const generatedCode = await generateScript(generationPrompt, effectiveApiKey);
+
       if (generatedCode) {
         setScriptCode(generatedCode);
         setScriptName(generationPrompt.split(' ').slice(0, 3).join('-') + '.ps1');
-        
+
         // Switch to editor tab
         setActiveTab(1);
-        
+
         setNotification({
           open: true,
           message: 'Script generated successfully! You can now edit it in the editor.',
@@ -358,9 +358,26 @@ const AgenticAIPage: React.FC = () => {
       }
     } catch (error) {
       console.error('Error generating script:', error);
+
+      // Provide more specific error messages based on error type
+      let errorMessage = 'Error generating script. Please try again.';
+
+      if (error instanceof Error) {
+        const errorMsg = error.message.toLowerCase();
+        if (errorMsg.includes('api key') || errorMsg.includes('unauthorized') || errorMsg.includes('401')) {
+          errorMessage = 'Invalid API key. Please check your OpenAI API key in Settings → API Settings.';
+        } else if (errorMsg.includes('rate limit') || errorMsg.includes('429')) {
+          errorMessage = 'Rate limit exceeded. Please wait a moment and try again.';
+        } else if (errorMsg.includes('timeout') || errorMsg.includes('network')) {
+          errorMessage = 'Network error. Please check your connection and try again.';
+        } else if (errorMsg.includes('500') || errorMsg.includes('server')) {
+          errorMessage = 'Server error. The AI service may be temporarily unavailable.';
+        }
+      }
+
       setNotification({
         open: true,
-        message: 'Error generating script. Please try again.',
+        message: errorMessage,
         severity: 'error',
       });
     } finally {
@@ -419,7 +436,7 @@ const AgenticAIPage: React.FC = () => {
   };
   
   // Handle asking AI about current script
-  const handleAskAboutScript = (question: string) => {
+  const handleAskAboutScript = (_question: string) => {
     // Switch to assistant tab
     setActiveTab(3);
     

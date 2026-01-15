@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import {
   Container,
   Grid,
@@ -19,8 +19,7 @@ import {
   CircularProgress,
   Alert,
   Chip,
-  Avatar,
-  IconButton
+  Avatar
 } from '@mui/material';
 import { styled } from '@mui/material/styles';
 import SmartToyIcon from '@mui/icons-material/SmartToy';
@@ -30,7 +29,6 @@ import SettingsIcon from '@mui/icons-material/Settings';
 import NoteAltIcon from '@mui/icons-material/NoteAlt';
 import CodeIcon from '@mui/icons-material/Code';
 import SecurityIcon from '@mui/icons-material/Security';
-import AssistantIcon from '@mui/icons-material/Assistant';
 import { Link } from 'react-router-dom';
 
 // Import components
@@ -124,7 +122,7 @@ const agentTemplates: Partial<Agent>[] = [
  * Provides a UI for interacting with the agentic framework
  */
 const AgentOrchestrationPage: React.FC = () => {
-  const { isAuthenticated, user } = useAuth();
+  const { isAuthenticated, user: _user } = useAuth();
   const [activeTab, setActiveTab] = useState(0);
   const [selectedAgentTemplate, setSelectedAgentTemplate] = useState<Partial<Agent> | null>(null);
   const [isCreatingAgent, setIsCreatingAgent] = useState(false);

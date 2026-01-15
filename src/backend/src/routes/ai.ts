@@ -1,7 +1,6 @@
 import express from 'express';
 import AiAgentController from '../controllers/AiAgentController';
 import { corsMiddleware } from '../middleware/corsMiddleware';
-import logger from '../utils/logger';
 
 const router = express.Router();
 

@@ -1,0 +1,385 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <base href="file:///Users/morlock/fun/psscript/" />
+  <title>docs-E2E-COMPREHENSIVE-FIX-PLAN-2026-01-08</title>
+  <style>
+:root {
+  color-scheme: light;
+}
+body {
+  font-family: "Segoe UI", "Helvetica Neue", Arial, sans-serif;
+  margin: 0;
+  padding: 0;
+  background: #ffffff;
+  color: #0f172a;
+}
+.markdown-body {
+  max-width: 980px;
+  margin: 40px auto 60px;
+  padding: 0 32px;
+  line-height: 1.65;
+}
+.markdown-body h1 {
+  font-size: 32px;
+  margin-bottom: 12px;
+  border-bottom: 2px solid #e2e8f0;
+  padding-bottom: 12px;
+  page-break-before: always;
+  page-break-after: avoid;
+  break-before: page;
+  break-after: avoid;
+}
+.markdown-body h1:first-of-type {
+  page-break-before: avoid;
+  break-before: avoid;
+}
+.markdown-body h2 {
+  font-size: 24px;
+  margin-top: 28px;
+  border-bottom: 1px solid #e2e8f0;
+  padding-bottom: 8px;
+  page-break-before: always;
+  page-break-after: avoid;
+  break-before: page;
+  break-after: avoid;
+}
+.markdown-body h3 {
+  font-size: 18px;
+  margin-top: 20px;
+  page-break-after: avoid;
+  break-after: avoid;
+}
+.markdown-body h4, .markdown-body h5, .markdown-body h6 {
+  page-break-after: avoid;
+  break-after: avoid;
+}
+.markdown-body table {
+  width: 100%;
+  border-collapse: collapse;
+  margin: 16px 0;
+  font-size: 14px;
+  page-break-inside: avoid;
+  break-inside: avoid;
+}
+.markdown-body th,
+.markdown-body td {
+  border: 1px solid #e2e8f0;
+  padding: 8px 10px;
+  text-align: left;
+}
+.markdown-body th {
+  background: #f8fafc;
+}
+.markdown-body tr {
+  page-break-inside: avoid;
+  break-inside: avoid;
+}
+.markdown-body code {
+  background: #f1f5f9;
+  padding: 2px 4px;
+  border-radius: 4px;
+  font-family: "SFMono-Regular", Menlo, Consolas, monospace;
+  font-size: 0.92em;
+}
+.markdown-body pre {
+  background: #0f172a;
+  color: #e2e8f0;
+  padding: 16px;
+  border-radius: 8px;
+  overflow-x: auto;
+  page-break-inside: avoid;
+  break-inside: avoid;
+}
+.markdown-body pre code {
+  background: transparent;
+  color: inherit;
+}
+.markdown-body blockquote {
+  border-left: 4px solid #38bdf8;
+  margin: 16px 0;
+  padding: 8px 16px;
+  background: #f8fafc;
+  color: #334155;
+}
+.markdown-body img {
+  max-width: 100%;
+  height: auto;
+  display: block;
+  margin: 16px 0;
+  border-radius: 10px;
+  box-shadow: 0 8px 20px rgba(15, 23, 42, 0.12);
+  page-break-inside: avoid;
+  break-inside: avoid;
+}
+.markdown-body figure {
+  page-break-inside: avoid;
+  break-inside: avoid;
+  margin: 16px 0;
+}
+.markdown-body a {
+  color: #2563eb;
+  text-decoration: none;
+}
+.markdown-body a:hover {
+  text-decoration: underline;
+}
+.cover {
+  padding: 80px 60px 60px;
+  background: linear-gradient(135deg, #0b1220 0%, #1e3a8a 100%);
+  color: #f8fafc;
+  border-radius: 18px;
+  margin-bottom: 32px;
+}
+.cover-title {
+  font-size: 36px;
+  font-weight: 700;
+  margin: 0 0 12px;
+}
+.cover-subtitle {
+  font-size: 18px;
+  color: #cbd5f5;
+  margin: 0 0 16px;
+}
+.cover-meta {
+  font-size: 13px;
+  color: #94a3b8;
+}
+.page-break {
+  page-break-after: always;
+  break-after: page;
+}
+.footer {
+  margin-top: 40px;
+  font-size: 12px;
+  color: #64748b;
+}
+/* Print and PDF-specific styles */
+@page {
+  margin: 20mm 18mm;
+}
+@media print {
+  .markdown-body {
+    orphans: 3;
+    widows: 3;
+  }
+  .markdown-body p {
+    orphans: 3;
+    widows: 3;
+  }
+  .markdown-body li {
+    page-break-inside: avoid;
+    break-inside: avoid;
+  }
+  .markdown-body ul, .markdown-body ol {
+    page-break-before: avoid;
+    break-before: avoid;
+  }
+  .markdown-body blockquote {
+    page-break-inside: avoid;
+    break-inside: avoid;
+  }
+  /* Keep section content together */
+  .markdown-body h2 + *, .markdown-body h3 + * {
+    page-break-before: avoid;
+    break-before: avoid;
+  }
+}
+</style>
+</head>
+<body>
+  <div class="markdown-body">
+    
+    <h1 id="e2e-test-comprehensive-fix-plan-january-8-2026">E2E Test Comprehensive Fix Plan - January 8, 2026</h1>
+<h2 id="executive-summary">Executive Summary</h2>
+<p><strong>Current Status</strong>: 161/205 tests passing (78.5%)
+<strong>Target</strong>: 210/210 tests passing (100%)
+<strong>Gap</strong>: 49 tests need fixing (39 failures + 5 skipped + restore to 210 total)</p>
+<h2 id="test-results-after-rollback">Test Results After Rollback</h2>
+<ul>
+<li><strong>Passed</strong>: 161 (78.5%)</li>
+<li><strong>Failed</strong>: 39 (19.0%)</li>
+<li><strong>Skipped</strong>: 5 (2.4%)</li>
+<li><strong>Total</strong>: 205 tests</li>
+</ul>
+<p><strong>Note</strong>: Rollback performed worse than Phase 3 (173/210 = 82%). This requires investigation.</p>
+<h2 id="failure-categories">Failure Categories</h2>
+<h3 id="1-agent-performance-parallel-execution-5-tests">1. Agent Performance - Parallel Execution (5 tests)</h3>
+<p><strong>Failed Tests</strong>:
+- <code>[chromium] › ai-agents.spec.ts:145:7 › Should support parallel agent execution</code>
+- <code>[firefox] › ai-agents.spec.ts:145:7 › Should support parallel agent execution</code>
+- <code>[webkit] › ai-agents.spec.ts:145:7 › Should support parallel agent execution</code>
+- <code>[Mobile Chrome] › ai-agents.spec.ts:145:7 › Should support parallel agent execution</code>
+- (Mobile Safari not shown but likely failed)</p>
+<p><strong>Root Cause</strong>: TBD - needs research into parallel async operations in Playwright</p>
+<h3 id="2-error-handling-timeout-scenarios-5-tests">2. Error Handling - Timeout Scenarios (5 tests)</h3>
+<p><strong>Failed Tests</strong>:
+- <code>[chromium] › ai-agents.spec.ts:243:7 › Should handle timeout scenarios</code>
+- <code>[firefox] › ai-agents.spec.ts:243:7 › Should handle timeout scenarios</code>
+- <code>[webkit] › ai-agents.spec.ts:243:7 › Should handle timeout scenarios</code>
+- <code>[Mobile Chrome] › ai-agents.spec.ts:243:7 › Should handle timeout scenarios</code>
+- (Mobile Safari not shown but likely failed)</p>
+<p><strong>Root Cause</strong>: TBD - needs research into timeout testing patterns</p>
+<h3 id="3-authentication-validation-errors-5-tests">3. Authentication - Validation Errors (5 tests)</h3>
+<p><strong>Failed Tests</strong>:
+- <code>[chromium] › authentication.spec.ts:23:7 › Should show validation errors for invalid login</code>
+- <code>[firefox] › authentication.spec.ts:23:7 › Should show validation errors for invalid login</code>
+- <code>[webkit] › authentication.spec.ts:23:7 › Should show validation errors for invalid login</code>
+- <code>[Mobile Chrome] › authentication.spec.ts:23:7 › Should show validation errors for invalid login</code>
+- (Mobile Safari not shown but likely failed)</p>
+<p><strong>Root Cause</strong>: Error messages not appearing in UI - needs form error handling research</p>
+<h3 id="4-script-management-list-display-5-tests">4. Script Management - List Display (5+ tests)</h3>
+<p><strong>Failed Tests</strong>:
+- <code>[chromium] › script-management.spec.ts:194:7 › Should display list of uploaded scripts</code>
+- <code>[firefox] › script-management.spec.ts:194:7 › Should display list of uploaded scripts</code>
+- <code>[webkit] › script-management.spec.ts:194:7 › Should display list of uploaded scripts</code>
+- (More browsers likely affected)</p>
+<p><strong>Root Cause</strong>: React Query data loading after authentication redirect - needs research</p>
+<h3 id="5-firefox-specific-issues-6-tests-total">5. Firefox-Specific Issues (6 tests total)</h3>
+<p><strong>Failed Tests</strong>:
+- <code>[firefox] › ai-analytics.spec.ts:113:7 › Should display analytics dashboard page</code>
+- <code>[firefox] › ai-analytics.spec.ts:132:7 › Should display cost metrics</code>
+- <code>[firefox] › script-management.spec.ts:35:7 › Should display upload button</code>
+- <code>[firefox] › script-management.spec.ts:208:7 › Should allow searching scripts</code>
+- (Plus 2 from other categories)</p>
+<p><strong>Root Cause</strong>: Firefox-specific rendering or timing - needs browser-specific research</p>
+<h3 id="6-mobile-chrome-analytics-1-test">6. Mobile Chrome Analytics (1 test)</h3>
+<p><strong>Failed Tests</strong>:
+- <code>[Mobile Chrome] › ai-analytics.spec.ts:161:7 › Should display model performance metrics</code></p>
+<p><strong>Root Cause</strong>: Mobile viewport rendering issue - needs mobile testing research</p>
+<h3 id="7-skipped-tests-5-tests">7. Skipped Tests (5 tests)</h3>
+<p><strong>Reason</strong>: Require environment variables (API keys, external services)</p>
+<p><strong>Action Needed</strong>: Document how to enable these tests</p>
+<h2 id="research-topics-for-2026-best-practices">Research Topics for 2026 Best Practices</h2>
+<ol>
+<li><strong>Playwright + React Query v5 Integration</strong></li>
+<li>Query state management in E2E tests</li>
+<li>Waiting for cache hydration</li>
+<li>
+<p>Testing refetch behavior</p>
+</li>
+<li>
+<p><strong>Form Validation Error Display</strong></p>
+</li>
+<li>React Hook Form error rendering</li>
+<li>Accessibility-compliant error messages</li>
+<li>
+<p>Testing form validation states</p>
+</li>
+<li>
+<p><strong>Parallel Async Operations Testing</strong></p>
+</li>
+<li>Testing concurrent API calls</li>
+<li>Race condition detection</li>
+<li>
+<p>Promise.all() testing patterns</p>
+</li>
+<li>
+<p><strong>Timeout Scenario Testing</strong></p>
+</li>
+<li>Simulating slow network conditions</li>
+<li>Testing error boundaries</li>
+<li>
+<p>Graceful degradation patterns</p>
+</li>
+<li>
+<p><strong>Firefox-Specific E2E Testing</strong></p>
+</li>
+<li>Gecko engine timing differences</li>
+<li>Firefox DevTools integration</li>
+<li>
+<p>Browser-specific selectors</p>
+</li>
+<li>
+<p><strong>Mobile Viewport Testing</strong></p>
+</li>
+<li>Touch event simulation</li>
+<li>Viewport-specific rendering</li>
+<li>Mobile performance testing</li>
+</ol>
+<h2 id="comprehensive-fix-approach">Comprehensive Fix Approach</h2>
+<h3 id="phase-1-research-current">Phase 1: Research (Current)</h3>
+<ul>
+<li>[ ] Internet research for each failure category</li>
+<li>[ ] MCP tools analysis of failing test code</li>
+<li>[ ] Review 2026 Playwright documentation</li>
+<li>[ ] Study React Query v5 + testing patterns</li>
+</ul>
+<h3 id="phase-2-validation-authentication-fixes">Phase 2: Validation &amp; Authentication Fixes</h3>
+<ul>
+<li>[ ] Fix form error display mechanism</li>
+<li>[ ] Ensure error messages visible in all browsers</li>
+<li>[ ] Add proper ARIA labels for accessibility</li>
+<li>[ ] Test across all 5 browser configurations</li>
+</ul>
+<h3 id="phase-3-data-loading-react-query-fixes">Phase 3: Data Loading &amp; React Query Fixes</h3>
+<ul>
+<li>[ ] Implement proper wait strategies for React Query</li>
+<li>[ ] Add data-testid attributes for loaded states</li>
+<li>[ ] Handle authentication redirect → data fetch flow</li>
+<li>[ ] Test list display after navigation</li>
+</ul>
+<h3 id="phase-4-agent-async-operation-fixes">Phase 4: Agent &amp; Async Operation Fixes</h3>
+<ul>
+<li>[ ] Fix parallel agent execution tests</li>
+<li>[ ] Implement timeout scenario testing</li>
+<li>[ ] Add proper error boundaries</li>
+<li>[ ] Test async operation completion</li>
+</ul>
+<h3 id="phase-5-browser-specific-fixes">Phase 5: Browser-Specific Fixes</h3>
+<ul>
+<li>[ ] Address Firefox rendering issues</li>
+<li>[ ] Fix Mobile Chrome analytics display</li>
+<li>[ ] Ensure consistent behavior across browsers</li>
+<li>[ ] Test mobile viewport edge cases</li>
+</ul>
+<h3 id="phase-6-verification-documentation">Phase 6: Verification &amp; Documentation</h3>
+<ul>
+<li>[ ] Run complete test suite</li>
+<li>[ ] Verify 210/210 tests passing</li>
+<li>[ ] Document all changes made</li>
+<li>[ ] Create maintenance guide</li>
+</ul>
+<h2 id="resources-to-utilize">Resources to Utilize</h2>
+<ol>
+<li><strong>Internet Research (January 2026)</strong></li>
+<li>Latest Playwright documentation</li>
+<li>React Query v5 testing guides</li>
+<li>Browser compatibility databases</li>
+<li>
+<p>Stack Overflow recent solutions</p>
+</li>
+<li>
+<p><strong>MCP Tools</strong></p>
+</li>
+<li>Serena for code analysis</li>
+<li>Symbol navigation for test structure</li>
+<li>
+<p>File search for related patterns</p>
+</li>
+<li>
+<p><strong>All Available Agents</strong></p>
+</li>
+<li>Research agents for documentation</li>
+<li>Code analysis agents for patterns</li>
+<li>Testing agents for strategy</li>
+</ol>
+<h2 id="success-criteria">Success Criteria</h2>
+<ul>
+<li>✅ 210/210 tests passing (100%)</li>
+<li>✅ All browsers working (Chromium, Firefox, Webkit, Mobile Chrome, Mobile Safari)</li>
+<li>✅ Zero skipped tests (unless environment-dependent)</li>
+<li>✅ Stable test suite (no flakiness)</li>
+<li>✅ Comprehensive documentation</li>
+</ul>
+<h2 id="timeline">Timeline</h2>
+<p><strong>Target</strong>: Complete fix within this session</p>
+<hr />
+<p><em>Document created: 2026-01-08</em>
+<em>Status: Research phase initiated</em></p>
+    <div class="footer">Generated 2026-01-13 06:26 UTC</div>
+  </div>
+</body>
+</html>

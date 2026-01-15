@@ -1,0 +1,12 @@
+tunnel: de34187a-1d92-4d21-a99f-504533e2acbd
+credentials-file: /etc/cloudflared/de34187a-1d92-4d21-a99f-504533e2acbd.json
+
+ingress:
+  # Route API requests to backend service
+  - hostname: psscript.morloksmaze.com
+    path: /api/*
+    service: http://backend:4000
+  # Route all other requests to frontend
+  - hostname: psscript.morloksmaze.com
+    service: http://frontend:3000
+  - service: http_status:404

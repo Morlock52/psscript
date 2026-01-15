@@ -1,0 +1,507 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <base href="file:///Users/morlock/fun/psscript/" />
+  <title>Management-Playbook</title>
+  <style>
+:root {
+  color-scheme: light;
+}
+body {
+  font-family: "Segoe UI", "Helvetica Neue", Arial, sans-serif;
+  margin: 0;
+  padding: 0;
+  background: #ffffff;
+  color: #0f172a;
+}
+.markdown-body {
+  max-width: 980px;
+  margin: 40px auto 60px;
+  padding: 0 32px;
+  line-height: 1.65;
+}
+.markdown-body h1 {
+  font-size: 32px;
+  margin-bottom: 12px;
+  border-bottom: 2px solid #e2e8f0;
+  padding-bottom: 12px;
+  page-break-before: always;
+  page-break-after: avoid;
+  break-before: page;
+  break-after: avoid;
+}
+.markdown-body h1:first-of-type {
+  page-break-before: avoid;
+  break-before: avoid;
+}
+.markdown-body h2 {
+  font-size: 24px;
+  margin-top: 28px;
+  border-bottom: 1px solid #e2e8f0;
+  padding-bottom: 8px;
+  page-break-before: always;
+  page-break-after: avoid;
+  break-before: page;
+  break-after: avoid;
+}
+.markdown-body h3 {
+  font-size: 18px;
+  margin-top: 20px;
+  page-break-after: avoid;
+  break-after: avoid;
+}
+.markdown-body h4, .markdown-body h5, .markdown-body h6 {
+  page-break-after: avoid;
+  break-after: avoid;
+}
+.markdown-body table {
+  width: 100%;
+  border-collapse: collapse;
+  margin: 16px 0;
+  font-size: 14px;
+  page-break-inside: avoid;
+  break-inside: avoid;
+}
+.markdown-body th,
+.markdown-body td {
+  border: 1px solid #e2e8f0;
+  padding: 8px 10px;
+  text-align: left;
+}
+.markdown-body th {
+  background: #f8fafc;
+}
+.markdown-body tr {
+  page-break-inside: avoid;
+  break-inside: avoid;
+}
+.markdown-body code {
+  background: #f1f5f9;
+  padding: 2px 4px;
+  border-radius: 4px;
+  font-family: "SFMono-Regular", Menlo, Consolas, monospace;
+  font-size: 0.92em;
+}
+.markdown-body pre {
+  background: #0f172a;
+  color: #e2e8f0;
+  padding: 16px;
+  border-radius: 8px;
+  overflow-x: auto;
+  page-break-inside: avoid;
+  break-inside: avoid;
+}
+.markdown-body pre code {
+  background: transparent;
+  color: inherit;
+}
+.markdown-body blockquote {
+  border-left: 4px solid #38bdf8;
+  margin: 16px 0;
+  padding: 8px 16px;
+  background: #f8fafc;
+  color: #334155;
+}
+.markdown-body img {
+  max-width: 100%;
+  height: auto;
+  display: block;
+  margin: 16px 0;
+  border-radius: 10px;
+  box-shadow: 0 8px 20px rgba(15, 23, 42, 0.12);
+  page-break-inside: avoid;
+  break-inside: avoid;
+}
+.markdown-body figure {
+  page-break-inside: avoid;
+  break-inside: avoid;
+  margin: 16px 0;
+}
+.markdown-body a {
+  color: #2563eb;
+  text-decoration: none;
+}
+.markdown-body a:hover {
+  text-decoration: underline;
+}
+.cover {
+  padding: 80px 60px 60px;
+  background: linear-gradient(135deg, #0b1220 0%, #1e3a8a 100%);
+  color: #f8fafc;
+  border-radius: 18px;
+  margin-bottom: 32px;
+}
+.cover-title {
+  font-size: 36px;
+  font-weight: 700;
+  margin: 0 0 12px;
+}
+.cover-subtitle {
+  font-size: 18px;
+  color: #cbd5f5;
+  margin: 0 0 16px;
+}
+.cover-meta {
+  font-size: 13px;
+  color: #94a3b8;
+}
+.page-break {
+  page-break-after: always;
+  break-after: page;
+}
+.footer {
+  margin-top: 40px;
+  font-size: 12px;
+  color: #64748b;
+}
+/* Print and PDF-specific styles */
+@page {
+  margin: 20mm 18mm;
+}
+@media print {
+  .markdown-body {
+    orphans: 3;
+    widows: 3;
+  }
+  .markdown-body p {
+    orphans: 3;
+    widows: 3;
+  }
+  .markdown-body li {
+    page-break-inside: avoid;
+    break-inside: avoid;
+  }
+  .markdown-body ul, .markdown-body ol {
+    page-break-before: avoid;
+    break-before: avoid;
+  }
+  .markdown-body blockquote {
+    page-break-inside: avoid;
+    break-inside: avoid;
+  }
+  /* Keep section content together */
+  .markdown-body h2 + *, .markdown-body h3 + * {
+    page-break-before: avoid;
+    break-before: avoid;
+  }
+}
+</style>
+</head>
+<body>
+  <div class="markdown-body">
+    
+  <section class="cover page-break">
+    <h1 class="cover-title">Management Playbook</h1>
+    <p class="cover-subtitle">Phased rollout, KPIs, and governance cadences</p>
+    <p class="cover-meta">PSScript Manager Docs</p>
+  </section>
+  
+    <h1 id="psscript-manager-management-playbook">PSScript Manager Management Playbook</h1>
+<p>This playbook is a management-focused guide for deploying, governing, and scaling PSScript Manager. It is written for non-technical stakeholders while keeping enough detail for engineering and operations leads.</p>
+<h2 id="table-of-contents">Table of Contents</h2>
+<ul>
+<li><a href="#purpose-and-audience">Purpose and audience</a></li>
+<li><a href="#executive-summary">Executive summary</a></li>
+<li><a href="#rollout-phases">Rollout phases</a></li>
+<li><a href="#phase-deliverables-and-success-signals">Phase deliverables and success signals</a></li>
+<li><a href="#raci-and-ownership">RACI and ownership</a></li>
+<li><a href="#kpis-and-targets">KPIs and targets</a></li>
+<li><a href="#risk-register">Risk register</a></li>
+<li><a href="#governance-cadence">Governance cadence</a></li>
+<li><a href="#change-management-checklist">Change management checklist</a></li>
+<li><a href="#training-alignment">Training alignment</a></li>
+<li><a href="#reporting-templates">Reporting templates</a></li>
+<li><a href="#appendix-glossary">Appendix: Glossary</a></li>
+</ul>
+<h2 id="purpose-and-audience">Purpose and audience</h2>
+<p>This document helps managers, program leads, and operations owners plan a phased rollout and keep governance consistent. It can also be used by engineering managers to align technical work with measurable outcomes.</p>
+<h2 id="executive-summary">Executive summary</h2>
+<p>PSScript Manager reduces risk in PowerShell automation by adding centralized inventory, AI analysis, and governance workflows. The rollout should be staged to avoid disruption and to ensure outcomes are measurable.</p>
+<p>Key outcomes:
+- Centralized script inventory with ownership and tags
+- AI-driven security and quality insights on critical scripts
+- Searchable knowledge base with semantic similarity
+- Governance cadence with scorecards and analytics</p>
+<h2 id="rollout-phases">Rollout phases</h2>
+<p><img alt="Management Rollout Phases" src="docs/graphics/rollout-phases.svg" /></p>
+<h2 id="phase-deliverables-and-success-signals">Phase deliverables and success signals</h2>
+<table>
+<thead>
+<tr>
+<th>Phase</th>
+<th>Duration</th>
+<th>Focus</th>
+<th>Deliverables</th>
+<th>Success signals</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Phase 0: Discover</td>
+<td>1-2 weeks</td>
+<td>Inventory and ownership</td>
+<td>Script inventory, owners, baseline risk</td>
+<td>90% of scripts cataloged</td>
+</tr>
+<tr>
+<td>Phase 1: Pilot</td>
+<td>2-4 weeks</td>
+<td>Validate workflows</td>
+<td>Training completion, pilot scorecards</td>
+<td>10-20 scripts analyzed</td>
+</tr>
+<tr>
+<td>Phase 2: Scale</td>
+<td>4-8 weeks</td>
+<td>Expand coverage</td>
+<td>Governance cadence, dashboards</td>
+<td>60% coverage, monthly reviews</td>
+</tr>
+<tr>
+<td>Phase 3: Optimize</td>
+<td>Ongoing</td>
+<td>Continuous improvement</td>
+<td>Automation backlog, SLA tracking</td>
+<td>95% on-time reviews</td>
+</tr>
+</tbody>
+</table>
+<h2 id="raci-and-ownership">RACI and ownership</h2>
+<table>
+<thead>
+<tr>
+<th>Workstream</th>
+<th>Responsible</th>
+<th>Accountable</th>
+<th>Consulted</th>
+<th>Informed</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Script inventory</td>
+<td>Script owners</td>
+<td>Platform admin</td>
+<td>Security</td>
+<td>Management</td>
+</tr>
+<tr>
+<td>Analysis and remediation</td>
+<td>Security reviewer</td>
+<td>Security lead</td>
+<td>Script owner</td>
+<td>Management</td>
+</tr>
+<tr>
+<td>Search and documentation</td>
+<td>Script authors</td>
+<td>Engineering lead</td>
+<td>Support</td>
+<td>All users</td>
+</tr>
+<tr>
+<td>Governance reporting</td>
+<td>Platform admin</td>
+<td>Program manager</td>
+<td>Security</td>
+<td>Executives</td>
+</tr>
+<tr>
+<td>Training completion</td>
+<td>Enablement lead</td>
+<td>Program manager</td>
+<td>Engineering</td>
+<td>Management</td>
+</tr>
+</tbody>
+</table>
+<h2 id="kpis-and-targets">KPIs and targets</h2>
+<table>
+<thead>
+<tr>
+<th>KPI</th>
+<th>Definition</th>
+<th>Target</th>
+<th>Owner</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Coverage</td>
+<td>% scripts with analysis results</td>
+<td>&gt;= 80%</td>
+<td>Platform admin</td>
+</tr>
+<tr>
+<td>Risk reduction</td>
+<td>High-risk findings closed</td>
+<td>100% in 30 days</td>
+<td>Security lead</td>
+</tr>
+<tr>
+<td>Owner coverage</td>
+<td>Scripts with owner tag</td>
+<td>100%</td>
+<td>Script owners</td>
+</tr>
+<tr>
+<td>Search adoption</td>
+<td>Weekly search sessions</td>
+<td>&gt;= 3 per user</td>
+<td>Enablement lead</td>
+</tr>
+<tr>
+<td>Review cadence</td>
+<td>Days between reviews</td>
+<td>&lt;= 30</td>
+<td>Program manager</td>
+</tr>
+</tbody>
+</table>
+<h2 id="risk-register">Risk register</h2>
+<table>
+<thead>
+<tr>
+<th>Risk</th>
+<th>Likelihood</th>
+<th>Impact</th>
+<th>Mitigation</th>
+<th>Owner</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Unowned scripts</td>
+<td>Medium</td>
+<td>High</td>
+<td>Owner tags required on upload</td>
+<td>Program manager</td>
+</tr>
+<tr>
+<td>Analysis backlog</td>
+<td>Medium</td>
+<td>Medium</td>
+<td>Schedule batch analysis weekly</td>
+<td>Platform admin</td>
+</tr>
+<tr>
+<td>False positives</td>
+<td>Low</td>
+<td>Medium</td>
+<td>Human review workflow</td>
+<td>Security lead</td>
+</tr>
+<tr>
+<td>Low adoption</td>
+<td>Medium</td>
+<td>High</td>
+<td>Mandatory onboarding labs</td>
+<td>Enablement lead</td>
+</tr>
+<tr>
+<td>Data drift</td>
+<td>Low</td>
+<td>Medium</td>
+<td>Quarterly taxonomy review</td>
+<td>Platform admin</td>
+</tr>
+</tbody>
+</table>
+<h2 id="governance-cadence">Governance cadence</h2>
+<p><img alt="Governance Loop" src="docs/graphics/governance-loop.svg" /></p>
+<p>Recommended cadence:
+- Weekly: Review top findings and remediation progress
+- Monthly: Review scorecards and KPIs with leadership
+- Quarterly: Audit taxonomy, access, and compliance requirements</p>
+<h2 id="change-management-checklist">Change management checklist</h2>
+<ul>
+<li>Define the script ownership policy</li>
+<li>Align with security and compliance requirements</li>
+<li>Communicate pilot scope and success criteria</li>
+<li>Schedule training completion for pilot teams</li>
+<li>Establish scorecard reporting cadence</li>
+<li>Define escalation path for high-risk findings</li>
+</ul>
+<h2 id="training-alignment">Training alignment</h2>
+<p>Training materials:
+- Training suite overview: <code>training-suite/README.md</code>
+- End-to-end guide: <code>training-suite/TRAINING-GUIDE.md</code></p>
+<p>Recommended minimum training completion per phase:
+- Phase 0: Module 01
+- Phase 1: Modules 01-03 + Labs 01-02
+- Phase 2: Modules 01-05 + Labs 01-04
+- Phase 3: Quarterly refresher and governance review</p>
+<h2 id="reporting-templates">Reporting templates</h2>
+<p>Sample dashboard views:</p>
+<p><img alt="Analytics Dashboard" src="docs/screenshots/analytics.png" /></p>
+<p><img alt="Sample Usage Metrics" src="docs/graphics/usage-metrics.svg" /></p>
+<p><img alt="Security Scorecard" src="docs/graphics/security-scorecard.svg" /></p>
+<p><img alt="KPI Dashboard" src="docs/graphics/kpi-dashboard.svg" /></p>
+<p>Suggested monthly report template:</p>
+<table>
+<thead>
+<tr>
+<th>Section</th>
+<th>Details</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Coverage</td>
+<td>% of scripts analyzed, top categories</td>
+</tr>
+<tr>
+<td>Risk</td>
+<td>High-risk findings, remediation status</td>
+</tr>
+<tr>
+<td>Adoption</td>
+<td>Active users, searches, training completion</td>
+</tr>
+<tr>
+<td>Operations</td>
+<td>Uptime, backlog, automation changes</td>
+</tr>
+<tr>
+<td>Next steps</td>
+<td>Risks to address, upcoming training</td>
+</tr>
+</tbody>
+</table>
+<h2 id="appendix-glossary">Appendix: Glossary</h2>
+<table>
+<thead>
+<tr>
+<th>Term</th>
+<th>Meaning</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Coverage</td>
+<td>Percentage of scripts analyzed</td>
+</tr>
+<tr>
+<td>Scorecard</td>
+<td>Security and quality summary for a script</td>
+</tr>
+<tr>
+<td>Owner tag</td>
+<td>Tag that identifies team accountability</td>
+</tr>
+<tr>
+<td>Vector search</td>
+<td>Semantic search using embeddings</td>
+</tr>
+<tr>
+<td>Governance cadence</td>
+<td>Scheduled reviews and audits</td>
+</tr>
+</tbody>
+</table>
+    <div class="footer">Generated 2026-01-13 06:26 UTC</div>
+  </div>
+</body>
+</html>

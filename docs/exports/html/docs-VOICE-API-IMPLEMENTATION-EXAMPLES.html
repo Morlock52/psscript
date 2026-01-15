@@ -1,0 +1,454 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <base href="file:///Users/morlock/fun/psscript/" />
+  <title>docs-VOICE-API-IMPLEMENTATION-EXAMPLES</title>
+  <style>
+:root {
+  color-scheme: light;
+}
+body {
+  font-family: "Segoe UI", "Helvetica Neue", Arial, sans-serif;
+  margin: 0;
+  padding: 0;
+  background: #ffffff;
+  color: #0f172a;
+}
+.markdown-body {
+  max-width: 980px;
+  margin: 40px auto 60px;
+  padding: 0 32px;
+  line-height: 1.65;
+}
+.markdown-body h1 {
+  font-size: 32px;
+  margin-bottom: 12px;
+  border-bottom: 2px solid #e2e8f0;
+  padding-bottom: 12px;
+  page-break-before: always;
+  page-break-after: avoid;
+  break-before: page;
+  break-after: avoid;
+}
+.markdown-body h1:first-of-type {
+  page-break-before: avoid;
+  break-before: avoid;
+}
+.markdown-body h2 {
+  font-size: 24px;
+  margin-top: 28px;
+  border-bottom: 1px solid #e2e8f0;
+  padding-bottom: 8px;
+  page-break-before: always;
+  page-break-after: avoid;
+  break-before: page;
+  break-after: avoid;
+}
+.markdown-body h3 {
+  font-size: 18px;
+  margin-top: 20px;
+  page-break-after: avoid;
+  break-after: avoid;
+}
+.markdown-body h4, .markdown-body h5, .markdown-body h6 {
+  page-break-after: avoid;
+  break-after: avoid;
+}
+.markdown-body table {
+  width: 100%;
+  border-collapse: collapse;
+  margin: 16px 0;
+  font-size: 14px;
+  page-break-inside: avoid;
+  break-inside: avoid;
+}
+.markdown-body th,
+.markdown-body td {
+  border: 1px solid #e2e8f0;
+  padding: 8px 10px;
+  text-align: left;
+}
+.markdown-body th {
+  background: #f8fafc;
+}
+.markdown-body tr {
+  page-break-inside: avoid;
+  break-inside: avoid;
+}
+.markdown-body code {
+  background: #f1f5f9;
+  padding: 2px 4px;
+  border-radius: 4px;
+  font-family: "SFMono-Regular", Menlo, Consolas, monospace;
+  font-size: 0.92em;
+}
+.markdown-body pre {
+  background: #0f172a;
+  color: #e2e8f0;
+  padding: 16px;
+  border-radius: 8px;
+  overflow-x: auto;
+  page-break-inside: avoid;
+  break-inside: avoid;
+}
+.markdown-body pre code {
+  background: transparent;
+  color: inherit;
+}
+.markdown-body blockquote {
+  border-left: 4px solid #38bdf8;
+  margin: 16px 0;
+  padding: 8px 16px;
+  background: #f8fafc;
+  color: #334155;
+}
+.markdown-body img {
+  max-width: 100%;
+  height: auto;
+  display: block;
+  margin: 16px 0;
+  border-radius: 10px;
+  box-shadow: 0 8px 20px rgba(15, 23, 42, 0.12);
+  page-break-inside: avoid;
+  break-inside: avoid;
+}
+.markdown-body figure {
+  page-break-inside: avoid;
+  break-inside: avoid;
+  margin: 16px 0;
+}
+.markdown-body a {
+  color: #2563eb;
+  text-decoration: none;
+}
+.markdown-body a:hover {
+  text-decoration: underline;
+}
+.cover {
+  padding: 80px 60px 60px;
+  background: linear-gradient(135deg, #0b1220 0%, #1e3a8a 100%);
+  color: #f8fafc;
+  border-radius: 18px;
+  margin-bottom: 32px;
+}
+.cover-title {
+  font-size: 36px;
+  font-weight: 700;
+  margin: 0 0 12px;
+}
+.cover-subtitle {
+  font-size: 18px;
+  color: #cbd5f5;
+  margin: 0 0 16px;
+}
+.cover-meta {
+  font-size: 13px;
+  color: #94a3b8;
+}
+.page-break {
+  page-break-after: always;
+  break-after: page;
+}
+.footer {
+  margin-top: 40px;
+  font-size: 12px;
+  color: #64748b;
+}
+/* Print and PDF-specific styles */
+@page {
+  margin: 20mm 18mm;
+}
+@media print {
+  .markdown-body {
+    orphans: 3;
+    widows: 3;
+  }
+  .markdown-body p {
+    orphans: 3;
+    widows: 3;
+  }
+  .markdown-body li {
+    page-break-inside: avoid;
+    break-inside: avoid;
+  }
+  .markdown-body ul, .markdown-body ol {
+    page-break-before: avoid;
+    break-before: avoid;
+  }
+  .markdown-body blockquote {
+    page-break-inside: avoid;
+    break-inside: avoid;
+  }
+  /* Keep section content together */
+  .markdown-body h2 + *, .markdown-body h3 + * {
+    page-break-before: avoid;
+    break-before: avoid;
+  }
+}
+</style>
+</head>
+<body>
+  <div class="markdown-body">
+    
+    <h1 id="voice-api-implementation-examples">Voice API Implementation Examples</h1>
+<p>This document provides concrete implementation examples for the Voice API integration. These examples demonstrate how to use the Voice API in different contexts and scenarios.</p>
+<h2 id="table-of-contents">Table of Contents</h2>
+<ol>
+<li><a href="#backend-examples">Backend Examples</a></li>
+<li><a href="#voice-synthesis">Voice Synthesis</a></li>
+<li><a href="#voice-recognition">Voice Recognition</a></li>
+<li><a href="#frontend-examples">Frontend Examples</a></li>
+<li><a href="#recording-voice">Recording Voice</a></li>
+<li><a href="#playing-synthesized-speech">Playing Synthesized Speech</a></li>
+<li><a href="#ai-service-examples">AI Service Examples</a></li>
+<li><a href="#voice-service-integration">Voice Service Integration</a></li>
+</ol>
+<h2 id="backend-examples">Backend Examples</h2>
+<h3 id="voice-synthesis">Voice Synthesis</h3>
+<p>This example demonstrates how to use the Voice Controller to synthesize speech from text.</p>
+<pre><code class="language-javascript">// src/backend/controllers/voiceController.js
+
+/**
+ * Synthesize text into speech
+ * 
+ * @param {Object} req - Express request object
+ * @param {Object} res - Express response object
+ */
+exports.synthesizeSpeech = async (req, res) =&gt; {
+  try {
+    const { text, voiceId, outputFormat } = req.body;
+
+    if (!text) {
+      return res.status(400).json({ error: 'Text is required' });
+    }
+
+    logger.info(`Synthesizing speech: &quot;${text.substring(0, 50)}...&quot;`);
+
+    // Call the AI service
+    const response = await axios.post(
+      `${config.aiServiceUrl}/voice/synthesize`,
+      {
+        text,
+        voice_id: voiceId,
+        output_format: outputFormat || 'mp3'
+      },
+      {
+        headers: {
+          'Content-Type': 'application/json',
+          'x-api-key': config.aiServiceApiKey
+        }
+      }
+    );
+
+    // Return the response from the AI service
+    return res.status(200).json(response.data);
+  } catch (error) {
+    logger.error(`Error in synthesizeSpeech: ${error.message}`);
+    return res.status(500).json({ error: 'Internal server error' });
+  }
+};
+</code></pre>
+<h3 id="voice-recognition">Voice Recognition</h3>
+<p>This example demonstrates how to use the Voice Controller to recognize speech from audio data.</p>
+<pre><code class="language-javascript">// src/backend/controllers/voiceController.js
+
+/**
+ * Recognize speech from audio data
+ * 
+ * @param {Object} req - Express request object
+ * @param {Object} res - Express response object
+ */
+exports.recognizeSpeech = async (req, res) =&gt; {
+  try {
+    const { audioData, language } = req.body;
+
+    if (!audioData) {
+      return res.status(400).json({ error: 'Audio data is required' });
+    }
+
+    logger.info(`Recognizing speech with language: ${language || 'en-US'}`);
+
+    // Call the AI service
+    const response = await axios.post(
+      `${config.aiServiceUrl}/voice/recognize`,
+      {
+        audio_data: audioData,
+        language: language || 'en-US'
+      },
+      {
+        headers: {
+          'Content-Type': 'application/json',
+          'x-api-key': config.aiServiceApiKey
+        }
+      }
+    );
+
+    // Return the response from the AI service
+    return res.status(200).json(response.data);
+  } catch (error) {
+    logger.error(`Error in recognizeSpeech: ${error.message}`);
+    return res.status(500).json({ error: 'Internal server error' });
+  }
+};
+</code></pre>
+<h2 id="frontend-examples">Frontend Examples</h2>
+<h3 id="recording-voice">Recording Voice</h3>
+<p>This example demonstrates how to use the VoiceRecorder component to record voice input.</p>
+<pre><code class="language-jsx">// Example component using VoiceRecorder
+import React, { useState } from 'react';
+import VoiceRecorder from '../components/VoiceRecorder';
+
+const VoiceInputExample = () =&gt; {
+  const [recognizedText, setRecognizedText] = useState('');
+
+  const handleAudioCaptured = (text, audioData) =&gt; {
+    setRecognizedText(text);
+    // You can also send the audio data to the server for further processing
+  };
+
+  return (
+    &lt;div className=&quot;voice-input-example&quot;&gt;
+      &lt;h2&gt;Voice Input Example&lt;/h2&gt;
+
+      &lt;VoiceRecorder onAudioCaptured={handleAudioCaptured} /&gt;
+
+      {recognizedText &amp;&amp; (
+        &lt;div className=&quot;recognized-text&quot;&gt;
+          &lt;h3&gt;Recognized Text:&lt;/h3&gt;
+          &lt;p&gt;{recognizedText}&lt;/p&gt;
+        &lt;/div&gt;
+      )}
+    &lt;/div&gt;
+  );
+};
+
+export default VoiceInputExample;
+</code></pre>
+<h3 id="playing-synthesized-speech">Playing Synthesized Speech</h3>
+<p>This example demonstrates how to use the VoicePlayback component to play synthesized speech.</p>
+<pre><code class="language-jsx">// Example component using VoicePlayback
+import React, { useState } from 'react';
+import VoicePlayback from '../components/VoicePlayback';
+
+const VoiceOutputExample = () =&gt; {
+  const [text, setText] = useState('');
+  const [audioData, setAudioData] = useState(null);
+
+  const handleTextChange = (e) =&gt; {
+    setText(e.target.value);
+  };
+
+  const handleGenerateSpeech = async () =&gt; {
+    if (!text) return;
+
+    try {
+      const response = await fetch('/api/voice/synthesize', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${localStorage.getItem('token')}`
+        },
+        body: JSON.stringify({
+          text,
+          voiceId: 'en-US-Standard-A',
+          outputFormat: 'mp3'
+        })
+      });
+
+      const data = await response.json();
+
+      if (data.audio_data) {
+        setAudioData(data.audio_data);
+      }
+    } catch (error) {
+      console.error('Error generating speech:', error);
+    }
+  };
+
+  return (
+    &lt;div className=&quot;voice-output-example&quot;&gt;
+      &lt;h2&gt;Voice Output Example&lt;/h2&gt;
+
+      &lt;div className=&quot;text-input&quot;&gt;
+        &lt;textarea
+          value={text}
+          onChange={handleTextChange}
+          placeholder=&quot;Enter text to synthesize&quot;
+          rows={4}
+        /&gt;
+
+        &lt;button
+          onClick={handleGenerateSpeech}
+          disabled={!text}
+        &gt;
+          Generate Speech
+        &lt;/button&gt;
+      &lt;/div&gt;
+
+      {audioData &amp;&amp; (
+        &lt;div className=&quot;playback-container&quot;&gt;
+          &lt;h3&gt;Generated Speech:&lt;/h3&gt;
+
+          &lt;VoicePlayback
+            audioData={audioData}
+            autoPlay={true}
+          /&gt;
+        &lt;/div&gt;
+      )}
+    &lt;/div&gt;
+  );
+};
+
+export default VoiceOutputExample;
+</code></pre>
+<h2 id="ai-service-examples">AI Service Examples</h2>
+<h3 id="voice-service-integration">Voice Service Integration</h3>
+<p>This example demonstrates how to integrate the Voice Service with external voice APIs.</p>
+<p>```python</p>
+<h1 id="srcaivoice_servicepy">src/ai/voice_service.py</h1>
+<p>async def synthesize_speech(
+    self,
+    text: str,
+    voice_id: Optional[str] = None,
+    output_format: str = "mp3"
+) -&gt; Dict[str, Any]:
+    """
+    Synthesize text into speech.</p>
+<pre><code>Args:
+    text: Text to synthesize
+    voice_id: Voice ID to use
+    output_format: Output audio format
+
+Returns:
+    Dictionary containing the audio data and metadata
+"""
+logger.info(f"Synthesizing speech: '{text[:50]}...' with voice: {voice_id}")
+
+try:
+    # Select the appropriate TTS service
+    if self.tts_service == "google":
+        audio_data, duration = await self._synthesize_google(text, voice_id, output_format)
+    elif self.tts_service == "amazon":
+        audio_data, duration = await self._synthesize_amazon(text, voice_id, output_format)
+    elif self.tts_service == "microsoft":
+        audio_data, duration = await self._synthesize_microsoft(text, voice_id, output_format)
+    else:
+        # Use mock implementation for testing
+        audio_data, duration = await self._synthesize_mock(text, voice_id, output_format)
+
+    return {
+        "audio_data": audio_data,
+        "format": output_format,
+        "duration": duration,
+        "text": text
+    }
+except Exception as e:
+    logger.error(f"Error in speech synthesis: {e}")
+    raise HTTPException(status_code=500, detail=f"Speech synthesis failed: {str(e)}")
+</code></pre>
+    <div class="footer">Generated 2026-01-13 06:26 UTC</div>
+  </div>
+</body>
+</html>

@@ -1,6 +1,6 @@
-import React, { useState, useRef } from 'react';
+import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { useTheme } from '../hooks/useTheme';
+import { useTheme } from '../contexts/ThemeContext';
 import { useAuth } from '../hooks/useAuth';
 import { scriptService } from '../services/api-simple';
 import useChat, { Message } from '../hooks/useChat';
@@ -8,10 +8,10 @@ import ChatMessage from '../components/ChatMessage';
 
 const SimpleChatWithAI = () => {
   // Get theme and auth from context
-  const { theme, toggleTheme } = useTheme();
+  const { toggleTheme, isDark } = useTheme();
   const { user, isAuthenticated } = useAuth();
   const navigate = useNavigate();
-  
+
   // Use our custom chat hook
   const {
     messages,
@@ -24,7 +24,7 @@ const SimpleChatWithAI = () => {
     showSearch,
     selectedFile,
     isUploading,
-    sessionId,
+    sessionId: _sessionId,
     messagesEndRef,
     inputRef,
     fileInputRef,
@@ -39,7 +39,7 @@ const SimpleChatWithAI = () => {
     setSearchQuery,
     searchChatHistory,
     loadChatHistory,
-    setSessionId
+    setSessionId: _setSessionId
   } = useChat({
     autoSave: true,
     mockMode: false
@@ -95,13 +95,13 @@ const SimpleChatWithAI = () => {
       alert('Script name and content are required');
       return;
     }
-    
+
     if (!isAuthenticated) {
       alert('You need to be logged in to save scripts');
       setShowCreateScriptModal(false);
       return;
     }
-    
+
     try {
       const scriptData = {
         name: scriptName,
@@ -109,13 +109,13 @@ const SimpleChatWithAI = () => {
         description: scriptDescription || 'Created from chat',
         isPublic: false
       };
-      
+
       const result = await scriptService.uploadScript(scriptData);
-      
+
       // Close modal and add a message about the saved script
       setShowCreateScriptModal(false);
       sendMessage(`I've saved the script "${scriptName}" successfully.`);
-      
+
       // Redirect to the script detail page if we have a valid ID
       if (result && result.id) {
         try {
@@ -128,7 +128,7 @@ const SimpleChatWithAI = () => {
     } catch (error) {
       console.error('Error creating script:', error);
       setShowCreateScriptModal(false);
-      
+
       // Add error message to chat
       sendMessage(`Sorry, I couldn't save the script "${scriptName}". There was an error.`);
     }
@@ -141,14 +141,19 @@ const SimpleChatWithAI = () => {
     await searchChatHistory(searchQuery);
   };
 
+  // Reusable styles
+  const inputStyles = "bg-[var(--color-bg-primary)] border border-[var(--color-border-default)] focus:ring-2 focus:ring-[var(--color-primary)]/50 focus:border-[var(--color-primary)] focus:outline-none";
+  const buttonPrimaryStyles = "px-4 py-2 rounded font-medium bg-[var(--color-primary)] text-white hover:bg-[var(--color-primary-light)] disabled:opacity-50 transition-colors";
+  const buttonSecondaryStyles = "px-3 py-1 rounded text-sm bg-[var(--color-bg-tertiary)] hover:bg-[var(--color-bg-tertiary)]/80 text-[var(--color-text-primary)] transition-colors";
+
   return (
-    <div className={`flex flex-col h-full ${theme === 'dark' ? 'bg-gray-900 text-white' : 'bg-white text-gray-900'}`}>
+    <div className="flex flex-col h-full bg-[var(--color-bg-primary)] text-[var(--color-text-primary)]">
       {/* Header */}
-      <div className={`p-4 flex justify-between items-center ${theme === 'dark' ? 'bg-gray-800' : 'bg-blue-600 text-white'}`}>
+      <div className="p-4 flex justify-between items-center bg-[var(--color-primary)] text-white">
         <div className="flex items-center space-x-2">
-          <button 
+          <button
             onClick={() => navigate('/dashboard')}
-            className="px-3 py-1 rounded bg-opacity-20 bg-white hover:bg-opacity-30 flex items-center"
+            className="px-3 py-1 rounded bg-white/20 hover:bg-white/30 flex items-center transition-colors"
             aria-label="Back to Dashboard"
           >
             <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -164,18 +169,18 @@ const SimpleChatWithAI = () => {
           )}
           {isAuthenticated && (
             <>
-              <button 
+              <button
                 onClick={() => setShowSearch(prevState => !prevState)}
-                className="px-3 py-1 rounded bg-opacity-20 bg-white hover:bg-opacity-30 flex items-center"
+                className="px-3 py-1 rounded bg-white/20 hover:bg-white/30 flex items-center transition-colors"
               >
                 <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
                 </svg>
                 {showSearch ? 'Close' : 'Search'}
               </button>
-              <button 
+              <button
                 onClick={() => navigate('/chat/history')}
-                className="px-3 py-1 rounded bg-opacity-20 bg-white hover:bg-opacity-30 flex items-center"
+                className="px-3 py-1 rounded bg-white/20 hover:bg-white/30 flex items-center transition-colors"
               >
                 <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
@@ -184,15 +189,15 @@ const SimpleChatWithAI = () => {
               </button>
             </>
           )}
-          <button 
+          <button
             onClick={toggleTheme}
-            className="px-3 py-1 rounded bg-opacity-20 bg-white hover:bg-opacity-30"
+            className="px-3 py-1 rounded bg-white/20 hover:bg-white/30 transition-colors"
           >
-            {theme === 'dark' ? 'Light' : 'Dark'}
+            {isDark ? 'Light' : 'Dark'}
           </button>
-          <button 
+          <button
             onClick={clearChat}
-            className="px-3 py-1 rounded bg-opacity-20 bg-white hover:bg-opacity-30"
+            className="px-3 py-1 rounded bg-white/20 hover:bg-white/30 transition-colors"
           >
             Clear
           </button>
@@ -201,79 +206,63 @@ const SimpleChatWithAI = () => {
 
       {/* Search panel */}
       {showSearch && (
-        <div className={`p-4 ${theme === 'dark' ? 'bg-gray-800 border-b border-gray-700' : 'bg-white border-b border-gray-200'}`}>
+        <div className="p-4 bg-[var(--color-bg-elevated)] border-b border-[var(--color-border-default)]">
           <form onSubmit={handleSearch} className="flex gap-2 mb-4">
             <input
               type="text"
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               placeholder="Search your chat history..."
-              className={`flex-1 p-2 rounded ${
-                theme === 'dark' 
-                  ? 'bg-gray-700 border-gray-600' 
-                  : 'bg-gray-100 border-gray-300'
-              } border focus:ring-2 focus:ring-blue-500 focus:outline-none`}
+              className={`flex-1 p-2 rounded ${inputStyles}`}
               disabled={isSearching || !isAuthenticated}
             />
             <button
               type="submit"
               disabled={isSearching || !searchQuery.trim() || !isAuthenticated}
-              className={`px-4 py-2 rounded font-medium ${
-                theme === 'dark'
-                  ? 'bg-blue-600 hover:bg-blue-500 disabled:bg-gray-700'
-                  : 'bg-blue-600 text-white hover:bg-blue-500 disabled:bg-gray-300'
-              }`}
+              className={buttonPrimaryStyles}
             >
               {isSearching ? 'Searching...' : 'Search'}
             </button>
           </form>
-          
+
           {!isAuthenticated && (
-            <div className="text-center py-2 text-yellow-500">
+            <div className="text-center py-2 text-amber-500">
               Please log in to search your chat history
             </div>
           )}
 
-          <div className={`max-h-60 overflow-y-auto rounded ${searchResults.length > 0 ? 'border' : ''} ${
-            theme === 'dark' ? 'border-gray-700' : 'border-gray-200'
-          }`}>
+          <div className={`max-h-60 overflow-y-auto rounded ${searchResults.length > 0 ? 'border border-[var(--color-border-default)]' : ''}`}>
             {searchResults.map((result, idx) => (
-              <div 
+              <div
                 key={result.id || idx}
-                className={`p-3 cursor-pointer ${
-                  theme === 'dark' 
-                    ? 'hover:bg-gray-700 border-b border-gray-700' 
-                    : 'hover:bg-gray-100 border-b border-gray-200'
-                } ${idx === searchResults.length - 1 ? 'border-b-0' : ''}`}
+                className={`p-3 cursor-pointer hover:bg-[var(--color-bg-tertiary)] border-b border-[var(--color-border-default)] transition-colors ${idx === searchResults.length - 1 ? 'border-b-0' : ''}`}
                 onClick={() => loadChatHistory(result.messages)}
               >
                 <div className="flex justify-between mb-1">
-                  <span className="text-sm font-medium">{result.date}</span>
-                  <span className={`text-xs px-2 py-0.5 rounded-full ${
-                    theme === 'dark' ? 'bg-blue-900 text-blue-200' : 'bg-blue-100 text-blue-800'
-                  }`}>
+                  <span className="text-sm font-medium text-[var(--color-text-primary)]">{result.date}</span>
+                  <span className="text-xs px-2 py-0.5 rounded-full bg-blue-500/10 text-blue-500">
                     Score: {result.score.toFixed(2)}
                   </span>
                 </div>
-                <div className="text-sm truncate">
+                <div className="text-sm truncate text-[var(--color-text-secondary)]">
                   {result.messages[0]?.content || 'No content'}
                 </div>
               </div>
             ))}
-            
+
             {searchResults.length === 0 && searchQuery.trim() !== '' && !isSearching && (
-              <div className="p-4 text-center text-gray-500">
+              <div className="p-4 text-center text-[var(--color-text-tertiary)]">
                 No results found
               </div>
             )}
-            
+
             {isSearching && (
               <div className="p-4 text-center">
                 <div className="inline-block">
                   <div className="flex space-x-2">
-                    <div className="w-2 h-2 bg-blue-500 rounded-full animate-bounce"></div>
-                    <div className="w-2 h-2 bg-blue-500 rounded-full animate-bounce delay-150"></div>
-                    <div className="w-2 h-2 bg-blue-500 rounded-full animate-bounce delay-300"></div>
+                    <div className="w-2 h-2 bg-[var(--color-primary)] rounded-full animate-bounce"></div>
+                    <div className="w-2 h-2 bg-[var(--color-primary)] rounded-full animate-bounce delay-150"></div>
+                    <div className="w-2 h-2 bg-[var(--color-primary)] rounded-full animate-bounce delay-300"></div>
                   </div>
                 </div>
               </div>
@@ -283,9 +272,9 @@ const SimpleChatWithAI = () => {
       )}
 
       {/* Messages */}
-      <div className={`flex-1 p-4 overflow-y-auto ${theme === 'dark' ? 'bg-gray-900' : 'bg-gray-100'}`}>
+      <div className="flex-1 p-4 overflow-y-auto bg-[var(--color-bg-secondary)]">
         {messages.length === 0 ? (
-          <div className="flex items-center justify-center h-full text-gray-500">
+          <div className="flex items-center justify-center h-full text-[var(--color-text-tertiary)]">
             <div className="text-center">
               <p>No messages yet</p>
               <p className="text-sm mt-2">Start a conversation by typing a message below</p>
@@ -293,23 +282,22 @@ const SimpleChatWithAI = () => {
           </div>
         ) : (
           messages.map((msg, index) => (
-            <ChatMessage 
-              key={index} 
-              message={msg} 
-              theme={theme} 
+            <ChatMessage
+              key={index}
+              message={msg}
               onSaveScript={msg.role === 'assistant' ? () => openCreateScriptModal(msg) : undefined}
             />
           ))
         )}
-        
+
         {/* Loading indicator */}
         {isLoading && (
           <div className="flex items-center mb-4">
-            <div className={`p-3 rounded-lg ${theme === 'dark' ? 'bg-gray-800' : 'bg-white'}`}>
+            <div className="p-3 rounded-lg bg-[var(--color-bg-elevated)]">
               <div className="flex space-x-2">
-                <div className="w-2 h-2 bg-blue-500 rounded-full animate-bounce"></div>
-                <div className="w-2 h-2 bg-blue-500 rounded-full animate-bounce delay-150"></div>
-                <div className="w-2 h-2 bg-blue-500 rounded-full animate-bounce delay-300"></div>
+                <div className="w-2 h-2 bg-[var(--color-primary)] rounded-full animate-bounce"></div>
+                <div className="w-2 h-2 bg-[var(--color-primary)] rounded-full animate-bounce delay-150"></div>
+                <div className="w-2 h-2 bg-[var(--color-primary)] rounded-full animate-bounce delay-300"></div>
               </div>
             </div>
           </div>
@@ -318,7 +306,7 @@ const SimpleChatWithAI = () => {
       </div>
 
       {/* Input form */}
-      <div className={`p-4 ${theme === 'dark' ? 'bg-gray-800' : 'bg-white border-t'}`}>
+      <div className="p-4 bg-[var(--color-bg-elevated)] border-t border-[var(--color-border-default)]">
         <div className="flex gap-2 mb-2">
           <label htmlFor="file-upload" className="sr-only">
             Upload PowerShell Script
@@ -336,26 +324,18 @@ const SimpleChatWithAI = () => {
           <button
             type="button"
             onClick={() => fileInputRef.current?.click()}
-            className={`px-3 py-1 rounded text-sm ${
-              theme === 'dark'
-                ? 'bg-gray-700 hover:bg-gray-600'
-                : 'bg-gray-200 hover:bg-gray-300'
-            }`}
+            className={buttonSecondaryStyles}
             disabled={isLoading || isUploading}
           >
             Upload Script
           </button>
           {selectedFile && (
             <div className="flex-1 flex items-center">
-              <span className="text-sm truncate">{selectedFile.name}</span>
+              <span className="text-sm truncate text-[var(--color-text-primary)]">{selectedFile.name}</span>
               <button
                 type="button"
                 onClick={handleFileUpload}
-                className={`ml-2 px-3 py-1 rounded text-sm ${
-                  theme === 'dark'
-                    ? 'bg-green-700 hover:bg-green-600 text-white'
-                    : 'bg-green-600 hover:bg-green-500 text-white'
-                }`}
+                className="ml-2 px-3 py-1 rounded text-sm bg-emerald-600 hover:bg-emerald-500 text-white transition-colors"
                 disabled={isLoading || isUploading}
               >
                 {isUploading ? 'Uploading...' : 'Analyze'}
@@ -363,11 +343,7 @@ const SimpleChatWithAI = () => {
               <button
                 type="button"
                 onClick={() => setSelectedFile(null)}
-                className={`ml-2 px-3 py-1 rounded text-sm ${
-                  theme === 'dark'
-                    ? 'bg-gray-700 hover:bg-gray-600'
-                    : 'bg-gray-200 hover:bg-gray-300'
-                }`}
+                className={`ml-2 ${buttonSecondaryStyles}`}
                 disabled={isLoading || isUploading}
               >
                 Cancel
@@ -375,7 +351,7 @@ const SimpleChatWithAI = () => {
             </div>
           )}
         </div>
-        
+
         <form onSubmit={handleSubmit} className="flex gap-2">
           <input
             ref={inputRef}
@@ -383,111 +359,82 @@ const SimpleChatWithAI = () => {
             value={input}
             onChange={(e) => setInput(e.target.value)}
             placeholder="Type your PowerShell question..."
-            className={`flex-1 p-2 rounded ${
-              theme === 'dark' 
-                ? 'bg-gray-700 border-gray-600' 
-                : 'bg-gray-100 border-gray-300'
-            } border focus:ring-2 focus:ring-blue-500 focus:outline-none`}
+            className={`flex-1 p-2 rounded ${inputStyles}`}
             disabled={isLoading || isUploading}
           />
           <button
             type="submit"
             disabled={isLoading || isUploading || !input.trim()}
-            className={`px-4 py-2 rounded font-medium ${
-              theme === 'dark'
-                ? 'bg-blue-600 hover:bg-blue-500 disabled:bg-gray-700'
-                : 'bg-blue-600 text-white hover:bg-blue-500 disabled:bg-gray-300'
-            }`}
+            className={buttonPrimaryStyles}
           >
             {isLoading ? 'Sending...' : 'Send'}
           </button>
         </form>
         {isAuthenticated ? (
-          <p className="text-xs text-center mt-2 opacity-60">
+          <p className="text-xs text-center mt-2 text-[var(--color-text-tertiary)]">
             {user?.username} • {isSaving ? 'Saving chat...' : 'Chat saved'}
           </p>
         ) : (
-          <p className="text-xs text-center mt-2 opacity-60">
+          <p className="text-xs text-center mt-2 text-[var(--color-text-tertiary)]">
             Sign in to save your chat history
           </p>
         )}
       </div>
-      
+
       {/* Create Script Modal */}
       {showCreateScriptModal && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-          <div className={`rounded-lg shadow-lg max-w-lg w-full max-h-[90vh] overflow-y-auto
-            ${theme === 'dark' ? 'bg-gray-800 text-white' : 'bg-white text-gray-900'}`}>
-            <div className={`p-4 border-b ${theme === 'dark' ? 'border-gray-700' : 'border-gray-200'}`}>
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+          <div className="rounded-xl shadow-lg max-w-lg w-full max-h-[90vh] overflow-y-auto bg-[var(--color-bg-elevated)] text-[var(--color-text-primary)] border border-[var(--color-border-default)]">
+            <div className="p-4 border-b border-[var(--color-border-default)]">
               <h2 className="text-xl font-bold">Create New Script</h2>
-              <p className="text-sm opacity-70 mt-1">Save this code as a new PowerShell script</p>
+              <p className="text-sm text-[var(--color-text-tertiary)] mt-1">Save this code as a new PowerShell script</p>
             </div>
-            
+
             <div className="p-4">
               <div className="mb-4">
-                <label className="block text-sm font-medium mb-1">Script Name</label>
+                <label className="block text-sm font-medium mb-1 text-[var(--color-text-secondary)]">Script Name</label>
                 <input
                   type="text"
                   value={scriptName}
                   onChange={(e) => setScriptName(e.target.value)}
                   placeholder="script-name.ps1"
-                  className={`w-full p-2 rounded ${
-                    theme === 'dark' 
-                      ? 'bg-gray-700 border-gray-600' 
-                      : 'bg-gray-100 border-gray-300'
-                  } border focus:ring-2 focus:ring-blue-500 focus:outline-none`}
+                  className={`w-full p-2 rounded ${inputStyles}`}
                 />
               </div>
-              
+
               <div className="mb-4">
-                <label className="block text-sm font-medium mb-1">Description</label>
+                <label className="block text-sm font-medium mb-1 text-[var(--color-text-secondary)]">Description</label>
                 <input
                   type="text"
                   value={scriptDescription}
                   onChange={(e) => setScriptDescription(e.target.value)}
                   placeholder="Brief description of what the script does"
-                  className={`w-full p-2 rounded ${
-                    theme === 'dark' 
-                      ? 'bg-gray-700 border-gray-600' 
-                      : 'bg-gray-100 border-gray-300'
-                  } border focus:ring-2 focus:ring-blue-500 focus:outline-none`}
+                  className={`w-full p-2 rounded ${inputStyles}`}
                 />
               </div>
-              
+
               <div className="mb-4">
-                <label className="block text-sm font-medium mb-1">Script Content</label>
-                <div className={`w-full rounded ${
-                  theme === 'dark' 
-                    ? 'bg-gray-700 border-gray-600' 
-                    : 'bg-gray-100 border-gray-300'
-                } border p-2 h-60 overflow-y-auto`}>
-                  <pre className="whitespace-pre-wrap font-mono text-sm">
+                <label className="block text-sm font-medium mb-1 text-[var(--color-text-secondary)]">Script Content</label>
+                <div className={`w-full rounded border border-[var(--color-border-default)] bg-[var(--color-bg-tertiary)] p-2 h-60 overflow-y-auto`}>
+                  <pre className="whitespace-pre-wrap font-mono text-sm text-[var(--color-text-primary)]">
                     {scriptContent}
                   </pre>
                 </div>
               </div>
             </div>
-            
-            <div className={`p-4 border-t flex justify-end gap-2 ${theme === 'dark' ? 'border-gray-700' : 'border-gray-200'}`}>
+
+            <div className="p-4 border-t border-[var(--color-border-default)] flex justify-end gap-2">
               <button
                 type="button"
                 onClick={() => setShowCreateScriptModal(false)}
-                className={`px-4 py-2 rounded ${
-                  theme === 'dark'
-                    ? 'bg-gray-700 hover:bg-gray-600'
-                    : 'bg-gray-200 hover:bg-gray-300'
-                }`}
+                className={buttonSecondaryStyles}
               >
                 Cancel
               </button>
               <button
                 type="button"
                 onClick={createScript}
-                className={`px-4 py-2 rounded font-medium ${
-                  theme === 'dark'
-                    ? 'bg-blue-600 hover:bg-blue-500'
-                    : 'bg-blue-600 text-white hover:bg-blue-500'
-                }`}
+                className={buttonPrimaryStyles}
               >
                 Create Script
               </button>

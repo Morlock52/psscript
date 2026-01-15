@@ -1,5 +1,6 @@
 import React, { useEffect, useRef } from 'react';
 import Chart from 'chart.js/auto';
+import { useTheme } from '../../contexts/ThemeContext';
 
 // Define Category interface
 interface Category {
@@ -14,10 +15,10 @@ interface Category {
 // Define props for CategoryPieChart
 interface CategoryPieChartProps {
   data: Category[];
-  theme: 'light' | 'dark';
 }
 
-const CategoryPieChart: React.FC<CategoryPieChartProps> = ({ data, theme }) => {
+const CategoryPieChart: React.FC<CategoryPieChartProps> = ({ data }) => {
+  const { isDark } = useTheme();
   const chartRef = useRef<HTMLCanvasElement>(null);
   const chartInstance = useRef<Chart | null>(null);
   
@@ -85,7 +86,7 @@ const CategoryPieChart: React.FC<CategoryPieChartProps> = ({ data, theme }) => {
             {
               data: counts,
               backgroundColor: chartColors,
-              borderColor: theme === 'dark' ? '#1A202C' : '#FFFFFF',
+              borderColor: isDark ? '#1A202C' : '#FFFFFF',
               borderWidth: 2,
             },
           ],
@@ -97,7 +98,7 @@ const CategoryPieChart: React.FC<CategoryPieChartProps> = ({ data, theme }) => {
             legend: {
               position: 'bottom',
               labels: {
-                color: theme === 'dark' ? '#E2E8F0' : '#2D3748',
+                color: isDark ? '#E2E8F0' : '#2D3748',
                 padding: 10,
                 usePointStyle: true,
                 font: {
@@ -106,10 +107,10 @@ const CategoryPieChart: React.FC<CategoryPieChartProps> = ({ data, theme }) => {
               },
             },
             tooltip: {
-              backgroundColor: theme === 'dark' ? '#4A5568' : '#FFFFFF',
-              titleColor: theme === 'dark' ? '#FFFFFF' : '#1A202C',
-              bodyColor: theme === 'dark' ? '#E2E8F0' : '#4A5568',
-              borderColor: theme === 'dark' ? '#2D3748' : '#E2E8F0',
+              backgroundColor: isDark ? '#4A5568' : '#FFFFFF',
+              titleColor: isDark ? '#FFFFFF' : '#1A202C',
+              bodyColor: isDark ? '#E2E8F0' : '#4A5568',
+              borderColor: isDark ? '#2D3748' : '#E2E8F0',
               borderWidth: 1,
               padding: 10,
               displayColors: true,
@@ -139,13 +140,13 @@ const CategoryPieChart: React.FC<CategoryPieChartProps> = ({ data, theme }) => {
         chartInstance.current.destroy();
       }
     };
-  }, [data, theme]);
+  }, [data, isDark]);
   
   return (
     <div className="w-full h-full">
       {data.length === 0 ? (
         <div className="flex items-center justify-center h-full">
-          <p className={`text-sm ${theme === 'dark' ? 'text-gray-400' : 'text-gray-500'}`}>
+          <p className={`text-sm ${isDark ? 'text-gray-400' : 'text-gray-500'}`}>
             No category data available
           </p>
         </div>

@@ -1,9 +1,9 @@
--- Create an admin user with randomly generated password
+-- Create an admin user with default password
+-- Default credentials: admin@example.com / admin123
 -- For production, you should change this password immediately after setup
--- Current hash is for a randomly generated password
 INSERT INTO users (username, email, password_hash, role)
-VALUES 
-  ('admin', 'admin@example.com', '$2b$10$V2AZQJ/zLnSA2C0UBH3hO.DSRb0olqB/ZSa36L4vF/qI6aiGrBAHG', 'admin');
+VALUES
+  ('admin', 'admin@example.com', '$2b$10$PW5jrAWd.pj/0yENtn/XuOy/MuRZQvO2xKxgxc4rrszX0u1lqGo7e', 'admin');
 
 -- Create some categories
 INSERT INTO categories (name, description)

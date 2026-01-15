@@ -97,3 +97,6 @@ src/backend/uploads/
 !.yarn/releases
 !.yarn/sdks
 !.yarn/versions
+
+# Cloudflare Tunnel credentials (keep config, ignore secrets)
+cloudflared/*.json

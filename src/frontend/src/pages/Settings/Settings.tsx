@@ -1,14 +1,13 @@
 import React, { useState, useEffect } from 'react';
-import { 
-  Container, 
-  Typography, 
-  Box, 
-  Grid, 
-  Card, 
+import {
+  Container,
+  Typography,
+  Box,
+  Grid,
+  Card,
   CardContent,
-  Tabs, 
-  Tab, 
-  Divider, 
+  Tabs,
+  Tab,
   Alert,
   TextField,
   Button,
@@ -29,13 +28,12 @@ import { useAuth } from '../../hooks/useAuth';
 import { useTheme } from '../../hooks/useTheme';
 import { useLocation, useNavigate } from 'react-router-dom';
 import KeyIcon from '@mui/icons-material/Key';
-import AutoAwesomeIcon from '@mui/icons-material/AutoAwesome';
 import VisibilityIcon from '@mui/icons-material/Visibility';
 import VisibilityOffIcon from '@mui/icons-material/VisibilityOff';
-import BrushIcon from '@mui/icons-material/Brush';
 import DarkModeIcon from '@mui/icons-material/DarkMode';
 import LightModeIcon from '@mui/icons-material/LightMode';
 import CheckCircleOutlineIcon from '@mui/icons-material/CheckCircleOutline';
+import PeopleIcon from '@mui/icons-material/People';
 
 interface TabPanelProps {
   children?: React.ReactNode;
@@ -66,7 +64,7 @@ const a11yProps = (index: number) => {
 
 const Settings: React.FC = () => {
   const { theme, toggleTheme } = useTheme();
-  const { isAuthenticated, user } = useAuth();
+  const { isAuthenticated: _isAuthenticated, user: _user } = useAuth();
   const location = useLocation();
   const navigate = useNavigate();
 
@@ -113,6 +111,7 @@ const Settings: React.FC = () => {
     if (newValue === 0) navigate('/settings');
     else if (newValue === 1) navigate('/settings/api');
     else if (newValue === 2) navigate('/settings/advanced');
+    else if (newValue === 3) navigate('/settings/users');
   };
 
   const handleToggleEnvVariables = (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -155,6 +154,12 @@ const Settings: React.FC = () => {
           <Tab label="General" {...a11yProps(0)} />
           <Tab label="API Keys" {...a11yProps(1)} />
           <Tab label="Advanced" {...a11yProps(2)} />
+          <Tab
+            label="User Management"
+            icon={<PeopleIcon />}
+            iconPosition="start"
+            {...a11yProps(3)}
+          />
         </Tabs>
       </Box>
 

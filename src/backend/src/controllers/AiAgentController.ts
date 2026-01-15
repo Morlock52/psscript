@@ -4,18 +4,17 @@
  */
 import { Request, Response, NextFunction } from 'express';
 import logger from '../utils/logger';
-import axios from 'axios';
 
 // Mock AI service URL - would be replaced with actual service in production
-const AI_SERVICE_URL = process.env.AI_SERVICE_URL || 'http://localhost:5000';
+const _AI_SERVICE_URL = process.env.AI_SERVICE_URL || 'http://localhost:5000';
 
 class AiAgentController {
   /**
    * Answer a question using the AI agent
    */
-  async answerQuestion(req: Request, res: Response, next: NextFunction) {
+  async answerQuestion(req: Request, res: Response, _next: NextFunction) {
     try {
-      const { question, context, useAgent = false } = req.body;
+      const { question, context, useAgent: _useAgent = false } = req.body;
       
       if (!question) {
         return res.status(400).json({ 
@@ -55,9 +54,9 @@ class AiAgentController {
   /**
    * Analyze a script using the AI assistant
    */
-  async analyzeScript(req: Request, res: Response, next: NextFunction) {
+  async analyzeScript(req: Request, res: Response, _next: NextFunction) {
     try {
-      const { content, filename, requestType = 'standard', analysisOptions } = req.body;
+      const { content, filename, requestType: _requestType = 'standard', analysisOptions: _analysisOptions } = req.body;
       
       if (!content) {
         return res.status(400).json({ 

@@ -2,6 +2,7 @@ import React, { useState, useRef, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useQuery, useMutation } from '@tanstack/react-query';
 import { scriptService, categoryService, tagService } from '../services/api';
+import { isRetryableError, getErrorMessage } from '../utils/errorUtils';
 
 const ScriptUpload: React.FC = () => {
   const navigate = useNavigate();
@@ -60,29 +61,17 @@ const ScriptUpload: React.FC = () => {
           navigate('/scripts');
         }
       },
-      onError: (error: any) => {
+      onError: (error: unknown) => {
         console.error("Error uploading script:", error);
         setUploadProgress(0);
-        
-        // Check if it's a network-related error
-        const isNetworkRelated = 
-          error.message?.includes('Network error') || 
-          error.message?.includes('check your connection') || 
-          error.message?.includes('No response received') || 
-          error.message?.includes('timeout');
-        
-        setIsNetworkError(isNetworkRelated);
-        setFileError(error.message || "Failed to upload script. Please try again.");
+
+        // Use centralized error detection for reliable network error identification
+        setIsNetworkError(isRetryableError(error));
+        setFileError(getErrorMessage(error, "Failed to upload script. Please try again."));
       },
-      retry: (failureCount, error: any) => {
-        // Only retry for network-related errors and up to MAX_RETRIES times
-        const isNetworkRelated = 
-          error.message?.includes('Network error') || 
-          error.message?.includes('check your connection') || 
-          error.message?.includes('No response received') || 
-          error.message?.includes('timeout');
-        
-        return isNetworkRelated && failureCount < MAX_RETRIES;
+      retry: (failureCount, error: unknown) => {
+        // Only retry for retryable errors (network, timeout, server errors) up to MAX_RETRIES times
+        return isRetryableError(error) && failureCount < MAX_RETRIES;
       },
       retryDelay: (attemptIndex) => Math.min(1000 * (2 ** attemptIndex), 10000), // Exponential backoff
       onMutate: () => {

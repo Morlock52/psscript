@@ -1,0 +1,412 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <base href="file:///Users/morlock/fun/psscript/" />
+  <title>docs-VOICE-API-ARCHITECTURE</title>
+  <style>
+:root {
+  color-scheme: light;
+}
+body {
+  font-family: "Segoe UI", "Helvetica Neue", Arial, sans-serif;
+  margin: 0;
+  padding: 0;
+  background: #ffffff;
+  color: #0f172a;
+}
+.markdown-body {
+  max-width: 980px;
+  margin: 40px auto 60px;
+  padding: 0 32px;
+  line-height: 1.65;
+}
+.markdown-body h1 {
+  font-size: 32px;
+  margin-bottom: 12px;
+  border-bottom: 2px solid #e2e8f0;
+  padding-bottom: 12px;
+  page-break-before: always;
+  page-break-after: avoid;
+  break-before: page;
+  break-after: avoid;
+}
+.markdown-body h1:first-of-type {
+  page-break-before: avoid;
+  break-before: avoid;
+}
+.markdown-body h2 {
+  font-size: 24px;
+  margin-top: 28px;
+  border-bottom: 1px solid #e2e8f0;
+  padding-bottom: 8px;
+  page-break-before: always;
+  page-break-after: avoid;
+  break-before: page;
+  break-after: avoid;
+}
+.markdown-body h3 {
+  font-size: 18px;
+  margin-top: 20px;
+  page-break-after: avoid;
+  break-after: avoid;
+}
+.markdown-body h4, .markdown-body h5, .markdown-body h6 {
+  page-break-after: avoid;
+  break-after: avoid;
+}
+.markdown-body table {
+  width: 100%;
+  border-collapse: collapse;
+  margin: 16px 0;
+  font-size: 14px;
+  page-break-inside: avoid;
+  break-inside: avoid;
+}
+.markdown-body th,
+.markdown-body td {
+  border: 1px solid #e2e8f0;
+  padding: 8px 10px;
+  text-align: left;
+}
+.markdown-body th {
+  background: #f8fafc;
+}
+.markdown-body tr {
+  page-break-inside: avoid;
+  break-inside: avoid;
+}
+.markdown-body code {
+  background: #f1f5f9;
+  padding: 2px 4px;
+  border-radius: 4px;
+  font-family: "SFMono-Regular", Menlo, Consolas, monospace;
+  font-size: 0.92em;
+}
+.markdown-body pre {
+  background: #0f172a;
+  color: #e2e8f0;
+  padding: 16px;
+  border-radius: 8px;
+  overflow-x: auto;
+  page-break-inside: avoid;
+  break-inside: avoid;
+}
+.markdown-body pre code {
+  background: transparent;
+  color: inherit;
+}
+.markdown-body blockquote {
+  border-left: 4px solid #38bdf8;
+  margin: 16px 0;
+  padding: 8px 16px;
+  background: #f8fafc;
+  color: #334155;
+}
+.markdown-body img {
+  max-width: 100%;
+  height: auto;
+  display: block;
+  margin: 16px 0;
+  border-radius: 10px;
+  box-shadow: 0 8px 20px rgba(15, 23, 42, 0.12);
+  page-break-inside: avoid;
+  break-inside: avoid;
+}
+.markdown-body figure {
+  page-break-inside: avoid;
+  break-inside: avoid;
+  margin: 16px 0;
+}
+.markdown-body a {
+  color: #2563eb;
+  text-decoration: none;
+}
+.markdown-body a:hover {
+  text-decoration: underline;
+}
+.cover {
+  padding: 80px 60px 60px;
+  background: linear-gradient(135deg, #0b1220 0%, #1e3a8a 100%);
+  color: #f8fafc;
+  border-radius: 18px;
+  margin-bottom: 32px;
+}
+.cover-title {
+  font-size: 36px;
+  font-weight: 700;
+  margin: 0 0 12px;
+}
+.cover-subtitle {
+  font-size: 18px;
+  color: #cbd5f5;
+  margin: 0 0 16px;
+}
+.cover-meta {
+  font-size: 13px;
+  color: #94a3b8;
+}
+.page-break {
+  page-break-after: always;
+  break-after: page;
+}
+.footer {
+  margin-top: 40px;
+  font-size: 12px;
+  color: #64748b;
+}
+/* Print and PDF-specific styles */
+@page {
+  margin: 20mm 18mm;
+}
+@media print {
+  .markdown-body {
+    orphans: 3;
+    widows: 3;
+  }
+  .markdown-body p {
+    orphans: 3;
+    widows: 3;
+  }
+  .markdown-body li {
+    page-break-inside: avoid;
+    break-inside: avoid;
+  }
+  .markdown-body ul, .markdown-body ol {
+    page-break-before: avoid;
+    break-before: avoid;
+  }
+  .markdown-body blockquote {
+    page-break-inside: avoid;
+    break-inside: avoid;
+  }
+  /* Keep section content together */
+  .markdown-body h2 + *, .markdown-body h3 + * {
+    page-break-before: avoid;
+    break-before: avoid;
+  }
+}
+</style>
+</head>
+<body>
+  <div class="markdown-body">
+    
+    <h1 id="voice-api-architecture">Voice API Architecture</h1>
+<p>This document provides a detailed overview of the architecture for the Voice API integration in the PSScript Manager platform.</p>
+<h2 id="table-of-contents">Table of Contents</h2>
+<ol>
+<li><a href="#system-architecture">System Architecture</a></li>
+<li><a href="#component-interactions">Component Interactions</a></li>
+<li><a href="#data-flow">Data Flow</a></li>
+<li><a href="#security-considerations">Security Considerations</a></li>
+<li><a href="#performance-optimizations">Performance Optimizations</a></li>
+<li><a href="#error-handling-and-fallbacks">Error Handling and Fallbacks</a></li>
+<li><a href="#extensibility">Extensibility</a></li>
+</ol>
+<h2 id="system-architecture">System Architecture</h2>
+<p>The Voice API integration follows a layered architecture with clear separation of concerns:</p>
+<pre><code>┌─────────────────────────────────────────────────────────────────┐
+│                        Frontend Layer                           │
+│                                                                 │
+│  ┌───────────────┐  ┌───────────────┐  ┌───────────────────┐   │
+│  │ VoiceRecorder │  │ VoicePlayback │  │ VoiceChatInterface│   │
+│  └───────────────┘  └───────────────┘  └───────────────────┘   │
+│                                                                 │
+│  ┌───────────────┐                                              │
+│  │ VoiceSettings │                                              │
+│  └───────────────┘                                              │
+└─────────────────────────────────────────────────────────────────┘
+                            ▲
+                            │
+                            ▼
+┌─────────────────────────────────────────────────────────────────┐
+│                        Backend Layer                            │
+│                                                                 │
+│  ┌───────────────┐  ┌───────────────┐                           │
+│  │ VoiceRoutes   │  │VoiceController│                           │
+│  └───────────────┘  └───────────────┘                           │
+│                                                                 │
+└─────────────────────────────────────────────────────────────────┘
+                            ▲
+                            │
+                            ▼
+┌─────────────────────────────────────────────────────────────────┐
+│                        AI Service Layer                         │
+│                                                                 │
+│  ┌───────────────┐  ┌───────────────┐  ┌───────────────┐        │
+│  │ VoiceService  │  │ VoiceEndpoints│  │  VoiceAgent   │        │
+│  └───────────────┘  └───────────────┘  └───────────────┘        │
+│                                                                 │
+└─────────────────────────────────────────────────────────────────┘
+                            ▲
+                            │
+                            ▼
+┌─────────────────────────────────────────────────────────────────┐
+│                    External Voice Services                       │
+│                                                                 │
+│  ┌───────────────┐  ┌───────────────┐  ┌───────────────┐        │
+│  │  Google Cloud │  │  Amazon AWS   │  │ Microsoft Azure│       │
+│  └───────────────┘  └───────────────┘  └───────────────┘        │
+│                                                                 │
+└─────────────────────────────────────────────────────────────────┘
+</code></pre>
+<h3 id="1-frontend-layer">1. Frontend Layer</h3>
+<p>The frontend layer provides the user interface components for voice interaction:</p>
+<ul>
+<li><strong>VoiceRecorder</strong>: Handles audio recording with visualization</li>
+<li><strong>VoicePlayback</strong>: Manages audio playback with controls</li>
+<li><strong>VoiceChatInterface</strong>: Integrates voice capabilities into the chat interface</li>
+<li><strong>VoiceSettings</strong>: Provides user preferences for voice features</li>
+</ul>
+<p>These components are implemented as React components with responsive design and accessibility features.</p>
+<h3 id="2-backend-layer">2. Backend Layer</h3>
+<p>The backend layer provides the API endpoints for voice functionality:</p>
+<ul>
+<li><strong>VoiceRoutes</strong>: Defines the API routes for voice endpoints</li>
+<li><strong>VoiceController</strong>: Implements the logic for handling voice requests</li>
+</ul>
+<p>The backend layer is implemented using Express.js and communicates with the AI service layer for voice processing.</p>
+<h3 id="3-ai-service-layer">3. AI Service Layer</h3>
+<p>The AI service layer provides the core voice processing capabilities:</p>
+<ul>
+<li><strong>VoiceService</strong>: Implements the core voice synthesis and recognition functionality</li>
+<li><strong>VoiceEndpoints</strong>: Defines the FastAPI endpoints for the voice service</li>
+<li><strong>VoiceAgent</strong>: Specialized agent for handling voice-related tasks</li>
+</ul>
+<p>The AI service layer is implemented using Python with FastAPI and integrates with external voice service providers.</p>
+<h3 id="4-external-voice-services">4. External Voice Services</h3>
+<p>The external voice services provide the actual voice processing capabilities:</p>
+<ul>
+<li><strong>Google Cloud</strong>: Speech-to-Text and Text-to-Speech services</li>
+<li><strong>Amazon AWS</strong>: Polly and Transcribe services</li>
+<li><strong>Microsoft Azure</strong>: Cognitive Services for speech</li>
+</ul>
+<h2 id="component-interactions">Component Interactions</h2>
+<h3 id="voice-synthesis-flow">Voice Synthesis Flow</h3>
+<ol>
+<li>User requests voice synthesis through the frontend</li>
+<li>Frontend sends a request to the backend API</li>
+<li>Backend controller forwards the request to the AI service</li>
+<li>AI service checks the cache for a matching request</li>
+<li>If found in cache, returns the cached result</li>
+<li>If not found, selects the appropriate voice service provider</li>
+<li>Sends the request to the selected provider</li>
+<li>Receives the synthesized speech from the provider</li>
+<li>Caches the result for future use</li>
+<li>Returns the result to the backend</li>
+<li>Backend returns the result to the frontend</li>
+<li>Frontend plays the synthesized speech</li>
+</ol>
+<h3 id="voice-recognition-flow">Voice Recognition Flow</h3>
+<ol>
+<li>User records audio through the frontend</li>
+<li>Frontend sends the audio data to the backend API</li>
+<li>Backend controller forwards the request to the AI service</li>
+<li>AI service selects the appropriate voice service provider</li>
+<li>Sends the audio data to the selected provider</li>
+<li>Receives the recognized text from the provider</li>
+<li>Returns the result to the backend</li>
+<li>Backend returns the result to the frontend</li>
+<li>Frontend displays the recognized text</li>
+</ol>
+<h2 id="data-flow">Data Flow</h2>
+<h3 id="voice-synthesis-data-flow">Voice Synthesis Data Flow</h3>
+<pre><code>┌──────────┐     ┌──────────┐     ┌──────────┐     ┌──────────┐
+│ Frontend │────&gt;│ Backend  │────&gt;│AI Service│────&gt;│ Provider │
+└──────────┘     └──────────┘     └──────────┘     └──────────┘
+     ▲               ▲               ▲                  │
+     │               │               │                  │
+     └───────────────┴───────────────┴──────────────────┘
+                        Response
+</code></pre>
+<h3 id="voice-recognition-data-flow">Voice Recognition Data Flow</h3>
+<pre><code>┌──────────┐     ┌──────────┐     ┌──────────┐     ┌──────────┐
+│ Frontend │────&gt;│ Backend  │────&gt;│AI Service│────&gt;│ Provider │
+└──────────┘     └──────────┘     └──────────┘     └──────────┘
+     ▲               ▲               ▲                  │
+     │               │               │                  │
+     └───────────────┴───────────────┴──────────────────┘
+                        Response
+</code></pre>
+<h2 id="security-considerations">Security Considerations</h2>
+<h3 id="authentication-and-authorization">Authentication and Authorization</h3>
+<ul>
+<li><strong>API Authentication</strong>: All API endpoints require authentication using JWT tokens</li>
+<li><strong>Service Authentication</strong>: Communication with external voice service providers uses API keys</li>
+<li><strong>Authorization</strong>: Access to voice features is controlled by user permissions</li>
+</ul>
+<h3 id="data-protection">Data Protection</h3>
+<ul>
+<li><strong>Encryption</strong>: Voice data is encrypted in transit using HTTPS</li>
+<li><strong>Storage</strong>: Cached voice data is stored securely with appropriate access controls</li>
+<li><strong>Retention</strong>: Voice data is retained only for the necessary duration</li>
+</ul>
+<h3 id="privacy">Privacy</h3>
+<ul>
+<li><strong>User Consent</strong>: Users must provide consent for voice recording</li>
+<li><strong>Data Minimization</strong>: Only necessary data is collected and processed</li>
+<li><strong>Transparency</strong>: Users are informed about how their voice data is used</li>
+</ul>
+<h2 id="performance-optimizations">Performance Optimizations</h2>
+<h3 id="caching">Caching</h3>
+<p>The Voice API implements a multi-level caching strategy:</p>
+<ol>
+<li><strong>Memory Cache</strong>: Fast in-memory cache for frequently accessed voice data</li>
+<li><strong>Disk Cache</strong>: Persistent cache for larger voice data with longer TTL</li>
+<li><strong>Cache Invalidation</strong>: Time-based and LRU-based cache invalidation</li>
+</ol>
+<h3 id="asynchronous-processing">Asynchronous Processing</h3>
+<ul>
+<li>Voice processing operations are performed asynchronously to avoid blocking</li>
+<li>Long-running operations use background processing</li>
+</ul>
+<h3 id="resource-pooling">Resource Pooling</h3>
+<ul>
+<li>Connection pooling for external service providers</li>
+<li>Resource reuse for improved performance</li>
+</ul>
+<h2 id="error-handling-and-fallbacks">Error Handling and Fallbacks</h2>
+<h3 id="error-detection">Error Detection</h3>
+<ul>
+<li>Comprehensive error detection for all voice operations</li>
+<li>Detailed error logging for troubleshooting</li>
+</ul>
+<h3 id="fallback-mechanisms">Fallback Mechanisms</h3>
+<ul>
+<li>Provider Fallback: If the primary provider fails, fallback to alternative providers</li>
+<li>Graceful Degradation: If voice features are unavailable, fallback to text-based interaction</li>
+</ul>
+<h3 id="retry-logic">Retry Logic</h3>
+<ul>
+<li>Automatic retry for transient errors</li>
+<li>Exponential backoff for repeated failures</li>
+</ul>
+<h2 id="extensibility">Extensibility</h2>
+<h3 id="adding-new-providers">Adding New Providers</h3>
+<p>The Voice API is designed to be easily extended with new voice service providers:</p>
+<ol>
+<li>Implement the provider-specific methods in the VoiceService class</li>
+<li>Add the provider to the provider selection logic</li>
+<li>Update the configuration to include the new provider</li>
+</ol>
+<h3 id="adding-new-features">Adding New Features</h3>
+<p>The modular architecture allows for easy addition of new features:</p>
+<ol>
+<li>Add new endpoints to the VoiceEndpoints class</li>
+<li>Implement the corresponding methods in the VoiceService class</li>
+<li>Add new routes to the VoiceRoutes module</li>
+<li>Implement the corresponding methods in the VoiceController class</li>
+<li>Add new components to the frontend as needed</li>
+</ol>
+<h3 id="customization">Customization</h3>
+<p>The Voice API supports customization through:</p>
+<ul>
+<li>User preferences for voice selection</li>
+<li>Configuration options for voice processing</li>
+<li>Extensible component architecture</li>
+</ul>
+    <div class="footer">Generated 2026-01-13 06:26 UTC</div>
+  </div>
+</body>
+</html>

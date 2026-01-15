@@ -43,18 +43,17 @@ export const Avatar: React.FC<AvatarProps> = ({
   className = '',
   ...props
 }) => {
-  const { theme } = useTheme();
-  const isDark = theme === 'dark';
+  const { isDark } = useTheme();
 
   // Get initials from name
   const getInitials = (): string => {
     if (!name) return '?';
-    
+
     const nameParts = name.split(' ').filter(Boolean);
-    
+
     if (nameParts.length === 0) return '?';
     if (nameParts.length === 1) return nameParts[0].charAt(0).toUpperCase();
-    
+
     return `${nameParts[0].charAt(0)}${nameParts[nameParts.length - 1].charAt(0)}`.toUpperCase();
   };
 
@@ -96,10 +95,10 @@ export const Avatar: React.FC<AvatarProps> = ({
     }
   };
 
-  // Get border styles
+  // Get border styles - theme-aware via CSS variable
   const getBorderStyles = (): string => {
     if (!withBorder) return '';
-    
+
     const width = (() => {
       switch (borderWidth) {
         case 'thin':
@@ -112,25 +111,23 @@ export const Avatar: React.FC<AvatarProps> = ({
           return 'border-2';
       }
     })();
-    
-    const color = borderColor || (isDark ? 'border-gray-700' : 'border-white');
-    
+
+    // Use provided color or theme-aware default
+    const color = borderColor || 'border-[var(--color-bg-elevated)]';
+
     return `${width} ${color}`;
   };
 
-  // Get shadow styles
+  // Get shadow styles - transparent black works in both modes
   const getShadowStyles = (): string => {
     if (!withShadow) return '';
-    
-    return isDark
-      ? 'shadow-md shadow-black/30'
-      : 'shadow-md shadow-black/10';
+    return 'shadow-md shadow-black/20';
   };
 
   // Get status styles
   const getStatusStyles = (): string => {
     if (status === 'none') return '';
-    
+
     const statusColor = (() => {
       switch (status) {
         case 'online':
@@ -145,7 +142,7 @@ export const Avatar: React.FC<AvatarProps> = ({
           return '';
       }
     })();
-    
+
     const statusSize = (() => {
       switch (size) {
         case 'xs':
@@ -164,7 +161,7 @@ export const Avatar: React.FC<AvatarProps> = ({
           return 'w-2.5 h-2.5';
       }
     })();
-    
+
     const statusPositionClass = (() => {
       switch (statusPosition) {
         case 'top-right':
@@ -179,23 +176,25 @@ export const Avatar: React.FC<AvatarProps> = ({
           return 'bottom-0 right-0 transform translate-x-1/4 translate-y-1/4';
       }
     })();
-    
-    return `after:content-[''] after:absolute after:${statusPositionClass} after:block after:${statusSize} after:${statusColor} after:rounded-full after:ring-2 after:ring-white after:dark:ring-gray-800`;
+
+    // Ring color adapts to theme via dark: variant
+    return `after:content-[''] after:absolute after:${statusPositionClass} after:block after:${statusSize} after:${statusColor} after:rounded-full after:ring-2 after:ring-[var(--color-bg-elevated)]`;
   };
 
-  // Get background color for placeholder
+  // Get background color for placeholder - generates unique color from name
   const getPlaceholderBgColor = (): string => {
     if (!name) {
-      return isDark ? 'bg-gray-700' : 'bg-gray-200';
+      return 'bg-[var(--color-bg-tertiary)]';
     }
-    
+
     // Generate a consistent color based on the name
     const hash = name.split('').reduce((acc, char) => {
       return char.charCodeAt(0) + ((acc << 5) - acc);
     }, 0);
-    
+
     const hue = Math.abs(hash % 360);
-    
+
+    // Use dynamic HSL with theme-aware lightness
     return `bg-[hsl(${hue},70%,${isDark ? '40%' : '60%'})]`;
   };
 
@@ -204,7 +203,7 @@ export const Avatar: React.FC<AvatarProps> = ({
     const displayCount = groupCount !== undefined && groupCount > groupLimit
       ? `${groupLimit}+`
       : groupCount?.toString() || '?';
-    
+
     return (
       <div
         className={`
@@ -213,7 +212,7 @@ export const Avatar: React.FC<AvatarProps> = ({
           ${getRoundedStyles()}
           ${getBorderStyles()}
           ${getShadowStyles()}
-          ${isDark ? 'bg-gray-700 text-white' : 'bg-gray-200 text-gray-800'}
+          bg-[var(--color-bg-tertiary)] text-[var(--color-text-primary)]
           font-medium
           ${className}
         `}

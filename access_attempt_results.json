@@ -1,0 +1,46 @@
+{
+  "timestamp": "2026-01-14T16:00:05.407348",
+  "attempts": [
+    {
+      "method": "ICMP",
+      "status": "failed"
+    },
+    {
+      "method": "Tunnel",
+      "endpoint": "Frontend",
+      "status": "302"
+    },
+    {
+      "method": "Tunnel",
+      "endpoint": "API Health",
+      "status": "530"
+    },
+    {
+      "method": "Tunnel",
+      "endpoint": "API Root",
+      "status": "530"
+    },
+    {
+      "method": "DNS",
+      "reverse": "ip74-208-184-195.pbiaas.com."
+    }
+  ],
+  "successes": [],
+  "failures": [
+    {
+      "method": "SSH",
+      "attempt": 1,
+      "error": "OpenSSH_8.9p1 Ubuntu-3ubuntu0.13, OpenSSL 3.0.2 15 Mar 2022\ndebug1: Reading configuration data /etc/ssh/ssh_config\ndebug1: /etc/ssh/ssh_config line 19: include /etc/ssh/ssh_config.d/*.conf matched no "
+    },
+    {
+      "method": "SSH",
+      "attempt": 2,
+      "error": "ssh: connect to host 74.208.184.195 port 22: Connection timed out\n"
+    },
+    {
+      "method": "SSH",
+      "attempt": 3,
+      "error": "ssh: connect to host 74.208.184.195 port 22: Connection timed out\n"
+    }
+  ]
+}

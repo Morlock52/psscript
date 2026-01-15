@@ -1,72 +1,63 @@
+// eslint-disable-next-line @typescript-eslint/ban-ts-comment
 // @ts-nocheck - Required for flexible API client configuration
-import axios, { AxiosRequestConfig, AxiosResponse, AxiosError } from "axios";
-
-// API base URL from environment variable or default
-// Define the type for import.meta to include env
-interface ImportMeta {
-  env: {
-    VITE_API_URL?: string;
-    [key: string]: any;
-  };
-}
+import axios, { AxiosRequestConfig, AxiosError } from "axios";
+import { getApiUrl, isLocalhost as checkIsLocalhost } from "../utils/apiUrl";
+import { extractApiError, ErrorCodes } from "../utils/errorUtils";
 
 // Determine if we're running in a development environment
-const isDevelopment = import.meta.env.DEV || 
-  (typeof window !== 'undefined' && window.location.hostname === 'localhost');
+// This is evaluated at runtime in the browser
+const isDevelopment = import.meta.env.DEV ||
+  (typeof window !== 'undefined' && checkIsLocalhost());
 
-// Default API URL with fallbacks for different environments
-// Use window.location.hostname to ensure we connect to the same host when in Docker
-const API_URL = import.meta.env.VITE_API_URL || 
-  `http://${window.location.hostname}:4000/api`; // Dynamic hostname to work with Docker
-
-// Force log the API URL to ensure it's correct
-console.log('API URL is set to:', API_URL);
-
-console.log('Using API URL:', API_URL);
-
-// Create axios instance with default config
+// Create axios instance WITHOUT baseURL - we'll add it dynamically via interceptor
+// This ensures the URL is computed at RUNTIME, not BUILD time
 const apiClient = axios.create({
-  baseURL: API_URL,
   headers: {
     "Content-Type": "application/json",
   },
   timeout: 30000, // 30 second timeout
 });
 
-// Export apiClient for use in other modules
-export { apiClient };
-
-// Also export apiClient as default for backward compatibility
-export default apiClient;
-
-// Request interceptor for adding auth token
+// Request interceptor to dynamically set baseURL at runtime AND add auth token
 apiClient.interceptors.request.use(
   (config) => {
-    // Try to get the token
+    // Step 1: Prepend API URL if the request URL is relative (doesn't start with http)
+    if (config.url && !config.url.startsWith('http')) {
+      const apiUrl = getApiUrl();
+      config.url = `${apiUrl}${config.url.startsWith('/') ? '' : '/'}${config.url}`;
+    }
+
+    // Step 2: Add auth token
     const token = localStorage.getItem("auth_token");
-    
-    // For file uploads, we should ensure we're not setting both multipart/form-data 
+
+    // For file uploads, we should ensure we're not setting both multipart/form-data
     // and Authorization headers, as this can cause issues with CORS preflight checks
-    const isFileUpload = 
-      config.url?.includes('/upload') && 
+    const isFileUpload =
+      config.url?.includes('/upload') &&
       config.headers['Content-Type'] === 'multipart/form-data';
-    
+
     // Only add the auth token if it exists and we're not uploading a file
     // or if we specifically want to authenticate the file upload
     if (token && (!isFileUpload || localStorage.getItem("authenticate_uploads") === "true")) {
       config.headers["Authorization"] = `Bearer ${token}`;
     }
-    
+
     // Log requests in development
     if (isDevelopment) {
-      console.log(`API Request: ${config.method?.toUpperCase()} ${config.url}`, 
+      console.log(`[api.ts] Request: ${config.method?.toUpperCase()} ${config.url}`,
         isFileUpload ? '[File Upload]' : '');
     }
-    
+
     return config;
   },
   (error) => Promise.reject(error)
 );
+
+// Export apiClient for use in other modules
+export { apiClient };
+
+// Also export apiClient as default for backward compatibility
+export default apiClient;
 
 // Response interceptor for handling errors
 apiClient.interceptors.response.use(
@@ -106,22 +97,22 @@ apiClient.interceptors.response.use(
       }
     }
     
-    // Handle network errors
-    if (!error.response) {
-      console.error("Network Error:", (error as any).message);
-      return Promise.reject({
-        message: "Network error. Please check your connection.",
-        originalError: error,
+    // Use centralized error extraction for consistent error handling
+    // This ensures all errors have the same shape: { status, message, code, isNetworkError, ... }
+    const apiError = extractApiError(error);
+
+    // Log in development mode
+    if (isDevelopment) {
+      console.error(`[api.ts] API Error:`, {
+        code: apiError.code,
+        status: apiError.status,
+        message: apiError.message,
+        isNetworkError: apiError.isNetworkError,
       });
     }
-    
-    // Return specific error from API when available with type safety
-    const errorMessage = error.response?.data?.message || (error as any).message || 'Unknown error';
-    return Promise.reject({
-      status: error.response?.status,
-      message: errorMessage,
-      originalError: error,
-    });
+
+    // Return standardized error object
+    return Promise.reject(apiError);
   }
 );
 
@@ -166,10 +157,10 @@ const scriptService = {
       };
       
       // Debug log
-      console.log('[UPLOAD DEBUG] Starting upload:', 
-        isFormData ? 'as FormData' : 'as JSON', 
-        isLargeFile ? '(large file)' : '', 
-        'to API URL:', API_URL);
+      console.log('[UPLOAD DEBUG] Starting upload:',
+        isFormData ? 'as FormData' : 'as JSON',
+        isLargeFile ? '(large file)' : '',
+        'to API URL:', getApiUrl());
       
       // Choose the appropriate endpoint based on file size and type
       const endpoint = isFormData
@@ -620,7 +611,7 @@ interface ChatResponse {
 }
 
 // AI service URL
-const AI_SERVICE_URL = import.meta.env.VITE_AI_SERVICE_URL || "http://ai-service:8000";
+const AI_SERVICE_URL = import.meta.env.VITE_AI_SERVICE_URL || "http://localhost:8000";
 
 // Chat service
 export const chatService = {
@@ -629,8 +620,7 @@ export const chatService = {
     try {
       // Get the user's OpenAI API key from local storage
       const openaiApiKey = localStorage.getItem('openai_api_key');
-      const useMockMode = localStorage.getItem('psscript_mock_mode') === 'true' || 
-                           import.meta.env.DEV;
+      const useMockMode = localStorage.getItem('psscript_mock_mode') === 'true';
       
       // Only use valid API keys, not placeholder values
       const apiKey = openaiApiKey || "";

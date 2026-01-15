@@ -2,7 +2,7 @@ import React from 'react';
 import { Message } from '../../api/assistantsApi';
 import { marked } from 'marked';
 import DOMPurify from 'dompurify';
-import hljs from 'highlight.js';
+import 'highlight.js'; // Imported for side-effect styles
 import 'highlight.js/styles/github.css';
 
 // Configure marked options

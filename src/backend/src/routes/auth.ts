@@ -1,10 +1,12 @@
 import express, { Request, Response } from 'express';
-import bcrypt from 'bcrypt';
-import jwt, { SignOptions, Secret } from 'jsonwebtoken';
+import jwt, { Secret } from 'jsonwebtoken';
 import { body, validationResult } from 'express-validator';
 import User from '../models/User';
 import { authenticateJWT, logAuthAttempt } from '../middleware/authMiddleware';
 import logger from '../utils/logger';
+import { getAuthConfig, IS_PRODUCTION, obfuscateEmail } from '../utils/envValidation';
+import { passwordStrengthValidator, MIN_PASSWORD_LENGTH } from '../utils/passwordValidation';
+import bcrypt from 'bcrypt';
 
 // Extend the Express Request interface to include user and auth info
 declare module 'express' {
@@ -22,18 +24,25 @@ declare module 'express' {
 
 const router = express.Router();
 
-// Environment variables with better defaults and logging
-const JWT_SECRET: Secret = process.env.JWT_SECRET || 'development_secret';
-const JWT_EXPIRES_IN: string | number = process.env.JWT_EXPIRES_IN || '1d';
-const REFRESH_TOKEN_SECRET: Secret = process.env.REFRESH_TOKEN_SECRET || 'development_refresh_secret';
-const REFRESH_TOKEN_EXPIRES_IN: string | number = process.env.REFRESH_TOKEN_EXPIRES_IN || '7d';
+// Get configuration from validated environment
+const authConfig = getAuthConfig();
+const JWT_SECRET: Secret = authConfig.jwtSecret;
+const JWT_EXPIRES_IN: string | number = authConfig.jwtExpiresIn;
+const REFRESH_TOKEN_SECRET: Secret = authConfig.refreshTokenSecret;
+const REFRESH_TOKEN_EXPIRES_IN: string | number = authConfig.refreshTokenExpiresIn;
 
 // Log JWT configuration on startup (without revealing secrets)
 logger.info('Auth configuration loaded', {
   jwtExpiresIn: JWT_EXPIRES_IN,
   refreshTokenExpiresIn: REFRESH_TOKEN_EXPIRES_IN,
-  usingDevSecrets: !process.env.JWT_SECRET || !process.env.REFRESH_TOKEN_SECRET
+  isProduction: IS_PRODUCTION,
+  bcryptRounds: authConfig.bcryptRounds,
+  accountLockoutAttempts: authConfig.accountLockoutAttempts,
+  accountLockoutDurationMinutes: authConfig.accountLockoutDurationMinutes
 });
+
+// Constant-time delay to prevent timing attacks on login
+const CONSTANT_LOGIN_DELAY_MS = 100;
 
 // Error response helper function
 const sendErrorResponse = (
@@ -90,18 +99,21 @@ router.post(
   '/register',
   logAuthAttempt,
   [
-    body('username').trim().isLength({ min: 3 }).withMessage('Username must be at least 3 characters'),
-    body('email').isEmail().withMessage('Must be a valid email address'),
-    body('password').isLength({ min: 8 }).withMessage('Password must be at least 8 characters'),
+    body('username').trim().isLength({ min: 3, max: 50 }).withMessage('Username must be 3-50 characters'),
+    body('email').isEmail().normalizeEmail().withMessage('Must be a valid email address'),
+    body('password')
+      .isLength({ min: MIN_PASSWORD_LENGTH })
+      .withMessage(`Password must be at least ${MIN_PASSWORD_LENGTH} characters`)
+      .custom(passwordStrengthValidator),
   ],
   async (req: Request, res: Response) => {
     const requestId = req.authInfo?.requestId;
     const startTime = Date.now();
-    
+
     try {
       logger.debug('Processing registration request', {
         requestId,
-        email: req.body.email,
+        email: obfuscateEmail(req.body.email),
         username: req.body.username
       });
       
@@ -295,72 +307,127 @@ router.post(
 
       const { email, password } = req.body;
 
+      // Log with obfuscated email for privacy
       logger.debug('Processing login request', {
         requestId,
-        email,
+        email: obfuscateEmail(email),
         ipAddress,
         userAgent
       });
 
-      // Find user
+      // Find user - but DON'T reveal if user exists or not (prevents enumeration)
       const user = await User.findOne({ where: { email } });
+
+      // SECURITY: Apply constant-time delay regardless of whether user exists
+      // This prevents timing attacks that could enumerate valid accounts
+      const loginStartTime = Date.now();
+
+      // Variable to track if login should fail
+      let shouldFail = false;
+      let isLocked = false;
+      let lockoutRemaining = 0;
+
       if (!user) {
+        // User doesn't exist - but don't reveal this!
+        shouldFail = true;
+
+        // Log internally but don't expose to client
         logger.warn('Login failed: User not found', {
           requestId,
-          email,
+          email: obfuscateEmail(email),
           ipAddress
         });
-        
+
+        // Still compute a dummy hash to maintain constant time
+        // This prevents timing attacks from revealing account existence
+        await bcrypt.compare(password, '$2b$12$LQv3c1yqBWVHxkd0LHAkCOYz6TtxMQJqhN8/X4.Iq0gHvoLf4JyWq');
+      } else {
+        // Check if account is locked
+        if (user.isLocked()) {
+          isLocked = true;
+          lockoutRemaining = user.getLockoutRemaining();
+          shouldFail = true;
+
+          logger.warn('Login failed: Account locked', {
+            requestId,
+            userId: user.id,
+            email: obfuscateEmail(email),
+            ipAddress,
+            lockoutRemaining
+          });
+        } else {
+          // Check password using the model's validatePassword method
+          const isPasswordValid = await user.validatePassword(password, requestId);
+
+          if (!isPasswordValid) {
+            shouldFail = true;
+
+            // Track failed login attempt (may trigger lockout)
+            const nowLocked = await user.trackLoginAttempt(false, requestId);
+
+            if (nowLocked) {
+              isLocked = true;
+              lockoutRemaining = user.getLockoutRemaining();
+            }
+
+            logger.warn('Login failed: Invalid credentials', {
+              requestId,
+              userId: user.id,
+              email: obfuscateEmail(email),
+              ipAddress,
+              loginAttempts: user.loginAttempts,
+              isLocked: nowLocked,
+              processingTime: Date.now() - startTime
+            });
+          }
+        }
+      }
+
+      // SECURITY: Ensure constant-time response to prevent timing attacks
+      const elapsed = Date.now() - loginStartTime;
+      const remainingDelay = Math.max(0, CONSTANT_LOGIN_DELAY_MS - elapsed);
+      if (remainingDelay > 0) {
+        await new Promise(resolve => setTimeout(resolve, remainingDelay));
+      }
+
+      if (shouldFail) {
+        // SECURITY: Return generic error message to prevent user enumeration
+        // Do NOT reveal whether the email exists or if password was wrong
+        const message = isLocked
+          ? `Account temporarily locked. Try again in ${Math.ceil(lockoutRemaining / 60)} minutes.`
+          : 'Invalid email or password';
+
+        const errorCode = isLocked ? 'account_locked' : 'invalid_credentials';
+        const status = isLocked ? 423 : 401; // 423 = Locked, 401 = Unauthorized
+
         return sendErrorResponse(
-          res, 
-          404, 
-          'User not found', 
-          'user_not_found',
-          requestId
+          res,
+          status,
+          message,
+          errorCode,
+          requestId,
+          isLocked ? { lockoutRemaining } : undefined
         );
       }
 
-      // Check password using the model's validatePassword method
-      const isPasswordValid = await user.validatePassword(password, requestId);
-      
-      // Track login attempt
-      await user.trackLoginAttempt(isPasswordValid, requestId);
-      
-      if (!isPasswordValid) {
-        const loginAttempts = user.loginAttempts || 0;
-        
-        logger.warn('Login failed: Invalid credentials', {
-          requestId,
-          userId: user.id,
-          email,
-          ipAddress,
-          loginAttempts,
-          processingTime: Date.now() - startTime
-        });
-        
-        // Add a delay for failed login attempts to prevent brute force
-        const delayMs = Math.min(loginAttempts * 200, 2000);
-        if (delayMs > 0) {
-          await new Promise(resolve => setTimeout(resolve, delayMs));
-        }
-        
-        return sendErrorResponse(
-          res, 
-          400, 
-          'Invalid credentials', 
-          'invalid_credentials',
-          requestId
-        );
+      // At this point, user is guaranteed to exist (we returned early if shouldFail)
+      // TypeScript assertion for safety
+      if (!user) {
+        // This should never happen, but handle gracefully
+        return sendErrorResponse(res, 500, 'Unexpected error', 'server_error', requestId);
       }
-      
+
+      // Track successful login
+      await user.trackLoginAttempt(true, requestId);
+
       // Create JWT token
-      const payload = { 
-        userId: user.id, 
-        username: user.username, 
-        email: user.email, 
-        role: user.role 
+      const payload = {
+        userId: user.id,
+        username: user.username,
+        email: user.email,
+        role: user.role
       };
-      
+
       const token = jwt.sign(payload, JWT_SECRET, {
         expiresIn: JWT_EXPIRES_IN as any
       });
@@ -376,7 +443,7 @@ router.post(
         requestId,
         userId: user.id,
         username: user.username,
-        email,
+        email: obfuscateEmail(user.email),
         ipAddress,
         processingTime
       });
@@ -686,7 +753,8 @@ router.put('/user', authenticateJWT, async (req: Request, res: Response) => {
       userId: req.user.id
     });
     
-    const { username, email, avatar_url } = req.body;
+    // eslint-disable-next-line camelcase -- API request body uses snake_case
+    const { username, email, avatar_url: _avatar_url } = req.body;
     const user = await User.findByPk(req.user.id);
     
     if (!user) {

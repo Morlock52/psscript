@@ -6,7 +6,7 @@ import axios from 'axios';
 import ReactMarkdown from 'react-markdown';
 import { FaExclamationTriangle, FaCheckCircle, FaInfoCircle, FaLightbulb, FaChartLine, FaPaperPlane, FaRobot } from 'react-icons/fa';
 // LangGraph Integration
-import { streamAnalysis, AnalysisEvent, LangGraphAnalysisResults } from '../services/langgraphService';
+import { streamAnalysis, AnalysisEvent } from '../services/langgraphService';
 import { AnalysisProgressPanel } from '../components/Analysis/AnalysisProgressPanel';
 
 // Define message type for AI chat
@@ -33,6 +33,18 @@ const ScriptAnalysis: React.FC = () => {
   const [workflowId, setWorkflowId] = useState<string | null>(null);
   const [analysisError, setAnalysisError] = useState<string | null>(null);
   const cleanupRef = useRef<(() => void) | null>(null);
+
+  // AI Model selection state - Multi-model support
+  const [selectedModel, setSelectedModel] = useState('gpt-4');
+  const availableModels = [
+    { value: 'gpt-4', label: 'GPT-4 (OpenAI)', provider: 'openai' },
+    { value: 'gpt-4o', label: 'GPT-4o (OpenAI)', provider: 'openai' },
+    { value: 'gpt-4o-mini', label: 'GPT-4o Mini (Fast)', provider: 'openai' },
+    { value: 'gpt-4.1', label: 'GPT-4.1 (Code)', provider: 'openai' },
+    { value: 'claude-sonnet-4-20250514', label: 'Claude Sonnet 4 (Anthropic)', provider: 'anthropic' },
+    { value: 'claude-opus-4-20250514', label: 'Claude Opus 4 (Best)', provider: 'anthropic' },
+    { value: 'claude-3-5-haiku-20241022', label: 'Claude Haiku (Fast)', provider: 'anthropic' },
+  ];
   
   const { data: script, isLoading: scriptLoading } = useQuery({
     queryKey: ['script', id],
@@ -83,34 +95,53 @@ What would you like to know about your script?`
   // Handle sending a message to the AI
   const handleSendMessage = async () => {
     if (!input.trim()) return;
-    
+
     // Create a copy of the user message
     const userMessage = { role: 'user' as const, content: input };
-    
+
     // Update state
     setInput('');
     setIsLoading(true);
     setMessages(prev => [...prev, userMessage]);
-    
+
     try {
-      // Prepare context about the script for the AI
-      const systemPrompt = `You are Psscript AI, a PowerShell scripting assistant analyzing the following script:
+      // Prepare enhanced context about the script for the AI
+      // The backend has guardrails to ensure PowerShell/scripting focus
+      const systemPrompt = `You are PSScript AI, a specialized PowerShell scripting assistant.
 
-Title: ${script?.title}
-Purpose: ${analysis?.purpose}
-Security Score: ${analysis?.security_score}/10
-Code Quality Score: ${analysis?.code_quality_score}/10
+CURRENT SCRIPT CONTEXT:
+- Title: ${script?.title || 'Untitled Script'}
+- Purpose: ${analysis?.purpose || 'Not yet analyzed'}
+- Security Score: ${analysis?.securityScore || analysis?.security_score || 'N/A'}/10
+- Code Quality Score: ${analysis?.codeQualityScore || analysis?.code_quality_score || 'N/A'}/10
+- Risk Score: ${analysis?.riskScore || analysis?.risk_score || 'N/A'}/10
 
-You should help the user understand this script, address any concerns, and suggest improvements.
-Be specific and reference details from the script analysis when possible.
-If you don't know something specific about the script, be honest about it.
-`;
-      
+YOUR CAPABILITIES:
+1. Explain what this script does and how it works
+2. Identify security concerns and suggest fixes
+3. Recommend code quality improvements
+4. Help debug issues in the script
+5. Generate new PowerShell scripts or modify existing ones
+6. Explain PowerShell concepts and best practices
+
+RESPONSE GUIDELINES:
+- Be specific and reference details from the script analysis
+- Provide code examples with proper PowerShell syntax highlighting
+- Highlight security implications when relevant
+- If asked to generate scripts, follow 2026 PowerShell best practices
+- Be honest if you don't have enough information about something
+
+When generating or modifying scripts:
+- Include comment-based help (.SYNOPSIS, .DESCRIPTION, .PARAMETER, .EXAMPLE)
+- Use [CmdletBinding()] for advanced function features
+- Implement proper error handling with try/catch
+- Follow Verb-Noun naming conventions`;
+
       // Get the API URL from environment or use dynamic hostname
-      const apiUrl = import.meta.env.VITE_API_URL || 
+      const apiUrl = import.meta.env.VITE_API_URL ||
         `http://${window.location.hostname}:4000/api`;
-      
-      // Call AI service
+
+      // Call AI service with guardrails enabled on backend
       const response = await axios.post(`${apiUrl}/chat`, {
         messages: [...messages, userMessage],
         system_prompt: systemPrompt
@@ -118,9 +149,9 @@ If you don't know something specific about the script, be honest about it.
         headers: {
           'Content-Type': 'application/json'
         },
-        timeout: 30000 // 30 second timeout
+        timeout: 60000 // 60 second timeout for script generation
       });
-      
+
       // Add AI response
       if (response.data && response.data.response) {
         setMessages(prev => [
@@ -135,9 +166,9 @@ If you don't know something specific about the script, be honest about it.
       // Add error message to chat
       setMessages(prev => [
         ...prev,
-        { 
-          role: 'assistant', 
-          content: "I'm sorry, I encountered an error processing your request. Please try again later."
+        {
+          role: 'assistant',
+          content: "I'm sorry, I encountered an error processing your request. Please ensure your question is about PowerShell or scripting. Try asking about script analysis, debugging, or generating new scripts."
         }
       ]);
     } finally {
@@ -205,7 +236,7 @@ If you don't know something specific about the script, be honest about it.
         },
         {
           require_human_review: false,
-          model: 'gpt-4',
+          model: selectedModel,
         }
       );
 
@@ -262,7 +293,7 @@ If you don't know something specific about the script, be honest about it.
       <div className="bg-gray-700 rounded-lg p-8 shadow text-center">
         <h2 className="text-2xl font-bold text-white mb-4">Analysis Not Available</h2>
         <p className="text-gray-300 mb-6">
-          The script analysis you are looking for does not exist or you don't have permission to view it.
+          The script analysis you are looking for does not exist or you don&apos;t have permission to view it.
         </p>
         <button
           onClick={() => navigate(`/scripts/${id}`)}
@@ -477,27 +508,56 @@ If you don't know something specific about the script, be honest about it.
                       Run deep multi-agent analysis with LangGraph orchestrator for comprehensive security scanning, quality assessment, and optimization recommendations.
                     </p>
                   </div>
-                  <button
-                    onClick={handleLangGraphAnalysis}
-                    disabled={isAnalyzing}
-                    className={`ml-6 px-6 py-3 rounded-lg font-medium transition-all ${
-                      isAnalyzing
-                        ? 'bg-gray-600 text-gray-400 cursor-not-allowed'
-                        : 'bg-indigo-600 text-white hover:bg-indigo-700 hover:shadow-lg'
-                    }`}
-                  >
-                    {isAnalyzing ? (
-                      <span className="flex items-center">
-                        <svg className="animate-spin -ml-1 mr-3 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                          <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                          <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                        </svg>
-                        Analyzing...
-                      </span>
-                    ) : (
-                      'Analyze with AI Agents'
-                    )}
-                  </button>
+                  <div className="flex items-center ml-6 space-x-4">
+                    {/* Model Selector Dropdown */}
+                    <div className="flex flex-col">
+                      <label htmlFor="model-select" className="text-xs text-gray-400 mb-1">AI Model</label>
+                      <select
+                        id="model-select"
+                        value={selectedModel}
+                        onChange={(e) => setSelectedModel(e.target.value)}
+                        disabled={isAnalyzing}
+                        className={`px-3 py-2 rounded-lg border text-sm font-medium transition-all ${
+                          isAnalyzing
+                            ? 'bg-gray-700 text-gray-400 border-gray-600 cursor-not-allowed'
+                            : 'bg-gray-800 text-white border-gray-600 hover:border-indigo-500 focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500'
+                        }`}
+                        aria-label="Select AI model for analysis"
+                      >
+                        <optgroup label="OpenAI">
+                          {availableModels.filter(m => m.provider === 'openai').map(model => (
+                            <option key={model.value} value={model.value}>{model.label}</option>
+                          ))}
+                        </optgroup>
+                        <optgroup label="Anthropic">
+                          {availableModels.filter(m => m.provider === 'anthropic').map(model => (
+                            <option key={model.value} value={model.value}>{model.label}</option>
+                          ))}
+                        </optgroup>
+                      </select>
+                    </div>
+                    <button
+                      onClick={handleLangGraphAnalysis}
+                      disabled={isAnalyzing}
+                      className={`px-6 py-3 rounded-lg font-medium transition-all ${
+                        isAnalyzing
+                          ? 'bg-gray-600 text-gray-400 cursor-not-allowed'
+                          : 'bg-indigo-600 text-white hover:bg-indigo-700 hover:shadow-lg'
+                      }`}
+                    >
+                      {isAnalyzing ? (
+                        <span className="flex items-center">
+                          <svg className="animate-spin -ml-1 mr-3 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                            <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                            <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                          </svg>
+                          Analyzing...
+                        </span>
+                      ) : (
+                        'Analyze with AI Agents'
+                      )}
+                    </button>
+                  </div>
                 </div>
               </div>
 
@@ -908,12 +968,19 @@ This script follows the PowerShell cmdlet naming convention "Verb-Noun" and uses
                   <div className="mb-6">
                     <h3 className="text-md font-medium mb-3">Suggested Improvements</h3>
                     <div className="space-y-3">
-                      {analysis.optimizationSuggestions.map((suggestion, index) => (
+                      {analysis.optimizationSuggestions.map((suggestion: string | { type?: string; description?: string }, index: number) => (
                         <div key={index} className="bg-blue-900 bg-opacity-20 p-3 rounded-lg border border-blue-800">
                           <div className="flex items-start">
                             <FaLightbulb className="text-yellow-400 mt-1 mr-3 flex-shrink-0" />
                             <div>
-                              <p className="text-gray-300">{suggestion}</p>
+                              {typeof suggestion === 'string' ? (
+                                <p className="text-gray-300">{suggestion}</p>
+                              ) : (
+                                <>
+                                  {suggestion.type && <p className="text-gray-200 font-medium">{suggestion.type}</p>}
+                                  <p className="text-gray-300">{suggestion.description || JSON.stringify(suggestion)}</p>
+                                </>
+                              )}
                             </div>
                           </div>
                         </div>
@@ -1118,7 +1185,7 @@ This script follows the PowerShell cmdlet naming convention "Verb-Noun" and uses
                       >
                         <ReactMarkdown
                           components={{
-                            code({node, inline, className, children, ...props}) {
+                            code({inline, className, children, ...props}) {
                               if (inline) {
                                 return <code className="bg-gray-900 px-1 rounded font-mono text-yellow-300" {...props}>{children}</code>;
                               }
@@ -1256,10 +1323,19 @@ This script follows the PowerShell cmdlet naming convention "Verb-Noun" and uses
                   Edit Script
                 </button>
                 <button
-                  onClick={() => window.open(`/api/scripts/${id}/export-analysis`, '_blank')}
-                  className="w-full px-4 py-2 bg-gray-600 text-white rounded-lg hover:bg-gray-700 flex items-center justify-center"
+                  onClick={() => {
+                    const apiUrl = import.meta.env.VITE_API_URL ||
+                      (typeof window !== 'undefined' && window.location.hostname === 'localhost'
+                        ? 'http://localhost:4005/api'
+                        : '/api');
+                    window.open(`${apiUrl}/scripts/${id}/export-analysis`, '_blank');
+                  }}
+                  className="w-full px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 flex items-center justify-center"
                 >
-                  Export Analysis
+                  <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                  </svg>
+                  Export PDF
                 </button>
               </div>
             </div>
@@ -1295,7 +1371,7 @@ This script follows the PowerShell cmdlet naming convention "Verb-Noun" and uses
                   </div>
                   <div>
                     <h3 className="text-sm text-gray-400">Analysis Model</h3>
-                    <p className="text-white font-medium">o3-mini</p>
+                    <p className="text-white font-medium">{availableModels.find(m => m.value === selectedModel)?.label || selectedModel}</p>
                   </div>
                 </div>
                 

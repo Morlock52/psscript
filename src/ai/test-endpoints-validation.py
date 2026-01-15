@@ -6,9 +6,6 @@ Tests all major endpoints and their dependencies
 
 import sys
 import os
-import time
-import asyncio
-from typing import Any, Dict
 
 # Add src/ai to path
 sys.path.insert(0, os.path.dirname(__file__))
@@ -38,7 +35,7 @@ try:
     
     if health_routes:
         route = health_routes[0]
-        print(f"✅ Health endpoint found at /health")
+        print("✅ Health endpoint found at /health")
         print(f"   Methods: {route.methods}")
         print_result("Health Endpoint Structure", True, "Endpoint properly defined")
     else:
@@ -56,7 +53,7 @@ try:
     
     if analyze_routes:
         route = analyze_routes[0]
-        print(f"✅ Analyze endpoint found at /analyze")
+        print("✅ Analyze endpoint found at /analyze")
         print(f"   Methods: {route.methods}")
         print_result("Analysis Endpoint Structure", True, "Endpoint properly defined")
     else:
@@ -74,7 +71,7 @@ try:
     
     if security_routes:
         route = security_routes[0]
-        print(f"✅ Security analysis endpoint found at /security-analysis")
+        print("✅ Security analysis endpoint found at /security-analysis")
         print(f"   Methods: {route.methods}")
         print_result("Security Analysis Endpoint Structure", True, "Endpoint properly defined")
     else:
@@ -94,14 +91,14 @@ try:
     missing_methods = [m for m in methods if not hasattr(token_counter, m)]
     
     if not missing_methods:
-        print(f"✅ Token counter has all required methods")
+        print("✅ Token counter has all required methods")
         
         # Check pricing for valid models
         valid_models = ['gpt-4o', 'gpt-4-turbo', 'text-embedding-3-large']
         all_models_present = all(model in PRICING for model in valid_models)
         
         if all_models_present:
-            print(f"✅ All required models in pricing table:")
+            print("✅ All required models in pricing table:")
             for model in valid_models:
                 pricing = PRICING[model]
                 print(f"   - {model}: {pricing}")
@@ -125,11 +122,11 @@ try:
     
     # Check for async method
     if hasattr(analyzer, 'generate_embedding_async'):
-        print(f"✅ ScriptAnalyzer has generate_embedding_async method")
+        print("✅ ScriptAnalyzer has generate_embedding_async method")
         
         # Check for sync method
         if hasattr(analyzer, 'generate_embedding'):
-            print(f"✅ ScriptAnalyzer has generate_embedding (sync) method")
+            print("✅ ScriptAnalyzer has generate_embedding (sync) method")
             
             # Check EMBEDDING_MODEL constant
             if hasattr(analyzer, 'EMBEDDING_MODEL'):
@@ -169,7 +166,7 @@ try:
     missing = [m for m in required_methods if not hasattr(AgentCoordinator, m)]
     
     if not missing:
-        print(f"✅ AgentCoordinator has all required methods:")
+        print("✅ AgentCoordinator has all required methods:")
         for method in required_methods:
             print(f"   - {method}")
         print_result("Agent Coordinator Methods", True, "All methods present")
@@ -188,10 +185,10 @@ try:
     
     # Check if agent_factory has required methods
     if hasattr(agent_factory, 'get_agent'):
-        print(f"✅ agent_factory.get_agent available")
+        print("✅ agent_factory.get_agent available")
         
         if hasattr(agent_factory, 'process_message'):
-            print(f"✅ agent_factory.process_message available")
+            print("✅ agent_factory.process_message available")
             print_result("Chat Endpoint Dependencies", True, "All dependencies present")
         else:
             print_result("Chat Endpoint Dependencies", False, "process_message not found")
@@ -214,7 +211,7 @@ try:
         
         # Verify it's a valid model
         if default_model in ['gpt-4-turbo', 'gpt-4o', 'gpt-4']:
-            print(f"   ✅ Valid model specified")
+            print("   ✅ Valid model specified")
         else:
             print(f"   ⚠️  Unusual model: {default_model}")
     
@@ -223,14 +220,14 @@ try:
         print(f"✅ reasoning_model: {reasoning_model}")
         
         if reasoning_model in ['gpt-4-turbo', 'gpt-4o', 'gpt-4']:
-            print(f"   ✅ Valid model specified")
+            print("   ✅ Valid model specified")
     
     if hasattr(config.agent, 'embedding_model'):
         embedding_model = config.agent.embedding_model
         print(f"✅ embedding_model: {embedding_model}")
         
         if embedding_model == 'text-embedding-3-large':
-            print(f"   ✅ Correct embedding model")
+            print("   ✅ Correct embedding model")
     
     print_result("Models Configuration", True, "All models properly configured")
 except Exception as e:
@@ -260,7 +257,7 @@ try:
             found_invalid = True
     
     if not found_invalid:
-        print(f"✅ No references to invalid models found")
+        print("✅ No references to invalid models found")
         print_result("Invalid Model References Scan", True, "No invalid models detected")
     else:
         print_result("Invalid Model References Scan", False, "Invalid model references found")

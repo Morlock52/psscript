@@ -5,10 +5,9 @@ Tracks token usage and estimates costs for OpenAI API calls.
 """
 
 import logging
-from typing import Dict, Optional, Tuple
+from typing import Dict, Tuple
 from datetime import datetime
 import json
-import os
 from pathlib import Path
 
 logger = logging.getLogger("token_counter")

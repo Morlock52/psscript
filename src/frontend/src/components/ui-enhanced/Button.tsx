@@ -1,8 +1,7 @@
 import React, { ButtonHTMLAttributes, forwardRef, ReactNode } from 'react';
-import { useTheme } from '../../hooks/useTheme';
 
 // Define variant types
-export type ButtonVariant = 'primary' | 'secondary' | 'success' | 'danger' | 'warning' | 'info' | 'ghost';
+export type ButtonVariant = 'primary' | 'secondary' | 'success' | 'danger' | 'warning' | 'info' | 'ghost' | 'outline';
 
 // Define size types
 export type ButtonSize = 'xs' | 'sm' | 'md' | 'lg' | 'xl';
@@ -16,7 +15,7 @@ export interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
   isLoading?: boolean;
   leftIcon?: ReactNode;
   rightIcon?: ReactNode;
-  rounded?: 'none' | 'sm' | 'md' | 'lg' | 'full';
+  rounded?: 'none' | 'sm' | 'md' | 'lg' | 'xl' | 'full';
   withRipple?: boolean;
 }
 
@@ -31,7 +30,7 @@ export const Button = forwardRef<HTMLButtonElement, ButtonProps>(
       isLoading = false,
       leftIcon,
       rightIcon,
-      rounded = 'md',
+      rounded = 'lg',
       withRipple = true,
       className = '',
       disabled,
@@ -39,63 +38,87 @@ export const Button = forwardRef<HTMLButtonElement, ButtonProps>(
     },
     ref
   ) => {
-    const { theme } = useTheme();
     const [ripples, setRipples] = React.useState<{ x: number; y: number; id: number }[]>([]);
-    const isDark = theme === 'dark';
 
     // Handle ripple effect
     const handleRipple = (e: React.MouseEvent<HTMLButtonElement>) => {
       if (!withRipple || disabled || isLoading) return;
-      
+
       const button = e.currentTarget;
       const rect = button.getBoundingClientRect();
       const x = e.clientX - rect.left;
       const y = e.clientY - rect.top;
-      
+
       const id = Date.now();
       setRipples([...ripples, { x, y, id }]);
-      
+
       // Remove ripple after animation completes
       setTimeout(() => {
         setRipples(ripples => ripples.filter(ripple => ripple.id !== id));
       }, 600);
     };
 
-    // Get variant styles
+    // Get variant styles using CSS variables
     const getVariantStyles = (): string => {
       switch (variant) {
         case 'primary':
-          return isDark
-            ? 'bg-blue-600 hover:bg-blue-500 active:bg-blue-700 text-white'
-            : 'bg-blue-500 hover:bg-blue-400 active:bg-blue-600 text-white';
+          return `
+            bg-gradient-to-r from-[var(--color-primary)] to-[var(--color-primary-dark)]
+            hover:from-[var(--color-primary-light)] hover:to-[var(--color-primary)]
+            active:from-[var(--color-primary-dark)] active:to-[var(--color-primary-dark)]
+            text-white shadow-sm hover:shadow-md
+          `;
         case 'secondary':
-          return isDark
-            ? 'bg-gray-700 hover:bg-gray-600 active:bg-gray-800 text-white'
-            : 'bg-gray-200 hover:bg-gray-300 active:bg-gray-400 text-gray-800';
+          return `
+            bg-[var(--color-bg-tertiary)]
+            hover:bg-[var(--color-bg-tertiary)]/80
+            text-[var(--color-text-primary)]
+            border border-[var(--color-border-default)]
+          `;
         case 'success':
-          return isDark
-            ? 'bg-green-600 hover:bg-green-500 active:bg-green-700 text-white'
-            : 'bg-green-500 hover:bg-green-400 active:bg-green-600 text-white';
+          return `
+            bg-gradient-to-r from-emerald-500 to-emerald-600
+            hover:from-emerald-400 hover:to-emerald-500
+            text-white shadow-sm hover:shadow-md
+          `;
         case 'danger':
-          return isDark
-            ? 'bg-red-600 hover:bg-red-500 active:bg-red-700 text-white'
-            : 'bg-red-500 hover:bg-red-400 active:bg-red-600 text-white';
+          return `
+            bg-gradient-to-r from-red-500 to-red-600
+            hover:from-red-400 hover:to-red-500
+            text-white shadow-sm hover:shadow-md
+          `;
         case 'warning':
-          return isDark
-            ? 'bg-yellow-600 hover:bg-yellow-500 active:bg-yellow-700 text-white'
-            : 'bg-yellow-500 hover:bg-yellow-400 active:bg-yellow-600 text-white';
+          return `
+            bg-gradient-to-r from-amber-500 to-amber-600
+            hover:from-amber-400 hover:to-amber-500
+            text-white shadow-sm hover:shadow-md
+          `;
         case 'info':
-          return isDark
-            ? 'bg-purple-600 hover:bg-purple-500 active:bg-purple-700 text-white'
-            : 'bg-purple-500 hover:bg-purple-400 active:bg-purple-600 text-white';
+          return `
+            bg-gradient-to-r from-violet-500 to-violet-600
+            hover:from-violet-400 hover:to-violet-500
+            text-white shadow-sm hover:shadow-md
+          `;
         case 'ghost':
-          return isDark
-            ? 'bg-transparent hover:bg-gray-700 text-gray-300 hover:text-white'
-            : 'bg-transparent hover:bg-gray-100 text-gray-700 hover:text-gray-900';
+          return `
+            bg-transparent
+            hover:bg-[var(--color-bg-tertiary)]
+            text-[var(--color-text-secondary)]
+            hover:text-[var(--color-text-primary)]
+          `;
+        case 'outline':
+          return `
+            bg-transparent
+            border-2 border-[var(--color-primary)]
+            text-[var(--color-primary)]
+            hover:bg-[var(--color-primary)]/10
+          `;
         default:
-          return isDark
-            ? 'bg-blue-600 hover:bg-blue-500 active:bg-blue-700 text-white'
-            : 'bg-blue-500 hover:bg-blue-400 active:bg-blue-600 text-white';
+          return `
+            bg-gradient-to-r from-[var(--color-primary)] to-[var(--color-primary-dark)]
+            hover:from-[var(--color-primary-light)] hover:to-[var(--color-primary)]
+            text-white shadow-sm hover:shadow-md
+          `;
       }
     };
 
@@ -103,17 +126,17 @@ export const Button = forwardRef<HTMLButtonElement, ButtonProps>(
     const getSizeStyles = (): string => {
       switch (size) {
         case 'xs':
-          return 'text-xs py-1 px-2';
+          return 'text-xs py-1.5 px-2.5 gap-1';
         case 'sm':
-          return 'text-sm py-1.5 px-3';
+          return 'text-sm py-2 px-3 gap-1.5';
         case 'md':
-          return 'text-sm py-2 px-4';
+          return 'text-sm py-2.5 px-4 gap-2';
         case 'lg':
-          return 'text-base py-2.5 px-5';
+          return 'text-base py-3 px-5 gap-2';
         case 'xl':
-          return 'text-lg py-3 px-6';
+          return 'text-lg py-3.5 px-6 gap-2.5';
         default:
-          return 'text-sm py-2 px-4';
+          return 'text-sm py-2.5 px-4 gap-2';
       }
     };
 
@@ -128,18 +151,22 @@ export const Button = forwardRef<HTMLButtonElement, ButtonProps>(
           return 'rounded-md';
         case 'lg':
           return 'rounded-lg';
+        case 'xl':
+          return 'rounded-xl';
         case 'full':
           return 'rounded-full';
         default:
-          return 'rounded-md';
+          return 'rounded-lg';
       }
     };
 
     // Get disabled styles
     const getDisabledStyles = (): string => {
-      return isDark
-        ? 'opacity-50 cursor-not-allowed bg-gray-700 text-gray-300'
-        : 'opacity-50 cursor-not-allowed bg-gray-200 text-gray-500';
+      return `
+        opacity-50 cursor-not-allowed
+        bg-[var(--color-bg-tertiary)]
+        text-[var(--color-text-tertiary)]
+      `;
     };
 
     return (
@@ -147,16 +174,15 @@ export const Button = forwardRef<HTMLButtonElement, ButtonProps>(
         ref={ref}
         className={`
           relative inline-flex items-center justify-center
-          transition-all duration-200 ease-in-out
+          transition-all duration-200 ease-out
           font-medium
           ${getSizeStyles()}
           ${getRoundedStyles()}
           ${disabled || isLoading ? getDisabledStyles() : getVariantStyles()}
           ${fullWidth ? 'w-full' : ''}
           ${className}
-          focus:outline-none focus:ring-2 focus:ring-offset-2 ${
-            isDark ? 'focus:ring-blue-500 focus:ring-offset-gray-800' : 'focus:ring-blue-500 focus:ring-offset-white'
-          }
+          focus:outline-none focus:ring-2 focus:ring-[var(--color-primary)]/50 focus:ring-offset-2 focus:ring-offset-[var(--color-bg-primary)]
+          active:scale-[0.98]
           overflow-hidden
         `}
         disabled={disabled || isLoading}
@@ -168,9 +194,7 @@ export const Button = forwardRef<HTMLButtonElement, ButtonProps>(
           ripples.map(ripple => (
             <span
               key={ripple.id}
-              className={`absolute rounded-full transform -translate-x-1/2 -translate-y-1/2 animate-ripple ${
-                isDark ? 'bg-white bg-opacity-30' : 'bg-black bg-opacity-10'
-              }`}
+              className="absolute rounded-full transform -translate-x-1/2 -translate-y-1/2 animate-ripple bg-white/30"
               style={{
                 left: ripple.x,
                 top: ripple.y,
@@ -208,9 +232,9 @@ export const Button = forwardRef<HTMLButtonElement, ButtonProps>(
 
         {/* Button content */}
         <span className={`flex items-center ${isLoading ? 'invisible' : 'visible'}`}>
-          {leftIcon && <span className="mr-2">{leftIcon}</span>}
+          {leftIcon && <span className="shrink-0">{leftIcon}</span>}
           {children}
-          {rightIcon && <span className="ml-2">{rightIcon}</span>}
+          {rightIcon && <span className="shrink-0">{rightIcon}</span>}
         </span>
       </button>
     );

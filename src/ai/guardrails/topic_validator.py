@@ -258,7 +258,7 @@ def validate_powershell_topic(
 
     # Layer 2: Check for script generation requests (high priority)
     if is_script_generation_request(user_message):
-        requirements = extract_script_requirements(user_message)
+        extract_script_requirements(user_message)
         return TopicValidationResult(
             is_valid=True,
             category=TopicCategory.SCRIPT_GENERATION,

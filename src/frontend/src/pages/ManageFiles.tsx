@@ -451,7 +451,7 @@ const ManageFiles: React.FC = () => {
           <div className="bg-gray-800 rounded-lg p-6 max-w-2xl w-full mx-4">
             <h2 className="text-xl font-bold mb-4">AI Enhancement Suggestions</h2>
             <p className="mb-4 text-gray-300">
-              Our AI has analyzed your script "{selectedScriptForAI.title}" and has the following improvement suggestions:
+              Our AI has analyzed your script &quot;{selectedScriptForAI.title}&quot; and has the following improvement suggestions:
             </p>
             
             {aiSuggestions.length === 0 ? (

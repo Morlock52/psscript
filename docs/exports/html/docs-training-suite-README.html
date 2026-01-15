@@ -1,0 +1,321 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <base href="file:///Users/morlock/fun/psscript/" />
+  <title>docs-training-suite-README</title>
+  <style>
+:root {
+  color-scheme: light;
+}
+body {
+  font-family: "Segoe UI", "Helvetica Neue", Arial, sans-serif;
+  margin: 0;
+  padding: 0;
+  background: #ffffff;
+  color: #0f172a;
+}
+.markdown-body {
+  max-width: 980px;
+  margin: 40px auto 60px;
+  padding: 0 32px;
+  line-height: 1.65;
+}
+.markdown-body h1 {
+  font-size: 32px;
+  margin-bottom: 12px;
+  border-bottom: 2px solid #e2e8f0;
+  padding-bottom: 12px;
+}
+.markdown-body h2 {
+  font-size: 24px;
+  margin-top: 28px;
+  border-bottom: 1px solid #e2e8f0;
+  padding-bottom: 8px;
+}
+.markdown-body h3 {
+  font-size: 18px;
+  margin-top: 20px;
+}
+.markdown-body table {
+  width: 100%;
+  border-collapse: collapse;
+  margin: 16px 0;
+  font-size: 14px;
+}
+.markdown-body th,
+.markdown-body td {
+  border: 1px solid #e2e8f0;
+  padding: 8px 10px;
+  text-align: left;
+}
+.markdown-body th {
+  background: #f8fafc;
+}
+.markdown-body code {
+  background: #f1f5f9;
+  padding: 2px 4px;
+  border-radius: 4px;
+  font-family: "SFMono-Regular", Menlo, Consolas, monospace;
+  font-size: 0.92em;
+}
+.markdown-body pre {
+  background: #0f172a;
+  color: #e2e8f0;
+  padding: 16px;
+  border-radius: 8px;
+  overflow-x: auto;
+}
+.markdown-body pre code {
+  background: transparent;
+  color: inherit;
+}
+.markdown-body blockquote {
+  border-left: 4px solid #38bdf8;
+  margin: 16px 0;
+  padding: 8px 16px;
+  background: #f8fafc;
+  color: #334155;
+}
+.markdown-body img {
+  max-width: 100%;
+  height: auto;
+  display: block;
+  margin: 16px 0;
+  border-radius: 10px;
+  box-shadow: 0 8px 20px rgba(15, 23, 42, 0.12);
+}
+.footer {
+  margin-top: 40px;
+  font-size: 12px;
+  color: #64748b;
+}
+@page {
+  margin: 20mm 18mm;
+}
+</style>
+</head>
+<body>
+  <div class="markdown-body">
+    <h1 id="psscript-training-suite">PSScript Training Suite</h1>
+<p>This training suite is a structured onboarding and enablement program for PSScript Manager. It includes modules, hands-on labs, and operational checklists for script authors, security reviewers, and platform admins.</p>
+<h2 id="audience-and-outcomes">Audience and outcomes</h2>
+<table>
+<thead>
+<tr>
+<th>Audience</th>
+<th>Goals</th>
+<th>Outcome artifacts</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Script authors</td>
+<td>Upload, categorize, analyze, and improve scripts</td>
+<td>Curated script library with analysis reports</td>
+</tr>
+<tr>
+<td>Security reviewers</td>
+<td>Evaluate risk, audit findings, track fixes</td>
+<td>Security scorecards and remediation notes</td>
+</tr>
+<tr>
+<td>Platform admins</td>
+<td>Operate services, manage users, tune data</td>
+<td>Environment runbook and health checklist</td>
+</tr>
+</tbody>
+</table>
+<h2 id="training-paths">Training paths</h2>
+<p><img alt="Training Roadmap" src="../graphics/training-roadmap.svg" /></p>
+<pre><code class="language-mermaid">flowchart LR
+  Start[Orientation] --&gt; Foundations[Module 01: Platform Foundations]
+  Foundations --&gt; Lifecycle[Module 02: Script Lifecycle]
+  Lifecycle --&gt; Analysis[Module 03: AI Analysis]
+  Analysis --&gt; Search[Module 04: Search and Discovery]
+  Search --&gt; Ops[Module 05: Operations]
+  Ops --&gt; Labs[Hands-on Labs]
+</code></pre>
+<h2 id="suggested-schedules">Suggested schedules</h2>
+<table>
+<thead>
+<tr>
+<th>Option</th>
+<th>Duration</th>
+<th>Focus</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Fast start</td>
+<td>1 day</td>
+<td>Core workflows and 2 labs</td>
+</tr>
+<tr>
+<td>Standard</td>
+<td>2 days</td>
+<td>All modules and all labs</td>
+</tr>
+<tr>
+<td>Deep dive</td>
+<td>3 days</td>
+<td>Modules, labs, and ops review</td>
+</tr>
+</tbody>
+</table>
+<h2 id="environment-setup">Environment setup</h2>
+<p>Required services and ports:
+- Frontend: http://localhost:3002
+- Backend API: http://localhost:4000/api
+- AI service: http://localhost:8000</p>
+<p>Mock mode setup:</p>
+<pre><code class="language-bash">./start-all-mock.sh
+</code></pre>
+<h2 id="curriculum-map">Curriculum map</h2>
+<table>
+<thead>
+<tr>
+<th>Module</th>
+<th>Description</th>
+<th>Duration</th>
+<th>File</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Module 01</td>
+<td>Platform Foundations</td>
+<td>45 min</td>
+<td><code>modules/module-01-foundations.md</code></td>
+</tr>
+<tr>
+<td>Module 02</td>
+<td>Script Lifecycle</td>
+<td>60 min</td>
+<td><code>modules/module-02-lifecycle.md</code></td>
+</tr>
+<tr>
+<td>Module 03</td>
+<td>AI Analysis and Security</td>
+<td>75 min</td>
+<td><code>modules/module-03-analysis.md</code></td>
+</tr>
+<tr>
+<td>Module 04</td>
+<td>Search and Discovery</td>
+<td>45 min</td>
+<td><code>modules/module-04-search.md</code></td>
+</tr>
+<tr>
+<td>Module 05</td>
+<td>Operations and Governance</td>
+<td>60 min</td>
+<td><code>modules/module-05-operations.md</code></td>
+</tr>
+</tbody>
+</table>
+<h2 id="labs">Labs</h2>
+<table>
+<thead>
+<tr>
+<th>Lab</th>
+<th>Goal</th>
+<th>File</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Lab 01</td>
+<td>Upload and analyze a script</td>
+<td><code>labs/lab-01-upload-analyze.md</code></td>
+</tr>
+<tr>
+<td>Lab 02</td>
+<td>Vector search and similarity</td>
+<td><code>labs/lab-02-vector-search.md</code></td>
+</tr>
+<tr>
+<td>Lab 03</td>
+<td>Documentation and AI chat workflows</td>
+<td><code>labs/lab-03-docs-chat.md</code></td>
+</tr>
+<tr>
+<td>Lab 04</td>
+<td>Analytics and governance checks</td>
+<td><code>labs/lab-04-analytics.md</code></td>
+</tr>
+<tr>
+<td>Lab 05</td>
+<td>Settings and training resources</td>
+<td><code>TRAINING-GUIDE.md</code></td>
+</tr>
+</tbody>
+</table>
+<h2 id="training-guide">Training guide</h2>
+<p>Use the full guide for a single, end-to-end walkthrough with screenshots and sample actions:</p>
+<ul>
+<li><code>TRAINING-GUIDE.md</code></li>
+</ul>
+<h2 id="exported-formats">Exported formats</h2>
+<p>Generate HTML and PDF exports with:</p>
+<pre><code class="language-bash">scripts/export-docs.sh
+</code></pre>
+<p>Outputs land in <code>docs/exports/</code>.</p>
+<p>Key exports:</p>
+<ul>
+<li><code>docs/exports/pdf/Training-Guide.pdf</code></li>
+<li><code>docs/exports/pdf/Training-Suite.pdf</code></li>
+<li><code>docs/exports/docx/Training-Guide.docx</code></li>
+<li><code>docs/exports/docx/Training-Suite.docx</code></li>
+</ul>
+<h2 id="assessment-rubric">Assessment rubric</h2>
+<table>
+<thead>
+<tr>
+<th>Skill area</th>
+<th>Basic</th>
+<th>Proficient</th>
+<th>Advanced</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Script hygiene</td>
+<td>Upload and tag scripts</td>
+<td>Adds categories and metadata</td>
+<td>Enforces naming and dedup rules</td>
+</tr>
+<tr>
+<td>AI analysis</td>
+<td>Runs analysis</td>
+<td>Applies recommendations</td>
+<td>Creates reusable fixes and notes</td>
+</tr>
+<tr>
+<td>Search</td>
+<td>Keyword search</td>
+<td>Uses filters</td>
+<td>Uses vector similarity effectively</td>
+</tr>
+<tr>
+<td>Operations</td>
+<td>Starts services</td>
+<td>Reads logs</td>
+<td>Diagnoses and remediates issues</td>
+</tr>
+</tbody>
+</table>
+<h2 id="screenshot-catalog">Screenshot catalog</h2>
+<p>All training screenshots are captured via Playwright and stored in <code>../screenshots/</code>. See the root README for the capture workflow.</p>
+<h2 id="support-and-troubleshooting">Support and troubleshooting</h2>
+<ul>
+<li>Use <code>../LOGIN-CREDENTIALS.md</code> for demo accounts</li>
+<li>Use <code>../SUPPORT.md</code> for support and operational playbooks</li>
+<li>Use <code>../../DOCKER-QUICKSTART.md</code> for infrastructure setup</li>
+<li>Use GitHub Issues for bugs or feature requests</li>
+</ul>
+    <div class="footer">Generated 2026-01-12 11:31 UTC</div>
+  </div>
+</body>
+</html>

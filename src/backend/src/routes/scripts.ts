@@ -9,6 +9,7 @@ import { Script, ScriptAnalysis, ScriptTag, ScriptVersion, ExecutionLog } from '
 import { cache } from '../index';
 import { handleNetworkErrors } from '../middleware/networkErrorMiddleware';
 import AsyncUploadController from '../controllers/AsyncUploadController';
+import { generatePowerShellScript } from '../services/agentic/tools/ScriptGenerator';
 
 const router = express.Router();
 
@@ -411,6 +412,32 @@ router.get('/:id/analysis', ScriptController.getScriptAnalysis);
 
 /**
  * @swagger
+ * /api/scripts/{id}/export-analysis:
+ *   get:
+ *     summary: Export script analysis as PDF
+ *     description: Generates and downloads a formatted PDF with script content and AI analysis
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: integer
+ *         description: Script ID
+ *     responses:
+ *       200:
+ *         description: PDF file download
+ *         content:
+ *           application/pdf:
+ *             schema:
+ *               type: string
+ *               format: binary
+ *       404:
+ *         description: Script not found
+ */
+router.get('/:id/export-analysis', ScriptController.exportAnalysis);
+
+/**
+ * @swagger
  * /api/scripts/{id}/analyze:
  *   post:
  *     summary: Analyze a script and save the analysis
@@ -646,6 +673,122 @@ router.get('/:id/execution-history', authenticateJWT, ScriptController.getExecut
  */
 router.get('/:id/similar', ScriptController.findSimilarScripts);
 
+// ===== VERSION CONTROL ROUTES =====
+
+/**
+ * @swagger
+ * /api/scripts/{id}/versions:
+ *   get:
+ *     summary: Get version history for a script
+ *     description: Returns all versions of a script with changelog and metadata
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: integer
+ *         description: Script ID
+ *     responses:
+ *       200:
+ *         description: Version history
+ *       404:
+ *         description: Script not found
+ */
+router.get('/:id/versions', ScriptController.getVersionHistory);
+
+/**
+ * @swagger
+ * /api/scripts/{id}/versions/compare:
+ *   get:
+ *     summary: Compare two versions of a script
+ *     description: Returns a diff between two versions
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: integer
+ *         description: Script ID
+ *       - in: query
+ *         name: from
+ *         required: true
+ *         schema:
+ *           type: integer
+ *         description: Source version number
+ *       - in: query
+ *         name: to
+ *         required: true
+ *         schema:
+ *           type: integer
+ *         description: Target version number
+ *     responses:
+ *       200:
+ *         description: Version comparison diff
+ *       404:
+ *         description: Version not found
+ */
+router.get('/:id/versions/compare', ScriptController.compareVersions);
+
+/**
+ * @swagger
+ * /api/scripts/{id}/versions/{versionNumber}:
+ *   get:
+ *     summary: Get a specific version of a script
+ *     description: Returns the content and metadata for a specific version
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: integer
+ *         description: Script ID
+ *       - in: path
+ *         name: versionNumber
+ *         required: true
+ *         schema:
+ *           type: integer
+ *         description: Version number
+ *     responses:
+ *       200:
+ *         description: Version details
+ *       404:
+ *         description: Version not found
+ */
+router.get('/:id/versions/:versionNumber', ScriptController.getVersion);
+
+/**
+ * @swagger
+ * /api/scripts/{id}/revert/{versionNumber}:
+ *   post:
+ *     summary: Revert script to a previous version
+ *     description: Creates a new version with the content from a previous version
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: integer
+ *         description: Script ID
+ *       - in: path
+ *         name: versionNumber
+ *         required: true
+ *         schema:
+ *           type: integer
+ *         description: Target version to revert to
+ *     responses:
+ *       200:
+ *         description: Revert successful
+ *       400:
+ *         description: Already at this version
+ *       401:
+ *         description: Unauthorized
+ *       404:
+ *         description: Version not found
+ */
+router.post('/:id/revert/:versionNumber', authenticateJWT, ScriptController.revertToVersion);
+
 /**
  * @swagger
  * /api/scripts/analyze:
@@ -840,53 +983,36 @@ router.post('/delete', authenticateJWT, async (req, res) => {
 router.post('/generate', async (req, res) => {
   try {
     const { description } = req.body;
-    
+
     if (!description) {
-      return res.status(400).json({ 
-        message: 'Description is required', 
-        status: 'error' 
+      return res.status(400).json({
+        message: 'Description is required',
+        status: 'error'
       });
     }
-    
-    // For now returning a mock response since we're using a mock AI service
-    const mockScriptContent = `
-# Script to ${description}
-# Generated by PSScript AI Assistant
 
-# Function to log messages
-function Write-Log {
-    param (
-        [Parameter(Mandatory=$true)]
-        [string]$Message,
-        
-        [Parameter(Mandatory=$false)]
-        [string]$Level = "INFO"
-    )
-    
-    $timestamp = Get-Date -Format "yyyy-MM-dd HH:mm:ss"
-    Write-Host "[$timestamp] [$Level] $Message"
-}
+    // Check if OpenAI API key is configured
+    if (!process.env.OPENAI_API_KEY) {
+      console.error('OpenAI API key not configured');
+      return res.status(500).json({
+        message: 'AI service not configured. Please contact administrator.',
+        status: 'error'
+      });
+    }
 
-Write-Log -Message "Starting script execution" -Level "INFO"
+    console.log(`Generating PowerShell script for: ${description.substring(0, 50)}...`);
 
-# Main script logic would be implemented here
-# This is a placeholder implementation
-Write-Log -Message "Script purpose: ${description}" -Level "INFO"
+    // Use the real AI generator
+    const scriptContent = await generatePowerShellScript(description);
 
-# Sample code based on the description
-Write-Log -Message "Executing main functionality..." -Level "INFO"
-# Add your main code here
-
-Write-Log -Message "Script execution completed" -Level "INFO"
-    `;
-    
-    res.json({ content: mockScriptContent });
+    console.log('Script generated successfully');
+    res.json({ content: scriptContent });
   } catch (error) {
     console.error('Error generating script:', error);
-    res.status(500).json({ 
-      message: 'Failed to generate script', 
+    res.status(500).json({
+      message: 'Failed to generate script',
       status: 'error',
-      error: error.message 
+      error: error.message
     });
   }
 });
@@ -899,7 +1025,7 @@ router.post('/analyze/assistant', authenticateJWT, ScriptController.analyzeScrip
  */
 router.post('/please', async (req, res) => {
   try {
-    const { question, context, useAgent = false } = req.body;
+    const { question, context, useAgent: _useAgent = false } = req.body;
     
     if (!question) {
       return res.status(400).json({ 
@@ -935,83 +1061,11 @@ router.post('/please', async (req, res) => {
 });
 
 /**
- * Generate a PowerShell script based on a description
- */
-router.post('/generate', async (req, res) => {
-  try {
-    const { description } = req.body;
-    
-    if (!description) {
-      return res.status(400).json({ 
-        message: 'Description is required', 
-        status: 'error' 
-      });
-    }
-    
-    // Generate a simple PowerShell script based on the description
-    const scriptContent = `
-# PowerShell Script: ${description}
-# Generated on: ${new Date().toISOString()}
-# 
-# This script was auto-generated based on your request
-
-param (
-    [Parameter(Mandatory=$false)]
-    [string]$Path = "C:\\Temp"
-)
-
-function Main {
-    Write-Host "Starting script execution..."
-    
-    # Create directory if it doesn't exist
-    if (-not (Test-Path -Path $Path)) {
-        New-Item -ItemType Directory -Path $Path -Force | Out-Null
-        Write-Host "Created directory: $Path"
-    }
-    
-    # Main functionality would go here
-    Write-Host "Processing ${description.toLowerCase()}..."
-    
-    ${description.toLowerCase().includes('file') ? 
-    `# File operations
-    $files = Get-ChildItem -Path $Path -File
-    Write-Host "Found $($files.Count) files in $Path"` : ''}
-    
-    ${description.toLowerCase().includes('process') ? 
-    `# Process operations
-    $processes = Get-Process | Select-Object -First 5
-    Write-Host "Top 5 processes:"
-    $processes | Format-Table Name, Id, CPU -AutoSize` : ''}
-    
-    ${description.toLowerCase().includes('network') ? 
-    `# Network operations
-    $networkInfo = Get-NetIPAddress | Where-Object { $_.AddressFamily -eq 'IPv4' }
-    Write-Host "Network interfaces:"
-    $networkInfo | Format-Table InterfaceAlias, IPAddress -AutoSize` : ''}
-    
-    Write-Host "Script execution completed successfully."
-}
-
-# Call the main function
-Main
-`;
-    
-    return res.json({ content: scriptContent });
-  } catch (error) {
-    console.error('Error in script generation endpoint:', error);
-    return res.status(500).json({ 
-      message: 'Failed to generate script', 
-      status: 'error' 
-    });
-  }
-});
-
-/**
  * Analyze a script using the AI assistant
  */
 router.post('/analyze/assistant', async (req, res) => {
   try {
-    const { content, filename, requestType = 'standard', analysisOptions } = req.body;
+    const { content, filename: _filename, requestType: _requestType = 'standard', analysisOptions: _analysisOptions } = req.body;
     
     if (!content) {
       return res.status(400).json({ 

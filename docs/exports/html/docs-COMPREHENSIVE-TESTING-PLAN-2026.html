@@ -1,0 +1,641 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <base href="file:///Users/morlock/fun/psscript/" />
+  <title>docs-COMPREHENSIVE-TESTING-PLAN-2026</title>
+  <style>
+:root {
+  color-scheme: light;
+}
+body {
+  font-family: "Segoe UI", "Helvetica Neue", Arial, sans-serif;
+  margin: 0;
+  padding: 0;
+  background: #ffffff;
+  color: #0f172a;
+}
+.markdown-body {
+  max-width: 980px;
+  margin: 40px auto 60px;
+  padding: 0 32px;
+  line-height: 1.65;
+}
+.markdown-body h1 {
+  font-size: 32px;
+  margin-bottom: 12px;
+  border-bottom: 2px solid #e2e8f0;
+  padding-bottom: 12px;
+  page-break-before: always;
+  page-break-after: avoid;
+  break-before: page;
+  break-after: avoid;
+}
+.markdown-body h1:first-of-type {
+  page-break-before: avoid;
+  break-before: avoid;
+}
+.markdown-body h2 {
+  font-size: 24px;
+  margin-top: 28px;
+  border-bottom: 1px solid #e2e8f0;
+  padding-bottom: 8px;
+  page-break-before: always;
+  page-break-after: avoid;
+  break-before: page;
+  break-after: avoid;
+}
+.markdown-body h3 {
+  font-size: 18px;
+  margin-top: 20px;
+  page-break-after: avoid;
+  break-after: avoid;
+}
+.markdown-body h4, .markdown-body h5, .markdown-body h6 {
+  page-break-after: avoid;
+  break-after: avoid;
+}
+.markdown-body table {
+  width: 100%;
+  border-collapse: collapse;
+  margin: 16px 0;
+  font-size: 14px;
+  page-break-inside: avoid;
+  break-inside: avoid;
+}
+.markdown-body th,
+.markdown-body td {
+  border: 1px solid #e2e8f0;
+  padding: 8px 10px;
+  text-align: left;
+}
+.markdown-body th {
+  background: #f8fafc;
+}
+.markdown-body tr {
+  page-break-inside: avoid;
+  break-inside: avoid;
+}
+.markdown-body code {
+  background: #f1f5f9;
+  padding: 2px 4px;
+  border-radius: 4px;
+  font-family: "SFMono-Regular", Menlo, Consolas, monospace;
+  font-size: 0.92em;
+}
+.markdown-body pre {
+  background: #0f172a;
+  color: #e2e8f0;
+  padding: 16px;
+  border-radius: 8px;
+  overflow-x: auto;
+  page-break-inside: avoid;
+  break-inside: avoid;
+}
+.markdown-body pre code {
+  background: transparent;
+  color: inherit;
+}
+.markdown-body blockquote {
+  border-left: 4px solid #38bdf8;
+  margin: 16px 0;
+  padding: 8px 16px;
+  background: #f8fafc;
+  color: #334155;
+}
+.markdown-body img {
+  max-width: 100%;
+  height: auto;
+  display: block;
+  margin: 16px 0;
+  border-radius: 10px;
+  box-shadow: 0 8px 20px rgba(15, 23, 42, 0.12);
+  page-break-inside: avoid;
+  break-inside: avoid;
+}
+.markdown-body figure {
+  page-break-inside: avoid;
+  break-inside: avoid;
+  margin: 16px 0;
+}
+.markdown-body a {
+  color: #2563eb;
+  text-decoration: none;
+}
+.markdown-body a:hover {
+  text-decoration: underline;
+}
+.cover {
+  padding: 80px 60px 60px;
+  background: linear-gradient(135deg, #0b1220 0%, #1e3a8a 100%);
+  color: #f8fafc;
+  border-radius: 18px;
+  margin-bottom: 32px;
+}
+.cover-title {
+  font-size: 36px;
+  font-weight: 700;
+  margin: 0 0 12px;
+}
+.cover-subtitle {
+  font-size: 18px;
+  color: #cbd5f5;
+  margin: 0 0 16px;
+}
+.cover-meta {
+  font-size: 13px;
+  color: #94a3b8;
+}
+.page-break {
+  page-break-after: always;
+  break-after: page;
+}
+.footer {
+  margin-top: 40px;
+  font-size: 12px;
+  color: #64748b;
+}
+/* Print and PDF-specific styles */
+@page {
+  margin: 20mm 18mm;
+}
+@media print {
+  .markdown-body {
+    orphans: 3;
+    widows: 3;
+  }
+  .markdown-body p {
+    orphans: 3;
+    widows: 3;
+  }
+  .markdown-body li {
+    page-break-inside: avoid;
+    break-inside: avoid;
+  }
+  .markdown-body ul, .markdown-body ol {
+    page-break-before: avoid;
+    break-before: avoid;
+  }
+  .markdown-body blockquote {
+    page-break-inside: avoid;
+    break-inside: avoid;
+  }
+  /* Keep section content together */
+  .markdown-body h2 + *, .markdown-body h3 + * {
+    page-break-before: avoid;
+    break-before: avoid;
+  }
+}
+</style>
+</head>
+<body>
+  <div class="markdown-body">
+    
+    <h1 id="psscript-comprehensive-testing-plan-2026">PSScript Comprehensive Testing Plan - 2026</h1>
+<h2 id="executive-summary">📋 Executive Summary</h2>
+<p>This document outlines a comprehensive testing strategy for the PSScript PowerShell script management platform, following January 2026 industry best practices for full-stack React, Node.js, and PostgreSQL applications.</p>
+<p><strong>Testing Framework Strategy (2026):</strong>
+- <strong>Vitest</strong> for unit and component tests (faster than Jest, native ESM support)
+- <strong>Playwright</strong> for E2E tests (already configured in project)
+- <strong>Supertest</strong> for API endpoint testing
+- <strong>Real PostgreSQL</strong> with Docker for integration tests
+- <strong>GitHub Actions</strong> for CI/CD automation</p>
+<h2 id="testing-levels-scope">🎯 Testing Levels &amp; Scope</h2>
+<h3 id="1-smoke-tests-critical-path">1. Smoke Tests (Critical Path)</h3>
+<p><strong>Purpose:</strong> Verify basic functionality and critical user paths work
+<strong>Execution Time:</strong> ~5 minutes
+<strong>Tools:</strong> Manual browser testing + Playwright</p>
+<h4 id="test-cases">Test Cases:</h4>
+<ul>
+<li>[ ] <strong>ST-01</strong>: Application loads at http://localhost:3000</li>
+<li>[ ] <strong>ST-02</strong>: Login page renders correctly</li>
+<li>[ ] <strong>ST-03</strong>: Default login (green button) works</li>
+<li>[ ] <strong>ST-04</strong>: Manual login works (admin@example.com / Password123)</li>
+<li>[ ] <strong>ST-05</strong>: Dashboard renders after login</li>
+<li>[ ] <strong>ST-06</strong>: Navigation sidebar functional</li>
+<li>[ ] <strong>ST-07</strong>: Logout works</li>
+<li>[ ] <strong>ST-08</strong>: Backend API responds (health check)</li>
+<li>[ ] <strong>ST-09</strong>: Database connection active</li>
+<li>[ ] <strong>ST-10</strong>: Redis connection active</li>
+</ul>
+<h3 id="2-frontend-unit-tests-react-components">2. Frontend Unit Tests (React Components)</h3>
+<p><strong>Purpose:</strong> Test individual components in isolation
+<strong>Tools:</strong> Vitest + React Testing Library
+<strong>Target Coverage:</strong> 80%+</p>
+<h4 id="component-test-cases">Component Test Cases:</h4>
+<ul>
+<li>[ ] <strong>FU-01</strong>: Login.tsx form validation</li>
+<li>[ ] <strong>FU-02</strong>: Login.tsx default login function</li>
+<li>[ ] <strong>FU-03</strong>: Dashboard.tsx stats cards rendering</li>
+<li>[ ] <strong>FU-04</strong>: Dashboard.tsx React Query hooks</li>
+<li>[ ] <strong>FU-05</strong>: Navbar.tsx user menu functionality</li>
+<li>[ ] <strong>FU-06</strong>: Sidebar.tsx navigation items</li>
+<li>[ ] <strong>FU-07</strong>: AuthContext.tsx state management</li>
+<li>[ ] <strong>FU-08</strong>: useAuth hook functionality</li>
+<li>[ ] <strong>FU-09</strong>: ScriptCard.tsx props handling</li>
+<li>[ ] <strong>FU-10</strong>: CategoryBadge.tsx rendering</li>
+</ul>
+<h3 id="3-frontend-integration-tests">3. Frontend Integration Tests</h3>
+<p><strong>Purpose:</strong> Test component interactions and data flow
+<strong>Tools:</strong> Vitest + React Testing Library + MSW (Mock Service Worker)</p>
+<h4 id="integration-test-cases">Integration Test Cases:</h4>
+<ul>
+<li>[ ] <strong>FI-01</strong>: Login flow with API mocking</li>
+<li>[ ] <strong>FI-02</strong>: Dashboard data fetching with React Query</li>
+<li>[ ] <strong>FI-03</strong>: Navigation state persistence</li>
+<li>[ ] <strong>FI-04</strong>: Auth token refresh flow</li>
+<li>[ ] <strong>FI-05</strong>: Protected route access control</li>
+<li>[ ] <strong>FI-06</strong>: Form submission with validation</li>
+<li>[ ] <strong>FI-07</strong>: Error boundary handling</li>
+<li>[ ] <strong>FI-08</strong>: Loading state transitions</li>
+</ul>
+<h3 id="4-backend-unit-tests-nodejstypescript">4. Backend Unit Tests (Node.js/TypeScript)</h3>
+<p><strong>Purpose:</strong> Test business logic and utilities
+<strong>Tools:</strong> Jest or Vitest
+<strong>Target Coverage:</strong> 85%+</p>
+<h4 id="backend-test-cases">Backend Test Cases:</h4>
+<ul>
+<li>[ ] <strong>BU-01</strong>: User model password validation</li>
+<li>[ ] <strong>BU-02</strong>: User model login attempt tracking</li>
+<li>[ ] <strong>BU-03</strong>: JWT token generation</li>
+<li>[ ] <strong>BU-04</strong>: JWT token verification</li>
+<li>[ ] <strong>BU-05</strong>: bcrypt password hashing</li>
+<li>[ ] <strong>BU-06</strong>: Request validation middleware</li>
+<li>[ ] <strong>BU-07</strong>: Error handling utilities</li>
+<li>[ ] <strong>BU-08</strong>: Database query builders</li>
+<li>[ ] <strong>BU-09</strong>: Script hash calculation</li>
+<li>[ ] <strong>BU-10</strong>: File upload validation</li>
+</ul>
+<h3 id="5-backend-integration-tests-api-database">5. Backend Integration Tests (API + Database)</h3>
+<p><strong>Purpose:</strong> Test API endpoints with real database
+<strong>Tools:</strong> Jest/Vitest + Supertest + Docker PostgreSQL
+<strong>Strategy:</strong> Real database testing (2026 best practice)</p>
+<h4 id="api-endpoint-test-cases">API Endpoint Test Cases:</h4>
+<ul>
+<li>[ ] <strong>BI-01</strong>: POST /api/auth/login (successful login)</li>
+<li>[ ] <strong>BI-02</strong>: POST /api/auth/login (invalid credentials)</li>
+<li>[ ] <strong>BI-03</strong>: POST /api/auth/login (user not found)</li>
+<li>[ ] <strong>BI-04</strong>: POST /api/auth/register (new user)</li>
+<li>[ ] <strong>BI-05</strong>: POST /api/auth/register (duplicate email)</li>
+<li>[ ] <strong>BI-06</strong>: POST /api/auth/refresh (token refresh)</li>
+<li>[ ] <strong>BI-07</strong>: GET /api/auth/me (user profile)</li>
+<li>[ ] <strong>BI-08</strong>: PUT /api/auth/user (update profile)</li>
+<li>[ ] <strong>BI-09</strong>: GET /api/scripts (list scripts)</li>
+<li>[ ] <strong>BI-10</strong>: POST /api/scripts (create script)</li>
+<li>[ ] <strong>BI-11</strong>: GET /api/scripts/:id (get script)</li>
+<li>[ ] <strong>BI-12</strong>: PUT /api/scripts/:id (update script)</li>
+<li>[ ] <strong>BI-13</strong>: DELETE /api/scripts/:id (delete script)</li>
+<li>[ ] <strong>BI-14</strong>: GET /api/categories (list categories)</li>
+<li>[ ] <strong>BI-15</strong>: POST /api/scripts/analyze (AI analysis)</li>
+<li>[ ] <strong>BI-16</strong>: GET /api/stats (dashboard stats)</li>
+<li>[ ] <strong>BI-17</strong>: GET /api/activity (recent activity)</li>
+</ul>
+<h3 id="6-e2e-tests-end-to-end-with-playwright">6. E2E Tests (End-to-End with Playwright)</h3>
+<p><strong>Purpose:</strong> Test complete user flows in real browser
+<strong>Tools:</strong> Playwright (already configured)
+<strong>Browsers:</strong> Chromium, Firefox, WebKit</p>
+<h4 id="e2e-test-cases">E2E Test Cases:</h4>
+<ul>
+<li>[ ] <strong>E2E-01</strong>: Complete login flow</li>
+<li>[ ] <strong>E2E-02</strong>: Complete logout flow</li>
+<li>[ ] <strong>E2E-03</strong>: Dashboard navigation</li>
+<li>[ ] <strong>E2E-04</strong>: Script upload flow</li>
+<li>[ ] <strong>E2E-05</strong>: Script analysis flow</li>
+<li>[ ] <strong>E2E-06</strong>: Script editing flow</li>
+<li>[ ] <strong>E2E-07</strong>: Script deletion flow</li>
+<li>[ ] <strong>E2E-08</strong>: Search functionality</li>
+<li>[ ] <strong>E2E-09</strong>: Category filtering</li>
+<li>[ ] <strong>E2E-10</strong>: User profile update</li>
+<li>[ ] <strong>E2E-11</strong>: AI assistant interaction</li>
+<li>[ ] <strong>E2E-12</strong>: Error handling (404, 500)</li>
+<li>[ ] <strong>E2E-13</strong>: Responsive design (mobile, tablet, desktop)</li>
+<li>[ ] <strong>E2E-14</strong>: Dark mode toggle</li>
+<li>[ ] <strong>E2E-15</strong>: Session persistence</li>
+</ul>
+<h3 id="7-database-tests">7. Database Tests</h3>
+<p><strong>Purpose:</strong> Test database operations and migrations
+<strong>Tools:</strong> Jest + pg (PostgreSQL client)</p>
+<h4 id="database-test-cases">Database Test Cases:</h4>
+<ul>
+<li>[ ] <strong>DB-01</strong>: Connection pool management</li>
+<li>[ ] <strong>DB-02</strong>: User CRUD operations</li>
+<li>[ ] <strong>DB-03</strong>: Script CRUD operations</li>
+<li>[ ] <strong>DB-04</strong>: Category CRUD operations</li>
+<li>[ ] <strong>DB-05</strong>: File hash deduplication</li>
+<li>[ ] <strong>DB-06</strong>: Vector embedding storage/retrieval</li>
+<li>[ ] <strong>DB-07</strong>: Transaction handling</li>
+<li>[ ] <strong>DB-08</strong>: Constraint violations</li>
+<li>[ ] <strong>DB-09</strong>: Migration execution</li>
+<li>[ ] <strong>DB-10</strong>: Index performance</li>
+</ul>
+<h3 id="8-uiux-manual-tests">8. UI/UX Manual Tests</h3>
+<p><strong>Purpose:</strong> Verify user experience and visual consistency
+<strong>Tools:</strong> Manual browser testing + Chromatic (visual regression)</p>
+<h4 id="uiux-test-cases">UI/UX Test Cases:</h4>
+<ul>
+<li>[ ] <strong>UI-01</strong>: All buttons clickable and responsive</li>
+<li>[ ] <strong>UI-02</strong>: All forms accept valid input</li>
+<li>[ ] <strong>UI-03</strong>: All error messages displayed correctly</li>
+<li>[ ] <strong>UI-04</strong>: Loading states show spinners</li>
+<li>[ ] <strong>UI-05</strong>: Success messages display</li>
+<li>[ ] <strong>UI-06</strong>: Modal dialogs open/close</li>
+<li>[ ] <strong>UI-07</strong>: Dropdown menus function</li>
+<li>[ ] <strong>UI-08</strong>: Tooltips display on hover</li>
+<li>[ ] <strong>UI-09</strong>: Icons render correctly</li>
+<li>[ ] <strong>UI-10</strong>: Layout responsive on mobile (320px-480px)</li>
+<li>[ ] <strong>UI-11</strong>: Layout responsive on tablet (768px-1024px)</li>
+<li>[ ] <strong>UI-12</strong>: Layout responsive on desktop (1280px+)</li>
+<li>[ ] <strong>UI-13</strong>: Dark mode colors correct</li>
+<li>[ ] <strong>UI-14</strong>: Light mode colors correct</li>
+<li>[ ] <strong>UI-15</strong>: Focus states visible (accessibility)</li>
+</ul>
+<h3 id="9-linting-code-quality">9. Linting &amp; Code Quality</h3>
+<p><strong>Purpose:</strong> Ensure code quality and consistency
+<strong>Tools:</strong> ESLint, TypeScript compiler</p>
+<h4 id="linting-test-cases">Linting Test Cases:</h4>
+<ul>
+<li>[ ] <strong>LT-01</strong>: Backend ESLint passes (src/backend)</li>
+<li>[ ] <strong>LT-02</strong>: Frontend ESLint passes (src/frontend)</li>
+<li>[ ] <strong>LT-03</strong>: TypeScript compilation succeeds (backend)</li>
+<li>[ ] <strong>LT-04</strong>: TypeScript compilation succeeds (frontend)</li>
+<li>[ ] <strong>LT-05</strong>: No console.error in production code</li>
+<li>[ ] <strong>LT-06</strong>: No unused imports</li>
+<li>[ ] <strong>LT-07</strong>: No unused variables</li>
+<li>[ ] <strong>LT-08</strong>: Consistent code formatting (Prettier)</li>
+</ul>
+<h3 id="10-security-tests">10. Security Tests</h3>
+<p><strong>Purpose:</strong> Identify security vulnerabilities
+<strong>Tools:</strong> npm audit, OWASP ZAP, manual testing</p>
+<h4 id="security-test-cases">Security Test Cases:</h4>
+<ul>
+<li>[ ] <strong>SEC-01</strong>: No dependency vulnerabilities (npm audit)</li>
+<li>[ ] <strong>SEC-02</strong>: SQL injection prevention (parameterized queries)</li>
+<li>[ ] <strong>SEC-03</strong>: XSS prevention (input sanitization)</li>
+<li>[ ] <strong>SEC-04</strong>: CSRF protection implemented</li>
+<li>[ ] <strong>SEC-05</strong>: JWT secret properly secured</li>
+<li>[ ] <strong>SEC-06</strong>: Password hashing (bcrypt 10+ rounds)</li>
+<li>[ ] <strong>SEC-07</strong>: Rate limiting on auth endpoints</li>
+<li>[ ] <strong>SEC-08</strong>: HTTPS enforcement (production)</li>
+<li>[ ] <strong>SEC-09</strong>: Secure headers (helmet middleware)</li>
+<li>[ ] <strong>SEC-10</strong>: Input validation on all endpoints</li>
+<li>[ ] <strong>SEC-11</strong>: File upload restrictions (size, type)</li>
+<li>[ ] <strong>SEC-12</strong>: Authentication required for protected routes</li>
+<li>[ ] <strong>SEC-13</strong>: Authorization checks (role-based access)</li>
+<li>[ ] <strong>SEC-14</strong>: Session timeout working</li>
+<li>[ ] <strong>SEC-15</strong>: Sensitive data not in logs</li>
+</ul>
+<h3 id="11-performance-tests">11. Performance Tests</h3>
+<p><strong>Purpose:</strong> Ensure acceptable performance under load
+<strong>Tools:</strong> Artillery, Lighthouse, React DevTools Profiler</p>
+<h4 id="performance-test-cases">Performance Test Cases:</h4>
+<ul>
+<li>[ ] <strong>PERF-01</strong>: Page load time &lt; 3s (Lighthouse)</li>
+<li>[ ] <strong>PERF-02</strong>: Time to Interactive &lt; 5s</li>
+<li>[ ] <strong>PERF-03</strong>: First Contentful Paint &lt; 1.5s</li>
+<li>[ ] <strong>PERF-04</strong>: API response time &lt; 200ms (avg)</li>
+<li>[ ] <strong>PERF-05</strong>: Database query time &lt; 100ms (avg)</li>
+<li>[ ] <strong>PERF-06</strong>: 100 concurrent users supported</li>
+<li>[ ] <strong>PERF-07</strong>: No memory leaks in React components</li>
+<li>[ ] <strong>PERF-08</strong>: Bundle size &lt; 500KB (main chunk)</li>
+<li>[ ] <strong>PERF-09</strong>: Images optimized (WebP/AVIF)</li>
+<li>[ ] <strong>PERF-10</strong>: Code splitting implemented</li>
+</ul>
+<h2 id="testing-tools-setup">🛠️ Testing Tools &amp; Setup</h2>
+<h3 id="frontend-testing-stack">Frontend Testing Stack</h3>
+<pre><code class="language-bash"># Install Vitest for frontend unit/integration tests
+npm install -D vitest @vitest/ui @testing-library/react @testing-library/jest-dom
+
+# Install MSW for API mocking
+npm install -D msw
+
+# Configure Vitest
+# Create vitest.config.ts in src/frontend
+</code></pre>
+<h3 id="backend-testing-stack">Backend Testing Stack</h3>
+<pre><code class="language-bash"># Install testing dependencies
+npm install -D jest supertest @types/jest @types/supertest
+
+# Or use Vitest for consistency
+npm install -D vitest
+</code></pre>
+<h3 id="e2e-testing-already-configured">E2E Testing (Already Configured)</h3>
+<pre><code class="language-bash"># Playwright is already installed
+npx playwright test
+
+# Run specific test
+npx playwright test login.spec.ts
+
+# Debug mode
+npx playwright test --debug
+</code></pre>
+<h3 id="linting-commands">Linting Commands</h3>
+<pre><code class="language-bash"># Run all linting checks
+npm run lint
+
+# Fix linting issues
+npm run lint:fix
+
+# Backend only
+npm run lint:backend
+
+# Frontend only
+npm run lint:frontend
+</code></pre>
+<h2 id="test-execution-plan">📊 Test Execution Plan</h2>
+<h3 id="phase-1-smoke-tests-day-1">Phase 1: Smoke Tests (Day 1)</h3>
+<p><strong>Duration:</strong> 1-2 hours
+<strong>Priority:</strong> CRITICAL
+- Execute all smoke tests manually
+- Document any failures
+- Fix critical issues immediately</p>
+<h3 id="phase-2-linting-code-quality-day-1">Phase 2: Linting &amp; Code Quality (Day 1)</h3>
+<p><strong>Duration:</strong> 1 hour
+<strong>Priority:</strong> HIGH
+- Run ESLint on frontend and backend
+- Fix critical errors, document warnings
+- Run TypeScript compiler checks</p>
+<h3 id="phase-3-manual-uiux-tests-day-1-2">Phase 3: Manual UI/UX Tests (Day 1-2)</h3>
+<p><strong>Duration:</strong> 2-3 hours
+<strong>Priority:</strong> HIGH
+- Test all buttons and interactive elements
+- Verify responsive design
+- Check accessibility features</p>
+<h3 id="phase-4-api-integration-tests-day-2">Phase 4: API Integration Tests (Day 2)</h3>
+<p><strong>Duration:</strong> 3-4 hours
+<strong>Priority:</strong> HIGH
+- Test all authentication endpoints
+- Test all script management endpoints
+- Test with real database</p>
+<h3 id="phase-5-e2e-tests-day-2-3">Phase 5: E2E Tests (Day 2-3)</h3>
+<p><strong>Duration:</strong> 4-6 hours
+<strong>Priority:</strong> MEDIUM
+- Run existing Playwright tests
+- Add missing test coverage
+- Fix failing tests</p>
+<h3 id="phase-6-unit-tests-day-3-4">Phase 6: Unit Tests (Day 3-4)</h3>
+<p><strong>Duration:</strong> 8-12 hours
+<strong>Priority:</strong> MEDIUM
+- Write unit tests for critical components
+- Write unit tests for business logic
+- Aim for 80%+ coverage</p>
+<h3 id="phase-7-security-performance-day-4-5">Phase 7: Security &amp; Performance (Day 4-5)</h3>
+<p><strong>Duration:</strong> 4-6 hours
+<strong>Priority:</strong> MEDIUM
+- Run npm audit
+- Run Lighthouse audits
+- Test load handling</p>
+<h2 id="success-criteria">📈 Success Criteria</h2>
+<h3 id="minimum-acceptance-criteria">Minimum Acceptance Criteria</h3>
+<ul>
+<li>✅ All smoke tests pass (100%)</li>
+<li>✅ No critical ESLint errors</li>
+<li>✅ All authentication endpoints functional</li>
+<li>✅ Dashboard renders and displays data</li>
+<li>✅ No security vulnerabilities (high/critical)</li>
+<li>✅ Lighthouse score &gt; 80</li>
+</ul>
+<h3 id="target-criteria">Target Criteria</h3>
+<ul>
+<li>✅ 80%+ unit test coverage</li>
+<li>✅ 90%+ integration test coverage</li>
+<li>✅ All E2E tests pass</li>
+<li>✅ Lighthouse score &gt; 90</li>
+<li>✅ All UI elements accessible (WCAG 2.1 AA)</li>
+</ul>
+<h2 id="cicd-integration-github-actions">🔄 CI/CD Integration (GitHub Actions)</h2>
+<h3 id="recommended-workflow">Recommended Workflow</h3>
+<pre><code class="language-yaml">name: CI/CD Pipeline
+
+on:
+  push:
+    branches: [main, develop]
+  pull_request:
+    branches: [main]
+
+jobs:
+  lint:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - uses: actions/setup-node@v3
+        with:
+          node-version: '18'
+      - run: npm ci
+      - run: npm run lint
+
+  test-backend:
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: pgvector/pgvector:pg15
+        env:
+          POSTGRES_PASSWORD: postgres
+        options: &gt;-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+    steps:
+      - uses: actions/checkout@v3
+      - uses: actions/setup-node@v3
+      - run: npm ci
+      - run: npm run test:backend
+
+  test-frontend:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - uses: actions/setup-node@v3
+      - run: npm ci
+      - run: npm run test:frontend
+
+  e2e:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - uses: actions/setup-node@v3
+      - run: npx playwright install --with-deps
+      - run: npm run test:e2e
+      - uses: actions/upload-artifact@v3
+        if: failure()
+        with:
+          name: playwright-report
+          path: playwright-report/
+</code></pre>
+<h2 id="framework-improvements-recommended">🚀 Framework Improvements Recommended</h2>
+<h3 id="1-testing-infrastructure">1. Testing Infrastructure</h3>
+<ul>
+<li><strong>Add Vitest</strong> for faster unit tests (replace Jest if present)</li>
+<li><strong>Add MSW</strong> for API mocking in frontend tests</li>
+<li><strong>Add testing-library/user-event</strong> for better user interaction simulation</li>
+<li><strong>Add @axe-core/playwright</strong> for automated accessibility testing</li>
+</ul>
+<h3 id="2-code-quality-tools">2. Code Quality Tools</h3>
+<ul>
+<li><strong>Add Prettier</strong> for consistent code formatting</li>
+<li><strong>Add husky</strong> for pre-commit hooks</li>
+<li><strong>Add lint-staged</strong> to lint only changed files</li>
+<li><strong>Add commitlint</strong> for conventional commits</li>
+</ul>
+<h3 id="3-performance-monitoring">3. Performance Monitoring</h3>
+<ul>
+<li><strong>Add Lighthouse CI</strong> for automated performance tracking</li>
+<li><strong>Add Bundle Analyzer</strong> to monitor bundle size</li>
+<li><strong>Add React DevTools Profiler</strong> integration</li>
+</ul>
+<h3 id="4-security-enhancements">4. Security Enhancements</h3>
+<ul>
+<li><strong>Add Snyk</strong> for continuous vulnerability scanning</li>
+<li><strong>Add OWASP Dependency Check</strong></li>
+<li><strong>Add SonarQube</strong> for code quality and security analysis</li>
+</ul>
+<h3 id="5-documentation">5. Documentation</h3>
+<ul>
+<li><strong>Add JSDoc</strong> comments for public APIs</li>
+<li><strong>Add Storybook</strong> for component documentation</li>
+<li><strong>Add API documentation</strong> (Swagger/OpenAPI)</li>
+<li><strong>Add architecture decision records</strong> (ADRs)</li>
+</ul>
+<h3 id="6-developer-experience">6. Developer Experience</h3>
+<ul>
+<li><strong>Add Docker Compose</strong> test environment</li>
+<li><strong>Add VS Code</strong> testing extensions configuration</li>
+<li><strong>Add test coverage</strong> reports with Istanbul/c8</li>
+<li><strong>Add test utilities</strong> helpers for common patterns</li>
+</ul>
+<h2 id="testing-best-practices-2026">📚 Testing Best Practices (2026)</h2>
+<p>Based on industry research from January 2026:</p>
+<ol>
+<li><strong>Test Features, Not Functions</strong> - Focus on user-facing behavior rather than implementation details</li>
+<li><strong>Use Real Databases</strong> - Docker makes it easy to test against actual PostgreSQL</li>
+<li><strong>Prefer Integration Tests</strong> - They catch more bugs than pure unit tests</li>
+<li><strong>Keep E2E Tests Focused</strong> - Test critical paths only, they're slow and expensive</li>
+<li><strong>Mock External Services</strong> - Don't make real API calls in tests</li>
+<li><strong>Use Migrations in Tests</strong> - Same database setup as production</li>
+<li><strong>Run Tests in Parallel</strong> - Faster feedback with isolated test environments</li>
+<li><strong>Fail Fast</strong> - Run linting and unit tests before slower integration/E2E tests</li>
+<li><strong>Visual Regression Testing</strong> - Catch UI bugs with screenshot comparisons</li>
+<li><strong>Accessibility Testing</strong> - Automated checks with axe-core</li>
+</ol>
+<h2 id="references-january-2026">📖 References (January 2026)</h2>
+<p>Based on current industry standards:</p>
+<ul>
+<li><a href="https://dev.to/dataformathub/vitest-vs-jest-30-why-2026-is-the-year-of-browser-native-testing-2fgb">Vitest vs Jest 30: Why 2026 is the Year of Browser-Native Testing</a></li>
+<li><a href="https://www.browserstack.com/guide/top-react-testing-libraries">Top Testing Libraries for React in 2026</a></li>
+<li><a href="https://github.com/goldbergyoni/nodejs-testing-best-practices">Node.js Testing Best Practices</a></li>
+<li><a href="https://bugfender.com/blog/react-testing/">Comprehensive Guide to Testing React Apps</a></li>
+<li><a href="https://www.defined.net/blog/modern-frontend-testing/">Modern Frontend Testing with Vitest, Storybook, and Playwright</a></li>
+<li><a href="https://graphite.dev/guides/in-depth-guide-ci-cd-best-practices">CI/CD Best Practices with GitHub Actions</a></li>
+<li><a href="https://medium.com/geoblinktech/postgres-and-integration-testing-in-node-js-apps-2e1b52af7ffc">Postgres and Integration Testing in Node.js Apps</a></li>
+<li><a href="https://www.fullstack.com/labs/resources/blog/best-practices-for-scalable-secure-react-node-js-apps-in-2025">Scalable React and Secure Node.js in 2025</a></li>
+</ul>
+<hr />
+<p><em>Testing Plan Created: January 8, 2026</em>
+<em>Framework: React + Node.js + PostgreSQL</em>
+<em>Testing Strategy: Vitest + Playwright + Real Database Testing</em>
+<em>Status: 🚧 READY FOR EXECUTION</em></p>
+    <div class="footer">Generated 2026-01-13 06:26 UTC</div>
+  </div>
+</body>
+</html>

@@ -18,11 +18,11 @@ services:
       - VITE_API_URL=http://localhost:4000/api
       - VITE_USE_MOCKS=true
     healthcheck:
-      test: ["CMD", "wget", "-qO-", "http://localhost:3000"]
+      test: ["CMD", "wget", "--spider", "-q", "http://127.0.0.1:3000"]
       interval: 30s
       timeout: 10s
-      retries: 3
-      start_period: 40s
+      retries: 5
+      start_period: 60s
     restart: unless-stopped
 
   # Backend API service
@@ -35,12 +35,14 @@ services:
     volumes:
       - ./src/backend:/app
       - /app/node_modules
+      - ./docs:/docs
     depends_on:
       - postgres
       - redis
       - ai-service
     environment:
       - NODE_ENV=development
+      - DOCKER_ENV=true
       - PORT=4000
       - DB_HOST=postgres
       - DB_PORT=5432
@@ -78,12 +80,15 @@ services:
       - "5432:5432"
     volumes:
       - postgres_data:/var/lib/postgresql/data
+      - ./src/db/00-init-pgvector.sh:/docker-entrypoint-initdb.d/00-init-pgvector.sh
       - ./src/db/schema.sql:/docker-entrypoint-initdb.d/01-schema.sql
       - ./src/db/seeds/01-initial-data.sql:/docker-entrypoint-initdb.d/02-seed-data.sql
     environment:
       - POSTGRES_DB=${DB_NAME:-psscript}
       - POSTGRES_USER=${DB_USER:-postgres}
       - POSTGRES_PASSWORD=${DB_PASSWORD:-postgres}
+    command: >
+      bash -c "ldconfig && docker-entrypoint.sh postgres"
 
   # Redis for caching
   redis:
@@ -92,6 +97,17 @@ services:
       - "6379:6379"
     volumes:
       - redis_data:/data
+
+  # Cloudflare Tunnel for external access
+  cloudflared:
+    image: cloudflare/cloudflared:latest
+    command: tunnel --config /etc/cloudflared/config.yml run
+    volumes:
+      - ./cloudflared:/etc/cloudflared:ro
+    depends_on:
+      - frontend
+      - backend
+    restart: unless-stopped
 
 volumes:
   postgres_data:

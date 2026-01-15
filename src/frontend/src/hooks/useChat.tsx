@@ -51,9 +51,11 @@ export const useChat = (options: UseChatOptions = {}) => {
   const [isUploading, setIsUploading] = useState(false);
   const [useMockService, setUseMockService] = useState(mockMode);
   const [sessionId, setSessionId] = useState<string | undefined>(undefined);
+  const [isStreaming, setIsStreaming] = useState(false);
+  const [streamingContent, setStreamingContent] = useState('');
   
   // Get auth from context
-  const { isAuthenticated, user } = useAuth();
+  const { isAuthenticated, user: _user } = useAuth();
   
   // Refs
   const messagesEndRef = useRef<HTMLDivElement>(null);
@@ -163,8 +165,8 @@ export const useChat = (options: UseChatOptions = {}) => {
       setIsLoading(true);
       setMessages(prev => [...prev, userMessage]);
       
-      // Simple fallback message in case API fails
-      const fallbackResponse = { response: "I'm having trouble connecting to my backend. Please try again in a moment." };
+      // Simple fallback message in case API fails (kept for future error handling)
+      const _fallbackResponse = { response: "I'm having trouble connecting to my backend. Please try again in a moment." };
       
       try {
         // Get the updated messages to send to the API
@@ -231,23 +233,97 @@ export const useChat = (options: UseChatOptions = {}) => {
             }
           ]);
         }
-      } catch (error) {
+      } catch (_error) {
         // Add generic error message to chat
         setMessages(prev => [
           ...prev,
-          { 
-            role: 'assistant', 
-            content: "Something went wrong processing your request. Please try again.", 
-            timestamp: new Date() 
+          {
+            role: 'assistant',
+            content: "Something went wrong processing your request. Please try again.",
+            timestamp: new Date()
           }
         ]);
       }
-    } catch (error) {
-      console.error('Error in sendMessage:', error);
+    } catch (_outerError) {
+      console.error('Error in sendMessage:', _outerError);
     } finally {
       setIsLoading(false);
     }
   }, [messages, useMockService, sessionId]);
+
+  // Send a message with streaming response (January 2026 feature)
+  const sendMessageStreaming = useCallback(async (messageText: string) => {
+    if (!messageText.trim() || isStreaming) return;
+
+    try {
+      // Create user message
+      const userMessage = { role: 'user' as const, content: messageText, timestamp: new Date() };
+
+      // Update state
+      setInput('');
+      setIsStreaming(true);
+      setStreamingContent('');
+      setMessages(prev => [...prev, userMessage]);
+
+      // Create placeholder for streaming response
+      const placeholderMessage = { role: 'assistant' as const, content: '', timestamp: new Date() };
+      setMessages(prev => [...prev, placeholderMessage]);
+
+      const messagesToSend = [...messages, userMessage];
+      let accumulatedContent = '';
+
+      await chatService.streamMessage(
+        messagesToSend,
+        // onToken - called for each token
+        (token: string) => {
+          accumulatedContent += token;
+          setStreamingContent(accumulatedContent);
+          // Update the last message with accumulated content
+          setMessages(prev => {
+            const updated = [...prev];
+            if (updated.length > 0) {
+              updated[updated.length - 1] = {
+                ...updated[updated.length - 1],
+                content: accumulatedContent
+              };
+            }
+            return updated;
+          });
+        },
+        // onDone - called when streaming completes
+        (metadata: { session_id?: string; tokens?: number; time?: number }) => {
+          if (metadata.session_id) {
+            setSessionId(metadata.session_id);
+          }
+          console.log(`Streaming complete: ${metadata.tokens} tokens in ${metadata.time}s`);
+          setIsStreaming(false);
+          setStreamingContent('');
+        },
+        // onError - called on error
+        (error: string) => {
+          console.error('Streaming error:', error);
+          setMessages(prev => {
+            const updated = [...prev];
+            if (updated.length > 0) {
+              updated[updated.length - 1] = {
+                ...updated[updated.length - 1],
+                content: `Error: ${error}. Please try again.`
+              };
+            }
+            return updated;
+          });
+          setIsStreaming(false);
+          setStreamingContent('');
+        },
+        "assistant",
+        sessionId
+      );
+    } catch (error) {
+      console.error('Error in sendMessageStreaming:', error);
+      setIsStreaming(false);
+      setStreamingContent('');
+    }
+  }, [messages, sessionId, isStreaming]);
 
   // Clear chat history
   const clearChat = useCallback(() => {
@@ -295,6 +371,7 @@ export const useChat = (options: UseChatOptions = {}) => {
         fileContent = await readFileAsText(file);
         
         // Validate content is not binary or corrupted
+        // eslint-disable-next-line no-control-regex
         if (!fileContent || fileContent.includes('\u0000') || /[\x00-\x08\x0B\x0C\x0E-\x1F]/.test(fileContent)) {
           throw new Error('File appears to be binary or contains invalid characters');
         }
@@ -303,7 +380,7 @@ export const useChat = (options: UseChatOptions = {}) => {
         if (fileContent.length > 100000) {
           fileContent = fileContent.substring(0, 100000) + '\n\n... [Content truncated due to size] ...';
         }
-      } catch (readError) {
+      } catch (_readError) {
         throw new Error('Could not read file contents');
       }
       
@@ -363,7 +440,7 @@ export const useChat = (options: UseChatOptions = {}) => {
     const commentMatch = content.match(/^#\s*(.+)$/m);
     if (commentMatch && commentMatch[1]) {
       const commentWords = commentMatch[1].split(' ').slice(0, 3).join('-');
-      return `${commentWords.toLowerCase().replace(/[^a-z0-9\-]/g, '')}.ps1`;
+      return `${commentWords.toLowerCase().replace(/[^a-z0-9-]/g, '')}.ps1`;
     }
     
     // Default name
@@ -419,15 +496,18 @@ export const useChat = (options: UseChatOptions = {}) => {
     isUploading,
     useMockService,
     sessionId,
-    
+    isStreaming,
+    streamingContent,
+
     // Refs
     messagesEndRef,
     inputRef,
     fileInputRef,
-    
+
     // Actions
     setInput,
     sendMessage,
+    sendMessageStreaming,
     clearChat,
     uploadFile,
     setSelectedFile,

@@ -17,8 +17,9 @@ import DownloadIcon from '@mui/icons-material/Download';
 import ThumbUpIcon from '@mui/icons-material/ThumbUp';
 import ThumbDownIcon from '@mui/icons-material/ThumbDown';
 import StarIcon from '@mui/icons-material/Star';
-import SyntaxHighlighter from 'react-syntax-highlighter';
-import { vs2015 } from 'react-syntax-highlighter/dist/esm/styles/hljs';
+// NOTE: react-syntax-highlighter removed due to [object Object] rendering bug
+// Both hljs and Prism versions have this issue. Using plain pre/code instead.
+// TODO(cleanup): Investigate react-syntax-highlighter bug - Reminder: 2026-01-24
 import './ScriptExamplesViewer.css';
 
 // Interface for script example data
@@ -53,6 +54,21 @@ const ScriptExamplesViewer: React.FC<ScriptExamplesViewerProps> = ({
 }) => {
   const [activeTab, setActiveTab] = useState(0);
   const [ratings, setRatings] = useState<Record<string, 'helpful' | 'unhelpful' | null>>({});
+
+  // DEBUG: Log examples to diagnose [object Object] rendering issue
+  // TODO(cleanup): Remove this logging after fixing the bug - Reminder: 2026-01-24
+  React.useEffect(() => {
+    console.log('[ScriptExamplesViewer] DEBUG - examples received:', examples);
+    examples.forEach((ex, i) => {
+      console.log(`[ScriptExamplesViewer] DEBUG - example[${i}]:`, {
+        id: ex.id,
+        title: ex.title,
+        scriptType: typeof ex.script,
+        scriptIsArray: Array.isArray(ex.script),
+        scriptPreview: typeof ex.script === 'string' ? ex.script.substring(0, 100) : ex.script,
+      });
+    });
+  }, [examples]);
 
   // Handle tab change
   const handleTabChange = (_: React.SyntheticEvent, newValue: number) => {
@@ -247,17 +263,20 @@ const ScriptExamplesViewer: React.FC<ScriptExamplesViewerProps> = ({
               
               <Divider className="tabpanel-divider" />
               
-              {/* Script code */}
-              <SyntaxHighlighter
-                language="powershell"
-                style={vs2015}
-                wrapLines
-                wrapLongLines
-                customStyle={{ borderRadius: '4px' }}
-                className="tabpanel-code"
-              >
-                {example.script}
-              </SyntaxHighlighter>
+              {/* Script code - Plain pre/code (react-syntax-highlighter has [object Object] bug) */}
+              <pre style={{
+                backgroundColor: '#1e1e1e',
+                color: '#d4d4d4',
+                padding: '16px',
+                borderRadius: '4px',
+                overflow: 'auto',
+                fontSize: '13px',
+                lineHeight: '1.5',
+                fontFamily: 'Consolas, Monaco, "Courier New", monospace',
+                margin: 0,
+              }}>
+                <code>{example.script}</code>
+              </pre>
               
               {/* Use this script button & rating */}
               <Box 

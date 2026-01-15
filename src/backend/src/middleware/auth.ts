@@ -11,6 +11,7 @@ interface JwtPayload {
 
 // Extend Express Request type
 declare global {
+  // eslint-disable-next-line @typescript-eslint/no-namespace -- Required for Express type augmentation
   namespace Express {
     interface Request {
       user?: JwtPayload;
@@ -52,7 +53,7 @@ export const authenticateJWT = (req: Request, res: Response, next: NextFunction)
     req.user = decoded;
 
     next();
-  } catch (error) {
+  } catch (_error) {
     return res.status(403).json({ message: 'Invalid or expired token' });
   }
 };

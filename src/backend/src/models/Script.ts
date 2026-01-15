@@ -84,7 +84,7 @@ export default class Script extends Model {
       tableName: 'scripts',
       underscored: true,
       hooks: {
-        beforeCreate: async (script: Script) => {
+        beforeCreate: async (_script: Script) => {
           // Any pre-save processing logic
         }
       }

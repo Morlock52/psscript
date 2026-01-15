@@ -7,8 +7,7 @@ voice synthesis and recognition.
 """
 
 import logging
-import json
-from typing import Dict, Any, List, Optional
+from typing import Dict, Any, Optional
 
 from .multi_agent_system import Agent, AgentRole, AgentCapability
 from voice_service import VoiceService
@@ -45,7 +44,6 @@ class VoiceAgent(Agent):
             model: Model to use for AI operations
         """
         super().__init__(
-            agent_id=agent_id,
             name=name,
             role=AgentRole.INTERFACE,
             capabilities=[
@@ -56,6 +54,9 @@ class VoiceAgent(Agent):
             api_key=api_key,
             model=model
         )
+        # Override the auto-generated ID if a specific one was provided
+        if agent_id:
+            self.id = agent_id
         
         # Initialize the Voice Service
         self.voice_service = VoiceService(api_key=api_key)

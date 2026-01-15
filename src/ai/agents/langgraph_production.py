@@ -23,7 +23,7 @@ from datetime import datetime
 import asyncio
 
 # LangGraph 1.0 imports
-from langgraph.graph import StateGraph, END, START
+from langgraph.graph import StateGraph, END
 from langgraph.checkpoint.memory import MemorySaver
 # Try to import PostgresSaver, fall back to MemorySaver if not available
 try:
@@ -32,20 +32,19 @@ try:
 except ImportError:
     PostgresSaver = None
     POSTGRES_AVAILABLE = False
-from langgraph.prebuilt import ToolNode, tools_condition
+from langgraph.prebuilt import ToolNode
 from langgraph.graph.message import add_messages
 
 # LangChain imports
-from langchain_core.messages import BaseMessage, HumanMessage, AIMessage, SystemMessage, ToolMessage
-from langchain_core.prompts import ChatPromptTemplate, MessagesPlaceholder
+from langchain_core.messages import BaseMessage, HumanMessage, SystemMessage, ToolMessage
 from langchain_openai import ChatOpenAI
 from langchain_core.tools import tool
 from langchain_core.runnables import RunnableConfig
 
-# Local imports
+# Local imports (after path manipulation)
 import sys
 sys.path.append(os.path.dirname(os.path.dirname(__file__)))
-from analysis.script_analyzer import ScriptAnalyzer
+from analysis.script_analyzer import ScriptAnalyzer  # noqa: E402
 
 # Configure logging
 logging.basicConfig(
@@ -323,7 +322,7 @@ def generate_optimizations(script_content: str, quality_metrics: str) -> str:
         if quality_metrics:
             try:
                 metrics = json.loads(quality_metrics)
-            except:
+            except (json.JSONDecodeError, TypeError):
                 pass
 
         script_lower = script_content.lower()
@@ -814,7 +813,7 @@ class LangGraphProductionOrchestrator:
                 try:
                     result = json.loads(msg.content)
                     tool_results[msg.name] = result
-                except:
+                except (json.JSONDecodeError, TypeError):
                     tool_results[msg.name] = {"raw": msg.content}
 
         return {

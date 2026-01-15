@@ -10,7 +10,7 @@ import os
 import json
 import logging
 import asyncio
-from typing import Dict, List, Any, Optional, Union, Tuple
+from typing import Dict, List, Any, Optional
 import time
 from datetime import datetime
 
@@ -18,14 +18,12 @@ from datetime import datetime
 from .enhanced_memory import EnhancedMemorySystem
 from .multi_agent_system import (
     MultiAgentSystem, 
-    Agent, 
     AgentRole, 
     AgentCapability, 
-    Task, 
     TaskStatus
 )
 from .tool_integration import tool_registry
-from .task_planning import TaskPlanner, TaskType, TaskPriority, TaskContext
+from .task_planning import TaskPlanner
 from .state_visualization import StateTracker
 from .voice_agent import VoiceAgent
 from analysis.script_analyzer import ScriptAnalyzer
@@ -104,7 +102,7 @@ class AgentCoordinator:
             model: Model to use for agents
         """
         # Analysis Agent
-        analysis_agent_id = self.multi_agent_system.add_agent(
+        self.multi_agent_system.add_agent(
             name="Analysis Agent",
             role=AgentRole.ANALYST,
             capabilities=[
@@ -117,7 +115,7 @@ class AgentCoordinator:
         )
         
         # Security Agent
-        security_agent_id = self.multi_agent_system.add_agent(
+        self.multi_agent_system.add_agent(
             name="Security Agent",
             role=AgentRole.SPECIALIST,
             capabilities=[
@@ -129,7 +127,7 @@ class AgentCoordinator:
         )
         
         # Categorization Agent
-        categorization_agent_id = self.multi_agent_system.add_agent(
+        self.multi_agent_system.add_agent(
             name="Categorization Agent",
             role=AgentRole.SPECIALIST,
             capabilities=[
@@ -141,7 +139,7 @@ class AgentCoordinator:
         )
         
         # Documentation Agent
-        documentation_agent_id = self.multi_agent_system.add_agent(
+        self.multi_agent_system.add_agent(
             name="Documentation Agent",
             role=AgentRole.RESEARCHER,
             capabilities=[
@@ -153,7 +151,7 @@ class AgentCoordinator:
         )
         
         # Optimization Agent
-        optimization_agent_id = self.multi_agent_system.add_agent(
+        self.multi_agent_system.add_agent(
             name="Optimization Agent",
             role=AgentRole.SPECIALIST,
             capabilities=[
@@ -597,7 +595,7 @@ class AgentCoordinator:
             logger.info(f"Searching for similar scripts (limit={limit})")
             
             # Generate embedding for the input script
-            embedding = await self.generate_script_embedding(script_content)
+            await self.generate_script_embedding(script_content)
             
             # In a real implementation, this would:
             # 1. Query the vector database for similar embeddings

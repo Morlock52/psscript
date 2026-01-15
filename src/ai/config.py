@@ -8,7 +8,7 @@ including API keys, rate limits, and other settings.
 import os
 import json
 import logging
-from typing import Dict, Any, Optional
+from typing import Optional
 from pydantic import BaseModel, Field
 
 # Configure logging
@@ -24,6 +24,7 @@ CONFIG_FILE_PATH = os.getenv("CONFIG_FILE_PATH", "config.json")
 class APIKeys(BaseModel):
     """API keys configuration."""
     openai: Optional[str] = Field(None, description="OpenAI API key")
+    anthropic: Optional[str] = Field(None, description="Anthropic API key for Claude models")
     google_search: Optional[str] = Field(None, description="Google Search API key")
     google_cse_id: Optional[str] = Field(None, description="Google Custom Search Engine ID")
     weather: Optional[str] = Field(None, description="OpenWeather API key")
@@ -34,6 +35,8 @@ class RateLimits(BaseModel):
     """Rate limiting configuration."""
     openai_rpm: int = Field(60, description="OpenAI requests per minute")
     openai_tpm: int = Field(40000, description="OpenAI tokens per minute")
+    anthropic_rpm: int = Field(60, description="Anthropic requests per minute")
+    anthropic_tpm: int = Field(100000, description="Anthropic tokens per minute")
     google_search_rpm: int = Field(30, description="Google Search requests per minute")
     weather_rpm: int = Field(60, description="Weather API requests per minute")
     alpha_vantage_rpm: int = Field(5, description="Alpha Vantage requests per minute")
@@ -41,21 +44,36 @@ class RateLimits(BaseModel):
 class AgentConfig(BaseModel):
     """Agent configuration - Updated January 2026.
 
-    Based on latest OpenAI model recommendations:
-    - o3: Best reasoning model for complex tasks (coding, math, STEM)
-    - gpt-4o: Best general-purpose model
+    Based on latest OpenAI model recommendations and benchmarks:
+    - gpt-4.1: Best for code generation (54.6% SWE-bench, 52.9% code diff accuracy)
+    - o3: Best reasoning model for complex analysis tasks
+    - gpt-4o: Good general-purpose model
     - gpt-4o-mini: Fast model for quick tasks
 
     Reference: https://platform.openai.com/docs/models
+    PowerShell-specific: GPT-4.1 recommended for script generation due to:
+    - 1M token context window (handles large scripts)
+    - 60% higher coding benchmarks vs GPT-4o
+    - Better instruction following for scripting tasks
     """
     default_agent: str = Field("langgraph", description="Default agent type (langgraph recommended)")
     max_steps: int = Field(15, description="Maximum steps for agent workflows")
     memory_size: int = Field(20, description="Number of messages to keep in memory")
 
-    # Updated models for January 2026
-    default_model: str = Field("gpt-4o", description="Default OpenAI model for general tasks")
+    # Updated models for January 2026 - Optimized for PowerShell
+    default_model: str = Field("gpt-4.1", description="Default model - best for code generation")
+    powershell_model: str = Field("gpt-4.1", description="PowerShell script generation model")
     reasoning_model: str = Field("o3", description="OpenAI o3 reasoning model for complex analysis")
     fast_model: str = Field("gpt-4o-mini", description="Fast model for quick tasks")
+    fallback_model: str = Field("gpt-4o", description="Fallback model if primary unavailable")
+
+    # Anthropic Claude models - Added January 2026
+    claude_model: str = Field("claude-sonnet-4-20250514", description="Claude Sonnet 4 - best balance of speed and quality")
+    claude_reasoning_model: str = Field("claude-opus-4-20250514", description="Claude Opus 4 - best for complex reasoning")
+    claude_fast_model: str = Field("claude-3-5-haiku-20241022", description="Claude Haiku - fast and cost-effective")
+
+    # Provider priority - which AI provider to try first
+    provider_priority: str = Field("openai,anthropic,mock", description="Order to try providers: openai,anthropic,mock")
 
     # Embedding configuration
     embedding_model: str = Field("text-embedding-3-large", description="Embedding model (3072 dimensions)")
@@ -126,7 +144,10 @@ def load_config() -> Config:
     # API keys
     if os.getenv("OPENAI_API_KEY"):
         config.api_keys.openai = os.getenv("OPENAI_API_KEY")
-    
+
+    if os.getenv("ANTHROPIC_API_KEY"):
+        config.api_keys.anthropic = os.getenv("ANTHROPIC_API_KEY")
+
     if os.getenv("GOOGLE_API_KEY"):
         config.api_keys.google_search = os.getenv("GOOGLE_API_KEY")
     
@@ -150,32 +171,46 @@ def load_config() -> Config:
         config.debug = True
         logging.getLogger().setLevel(logging.DEBUG)
     
-    # If no OpenAI API key is provided, enable mock mode
-    if not config.api_keys.openai:
-        logger.warning("No OpenAI API key provided, enabling mock mode")
+    # If no API keys are provided, enable mock mode
+    if not config.api_keys.openai and not config.api_keys.anthropic:
+        logger.warning("No AI API keys provided (OpenAI or Anthropic), enabling mock mode")
         config.mock_mode = True
+    else:
+        providers = []
+        if config.api_keys.openai:
+            providers.append("OpenAI")
+        if config.api_keys.anthropic:
+            providers.append("Anthropic")
+        logger.info(f"AI providers available: {', '.join(providers)}")
     
     # Ensure valid models are set - Updated January 2026
     if not config.agent.default_model:
-        config.agent.default_model = "gpt-4o"  # Current best stable model
+        config.agent.default_model = "gpt-4.1"  # Best for code generation
     if not config.agent.reasoning_model:
-        config.agent.reasoning_model = "gpt-4o"
+        config.agent.reasoning_model = "o3"
+    if not hasattr(config.agent, 'powershell_model') or not config.agent.powershell_model:
+        config.agent.powershell_model = "gpt-4.1"  # Best for PowerShell
     if not hasattr(config.agent, 'fast_model') or not config.agent.fast_model:
         config.agent.fast_model = "gpt-4o-mini"  # Fast model for quick tasks
+    if not hasattr(config.agent, 'fallback_model') or not config.agent.fallback_model:
+        config.agent.fallback_model = "gpt-4o"  # Fallback if primary unavailable
     if not hasattr(config.agent, 'embedding_model') or not config.agent.embedding_model:
         config.agent.embedding_model = "text-embedding-3-large"
     if not hasattr(config.agent, 'embedding_dimensions'):
         config.agent.embedding_dimensions = 3072
-    
+
+    logger.info(f"Models configured - Default: {config.agent.default_model}, PowerShell: {config.agent.powershell_model}")
     return config
 
 def save_config(config: Config) -> None:
     """
-    Save configuration to file.
+    Save configuration to file with secure permissions.
     """
     try:
         with open(CONFIG_FILE_PATH, "w") as f:
             json.dump(config.dict(), f, indent=2)
+        # Set secure file permissions (owner read/write only)
+        os.chmod(CONFIG_FILE_PATH, 0o600)
         logger.info(f"Saved configuration to {CONFIG_FILE_PATH}")
     except Exception as e:
         logger.error(f"Error saving config file: {e}")

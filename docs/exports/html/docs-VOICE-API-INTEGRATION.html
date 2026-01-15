@@ -1,0 +1,1026 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <base href="file:///Users/morlock/fun/psscript/" />
+  <title>docs-VOICE-API-INTEGRATION</title>
+  <style>
+:root {
+  color-scheme: light;
+}
+body {
+  font-family: "Segoe UI", "Helvetica Neue", Arial, sans-serif;
+  margin: 0;
+  padding: 0;
+  background: #ffffff;
+  color: #0f172a;
+}
+.markdown-body {
+  max-width: 980px;
+  margin: 40px auto 60px;
+  padding: 0 32px;
+  line-height: 1.65;
+}
+.markdown-body h1 {
+  font-size: 32px;
+  margin-bottom: 12px;
+  border-bottom: 2px solid #e2e8f0;
+  padding-bottom: 12px;
+  page-break-before: always;
+  page-break-after: avoid;
+  break-before: page;
+  break-after: avoid;
+}
+.markdown-body h1:first-of-type {
+  page-break-before: avoid;
+  break-before: avoid;
+}
+.markdown-body h2 {
+  font-size: 24px;
+  margin-top: 28px;
+  border-bottom: 1px solid #e2e8f0;
+  padding-bottom: 8px;
+  page-break-before: always;
+  page-break-after: avoid;
+  break-before: page;
+  break-after: avoid;
+}
+.markdown-body h3 {
+  font-size: 18px;
+  margin-top: 20px;
+  page-break-after: avoid;
+  break-after: avoid;
+}
+.markdown-body h4, .markdown-body h5, .markdown-body h6 {
+  page-break-after: avoid;
+  break-after: avoid;
+}
+.markdown-body table {
+  width: 100%;
+  border-collapse: collapse;
+  margin: 16px 0;
+  font-size: 14px;
+  page-break-inside: avoid;
+  break-inside: avoid;
+}
+.markdown-body th,
+.markdown-body td {
+  border: 1px solid #e2e8f0;
+  padding: 8px 10px;
+  text-align: left;
+}
+.markdown-body th {
+  background: #f8fafc;
+}
+.markdown-body tr {
+  page-break-inside: avoid;
+  break-inside: avoid;
+}
+.markdown-body code {
+  background: #f1f5f9;
+  padding: 2px 4px;
+  border-radius: 4px;
+  font-family: "SFMono-Regular", Menlo, Consolas, monospace;
+  font-size: 0.92em;
+}
+.markdown-body pre {
+  background: #0f172a;
+  color: #e2e8f0;
+  padding: 16px;
+  border-radius: 8px;
+  overflow-x: auto;
+  page-break-inside: avoid;
+  break-inside: avoid;
+}
+.markdown-body pre code {
+  background: transparent;
+  color: inherit;
+}
+.markdown-body blockquote {
+  border-left: 4px solid #38bdf8;
+  margin: 16px 0;
+  padding: 8px 16px;
+  background: #f8fafc;
+  color: #334155;
+}
+.markdown-body img {
+  max-width: 100%;
+  height: auto;
+  display: block;
+  margin: 16px 0;
+  border-radius: 10px;
+  box-shadow: 0 8px 20px rgba(15, 23, 42, 0.12);
+  page-break-inside: avoid;
+  break-inside: avoid;
+}
+.markdown-body figure {
+  page-break-inside: avoid;
+  break-inside: avoid;
+  margin: 16px 0;
+}
+.markdown-body a {
+  color: #2563eb;
+  text-decoration: none;
+}
+.markdown-body a:hover {
+  text-decoration: underline;
+}
+.cover {
+  padding: 80px 60px 60px;
+  background: linear-gradient(135deg, #0b1220 0%, #1e3a8a 100%);
+  color: #f8fafc;
+  border-radius: 18px;
+  margin-bottom: 32px;
+}
+.cover-title {
+  font-size: 36px;
+  font-weight: 700;
+  margin: 0 0 12px;
+}
+.cover-subtitle {
+  font-size: 18px;
+  color: #cbd5f5;
+  margin: 0 0 16px;
+}
+.cover-meta {
+  font-size: 13px;
+  color: #94a3b8;
+}
+.page-break {
+  page-break-after: always;
+  break-after: page;
+}
+.footer {
+  margin-top: 40px;
+  font-size: 12px;
+  color: #64748b;
+}
+/* Print and PDF-specific styles */
+@page {
+  margin: 20mm 18mm;
+}
+@media print {
+  .markdown-body {
+    orphans: 3;
+    widows: 3;
+  }
+  .markdown-body p {
+    orphans: 3;
+    widows: 3;
+  }
+  .markdown-body li {
+    page-break-inside: avoid;
+    break-inside: avoid;
+  }
+  .markdown-body ul, .markdown-body ol {
+    page-break-before: avoid;
+    break-before: avoid;
+  }
+  .markdown-body blockquote {
+    page-break-inside: avoid;
+    break-inside: avoid;
+  }
+  /* Keep section content together */
+  .markdown-body h2 + *, .markdown-body h3 + * {
+    page-break-before: avoid;
+    break-before: avoid;
+  }
+}
+</style>
+</head>
+<body>
+  <div class="markdown-body">
+    
+    <h1 id="voice-api-integration-plan">Voice API Integration Plan</h1>
+<h2 id="overview">Overview</h2>
+<p>This document outlines the detailed implementation plan for integrating Voice API capabilities into the PSScript Manager platform. The integration will enhance the platform with interactive voice capabilities, aligning with the app's mission of leveraging cutting-edge AI technologies.</p>
+<h2 id="current-architecture-analysis">Current Architecture Analysis</h2>
+<h3 id="strengths">Strengths</h3>
+<ul>
+<li><strong>Modular Design</strong>: The platform has a clear separation between frontend, backend, AI service, and database components.</li>
+<li><strong>Agent-Based Architecture</strong>: The AI service uses a well-structured agent coordinator that orchestrates specialized agents for different tasks.</li>
+<li><strong>Extensible API</strong>: The backend provides a clean API structure that can be extended for new capabilities.</li>
+<li><strong>Containerization</strong>: Docker support makes deployment and scaling straightforward.</li>
+</ul>
+<h3 id="areas-for-improvement">Areas for Improvement</h3>
+<ul>
+<li><strong>Tight Coupling</strong>: Some components have tight coupling that could be refactored for better maintainability.</li>
+<li><strong>Error Handling</strong>: Error handling is inconsistent across different modules.</li>
+<li><strong>Documentation</strong>: Integration points between components could be better documented.</li>
+</ul>
+<h2 id="voice-api-integration-architecture">Voice API Integration Architecture</h2>
+<p>The Voice API integration will follow a microservices approach, adding a new Voice Service component that will interact with the existing AI service and backend.</p>
+<pre><code class="language-mermaid">graph TD
+    A[Frontend] --&gt; B[Backend API]
+    B --&gt; C[AI Service]
+    B --&gt; D[New Voice Service]
+    C --&gt; E[Agent Coordinator]
+    D --&gt; F[Voice Synthesis]
+    D --&gt; G[Voice Recognition]
+    E --&gt; H[Analysis Agent]
+    E --&gt; I[Security Agent]
+    E --&gt; J[Categorization Agent]
+    E --&gt; K[Documentation Agent]
+    E --&gt; L[Optimization Agent]
+    E --&gt; M[New Voice Agent]
+</code></pre>
+<h2 id="phased-implementation-plan">Phased Implementation Plan</h2>
+<h3 id="phase-1-voice-service-foundation-weeks-1-2">Phase 1: Voice Service Foundation (Weeks 1-2)</h3>
+<h4 id="11-create-voice-service-agent">1.1 Create Voice Service Agent</h4>
+<ul>
+<li>Add a new Voice Agent to the agent coordinator in the AI service</li>
+<li>Implement basic voice-related capabilities</li>
+<li>Define the agent's role and responsibilities</li>
+</ul>
+<pre><code class="language-python"># Example implementation in src/ai/agents/agent_coordinator.py
+
+# Add to _create_specialized_agents method
+voice_agent_id = self.multi_agent_system.add_agent(
+    name=&quot;Voice Agent&quot;,
+    role=AgentRole.INTERFACE,
+    capabilities=[
+        AgentCapability.VOICE_SYNTHESIS,
+        AgentCapability.VOICE_RECOGNITION,
+        AgentCapability.TOOL_USE
+    ],
+    api_key=self.api_key,
+    model=model
+)
+</code></pre>
+<h4 id="12-add-voice-capabilities-to-agent-capabilities-enum">1.2 Add Voice Capabilities to Agent Capabilities Enum</h4>
+<ul>
+<li>Update the AgentCapability enum to include voice-related capabilities</li>
+</ul>
+<pre><code class="language-python"># Example implementation in src/ai/agents/multi_agent_system.py
+
+class AgentCapability(Enum):
+    # Existing capabilities
+    SCRIPT_ANALYSIS = &quot;script_analysis&quot;
+    SECURITY_ANALYSIS = &quot;security_analysis&quot;
+    CATEGORIZATION = &quot;categorization&quot;
+    DOCUMENTATION = &quot;documentation&quot;
+    OPTIMIZATION = &quot;optimization&quot;
+    CODE_GENERATION = &quot;code_generation&quot;
+    REASONING = &quot;reasoning&quot;
+    MEMORY_MANAGEMENT = &quot;memory_management&quot;
+    TOOL_USE = &quot;tool_use&quot;
+
+    # New voice capabilities
+    VOICE_SYNTHESIS = &quot;voice_synthesis&quot;
+    VOICE_RECOGNITION = &quot;voice_recognition&quot;
+</code></pre>
+<h4 id="13-create-voice-service-api-endpoints">1.3 Create Voice Service API Endpoints</h4>
+<ul>
+<li>Add new endpoints to the AI service for voice synthesis and recognition</li>
+</ul>
+<pre><code class="language-python"># Example implementation in src/ai/main.py
+
+class VoiceSynthesisRequest(BaseModel):
+    text: str = Field(..., description=&quot;Text to synthesize into speech&quot;)
+    voice_id: Optional[str] = Field(None, description=&quot;Voice ID to use&quot;)
+    output_format: str = Field(&quot;mp3&quot;, description=&quot;Output audio format&quot;)
+
+class VoiceRecognitionRequest(BaseModel):
+    audio_data: str = Field(..., description=&quot;Base64-encoded audio data&quot;)
+    language: str = Field(&quot;en-US&quot;, description=&quot;Language code&quot;)
+
+@app.post(&quot;/voice/synthesize&quot;, tags=[&quot;Voice&quot;])
+async def synthesize_speech(
+    request: VoiceSynthesisRequest,
+    api_key: Optional[str] = Header(None, alias=&quot;x-api-key&quot;)
+):
+    &quot;&quot;&quot;
+    Synthesize text into speech.
+
+    - api_key: Optional OpenAI API key to use for this request
+    &quot;&quot;&quot;
+    try:
+        # Use the agent coordinator if available
+        if agent_coordinator and not MOCK_MODE:
+            synthesis_result = await agent_coordinator.synthesize_speech(
+                text=request.text,
+                voice_id=request.voice_id,
+                output_format=request.output_format
+            )
+            return synthesis_result
+        else:
+            # Fall back to the legacy agent system
+            raise HTTPException(status_code=501, detail=&quot;Voice synthesis not implemented in legacy mode&quot;)
+
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f&quot;Speech synthesis failed: {str(e)}&quot;)
+
+@app.post(&quot;/voice/recognize&quot;, tags=[&quot;Voice&quot;])
+async def recognize_speech(
+    request: VoiceRecognitionRequest,
+    api_key: Optional[str] = Header(None, alias=&quot;x-api-key&quot;)
+):
+    &quot;&quot;&quot;
+    Recognize speech from audio data.
+
+    - api_key: Optional OpenAI API key to use for this request
+    &quot;&quot;&quot;
+    try:
+        # Use the agent coordinator if available
+        if agent_coordinator and not MOCK_MODE:
+            recognition_result = await agent_coordinator.recognize_speech(
+                audio_data=request.audio_data,
+                language=request.language
+            )
+            return recognition_result
+        else:
+            # Fall back to the legacy agent system
+            raise HTTPException(status_code=501, detail=&quot;Voice recognition not implemented in legacy mode&quot;)
+
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f&quot;Speech recognition failed: {str(e)}&quot;)
+</code></pre>
+<h4 id="14-implement-voice-agent-methods-in-agent-coordinator">1.4 Implement Voice Agent Methods in Agent Coordinator</h4>
+<ul>
+<li>Add methods to the AgentCoordinator class for voice synthesis and recognition</li>
+</ul>
+<pre><code class="language-python"># Example implementation in src/ai/agents/agent_coordinator.py
+
+async def synthesize_speech(
+    self,
+    text: str,
+    voice_id: Optional[str] = None,
+    output_format: str = &quot;mp3&quot;
+) -&gt; Dict[str, Any]:
+    &quot;&quot;&quot;
+    Synthesize text into speech using the voice agent.
+
+    Args:
+        text: Text to synthesize
+        voice_id: Voice ID to use
+        output_format: Output audio format
+
+    Returns:
+        Dictionary containing the audio data and metadata
+    &quot;&quot;&quot;
+    # Use the tool registry to execute the voice synthesis tool
+    synthesis_result = await tool_registry.execute_tool(
+        tool_name=&quot;voice_synthesis&quot;,
+        args={
+            &quot;text&quot;: text,
+            &quot;voice_id&quot;: voice_id,
+            &quot;output_format&quot;: output_format
+        },
+        use_cache=True,
+        api_key=self.api_key
+    )
+
+    if synthesis_result[&quot;success&quot;]:
+        # Add to working memory
+        self.memory_system.add_to_working_memory(
+            content={&quot;text&quot;: text, &quot;voice_id&quot;: voice_id},
+            memory_type=&quot;voice_synthesis&quot;,
+            source=&quot;voice_agent&quot;,
+            importance=0.6
+        )
+
+        return synthesis_result[&quot;result&quot;]
+    else:
+        logger.error(f&quot;Voice synthesis failed: {synthesis_result.get('error')}&quot;)
+        return {&quot;error&quot;: synthesis_result.get(&quot;error&quot;, &quot;Unknown error&quot;)}
+
+async def recognize_speech(
+    self,
+    audio_data: str,
+    language: str = &quot;en-US&quot;
+) -&gt; Dict[str, Any]:
+    &quot;&quot;&quot;
+    Recognize speech from audio data using the voice agent.
+
+    Args:
+        audio_data: Base64-encoded audio data
+        language: Language code
+
+    Returns:
+        Dictionary containing the recognized text and metadata
+    &quot;&quot;&quot;
+    # Use the tool registry to execute the voice recognition tool
+    recognition_result = await tool_registry.execute_tool(
+        tool_name=&quot;voice_recognition&quot;,
+        args={
+            &quot;audio_data&quot;: audio_data,
+            &quot;language&quot;: language
+        },
+        use_cache=False,  # Don't cache recognition results
+        api_key=self.api_key
+    )
+
+    if recognition_result[&quot;success&quot;]:
+        # Add to working memory
+        self.memory_system.add_to_working_memory(
+            content={&quot;recognized_text&quot;: recognition_result[&quot;result&quot;][&quot;text&quot;]},
+            memory_type=&quot;voice_recognition&quot;,
+            source=&quot;voice_agent&quot;,
+            importance=0.7
+        )
+
+        return recognition_result[&quot;result&quot;]
+    else:
+        logger.error(f&quot;Voice recognition failed: {recognition_result.get('error')}&quot;)
+        return {&quot;error&quot;: recognition_result.get(&quot;error&quot;, &quot;Unknown error&quot;)}
+</code></pre>
+<h3 id="phase-2-backend-integration-weeks-3-4">Phase 2: Backend Integration (Weeks 3-4)</h3>
+<h4 id="21-create-voice-controller-in-backend">2.1 Create Voice Controller in Backend</h4>
+<ul>
+<li>Add a new VoiceController to handle voice-related requests</li>
+</ul>
+<pre><code class="language-typescript">// Example implementation in src/backend/src/controllers/VoiceController.ts
+
+import { Request, Response } from 'express';
+import axios from 'axios';
+import logger from '../utils/logger';
+
+/**
+ * Voice Controller
+ * Handles voice interactions with the AI service
+ */
+export class VoiceController {
+  private aiServiceUrl: string;
+
+  constructor() {
+    // Get AI service URL from environment variables or use default
+    const isDocker = process.env.DOCKER_ENV === 'true';
+    this.aiServiceUrl = isDocker 
+      ? (process.env.AI_SERVICE_URL || 'http://ai-service:8000') 
+      : (process.env.AI_SERVICE_URL || 'http://localhost:8000');
+    logger.info(`VoiceController initialized with AI service URL: ${this.aiServiceUrl}`);
+  }
+
+  /**
+   * Synthesize text into speech
+   * @param req Request object containing text to synthesize
+   * @param res Response object
+   */
+  public async synthesizeSpeech(req: Request, res: Response): Promise&lt;void&gt; {
+    const requestId = Math.random().toString(36).substring(2, 10);
+
+    try {
+      const { text, voice_id, output_format } = req.body;
+
+      // Validate request parameters
+      if (!text || typeof text !== 'string' || text.trim().length === 0) {
+        logger.warn(`[${requestId}] Invalid request: Missing or empty text`);
+        res.status(400).json({ error: 'Text is required and must not be empty' });
+        return;
+      }
+
+      // Use server API key if one is not provided by the client
+      const apiKey = req.headers['x-api-key'] || process.env.OPENAI_API_KEY;
+
+      if (!apiKey) {
+        logger.warn(`[${requestId}] Invalid request: No API key provided and no server API key configured`);
+        res.status(400).json({ error: 'API key is required' });
+        return;
+      }
+
+      // Forward request to AI service
+      logger.debug(`[${requestId}] Sending voice synthesis request to ${this.aiServiceUrl}/voice/synthesize`);
+
+      const response = await axios.post(`${this.aiServiceUrl}/voice/synthesize`, {
+        text,
+        voice_id,
+        output_format: output_format || 'mp3'
+      }, {
+        headers: {
+          'Content-Type': 'application/json',
+          'X-API-Key': apiKey,
+          'X-Request-ID': requestId
+        },
+        timeout: 30000 // 30 second timeout
+      });
+
+      res.status(200).json(response.data);
+    } catch (error) {
+      logger.error(`[${requestId}] Error in synthesizeSpeech:`, error);
+
+      if (axios.isAxiosError(error)) {
+        if (error.code === 'ECONNABORTED') {
+          res.status(504).json({ 
+            error: 'Request timeout',
+            details: 'The AI service took too long to respond'
+          });
+        } else if (!error.response) {
+          res.status(503).json({ 
+            error: 'AI service unavailable',
+            details: 'Could not connect to the AI service'
+          });
+        } else {
+          res.status(error.response.status).json({ 
+            error: 'AI service error',
+            details: error.response.data?.message || error.message,
+            status: error.response.status
+          });
+        }
+      } else {
+        res.status(500).json({ 
+          error: 'Failed to synthesize speech',
+          details: error instanceof Error ? error.message : String(error),
+          requestId: requestId
+        });
+      }
+    }
+  }
+
+  /**
+   * Recognize speech from audio data
+   * @param req Request object containing audio data
+   * @param res Response object
+   */
+  public async recognizeSpeech(req: Request, res: Response): Promise&lt;void&gt; {
+    const requestId = Math.random().toString(36).substring(2, 10);
+
+    try {
+      const { audio_data, language } = req.body;
+
+      // Validate request parameters
+      if (!audio_data || typeof audio_data !== 'string' || audio_data.trim().length === 0) {
+        logger.warn(`[${requestId}] Invalid request: Missing or empty audio data`);
+        res.status(400).json({ error: 'Audio data is required and must not be empty' });
+        return;
+      }
+
+      // Use server API key if one is not provided by the client
+      const apiKey = req.headers['x-api-key'] || process.env.OPENAI_API_KEY;
+
+      if (!apiKey) {
+        logger.warn(`[${requestId}] Invalid request: No API key provided and no server API key configured`);
+        res.status(400).json({ error: 'API key is required' });
+        return;
+      }
+
+      // Forward request to AI service
+      logger.debug(`[${requestId}] Sending voice recognition request to ${this.aiServiceUrl}/voice/recognize`);
+
+      const response = await axios.post(`${this.aiServiceUrl}/voice/recognize`, {
+        audio_data,
+        language: language || 'en-US'
+      }, {
+        headers: {
+          'Content-Type': 'application/json',
+          'X-API-Key': apiKey,
+          'X-Request-ID': requestId
+        },
+        timeout: 30000 // 30 second timeout
+      });
+
+      res.status(200).json(response.data);
+    } catch (error) {
+      logger.error(`[${requestId}] Error in recognizeSpeech:`, error);
+
+      if (axios.isAxiosError(error)) {
+        if (error.code === 'ECONNABORTED') {
+          res.status(504).json({ 
+            error: 'Request timeout',
+            details: 'The AI service took too long to respond'
+          });
+        } else if (!error.response) {
+          res.status(503).json({ 
+            error: 'AI service unavailable',
+            details: 'Could not connect to the AI service'
+          });
+        } else {
+          res.status(error.response.status).json({ 
+            error: 'AI service error',
+            details: error.response.data?.message || error.message,
+            status: error.response.status
+          });
+        }
+      } else {
+        res.status(500).json({ 
+          error: 'Failed to recognize speech',
+          details: error instanceof Error ? error.message : String(error),
+          requestId: requestId
+        });
+      }
+    }
+  }
+}
+</code></pre>
+<h4 id="22-create-voice-routes-in-backend">2.2 Create Voice Routes in Backend</h4>
+<ul>
+<li>Add new routes for voice-related endpoints</li>
+</ul>
+<pre><code class="language-typescript">// Example implementation in src/backend/src/routes/voice.ts
+
+import express from 'express';
+import { VoiceController } from '../controllers/VoiceController';
+import { authenticateJWT } from '../middleware/authMiddleware';
+
+const router = express.Router();
+const voiceController = new VoiceController();
+
+/**
+ * @swagger
+ * tags:
+ *   name: Voice
+ *   description: Voice operations
+ */
+
+/**
+ * @swagger
+ * /voice/synthesize:
+ *   post:
+ *     summary: Synthesize text into speech
+ *     tags: [Voice]
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - text
+ *             properties:
+ *               text:
+ *                 type: string
+ *               voice_id:
+ *                 type: string
+ *               output_format:
+ *                 type: string
+ *                 enum: [mp3, wav, ogg]
+ *                 default: mp3
+ *     responses:
+ *       200:
+ *         description: Speech synthesized successfully
+ *       400:
+ *         description: Invalid request
+ *       500:
+ *         description: Server error
+ */
+router.post('/synthesize', voiceController.synthesizeSpeech.bind(voiceController));
+
+/**
+ * @swagger
+ * /voice/recognize:
+ *   post:
+ *     summary: Recognize speech from audio data
+ *     tags: [Voice]
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - audio_data
+ *             properties:
+ *               audio_data:
+ *                 type: string
+ *                 description: Base64-encoded audio data
+ *               language:
+ *                 type: string
+ *                 default: en-US
+ *     responses:
+ *       200:
+ *         description: Speech recognized successfully
+ *       400:
+ *         description: Invalid request
+ *       500:
+ *         description: Server error
+ */
+router.post('/recognize', voiceController.recognizeSpeech.bind(voiceController));
+
+export default router;
+</code></pre>
+<h4 id="23-register-voice-routes-in-backend">2.3 Register Voice Routes in Backend</h4>
+<ul>
+<li>Update the main backend index.js file to include the new voice routes</li>
+</ul>
+<pre><code class="language-typescript">// Example update to src/backend/index.js or src/backend/src/index.ts
+
+// Import the voice routes
+import voiceRoutes from './routes/voice';
+
+// Register the voice routes
+app.use('/api/voice', voiceRoutes);
+</code></pre>
+<h4 id="24-update-chat-controller-to-support-voice-interactions">2.4 Update Chat Controller to Support Voice Interactions</h4>
+<ul>
+<li>Extend the ChatController to support voice input and output</li>
+</ul>
+<pre><code class="language-typescript">// Example update to src/backend/src/controllers/ChatController.ts
+
+// Add to the sendMessage method
+public async sendMessage(req: Request, res: Response): Promise&lt;void&gt; {
+  // ... existing code ...
+
+  try {
+    const { messages, system_prompt, api_key, agent_type, session_id, voice_response } = req.body;
+
+    // ... existing validation code ...
+
+    // Forward request to AI service with voice_response flag
+    const response = await axios.post(`${this.aiServiceUrl}/chat`, {
+      messages,
+      system_prompt,
+      api_key: effectiveApiKey,
+      agent_type,
+      session_id,
+      voice_response // Pass the voice_response flag to the AI service
+    }, {
+      headers: {
+        'Content-Type': 'application/json',
+        'X-Request-ID': requestId
+      },
+      timeout: 60000 // 60 second timeout for LLM responses
+    });
+
+    // If voice response is requested, synthesize the response
+    if (voice_response &amp;&amp; response.data &amp;&amp; response.data.response) {
+      try {
+        const voiceResponse = await axios.post(`${this.aiServiceUrl}/voice/synthesize`, {
+          text: response.data.response,
+          voice_id: req.body.voice_id, // Optional voice ID
+          output_format: req.body.output_format || 'mp3' // Default to mp3
+        }, {
+          headers: {
+            'Content-Type': 'application/json',
+            'X-API-Key': effectiveApiKey,
+            'X-Request-ID': requestId
+          },
+          timeout: 30000 // 30 second timeout
+        });
+
+        // Add voice data to the response
+        response.data.voice_data = voiceResponse.data.audio_data;
+        response.data.voice_format = voiceResponse.data.format;
+      } catch (voiceError) {
+        logger.error(`[${requestId}] Error synthesizing voice response:`, voiceError);
+        // Continue without voice response if synthesis fails
+      }
+    }
+
+    // ... rest of the existing code ...
+  } catch (error) {
+    // ... existing error handling ...
+  }
+}
+</code></pre>
+<h3 id="phase-3-voice-tool-integration-weeks-5-6">Phase 3: Voice Tool Integration (Weeks 5-6)</h3>
+<h4 id="31-implement-voice-synthesis-tool">3.1 Implement Voice Synthesis Tool</h4>
+<ul>
+<li>Create a new tool for voice synthesis in the AI service</li>
+</ul>
+<pre><code class="language-python"># Example implementation in src/ai/agents/tool_integration.py
+
+@tool_registry.register_tool
+async def voice_synthesis(text: str, voice_id: Optional[str] = None, output_format: str = &quot;mp3&quot;) -&gt; Dict[str, Any]:
+    &quot;&quot;&quot;
+    Synthesize text into speech.
+
+    Args:
+        text: Text to synthesize
+        voice_id: Voice ID to use
+        output_format: Output audio format
+
+    Returns:
+        Dictionary containing the audio data and metadata
+    &quot;&quot;&quot;
+    try:
+        # Validate input
+        if not text or not isinstance(text, str) or len(text.strip()) == 0:
+            return {
+                &quot;success&quot;: False,
+                &quot;error&quot;: &quot;Text is required and must not be empty&quot;
+            }
+
+        # Truncate text if it's too long
+        max_length = 5000  # Most TTS services have limits
+        if len(text) &gt; max_length:
+            logger.warning(f&quot;Text too long for voice synthesis, truncating from {len(text)} to {max_length} characters&quot;)
+            text = text[:max_length]
+
+        # Use a TTS service to synthesize speech
+        # This is a placeholder - replace with actual TTS service integration
+        # For example, using Google Cloud Text-to-Speech:
+
+        from google.cloud import texttospeech
+
+        # Instantiate a client
+        client = texttospeech.TextToSpeechClient()
+
+        # Set the text input to be synthesized
+        synthesis_input = texttospeech.SynthesisInput(text=text)
+
+        # Build the voice request
+        if voice_id:
+            # Parse voice_id format (e.g., &quot;en-US-Standard-A&quot;)
+            parts = voice_id.split(&quot;-&quot;)
+            if len(parts) &gt;= 3:
+                language_code = f&quot;{parts[0]}-{parts[1]}&quot;
+                voice_name = &quot;-&quot;.join(parts[2:])
+            else:
+                language_code = &quot;en-US&quot;
+                voice_name = &quot;Standard-A&quot;
+        else:
+            language_code = &quot;en-US&quot;
+            voice_name = &quot;Standard-A&quot;
+
+        # Select the type of audio file to return
+        if output_format.lower() == &quot;mp3&quot;:
+            audio_encoding = texttospeech.AudioEncoding.MP3
+        elif output_format.lower() == &quot;wav&quot;:
+            audio_encoding = texttospeech.AudioEncoding.LINEAR16
+        elif output_format.lower() == &quot;ogg&quot;:
+            audio_encoding = texttospeech.AudioEncoding.OGG_OPUS
+        else:
+            audio_encoding = texttospeech.AudioEncoding.MP3
+
+        voice = texttospeech.VoiceSelectionParams(
+            language_code=language_code,
+            name=f&quot;{language_code}-{voice_name}&quot;
+        )
+
+        audio_config = texttospeech.AudioConfig(
+            audio_encoding=audio_encoding
+        )
+
+        # Perform the text-to-speech request
+        response = client.synthesize_speech(
+            input=synthesis_input,
+            voice=voice,
+            audio_config=audio_config
+        )
+
+        # Return the audio content as base64-encoded string
+        import base64
+        audio_data = base64.b64encode(response.audio_content).decode(&quot;utf-8&quot;)
+
+        return {
+            &quot;success&quot;: True,
+            &quot;result&quot;: {
+                &quot;audio_data&quot;: audio_data,
+                &quot;format&quot;: output_format.lower(),
+                &quot;duration&quot;: len(response.audio_content) / 16000,  # Approximate duration in seconds
+                &quot;text&quot;: text
+            }
+        }
+    except Exception as e:
+        logger.error(f&quot;Error in voice_synthesis tool: {e}&quot;)
+        return {
+            &quot;success&quot;: False,
+            &quot;error&quot;: str(e)
+        }
+</code></pre>
+<h4 id="32-implement-voice-recognition-tool">3.2 Implement Voice Recognition Tool</h4>
+<ul>
+<li>Create a new tool for voice recognition in the AI service</li>
+</ul>
+<pre><code class="language-python"># Example implementation in src/ai/agents/tool_integration.py
+
+@tool_registry.register_tool
+async def voice_recognition(audio_data: str, language: str = &quot;en-US&quot;) -&gt; Dict[str, Any]:
+    &quot;&quot;&quot;
+    Recognize speech from audio data.
+
+    Args:
+        audio_data: Base64-encoded audio data
+        language: Language code
+
+    Returns:
+        Dictionary containing the recognized text and metadata
+    &quot;&quot;&quot;
+    try:
+        # Validate input
+        if not audio_data or not isinstance(audio_data, str) or len(audio_data.strip()) == 0:
+            return {
+                &quot;success&quot;: False,
+                &quot;error&quot;: &quot;Audio data is required and must not be empty&quot;
+            }
+
+        # Decode base64 audio data
+        import base64
+        try:
+            decoded_audio = base64.b64decode(audio_data)
+        except Exception as e:
+            return {
+                &quot;success&quot;: False,
+                &quot;error&quot;: f&quot;Invalid base64-encoded audio data: {str(e)}&quot;
+            }
+
+        # Use a speech recognition service to recognize speech
+        # This is a placeholder - replace with actual speech recognition service integration
+        # For example, using Google Cloud Speech-to-Text:
+
+        from google.cloud import speech
+
+        # Instantiate a client
+        client = speech.SpeechClient()
+
+        # Configure the request
+        config = speech.RecognitionConfig(
+            encoding=speech.RecognitionConfig.AudioEncoding.LINEAR16,
+            sample_rate_hertz=16000,
+            language_code=language
+        )
+
+        # Create an audio object
+        audio = speech.RecognitionAudio(content=decoded_audio)
+
+        # Perform the speech recognition
+        response = client.recognize(config=config, audio=audio)
+
+        # Process the response
+        results = []
+        for result in response.results:
+            for alternative in result.alternatives:
+                results.append({
+                    &quot;text&quot;: alternative.transcript,
+                    &quot;confidence&quot;: alternative.confidence
+                })
+
+        # Return the recognized text
+        if results:
+            return {
+                &quot;success&quot;: True,
+                &quot;result&quot;: {
+                    &quot;text&quot;: results[0][&quot;text&quot;],
+                    &quot;confidence&quot;: results[0][&quot;confidence&quot;],
+                    &quot;alternatives&quot;: results[1:] if len(results) &gt; 1 else []
+                }
+            }
+        else:
+            return {
+                &quot;success&quot;: False,
+                &quot;error&quot;: &quot;No speech recognized&quot;
+            }
+    except Exception as e:
+        logger.error(f&quot;Error in voice_recognition tool: {e}&quot;)
+        return {
+            &quot;success&quot;: False,
+            &quot;error&quot;: str(e)
+        }
+</code></pre>
+<h3 id="phase-4-frontend-integration-weeks-7-8">Phase 4: Frontend Integration (Weeks 7-8)</h3>
+<h4 id="41-create-voice-components">4.1 Create Voice Components</h4>
+<ul>
+<li>Implement frontend components for voice interactions</li>
+</ul>
+<h4 id="42-integrate-voice-components-with-chat-interface">4.2 Integrate Voice Components with Chat Interface</h4>
+<ul>
+<li>Update the chat interface to support voice input and output</li>
+</ul>
+<h4 id="43-add-voice-settings">4.3 Add Voice Settings</h4>
+<ul>
+<li>Add settings for voice preferences (voice type, language, etc.)</li>
+</ul>
+<h3 id="phase-5-testing-and-optimization-weeks-9-10">Phase 5: Testing and Optimization (Weeks 9-10)</h3>
+<h4 id="51-unit-testing">5.1 Unit Testing</h4>
+<ul>
+<li>Write unit tests for voice-related functionality</li>
+</ul>
+<h4 id="52-integration-testing">5.2 Integration Testing</h4>
+<ul>
+<li>Test the integration of voice capabilities with the existing system</li>
+</ul>
+<h4 id="53-performance-optimization">5.3 Performance Optimization</h4>
+<ul>
+<li>Optimize voice processing for better performance</li>
+</ul>
+<h4 id="54-user-acceptance-testing">5.4 User Acceptance Testing</h4>
+<ul>
+<li>Gather feedback from users and make improvements</li>
+</ul>
+<h2 id="implementation-considerations">Implementation Considerations</h2>
+<h3 id="api-selection">API Selection</h3>
+<ul>
+<li>Consider using established voice APIs such as Google Cloud Text-to-Speech/Speech-to-Text, Amazon Polly/Transcribe, or Microsoft Azure Cognitive Services.</li>
+<li>Evaluate factors such as cost, quality, language support, and latency.</li>
+</ul>
+<h3 id="security-considerations">Security Considerations</h3>
+<ul>
+<li>Ensure that voice data is transmitted securely.</li>
+<li>Implement proper authentication and authorization for voice endpoints.</li>
+<li>Consider privacy implications of storing voice data.</li>
+</ul>
+<h3 id="performance-optimization">Performance Optimization</h3>
+<ul>
+<li>Implement caching for frequently used voice responses.</li>
+<li>Consider streaming audio for better user experience.</li>
+<li>Optimize audio formats and quality for different use cases.</li>
+</ul>
+<h3 id="error-handling">Error Handling</h3>
+<ul>
+<li>Implement robust error handling for voice processing failures.</li>
+<li>Provide fallback mechanisms when voice processing is unavailable.</li>
+</ul>
+<h2 id="future-enhancements">Future Enhancements</h2>
+<ol>
+<li><strong>Voice Authentication</strong>: Add voice biometric authentication for enhanced security.</li>
+<li><strong>Voice Commands</strong>: Implement custom voice commands for common actions.</li>
+<li><strong>Multi-language Support</strong>: Expand voice capabilities to support multiple languages.</li>
+<li><strong>Voice Customization</strong>: Allow users to customize voice parameters (pitch, speed, etc.).</li>
+<li><strong>Voice Analytics</strong>: Add analytics to track voice usage and performance.</li>
+</ol>
+<h2 id="conclusion">Conclusion</h2>
+<p>This implementation plan provides a comprehensive approach to integrating Voice API capabilities into the PSScript Manager platform. By following this phased approach, we can ensure a smooth integration that enhances the platform's capabilities while maintaining its existing functionality.</p>
+    <div class="footer">Generated 2026-01-13 06:26 UTC</div>
+  </div>
+</body>
+</html>

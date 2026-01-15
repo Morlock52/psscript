@@ -1,6 +1,5 @@
 import React, { useState } from 'react';
 import { NavLink } from 'react-router-dom';
-import { useTheme } from '../hooks/useTheme';
 import { useAuth } from '../hooks/useAuth';
 
 // Define submenu item interface
@@ -26,10 +25,9 @@ interface SidebarProps {
 }
 
 const Sidebar: React.FC<SidebarProps> = ({ isOpen, onClose }) => {
-  const { theme } = useTheme();
   const { isAuthenticated } = useAuth();
   const [aiMenuOpen, setAiMenuOpen] = useState(false);
-  
+
   // Define navigation items
   const navItems: NavItem[] = [
     {
@@ -98,7 +96,7 @@ const Sidebar: React.FC<SidebarProps> = ({ isOpen, onClose }) => {
       ),
     },
   ];
-  
+
   // Define authenticated-only items
   const authItems: NavItem[] = [
     {
@@ -112,70 +110,99 @@ const Sidebar: React.FC<SidebarProps> = ({ isOpen, onClose }) => {
       ),
     },
   ];
-  
+
   // Define auth-related items
   const authActionItems: NavItem[] = isAuthenticated
     ? []
     : [
-        {
-          name: 'Login',
-          path: '/login',
-          icon: (
-            <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 16l-4-4m0 0l4-4m-4 4h14m-5 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h7a3 3 0 013 3v1" />
-            </svg>
-          ),
-        },
-        {
-          name: 'Register',
-          path: '/register',
-          icon: (
-            <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M18 9v3m0 0v3m0-3h3m-3 0h-3m-2-5a4 4 0 11-8 0 4 4 0 018 0zM3 20a6 6 0 0112 0v1H3v-1z" />
-            </svg>
-          ),
-        },
-      ];
-  
+      {
+        name: 'Login',
+        path: '/login',
+        icon: (
+          <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 16l-4-4m0 0l4-4m-4 4h14m-5 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h7a3 3 0 013 3v1" />
+          </svg>
+        ),
+      },
+      {
+        name: 'Register',
+        path: '/register',
+        icon: (
+          <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M18 9v3m0 0v3m0-3h3m-3 0h-3m-2-5a4 4 0 11-8 0 4 4 0 018 0zM3 20a6 6 0 0112 0v1H3v-1z" />
+          </svg>
+        ),
+      },
+    ];
+
   // Combine all items
   const allItems: NavItem[] = [...navItems, ...(isAuthenticated ? authItems : []), ...authActionItems];
-  
+
   // Toggle AI submenu
   const toggleAiMenu = () => {
     setAiMenuOpen(!aiMenuOpen);
   };
-  
+
+  // Nav link base styles
+  const navLinkBase = `
+    flex items-center px-4 py-2.5 text-sm font-medium rounded-lg
+    transition-all duration-200
+  `;
+
+  // Active nav link styles
+  const navLinkActive = `
+    bg-gradient-to-r from-[var(--color-primary)]/10 to-[var(--color-accent)]/10
+    text-[var(--color-primary)]
+    border-l-3 border-[var(--color-primary)]
+  `;
+
+  // Inactive nav link styles
+  const navLinkInactive = `
+    text-[var(--color-text-secondary)]
+    hover:text-[var(--color-text-primary)]
+    hover:bg-[var(--color-bg-tertiary)]
+  `;
+
   return (
     <>
       {/* Backdrop */}
       {isOpen && (
         <div
-          className="fixed inset-0 bg-black bg-opacity-50 z-20 lg:hidden"
+          className="fixed inset-0 bg-black/50 backdrop-blur-sm z-20 lg:hidden transition-opacity"
           onClick={onClose}
           aria-hidden="true"
         />
       )}
-      
+
       {/* Sidebar */}
       <div
-        className={`fixed inset-y-0 left-0 z-30 w-64 transform ${
-          isOpen ? 'translate-x-0' : '-translate-x-full'
-        } transition-transform duration-300 ease-in-out ${
-          theme === 'dark' ? 'bg-gray-900' : 'bg-white'
-        } lg:translate-x-0 lg:static lg:w-auto`}
+        className={`fixed inset-y-0 left-0 z-30 w-64 transform ${isOpen ? 'translate-x-0' : '-translate-x-full'
+          } transition-transform duration-300 ease-in-out
+          bg-[var(--color-bg-primary)]
+          border-r border-[var(--color-border-default)]
+          lg:translate-x-0 lg:static lg:w-auto`}
       >
         {/* Logo and close button */}
-        <div className="flex items-center justify-between p-4">
-          <div className="flex items-center">
-            <div className={`text-2xl font-bold ${theme === 'dark' ? 'text-blue-400' : 'text-blue-600'}`}>
-              PSScript
+        <div className="flex items-center justify-between p-4 border-b border-[var(--color-border-default)]">
+          <div className="flex items-center gap-3">
+            {/* Logo icon */}
+            <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-[var(--color-primary)] to-[var(--color-accent)] flex items-center justify-center shadow-lg">
+              <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+              </svg>
+            </div>
+            <div>
+              <div className="text-lg font-bold bg-gradient-to-r from-[var(--color-primary)] to-[var(--color-accent)] bg-clip-text text-transparent">
+                PSScript
+              </div>
+              <div className="text-xs text-[var(--color-text-tertiary)]">
+                AI-Powered
+              </div>
             </div>
           </div>
           <button
             onClick={onClose}
-            className={`p-2 rounded-md lg:hidden ${
-              theme === 'dark' ? 'hover:bg-gray-800' : 'hover:bg-gray-100'
-            }`}
+            className="p-2 rounded-lg lg:hidden text-[var(--color-text-secondary)] hover:text-[var(--color-text-primary)] hover:bg-[var(--color-bg-tertiary)] transition-colors"
             aria-label="Close menu"
           >
             <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -183,9 +210,9 @@ const Sidebar: React.FC<SidebarProps> = ({ isOpen, onClose }) => {
             </svg>
           </button>
         </div>
-        
+
         {/* Navigation */}
-        <nav className={`mt-5 px-2 ${theme === 'dark' ? 'text-gray-300' : 'text-gray-600'}`}>
+        <nav className="mt-4 px-3 flex-1">
           <div className="space-y-1">
             {allItems.map((item, index) => (
               item.hasSubmenu ? (
@@ -193,19 +220,15 @@ const Sidebar: React.FC<SidebarProps> = ({ isOpen, onClose }) => {
                   {/* Parent menu item with submenu */}
                   <button
                     onClick={toggleAiMenu}
-                    className={`w-full flex items-center justify-between px-4 py-2 text-sm font-medium rounded-md ${
-                      theme === 'dark'
-                        ? 'hover:bg-gray-800 hover:text-white'
-                        : 'hover:bg-gray-100 hover:text-gray-900'
-                    }`}
+                    className={`w-full ${navLinkBase} ${navLinkInactive} justify-between`}
                   >
-                    <div className="flex items-center">
-                      <span className="mr-3">{item.icon}</span>
+                    <div className="flex items-center gap-3">
+                      <span className="text-[var(--color-text-tertiary)]">{item.icon}</span>
                       {item.name}
                     </div>
                     <svg
                       xmlns="http://www.w3.org/2000/svg"
-                      className={`h-4 w-4 transition-transform ${aiMenuOpen ? 'transform rotate-180' : ''}`}
+                      className={`h-4 w-4 transition-transform duration-200 ${aiMenuOpen ? 'rotate-180' : ''}`}
                       fill="none"
                       viewBox="0 0 24 24"
                       stroke="currentColor"
@@ -213,64 +236,54 @@ const Sidebar: React.FC<SidebarProps> = ({ isOpen, onClose }) => {
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
                     </svg>
                   </button>
-                  
-                  {/* Submenu items */}
-                  {aiMenuOpen && (
-                    <div className="pl-10 mt-1 space-y-1">
+
+                  {/* Submenu items with animation */}
+                  <div className={`overflow-hidden transition-all duration-200 ${aiMenuOpen ? 'max-h-40 opacity-100' : 'max-h-0 opacity-0'}`}>
+                    <div className="pl-6 mt-1 space-y-1 border-l-2 border-[var(--color-border-default)] ml-6">
                       {item.submenuItems?.map((subItem, subIndex) => (
                         <NavLink
                           key={`subitem-${subIndex}`}
                           to={subItem.path}
                           className={({ isActive }) =>
-                            `flex items-center px-4 py-2 text-sm font-medium rounded-md ${
-                              isActive
-                                ? theme === 'dark'
-                                  ? 'bg-gray-800 text-white'
-                                  : 'bg-gray-100 text-blue-600'
-                                : theme === 'dark'
-                                ? 'hover:bg-gray-800 hover:text-white'
-                                : 'hover:bg-gray-100 hover:text-gray-900'
-                            }`
+                            `${navLinkBase} ${isActive ? navLinkActive : navLinkInactive} gap-3`
                           }
                           onClick={onClose}
                         >
-                          <span className="mr-3">{subItem.icon}</span>
+                          <span className="text-[var(--color-text-tertiary)]">{subItem.icon}</span>
                           {subItem.name}
                         </NavLink>
                       ))}
                     </div>
-                  )}
+                  </div>
                 </div>
               ) : (
                 <NavLink
                   key={item.path}
-                  to={item.path}
+                  to={item.path!}
                   className={({ isActive }) =>
-                    `flex items-center px-4 py-2 text-sm font-medium rounded-md ${
-                      isActive
-                        ? theme === 'dark'
-                          ? 'bg-gray-800 text-white'
-                          : 'bg-gray-100 text-blue-600'
-                        : theme === 'dark'
-                        ? 'hover:bg-gray-800 hover:text-white'
-                        : 'hover:bg-gray-100 hover:text-gray-900'
-                    }`
+                    `${navLinkBase} ${isActive ? navLinkActive : navLinkInactive} gap-3`
                   }
                   onClick={onClose}
                 >
-                  <span className="mr-3">{item.icon}</span>
+                  <span className="text-[var(--color-text-tertiary)]">{item.icon}</span>
                   {item.name}
                 </NavLink>
               )
             ))}
           </div>
         </nav>
-        
+
         {/* Footer */}
-        <div className="absolute bottom-0 w-full p-4">
-          <div className={`text-xs ${theme === 'dark' ? 'text-gray-500' : 'text-gray-400'}`}>
-            <p>&copy; 2025 PSScript</p>
-            <p className="mt-1">AI-Powered PowerShell Management</p>
+        <div className="absolute bottom-0 w-full p-4 border-t border-[var(--color-border-default)]">
+          <div className="flex items-center justify-between">
+            <div className="text-xs text-[var(--color-text-tertiary)]">
+              <p className="font-medium">&copy; 2025 PSScript</p>
+              <p className="mt-0.5 opacity-75">AI-Powered Management</p>
+            </div>
+            {/* Version badge */}
+            <span className="px-2 py-1 text-xs font-medium rounded-full bg-[var(--color-bg-tertiary)] text-[var(--color-text-tertiary)]">
+              v1.0
+            </span>
           </div>
         </div>
       </div>

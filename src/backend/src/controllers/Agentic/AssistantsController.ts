@@ -327,7 +327,7 @@ export class AssistantsController {
   async submitToolOutputs(req: Request, res: Response) {
     try {
       const { runId } = req.params;
-      const { tool_outputs }: SubmitToolOutputsParams = req.body;
+      const { tool_outputs }: SubmitToolOutputsParams = req.body; // eslint-disable-line camelcase -- OpenAI API format
       
       // Get the run
       const run = await assistantsStore.retrieveRun(runId);

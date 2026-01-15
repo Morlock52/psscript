@@ -1,0 +1,1259 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <base href="file:///Users/morlock/fun/psscript/" />
+  <title>README</title>
+  <style>
+:root {
+  color-scheme: light;
+}
+body {
+  font-family: "Segoe UI", "Helvetica Neue", Arial, sans-serif;
+  margin: 0;
+  padding: 0;
+  background: #ffffff;
+  color: #0f172a;
+}
+.markdown-body {
+  max-width: 980px;
+  margin: 40px auto 60px;
+  padding: 0 32px;
+  line-height: 1.65;
+}
+.markdown-body h1 {
+  font-size: 32px;
+  margin-bottom: 12px;
+  border-bottom: 2px solid #e2e8f0;
+  padding-bottom: 12px;
+  page-break-before: always;
+  page-break-after: avoid;
+  break-before: page;
+  break-after: avoid;
+}
+.markdown-body h1:first-of-type {
+  page-break-before: avoid;
+  break-before: avoid;
+}
+.markdown-body h2 {
+  font-size: 24px;
+  margin-top: 28px;
+  border-bottom: 1px solid #e2e8f0;
+  padding-bottom: 8px;
+  page-break-before: always;
+  page-break-after: avoid;
+  break-before: page;
+  break-after: avoid;
+}
+.markdown-body h3 {
+  font-size: 18px;
+  margin-top: 20px;
+  page-break-after: avoid;
+  break-after: avoid;
+}
+.markdown-body h4, .markdown-body h5, .markdown-body h6 {
+  page-break-after: avoid;
+  break-after: avoid;
+}
+.markdown-body table {
+  width: 100%;
+  border-collapse: collapse;
+  margin: 16px 0;
+  font-size: 14px;
+  page-break-inside: avoid;
+  break-inside: avoid;
+}
+.markdown-body th,
+.markdown-body td {
+  border: 1px solid #e2e8f0;
+  padding: 8px 10px;
+  text-align: left;
+}
+.markdown-body th {
+  background: #f8fafc;
+}
+.markdown-body tr {
+  page-break-inside: avoid;
+  break-inside: avoid;
+}
+.markdown-body code {
+  background: #f1f5f9;
+  padding: 2px 4px;
+  border-radius: 4px;
+  font-family: "SFMono-Regular", Menlo, Consolas, monospace;
+  font-size: 0.92em;
+}
+.markdown-body pre {
+  background: #0f172a;
+  color: #e2e8f0;
+  padding: 16px;
+  border-radius: 8px;
+  overflow-x: auto;
+  page-break-inside: avoid;
+  break-inside: avoid;
+}
+.markdown-body pre code {
+  background: transparent;
+  color: inherit;
+}
+.markdown-body blockquote {
+  border-left: 4px solid #38bdf8;
+  margin: 16px 0;
+  padding: 8px 16px;
+  background: #f8fafc;
+  color: #334155;
+}
+.markdown-body img {
+  max-width: 100%;
+  height: auto;
+  display: block;
+  margin: 16px 0;
+  border-radius: 10px;
+  box-shadow: 0 8px 20px rgba(15, 23, 42, 0.12);
+  page-break-inside: avoid;
+  break-inside: avoid;
+}
+.markdown-body figure {
+  page-break-inside: avoid;
+  break-inside: avoid;
+  margin: 16px 0;
+}
+.markdown-body a {
+  color: #2563eb;
+  text-decoration: none;
+}
+.markdown-body a:hover {
+  text-decoration: underline;
+}
+.cover {
+  padding: 80px 60px 60px;
+  background: linear-gradient(135deg, #0b1220 0%, #1e3a8a 100%);
+  color: #f8fafc;
+  border-radius: 18px;
+  margin-bottom: 32px;
+}
+.cover-title {
+  font-size: 36px;
+  font-weight: 700;
+  margin: 0 0 12px;
+}
+.cover-subtitle {
+  font-size: 18px;
+  color: #cbd5f5;
+  margin: 0 0 16px;
+}
+.cover-meta {
+  font-size: 13px;
+  color: #94a3b8;
+}
+.page-break {
+  page-break-after: always;
+  break-after: page;
+}
+.footer {
+  margin-top: 40px;
+  font-size: 12px;
+  color: #64748b;
+}
+/* Print and PDF-specific styles */
+@page {
+  margin: 20mm 18mm;
+}
+@media print {
+  .markdown-body {
+    orphans: 3;
+    widows: 3;
+  }
+  .markdown-body p {
+    orphans: 3;
+    widows: 3;
+  }
+  .markdown-body li {
+    page-break-inside: avoid;
+    break-inside: avoid;
+  }
+  .markdown-body ul, .markdown-body ol {
+    page-break-before: avoid;
+    break-before: avoid;
+  }
+  .markdown-body blockquote {
+    page-break-inside: avoid;
+    break-inside: avoid;
+  }
+  /* Keep section content together */
+  .markdown-body h2 + *, .markdown-body h3 + * {
+    page-break-before: avoid;
+    break-before: avoid;
+  }
+}
+</style>
+</head>
+<body>
+  <div class="markdown-body">
+    
+  <section class="cover page-break">
+    <h1 class="cover-title">PSScript Manager</h1>
+    <p class="cover-subtitle">AI-powered PowerShell script management and analysis platform</p>
+    <p class="cover-meta">Product README</p>
+  </section>
+  
+    <p align="center">
+  <img src="docs/graphics/banner.svg" alt="PSScript Manager" />
+</p>
+
+<p align="center">
+  PSScript Manager is an AI-powered platform for managing, analyzing, and optimizing PowerShell scripts with an end-to-end workflow for teams.
+</p>
+
+<p align="center">
+  <img alt="status" src="https://img.shields.io/badge/status-active-brightgreen" />
+  <img alt="stack" src="https://img.shields.io/badge/stack-React%20%7C%20Node%20%7C%20Python-blue" />
+  <img alt="db" src="https://img.shields.io/badge/db-Postgres%20%2B%20pgvector-336791" />
+  <img alt="ai" src="https://img.shields.io/badge/ai-LangGraph%20%2B%20OpenAI-0f172a" />
+</p>
+
+<p align="center">
+  <a href="docs/GETTING-STARTED.md">Getting Started</a> |
+  <a href="docs/training-suite/README.md">Training Suite</a> |
+  <a href="DOCKER-QUICKSTART.md">Docker Quickstart</a> |
+  <a href="docs/SUPPORT.md">Support</a>
+</p>
+
+<h2 id="table-of-contents">Table of Contents</h2>
+<ul>
+<li><a href="#executive-overview">Executive overview</a></li>
+<li><a href="#why-psscript-manager">Why PSScript Manager</a></li>
+<li><a href="#what-it-does">What it does</a></li>
+<li><a href="#audience-and-outcomes">Audience and outcomes</a></li>
+<li><a href="#management-rollout-plan">Management rollout plan</a></li>
+<li><a href="#beginner-path-first-week">Beginner path (first week)</a></li>
+<li><a href="#screenshots">Screenshots</a></li>
+<li><a href="#how-it-works">How it works</a></li>
+<li><a href="#architecture-and-services">Architecture and services</a></li>
+<li><a href="#core-data-model">Core data model</a></li>
+<li><a href="#feature-matrix">Feature matrix</a></li>
+<li><a href="#engineer-deep-dive">Engineer deep dive</a></li>
+<li><a href="#governance-and-security">Governance and security</a></li>
+<li><a href="#quickstart">Quickstart</a></li>
+<li><a href="#local-development">Local development</a></li>
+<li><a href="#configuration">Configuration</a></li>
+<li><a href="#training-suite">Training suite</a></li>
+<li><a href="#playwright-screenshot-automation">Playwright screenshot automation</a></li>
+<li><a href="#document-exports-html--pdf--docx">Document exports (HTML + PDF + DOCX)</a></li>
+<li><a href="#documentation">Documentation</a></li>
+<li><a href="#support">Support</a></li>
+<li><a href="#documentation-patterns-referenced">Documentation patterns referenced</a></li>
+<li><a href="#license">License</a></li>
+</ul>
+<h2 id="executive-overview">Executive overview</h2>
+<p>PSScript Manager is a centralized platform for PowerShell automation that balances governance, speed, and safety. It is structured so management can roll out in phases, engineers can integrate quickly, and new users can follow a guided path.</p>
+<ul>
+<li>Management: phased rollout plan, KPIs, and governance scorecards</li>
+<li>Engineering: AI analysis pipeline, vector search, and API-first workflows</li>
+<li>New users: structured training with screenshots, labs, and checklists</li>
+</ul>
+<p>At-a-glance outcomes:</p>
+<table>
+<thead>
+<tr>
+<th>Outcome</th>
+<th>Description</th>
+<th>Evidence in product</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Reduced risk</td>
+<td>AI flags security issues and missing validation</td>
+<td>Security scorecards + analysis tab</td>
+</tr>
+<tr>
+<td>Faster discovery</td>
+<td>Semantic search finds similar scripts</td>
+<td>Search + embeddings</td>
+</tr>
+<tr>
+<td>Better governance</td>
+<td>Activity and review cadence tracked</td>
+<td>Analytics + scorecards</td>
+</tr>
+<tr>
+<td>Strong onboarding</td>
+<td>Guided training with labs</td>
+<td>Training suite + exports</td>
+</tr>
+</tbody>
+</table>
+<h2 id="why-psscript-manager">Why PSScript Manager</h2>
+<ul>
+<li>Centralizes PowerShell scripts with tagging, categories, and versioning</li>
+<li>Adds AI analysis for security, quality, and performance guidance</li>
+<li>Enables semantic search with pgvector embeddings</li>
+<li>Supports agentic workflows, AI chat, and documentation discovery</li>
+<li>Tracks activity, analytics, and governance signals</li>
+</ul>
+<h2 id="what-it-does">What it does</h2>
+<ul>
+<li>Upload, edit, tag, and manage PowerShell scripts with metadata</li>
+<li>Run AI analysis for security risks, code quality, and recommendations</li>
+<li>Find similar scripts with vector and hybrid search</li>
+<li>Provide documentation explorer and AI chat</li>
+<li>Track analytics and usage trends</li>
+<li>Provide file integrity checks with hash-based deduplication</li>
+<li>Offer voice input and output in the AI service</li>
+</ul>
+<h2 id="audience-and-outcomes">Audience and outcomes</h2>
+<table>
+<thead>
+<tr>
+<th>Audience</th>
+<th>Primary goals</th>
+<th>Key outcomes</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Script authors</td>
+<td>Upload, tag, and improve scripts</td>
+<td>Clean library with metadata and analysis</td>
+</tr>
+<tr>
+<td>Security reviewers</td>
+<td>Identify and remediate risks</td>
+<td>Scorecards and remediation notes</td>
+</tr>
+<tr>
+<td>Platform admins</td>
+<td>Operate services and reliability</td>
+<td>Stable services and clean audit trail</td>
+</tr>
+<tr>
+<td>Program managers</td>
+<td>Rollout and governance</td>
+<td>Phase milestones and KPI reporting</td>
+</tr>
+</tbody>
+</table>
+<h2 id="management-rollout-plan">Management rollout plan</h2>
+<p><img alt="Management Rollout Phases" src="docs/graphics/rollout-phases.svg" /></p>
+<p>This README summarizes the phased approach. For full details, see <code>docs/MANAGEMENT-PLAYBOOK.md</code>.</p>
+<table>
+<thead>
+<tr>
+<th>Phase</th>
+<th>Duration</th>
+<th>Focus</th>
+<th>Deliverables</th>
+<th>Success signals</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Phase 0: Discover</td>
+<td>1-2 weeks</td>
+<td>Inventory and ownership</td>
+<td>Script inventory, owners, baseline risk</td>
+<td>90% cataloged</td>
+</tr>
+<tr>
+<td>Phase 1: Pilot</td>
+<td>2-4 weeks</td>
+<td>Validate workflows</td>
+<td>Training completion, pilot scorecards</td>
+<td>10-20 scripts analyzed</td>
+</tr>
+<tr>
+<td>Phase 2: Scale</td>
+<td>4-8 weeks</td>
+<td>Expand coverage</td>
+<td>Governance cadence, dashboards</td>
+<td>60% coverage</td>
+</tr>
+<tr>
+<td>Phase 3: Optimize</td>
+<td>Ongoing</td>
+<td>Continuous improvement</td>
+<td>Automation backlog, SLA tracking</td>
+<td>95% on-time reviews</td>
+</tr>
+</tbody>
+</table>
+<p>Management KPI targets (sample):</p>
+<table>
+<thead>
+<tr>
+<th>KPI</th>
+<th>Target</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Coverage</td>
+<td>&gt;= 80% scripts analyzed</td>
+</tr>
+<tr>
+<td>Review cadence</td>
+<td>&lt;= 30 days between reviews</td>
+</tr>
+<tr>
+<td>High-risk closure</td>
+<td>100% within 30 days</td>
+</tr>
+<tr>
+<td>Owner tags</td>
+<td>100% scripts assigned</td>
+</tr>
+</tbody>
+</table>
+<p><img alt="KPI Dashboard" src="docs/graphics/kpi-dashboard.svg" /></p>
+<p>Monthly status template (management ready):</p>
+<table>
+<thead>
+<tr>
+<th>Section</th>
+<th>What to report</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Coverage</td>
+<td>% scripts analyzed, top categories, backlog</td>
+</tr>
+<tr>
+<td>Risk</td>
+<td>High-risk findings, remediation status, SLA breaches</td>
+</tr>
+<tr>
+<td>Adoption</td>
+<td>Active users, searches per user, training completion</td>
+</tr>
+<tr>
+<td>Operations</td>
+<td>Uptime, incident count, release changes</td>
+</tr>
+<tr>
+<td>Next steps</td>
+<td>Decisions needed, upcoming training, owners</td>
+</tr>
+</tbody>
+</table>
+<h2 id="beginner-path-first-week">Beginner path (first week)</h2>
+<p>Use this path if you are brand new to the platform. It pairs screenshots with action steps and leaves deeper automation for later.</p>
+<p><img alt="Beginner Journey" src="docs/graphics/beginner-journey.svg" /></p>
+<table>
+<thead>
+<tr>
+<th>Day</th>
+<th>Focus</th>
+<th>Actions</th>
+<th>Evidence</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Day 0</td>
+<td>Access + orientation</td>
+<td>Login, open Dashboard, review Scripts list</td>
+<td>Dashboard + Scripts view</td>
+</tr>
+<tr>
+<td>Day 1</td>
+<td>Upload + analysis</td>
+<td>Upload one script, run analysis, review findings</td>
+<td>Script detail + analysis tab</td>
+</tr>
+<tr>
+<td>Day 3</td>
+<td>Search + docs</td>
+<td>Run keyword search, try vector search, read docs</td>
+<td>Search results + docs panel</td>
+</tr>
+<tr>
+<td>Day 7</td>
+<td>Governance basics</td>
+<td>Tag owners, capture remediation notes</td>
+<td>Scorecard + audit notes</td>
+</tr>
+</tbody>
+</table>
+<p>Recommended next step: complete <code>docs/training-suite/TRAINING-GUIDE.md</code>.</p>
+<h3 id="day-0-login-and-orient-15-30-minutes">Day 0: Login and orient (15-30 minutes)</h3>
+<table>
+<thead>
+<tr>
+<th>Step</th>
+<th>Where</th>
+<th>Action</th>
+<th>Expected result</th>
+<th>Screenshot</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>1</td>
+<td>Login</td>
+<td>Click "Use Default Login"</td>
+<td>You land on the dashboard</td>
+<td>docs/screenshots/login.png</td>
+</tr>
+<tr>
+<td>2</td>
+<td>Dashboard</td>
+<td>Scan the top stats cards</td>
+<td>You see total scripts and recent activity</td>
+<td>docs/screenshots/dashboard.png</td>
+</tr>
+<tr>
+<td>3</td>
+<td>Scripts</td>
+<td>Open the script list</td>
+<td>You see scripts with tags and scores</td>
+<td>docs/screenshots/scripts.png</td>
+</tr>
+</tbody>
+</table>
+<h3 id="day-1-upload-and-analyze-30-45-minutes">Day 1: Upload and analyze (30-45 minutes)</h3>
+<table>
+<thead>
+<tr>
+<th>Step</th>
+<th>Where</th>
+<th>Action</th>
+<th>Expected result</th>
+<th>Screenshot</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>1</td>
+<td>Upload</td>
+<td>Upload <code>test-script.ps1</code> and add tags</td>
+<td>Script appears in the library</td>
+<td>docs/screenshots/upload.png</td>
+</tr>
+<tr>
+<td>2</td>
+<td>Script detail</td>
+<td>Open the script and view metadata</td>
+<td>Tags, category, and version visible</td>
+<td>docs/screenshots/script-detail.png</td>
+</tr>
+<tr>
+<td>3</td>
+<td>Analysis</td>
+<td>Review findings and scores</td>
+<td>Security and quality scores appear</td>
+<td>docs/screenshots/analysis.png</td>
+</tr>
+</tbody>
+</table>
+<h3 id="day-3-search-and-documentation-20-30-minutes">Day 3: Search and documentation (20-30 minutes)</h3>
+<table>
+<thead>
+<tr>
+<th>Step</th>
+<th>Where</th>
+<th>Action</th>
+<th>Expected result</th>
+<th>Screenshot</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>1</td>
+<td>Scripts</td>
+<td>Search for a cmdlet (example: Get-ADUser)</td>
+<td>Keyword results are returned</td>
+<td>docs/screenshots/scripts.png</td>
+</tr>
+<tr>
+<td>2</td>
+<td>Documentation</td>
+<td>Search for a command</td>
+<td>Documentation details appear</td>
+<td>docs/screenshots/documentation.png</td>
+</tr>
+</tbody>
+</table>
+<h3 id="day-7-governance-basics-20-minutes">Day 7: Governance basics (20 minutes)</h3>
+<table>
+<thead>
+<tr>
+<th>Step</th>
+<th>Where</th>
+<th>Action</th>
+<th>Expected result</th>
+<th>Screenshot</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>1</td>
+<td>Script detail</td>
+<td>Add an owner tag (example: owner:team-identity)</td>
+<td>Ownership visible in metadata</td>
+<td>docs/screenshots/script-detail.png</td>
+</tr>
+<tr>
+<td>2</td>
+<td>Analytics</td>
+<td>Review usage trends</td>
+<td>Activity metrics displayed</td>
+<td>docs/screenshots/analytics.png</td>
+</tr>
+<tr>
+<td>3</td>
+<td>Scorecard</td>
+<td>Record a remediation note</td>
+<td>Findings tracked for follow up</td>
+<td>docs/graphics/security-scorecard.svg</td>
+</tr>
+</tbody>
+</table>
+<p>Beginner checklist:</p>
+<ul>
+<li>[ ] Logged in with default credentials</li>
+<li>[ ] Uploaded a script and added tags</li>
+<li>[ ] Reviewed AI analysis scores</li>
+<li>[ ] Tried keyword or vector search</li>
+<li>[ ] Added an owner tag and review note</li>
+</ul>
+<h2 id="screenshots">Screenshots</h2>
+<table>
+<thead>
+<tr>
+<th>Login</th>
+<th>Dashboard</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><img alt="Login" src="docs/screenshots/login.png" /></td>
+<td><img alt="Dashboard" src="docs/screenshots/dashboard.png" /></td>
+</tr>
+</tbody>
+</table>
+<table>
+<thead>
+<tr>
+<th>Script Library</th>
+<th>Script Detail</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><img alt="Script Library" src="docs/screenshots/scripts.png" /></td>
+<td><img alt="Script Detail" src="docs/screenshots/script-detail.png" /></td>
+</tr>
+</tbody>
+</table>
+<table>
+<thead>
+<tr>
+<th>Script Upload</th>
+<th>Script Analysis</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><img alt="Script Upload" src="docs/screenshots/upload.png" /></td>
+<td><img alt="Script Analysis" src="docs/screenshots/analysis.png" /></td>
+</tr>
+</tbody>
+</table>
+<table>
+<thead>
+<tr>
+<th>Documentation Explorer</th>
+<th>Analytics</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><img alt="Documentation Explorer" src="docs/screenshots/documentation.png" /></td>
+<td><img alt="Analytics" src="docs/screenshots/analytics.png" /></td>
+</tr>
+</tbody>
+</table>
+<table>
+<thead>
+<tr>
+<th>AI Chat</th>
+<th>Settings</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><img alt="AI Chat" src="docs/screenshots/chat.png" /></td>
+<td><img alt="Settings" src="docs/screenshots/settings.png" /></td>
+</tr>
+</tbody>
+</table>
+<h2 id="how-it-works">How it works</h2>
+<h3 id="platform-architecture">Platform architecture</h3>
+<p><img alt="Architecture Diagram" src="docs/graphics/architecture.svg" /></p>
+<h3 id="analysis-pipeline">Analysis pipeline</h3>
+<p><img alt="Analysis Pipeline" src="docs/graphics/analysis-pipeline.svg" /></p>
+<h3 id="script-lifecycle">Script lifecycle</h3>
+<p><img alt="Script Lifecycle" src="docs/graphics/lifecycle.svg" /></p>
+<h3 id="search-modes">Search modes</h3>
+<p><img alt="Search Modes" src="docs/graphics/search-modes.svg" /></p>
+<h3 id="security-scorecard">Security scorecard</h3>
+<p><img alt="Security Scorecard" src="docs/graphics/security-scorecard.svg" /></p>
+<h3 id="usage-and-governance-signals">Usage and governance signals</h3>
+<p><img alt="Sample Usage Metrics" src="docs/graphics/usage-metrics.svg" /></p>
+<h3 id="script-analysis-output-example">Script analysis output example</h3>
+<pre><code class="language-json">{
+  &quot;security_score&quot;: 7.8,
+  &quot;quality_score&quot;: 8.3,
+  &quot;issues&quot;: [
+    &quot;Hardcoded credential found on line 42&quot;,
+    &quot;Missing input validation for parameters&quot;
+  ],
+  &quot;recommendations&quot;: [
+    &quot;Use Get-Credential or SecretStore&quot;,
+    &quot;Add ValidateSet or ValidatePattern&quot;
+  ]
+}
+</code></pre>
+<h2 id="architecture-and-services">Architecture and services</h2>
+<table>
+<thead>
+<tr>
+<th>Component</th>
+<th>Role</th>
+<th>Tech</th>
+<th>Key paths</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Frontend</td>
+<td>UI and workflows</td>
+<td>React, Vite, TypeScript</td>
+<td>src/frontend</td>
+</tr>
+<tr>
+<td>Backend</td>
+<td>API, auth, scripts</td>
+<td>Node, Express, TypeScript</td>
+<td>src/backend</td>
+</tr>
+<tr>
+<td>AI Service</td>
+<td>Analysis, chat, voice</td>
+<td>Python, FastAPI, LangGraph</td>
+<td>src/ai</td>
+</tr>
+<tr>
+<td>Database</td>
+<td>Metadata and embeddings</td>
+<td>Postgres, pgvector</td>
+<td>src/db</td>
+</tr>
+<tr>
+<td>Cache</td>
+<td>Performance</td>
+<td>Redis</td>
+<td>docker/</td>
+</tr>
+</tbody>
+</table>
+<h2 id="core-data-model">Core data model</h2>
+<p><img alt="Core Data Model" src="docs/graphics/data-model.svg" /></p>
+<table>
+<thead>
+<tr>
+<th>Entity</th>
+<th>Purpose</th>
+<th>Notes</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Script</td>
+<td>Source content and metadata</td>
+<td>Stored with hash for dedup</td>
+</tr>
+<tr>
+<td>ScriptAnalysis</td>
+<td>AI output and scorecards</td>
+<td>Linked to Script</td>
+</tr>
+<tr>
+<td>Embeddings</td>
+<td>Vector representations</td>
+<td>Used for similarity search</td>
+</tr>
+<tr>
+<td>Tags</td>
+<td>Metadata and ownership</td>
+<td>Enables filtering and governance</td>
+</tr>
+<tr>
+<td>ScriptVersion</td>
+<td>Change history</td>
+<td>Supports comparison and rollback</td>
+</tr>
+<tr>
+<td>ExecutionLog</td>
+<td>Run history and outcomes</td>
+<td>Used for audit and analytics</td>
+</tr>
+</tbody>
+</table>
+<h2 id="feature-matrix">Feature matrix</h2>
+<table>
+<thead>
+<tr>
+<th>Area</th>
+<th>Capabilities</th>
+<th>Notes</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Script management</td>
+<td>Upload, edit, tag, categorize, version</td>
+<td>UI + API endpoints</td>
+</tr>
+<tr>
+<td>AI analysis</td>
+<td>Security, quality, performance, best practices</td>
+<td>Mock mode supported</td>
+</tr>
+<tr>
+<td>Vector search</td>
+<td>Similarity and hybrid search</td>
+<td>pgvector embeddings</td>
+</tr>
+<tr>
+<td>Documentation</td>
+<td>Crawl and explore PowerShell docs</td>
+<td>Search + stats</td>
+</tr>
+<tr>
+<td>Analytics</td>
+<td>Usage, token tracking, trends</td>
+<td>Analytics dashboard</td>
+</tr>
+<tr>
+<td>Voice</td>
+<td>TTS and STT endpoints</td>
+<td>Multi-provider support</td>
+</tr>
+<tr>
+<td>Integrity</td>
+<td>Hash deduplication</td>
+<td>Prevents duplicates</td>
+</tr>
+</tbody>
+</table>
+<h2 id="engineer-deep-dive">Engineer deep dive</h2>
+<h3 id="api-surface-selected">API surface (selected)</h3>
+<table>
+<thead>
+<tr>
+<th>Service</th>
+<th>Endpoint</th>
+<th>Method</th>
+<th>Purpose</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Backend</td>
+<td>/api/scripts</td>
+<td>GET</td>
+<td>List scripts with filters</td>
+</tr>
+<tr>
+<td>Backend</td>
+<td>/api/scripts/upload</td>
+<td>POST</td>
+<td>Upload script file + metadata</td>
+</tr>
+<tr>
+<td>Backend</td>
+<td>/api/scripts/:id/analyze</td>
+<td>POST</td>
+<td>Run AI analysis and persist</td>
+</tr>
+<tr>
+<td>Backend</td>
+<td>/api/scripts/:id/analysis-stream</td>
+<td>GET</td>
+<td>SSE analysis progress</td>
+</tr>
+<tr>
+<td>Backend</td>
+<td>/api/scripts/search</td>
+<td>GET</td>
+<td>Keyword search + filters</td>
+</tr>
+<tr>
+<td>Backend</td>
+<td>/api/scripts/upload/async</td>
+<td>POST</td>
+<td>Async upload queue</td>
+</tr>
+<tr>
+<td>Backend</td>
+<td>/api/scripts/upload/status/:uploadId</td>
+<td>GET</td>
+<td>Async status tracking</td>
+</tr>
+<tr>
+<td>AI service</td>
+<td>/analyze</td>
+<td>POST</td>
+<td>Analyze script content</td>
+</tr>
+<tr>
+<td>AI service</td>
+<td>/chat</td>
+<td>POST</td>
+<td>AI chat workflows</td>
+</tr>
+<tr>
+<td>AI service</td>
+<td>/embedding</td>
+<td>POST</td>
+<td>Create embeddings</td>
+</tr>
+<tr>
+<td>AI service</td>
+<td>/similar</td>
+<td>POST</td>
+<td>Semantic similarity search</td>
+</tr>
+</tbody>
+</table>
+<h3 id="workflow-notes">Workflow notes</h3>
+<ul>
+<li>Upload flow writes script metadata, hashes, and tags before analysis runs.</li>
+<li>Analysis flow stores scorecards and findings as linked analysis records.</li>
+<li>Search uses keyword filters plus vector similarity when embeddings exist.</li>
+<li>Governance uses analytics and scorecards to drive review cadence.</li>
+</ul>
+<h3 id="analysis-pipeline-detail">Analysis pipeline detail</h3>
+<p><img alt="Analysis Pipeline" src="docs/graphics/analysis-pipeline.svg" /></p>
+<table>
+<thead>
+<tr>
+<th>Stage</th>
+<th>Input</th>
+<th>Output</th>
+<th>Notes</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Ingest</td>
+<td>Script file + metadata</td>
+<td>Stored script + hash</td>
+<td>Hash prevents duplicates</td>
+</tr>
+<tr>
+<td>Analyze</td>
+<td>Script content</td>
+<td>Scores + findings</td>
+<td>AI service computes scorecards</td>
+</tr>
+<tr>
+<td>Persist</td>
+<td>Analysis payload</td>
+<td>ScriptAnalysis record</td>
+<td>Linked to Script</td>
+</tr>
+<tr>
+<td>Index</td>
+<td>Script text</td>
+<td>Embeddings</td>
+<td>Enables semantic search</td>
+</tr>
+<tr>
+<td>Report</td>
+<td>Analytics events</td>
+<td>Dashboards</td>
+<td>Supports governance</td>
+</tr>
+</tbody>
+</table>
+<h3 id="example-requests-curl">Example requests (curl)</h3>
+<p>Upload a script file:</p>
+<pre><code class="language-bash">curl -X POST http://localhost:4000/api/scripts/upload \
+  -H &quot;Authorization: Bearer &lt;token&gt;&quot; \
+  -F &quot;title=Reset-UserPassword&quot; \
+  -F &quot;description=Reset AD user password&quot; \
+  -F &quot;tags=security,active-directory&quot; \
+  -F &quot;script_file=@test-script.ps1&quot;
+</code></pre>
+<p>Analyze a script by ID:</p>
+<pre><code class="language-bash">curl -X POST http://localhost:4000/api/scripts/1/analyze \
+  -H &quot;Authorization: Bearer &lt;token&gt;&quot;
+</code></pre>
+<p>Vector search by script ID:</p>
+<pre><code class="language-bash">curl http://localhost:4000/api/scripts/1/similar
+</code></pre>
+<p>Vector search by content (AI service):</p>
+<pre><code class="language-bash">curl -X POST http://localhost:8000/similar \
+  -H &quot;Content-Type: application/json&quot; \
+  -d '{&quot;content&quot;: &quot;active directory onboarding&quot;, &quot;limit&quot;: 5}'
+</code></pre>
+<p>AI service analysis (direct):</p>
+<pre><code class="language-bash">curl -X POST http://localhost:8000/analyze \
+  -H &quot;Content-Type: application/json&quot; \
+  -d '{&quot;content&quot;: &quot;Get-ADUser -Filter *&quot;, &quot;type&quot;: &quot;security&quot;}'
+</code></pre>
+<h3 id="local-validation-checklist">Local validation checklist</h3>
+<table>
+<thead>
+<tr>
+<th>Check</th>
+<th>Command</th>
+<th>Expected result</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Backend health</td>
+<td><code>curl http://localhost:4000/health</code></td>
+<td>status: ok</td>
+</tr>
+<tr>
+<td>API health</td>
+<td><code>curl http://localhost:4000/api/health</code></td>
+<td>status: ok</td>
+</tr>
+<tr>
+<td>AI health</td>
+<td><code>curl http://localhost:8000/health</code></td>
+<td>status: ok</td>
+</tr>
+</tbody>
+</table>
+<h2 id="governance-and-security">Governance and security</h2>
+<p><img alt="Governance Loop" src="docs/graphics/governance-loop.svg" /></p>
+<table>
+<thead>
+<tr>
+<th>Control</th>
+<th>Cadence</th>
+<th>Owner</th>
+<th>Evidence</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Security scorecard review</td>
+<td>Weekly</td>
+<td>Security lead</td>
+<td>Scorecard + findings</td>
+</tr>
+<tr>
+<td>Owner tagging</td>
+<td>Continuous</td>
+<td>Script owners</td>
+<td>Metadata tags</td>
+</tr>
+<tr>
+<td>Review cadence</td>
+<td>Monthly</td>
+<td>Program manager</td>
+<td>Analytics + audit logs</td>
+</tr>
+<tr>
+<td>High-risk remediation</td>
+<td>Within 30 days</td>
+<td>Security lead</td>
+<td>Remediation notes</td>
+</tr>
+</tbody>
+</table>
+<p>Scorecard thresholds (sample):</p>
+<table>
+<thead>
+<tr>
+<th>Score band</th>
+<th>Meaning</th>
+<th>Action</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>9.0 - 10</td>
+<td>Low risk</td>
+<td>Approve and monitor</td>
+</tr>
+<tr>
+<td>7.0 - 8.9</td>
+<td>Moderate risk</td>
+<td>Fix and re-run analysis</td>
+</tr>
+<tr>
+<td>&lt; 7.0</td>
+<td>High risk</td>
+<td>Remediate before execution</td>
+</tr>
+</tbody>
+</table>
+<h2 id="quickstart">Quickstart</h2>
+<h3 id="docker-recommended">Docker (recommended)</h3>
+<pre><code class="language-bash">cp .env.example .env
+mkdir -p backups/postgres backups/redis backups/logs
+./docker-manage.sh start
+</code></pre>
+<p>See <code>DOCKER-QUICKSTART.md</code> for full setup and ports.</p>
+<h3 id="mock-mode">Mock mode</h3>
+<pre><code class="language-bash">./start-all-mock.sh
+</code></pre>
+<p>Mock mode lets you run the UI without external dependencies or API keys.</p>
+<h2 id="local-development">Local development</h2>
+<pre><code class="language-bash">npm run install:all
+npm run dev
+</code></pre>
+<p>Default ports:
+- Frontend: http://localhost:3002
+- Backend API: http://localhost:4000/api
+- AI service: http://localhost:8000</p>
+<h2 id="configuration">Configuration</h2>
+<p>Key environment variables from <code>.env.example</code>:</p>
+<table>
+<thead>
+<tr>
+<th>Variable</th>
+<th>Purpose</th>
+<th>Example</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>OPENAI_API_KEY</td>
+<td>AI analysis key</td>
+<td>sk-...</td>
+</tr>
+<tr>
+<td>AI_SERVICE_URL</td>
+<td>AI service base URL</td>
+<td>http://localhost:8000</td>
+</tr>
+<tr>
+<td>DB_HOST</td>
+<td>Postgres host</td>
+<td>localhost</td>
+</tr>
+<tr>
+<td>DB_PASSWORD</td>
+<td>Postgres password</td>
+<td>postgres</td>
+</tr>
+<tr>
+<td>JWT_SECRET</td>
+<td>Auth signing secret</td>
+<td>your_secret</td>
+</tr>
+<tr>
+<td>PGVECTOR_ENABLED</td>
+<td>Enable embeddings</td>
+<td>true</td>
+</tr>
+<tr>
+<td>ENABLE_AI_ANALYSIS</td>
+<td>Toggle AI analysis</td>
+<td>true</td>
+</tr>
+<tr>
+<td>VITE_DOCS_URL</td>
+<td>Frontend docs export base URL</td>
+<td>http://localhost:4000</td>
+</tr>
+</tbody>
+</table>
+<p>Docs export routing:
+- Backend serves exports at <code>/docs/exports</code>
+- Optional frontend override: <code>VITE_DOCS_URL=http://localhost:4000</code></p>
+<h2 id="training-suite">Training suite</h2>
+<p>The training suite is a structured onboarding program with modules, labs, checklists, and screenshots.</p>
+<ul>
+<li><code>docs/training-suite/README.md</code></li>
+<li><code>docs/training-suite/TRAINING-GUIDE.md</code></li>
+</ul>
+<h2 id="playwright-screenshot-automation">Playwright screenshot automation</h2>
+<p>The screenshot set used in this README is generated with Playwright.</p>
+<pre><code class="language-bash">scripts/capture-readme-screenshots.sh
+</code></pre>
+<p>This script starts the mock services, captures all key UI screens, and stores them in <code>docs/screenshots/</code>.</p>
+<h2 id="document-exports-html-pdf-docx">Document exports (HTML + PDF + DOCX)</h2>
+<p>Generate polished exports of key docs (README, training guide, support):</p>
+<pre><code class="language-bash">scripts/export-docs.sh
+</code></pre>
+<p>Outputs land in <code>docs/exports/</code> with <code>html/</code>, <code>pdf/</code>, and <code>docx/</code> subfolders.</p>
+<p>Key exports:</p>
+<table>
+<thead>
+<tr>
+<th>Document</th>
+<th>PDF</th>
+<th>DOCX</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>README</td>
+<td>docs/exports/pdf/README.pdf</td>
+<td>docs/exports/docx/README.docx</td>
+</tr>
+<tr>
+<td>Training guide</td>
+<td>docs/exports/pdf/Training-Guide.pdf</td>
+<td>docs/exports/docx/Training-Guide.docx</td>
+</tr>
+<tr>
+<td>Training suite</td>
+<td>docs/exports/pdf/Training-Suite.pdf</td>
+<td>docs/exports/docx/Training-Suite.docx</td>
+</tr>
+<tr>
+<td>Management playbook</td>
+<td>docs/exports/pdf/Management-Playbook.pdf</td>
+<td>docs/exports/docx/Management-Playbook.docx</td>
+</tr>
+<tr>
+<td>Support</td>
+<td>docs/exports/pdf/Support.pdf</td>
+<td>docs/exports/docx/Support.docx</td>
+</tr>
+</tbody>
+</table>
+<p>With the backend running, exports are also served at:
+- http://localhost:4000/docs/exports/</p>
+<h2 id="documentation">Documentation</h2>
+<ul>
+<li><code>docs/GETTING-STARTED.md</code></li>
+<li><code>DOCKER-QUICKSTART.md</code></li>
+<li><code>docs/README-VECTOR-SEARCH.md</code></li>
+<li><code>docs/README-VOICE-API.md</code></li>
+<li><code>docs/LOGIN-CREDENTIALS.md</code></li>
+<li><code>docs/MANAGEMENT-PLAYBOOK.md</code></li>
+<li><code>docs/training-suite/README.md</code></li>
+<li><code>docs/SUPPORT.md</code></li>
+</ul>
+<h2 id="support">Support</h2>
+<p>See <code>docs/SUPPORT.md</code> for issue reporting, triage, and operational checklists.</p>
+<h2 id="documentation-patterns-referenced">Documentation patterns referenced</h2>
+<p>Structure and layout cues inspired by:
+- https://github.com/supabase/supabase
+- https://github.com/appwrite/appwrite
+- https://github.com/posthog/posthog
+- https://github.com/pocketbase/pocketbase
+- https://github.com/prisma/prisma
+- https://github.com/istio/istio</p>
+<p>Full reference list: <code>docs/REFERENCE-SOURCES.md</code></p>
+<h2 id="license">License</h2>
+<p>MIT. See <code>LICENSE</code>.</p>
+    <div class="footer">Generated 2026-01-13 06:26 UTC</div>
+  </div>
+</body>
+</html>

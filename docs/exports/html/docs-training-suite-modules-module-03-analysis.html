@@ -1,0 +1,268 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <base href="file:///Users/morlock/fun/psscript/" />
+  <title>docs-training-suite-modules-module-03-analysis</title>
+  <style>
+:root {
+  color-scheme: light;
+}
+body {
+  font-family: "Segoe UI", "Helvetica Neue", Arial, sans-serif;
+  margin: 0;
+  padding: 0;
+  background: #ffffff;
+  color: #0f172a;
+}
+.markdown-body {
+  max-width: 980px;
+  margin: 40px auto 60px;
+  padding: 0 32px;
+  line-height: 1.65;
+}
+.markdown-body h1 {
+  font-size: 32px;
+  margin-bottom: 12px;
+  border-bottom: 2px solid #e2e8f0;
+  padding-bottom: 12px;
+  page-break-before: always;
+  page-break-after: avoid;
+  break-before: page;
+  break-after: avoid;
+}
+.markdown-body h1:first-of-type {
+  page-break-before: avoid;
+  break-before: avoid;
+}
+.markdown-body h2 {
+  font-size: 24px;
+  margin-top: 28px;
+  border-bottom: 1px solid #e2e8f0;
+  padding-bottom: 8px;
+  page-break-before: always;
+  page-break-after: avoid;
+  break-before: page;
+  break-after: avoid;
+}
+.markdown-body h3 {
+  font-size: 18px;
+  margin-top: 20px;
+  page-break-after: avoid;
+  break-after: avoid;
+}
+.markdown-body h4, .markdown-body h5, .markdown-body h6 {
+  page-break-after: avoid;
+  break-after: avoid;
+}
+.markdown-body table {
+  width: 100%;
+  border-collapse: collapse;
+  margin: 16px 0;
+  font-size: 14px;
+  page-break-inside: avoid;
+  break-inside: avoid;
+}
+.markdown-body th,
+.markdown-body td {
+  border: 1px solid #e2e8f0;
+  padding: 8px 10px;
+  text-align: left;
+}
+.markdown-body th {
+  background: #f8fafc;
+}
+.markdown-body tr {
+  page-break-inside: avoid;
+  break-inside: avoid;
+}
+.markdown-body code {
+  background: #f1f5f9;
+  padding: 2px 4px;
+  border-radius: 4px;
+  font-family: "SFMono-Regular", Menlo, Consolas, monospace;
+  font-size: 0.92em;
+}
+.markdown-body pre {
+  background: #0f172a;
+  color: #e2e8f0;
+  padding: 16px;
+  border-radius: 8px;
+  overflow-x: auto;
+  page-break-inside: avoid;
+  break-inside: avoid;
+}
+.markdown-body pre code {
+  background: transparent;
+  color: inherit;
+}
+.markdown-body blockquote {
+  border-left: 4px solid #38bdf8;
+  margin: 16px 0;
+  padding: 8px 16px;
+  background: #f8fafc;
+  color: #334155;
+}
+.markdown-body img {
+  max-width: 100%;
+  height: auto;
+  display: block;
+  margin: 16px 0;
+  border-radius: 10px;
+  box-shadow: 0 8px 20px rgba(15, 23, 42, 0.12);
+  page-break-inside: avoid;
+  break-inside: avoid;
+}
+.markdown-body figure {
+  page-break-inside: avoid;
+  break-inside: avoid;
+  margin: 16px 0;
+}
+.markdown-body a {
+  color: #2563eb;
+  text-decoration: none;
+}
+.markdown-body a:hover {
+  text-decoration: underline;
+}
+.cover {
+  padding: 80px 60px 60px;
+  background: linear-gradient(135deg, #0b1220 0%, #1e3a8a 100%);
+  color: #f8fafc;
+  border-radius: 18px;
+  margin-bottom: 32px;
+}
+.cover-title {
+  font-size: 36px;
+  font-weight: 700;
+  margin: 0 0 12px;
+}
+.cover-subtitle {
+  font-size: 18px;
+  color: #cbd5f5;
+  margin: 0 0 16px;
+}
+.cover-meta {
+  font-size: 13px;
+  color: #94a3b8;
+}
+.page-break {
+  page-break-after: always;
+  break-after: page;
+}
+.footer {
+  margin-top: 40px;
+  font-size: 12px;
+  color: #64748b;
+}
+/* Print and PDF-specific styles */
+@page {
+  margin: 20mm 18mm;
+}
+@media print {
+  .markdown-body {
+    orphans: 3;
+    widows: 3;
+  }
+  .markdown-body p {
+    orphans: 3;
+    widows: 3;
+  }
+  .markdown-body li {
+    page-break-inside: avoid;
+    break-inside: avoid;
+  }
+  .markdown-body ul, .markdown-body ol {
+    page-break-before: avoid;
+    break-before: avoid;
+  }
+  .markdown-body blockquote {
+    page-break-inside: avoid;
+    break-inside: avoid;
+  }
+  /* Keep section content together */
+  .markdown-body h2 + *, .markdown-body h3 + * {
+    page-break-before: avoid;
+    break-before: avoid;
+  }
+}
+</style>
+</head>
+<body>
+  <div class="markdown-body">
+    
+    <h1 id="module-03-ai-analysis-and-security">Module 03: AI Analysis and Security</h1>
+<h2 id="objectives">Objectives</h2>
+<ul>
+<li>Run an AI analysis on a script</li>
+<li>Interpret security and quality scores</li>
+<li>Track recommended improvements</li>
+</ul>
+<h2 id="walkthrough">Walkthrough</h2>
+<ol>
+<li>Open a script detail page.</li>
+<li>Trigger analysis or open the analysis tab.</li>
+<li>Review security findings and recommendations.</li>
+<li>Capture a remediation note for the top issue.</li>
+</ol>
+<h2 id="scorecard-snapshot">Scorecard snapshot</h2>
+<p><img alt="Security Scorecard" src="docs/graphics/security-scorecard.svg" /></p>
+<h2 id="screenshots">Screenshots</h2>
+<p><img alt="Script Analysis" src="docs/screenshots/analysis.png" /></p>
+<h2 id="score-interpretation">Score interpretation</h2>
+<table>
+<thead>
+<tr>
+<th>Band</th>
+<th>Meaning</th>
+<th>Action</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>9.0 - 10</td>
+<td>Low risk</td>
+<td>Approve and monitor</td>
+</tr>
+<tr>
+<td>7.0 - 8.9</td>
+<td>Moderate risk</td>
+<td>Plan fixes and re-run analysis</td>
+</tr>
+<tr>
+<td>&lt; 7.0</td>
+<td>High risk</td>
+<td>Remediate before execution</td>
+</tr>
+</tbody>
+</table>
+<h2 id="sample-analysis-output">Sample analysis output</h2>
+<pre><code class="language-json">{
+  &quot;security_score&quot;: 7.8,
+  &quot;quality_score&quot;: 8.3,
+  &quot;issues&quot;: [
+    &quot;Hardcoded credential found on line 42&quot;,
+    &quot;Missing input validation for parameters&quot;
+  ],
+  &quot;recommendations&quot;: [
+    &quot;Use Get-Credential or SecretStore&quot;,
+    &quot;Add ValidateSet or ValidatePattern&quot;
+  ]
+}
+</code></pre>
+<h2 id="what-to-look-for">What to look for</h2>
+<ul>
+<li>Hardcoded credentials or unsafe commands</li>
+<li>Missing parameter validation</li>
+<li>Error handling and logging gaps</li>
+</ul>
+<h2 id="verification-checklist">Verification checklist</h2>
+<ul>
+<li>Analysis results display successfully</li>
+<li>At least one recommendation is recorded for follow up</li>
+</ul>
+    <div class="footer">Generated 2026-01-13 06:26 UTC</div>
+  </div>
+</body>
+</html>

@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { getReadmeContent } from '../services/readmeService';
+import SafeHtml from './SafeHtml';
 
 interface ReadmeViewerProps {
   isOpen: boolean;
@@ -51,7 +52,7 @@ const ReadmeViewer: React.FC<ReadmeViewerProps> = ({ isOpen, onClose }) => {
       // Format links
       .replace(/\[([^\]]+)\]\(([^)]+)\)/g, '<a href="$2" class="text-blue-600 dark:text-blue-400 hover:underline">$1</a>')
       // Format unordered lists (basic)
-      .replace(/^\- (.+)$/gm, '<li class="ml-6 list-disc">$1</li>')
+      .replace(/^- (.+)$/gm, '<li class="ml-6 list-disc">$1</li>')
       // Format paragraphs (lines not captured by other patterns)
       .replace(/^([^<\n].+)$/gm, '<p class="mb-4">$1</p>')
       // Add blank line after lists
@@ -83,7 +84,10 @@ const ReadmeViewer: React.FC<ReadmeViewerProps> = ({ isOpen, onClose }) => {
               <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500"></div>
             </div>
           ) : (
-            <div dangerouslySetInnerHTML={{ __html: formatMarkdown(readmeContent) }} />
+            <SafeHtml
+              html={formatMarkdown(readmeContent)}
+              variant="markdown"
+            />
           )}
         </div>
         

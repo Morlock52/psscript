@@ -3,6 +3,12 @@ import { useQuery } from '@tanstack/react-query';
 import { analyticsService } from '../services/api';
 import CategoryPieChart from '../components/charts/CategoryPieChart';
 
+// Reusable style constants for theme-aware styling
+const cardStyles = "rounded-lg shadow-[var(--shadow-md)] p-6 bg-[var(--color-bg-elevated)] border border-[var(--color-border-default)]";
+const statCardStyles = "rounded-lg p-4 shadow-[var(--shadow-sm)] bg-[var(--color-bg-tertiary)]";
+const progressBarBgStyles = "w-full rounded-full h-2.5 bg-[var(--color-bg-primary)]";
+const categoryItemStyles = "flex items-center justify-between p-3 rounded bg-[var(--color-bg-tertiary)]";
+
 const Analytics: React.FC = () => {
   // Fetch real usage statistics
   const { data: usageStats, isLoading: usageLoading } = useQuery({
@@ -41,33 +47,33 @@ const Analytics: React.FC = () => {
     : 0;
 
   return (
-    <div className="container mx-auto pb-8">
+    <div className="container mx-auto pb-8 text-[var(--color-text-primary)]">
       <h1 className="text-2xl font-bold mb-6">Analytics Dashboard</h1>
 
       {/* Usage Statistics */}
       <div className="mb-8">
         <h2 className="text-xl font-semibold mb-4">Usage Statistics</h2>
         {usageLoading ? (
-          <div className="text-gray-400">Loading statistics...</div>
+          <div className="text-[var(--color-text-tertiary)]">Loading statistics...</div>
         ) : (
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-            <div className="bg-gray-700 rounded-lg p-4 shadow">
-              <h3 className="text-sm font-medium text-gray-400 mb-1">Total Scripts</h3>
+            <div className={statCardStyles}>
+              <h3 className="text-sm font-medium text-[var(--color-text-secondary)] mb-1">Total Scripts</h3>
               <p className="text-2xl font-bold">{usageStats?.totalScripts || 0}</p>
             </div>
 
-            <div className="bg-gray-700 rounded-lg p-4 shadow">
-              <h3 className="text-sm font-medium text-gray-400 mb-1">Total Users</h3>
+            <div className={statCardStyles}>
+              <h3 className="text-sm font-medium text-[var(--color-text-secondary)] mb-1">Total Users</h3>
               <p className="text-2xl font-bold">{usageStats?.totalUsers || 0}</p>
             </div>
 
-            <div className="bg-gray-700 rounded-lg p-4 shadow">
-              <h3 className="text-sm font-medium text-gray-400 mb-1">Total Analyses</h3>
+            <div className={statCardStyles}>
+              <h3 className="text-sm font-medium text-[var(--color-text-secondary)] mb-1">Total Analyses</h3>
               <p className="text-2xl font-bold">{usageStats?.totalAnalyses || 0}</p>
             </div>
 
-            <div className="bg-gray-700 rounded-lg p-4 shadow">
-              <h3 className="text-sm font-medium text-gray-400 mb-1">Scripts (Last 30 Days)</h3>
+            <div className={statCardStyles}>
+              <h3 className="text-sm font-medium text-[var(--color-text-secondary)] mb-1">Scripts (Last 30 Days)</h3>
               <p className="text-2xl font-bold">
                 {usageStats?.totalScripts || 0}
                 {usageStats?.scriptsChange && usageStats.scriptsChange !== 0 && (
@@ -85,9 +91,9 @@ const Analytics: React.FC = () => {
       <div className="mb-8">
         <h2 className="text-xl font-semibold mb-4">Security Overview</h2>
         {securityLoading ? (
-          <div className="text-gray-400">Loading security metrics...</div>
+          <div className="text-[var(--color-text-tertiary)]">Loading security metrics...</div>
         ) : (
-          <div className="bg-gray-700 rounded-lg shadow p-6">
+          <div className={cardStyles}>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
               {/* Script Security Distribution */}
               <div>
@@ -96,12 +102,12 @@ const Analytics: React.FC = () => {
                   <div className="space-y-4">
                     <div>
                       <div className="flex justify-between mb-1">
-                        <span className="text-sm font-medium text-green-400">High Security (8-10)</span>
-                        <span className="text-sm font-medium text-gray-300">
+                        <span className="text-sm font-medium text-green-500">High Security (8-10)</span>
+                        <span className="text-sm font-medium text-[var(--color-text-secondary)]">
                           {securityMetrics?.highSecurityCount || 0} scripts ({highSecurityPercentage}%)
                         </span>
                       </div>
-                      <div className="w-full bg-gray-800 rounded-full h-2.5">
+                      <div className={progressBarBgStyles}>
                         <div
                           className="bg-green-500 h-2.5 rounded-full"
                           style={{ width: `${highSecurityPercentage}%` }}
@@ -111,12 +117,12 @@ const Analytics: React.FC = () => {
 
                     <div>
                       <div className="flex justify-between mb-1">
-                        <span className="text-sm font-medium text-yellow-400">Medium Security (5-7)</span>
-                        <span className="text-sm font-medium text-gray-300">
+                        <span className="text-sm font-medium text-yellow-500">Medium Security (5-7)</span>
+                        <span className="text-sm font-medium text-[var(--color-text-secondary)]">
                           {securityMetrics?.mediumSecurityCount || 0} scripts ({mediumSecurityPercentage}%)
                         </span>
                       </div>
-                      <div className="w-full bg-gray-800 rounded-full h-2.5">
+                      <div className={progressBarBgStyles}>
                         <div
                           className="bg-yellow-500 h-2.5 rounded-full"
                           style={{ width: `${mediumSecurityPercentage}%` }}
@@ -126,12 +132,12 @@ const Analytics: React.FC = () => {
 
                     <div>
                       <div className="flex justify-between mb-1">
-                        <span className="text-sm font-medium text-red-400">Low Security (1-4)</span>
-                        <span className="text-sm font-medium text-gray-300">
+                        <span className="text-sm font-medium text-red-500">Low Security (1-4)</span>
+                        <span className="text-sm font-medium text-[var(--color-text-secondary)]">
                           {securityMetrics?.lowSecurityCount || 0} scripts ({lowSecurityPercentage}%)
                         </span>
                       </div>
-                      <div className="w-full bg-gray-800 rounded-full h-2.5">
+                      <div className={progressBarBgStyles}>
                         <div
                           className="bg-red-500 h-2.5 rounded-full"
                           style={{ width: `${lowSecurityPercentage}%` }}
@@ -140,7 +146,7 @@ const Analytics: React.FC = () => {
                     </div>
                   </div>
                 ) : (
-                  <p className="text-gray-400 text-sm">No security data available. Analyze some scripts to see security metrics.</p>
+                  <p className="text-[var(--color-text-tertiary)] text-sm">No security data available. Analyze some scripts to see security metrics.</p>
                 )}
               </div>
 
@@ -157,14 +163,14 @@ const Analytics: React.FC = () => {
                           </svg>
                         </div>
                         <div className="ml-3">
-                          <h4 className="text-sm font-medium text-white">{issue.name || issue.title}</h4>
-                          <p className="text-xs text-gray-500 mt-1">Found in {issue.count} scripts</p>
+                          <h4 className="text-sm font-medium text-[var(--color-text-primary)]">{issue.name || issue.title}</h4>
+                          <p className="text-xs text-[var(--color-text-tertiary)] mt-1">Found in {issue.count} scripts</p>
                         </div>
                       </li>
                     ))}
                   </ul>
                 ) : (
-                  <p className="text-gray-400 text-sm">No common security issues detected.</p>
+                  <p className="text-[var(--color-text-tertiary)] text-sm">No common security issues detected.</p>
                 )}
               </div>
             </div>
@@ -176,18 +182,15 @@ const Analytics: React.FC = () => {
       <div className="mb-8">
         <h2 className="text-xl font-semibold mb-4">Script Category Distribution</h2>
         {categoryLoading ? (
-          <div className="text-gray-400">Loading category distribution...</div>
+          <div className="text-[var(--color-text-tertiary)]">Loading category distribution...</div>
         ) : categoryData?.categories && categoryData.categories.length > 0 ? (
-          <div className="bg-gray-700 rounded-lg shadow p-6">
+          <div className={cardStyles}>
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
               {/* Pie Chart */}
               <div>
                 <h3 className="text-lg font-medium mb-4 text-center">Category Overview</h3>
                 <div className="h-80">
-                  <CategoryPieChart
-                    data={categoryData.categories}
-                    theme="dark"
-                  />
+                  <CategoryPieChart data={categoryData.categories} />
                 </div>
               </div>
 
@@ -196,7 +199,7 @@ const Analytics: React.FC = () => {
                 <h3 className="text-lg font-medium mb-4">Category Breakdown</h3>
                 <div className="space-y-3">
                   {categoryData.categories.map((category: any) => (
-                    <div key={category.id} className="flex items-center justify-between p-3 bg-gray-800 rounded">
+                    <div key={category.id} className={categoryItemStyles}>
                       <div className="flex items-center flex-1">
                         <div
                           className="w-4 h-4 rounded-full mr-3"
@@ -205,13 +208,13 @@ const Analytics: React.FC = () => {
                         <div className="flex-1">
                           <p className="text-sm font-medium">{category.name}</p>
                           {category.description && (
-                            <p className="text-xs text-gray-400 truncate">{category.description}</p>
+                            <p className="text-xs text-[var(--color-text-tertiary)] truncate">{category.description}</p>
                           )}
                         </div>
                       </div>
                       <div className="text-right ml-4">
                         <p className="text-sm font-bold">{category.count}</p>
-                        <p className="text-xs text-gray-400">{category.percentage}%</p>
+                        <p className="text-xs text-[var(--color-text-tertiary)]">{category.percentage}%</p>
                       </div>
                     </div>
                   ))}
@@ -220,8 +223,8 @@ const Analytics: React.FC = () => {
             </div>
           </div>
         ) : (
-          <div className="bg-gray-700 rounded-lg shadow p-6">
-            <p className="text-gray-400 text-center">
+          <div className={cardStyles}>
+            <p className="text-[var(--color-text-tertiary)] text-center">
               No category data available. Upload and categorize some scripts to see distribution.
             </p>
           </div>

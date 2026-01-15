@@ -8,22 +8,14 @@ with debugging, understanding, and explaining agent behavior.
 
 import os
 import json
-import time
 import logging
-from typing import Dict, List, Any, Optional, Union, Callable, Set, Tuple
+from typing import Dict, List, Any, Optional
 from enum import Enum, auto
 from datetime import datetime
-import uuid
 import networkx as nx
 import matplotlib.pyplot as plt
-import matplotlib.colors as mcolors
 from matplotlib.patches import Patch
 import numpy as np
-from dataclasses import dataclass, field
-import base64
-from io import BytesIO
-import re
-from collections import defaultdict, Counter
 
 # Configure logging
 logging.basicConfig(

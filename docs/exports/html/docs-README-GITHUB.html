@@ -1,0 +1,265 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <base href="file:///Users/morlock/fun/psscript/" />
+  <title>docs-README-GITHUB</title>
+  <style>
+:root {
+  color-scheme: light;
+}
+body {
+  font-family: "Segoe UI", "Helvetica Neue", Arial, sans-serif;
+  margin: 0;
+  padding: 0;
+  background: #ffffff;
+  color: #0f172a;
+}
+.markdown-body {
+  max-width: 980px;
+  margin: 40px auto 60px;
+  padding: 0 32px;
+  line-height: 1.65;
+}
+.markdown-body h1 {
+  font-size: 32px;
+  margin-bottom: 12px;
+  border-bottom: 2px solid #e2e8f0;
+  padding-bottom: 12px;
+  page-break-before: always;
+  page-break-after: avoid;
+  break-before: page;
+  break-after: avoid;
+}
+.markdown-body h1:first-of-type {
+  page-break-before: avoid;
+  break-before: avoid;
+}
+.markdown-body h2 {
+  font-size: 24px;
+  margin-top: 28px;
+  border-bottom: 1px solid #e2e8f0;
+  padding-bottom: 8px;
+  page-break-before: always;
+  page-break-after: avoid;
+  break-before: page;
+  break-after: avoid;
+}
+.markdown-body h3 {
+  font-size: 18px;
+  margin-top: 20px;
+  page-break-after: avoid;
+  break-after: avoid;
+}
+.markdown-body h4, .markdown-body h5, .markdown-body h6 {
+  page-break-after: avoid;
+  break-after: avoid;
+}
+.markdown-body table {
+  width: 100%;
+  border-collapse: collapse;
+  margin: 16px 0;
+  font-size: 14px;
+  page-break-inside: avoid;
+  break-inside: avoid;
+}
+.markdown-body th,
+.markdown-body td {
+  border: 1px solid #e2e8f0;
+  padding: 8px 10px;
+  text-align: left;
+}
+.markdown-body th {
+  background: #f8fafc;
+}
+.markdown-body tr {
+  page-break-inside: avoid;
+  break-inside: avoid;
+}
+.markdown-body code {
+  background: #f1f5f9;
+  padding: 2px 4px;
+  border-radius: 4px;
+  font-family: "SFMono-Regular", Menlo, Consolas, monospace;
+  font-size: 0.92em;
+}
+.markdown-body pre {
+  background: #0f172a;
+  color: #e2e8f0;
+  padding: 16px;
+  border-radius: 8px;
+  overflow-x: auto;
+  page-break-inside: avoid;
+  break-inside: avoid;
+}
+.markdown-body pre code {
+  background: transparent;
+  color: inherit;
+}
+.markdown-body blockquote {
+  border-left: 4px solid #38bdf8;
+  margin: 16px 0;
+  padding: 8px 16px;
+  background: #f8fafc;
+  color: #334155;
+}
+.markdown-body img {
+  max-width: 100%;
+  height: auto;
+  display: block;
+  margin: 16px 0;
+  border-radius: 10px;
+  box-shadow: 0 8px 20px rgba(15, 23, 42, 0.12);
+  page-break-inside: avoid;
+  break-inside: avoid;
+}
+.markdown-body figure {
+  page-break-inside: avoid;
+  break-inside: avoid;
+  margin: 16px 0;
+}
+.markdown-body a {
+  color: #2563eb;
+  text-decoration: none;
+}
+.markdown-body a:hover {
+  text-decoration: underline;
+}
+.cover {
+  padding: 80px 60px 60px;
+  background: linear-gradient(135deg, #0b1220 0%, #1e3a8a 100%);
+  color: #f8fafc;
+  border-radius: 18px;
+  margin-bottom: 32px;
+}
+.cover-title {
+  font-size: 36px;
+  font-weight: 700;
+  margin: 0 0 12px;
+}
+.cover-subtitle {
+  font-size: 18px;
+  color: #cbd5f5;
+  margin: 0 0 16px;
+}
+.cover-meta {
+  font-size: 13px;
+  color: #94a3b8;
+}
+.page-break {
+  page-break-after: always;
+  break-after: page;
+}
+.footer {
+  margin-top: 40px;
+  font-size: 12px;
+  color: #64748b;
+}
+/* Print and PDF-specific styles */
+@page {
+  margin: 20mm 18mm;
+}
+@media print {
+  .markdown-body {
+    orphans: 3;
+    widows: 3;
+  }
+  .markdown-body p {
+    orphans: 3;
+    widows: 3;
+  }
+  .markdown-body li {
+    page-break-inside: avoid;
+    break-inside: avoid;
+  }
+  .markdown-body ul, .markdown-body ol {
+    page-break-before: avoid;
+    break-before: avoid;
+  }
+  .markdown-body blockquote {
+    page-break-inside: avoid;
+    break-inside: avoid;
+  }
+  /* Keep section content together */
+  .markdown-body h2 + *, .markdown-body h3 + * {
+    page-break-before: avoid;
+    break-before: avoid;
+  }
+}
+</style>
+</head>
+<body>
+  <div class="markdown-body">
+    
+    <h1 id="psscript-manager">PSScript Manager</h1>
+<p>A PowerShell Script Management Application with AI Analysis capabilities. This application helps manage, analyze, and document PowerShell scripts using modern web technologies and AI-powered insights.</p>
+<h2 id="features">Features</h2>
+<ul>
+<li>PowerShell script management and organization</li>
+<li>AI-powered script analysis and security scanning</li>
+<li>Vector search for finding similar scripts</li>
+<li>Documentation generation</li>
+<li>Multi-agent architecture for advanced analysis</li>
+<li>User authentication and role-based access control</li>
+</ul>
+<h2 id="tech-stack">Tech Stack</h2>
+<ul>
+<li><strong>Frontend</strong>: React, TypeScript, Vite</li>
+<li><strong>Backend</strong>: Node.js, Express</li>
+<li><strong>AI Service</strong>: Python, FastAPI</li>
+<li><strong>Database</strong>: PostgreSQL with pgvector extension</li>
+<li><strong>Caching</strong>: Redis</li>
+<li><strong>Containerization</strong>: Docker</li>
+</ul>
+<h2 id="quick-start-with-docker">Quick Start with Docker</h2>
+<p>The easiest way to get started is using Docker:</p>
+<pre><code class="language-bash"># Clone the repository
+git clone https://github.com/YOUR_USERNAME/psscript.git
+cd psscript
+
+# Create and configure environment variables
+cp .env.example .env
+# Edit .env file to set your configuration
+
+# Start the application in production mode
+./docker-deploy.sh
+
+# Access the application
+# Frontend: http://localhost:3002
+# Backend API: http://localhost:4000
+</code></pre>
+<p>For detailed Docker setup instructions, see <a href="DOCKER-SETUP.md">DOCKER-SETUP.md</a>.</p>
+<h2 id="development-setup">Development Setup</h2>
+<p>To set up the development environment:</p>
+<pre><code class="language-bash"># Install dependencies
+npm run install:all
+
+# Start all services in development mode
+npm run dev
+</code></pre>
+<h2 id="environment-variables">Environment Variables</h2>
+<p>Key environment variables include:</p>
+<ul>
+<li><code>OPENAI_API_KEY</code>: Your OpenAI API key</li>
+<li><code>JWT_SECRET</code>: Secret for JWT authentication</li>
+<li><code>DB_PASSWORD</code>: Database password</li>
+<li><code>MOCK_MODE</code>: Enable mock mode for development without API keys</li>
+</ul>
+<p>See <code>.env.example</code> for a complete list of configuration options.</p>
+<h2 id="architecture">Architecture</h2>
+<p>The application consists of three main services:</p>
+<ol>
+<li><strong>Frontend Service</strong>: React application for user interface</li>
+<li><strong>Backend API Service</strong>: Node.js/Express API for business logic</li>
+<li><strong>AI Service</strong>: Python/FastAPI service for AI analysis</li>
+</ol>
+<p>These services are containerized using Docker and can be deployed together using Docker Compose.</p>
+<h2 id="contributing">Contributing</h2>
+<p>Contributions are welcome! Please see <a href="CONTRIBUTING.md">CONTRIBUTING.md</a> for guidelines.</p>
+<h2 id="license">License</h2>
+<p>This project is licensed under the MIT License - see the <a href="LICENSE">LICENSE</a> file for details.</p>
+    <div class="footer">Generated 2026-01-13 06:26 UTC</div>
+  </div>
+</body>
+</html>

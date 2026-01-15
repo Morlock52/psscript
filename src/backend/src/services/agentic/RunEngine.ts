@@ -1,6 +1,5 @@
 import { assistantsStore } from './AssistantsStore';
-import { Run, RunStatus, ToolCall, SubmittedToolCallOutput } from '../../models/Agentic/Run';
-import { createMessage } from '../../models/Agentic/Message';
+import { Run, ToolCall, SubmittedToolCallOutput } from '../../models/Agentic/Run';
 import { AssistantTool } from '../../models/Agentic/Assistant';
 import { getMessageText } from '../../models/Agentic/Message';
 import OpenAI from 'openai';
@@ -250,7 +249,7 @@ export async function handleAssistantRun(
               });
               
               // Create run step for message creation
-              const messageStep = await assistantsStore.createRunStep({
+              const _messageStep = await assistantsStore.createRunStep({
                 run_id: runId,
                 thread_id: thread.id,
                 assistant_id: assistant.id,

@@ -1,19 +1,25 @@
 import axios from 'axios';
+import { getApiUrl } from '../utils/apiUrl';
 
-// Use the same dynamic API URL pattern as in other services
-const API_URL = import.meta.env.VITE_API_URL || 
-  `http://${window.location.hostname}:4000/api`; // Fixed port from 4001 to 4000
+// API URL is now computed at runtime via getApiUrl() to support tunnels/proxies
 
 // Types for documentation API
 export interface DocItem {
-  id: string;
+  id: number;
   title: string;
   url: string;
   content: string;
+  summary?: string;
   similarity?: number;
   source: string;
+  contentType?: string;
+  category?: string;
   crawledAt: string;
   tags: string[];
+  extractedCommands?: string[];
+  extractedFunctions?: string[];
+  extractedModules?: string[];
+  metadata?: Record<string, unknown>;
 }
 
 export interface CrawlConfig {
@@ -30,191 +36,242 @@ export interface CrawlResult {
   scriptsFound: number;
   status: 'completed' | 'error';
   message?: string;
+  data?: DocItem[];
 }
 
 export interface SearchParams {
   query?: string;
   sources?: string[];
   tags?: string[];
-  sortBy?: 'recent' | 'title' | 'relevance';
+  contentTypes?: string[];
+  sortBy?: 'relevance' | 'date' | 'title';
   limit?: number;
   offset?: number;
+}
+
+export interface SearchResult {
+  items: DocItem[];
+  total: number;
+  limit: number;
+  offset: number;
+}
+
+export interface DocStats {
+  total: number;
+  sources: Record<string, number>;
+  tagsCount: number;
+  lastCrawled: string | null;
 }
 
 // Documentation API service
 const documentationApi = {
   // Get recent documentation
-  getRecentDocumentation: async (limit = 10): Promise<DocItem[]> => {
+  getRecentDocumentation: async (limit = 20): Promise<DocItem[]> => {
     try {
-      // In a real implementation, this would be:
-      // const response = await axios.get(`${API_URL}/documentation/recent?limit=${limit}`);
-      // return response.data;
-      
-      // Mock implementation for demonstration
-      return [
-        {
-          id: '1',
-          title: 'Working with PowerShell Modules',
-          url: 'https://learn.microsoft.com/en-us/powershell/scripting/developer/module/understanding-a-windows-powershell-module',
-          content: 'A PowerShell module is a package that contains PowerShell commands, such as cmdlets, providers, functions, workflows, variables, and aliases...',
-          source: 'Microsoft Learn',
-          crawledAt: '2025-03-08T14:30:00Z',
-          tags: ['modules', 'packages', 'basics']
-        },
-        {
-          id: '2',
-          title: 'Error Handling Best Practices',
-          url: 'https://learn.microsoft.com/en-us/powershell/scripting/learn/deep-dives/everything-about-exceptions',
-          content: 'PowerShell has several ways to handle errors and exceptions. This article covers the different approaches and when to use each one...',
-          source: 'Microsoft Learn',
-          crawledAt: '2025-03-08T15:45:00Z',
-          tags: ['error-handling', 'exceptions', 'best-practices']
-        },
-        {
-          id: '3',
-          title: 'Advanced Function Parameters',
-          url: 'https://learn.microsoft.com/en-us/powershell/scripting/learn/deep-dives/everything-about-parameter-binding',
-          content: 'Parameter binding is how PowerShell maps command line parameters to the parameters in a function or cmdlet definition...',
-          source: 'Microsoft Learn',
-          crawledAt: '2025-03-08T16:20:00Z',
-          tags: ['functions', 'parameters', 'advanced']
-        }
-      ];
+      const response = await axios.get(`${getApiUrl()}/documentation?limit=${limit}`);
+      if (response.data.success) {
+        return response.data.data;
+      }
+      throw new Error(response.data.error || 'Failed to fetch documentation');
     } catch (error) {
       console.error('Error fetching recent documentation:', error);
-      throw error;
+      // Return empty array on error so UI can handle gracefully
+      return [];
     }
   },
-  
+
   // Search documentation
-  searchDocumentation: async (params: SearchParams): Promise<DocItem[]> => {
+  searchDocumentation: async (params: SearchParams): Promise<SearchResult> => {
     try {
-      // In a real implementation, this would be:
-      // const queryParams = new URLSearchParams();
-      // if (params.query) queryParams.append('query', params.query);
-      // if (params.sources) queryParams.append('sources', params.sources.join(','));
-      // if (params.tags) queryParams.append('tags', params.tags.join(','));
-      // if (params.sortBy) queryParams.append('sortBy', params.sortBy);
-      // if (params.limit) queryParams.append('limit', params.limit.toString());
-      // if (params.offset) queryParams.append('offset', params.offset.toString());
-      // 
-      // const response = await axios.get(`${API_URL}/documentation/search?${queryParams.toString()}`);
-      // return response.data;
-      
-      // Mock implementation for demonstration
-      return [
-        {
-          id: '4',
-          title: 'Get-Process | Sort-Object -Property WS -Descending | Select-Object -First 5',
-          url: 'https://learn.microsoft.com/en-us/powershell/module/microsoft.powershell.management/get-process',
-          content: 'This PowerShell command gets all running processes, sorts them by working set (memory usage) in descending order, and selects the top 5 processes using the most memory.',
-          similarity: 0.92,
-          source: 'Microsoft Learn',
-          crawledAt: '2025-03-07T10:15:00Z',
-          tags: ['processes', 'memory', 'sorting']
-        },
-        {
-          id: '5',
-          title: 'Get-Process | Where-Object {$_.WorkingSet -gt 50MB} | Sort-Object -Property WorkingSet -Descending',
-          url: 'https://learn.microsoft.com/en-us/powershell/module/microsoft.powershell.core/where-object',
-          content: 'This PowerShell command gets all processes with a working set (memory usage) greater than 50MB and sorts them by working set in descending order.',
-          similarity: 0.87,
-          source: 'Microsoft Learn',
-          crawledAt: '2025-03-07T11:30:00Z',
-          tags: ['processes', 'filtering', 'memory']
-        },
-        {
-          id: '6',
-          title: 'Get-Process | Sort-Object CPU -Descending | Format-Table -Property ID,ProcessName,CPU,WS -AutoSize',
-          url: 'https://learn.microsoft.com/en-us/powershell/module/microsoft.powershell.utility/format-table',
-          content: 'This PowerShell command gets all processes, sorts them by CPU usage in descending order, and formats the output as a table showing ID, process name, CPU usage, and working set (memory usage).',
-          similarity: 0.81,
-          source: 'Microsoft Learn',
-          crawledAt: '2025-03-07T12:45:00Z',
-          tags: ['processes', 'cpu', 'formatting']
-        }
-      ];
+      const queryParams = new URLSearchParams();
+      if (params.query) queryParams.append('query', params.query);
+      if (params.sources?.length) queryParams.append('sources', params.sources.join(','));
+      if (params.tags?.length) queryParams.append('tags', params.tags.join(','));
+      if (params.contentTypes?.length) queryParams.append('contentTypes', params.contentTypes.join(','));
+      if (params.sortBy) queryParams.append('sortBy', params.sortBy);
+      if (params.limit) queryParams.append('limit', params.limit.toString());
+      if (params.offset) queryParams.append('offset', params.offset.toString());
+
+      const response = await axios.get(`${getApiUrl()}/documentation/search?${queryParams.toString()}`);
+      if (response.data.success) {
+        return {
+          items: response.data.data,
+          total: response.data.total,
+          limit: response.data.limit,
+          offset: response.data.offset
+        };
+      }
+      throw new Error(response.data.error || 'Failed to search documentation');
     } catch (error) {
       console.error('Error searching documentation:', error);
-      throw error;
+      return { items: [], total: 0, limit: params.limit || 20, offset: params.offset || 0 };
     }
   },
-  
+
   // Get available sources
-  getSources: async (): Promise<{ id: string; name: string }[]> => {
+  getSources: async (): Promise<string[]> => {
     try {
-      // In a real implementation, this would be:
-      // const response = await axios.get(`${API_URL}/documentation/sources`);
-      // return response.data;
-      
-      // Mock implementation for demonstration
-      return [
-        { id: '1', name: 'Microsoft Learn' },
-        { id: '2', name: 'PowerShell Gallery' },
-        { id: '3', name: 'GitHub' }
-      ];
+      const response = await axios.get(`${getApiUrl()}/documentation/sources`);
+      if (response.data.success) {
+        return response.data.data;
+      }
+      throw new Error(response.data.error || 'Failed to fetch sources');
     } catch (error) {
       console.error('Error fetching documentation sources:', error);
-      throw error;
+      // Return default sources on error
+      return ['Microsoft Learn', 'PowerShell Gallery', 'GitHub'];
     }
   },
-  
+
   // Get available tags
   getTags: async (): Promise<string[]> => {
     try {
-      // In a real implementation, this would be:
-      // const response = await axios.get(`${API_URL}/documentation/tags`);
-      // return response.data;
-      
-      // Mock implementation for demonstration
-      return [
-        'modules', 'packages', 'basics', 'error-handling', 'exceptions', 
-        'best-practices', 'functions', 'parameters', 'advanced', 
-        'processes', 'memory', 'sorting', 'filtering', 'cpu', 'formatting'
-      ];
+      const response = await axios.get(`${getApiUrl()}/documentation/tags`);
+      if (response.data.success) {
+        return response.data.data;
+      }
+      throw new Error(response.data.error || 'Failed to fetch tags');
     } catch (error) {
       console.error('Error fetching documentation tags:', error);
-      throw error;
+      return [];
     }
   },
-  
-  // Start a crawl
+
+  // Get documentation statistics
+  getStats: async (): Promise<DocStats> => {
+    try {
+      const response = await axios.get(`${getApiUrl()}/documentation/stats`);
+      if (response.data.success) {
+        return response.data.data;
+      }
+      throw new Error(response.data.error || 'Failed to fetch stats');
+    } catch (error) {
+      console.error('Error fetching documentation stats:', error);
+      return { total: 0, sources: {}, tagsCount: 0, lastCrawled: null };
+    }
+  },
+
+  // Get single documentation item by ID
+  getById: async (id: number): Promise<DocItem | null> => {
+    try {
+      const response = await axios.get(`${getApiUrl()}/documentation/${id}`);
+      if (response.data.success) {
+        return response.data.data;
+      }
+      throw new Error(response.data.error || 'Failed to fetch documentation');
+    } catch (error) {
+      console.error('Error fetching documentation by ID:', error);
+      return null;
+    }
+  },
+
+  // Start a crawl from a URL
   startCrawl: async (config: CrawlConfig): Promise<CrawlResult> => {
     try {
-      // In a real implementation, this would be:
-      // const response = await axios.post(`${API_URL}/documentation/crawl`, config);
-      // return response.data;
-      
-      // Mock implementation for demonstration
-      return {
-        pagesProcessed: config.maxPages,
-        totalPages: config.maxPages,
-        scriptsFound: Math.floor(Math.random() * 20) + 5, // Random number between 5 and 25
-        status: 'completed'
-      };
+      const response = await axios.post(`${getApiUrl()}/documentation/crawl`, {
+        url: config.url,
+        maxPages: config.maxPages,
+        depth: config.depth,
+        includeExternalLinks: config.includeExternalLinks,
+        fileTypes: config.fileTypes
+      });
+
+      if (response.data.success) {
+        return {
+          pagesProcessed: response.data.total,
+          totalPages: response.data.total,
+          scriptsFound: response.data.total,
+          status: 'completed',
+          message: response.data.message,
+          data: response.data.data
+        };
+      }
+      throw new Error(response.data.error || 'Failed to crawl documentation');
     } catch (error) {
       console.error('Error starting crawl:', error);
-      throw error;
+      return {
+        pagesProcessed: 0,
+        totalPages: 0,
+        scriptsFound: 0,
+        status: 'error',
+        message: error instanceof Error ? error.message : 'Unknown error'
+      };
     }
   },
-  
-  // Get crawl status
-  getCrawlStatus: async (crawlId: string): Promise<CrawlResult> => {
+
+  // Create or update documentation
+  upsert: async (doc: Partial<DocItem>): Promise<DocItem | null> => {
     try {
-      // In a real implementation, this would be:
-      // const response = await axios.get(`${API_URL}/documentation/crawl/${crawlId}/status`);
-      // return response.data;
-      
-      // Mock implementation for demonstration
-      return {
-        pagesProcessed: 10,
-        totalPages: 10,
-        scriptsFound: 15,
-        status: 'completed'
-      };
+      const response = await axios.post(`${getApiUrl()}/documentation`, doc);
+      if (response.data.success) {
+        return response.data.data;
+      }
+      throw new Error(response.data.error || 'Failed to save documentation');
     } catch (error) {
-      console.error('Error fetching crawl status:', error);
-      throw error;
+      console.error('Error upserting documentation:', error);
+      return null;
+    }
+  },
+
+  // Bulk import documentation
+  bulkImport: async (documents: Partial<DocItem>[]): Promise<{ imported: number; errors: number }> => {
+    try {
+      const response = await axios.post(`${getApiUrl()}/documentation/bulk`, { documents });
+      if (response.data.success) {
+        return {
+          imported: response.data.imported,
+          errors: response.data.errors
+        };
+      }
+      throw new Error(response.data.error || 'Failed to import documentation');
+    } catch (error) {
+      console.error('Error bulk importing documentation:', error);
+      return { imported: 0, errors: documents.length };
+    }
+  },
+
+  // Delete documentation
+  delete: async (id: number): Promise<boolean> => {
+    try {
+      const response = await axios.delete(`${getApiUrl()}/documentation/${id}`);
+      return response.data.success;
+    } catch (error) {
+      console.error('Error deleting documentation:', error);
+      return false;
+    }
+  },
+
+  // AI-powered crawl - fetches real content and uses AI for titles, summaries, script analysis
+  crawlWithAI: async (config: { url: string; maxPages: number; depth: number }): Promise<CrawlResult> => {
+    try {
+      const response = await axios.post(`${getApiUrl()}/documentation/crawl/ai`, {
+        url: config.url,
+        maxPages: config.maxPages,
+        depth: config.depth
+      }, {
+        timeout: 120000 // 2 minute timeout for AI processing
+      });
+
+      if (response.data.success) {
+        return {
+          pagesProcessed: response.data.total,
+          totalPages: response.data.total,
+          scriptsFound: response.data.data?.reduce((sum: number, d: any) => sum + (d.doc?.metadata?.scriptsFound || 0), 0) || 0,
+          status: 'completed',
+          message: response.data.message,
+          data: response.data.data?.map((d: any) => d.doc) || []
+        };
+      }
+      throw new Error(response.data.error || 'AI crawl failed');
+    } catch (error) {
+      console.error('Error in AI crawl:', error);
+      return {
+        pagesProcessed: 0,
+        totalPages: 0,
+        scriptsFound: 0,
+        status: 'error',
+        message: error instanceof Error ? error.message : 'AI crawl failed'
+      };
     }
   }
 };

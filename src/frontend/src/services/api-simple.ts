@@ -1,4 +1,5 @@
 import axios from 'axios';
+import { getAiServiceUrl } from '../utils/apiUrl';
 
 // Simulate network delay
 const delay = (ms: number) => new Promise(resolve => setTimeout(resolve, ms));
@@ -73,30 +74,25 @@ export const chatService = {
   // Send a chat message to the AI
   sendMessage: async (messages: Message[], agent_type?: string, session_id?: string) => {
     try {
-      // First try the real API
+      // First try the real API - AI service has the API key configured
       try {
-        const apiKey = localStorage.getItem('openai_api_key') || "";
-        if (apiKey) {
-          console.log("Attempting to use real AI service");
-          // Get API URL from environment variable or use fallback
-          const API_URL = import.meta.env.VITE_API_URL || 
-            `http://${window.location.hostname}:4001/api`;
-          
-          console.log('api-simple.ts API URL is set to:', API_URL);
-          
-          const response = await axios.post(`${API_URL}/chat`, { 
-            messages: messages,
-            api_key: apiKey,
-            agent_type: agent_type || "assistant", // Default to OpenAI Assistants API
-            session_id: session_id // Pass session ID for persistent conversations
-          }, {
-            headers: {
-              'Content-Type': 'application/json'
-            },
-            timeout: 5000 // Short timeout
-          });
-          return response.data;
-        }
+        console.log("Attempting to use real AI service");
+        // AI service URL - backend has API key configured
+        const AI_SERVICE_URL = getAiServiceUrl();
+
+        console.log('api-simple.ts AI Service URL:', AI_SERVICE_URL);
+
+        const response = await axios.post(`${AI_SERVICE_URL}/chat`, {
+          messages: messages,
+          agent_type: agent_type || "assistant",
+          session_id: session_id
+        }, {
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          timeout: 30000 // 30 second timeout for AI responses
+        });
+        return response.data;
       } catch (error) {
         console.warn("Real AI service failed, using mock:", error);
       }
@@ -125,6 +121,90 @@ export const chatService = {
       return { 
         response: 'Sorry, I encountered an error. Please try again later.'
       };
+    }
+  },
+
+  // Stream a chat message using Server-Sent Events (SSE)
+  // January 2026: Real-time token streaming for improved UX
+  streamMessage: async (
+    messages: Message[],
+    onToken: (token: string) => void,
+    onDone: (metadata: { session_id?: string; tokens?: number; time?: number }) => void,
+    onError?: (error: string) => void,
+    agent_type?: string,
+    session_id?: string
+  ): Promise<void> => {
+    const AI_SERVICE_URL = getAiServiceUrl();
+
+    try {
+      console.log("Starting SSE streaming from:", `${AI_SERVICE_URL}/chat/stream`);
+
+      const response = await fetch(`${AI_SERVICE_URL}/chat/stream`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Accept': 'text/event-stream',
+        },
+        body: JSON.stringify({
+          messages: messages,
+          agent_type: agent_type || "assistant",
+          session_id: session_id
+        })
+      });
+
+      if (!response.ok) {
+        throw new Error(`Streaming failed: ${response.status} ${response.statusText}`);
+      }
+
+      const reader = response.body?.getReader();
+      if (!reader) {
+        throw new Error('No readable stream available');
+      }
+
+      const decoder = new TextDecoder();
+      let buffer = '';
+
+      while (true) {
+        const { done, value } = await reader.read();
+        if (done) break;
+
+        buffer += decoder.decode(value, { stream: true });
+
+        // Process complete SSE events
+        const lines = buffer.split('\n');
+        buffer = lines.pop() || ''; // Keep incomplete line in buffer
+
+        for (const line of lines) {
+          if (line.startsWith('data: ')) {
+            try {
+              const data = JSON.parse(line.slice(6));
+
+              switch (data.type) {
+                case 'token':
+                  onToken(data.content);
+                  break;
+                case 'done':
+                  onDone({
+                    session_id: data.session_id,
+                    tokens: data.tokens,
+                    time: data.time
+                  });
+                  break;
+                case 'error':
+                  if (onError) onError(data.content);
+                  break;
+              }
+            } catch {
+              // Ignore JSON parse errors for incomplete data
+            }
+          }
+        }
+      }
+    } catch (error) {
+      console.error('Streaming error:', error);
+      if (onError) {
+        onError(error instanceof Error ? error.message : 'Unknown streaming error');
+      }
     }
   },
 
@@ -165,16 +245,131 @@ export const chatService = {
     try {
       // In a real implementation, this would search the chat history on the server
       console.log("Mock: Searching chat history for", query);
-      
+
       // Simulate network delay
       await delay(800 + Math.random() * 800);
-      
+
       // Simple mock implementation that returns predefined results
       // In a real implementation, this would filter based on the query
       return MOCK_CHAT_HISTORY;
     } catch (error) {
       console.error('Error searching chat history:', error);
       throw new Error('Failed to search chat history');
+    }
+  },
+
+  // Generate diff between original and improved code
+  generateDiff: async (original: string, improved: string, detectImprovements: boolean = true) => {
+    const AI_SERVICE_URL = getAiServiceUrl();
+
+    try {
+      const response = await axios.post(`${AI_SERVICE_URL}/diff`, {
+        original,
+        improved,
+        detect_improvements: detectImprovements
+      }, {
+        headers: { 'Content-Type': 'application/json' },
+        timeout: 30000
+      });
+      return response.data;
+    } catch (error) {
+      console.error('Error generating diff:', error);
+      throw new Error('Failed to generate diff');
+    }
+  },
+
+  // Improve a script and get the diff
+  improveScript: async (script: string) => {
+    const AI_SERVICE_URL = getAiServiceUrl();
+
+    try {
+      const response = await axios.post(`${AI_SERVICE_URL}/improve`, {
+        messages: [{ role: 'user', content: script }]
+      }, {
+        headers: { 'Content-Type': 'application/json' },
+        timeout: 60000 // 60 second timeout for AI improvements
+      });
+      return response.data;
+    } catch (error) {
+      console.error('Error improving script:', error);
+      throw new Error('Failed to improve script');
+    }
+  },
+
+  // Lint PowerShell script using PSScriptAnalyzer
+  lintScript: async (script: string, format?: string) => {
+    const AI_SERVICE_URL = getAiServiceUrl();
+
+    try {
+      const response = await axios.post(`${AI_SERVICE_URL}/lint`, {
+        content: script,  // Backend expects 'content' field
+        format: format || 'json'
+      }, {
+        headers: { 'Content-Type': 'application/json' },
+        timeout: 30000
+      });
+      return response.data;
+    } catch (error) {
+      console.error('Error linting script:', error);
+      throw new Error('Failed to lint script');
+    }
+  },
+
+  // Generate Pester tests for a script
+  generateTests: async (script: string, scriptName?: string, coverage?: string) => {
+    const AI_SERVICE_URL = getAiServiceUrl();
+
+    try {
+      const response = await axios.post(`${AI_SERVICE_URL}/generate-tests`, {
+        content: script,  // Backend expects 'content' field
+        script_name: scriptName || 'Script.ps1',
+        coverage: coverage || 'standard'
+      }, {
+        headers: { 'Content-Type': 'application/json' },
+        timeout: 30000
+      });
+      return response.data;
+    } catch (error) {
+      console.error('Error generating tests:', error);
+      throw new Error('Failed to generate tests');
+    }
+  },
+
+  // Execute a script in the sandbox
+  executeScript: async (script: string, timeout?: number) => {
+    const AI_SERVICE_URL = getAiServiceUrl();
+
+    try {
+      const response = await axios.post(`${AI_SERVICE_URL}/execute`, {
+        script,
+        timeout: timeout || 30
+      }, {
+        headers: { 'Content-Type': 'application/json' },
+        timeout: 60000 // Long timeout for execution
+      });
+      return response.data;
+    } catch (error) {
+      console.error('Error executing script:', error);
+      throw new Error('Failed to execute script');
+    }
+  },
+
+  // Route a query to the appropriate model
+  routeQuery: async (query: string, context?: Message[]) => {
+    const AI_SERVICE_URL = getAiServiceUrl();
+
+    try {
+      const response = await axios.post(`${AI_SERVICE_URL}/route`, {
+        query,
+        context: context || []
+      }, {
+        headers: { 'Content-Type': 'application/json' },
+        timeout: 10000
+      });
+      return response.data;
+    } catch (error) {
+      console.error('Error routing query:', error);
+      throw new Error('Failed to route query');
     }
   }
 };

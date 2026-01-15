@@ -8,7 +8,6 @@ import os
 import logging
 from pathlib import Path
 from typing import Optional
-import re
 
 logger = logging.getLogger("api_key_manager")
 
@@ -236,7 +235,7 @@ class APIKeyManager:
             openai.api_key = api_key
 
             # Make a minimal API call to test
-            response = openai.models.list()
+            openai.models.list()
             logger.info("API key validated successfully")
             return True
 
