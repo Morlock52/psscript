@@ -1,85 +1,108 @@
 # PSScript Manager
 
-A PowerShell Script Management Application with AI Analysis capabilities. This application helps manage, analyze, and document PowerShell scripts using modern web technologies and AI-powered insights.
+AI-powered PowerShell script management: intake, analysis, discovery, agentic chat, and governance—presented in the same polished style used by top open-source GitHub READMEs (think Supabase/PostHog).
 
-## Features
+## Quick tour (screenshots)
 
-- PowerShell script management and organization
-- AI-powered script analysis and security scanning
-- Vector search for finding similar scripts
-- Documentation generation
-- Multi-agent architecture for advanced analysis
-- User authentication and role-based access control
+- Login (demo-ready): ![Login](screenshots/login.png)
+- Dashboard (stats, trends, activity): ![Dashboard](screenshots/dashboard.png)
+- Script library (categories, owners, versions): ![Scripts](screenshots/scripts.png)
+- Upload with live preview + dedup hints: ![Upload](screenshots/upload.png)
+- AI analysis and remediation: ![Analysis](screenshots/analysis.png)
+- Documentation explorer and crawler: ![Documentation](screenshots/documentation.png)
+- Chat + agentic workflows: ![Chat](screenshots/chat.png)
+- Analytics and governance KPIs: ![Analytics](screenshots/analytics.png)
+- Settings with training/exports links: ![Settings](screenshots/settings.png)
 
-## Tech Stack
+## Product highlights
 
-- **Frontend**: React, TypeScript, Vite
-- **Backend**: Node.js, Express
-- **AI Service**: Python, FastAPI
-- **Database**: PostgreSQL with pgvector extension
-- **Caching**: Redis
-- **Containerization**: Docker
+- [x] Script intake: tagging, version history, hash-based deduplication
+- [x] AI analysis: security scores, findings, remediation notes, audit trails
+- [x] Discovery: keyword + vector search, documentation explorer, crawler
+- [x] AI copilots: chat assistant, agent orchestration, history
+- [x] Operations: analytics dashboards, exports (HTML/PDF/DOCX), health checks
+- [x] Training suite: modules, labs, role paths, printable guides (linked in Settings)
 
-## Quick Start with Docker
+## System at a glance
 
-The easiest way to get started is using Docker:
+| Layer | What it does | Tech |
+| --- | --- | --- |
+| UI | React + Tailwind, Monaco editor, dark/light theming | Vite, React 18, Tailwind |
+| API | Script CRUD, analysis orchestration, auth, docs crawl | Node.js/Express, Sequelize |
+| AI | Analysis scoring, recommendations, embeddings | FastAPI, pgvector |
+| Data | Postgres (pgvector), Redis cache | Dockerized services |
+| Ops | Cloudflare tunnel, health checks, logs, exports | Docker Compose |
+
+Architecture and flows:
+
+- Architecture: ![Architecture](graphics/architecture.svg)
+- Analysis pipeline: ![Analysis Pipeline](graphics/analysis-pipeline.svg)
+- Script lifecycle: ![Script Lifecycle](graphics/lifecycle.svg)
+- Search modes: ![Search Modes](graphics/search-modes.svg)
+- Security scorecard: ![Security Scorecard](graphics/security-scorecard.svg)
+
+## Getting started
+
+### Fast mock start (best for demos/training)
 
 ```bash
-# Clone the repository
-git clone https://github.com/YOUR_USERNAME/psscript.git
-cd psscript
+./start-all-mock.sh
+# Frontend: http://localhost:3002
+# Backend API: http://localhost:4000/api
+# AI service: http://localhost:8000
+```
 
-# Create and configure environment variables
-cp .env.example .env
-# Edit .env file to set your configuration
+### Production Docker
 
-# Start the application in production mode
+```bash
 ./docker-deploy.sh
-
-# Access the application
 # Frontend: http://localhost:3002
 # Backend API: http://localhost:4000
 ```
 
-For detailed Docker setup instructions, see [DOCKER-SETUP.md](DOCKER-SETUP.md).
+See `DOCKER-QUICKSTART.md` and `DOCKER-SETUP.md` for details.
 
-## Development Setup
-
-To set up the development environment:
+### Local development
 
 ```bash
-# Install dependencies
 npm run install:all
-
-# Start all services in development mode
 npm run dev
 ```
 
-## Environment Variables
+### Playwright screenshots (used in this README)
 
-Key environment variables include:
+```bash
+./scripts/capture-readme-screenshots.sh
+# Captures to docs/screenshots/*
+```
 
-- `OPENAI_API_KEY`: Your OpenAI API key
-- `JWT_SECRET`: Secret for JWT authentication
-- `DB_PASSWORD`: Database password
-- `MOCK_MODE`: Enable mock mode for development without API keys
+## Training suite (supreme docs pack)
 
-See `.env.example` for a complete list of configuration options.
+- Location: `docs/training-suite/`
+- Contents: modules, labs, guided walkthrough, schedules, rubrics, screenshots
+- In-app: Settings → Documentation & Training → Training Suite / PDFs / DOCX
+- Exports: `scripts/export-docs.sh --all` → `docs/exports/{html,pdf,docx}/`
+  - `docs/exports/pdf/Training-Suite.pdf`
+  - `docs/exports/docx/Training-Suite.docx`
 
-## Architecture
+## Key workflows
 
-The application consists of three main services:
+| Flow | Steps | Where |
+| --- | --- | --- |
+| Upload & dedup | Upload → tags → hash check → version history | Scripts → Upload |
+| AI review | Analyze → scores → findings → remediation notes | Scripts → Analysis |
+| Discovery | Keyword + vector → filters → detail → history | Scripts / Documentation |
+| Chat/agents | Ask for fixes, schedules, safety → save history | Chat / AI Assistant |
+| Ops & governance | Analytics → scorecards → exports → health | Analytics / Settings |
 
-1. **Frontend Service**: React application for user interface
-2. **Backend API Service**: Node.js/Express API for business logic
-3. **AI Service**: Python/FastAPI service for AI analysis
+## Environment & config
 
-These services are containerized using Docker and can be deployed together using Docker Compose.
+- `.env` samples: `src/frontend/.env`, `src/backend/.env`
+- Mock mode toggles: `VITE_USE_MOCKS=true`, `USE_MOCK_SERVICES=true`
+- Ports: UI 3002, API 4000, AI 8000 (mock defaults)
+- CSRF/CORS dev origins: localhost:3000/3002 + 4000 (see `src/backend/src/middleware/security.ts`)
 
-## Contributing
+## Contributing and licenses
 
-Contributions are welcome! Please see [CONTRIBUTING.md](CONTRIBUTING.md) for guidelines.
-
-## License
-
-This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+- Contributions welcome: see `CONTRIBUTING.md`
+- License: MIT (`LICENSE`)

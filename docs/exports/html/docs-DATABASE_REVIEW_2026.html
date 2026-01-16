@@ -641,7 +641,8 @@ CREATE INDEX idx_scripts_content_trgm ON scripts USING GIN (content gin_trgm_ops
 <ul>
 <li>[ ] Fix N+1 queries with eager loading</li>
 <li>[ ] Increase pool min to 2</li>
-<li>[ ] Create Sequelize models for agent tables</li>
+<li>[x] Create Sequelize models for missing tables (Comment, UserFavorite, ScriptDependency - completed 2026-01-16)</li>
+<li>[ ] Create Sequelize models for agent tables (agent_state, conversation_history, tool_execution_results)</li>
 </ul>
 <h3 id="sprint-3-medium-this-month">Sprint 3 (Medium - This Month)</h3>
 <ul>
@@ -787,9 +788,28 @@ tool_execution_results (id, agent_id, tool_name, input, output, created_at)
 </code></pre>
 <hr />
 <p><em>Generated: January 15, 2026</em>
+<em>Updated: January 16, 2026</em>
 <em>Review Frequency: Quarterly</em>
 <em>Next Review: April 15, 2026</em></p>
-    <div class="footer">Generated 2026-01-16 21:23 UTC</div>
+<hr />
+<h2 id="update-history">Update History</h2>
+<table>
+<thead>
+<tr>
+<th>Date</th>
+<th>Change</th>
+<th>Document</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>2026-01-16</td>
+<td>Added 4 FK indexes, 3 Sequelize models, monitoring panel</td>
+<td><a href="./DATABASE_UPDATE_2026-01-16.md">DATABASE_UPDATE_2026-01-16.md</a></td>
+</tr>
+</tbody>
+</table>
+    <div class="footer">Generated 2026-01-16 23:34 UTC</div>
   </div>
 </body>
 </html>

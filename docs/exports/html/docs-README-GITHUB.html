@@ -193,73 +193,153 @@ body {
   <div class="markdown-body">
     
     <h1 id="psscript-manager">PSScript Manager</h1>
-<p>A PowerShell Script Management Application with AI Analysis capabilities. This application helps manage, analyze, and document PowerShell scripts using modern web technologies and AI-powered insights.</p>
-<h2 id="features">Features</h2>
+<p>AI-powered PowerShell script management: intake, analysis, discovery, agentic chat, and governance—presented in the same polished style used by top open-source GitHub READMEs (think Supabase/PostHog).</p>
+<h2 id="quick-tour-screenshots">Quick tour (screenshots)</h2>
 <ul>
-<li>PowerShell script management and organization</li>
-<li>AI-powered script analysis and security scanning</li>
-<li>Vector search for finding similar scripts</li>
-<li>Documentation generation</li>
-<li>Multi-agent architecture for advanced analysis</li>
-<li>User authentication and role-based access control</li>
+<li>Login (demo-ready): <img alt="Login" src="docs/screenshots/login.png" /></li>
+<li>Dashboard (stats, trends, activity): <img alt="Dashboard" src="docs/screenshots/dashboard.png" /></li>
+<li>Script library (categories, owners, versions): <img alt="Scripts" src="docs/screenshots/scripts.png" /></li>
+<li>Upload with live preview + dedup hints: <img alt="Upload" src="docs/screenshots/upload.png" /></li>
+<li>AI analysis and remediation: <img alt="Analysis" src="docs/screenshots/analysis.png" /></li>
+<li>Documentation explorer and crawler: <img alt="Documentation" src="docs/screenshots/documentation.png" /></li>
+<li>Chat + agentic workflows: <img alt="Chat" src="docs/screenshots/chat.png" /></li>
+<li>Analytics and governance KPIs: <img alt="Analytics" src="docs/screenshots/analytics.png" /></li>
+<li>Settings with training/exports links: <img alt="Settings" src="docs/screenshots/settings.png" /></li>
 </ul>
-<h2 id="tech-stack">Tech Stack</h2>
+<h2 id="product-highlights">Product highlights</h2>
 <ul>
-<li><strong>Frontend</strong>: React, TypeScript, Vite</li>
-<li><strong>Backend</strong>: Node.js, Express</li>
-<li><strong>AI Service</strong>: Python, FastAPI</li>
-<li><strong>Database</strong>: PostgreSQL with pgvector extension</li>
-<li><strong>Caching</strong>: Redis</li>
-<li><strong>Containerization</strong>: Docker</li>
+<li>[x] Script intake: tagging, version history, hash-based deduplication</li>
+<li>[x] AI analysis: security scores, findings, remediation notes, audit trails</li>
+<li>[x] Discovery: keyword + vector search, documentation explorer, crawler</li>
+<li>[x] AI copilots: chat assistant, agent orchestration, history</li>
+<li>[x] Operations: analytics dashboards, exports (HTML/PDF/DOCX), health checks</li>
+<li>[x] Training suite: modules, labs, role paths, printable guides (linked in Settings)</li>
 </ul>
-<h2 id="quick-start-with-docker">Quick Start with Docker</h2>
-<p>The easiest way to get started is using Docker:</p>
-<pre><code class="language-bash"># Clone the repository
-git clone https://github.com/YOUR_USERNAME/psscript.git
-cd psscript
-
-# Create and configure environment variables
-cp .env.example .env
-# Edit .env file to set your configuration
-
-# Start the application in production mode
-./docker-deploy.sh
-
-# Access the application
+<h2 id="system-at-a-glance">System at a glance</h2>
+<table>
+<thead>
+<tr>
+<th>Layer</th>
+<th>What it does</th>
+<th>Tech</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>UI</td>
+<td>React + Tailwind, Monaco editor, dark/light theming</td>
+<td>Vite, React 18, Tailwind</td>
+</tr>
+<tr>
+<td>API</td>
+<td>Script CRUD, analysis orchestration, auth, docs crawl</td>
+<td>Node.js/Express, Sequelize</td>
+</tr>
+<tr>
+<td>AI</td>
+<td>Analysis scoring, recommendations, embeddings</td>
+<td>FastAPI, pgvector</td>
+</tr>
+<tr>
+<td>Data</td>
+<td>Postgres (pgvector), Redis cache</td>
+<td>Dockerized services</td>
+</tr>
+<tr>
+<td>Ops</td>
+<td>Cloudflare tunnel, health checks, logs, exports</td>
+<td>Docker Compose</td>
+</tr>
+</tbody>
+</table>
+<p>Architecture and flows:</p>
+<ul>
+<li>Architecture: <img alt="Architecture" src="docs/graphics/architecture.svg" /></li>
+<li>Analysis pipeline: <img alt="Analysis Pipeline" src="docs/graphics/analysis-pipeline.svg" /></li>
+<li>Script lifecycle: <img alt="Script Lifecycle" src="docs/graphics/lifecycle.svg" /></li>
+<li>Search modes: <img alt="Search Modes" src="docs/graphics/search-modes.svg" /></li>
+<li>Security scorecard: <img alt="Security Scorecard" src="docs/graphics/security-scorecard.svg" /></li>
+</ul>
+<h2 id="getting-started">Getting started</h2>
+<h3 id="fast-mock-start-best-for-demostraining">Fast mock start (best for demos/training)</h3>
+<pre><code class="language-bash">./start-all-mock.sh
+# Frontend: http://localhost:3002
+# Backend API: http://localhost:4000/api
+# AI service: http://localhost:8000
+</code></pre>
+<h3 id="production-docker">Production Docker</h3>
+<pre><code class="language-bash">./docker-deploy.sh
 # Frontend: http://localhost:3002
 # Backend API: http://localhost:4000
 </code></pre>
-<p>For detailed Docker setup instructions, see <a href="DOCKER-SETUP.md">DOCKER-SETUP.md</a>.</p>
-<h2 id="development-setup">Development Setup</h2>
-<p>To set up the development environment:</p>
-<pre><code class="language-bash"># Install dependencies
-npm run install:all
-
-# Start all services in development mode
+<p>See <code>DOCKER-QUICKSTART.md</code> and <code>DOCKER-SETUP.md</code> for details.</p>
+<h3 id="local-development">Local development</h3>
+<pre><code class="language-bash">npm run install:all
 npm run dev
 </code></pre>
-<h2 id="environment-variables">Environment Variables</h2>
-<p>Key environment variables include:</p>
+<h3 id="playwright-screenshots-used-in-this-readme">Playwright screenshots (used in this README)</h3>
+<pre><code class="language-bash">./scripts/capture-readme-screenshots.sh
+# Captures to docs/screenshots/*
+</code></pre>
+<h2 id="training-suite-supreme-docs-pack">Training suite (supreme docs pack)</h2>
 <ul>
-<li><code>OPENAI_API_KEY</code>: Your OpenAI API key</li>
-<li><code>JWT_SECRET</code>: Secret for JWT authentication</li>
-<li><code>DB_PASSWORD</code>: Database password</li>
-<li><code>MOCK_MODE</code>: Enable mock mode for development without API keys</li>
+<li>Location: <code>docs/training-suite/</code></li>
+<li>Contents: modules, labs, guided walkthrough, schedules, rubrics, screenshots</li>
+<li>In-app: Settings → Documentation &amp; Training → Training Suite / PDFs / DOCX</li>
+<li>Exports: <code>scripts/export-docs.sh --all</code> → <code>docs/exports/{html,pdf,docx}/</code></li>
+<li><code>docs/exports/pdf/Training-Suite.pdf</code></li>
+<li><code>docs/exports/docx/Training-Suite.docx</code></li>
 </ul>
-<p>See <code>.env.example</code> for a complete list of configuration options.</p>
-<h2 id="architecture">Architecture</h2>
-<p>The application consists of three main services:</p>
-<ol>
-<li><strong>Frontend Service</strong>: React application for user interface</li>
-<li><strong>Backend API Service</strong>: Node.js/Express API for business logic</li>
-<li><strong>AI Service</strong>: Python/FastAPI service for AI analysis</li>
-</ol>
-<p>These services are containerized using Docker and can be deployed together using Docker Compose.</p>
-<h2 id="contributing">Contributing</h2>
-<p>Contributions are welcome! Please see <a href="CONTRIBUTING.md">CONTRIBUTING.md</a> for guidelines.</p>
-<h2 id="license">License</h2>
-<p>This project is licensed under the MIT License - see the <a href="LICENSE">LICENSE</a> file for details.</p>
-    <div class="footer">Generated 2026-01-16 21:23 UTC</div>
+<h2 id="key-workflows">Key workflows</h2>
+<table>
+<thead>
+<tr>
+<th>Flow</th>
+<th>Steps</th>
+<th>Where</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Upload &amp; dedup</td>
+<td>Upload → tags → hash check → version history</td>
+<td>Scripts → Upload</td>
+</tr>
+<tr>
+<td>AI review</td>
+<td>Analyze → scores → findings → remediation notes</td>
+<td>Scripts → Analysis</td>
+</tr>
+<tr>
+<td>Discovery</td>
+<td>Keyword + vector → filters → detail → history</td>
+<td>Scripts / Documentation</td>
+</tr>
+<tr>
+<td>Chat/agents</td>
+<td>Ask for fixes, schedules, safety → save history</td>
+<td>Chat / AI Assistant</td>
+</tr>
+<tr>
+<td>Ops &amp; governance</td>
+<td>Analytics → scorecards → exports → health</td>
+<td>Analytics / Settings</td>
+</tr>
+</tbody>
+</table>
+<h2 id="environment-config">Environment &amp; config</h2>
+<ul>
+<li><code>.env</code> samples: <code>src/frontend/.env</code>, <code>src/backend/.env</code></li>
+<li>Mock mode toggles: <code>VITE_USE_MOCKS=true</code>, <code>USE_MOCK_SERVICES=true</code></li>
+<li>Ports: UI 3002, API 4000, AI 8000 (mock defaults)</li>
+<li>CSRF/CORS dev origins: localhost:3000/3002 + 4000 (see <code>src/backend/src/middleware/security.ts</code>)</li>
+</ul>
+<h2 id="contributing-and-licenses">Contributing and licenses</h2>
+<ul>
+<li>Contributions welcome: see <code>CONTRIBUTING.md</code></li>
+<li>License: MIT (<code>LICENSE</code>)</li>
+</ul>
+    <div class="footer">Generated 2026-01-16 23:34 UTC</div>
   </div>
 </body>
 </html>

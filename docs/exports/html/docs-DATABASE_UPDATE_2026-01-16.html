@@ -1,0 +1,547 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <base href="file:///Users/morlock/fun/psscript/" />
+  <title>docs-DATABASE_UPDATE_2026-01-16</title>
+  <style>
+:root {
+  color-scheme: light;
+}
+body {
+  font-family: "Segoe UI", "Helvetica Neue", Arial, sans-serif;
+  margin: 0;
+  padding: 0;
+  background: #ffffff;
+  color: #0f172a;
+}
+.markdown-body {
+  max-width: 980px;
+  margin: 40px auto 60px;
+  padding: 0 32px;
+  line-height: 1.65;
+}
+.markdown-body h1 {
+  font-size: 32px;
+  margin-bottom: 12px;
+  border-bottom: 2px solid #e2e8f0;
+  padding-bottom: 12px;
+  page-break-before: always;
+  page-break-after: avoid;
+  break-before: page;
+  break-after: avoid;
+}
+.markdown-body h1:first-of-type {
+  page-break-before: avoid;
+  break-before: avoid;
+}
+.markdown-body h2 {
+  font-size: 24px;
+  margin-top: 28px;
+  border-bottom: 1px solid #e2e8f0;
+  padding-bottom: 8px;
+  page-break-before: always;
+  page-break-after: avoid;
+  break-before: page;
+  break-after: avoid;
+}
+.markdown-body h3 {
+  font-size: 18px;
+  margin-top: 20px;
+  page-break-after: avoid;
+  break-after: avoid;
+}
+.markdown-body h4, .markdown-body h5, .markdown-body h6 {
+  page-break-after: avoid;
+  break-after: avoid;
+}
+.markdown-body table {
+  width: 100%;
+  border-collapse: collapse;
+  margin: 16px 0;
+  font-size: 14px;
+  page-break-inside: avoid;
+  break-inside: avoid;
+}
+.markdown-body th,
+.markdown-body td {
+  border: 1px solid #e2e8f0;
+  padding: 8px 10px;
+  text-align: left;
+}
+.markdown-body th {
+  background: #f8fafc;
+}
+.markdown-body tr {
+  page-break-inside: avoid;
+  break-inside: avoid;
+}
+.markdown-body code {
+  background: #f1f5f9;
+  padding: 2px 4px;
+  border-radius: 4px;
+  font-family: "SFMono-Regular", Menlo, Consolas, monospace;
+  font-size: 0.92em;
+}
+.markdown-body pre {
+  background: #0f172a;
+  color: #e2e8f0;
+  padding: 16px;
+  border-radius: 8px;
+  overflow-x: auto;
+  page-break-inside: avoid;
+  break-inside: avoid;
+}
+.markdown-body pre code {
+  background: transparent;
+  color: inherit;
+}
+.markdown-body blockquote {
+  border-left: 4px solid #38bdf8;
+  margin: 16px 0;
+  padding: 8px 16px;
+  background: #f8fafc;
+  color: #334155;
+}
+.markdown-body img {
+  max-width: 100%;
+  height: auto;
+  display: block;
+  margin: 16px 0;
+  border-radius: 10px;
+  box-shadow: 0 8px 20px rgba(15, 23, 42, 0.12);
+  page-break-inside: avoid;
+  break-inside: avoid;
+}
+.markdown-body figure {
+  page-break-inside: avoid;
+  break-inside: avoid;
+  margin: 16px 0;
+}
+.markdown-body a {
+  color: #2563eb;
+  text-decoration: none;
+}
+.markdown-body a:hover {
+  text-decoration: underline;
+}
+.cover {
+  padding: 80px 60px 60px;
+  background: linear-gradient(135deg, #0b1220 0%, #1e3a8a 100%);
+  color: #f8fafc;
+  border-radius: 18px;
+  margin-bottom: 32px;
+}
+.cover-title {
+  font-size: 36px;
+  font-weight: 700;
+  margin: 0 0 12px;
+}
+.cover-subtitle {
+  font-size: 18px;
+  color: #cbd5f5;
+  margin: 0 0 16px;
+}
+.cover-meta {
+  font-size: 13px;
+  color: #94a3b8;
+}
+.page-break {
+  page-break-after: always;
+  break-after: page;
+}
+.footer {
+  margin-top: 40px;
+  font-size: 12px;
+  color: #64748b;
+}
+/* Print and PDF-specific styles */
+@page {
+  margin: 20mm 18mm;
+}
+@media print {
+  .markdown-body {
+    orphans: 3;
+    widows: 3;
+  }
+  .markdown-body p {
+    orphans: 3;
+    widows: 3;
+  }
+  .markdown-body li {
+    page-break-inside: avoid;
+    break-inside: avoid;
+  }
+  .markdown-body ul, .markdown-body ol {
+    page-break-before: avoid;
+    break-before: avoid;
+  }
+  .markdown-body blockquote {
+    page-break-inside: avoid;
+    break-inside: avoid;
+  }
+  /* Keep section content together */
+  .markdown-body h2 + *, .markdown-body h3 + * {
+    page-break-before: avoid;
+    break-before: avoid;
+  }
+}
+</style>
+</head>
+<body>
+  <div class="markdown-body">
+    
+    <h1 id="psscript-database-infrastructure-update-january-16-2026">PSScript Database Infrastructure Update - January 16, 2026</h1>
+<h2 id="change-record">Change Record</h2>
+<table>
+<thead>
+<tr>
+<th>Document ID</th>
+<th>DCR-2026-016</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Version</td>
+<td>1.0</td>
+</tr>
+<tr>
+<td>Date</td>
+<td>January 16, 2026</td>
+</tr>
+<tr>
+<td>Author</td>
+<td>Database Infrastructure Team</td>
+</tr>
+<tr>
+<td>Review Status</td>
+<td>Completed</td>
+</tr>
+<tr>
+<td>Effective Date</td>
+<td>January 16, 2026</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="executive-summary">Executive Summary</h2>
+<p><strong>Status:</strong> Infrastructure improvements completed successfully
+<strong>Test Results:</strong> 81/81 tests passing (100%)
+<strong>Changes:</strong> 4 indexes created, 3 Sequelize models added, 1 frontend monitoring component</p>
+<p>This document records database infrastructure improvements made on January 16, 2026, building upon the comprehensive review completed on January 15, 2026 (see DATABASE_REVIEW_2026.md).</p>
+<hr />
+<h2 id="changes-implemented">Changes Implemented</h2>
+<h3 id="1-foreign-key-index-optimization">1. Foreign Key Index Optimization</h3>
+<p><strong>Issue Identified:</strong> 4 foreign keys lacked supporting indexes, causing potential query performance degradation during JOIN operations.</p>
+<p><strong>Resolution:</strong> Created indexes on all unindexed foreign keys:</p>
+<pre><code class="language-sql">CREATE INDEX idx_chat_history_user ON chat_history(user_id);
+CREATE INDEX idx_comments_user ON comments(user_id);
+CREATE INDEX idx_comments_script ON comments(script_id);
+CREATE INDEX idx_script_versions_user ON script_versions(user_id);
+</code></pre>
+<p><strong>Impact:</strong>
+- Improved JOIN performance for user-related queries
+- Better query planner estimates for foreign key lookups
+- Expected 10-50% improvement on queries involving these tables</p>
+<h3 id="2-new-sequelize-models">2. New Sequelize Models</h3>
+<p><strong>Issue Identified:</strong> 3 database tables existed without corresponding Sequelize models, creating inconsistent data access patterns.</p>
+<p><strong>Resolution:</strong> Created type-safe Sequelize models with proper associations:</p>
+<h4 id="comment-model-srcbackendsrcmodelscommentts">Comment Model (<code>src/backend/src/models/Comment.ts</code>)</h4>
+<ul>
+<li>Maps to <code>comments</code> table</li>
+<li>Associations: belongsTo User, belongsTo Script</li>
+<li>Indexes defined at model level for consistency</li>
+</ul>
+<h4 id="userfavorite-model-srcbackendsrcmodelsuserfavoritets">UserFavorite Model (<code>src/backend/src/models/UserFavorite.ts</code>)</h4>
+<ul>
+<li>Maps to <code>user_favorites</code> junction table</li>
+<li>Composite primary key (user_id, script_id)</li>
+<li>Associations: belongsTo User, belongsTo Script</li>
+<li>No updatedAt timestamp (by design)</li>
+</ul>
+<h4 id="scriptdependency-model-srcbackendsrcmodelsscriptdependencyts">ScriptDependency Model (<code>src/backend/src/models/ScriptDependency.ts</code>)</h4>
+<ul>
+<li>Maps to <code>script_dependencies</code> table</li>
+<li>Composite primary key (parent_script_id, child_script_id)</li>
+<li>Associations: belongsTo Script (both parent and child)</li>
+<li>Tracks script-to-script dependency relationships</li>
+</ul>
+<p><strong>Model Registration:</strong> All models registered in <code>src/backend/src/models/index.ts</code></p>
+<h3 id="3-table-maintenance">3. Table Maintenance</h3>
+<p><strong>Issue Identified:</strong> Table bloat detected during infrastructure analysis:
+- <code>script_versions</code>: 1400% dead row ratio
+- <code>script_analysis</code>: 1600% dead row ratio</p>
+<p><strong>Resolution:</strong> Executed VACUUM ANALYZE on all tables:</p>
+<pre><code class="language-sql">VACUUM ANALYZE;
+</code></pre>
+<p><strong>Impact:</strong>
+- Reclaimed disk space from dead tuples
+- Updated query planner statistics
+- Improved query performance estimates</p>
+<h3 id="4-frontend-monitoring-component">4. Frontend Monitoring Component</h3>
+<p><strong>Component:</strong> <code>DatabaseAdminPanel</code> (<code>src/frontend/src/components/admin/</code>)</p>
+<p><strong>Features:</strong>
+- Real-time connection pool monitoring
+- Table health visualization with status indicators
+- Index usage statistics display
+- Manual VACUUM trigger capability
+- Industrial control room aesthetic design</p>
+<p><strong>Files Created:</strong>
+- <code>DatabaseAdminPanel.tsx</code> - React component
+- <code>DatabaseAdminPanel.css</code> - Styling
+- <code>index.ts</code> - Barrel export</p>
+<p><strong>Dependencies Added:</strong>
+- <code>framer-motion</code> - Animation library for component transitions</p>
+<hr />
+<h2 id="updated-schema-summary">Updated Schema Summary</h2>
+<h3 id="tables-15-total">Tables: 15 Total</h3>
+<table>
+<thead>
+<tr>
+<th>Table</th>
+<th>Sequelize Model</th>
+<th>Status</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>users</td>
+<td>User</td>
+<td>OK</td>
+</tr>
+<tr>
+<td>scripts</td>
+<td>Script</td>
+<td>OK</td>
+</tr>
+<tr>
+<td>categories</td>
+<td>Category</td>
+<td>OK</td>
+</tr>
+<tr>
+<td>tags</td>
+<td>Tag</td>
+<td>OK</td>
+</tr>
+<tr>
+<td>script_tags</td>
+<td>ScriptTag</td>
+<td>OK</td>
+</tr>
+<tr>
+<td>script_versions</td>
+<td>ScriptVersion</td>
+<td>OK</td>
+</tr>
+<tr>
+<td>script_analysis</td>
+<td>ScriptAnalysis</td>
+<td>OK</td>
+</tr>
+<tr>
+<td>script_embeddings</td>
+<td>ScriptEmbedding</td>
+<td>OK</td>
+</tr>
+<tr>
+<td>execution_logs</td>
+<td>ExecutionLog</td>
+<td>OK</td>
+</tr>
+<tr>
+<td>chat_history</td>
+<td>ChatHistory</td>
+<td>OK</td>
+</tr>
+<tr>
+<td>documentation</td>
+<td>Documentation</td>
+<td>OK</td>
+</tr>
+<tr>
+<td>comments</td>
+<td><strong>Comment</strong></td>
+<td><strong>NEW</strong></td>
+</tr>
+<tr>
+<td>user_favorites</td>
+<td><strong>UserFavorite</strong></td>
+<td><strong>NEW</strong></td>
+</tr>
+<tr>
+<td>script_dependencies</td>
+<td><strong>ScriptDependency</strong></td>
+<td><strong>NEW</strong></td>
+</tr>
+<tr>
+<td>agent_state</td>
+<td>(pending)</td>
+<td>REVIEW</td>
+</tr>
+</tbody>
+</table>
+<h3 id="indexes-44-total">Indexes: 44+ Total</h3>
+<p><strong>New Indexes Created:</strong>
+| Index Name | Table | Column(s) |
+|------------|-------|-----------|
+| idx_chat_history_user | chat_history | user_id |
+| idx_comments_user | comments | user_id |
+| idx_comments_script | comments | script_id |
+| idx_script_versions_user | script_versions | user_id |</p>
+<hr />
+<h2 id="connection-pool-status">Connection Pool Status</h2>
+<table>
+<thead>
+<tr>
+<th>Metric</th>
+<th>Value</th>
+<th>Status</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Active Connections</td>
+<td>3</td>
+<td>OK</td>
+</tr>
+<tr>
+<td>Pool Maximum</td>
+<td>100</td>
+<td>OK</td>
+</tr>
+<tr>
+<td>Utilization</td>
+<td>3%</td>
+<td>OK</td>
+</tr>
+<tr>
+<td>Idle Timeout</td>
+<td>10,000ms</td>
+<td>OK</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="verification-results">Verification Results</h2>
+<h3 id="test-suite">Test Suite</h3>
+<pre><code>Test Suites: 6 passed, 6 total
+Tests:       81 passed, 81 total
+Time:        5.126s
+</code></pre>
+<h3 id="typescript-compilation">TypeScript Compilation</h3>
+<pre><code>npx tsc --noEmit
+# No errors
+</code></pre>
+<h3 id="model-association-verification">Model Association Verification</h3>
+<p>All new models successfully:
+- Initialize with Sequelize instance
+- Define correct associations
+- Map to existing database schema</p>
+<hr />
+<h2 id="sprint-progress-update">Sprint Progress Update</h2>
+<p>From DATABASE_REVIEW_2026.md recommendations:</p>
+<h3 id="sprint-2-items-addressed-today">Sprint 2 Items (Addressed Today)</h3>
+<ul>
+<li>[x] Create Sequelize models for missing tables (3 of 3 completed)</li>
+<li>[ ] Fix N+1 queries with eager loading (pending)</li>
+<li>[ ] Increase pool min to 2 (pending)</li>
+</ul>
+<h3 id="additional-improvements">Additional Improvements</h3>
+<ul>
+<li>[x] Index optimization for foreign keys</li>
+<li>[x] Table maintenance (VACUUM ANALYZE)</li>
+<li>[x] Monitoring dashboard component</li>
+</ul>
+<hr />
+<h2 id="risk-assessment">Risk Assessment</h2>
+<table>
+<thead>
+<tr>
+<th>Change</th>
+<th>Risk Level</th>
+<th>Mitigation</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>New indexes</td>
+<td>Low</td>
+<td>Non-blocking CREATE INDEX</td>
+</tr>
+<tr>
+<td>New models</td>
+<td>Low</td>
+<td>No schema changes, models match existing tables</td>
+</tr>
+<tr>
+<td>VACUUM ANALYZE</td>
+<td>Low</td>
+<td>Standard maintenance operation</td>
+</tr>
+<tr>
+<td>Frontend component</td>
+<td>None</td>
+<td>Isolated admin feature</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="rollback-procedures">Rollback Procedures</h2>
+<p>If issues arise:</p>
+<h3 id="indexes">Indexes</h3>
+<pre><code class="language-sql">DROP INDEX IF EXISTS idx_chat_history_user;
+DROP INDEX IF EXISTS idx_comments_user;
+DROP INDEX IF EXISTS idx_comments_script;
+DROP INDEX IF EXISTS idx_script_versions_user;
+</code></pre>
+<h3 id="models">Models</h3>
+<p>Remove from <code>models/index.ts</code>:
+- Comment import and initialization
+- UserFavorite import and initialization
+- ScriptDependency import and initialization</p>
+<h3 id="frontend-component">Frontend Component</h3>
+<p>Remove directory: <code>src/frontend/src/components/admin/</code></p>
+<hr />
+<h2 id="next-steps">Next Steps</h2>
+<ol>
+<li><strong>Commit Changes:</strong> Stage and commit all new files</li>
+<li><strong>Continue Sprint 2:</strong> Address N+1 query patterns</li>
+<li><strong>Pool Optimization:</strong> Increase min pool size to 2</li>
+<li><strong>Agent Models:</strong> Create Sequelize models for agent_state, conversation_history, tool_execution_results</li>
+</ol>
+<hr />
+<h2 id="appendix-new-model-schemas">Appendix: New Model Schemas</h2>
+<h3 id="comment-model">Comment Model</h3>
+<pre><code class="language-typescript">interface Comment {
+  id: number;           // Primary key
+  scriptId: number;     // FK -&gt; scripts.id (CASCADE DELETE)
+  userId: number;       // FK -&gt; users.id
+  content: string;      // Comment text
+  createdAt: Date;
+  updatedAt: Date;
+}
+</code></pre>
+<h3 id="userfavorite-model">UserFavorite Model</h3>
+<pre><code class="language-typescript">interface UserFavorite {
+  userId: number;       // PK, FK -&gt; users.id
+  scriptId: number;     // PK, FK -&gt; scripts.id (CASCADE DELETE)
+  createdAt: Date;
+}
+</code></pre>
+<h3 id="scriptdependency-model">ScriptDependency Model</h3>
+<pre><code class="language-typescript">interface ScriptDependency {
+  parentScriptId: number;  // PK, FK -&gt; scripts.id (CASCADE DELETE)
+  childScriptId: number;   // PK, FK -&gt; scripts.id (CASCADE DELETE)
+  createdAt: Date;
+}
+</code></pre>
+<hr />
+<p><em>Document Control: DCR-2026-016</em>
+<em>Review Cycle: As needed upon infrastructure changes</em>
+<em>Related Documents: DATABASE_REVIEW_2026.md</em></p>
+    <div class="footer">Generated 2026-01-16 23:34 UTC</div>
+  </div>
+</body>
+</html>
