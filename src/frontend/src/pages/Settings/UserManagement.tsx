@@ -220,7 +220,7 @@ const UserManagement: React.FC = () => {
 
   // Stats
   const adminCount = users.filter(u => u.role === 'admin').length;
-  const userCount = users.filter(u => u.role === 'user').length;
+  const _userCount = users.filter(u => u.role === 'user').length;
   const recentLogins = users.filter(u => {
     if (!u.lastLoginAt) return false;
     const lastLogin = new Date(u.lastLoginAt);

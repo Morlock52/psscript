@@ -24,10 +24,10 @@ let Tag: any;
 let ScriptTag: any;
 let ScriptVersion: any;
 let ScriptAnalysis: any;
-let ScriptEmbedding: any;
+let _ScriptEmbedding: any;
 let ExecutionLog: any;
-let ChatHistory: any;
-let Documentation: any;
+let _ChatHistory: any;
+let _Documentation: any;
 
 // Test configuration
 const TEST_TIMEOUT = 30000;
@@ -780,7 +780,7 @@ describe('Database Integration Tests', () => {
 
       try {
         const passwordHash = await bcrypt.hash('test123', 12);
-        const user = await User.create({
+        const _user = await User.create({
           username: 'tx_test_' + Date.now(),
           email: `tx_${Date.now()}@example.com`,
           password: passwordHash,
@@ -790,11 +790,11 @@ describe('Database Integration Tests', () => {
         // Force an error
         throw new Error('Simulated failure');
 
-      } catch (error) {
+      } catch (_error) {
         await t.rollback();
 
         // Verify rollback occurred - user should not exist
-        const users = await User.findAll({
+        const _users = await User.findAll({
           where: { username: { [Op.like]: 'tx_test_%' } }
         });
         // Should not find the user we tried to create
@@ -987,7 +987,8 @@ describe('Database Integration Tests', () => {
 
     test('15.3 Should detect duplicate file hash', async () => {
       const content = 'Get-Date # Unique test script ' + Date.now();
-      const fileHash = require('crypto').createHash('md5').update(content).digest('hex');
+      const crypto = await import('crypto');
+      const fileHash = crypto.createHash('md5').update(content).digest('hex');
 
       const user = await User.create({
         username: 'hash_test_' + Date.now(),

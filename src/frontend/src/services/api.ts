@@ -2,7 +2,7 @@
 // @ts-nocheck - Required for flexible API client configuration
 import axios, { AxiosRequestConfig, AxiosError } from "axios";
 import { getApiUrl, isLocalhost as checkIsLocalhost } from "../utils/apiUrl";
-import { extractApiError, ErrorCodes } from "../utils/errorUtils";
+import { extractApiError, ErrorCodes as _ErrorCodes } from "../utils/errorUtils";
 
 // Determine if we're running in a development environment
 // This is evaluated at runtime in the browser
