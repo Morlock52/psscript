@@ -10,6 +10,9 @@ import ScriptEmbedding from './ScriptEmbedding';
 import ExecutionLog from './ExecutionLog';
 import ChatHistory from './ChatHistory';
 import Documentation from './Documentation';
+import Comment from './Comment';
+import UserFavorite from './UserFavorite';
+import ScriptDependency from './ScriptDependency';
 
 import dotenv from 'dotenv';
 dotenv.config();
@@ -29,6 +32,9 @@ ScriptEmbedding.initialize(sequelize);
 ExecutionLog.initialize(sequelize);
 ChatHistory.initialize(sequelize);
 Documentation.initialize(sequelize);
+Comment.initialize(sequelize);
+UserFavorite.initialize(sequelize);
+ScriptDependency.initialize(sequelize);
 
 // Set up associations - check if method exists first
 function safeAssociate(model) {
@@ -53,6 +59,9 @@ safeAssociate(ScriptEmbedding);
 safeAssociate(ExecutionLog);
 safeAssociate(ChatHistory);
 safeAssociate(Documentation);
+safeAssociate(Comment);
+safeAssociate(UserFavorite);
+safeAssociate(ScriptDependency);
 
 // Track connection events and diagnostics
 import { dbConnectionInfo, connectionEvents } from '../database/connection';
@@ -71,5 +80,8 @@ export {
   ScriptEmbedding,
   ExecutionLog,
   ChatHistory,
-  Documentation
+  Documentation,
+  Comment,
+  UserFavorite,
+  ScriptDependency
 };
