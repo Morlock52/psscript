@@ -1,0 +1,3 @@
+[submodule "claude-canvas"]
+	path = claude-canvas
+	url = https://github.com/BEARLY-HODLING/claude-canvas.git
