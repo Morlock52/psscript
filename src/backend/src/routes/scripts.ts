@@ -1,4 +1,5 @@
-// @ts-nocheck - Required for middleware integration and route parameter handling
+// @ts-nocheck - Required: Express middleware chain loses type info when JWT adds req.user
+// TODO: Fix by extending Express.Request interface or using typed middleware wrappers
 import express from 'express';
 // New modular controllers (migrated from legacy ScriptController)
 import {

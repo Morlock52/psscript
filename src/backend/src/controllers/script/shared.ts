@@ -81,20 +81,63 @@ export const sendSuccess = <T>(res: Response, data: T, status = 200): Response =
 };
 
 /**
- * Send an error response with optional details
- * In production, details are not sent to clients for security
+ * Standard error response format
+ * Used across all script controllers for consistent API responses
+ */
+export interface ApiErrorResponse {
+  message: string;
+  success: false;
+  error?: string;
+  details?: Record<string, unknown>;
+}
+
+/**
+ * Common HTTP error status codes used in controllers
+ */
+export const HTTP_STATUS = {
+  BAD_REQUEST: 400,
+  UNAUTHORIZED: 401,
+  FORBIDDEN: 403,
+  NOT_FOUND: 404,
+  CONFLICT: 409,
+  INTERNAL_ERROR: 500,
+  SERVICE_UNAVAILABLE: 503
+} as const;
+
+/**
+ * Send an error response with standardized format
+ * All error responses use { message, success: false } for consistency
+ * In production, additional details are not sent to clients for security
+ *
+ * @param res - Express response object
+ * @param message - User-facing error message
+ * @param status - HTTP status code (default: 500)
+ * @param errorCode - Optional machine-readable error code (e.g., 'VALIDATION_ERROR')
+ * @param details - Optional details (omitted in production)
  */
 export const sendError = (
   res: Response,
   message: string,
-  status = 500,
+  status: number = HTTP_STATUS.INTERNAL_ERROR,
+  errorCode?: string,
   details?: Record<string, unknown>
 ): Response => {
-  logger.error(`Error: ${message}`, details);
+  logger.error(`Error [${status}]: ${message}`, { errorCode, details });
 
-  const responseBody = process.env.NODE_ENV === 'production'
-    ? { error: message }
-    : { error: message, details };
+  const responseBody: ApiErrorResponse = {
+    message,
+    success: false
+  };
+
+  // Add error code if provided
+  if (errorCode) {
+    responseBody.error = errorCode;
+  }
+
+  // Include details only in development
+  if (process.env.NODE_ENV !== 'production' && details) {
+    responseBody.details = details;
+  }
 
   return res.status(status).json(responseBody);
 };

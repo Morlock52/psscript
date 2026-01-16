@@ -14,7 +14,9 @@ import {
   sequelize,
   Transaction,
   logger,
-  calculateBufferMD5
+  calculateBufferMD5,
+  sendError,
+  HTTP_STATUS
 } from './shared';
 
 import type { AuthenticatedRequest } from './types';
@@ -32,7 +34,7 @@ export async function getVersionHistory(
     const scriptId = parseInt(req.params.id);
 
     if (isNaN(scriptId)) {
-      return res.status(400).json({ error: 'Invalid script ID' });
+      return sendError(res, 'Invalid script ID', HTTP_STATUS.BAD_REQUEST);
     }
 
     // Verify script exists
@@ -41,7 +43,7 @@ export async function getVersionHistory(
     });
 
     if (!script) {
-      return res.status(404).json({ error: 'Script not found' });
+      return sendError(res, 'Script not found', HTTP_STATUS.NOT_FOUND);
     }
 
     // Fetch all versions for this script with content included
@@ -125,7 +127,7 @@ export async function getVersion(
     const versionNumber = parseInt(req.params.versionNumber);
 
     if (isNaN(scriptId) || isNaN(versionNumber)) {
-      return res.status(400).json({ error: 'Invalid script ID or version number' });
+      return sendError(res, 'Invalid script ID or version number', HTTP_STATUS.BAD_REQUEST);
     }
 
     const version = await ScriptVersion.findOne({
@@ -136,7 +138,7 @@ export async function getVersion(
     });
 
     if (!version) {
-      return res.status(404).json({ error: 'Version not found' });
+      return sendError(res, 'Version not found', HTTP_STATUS.NOT_FOUND);
     }
 
     // Get the current script for comparison
@@ -176,11 +178,11 @@ export async function revertToVersion(
     const userId = req.user?.id;
 
     if (isNaN(scriptId) || isNaN(targetVersion)) {
-      return res.status(400).json({ error: 'Invalid script ID or version number' });
+      return sendError(res, 'Invalid script ID or version number', HTTP_STATUS.BAD_REQUEST);
     }
 
     if (!userId) {
-      return res.status(401).json({ error: 'Authentication required' });
+      return sendError(res, 'Authentication required', HTTP_STATUS.UNAUTHORIZED);
     }
 
     // Find the target version
@@ -189,19 +191,19 @@ export async function revertToVersion(
     });
 
     if (!targetVersionRecord) {
-      return res.status(404).json({ error: 'Target version not found' });
+      return sendError(res, 'Target version not found', HTTP_STATUS.NOT_FOUND);
     }
 
     // Find the current script
     const script = await Script.findByPk(scriptId);
 
     if (!script) {
-      return res.status(404).json({ error: 'Script not found' });
+      return sendError(res, 'Script not found', HTTP_STATUS.NOT_FOUND);
     }
 
     // Don't revert if already at this version
     if (script.version === targetVersion) {
-      return res.status(400).json({ error: 'Script is already at this version' });
+      return sendError(res, 'Script is already at this version', HTTP_STATUS.BAD_REQUEST);
     }
 
     // Start transaction for atomic operation
@@ -271,7 +273,7 @@ export async function compareVersions(
     const toVersion = parseInt(req.query.to as string);
 
     if (isNaN(scriptId) || isNaN(fromVersion) || isNaN(toVersion)) {
-      return res.status(400).json({ error: 'Invalid script ID or version numbers' });
+      return sendError(res, 'Invalid script ID or version numbers', HTTP_STATUS.BAD_REQUEST);
     }
 
     // Fetch both versions
@@ -281,7 +283,7 @@ export async function compareVersions(
     ]);
 
     if (!fromRecord || !toRecord) {
-      return res.status(404).json({ error: 'One or both versions not found' });
+      return sendError(res, 'One or both versions not found', HTTP_STATUS.NOT_FOUND);
     }
 
     // Simple line-by-line diff
