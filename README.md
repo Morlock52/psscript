@@ -1,352 +1,210 @@
-# PSScript Deployment - Complete Documentation Package
+# PSScript
 
-**Server:** 74.208.184.195  
-**Application:** https://psscript.morloksmaze.com  
-**Date:** January 14, 2026
+A multi-service PowerShell script analysis platform with agentic AI capabilities.
 
----
+## Overview
 
-## 🚨 URGENT: Current Status
+PSScript provides intelligent analysis, generation, and management of PowerShell scripts with features including:
 
-| Component | Status | Action Required |
-|-----------|--------|-----------------|
-| SSH Access | ❌ **BLOCKED** | Restore via hosting provider console |
-| Backend API | ❌ **DOWN** | Fix after SSH restored (Error 1033) |
-| Frontend | ✅ Working | Cloudflare Tunnel operational |
-| SSL/TLS | ✅ Valid | Certificate until Feb 23, 2026 |
+- **AI-Powered Analysis** - Security scanning, code quality assessment, and best practice validation
+- **Script Generation** - Agentic AI workflow for generating PowerShell scripts from natural language
+- **Semantic Search** - Vector embeddings for finding similar scripts and documentation
+- **Version Control** - Track script versions with changelogs
+- **Collaboration** - Comments, favorites, and user management
 
----
+## Architecture
 
-## 📚 Documentation Files
-
-### 1. **IMMEDIATE_FIX_STEPS.md** ⭐ START HERE
-**Purpose:** Step-by-step guide to fix critical issues  
-**Format:** Markdown  
-**Use:** Primary reference for fixing SSH and backend issues
-
-### 2. **IMMEDIATE_FIX_STEPS.docx** 
-**Purpose:** Professional Word document with detailed instructions  
-**Format:** Microsoft Word  
-**Use:** Print-friendly format with formatting and tables
-
-### 3. **IMMEDIATE_FIX_STEPS.xlsx**
-**Purpose:** Excel workbook with organized tabs  
-**Format:** Microsoft Excel (8 worksheets)  
-**Worksheets:**
-- Overview - Status and server info
-- Step 1 - Console Access - Provider-specific instructions
-- Step 2 - Fix SSH - SSH restoration commands
-- Step 3 - Check Docker - Container verification
-- Step 4 - Fix Backend - Backend troubleshooting
-- Step 5 - Verification - Post-fix checklist
-- Troubleshooting - Common issues and solutions
-- Quick Reference - Command reference table
-
-### 4. **IMMEDIATE_FIX_STEPS.pdf**
-**Purpose:** Portable document for easy sharing  
-**Format:** PDF  
-**Use:** Email-friendly, universal format
-
-### 5. **STRESS_TEST_REPORT.md**
-**Purpose:** Complete stress testing results  
-**Contains:**
-- SSL/TLS performance metrics (55ms avg handshake)
-- HTTP response time analysis (128ms avg)
-- Load testing results (50+ req/sec at 20 concurrent)
-- API endpoint testing (Error 1033 documented)
-- Performance benchmarks and recommendations
-
-### 6. **API_FIX_GUIDE.md**
-**Purpose:** Comprehensive API troubleshooting  
-**Contains:**
-- Error 1033 explanation and diagnosis
-- Step-by-step diagnostic procedures
-- Common error patterns and fixes
-- Verification steps after fixes
-- Preventive measures and monitoring
-
-### 7. **DEPLOYMENT_SUMMARY.md**
-**Purpose:** Complete deployment status report  
-**Contains:**
-- What's deployed (8 Docker containers)
-- What's working (60%)
-- What needs fixing (40%)
-- Configuration files reference
-- Commands cheat sheet
-- Next steps and priorities
-
-### 8. **RECOVERY_PLAN.md**
-**Purpose:** Full system recovery procedures  
-**Contains:**
-- 5-phase recovery plan
-- SSH restoration steps
-- Service verification procedures
-- Quick reference commands
-
-### 9. **DEPLOYMENT_STATUS.md**
-**Purpose:** Original deployment status (from initial deployment)
-**Contains:**
-- Deployment timeline
-- Services deployed
-- Known issues at deployment time
-
-### 10. **CONSOLE_FIX_COMMANDS.sh** ⚡ RUN THIS SCRIPT
-**Purpose:** Automated recovery script for console
-**Format:** Bash script
-**Use:** Run this in hosting provider console for automatic fix
-**Command:** `bash /opt/psscript/CONSOLE_FIX_COMMANDS.sh`
-
-### 11. **CONSOLE_QUICKREF.pdf** 📋 PRINT THIS
-**Purpose:** One-page quick reference for console access
-**Format:** PDF
-**Use:** Keep this open while working in console
-**Contains:**
-- Server credentials
-- All critical commands in order
-- Expected results checklist
-
----
-
-## 🎯 Quick Start Guide
-
-### If you need to fix the server RIGHT NOW:
-
-1. **Open:** `IMMEDIATE_FIX_STEPS.md` (or .docx, .xlsx, .pdf)
-2. **Do:** Follow Step 1 - Access your hosting provider console
-3. **Run:** Commands in Step 2-4 exactly as shown
-4. **Verify:** Use Step 5 checklist to confirm everything works
-
-### If you need to understand what's wrong:
-
-1. **Read:** `STRESS_TEST_REPORT.md` - Complete testing results
-2. **Read:** `API_FIX_GUIDE.md` - Backend-specific troubleshooting
-
-### If you need deployment information:
-
-1. **Read:** `DEPLOYMENT_SUMMARY.md` - Current state and what's next
-2. **Read:** `RECOVERY_PLAN.md` - How to recover if things go wrong
-
----
-
-## 🔧 Critical Information
-
-### Server Access
-- **IP:** 74.208.184.195
-- **SSH User:** root
-- **SSH Password:** xyyCbL6G
-- **SSH Status:** ❌ Port 22 blocked (requires console access)
-
-### Application URLs
-- **Production:** https://psscript.morloksmaze.com
-- **API Base:** https://psscript.morloksmaze.com/api (currently down)
-- **Authentication:** Cloudflare Access
-
-### Docker Services (8 Containers)
-1. **frontend** (port 3000) - ✅ Working
-2. **backend** (port 4000) - ❌ Down (Error 1033)
-3. **postgres** (port 5432) - ❓ Unknown
-4. **redis** (port 6379) - ❓ Unknown
-5. **ai-service** (port 5000) - ❓ Unknown
-6. **cloudflared** - ✅ Working
-7. **pgadmin** (port 5050) - ❓ Unknown
-8. **redis-commander** (port 8081) - ❓ Unknown
-
-### Cloudflare Configuration
-- **Tunnel ID:** de34187a-1d92-4d21-a99f-504533e2acbd
-- **Config:** `/opt/psscript/cloudflared/config.yml`
-- **Status:** ✅ Active and routing traffic
-
----
-
-## 📊 Test Results Summary
-
-### What We Tested
-- ✅ SSL/TLS performance (10 handshakes)
-- ✅ HTTP response times (10 sequential requests)
-- ✅ Concurrent load testing (5, 10, 20 concurrent)
-- ✅ API endpoints (all failing with Error 1033)
-- ✅ Port accessibility (all blocked)
-- ✅ SSL certificate validity
-
-### Key Findings
-- **SSL/TLS:** Excellent (TLSv1.3, 55ms avg handshake)
-- **Load Handling:** Exceptional (100% success, 50+ req/sec)
-- **Frontend:** Working perfectly via tunnel
-- **Backend API:** Not responding (Error 1033)
-- **Infrastructure:** Well-designed, secure, high-performance
-
----
-
-## 🔄 Next Steps (Priority Order)
-
-### CRITICAL - Do First
-1. ⚠️ **Restore SSH access** via hosting provider console
-2. ⚠️ **Fix backend service** - restart and verify health
-3. ⚠️ **Verify all containers** - ensure 8 containers running
-
-### After SSH is Restored
-4. Check PostgreSQL and Redis connectivity
-5. Test complete application flow
-6. Verify all API endpoints work
-7. Test authentication and authorization
-
-### Production Hardening
-8. Implement monitoring and alerting
-9. Set up automated backups
-10. Configure health checks in docker-compose
-11. Security hardening (close port 22, SSH keys only)
-12. Document recovery procedures
-
----
-
-## 💡 Useful Commands
-
-### Quick Status Check
-```bash
-cd /opt/psscript
-docker compose ps
-docker logs backend --tail 20
-curl http://localhost:4000/api/health
+```
+┌─────────────────────────────────────────────────────────────┐
+│                      PSScript Platform                       │
+├─────────────┬─────────────┬─────────────┬──────────────────┤
+│  Frontend   │   Backend   │ AI Service  │   Data Layer     │
+│  React/Vite │  Express/TS │ FastAPI/Py  │  PostgreSQL      │
+│  Port 3000  │  Port 4000  │  Port 8000  │  + Redis Cache   │
+└─────────────┴─────────────┴─────────────┴──────────────────┘
 ```
 
-### Restart Services
+| Service | Technology | Port | Description |
+|---------|------------|------|-------------|
+| Frontend | React + Vite | 3000 | Web application UI |
+| Backend | Express + TypeScript | 4000 | API server with agentic tools |
+| AI Service | FastAPI + Python | 8000 | AI/ML operations |
+| PostgreSQL | PostgreSQL 15+ | 5432 | Primary database with pgvector |
+| Redis | Redis 7+ | 6379 | Caching layer |
+
+## Quick Start
+
+### Prerequisites
+
+- Node.js 18+
+- Python 3.10+
+- Docker & Docker Compose
+- PostgreSQL 15+ with pgvector extension
+- Redis 7+
+
+### Development Setup
+
 ```bash
-docker compose restart backend          # Restart backend only
-docker compose restart                  # Restart all services
-docker compose down && docker compose up -d  # Full restart
+# Clone the repository
+git clone <repository-url>
+cd psscript
+
+# Start all services with Docker
+docker-compose up
+
+# Or start services individually:
+
+# Backend
+cd src/backend && npm install && npm run dev
+
+# Frontend
+cd src/frontend && npm install && npm run dev
+
+# AI Service
+cd src/ai && python main.py
 ```
 
-### View Logs
+### Production Deployment
+
 ```bash
-docker logs backend --follow           # Follow backend logs
-docker logs cloudflared --tail 50      # Check tunnel logs
-docker compose logs -f                 # Follow all logs
+# Build and start production containers
+docker-compose -f docker-compose.prod.yml up -d
+
+# For Cloudflare Tunnel access
+./scripts/start-frontend-prod.sh
 ```
 
-### Check Resources
-```bash
-docker stats --no-stream              # Container resource usage
-top -bn1 | head -20                   # Server CPU/memory
-free -h && df -h                      # Memory and disk
+## Project Structure
+
+```
+psscript/
+├── src/
+│   ├── backend/           # Express/TypeScript API
+│   │   ├── src/
+│   │   │   ├── controllers/    # API route handlers
+│   │   │   ├── models/         # Sequelize ORM models
+│   │   │   ├── services/       # Business logic
+│   │   │   │   └── agentic/    # AI workflow engine
+│   │   │   └── database/       # DB connection
+│   │   └── tests/
+│   ├── frontend/          # React/Vite application
+│   │   └── src/
+│   │       ├── components/     # React components
+│   │       ├── pages/          # Route pages
+│   │       └── services/       # API clients
+│   └── ai/                # Python AI service
+│       ├── main.py            # FastAPI server
+│       └── voice_endpoints.py # Voice API
+├── docs/                  # Documentation
+├── scripts/               # Utility scripts
+└── docker/                # Docker configurations
 ```
 
----
+## Key Features
 
-## 📞 Support Information
+### Agentic AI System
 
-### User Details
-- **Name:** Dave
-- **Email:** morlok52@gmail.com
+The backend includes a sophisticated agentic workflow system:
 
-### When You Need Help
-If you cannot resolve issues using these documents:
+- **RunEngine** (`src/backend/src/services/agentic/RunEngine.ts`) - Orchestrates multi-step AI workflows
+- **ScriptGenerator** - Generates PowerShell scripts from requirements
+- **SecurityAnalyzer** - Performs security analysis and vulnerability detection
+- **Modular Tools** - Extensible tool system for AI operations
 
-1. **Collect Information:**
-   - Output of `docker compose ps`
-   - Output of `docker logs backend --tail 100`
-   - Output of `docker logs cloudflared --tail 50`
-   - Screenshots of any error messages
+### Database Features
 
-2. **Check Documentation:**
-   - Review `API_FIX_GUIDE.md` for backend issues
-   - Review `RECOVERY_PLAN.md` for SSH issues
-   - Check `Troubleshooting` tab in IMMEDIATE_FIX_STEPS.xlsx
+- **File Hash Deduplication** - Prevents duplicate script storage
+- **Vector Embeddings** - 1536-dimension vectors for semantic search (pgvector)
+- **Version History** - Complete script version tracking
+- **Real-time Updates** - WebSocket connections for live updates
 
-3. **Hosting Provider:**
-   - Contact your hosting provider support
-   - Provide server IP: 74.208.184.195
-   - Explain: SSH not accessible, need console access
+### Security
 
----
+- **JWT Authentication** - Secure token-based auth
+- **Cloudflare Access** - Optional SSO integration
+- **Security Analysis** - Built-in script security scanning
+- **Input Validation** - Comprehensive request validation
 
-## 📈 Performance Metrics
+## Documentation
 
-### SSL/TLS Performance
-- Average Handshake: 55.53ms
-- Min: 19.27ms / Max: 158.31ms
-- Protocol: TLSv1.3
-- Cipher: TLS_AES_256_GCM_SHA384 (256-bit)
+| Document | Description |
+|----------|-------------|
+| [CLAUDE.md](./CLAUDE.md) | Development guide for Claude Code |
+| [docs/DATABASE_REVIEW_2026.md](./docs/DATABASE_REVIEW_2026.md) | Database architecture and optimization |
+| [docs/DOCKER-SETUP.md](./docs/DOCKER-SETUP.md) | Docker deployment guide |
 
-### HTTP Performance
-- Average Response: 128.21ms
-- Min: 63.81ms / Max: 341.27ms
-- 70% of requests under 100ms
+## Commands Reference
 
-### Load Testing
-- 5 concurrent: 34.11 req/sec (100% success)
-- 10 concurrent: 40.43 req/sec (100% success)
-- 20 concurrent: 50.32 req/sec (100% success)
+### Development
 
-### System Assessment
-- **Infrastructure:** ⭐⭐⭐⭐⭐ Excellent design
-- **Security:** ⭐⭐⭐⭐⭐ Cloudflare Tunnel + Access
-- **Performance:** ⭐⭐⭐⭐⭐ Fast, scalable, reliable
-- **Current Status:** ⚠️⚠️ Backend needs fix
+```bash
+# Start all services
+docker-compose up
 
----
+# Run tests
+cd src/backend && npm test
 
-## 🎓 Lessons Learned
+# Lint code
+npm run lint          # All
+npm run lint:backend  # Backend only
+npm run lint:frontend # Frontend only
 
-### What Went Right
-- Cloudflare Tunnel architecture is solid
-- SSL/TLS configuration is optimal
-- Load balancing handles high concurrency
-- Frontend deployment successful
-- Security layers (Access) working perfectly
+# Type checking
+cd src/backend && npm run typecheck
+```
 
-### What Needs Attention
-- Backend service health monitoring
-- SSH access management
-- Container restart policies
-- Automated health checks
-- Monitoring and alerting
+### Port Management
 
-### Recommendations
-1. Add health checks to docker-compose.yml
-2. Implement container restart policies
-3. Set up uptime monitoring
-4. Configure alerting for Error 1033
-5. Document this experience for future deployments
+```bash
+# Check port usage
+./scripts/ensure-ports.sh status
 
----
+# Free ports if needed
+./scripts/ensure-ports.sh kill-frontend
+./scripts/ensure-ports.sh kill-backend
+```
 
-## 📅 Timeline
+### Database
 
-- **Deployment Started:** January 14, 2026 (morning)
-- **Docker Installed:** Successfully
-- **Application Transferred:** 1,507 files via SFTP
-- **Containers Built:** All 8 containers
-- **Backend Working:** Temporarily (before SSH loss)
-- **SSH Access Lost:** ~1 hour into session
-- **Stress Testing:** Completed (20 minutes)
-- **Documentation:** Created (complete package)
+```bash
+# Test database connectivity
+cd src/backend && node test-db.js
 
----
+# Test Redis connectivity
+cd src/backend && node test-redis.js
+```
 
-## ✅ Final Checklist
+## API Endpoints
 
-Use this to track your progress:
+### Scripts
+- `GET /api/scripts` - List scripts
+- `POST /api/scripts` - Create script
+- `GET /api/scripts/:id` - Get script details
+- `POST /api/scripts/:id/analyze` - Analyze script
 
-- [ ] Read IMMEDIATE_FIX_STEPS.md completely
-- [ ] Access hosting provider console
-- [ ] Fix SSH access (ufw allow 22/tcp)
-- [ ] Test SSH from local machine
-- [ ] Check Docker container status
-- [ ] Read backend logs
-- [ ] Restart backend service
-- [ ] Test backend health locally
-- [ ] Test API via tunnel
-- [ ] Verify all 8 containers running
-- [ ] Complete verification checklist
-- [ ] Test full application flow
-- [ ] Implement monitoring
-- [ ] Set up backups
-- [ ] Document final configuration
+### AI Operations
+- `POST /api/ai/generate` - Generate script from prompt
+- `POST /api/ai/chat` - Chat with AI assistant
+- `GET /api/ai/search` - Semantic search
+
+### Authentication
+- `POST /api/auth/login` - User login
+- `POST /api/auth/register` - User registration
+- `GET /api/auth/me` - Current user info
+
+## Contributing
+
+1. Fork the repository
+2. Create a feature branch (`git checkout -b feature/amazing-feature`)
+3. Commit your changes (`git commit -m 'Add amazing feature'`)
+4. Push to the branch (`git push origin feature/amazing-feature`)
+5. Open a Pull Request
+
+## License
+
+This project is proprietary software. All rights reserved.
 
 ---
 
-**Generated by:** Claude AI (Anthropic)  
-**Date:** January 14, 2026  
-**Version:** 1.0
-
-**Note:** This is a comprehensive documentation package created after extensive testing and analysis. All technical details are accurate as of the generation date. The application infrastructure is well-designed and production-ready once the backend service is restored.
+**Status:** Active Development
+**Last Updated:** January 2026
