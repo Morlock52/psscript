@@ -100,3 +100,12 @@ src/backend/uploads/
 
 # Cloudflare Tunnel credentials (keep config, ignore secrets)
 cloudflared/*.json
+
+# Python virtual environments
+venv/
+.venv/
+src/ai/venv/
+__pycache__/
+*.pyc
+*.pyo
+*.egg-info/
