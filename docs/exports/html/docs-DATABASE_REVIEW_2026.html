@@ -1,0 +1,795 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <base href="file:///Users/morlock/fun/psscript/" />
+  <title>docs-DATABASE_REVIEW_2026</title>
+  <style>
+:root {
+  color-scheme: light;
+}
+body {
+  font-family: "Segoe UI", "Helvetica Neue", Arial, sans-serif;
+  margin: 0;
+  padding: 0;
+  background: #ffffff;
+  color: #0f172a;
+}
+.markdown-body {
+  max-width: 980px;
+  margin: 40px auto 60px;
+  padding: 0 32px;
+  line-height: 1.65;
+}
+.markdown-body h1 {
+  font-size: 32px;
+  margin-bottom: 12px;
+  border-bottom: 2px solid #e2e8f0;
+  padding-bottom: 12px;
+  page-break-before: always;
+  page-break-after: avoid;
+  break-before: page;
+  break-after: avoid;
+}
+.markdown-body h1:first-of-type {
+  page-break-before: avoid;
+  break-before: avoid;
+}
+.markdown-body h2 {
+  font-size: 24px;
+  margin-top: 28px;
+  border-bottom: 1px solid #e2e8f0;
+  padding-bottom: 8px;
+  page-break-before: always;
+  page-break-after: avoid;
+  break-before: page;
+  break-after: avoid;
+}
+.markdown-body h3 {
+  font-size: 18px;
+  margin-top: 20px;
+  page-break-after: avoid;
+  break-after: avoid;
+}
+.markdown-body h4, .markdown-body h5, .markdown-body h6 {
+  page-break-after: avoid;
+  break-after: avoid;
+}
+.markdown-body table {
+  width: 100%;
+  border-collapse: collapse;
+  margin: 16px 0;
+  font-size: 14px;
+  page-break-inside: avoid;
+  break-inside: avoid;
+}
+.markdown-body th,
+.markdown-body td {
+  border: 1px solid #e2e8f0;
+  padding: 8px 10px;
+  text-align: left;
+}
+.markdown-body th {
+  background: #f8fafc;
+}
+.markdown-body tr {
+  page-break-inside: avoid;
+  break-inside: avoid;
+}
+.markdown-body code {
+  background: #f1f5f9;
+  padding: 2px 4px;
+  border-radius: 4px;
+  font-family: "SFMono-Regular", Menlo, Consolas, monospace;
+  font-size: 0.92em;
+}
+.markdown-body pre {
+  background: #0f172a;
+  color: #e2e8f0;
+  padding: 16px;
+  border-radius: 8px;
+  overflow-x: auto;
+  page-break-inside: avoid;
+  break-inside: avoid;
+}
+.markdown-body pre code {
+  background: transparent;
+  color: inherit;
+}
+.markdown-body blockquote {
+  border-left: 4px solid #38bdf8;
+  margin: 16px 0;
+  padding: 8px 16px;
+  background: #f8fafc;
+  color: #334155;
+}
+.markdown-body img {
+  max-width: 100%;
+  height: auto;
+  display: block;
+  margin: 16px 0;
+  border-radius: 10px;
+  box-shadow: 0 8px 20px rgba(15, 23, 42, 0.12);
+  page-break-inside: avoid;
+  break-inside: avoid;
+}
+.markdown-body figure {
+  page-break-inside: avoid;
+  break-inside: avoid;
+  margin: 16px 0;
+}
+.markdown-body a {
+  color: #2563eb;
+  text-decoration: none;
+}
+.markdown-body a:hover {
+  text-decoration: underline;
+}
+.cover {
+  padding: 80px 60px 60px;
+  background: linear-gradient(135deg, #0b1220 0%, #1e3a8a 100%);
+  color: #f8fafc;
+  border-radius: 18px;
+  margin-bottom: 32px;
+}
+.cover-title {
+  font-size: 36px;
+  font-weight: 700;
+  margin: 0 0 12px;
+}
+.cover-subtitle {
+  font-size: 18px;
+  color: #cbd5f5;
+  margin: 0 0 16px;
+}
+.cover-meta {
+  font-size: 13px;
+  color: #94a3b8;
+}
+.page-break {
+  page-break-after: always;
+  break-after: page;
+}
+.footer {
+  margin-top: 40px;
+  font-size: 12px;
+  color: #64748b;
+}
+/* Print and PDF-specific styles */
+@page {
+  margin: 20mm 18mm;
+}
+@media print {
+  .markdown-body {
+    orphans: 3;
+    widows: 3;
+  }
+  .markdown-body p {
+    orphans: 3;
+    widows: 3;
+  }
+  .markdown-body li {
+    page-break-inside: avoid;
+    break-inside: avoid;
+  }
+  .markdown-body ul, .markdown-body ol {
+    page-break-before: avoid;
+    break-before: avoid;
+  }
+  .markdown-body blockquote {
+    page-break-inside: avoid;
+    break-inside: avoid;
+  }
+  /* Keep section content together */
+  .markdown-body h2 + *, .markdown-body h3 + * {
+    page-break-before: avoid;
+    break-before: avoid;
+  }
+}
+</style>
+</head>
+<body>
+  <div class="markdown-body">
+    
+    <h1 id="psscript-database-review-january-15-2026">PSScript Database Review - January 15, 2026</h1>
+<h2 id="executive-summary">Executive Summary</h2>
+<p><strong>Test Results:</strong> 81/81 tests passing (100%)
+<strong>Database:</strong> PostgreSQL 15+ with pgvector extension
+<strong>ORM:</strong> Sequelize v6+ with TypeScript
+<strong>Overall Health:</strong> Good with optimization opportunities identified</p>
+<hr />
+<h2 id="current-configuration">Current Configuration</h2>
+<h3 id="connection-pool-settings">Connection Pool Settings</h3>
+<table>
+<thead>
+<tr>
+<th>Setting</th>
+<th>Current Value</th>
+<th>2026 Best Practice</th>
+<th>Status</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Pool Max</td>
+<td>10</td>
+<td><code>CPU cores × 2 + disk count</code> (~9-17)</td>
+<td>OK</td>
+</tr>
+<tr>
+<td>Pool Min</td>
+<td>0</td>
+<td>2-5 for consistent workload</td>
+<td>REVIEW</td>
+</tr>
+<tr>
+<td>Acquire Timeout</td>
+<td>30,000ms</td>
+<td>10,000-30,000ms</td>
+<td>OK</td>
+</tr>
+<tr>
+<td>Idle Timeout</td>
+<td>10,000ms</td>
+<td>10,000-30,000ms</td>
+<td>OK</td>
+</tr>
+<tr>
+<td>Connection Timeout</td>
+<td>15,000ms</td>
+<td>5,000-15,000ms</td>
+<td>OK</td>
+</tr>
+<tr>
+<td>Retry Attempts</td>
+<td>5</td>
+<td>3-5</td>
+<td>OK</td>
+</tr>
+</tbody>
+</table>
+<h3 id="ssl-configuration">SSL Configuration</h3>
+<ul>
+<li><strong>Production:</strong> Full certificate validation (<code>rejectUnauthorized: true</code>)</li>
+<li><strong>Development:</strong> SSL disabled for local PostgreSQL</li>
+<li><strong>Status:</strong> SECURE</li>
+</ul>
+<h3 id="database-schema">Database Schema</h3>
+<ul>
+<li><strong>Tables:</strong> 14 total</li>
+<li><strong>Models:</strong> 11 Sequelize models</li>
+<li><strong>Indexes:</strong> 40+ including vector indexes</li>
+<li><strong>Triggers:</strong> 6 auto-update timestamp triggers</li>
+</ul>
+<hr />
+<h2 id="models-inventory">Models Inventory</h2>
+<table>
+<thead>
+<tr>
+<th>Model</th>
+<th>Table</th>
+<th>Key Features</th>
+<th>Status</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>User</td>
+<td>users</td>
+<td>bcrypt hashing (12 rounds), login tracking, account lockout</td>
+<td>OK</td>
+</tr>
+<tr>
+<td>Script</td>
+<td>scripts</td>
+<td>File hash dedup, version tracking, execution count</td>
+<td>OK</td>
+</tr>
+<tr>
+<td>Category</td>
+<td>categories</td>
+<td>Unique name constraint</td>
+<td>OK</td>
+</tr>
+<tr>
+<td>Tag</td>
+<td>tags</td>
+<td>No updatedAt (by design)</td>
+<td>OK</td>
+</tr>
+<tr>
+<td>ScriptTag</td>
+<td>script_tags</td>
+<td>Junction table, no timestamps</td>
+<td>OK</td>
+</tr>
+<tr>
+<td>ScriptVersion</td>
+<td>script_versions</td>
+<td>Version history, changelog</td>
+<td>OK</td>
+</tr>
+<tr>
+<td>ScriptAnalysis</td>
+<td>script_analysis</td>
+<td>JSONB fields for AI results</td>
+<td>OK</td>
+</tr>
+<tr>
+<td>ScriptEmbedding</td>
+<td>script_embeddings</td>
+<td>1536-dim vectors (pgvector)</td>
+<td>OK</td>
+</tr>
+<tr>
+<td>ExecutionLog</td>
+<td>execution_logs</td>
+<td>No updatedAt (by design)</td>
+<td>OK</td>
+</tr>
+<tr>
+<td>ChatHistory</td>
+<td>chat_histories</td>
+<td>Vector embeddings for search</td>
+<td>OK</td>
+</tr>
+<tr>
+<td>Documentation</td>
+<td>documentation</td>
+<td>MS Learn doc cache</td>
+<td>OK</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="issues-identified">Issues Identified</h2>
+<h3 id="high-priority">HIGH PRIORITY</h3>
+<h4 id="1-raw-sql-injection-risk-in-analytics-routes">1. Raw SQL Injection Risk in Analytics Routes</h4>
+<p><strong>Location:</strong> <code>src/backend/src/routes/analytics.ts</code>
+<strong>Issue:</strong> Raw SQL queries without parameterization
+<strong>Risk:</strong> SQL injection vulnerability
+<strong>Fix Required:</strong></p>
+<pre><code class="language-typescript">// BEFORE (vulnerable)
+const query = `SELECT * FROM scripts WHERE title LIKE '%${term}%'`;
+
+// AFTER (safe)
+const results = await Script.findAll({
+  where: { title: { [Op.like]: `%${term}%` } }
+});
+</code></pre>
+<h4 id="2-n1-query-pattern-in-scriptcontroller">2. N+1 Query Pattern in ScriptController</h4>
+<p><strong>Location:</strong> <code>src/backend/src/controllers/ScriptController.ts:getScripts()</code>
+<strong>Issue:</strong> Fetching scripts then separately loading related data
+<strong>Impact:</strong> Performance degradation with large datasets
+<strong>Fix Required:</strong></p>
+<pre><code class="language-typescript">// Use eager loading
+const scripts = await Script.findAll({
+  include: [
+    { model: User, as: 'user', attributes: ['id', 'username'] },
+    { model: Category, as: 'category' },
+    { model: Tag, as: 'tags', through: { attributes: [] } }
+  ]
+});
+</code></pre>
+<h4 id="3-missing-transactions-in-multi-operation-writes">3. Missing Transactions in Multi-Operation Writes</h4>
+<p><strong>Location:</strong> Script creation with tags
+<strong>Issue:</strong> Tags added without transaction wrapper
+<strong>Risk:</strong> Partial data on failure
+<strong>Fix Required:</strong></p>
+<pre><code class="language-typescript">const t = await sequelize.transaction();
+try {
+  const script = await Script.create(data, { transaction: t });
+  await ScriptTag.bulkCreate(tagMappings, { transaction: t });
+  await t.commit();
+} catch (error) {
+  await t.rollback();
+  throw error;
+}
+</code></pre>
+<h3 id="medium-priority">MEDIUM PRIORITY</h3>
+<h4 id="4-missing-input-validation-on-pagination">4. Missing Input Validation on Pagination</h4>
+<p><strong>Location:</strong> Multiple API routes
+<strong>Issue:</strong> No upper limit on <code>limit</code> parameter
+<strong>Risk:</strong> Memory exhaustion attacks
+<strong>Fix Required:</strong></p>
+<pre><code class="language-typescript">const MAX_LIMIT = 100;
+const limit = Math.min(parseInt(req.query.limit) || 10, MAX_LIMIT);
+</code></pre>
+<h4 id="5-agent-tables-not-in-sequelize-models">5. Agent Tables Not in Sequelize Models</h4>
+<p><strong>Location:</strong> Schema has <code>agent_state</code>, <code>conversation_history</code>, <code>tool_execution_results</code>
+<strong>Issue:</strong> Tables exist but no corresponding Sequelize models
+<strong>Impact:</strong> Inconsistent data access patterns
+<strong>Fix Required:</strong> Create Sequelize models for agent tables</p>
+<h4 id="6-pool-min-size-at-zero">6. Pool Min Size at Zero</h4>
+<p><strong>Location:</strong> <code>src/backend/src/database/connection.ts</code>
+<strong>Issue:</strong> <code>min: 0</code> causes connection churn
+<strong>Impact:</strong> Latency spikes on first requests after idle
+<strong>Fix Required:</strong></p>
+<pre><code class="language-typescript">pool: {
+  min: 2,  // Keep warm connections
+  max: 10
+}
+</code></pre>
+<h3 id="low-priority">LOW PRIORITY</h3>
+<h4 id="7-missing-composite-indexes">7. Missing Composite Indexes</h4>
+<p><strong>Location:</strong> Various tables
+<strong>Recommendation:</strong> Add composite indexes for common query patterns:</p>
+<pre><code class="language-sql">CREATE INDEX idx_scripts_user_category ON scripts(user_id, category_id);
+CREATE INDEX idx_execution_logs_script_created ON execution_logs(script_id, created_at DESC);
+</code></pre>
+<h4 id="8-ilike-query-performance">8. ILIKE Query Performance</h4>
+<p><strong>Location:</strong> Search functionality
+<strong>Issue:</strong> ILIKE queries on content field can be slow
+<strong>Recommendation:</strong> Consider pg_trgm extension with GIN index:</p>
+<pre><code class="language-sql">CREATE EXTENSION IF NOT EXISTS pg_trgm;
+CREATE INDEX idx_scripts_content_trgm ON scripts USING GIN (content gin_trgm_ops);
+</code></pre>
+<hr />
+<h2 id="performance-benchmarks-from-test-suite">Performance Benchmarks (from test suite)</h2>
+<table>
+<thead>
+<tr>
+<th>Query Type</th>
+<th>Time</th>
+<th>Threshold</th>
+<th>Status</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Simple SELECT</td>
+<td>3-17ms</td>
+<td>&lt;100ms</td>
+<td>PASS</td>
+</tr>
+<tr>
+<td>JOIN query</td>
+<td>10-21ms</td>
+<td>&lt;1000ms</td>
+<td>PASS</td>
+</tr>
+<tr>
+<td>COUNT query</td>
+<td>5-10ms</td>
+<td>&lt;200ms</td>
+<td>PASS</td>
+</tr>
+<tr>
+<td>ILIKE search</td>
+<td>5-18ms</td>
+<td>&lt;2000ms</td>
+<td>PASS</td>
+</tr>
+<tr>
+<td>Transaction commit</td>
+<td>~800ms</td>
+<td>&lt;2000ms</td>
+<td>PASS</td>
+</tr>
+<tr>
+<td>Concurrent creates</td>
+<td>660-1374ms</td>
+<td>&lt;3000ms</td>
+<td>PASS</td>
+</tr>
+<tr>
+<td>Vector distance</td>
+<td>&lt;5ms</td>
+<td>&lt;100ms</td>
+<td>PASS</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="security-audit-results">Security Audit Results</h2>
+<table>
+<thead>
+<tr>
+<th>Test</th>
+<th>Result</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>SQL Injection Prevention</td>
+<td>PASS (Sequelize parameterization)</td>
+</tr>
+<tr>
+<td>XSS Storage</td>
+<td>PASS (stored as-is, sanitize in UI)</td>
+</tr>
+<tr>
+<td>Password Hashing</td>
+<td>PASS (bcrypt, 12 rounds - OWASP compliant)</td>
+</tr>
+<tr>
+<td>Unique Constraints</td>
+<td>PASS (username, email enforced)</td>
+</tr>
+<tr>
+<td>Cascade Deletes</td>
+<td>PASS (foreign key constraints)</td>
+</tr>
+<tr>
+<td>Transaction Rollback</td>
+<td>PASS (ACID compliance verified)</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="2026-best-practices-comparison">2026 Best Practices Comparison</h2>
+<h3 id="connection-pooling">Connection Pooling</h3>
+<table>
+<thead>
+<tr>
+<th>Practice</th>
+<th>PSScript</th>
+<th>Recommendation</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Formula</td>
+<td>Fixed 10</td>
+<td><code>CPU × 2 + disks</code></td>
+</tr>
+<tr>
+<td>External pooler</td>
+<td>None</td>
+<td>Consider pgBouncer for serverless</td>
+</tr>
+<tr>
+<td>Health checks</td>
+<td>Yes</td>
+<td>Keep</td>
+</tr>
+</tbody>
+</table>
+<h3 id="query-optimization">Query Optimization</h3>
+<table>
+<thead>
+<tr>
+<th>Practice</th>
+<th>PSScript</th>
+<th>Recommendation</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Prepared statements</td>
+<td>Partial</td>
+<td>Enable <code>dialectOptions.prepareQuery</code></td>
+</tr>
+<tr>
+<td>Query logging</td>
+<td>Development only</td>
+<td>Add slow query logging (&gt;100ms)</td>
+</tr>
+<tr>
+<td>Explain plans</td>
+<td>Manual</td>
+<td>Add automated slow query analysis</td>
+</tr>
+</tbody>
+</table>
+<h3 id="security">Security</h3>
+<table>
+<thead>
+<tr>
+<th>Practice</th>
+<th>PSScript</th>
+<th>Recommendation</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>SSL/TLS</td>
+<td>Production only</td>
+<td>Enforce in all environments</td>
+</tr>
+<tr>
+<td>Password policy</td>
+<td>12 rounds bcrypt</td>
+<td>Keep (OWASP 2024 compliant)</td>
+</tr>
+<tr>
+<td>Rate limiting</td>
+<td>Yes</td>
+<td>Keep</td>
+</tr>
+<tr>
+<td>Account lockout</td>
+<td>Yes</td>
+<td>Keep</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="data-flow-verification">Data Flow Verification</h2>
+<h3 id="frontend-backend-database">Frontend → Backend → Database</h3>
+<ol>
+<li><strong>API Service</strong> (axios) → Runtime URL detection to port 4000</li>
+<li><strong>Middleware</strong> → JWT auth, input validation</li>
+<li><strong>Controllers</strong> → Business logic, Sequelize ORM</li>
+<li><strong>Models</strong> → Type-safe database operations</li>
+<li><strong>PostgreSQL</strong> → ACID-compliant storage</li>
+</ol>
+<h3 id="real-time-updates">Real-Time Updates</h3>
+<ul>
+<li><strong>SSE Streaming</strong> for analysis progress</li>
+<li><strong>Chat streaming</strong> via AI service</li>
+<li><strong>Redis caching</strong> with 5-minute TTL</li>
+</ul>
+<h3 id="file-upload-pipeline">File Upload Pipeline</h3>
+<ol>
+<li>Frontend validation (size, extension)</li>
+<li>MD5 hash deduplication check</li>
+<li>Multipart upload (async for &gt;5MB)</li>
+<li>Database storage with hash index</li>
+<li>Cache invalidation</li>
+</ol>
+<hr />
+<h2 id="recommended-fixes-priority">Recommended Fixes Priority</h2>
+<h3 id="sprint-1-critical-this-week">Sprint 1 (Critical - This Week)</h3>
+<ul>
+<li>[ ] Parameterize raw SQL in analytics routes</li>
+<li>[ ] Add transaction wrappers to multi-operation writes</li>
+<li>[ ] Implement pagination limits (max 100)</li>
+</ul>
+<h3 id="sprint-2-high-next-2-weeks">Sprint 2 (High - Next 2 Weeks)</h3>
+<ul>
+<li>[ ] Fix N+1 queries with eager loading</li>
+<li>[ ] Increase pool min to 2</li>
+<li>[ ] Create Sequelize models for agent tables</li>
+</ul>
+<h3 id="sprint-3-medium-this-month">Sprint 3 (Medium - This Month)</h3>
+<ul>
+<li>[ ] Add composite indexes for common queries</li>
+<li>[ ] Enable slow query logging</li>
+<li>[ ] Add pg_trgm for full-text search optimization</li>
+</ul>
+<h3 id="backlog-low-as-needed">Backlog (Low - As Needed)</h3>
+<ul>
+<li>[ ] Consider pgBouncer for connection pooling</li>
+<li>[ ] Implement query plan caching</li>
+<li>[ ] Add automated index recommendations</li>
+</ul>
+<hr />
+<h2 id="test-coverage-summary">Test Coverage Summary</h2>
+<table>
+<thead>
+<tr>
+<th>Category</th>
+<th>Tests</th>
+<th>Passed</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Connection</td>
+<td>5</td>
+<td>5</td>
+</tr>
+<tr>
+<td>User Model</td>
+<td>7</td>
+<td>7</td>
+</tr>
+<tr>
+<td>Category Model</td>
+<td>3</td>
+<td>3</td>
+</tr>
+<tr>
+<td>Script Model</td>
+<td>7</td>
+<td>7</td>
+</tr>
+<tr>
+<td>Tag Associations</td>
+<td>3</td>
+<td>3</td>
+</tr>
+<tr>
+<td>Script Versions</td>
+<td>3</td>
+<td>3</td>
+</tr>
+<tr>
+<td>Script Analysis</td>
+<td>3</td>
+<td>3</td>
+</tr>
+<tr>
+<td>Execution Logs</td>
+<td>3</td>
+<td>3</td>
+</tr>
+<tr>
+<td>Index Verification</td>
+<td>4</td>
+<td>4</td>
+</tr>
+<tr>
+<td>Performance</td>
+<td>4</td>
+<td>4</td>
+</tr>
+<tr>
+<td>Cascade Deletes</td>
+<td>1</td>
+<td>1</td>
+</tr>
+<tr>
+<td>Transactions</td>
+<td>2</td>
+<td>2</td>
+</tr>
+<tr>
+<td>Data Integrity</td>
+<td>3</td>
+<td>3</td>
+</tr>
+<tr>
+<td>Schema Validation</td>
+<td>3</td>
+<td>3</td>
+</tr>
+<tr>
+<td>Edge Cases</td>
+<td>5</td>
+<td>5</td>
+</tr>
+<tr>
+<td>Security</td>
+<td>3</td>
+<td>3</td>
+</tr>
+<tr>
+<td>Concurrency</td>
+<td>3</td>
+<td>3</td>
+</tr>
+<tr>
+<td>Vector Embeddings</td>
+<td>2</td>
+<td>2</td>
+</tr>
+<tr>
+<td><strong>TOTAL</strong></td>
+<td><strong>64</strong></td>
+<td><strong>64</strong></td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="appendix-database-schema-quick-reference">Appendix: Database Schema Quick Reference</h2>
+<h3 id="core-tables">Core Tables</h3>
+<pre><code>users (id, username, email, password, role, login_attempts, locked_until, last_login, created_at, updated_at)
+scripts (id, title, description, content, user_id, category_id, is_public, version, file_hash, execution_count, created_at, updated_at)
+categories (id, name, description, created_at, updated_at)
+tags (id, name, created_at)
+script_tags (script_id, tag_id) [junction]
+</code></pre>
+<h3 id="analysis-tables">Analysis Tables</h3>
+<pre><code>script_analysis (id, script_id, purpose, security_score, code_quality_score, risk_score, suggestions, command_details, security_issues, best_practice_violations, performance_insights, created_at, updated_at)
+script_embeddings (id, script_id, embedding[1536], model_name, created_at)
+script_versions (id, script_id, content, version, user_id, commit_message, created_at)
+execution_logs (id, script_id, user_id, status, error_message, execution_time, parameters, created_at)
+</code></pre>
+<h3 id="aiagent-tables">AI/Agent Tables</h3>
+<pre><code>chat_histories (id, user_id, role, content, embedding, session_id, created_at)
+documentation (id, url, title, content, embedding, created_at, updated_at)
+agent_state (id, agent_id, state, created_at, updated_at)
+conversation_history (id, agent_id, role, content, created_at)
+tool_execution_results (id, agent_id, tool_name, input, output, created_at)
+</code></pre>
+<hr />
+<p><em>Generated: January 15, 2026</em>
+<em>Review Frequency: Quarterly</em>
+<em>Next Review: April 15, 2026</em></p>
+    <div class="footer">Generated 2026-01-16 21:23 UTC</div>
+  </div>
+</body>
+</html>

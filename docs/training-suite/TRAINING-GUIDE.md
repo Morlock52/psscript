@@ -1,35 +1,31 @@
 # PSScript Training Guide
 
-This guide is a full training and enablement program for PSScript Manager. It includes walkthroughs, screenshots, labs, sample actions, and operational checklists.
+End-to-end walkthrough of the PowerShell Script Manager. Includes flows, screenshots, labs, tables, sample actions, and operational checklists. Built for hands-on enablement and printable exports.
 
 ## Table of Contents
 
 - [Program overview](#program-overview)
 - [System overview](#system-overview)
+- [Feature cheat sheet](#feature-cheat-sheet)
 - [Training roadmap](#training-roadmap)
 - [Environment setup](#environment-setup)
+- [Guided walkthrough](#guided-walkthrough)
 - [Role-based paths](#role-based-paths)
 - [Module breakdown](#module-breakdown)
 - [Hands-on labs](#hands-on-labs)
 - [Sample actions](#sample-actions)
 - [Operational readiness](#operational-readiness)
-- [Appendix: Troubleshooting](#appendix-troubleshooting)
+- [Appendix](#appendix)
 
 ## Program overview
 
-PSScript Manager is a full workflow platform for PowerShell scripts. This training builds capability across authoring, analysis, search, and operations.
-
-Expected outcomes:
-- Scripts are organized, tagged, and versioned
-- AI analysis is used to identify and remediate risks
-- Similar scripts can be found via vector search
-- Analytics and audit trails are used for governance
+PSScript Manager is a full workflow platform for PowerShell scripts—intake, AI analysis, discovery, agentic chat, and governance. This guide delivers:
+- Organized, tagged, versioned scripts with deduplication by hash
+- AI-backed analysis with scores, recommendations, and remediation notes
+- Dual-mode discovery (keyword + vector search) plus documentation crawler
+- Analytics and audit trails for compliance and release readiness
 
 Management rollout details live in `../MANAGEMENT-PLAYBOOK.md`.
-
-## Program phases (management alignment)
-
-![Management Rollout Phases](../graphics/rollout-phases.svg)
 
 ## System overview
 
@@ -41,22 +37,56 @@ Management rollout details live in `../MANAGEMENT-PLAYBOOK.md`.
 
 ![Search Modes](../graphics/search-modes.svg)
 
+![Usage Metrics](../graphics/usage-metrics.svg)
+
+## Feature cheat sheet
+
+| Area | What to look for | Screenshot |
+| --- | --- | --- |
+| Dashboard | Stats, recent scripts, security trends | ![Dashboard](../screenshots/dashboard.png) |
+| Script library | Categories, owners, version history | ![Scripts](../screenshots/scripts.png) |
+| Upload | Live preview, tags, dedup hints | ![Upload](../screenshots/upload.png) |
+| Analysis | Scores, findings, remediation | ![Analysis](../screenshots/analysis.png) |
+| Docs + crawl | Cmdlet search, crawling, saved excerpts | ![Documentation](../screenshots/documentation.png) |
+| Chat/agents | Quick prompts, agentic orchestration | ![Chat](../screenshots/chat.png) |
+| Analytics | Adoption, usage, training exports | ![Analytics](../screenshots/analytics.png) |
+| Settings | API usage, notifications, training links | ![Settings](../screenshots/settings.png) |
+
 ## Training roadmap
 
 ![Training Roadmap](../graphics/training-roadmap.svg)
 
 ## Environment setup
 
-Recommended setup uses mock mode so training can run without external dependencies.
+Recommended mock mode so every lab works offline:
 
 ```bash
 ./start-all-mock.sh
 ```
 
-Default ports:
+Ports:
 - Frontend: http://localhost:3002
 - Backend API: http://localhost:4000/api
 - AI service: http://localhost:8000
+
+Verify:
+- `curl http://localhost:4000/health` → 200 OK
+- Open http://localhost:3002 and click **Use Default Login**
+- Confirm dashboard counters populate with mock data
+
+## Guided walkthrough
+
+Ship a vetted script in ~15 minutes:
+1. **Sign in** → use Default Login on the login screen.
+2. **Scan the dashboard** → note total scripts, AI analyses, and security score trend.
+3. **Upload** → go to Upload, add `test-script.ps1`, tags, and category; note dedup hints.
+4. **Review detail** → open the new script, confirm metadata, owner, and activity feed.
+5. **Analyze** → open Analysis, read findings, and log remediation notes.
+6. **Search** → find a similar script via keyword + vector search.
+7. **Consult docs** → open Documentation, search for a related cmdlet, and save an excerpt.
+8. **Chat** → ask the assistant “safest way to schedule this script weekly?” and record the answer.
+9. **Analytics** → confirm the run shows up in usage metrics and training exports.
+10. **Settings** → open Documentation & Training and verify the PDF/DOCX links load.
 
 ## Role-based paths
 
@@ -70,69 +100,58 @@ Default ports:
 
 | Module | Objectives | Key screen |
 | --- | --- | --- |
-| Module 01: Foundations | Navigate UI, find docs, understand services | Dashboard | 
-| Module 02: Script Lifecycle | Upload, tag, version scripts | Upload | 
-| Module 03: AI Analysis | Read scores and recommendations | Analysis | 
-| Module 04: Search | Use keyword + vector search | Scripts | 
-| Module 05: Operations | Review analytics and logs | Analytics | 
+| Module 01: Foundations | Navigate UI, find docs, understand services | Dashboard |
+| Module 02: Script Lifecycle | Upload, tag, version scripts | Upload |
+| Module 03: AI Analysis | Read scores and recommendations | Analysis |
+| Module 04: Search | Use keyword + vector search | Scripts |
+| Module 05: Operations | Review analytics and logs | Analytics |
 
 ## Hands-on labs
 
 ### Lab 01: Sign in and orient
-
 1. Open the login screen and use Default Login.
-2. Review the dashboard stats cards and recent scripts.
-3. Locate Scripts, Documentation, and Analytics in the sidebar.
+2. Review stats cards and activity feed on the dashboard.
+3. Find Scripts, Documentation, Analytics in the sidebar.
 
 ![Login Screen](../screenshots/login.png)
-
 ![Dashboard](../screenshots/dashboard.png)
 
 ### Lab 02: Upload and analyze a script
-
-1. Navigate to Upload.
-2. Upload `test-script.ps1` and add tags.
-3. Preview analysis, then submit.
-4. Open the script detail view and review scores.
+1. Go to Upload and add `test-script.ps1` with tags + category.
+2. Observe dedup hints; submit the script.
+3. Open the script detail view and verify metadata.
+4. Run AI analysis and capture recommendations.
 
 ![Script Upload](../screenshots/upload.png)
-
 ![Script Detail](../screenshots/script-detail.png)
-
 ![Script Analysis](../screenshots/analysis.png)
 
 ### Lab 03: Documentation and AI chat
-
-1. Open Documentation and search for a cmdlet.
-2. Capture an example in your notes.
-3. Open AI Chat and ask for safe usage patterns.
+1. Open Documentation; search for a cmdlet (e.g., `Get-Process`).
+2. Save an excerpt to your notes.
+3. Open Chat and ask for safe usage patterns.
 
 ![Documentation Explorer](../screenshots/documentation.png)
-
 ![AI Chat](../screenshots/chat.png)
 
 ### Lab 04: Analytics and governance
-
-1. Open Analytics and review usage metrics.
-2. Identify top activity areas.
-3. Document a governance checklist for releases.
+1. Open Analytics; review usage metrics and trend lines.
+2. Identify top activity areas and any gaps.
+3. Draft a governance checklist for releases.
 
 ![Analytics](../screenshots/analytics.png)
-
 ![Sample Usage Metrics](../graphics/usage-metrics.svg)
 
 ### Lab 05: Settings and training resources
-
-1. Open Settings and review API usage and notifications.
-2. Locate the Documentation and Training section.
-3. Confirm the Training Suite link opens the guide.
-4. Verify the local PDF export loads at `http://localhost:4000/docs/exports/pdf/Training-Guide.pdf`.
+1. Open Settings; review API usage and notifications.
+2. Locate Documentation & Training and open the Training Suite.
+3. Open the local PDF export at `http://localhost:4000/docs/exports/pdf/Training-Guide.pdf`.
 
 ![Settings](../screenshots/settings.png)
 
 ## Sample actions
 
-### Example: Upload via API
+### Upload via API
 
 ```bash
 curl -X POST http://localhost:4000/api/scripts \
@@ -143,7 +162,7 @@ curl -X POST http://localhost:4000/api/scripts \
   -F "tags=security,active-directory"
 ```
 
-### Example: Run analysis
+### Run analysis
 
 ```bash
 curl -X POST http://localhost:8000/analyze \
@@ -151,11 +170,7 @@ curl -X POST http://localhost:8000/analyze \
   -d '{"content": "Get-ADUser -Filter *", "type": "security"}'
 ```
 
-### Example: Vector search
-
-```bash
-curl http://localhost:4000/api/scripts/1/similar
-```
+### Vector search
 
 ```bash
 curl -X POST http://localhost:8000/similar \
@@ -166,7 +181,6 @@ curl -X POST http://localhost:8000/similar \
 ## Operational readiness
 
 ### Governance checklist
-
 - Scripts are tagged, categorized, and have an owner
 - Security score is reviewed and exceptions are documented
 - Duplicates are prevented by hash check
@@ -197,7 +211,11 @@ curl -X POST http://localhost:8000/similar \
 | Cache | Redis reachable | Optional |
 | UI | Dashboard load | < 3 seconds |
 
-For deeper triage and support patterns, see `../SUPPORT.md`.
+## Appendix
+
+- Troubleshooting and support: `../SUPPORT.md`
+- Screenshot capture: `./scripts/capture-readme-screenshots.sh`
+- Exports (HTML/PDF/DOCX): `scripts/export-docs.sh --all`
 
 ## Appendix: Troubleshooting
 

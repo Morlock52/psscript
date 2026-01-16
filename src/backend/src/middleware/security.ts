@@ -284,7 +284,13 @@ export const csrfProtection = (allowedOrigins?: string[]) => {
   // Default allowed origins based on environment
   const defaultAllowed = process.env.NODE_ENV === 'production'
     ? [process.env.FRONTEND_URL || 'https://psscript.morloksmaze.com']
-    : ['http://localhost:3000', 'http://localhost:4000', 'http://127.0.0.1:3000'];
+    : [
+        'http://localhost:3000',
+        'http://localhost:3002',
+        'http://localhost:4000',
+        'http://127.0.0.1:3000',
+        'http://127.0.0.1:3002'
+      ];
 
   const origins = allowedOrigins || defaultAllowed;
 

@@ -1,0 +1,1020 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <base href="file:///Users/morlock/fun/psscript/" />
+  <title>docs-DATABASE_TEST_PLAN</title>
+  <style>
+:root {
+  color-scheme: light;
+}
+body {
+  font-family: "Segoe UI", "Helvetica Neue", Arial, sans-serif;
+  margin: 0;
+  padding: 0;
+  background: #ffffff;
+  color: #0f172a;
+}
+.markdown-body {
+  max-width: 980px;
+  margin: 40px auto 60px;
+  padding: 0 32px;
+  line-height: 1.65;
+}
+.markdown-body h1 {
+  font-size: 32px;
+  margin-bottom: 12px;
+  border-bottom: 2px solid #e2e8f0;
+  padding-bottom: 12px;
+  page-break-before: always;
+  page-break-after: avoid;
+  break-before: page;
+  break-after: avoid;
+}
+.markdown-body h1:first-of-type {
+  page-break-before: avoid;
+  break-before: avoid;
+}
+.markdown-body h2 {
+  font-size: 24px;
+  margin-top: 28px;
+  border-bottom: 1px solid #e2e8f0;
+  padding-bottom: 8px;
+  page-break-before: always;
+  page-break-after: avoid;
+  break-before: page;
+  break-after: avoid;
+}
+.markdown-body h3 {
+  font-size: 18px;
+  margin-top: 20px;
+  page-break-after: avoid;
+  break-after: avoid;
+}
+.markdown-body h4, .markdown-body h5, .markdown-body h6 {
+  page-break-after: avoid;
+  break-after: avoid;
+}
+.markdown-body table {
+  width: 100%;
+  border-collapse: collapse;
+  margin: 16px 0;
+  font-size: 14px;
+  page-break-inside: avoid;
+  break-inside: avoid;
+}
+.markdown-body th,
+.markdown-body td {
+  border: 1px solid #e2e8f0;
+  padding: 8px 10px;
+  text-align: left;
+}
+.markdown-body th {
+  background: #f8fafc;
+}
+.markdown-body tr {
+  page-break-inside: avoid;
+  break-inside: avoid;
+}
+.markdown-body code {
+  background: #f1f5f9;
+  padding: 2px 4px;
+  border-radius: 4px;
+  font-family: "SFMono-Regular", Menlo, Consolas, monospace;
+  font-size: 0.92em;
+}
+.markdown-body pre {
+  background: #0f172a;
+  color: #e2e8f0;
+  padding: 16px;
+  border-radius: 8px;
+  overflow-x: auto;
+  page-break-inside: avoid;
+  break-inside: avoid;
+}
+.markdown-body pre code {
+  background: transparent;
+  color: inherit;
+}
+.markdown-body blockquote {
+  border-left: 4px solid #38bdf8;
+  margin: 16px 0;
+  padding: 8px 16px;
+  background: #f8fafc;
+  color: #334155;
+}
+.markdown-body img {
+  max-width: 100%;
+  height: auto;
+  display: block;
+  margin: 16px 0;
+  border-radius: 10px;
+  box-shadow: 0 8px 20px rgba(15, 23, 42, 0.12);
+  page-break-inside: avoid;
+  break-inside: avoid;
+}
+.markdown-body figure {
+  page-break-inside: avoid;
+  break-inside: avoid;
+  margin: 16px 0;
+}
+.markdown-body a {
+  color: #2563eb;
+  text-decoration: none;
+}
+.markdown-body a:hover {
+  text-decoration: underline;
+}
+.cover {
+  padding: 80px 60px 60px;
+  background: linear-gradient(135deg, #0b1220 0%, #1e3a8a 100%);
+  color: #f8fafc;
+  border-radius: 18px;
+  margin-bottom: 32px;
+}
+.cover-title {
+  font-size: 36px;
+  font-weight: 700;
+  margin: 0 0 12px;
+}
+.cover-subtitle {
+  font-size: 18px;
+  color: #cbd5f5;
+  margin: 0 0 16px;
+}
+.cover-meta {
+  font-size: 13px;
+  color: #94a3b8;
+}
+.page-break {
+  page-break-after: always;
+  break-after: page;
+}
+.footer {
+  margin-top: 40px;
+  font-size: 12px;
+  color: #64748b;
+}
+/* Print and PDF-specific styles */
+@page {
+  margin: 20mm 18mm;
+}
+@media print {
+  .markdown-body {
+    orphans: 3;
+    widows: 3;
+  }
+  .markdown-body p {
+    orphans: 3;
+    widows: 3;
+  }
+  .markdown-body li {
+    page-break-inside: avoid;
+    break-inside: avoid;
+  }
+  .markdown-body ul, .markdown-body ol {
+    page-break-before: avoid;
+    break-before: avoid;
+  }
+  .markdown-body blockquote {
+    page-break-inside: avoid;
+    break-inside: avoid;
+  }
+  /* Keep section content together */
+  .markdown-body h2 + *, .markdown-body h3 + * {
+    page-break-before: avoid;
+    break-before: avoid;
+  }
+}
+</style>
+</head>
+<body>
+  <div class="markdown-body">
+    
+    <h1 id="comprehensive-database-test-plan">Comprehensive Database Test Plan</h1>
+<h2 id="psscript-platform-january-15-2026">PSScript Platform - January 15, 2026</h2>
+<hr />
+<h2 id="executive-summary">Executive Summary</h2>
+<p>This test plan provides a systematic approach to verify database integrity, API integration, and end-to-end data flow for the PSScript PowerShell analysis platform. All tests are designed to validate the current configuration as of January 15, 2026.</p>
+<hr />
+<h2 id="test-environment">Test Environment</h2>
+<h3 id="infrastructure">Infrastructure</h3>
+<table>
+<thead>
+<tr>
+<th>Component</th>
+<th>Technology</th>
+<th>Port</th>
+<th>Test Coverage</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Database</td>
+<td>PostgreSQL 15 + pgvector</td>
+<td>5432</td>
+<td>Unit, Integration</td>
+</tr>
+<tr>
+<td>Cache</td>
+<td>Redis 7.0</td>
+<td>6379</td>
+<td>Integration</td>
+</tr>
+<tr>
+<td>Backend</td>
+<td>Express/TypeScript</td>
+<td>4000</td>
+<td>Unit, Integration, E2E</td>
+</tr>
+<tr>
+<td>Frontend</td>
+<td>React/Vite</td>
+<td>3000</td>
+<td>E2E</td>
+</tr>
+<tr>
+<td>AI Service</td>
+<td>FastAPI/Python</td>
+<td>8000</td>
+<td>Integration</td>
+</tr>
+</tbody>
+</table>
+<h3 id="prerequisites">Prerequisites</h3>
+<pre><code class="language-bash"># Start services
+docker-compose up -d postgres redis
+
+# Verify connections
+psql -h localhost -p 5432 -U postgres -d psscript -c &quot;SELECT 1&quot;
+redis-cli -p 6379 ping
+</code></pre>
+<hr />
+<h2 id="test-categories">Test Categories</h2>
+<h3 id="1-unit-tests-database-layer">1. Unit Tests (Database Layer)</h3>
+<p><strong>Location:</strong> <code>src/backend/src/__tests__/database.test.ts</code></p>
+<table>
+<thead>
+<tr>
+<th>Test ID</th>
+<th>Description</th>
+<th>Priority</th>
+<th>Status</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>DB-U-001</td>
+<td>PostgreSQL connection</td>
+<td>Critical</td>
+<td>✅ Created</td>
+</tr>
+<tr>
+<td>DB-U-002</td>
+<td>Health check query</td>
+<td>Critical</td>
+<td>✅ Created</td>
+</tr>
+<tr>
+<td>DB-U-003</td>
+<td>pgvector extension verification</td>
+<td>High</td>
+<td>✅ Created</td>
+</tr>
+<tr>
+<td>DB-U-004</td>
+<td>Connection pool settings</td>
+<td>High</td>
+<td>✅ Created</td>
+</tr>
+<tr>
+<td>DB-U-005</td>
+<td>User CRUD operations</td>
+<td>Critical</td>
+<td>✅ Created</td>
+</tr>
+<tr>
+<td>DB-U-006</td>
+<td>Script CRUD operations</td>
+<td>Critical</td>
+<td>✅ Created</td>
+</tr>
+<tr>
+<td>DB-U-007</td>
+<td>Category CRUD operations</td>
+<td>High</td>
+<td>✅ Created</td>
+</tr>
+<tr>
+<td>DB-U-008</td>
+<td>Tag associations</td>
+<td>Medium</td>
+<td>✅ Created</td>
+</tr>
+<tr>
+<td>DB-U-009</td>
+<td>Script versioning</td>
+<td>High</td>
+<td>✅ Created</td>
+</tr>
+<tr>
+<td>DB-U-010</td>
+<td>Script analysis storage</td>
+<td>High</td>
+<td>✅ Created</td>
+</tr>
+<tr>
+<td>DB-U-011</td>
+<td>Execution logging</td>
+<td>Medium</td>
+<td>✅ Created</td>
+</tr>
+<tr>
+<td>DB-U-012</td>
+<td>Index verification</td>
+<td>High</td>
+<td>✅ Created</td>
+</tr>
+<tr>
+<td>DB-U-013</td>
+<td>Cascade delete behavior</td>
+<td>High</td>
+<td>✅ Created</td>
+</tr>
+<tr>
+<td>DB-U-014</td>
+<td>Transaction rollback</td>
+<td>Critical</td>
+<td>✅ Created</td>
+</tr>
+<tr>
+<td>DB-U-015</td>
+<td>Data integrity (Unicode, special chars)</td>
+<td>Medium</td>
+<td>✅ Created</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Run Command:</strong></p>
+<pre><code class="language-bash">cd src/backend &amp;&amp; npm test -- --testPathPattern=database.test.ts
+</code></pre>
+<hr />
+<h3 id="2-integration-tests-api-database">2. Integration Tests (API → Database)</h3>
+<table>
+<thead>
+<tr>
+<th>Test ID</th>
+<th>Description</th>
+<th>Endpoint</th>
+<th>Method</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>DB-I-001</td>
+<td>User registration stores in DB</td>
+<td>/auth/register</td>
+<td>POST</td>
+</tr>
+<tr>
+<td>DB-I-002</td>
+<td>Login validates password hash</td>
+<td>/auth/login</td>
+<td>POST</td>
+</tr>
+<tr>
+<td>DB-I-003</td>
+<td>Script upload with deduplication</td>
+<td>/scripts/upload</td>
+<td>POST</td>
+</tr>
+<tr>
+<td>DB-I-004</td>
+<td>Script list with pagination</td>
+<td>/scripts</td>
+<td>GET</td>
+</tr>
+<tr>
+<td>DB-I-005</td>
+<td>Script search with filtering</td>
+<td>/scripts/search</td>
+<td>GET</td>
+</tr>
+<tr>
+<td>DB-I-006</td>
+<td>Analysis results storage</td>
+<td>/scripts/:id/analyze</td>
+<td>POST</td>
+</tr>
+<tr>
+<td>DB-I-007</td>
+<td>Version history retrieval</td>
+<td>/scripts/:id/versions</td>
+<td>GET</td>
+</tr>
+<tr>
+<td>DB-I-008</td>
+<td>Execution log creation</td>
+<td>/scripts/:id/execute</td>
+<td>POST</td>
+</tr>
+<tr>
+<td>DB-I-009</td>
+<td>Category CRUD via API</td>
+<td>/categories</td>
+<td>ALL</td>
+</tr>
+<tr>
+<td>DB-I-010</td>
+<td>Chat history persistence</td>
+<td>/chat/history</td>
+<td>POST</td>
+</tr>
+<tr>
+<td>DB-I-011</td>
+<td>Analytics aggregation queries</td>
+<td>/analytics/*</td>
+<td>GET</td>
+</tr>
+<tr>
+<td>DB-I-012</td>
+<td>Bulk delete with transaction</td>
+<td>/scripts/delete</td>
+<td>POST</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Test Script:</strong></p>
+<pre><code class="language-bash">#!/bin/bash
+# Integration test runner
+
+BASE_URL=&quot;http://localhost:4000/api&quot;
+TOKEN=&quot;&quot; # Set after login
+
+# Test DB-I-001: User Registration
+echo &quot;Testing user registration...&quot;
+REGISTER_RESPONSE=$(curl -s -X POST &quot;$BASE_URL/auth/register&quot; \
+  -H &quot;Content-Type: application/json&quot; \
+  -d '{&quot;username&quot;:&quot;test_'$(date +%s)'&quot;,&quot;email&quot;:&quot;test_'$(date +%s)'@test.com&quot;,&quot;password&quot;:&quot;Test123456!&quot;}')
+echo &quot;$REGISTER_RESPONSE&quot; | jq .
+
+# Test DB-I-002: Login
+echo &quot;Testing login...&quot;
+LOGIN_RESPONSE=$(curl -s -X POST &quot;$BASE_URL/auth/login&quot; \
+  -H &quot;Content-Type: application/json&quot; \
+  -d '{&quot;email&quot;:&quot;admin@psscript.com&quot;,&quot;password&quot;:&quot;admin123&quot;}')
+TOKEN=$(echo &quot;$LOGIN_RESPONSE&quot; | jq -r '.token')
+echo &quot;Token: ${TOKEN:0:20}...&quot;
+
+# Test DB-I-004: Script list
+echo &quot;Testing script list with pagination...&quot;
+curl -s &quot;$BASE_URL/scripts?page=1&amp;limit=5&quot; \
+  -H &quot;Authorization: Bearer $TOKEN&quot; | jq '.data | length'
+
+# Test DB-I-011: Analytics
+echo &quot;Testing analytics...&quot;
+curl -s &quot;$BASE_URL/analytics/security&quot; \
+  -H &quot;Authorization: Bearer $TOKEN&quot; | jq '.summary'
+
+echo &quot;Integration tests complete!&quot;
+</code></pre>
+<hr />
+<h3 id="3-end-to-end-tests-frontend-api-database">3. End-to-End Tests (Frontend → API → Database)</h3>
+<table>
+<thead>
+<tr>
+<th>Test ID</th>
+<th>Description</th>
+<th>User Flow</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>DB-E-001</td>
+<td>Complete script upload flow</td>
+<td>Upload → Validate → Store → Display</td>
+</tr>
+<tr>
+<td>DB-E-002</td>
+<td>Script analysis workflow</td>
+<td>Select → Analyze → Save → Show Results</td>
+</tr>
+<tr>
+<td>DB-E-003</td>
+<td>User authentication flow</td>
+<td>Register → Login → Access Protected</td>
+</tr>
+<tr>
+<td>DB-E-004</td>
+<td>Category filtering</td>
+<td>Select Category → Filter Scripts → Verify</td>
+</tr>
+<tr>
+<td>DB-E-005</td>
+<td>Version history navigation</td>
+<td>View Script → Show Versions → Revert</td>
+</tr>
+<tr>
+<td>DB-E-006</td>
+<td>Search functionality</td>
+<td>Enter Query → Search → Display Results</td>
+</tr>
+<tr>
+<td>DB-E-007</td>
+<td>Dashboard statistics</td>
+<td>Load → Aggregate → Display Charts</td>
+</tr>
+<tr>
+<td>DB-E-008</td>
+<td>Chat persistence</td>
+<td>Send Message → Store → Reload → Verify</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Playwright Test Example:</strong></p>
+<pre><code class="language-typescript">// e2e/database-flow.spec.ts
+import { test, expect } from '@playwright/test';
+
+test.describe('Database E2E Tests', () =&gt; {
+  test('DB-E-001: Complete script upload flow', async ({ page }) =&gt; {
+    // Login
+    await page.goto('/login');
+    await page.fill('[name=&quot;email&quot;]', 'admin@psscript.com');
+    await page.fill('[name=&quot;password&quot;]', 'admin123');
+    await page.click('button[type=&quot;submit&quot;]');
+    await expect(page).toHaveURL('/dashboard');
+
+    // Navigate to upload
+    await page.click('text=Upload Script');
+
+    // Upload a script
+    const scriptContent = 'Get-Process | Select-Object Name, CPU';
+    await page.fill('[name=&quot;title&quot;]', 'E2E Test Script');
+    await page.fill('[name=&quot;content&quot;]', scriptContent);
+    await page.click('button:has-text(&quot;Upload&quot;)');
+
+    // Verify script appears in list
+    await expect(page.locator('text=E2E Test Script')).toBeVisible();
+
+    // Verify in database (via API)
+    const response = await page.request.get('/api/scripts?search=E2E Test');
+    const data = await response.json();
+    expect(data.data.length).toBeGreaterThan(0);
+  });
+
+  test('DB-E-007: Dashboard statistics from database', async ({ page }) =&gt; {
+    await page.goto('/login');
+    await page.fill('[name=&quot;email&quot;]', 'admin@psscript.com');
+    await page.fill('[name=&quot;password&quot;]', 'admin123');
+    await page.click('button[type=&quot;submit&quot;]');
+
+    // Wait for dashboard to load
+    await page.waitForSelector('[data-testid=&quot;total-scripts&quot;]');
+
+    // Verify stats are displayed (pulled from database)
+    const totalScripts = await page.textContent('[data-testid=&quot;total-scripts&quot;]');
+    expect(parseInt(totalScripts || '0')).toBeGreaterThanOrEqual(0);
+  });
+});
+</code></pre>
+<hr />
+<h3 id="4-performance-tests">4. Performance Tests</h3>
+<table>
+<thead>
+<tr>
+<th>Test ID</th>
+<th>Description</th>
+<th>Threshold</th>
+<th>Query</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>DB-P-001</td>
+<td>Simple SELECT</td>
+<td>&lt; 50ms</td>
+<td><code>SELECT * FROM scripts LIMIT 10</code></td>
+</tr>
+<tr>
+<td>DB-P-002</td>
+<td>JOIN query</td>
+<td>&lt; 100ms</td>
+<td>Scripts with User, Category</td>
+</tr>
+<tr>
+<td>DB-P-003</td>
+<td>COUNT aggregation</td>
+<td>&lt; 30ms</td>
+<td><code>SELECT COUNT(*) FROM scripts</code></td>
+</tr>
+<tr>
+<td>DB-P-004</td>
+<td>ILIKE search</td>
+<td>&lt; 200ms</td>
+<td><code>WHERE content ILIKE '%Get-%'</code></td>
+</tr>
+<tr>
+<td>DB-P-005</td>
+<td>Vector similarity</td>
+<td>&lt; 500ms</td>
+<td>pgvector cosine distance</td>
+</tr>
+<tr>
+<td>DB-P-006</td>
+<td>Paginated list</td>
+<td>&lt; 100ms</td>
+<td>LIMIT/OFFSET with ORDER</td>
+</tr>
+<tr>
+<td>DB-P-007</td>
+<td>Analytics aggregation</td>
+<td>&lt; 300ms</td>
+<td>GROUP BY with calculations</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Performance Test Script:</strong></p>
+<pre><code class="language-sql">-- Run in psql with \timing on
+\timing
+
+-- DB-P-001: Simple SELECT
+SELECT * FROM scripts LIMIT 10;
+
+-- DB-P-002: JOIN query
+SELECT s.*, u.username, c.name as category_name
+FROM scripts s
+LEFT JOIN users u ON s.user_id = u.id
+LEFT JOIN categories c ON s.category_id = c.id
+LIMIT 10;
+
+-- DB-P-003: COUNT aggregation
+SELECT COUNT(*) FROM scripts;
+
+-- DB-P-004: ILIKE search
+SELECT * FROM scripts WHERE content ILIKE '%Get-%' LIMIT 10;
+
+-- DB-P-005: Vector similarity (if embeddings exist)
+SELECT s.title, 1 - (e.embedding &lt;=&gt; '[0.1, 0.2, ...]'::vector) as similarity
+FROM script_embeddings e
+JOIN scripts s ON e.script_id = s.id
+ORDER BY e.embedding &lt;=&gt; '[0.1, 0.2, ...]'::vector
+LIMIT 5;
+
+-- DB-P-006: Paginated list
+SELECT * FROM scripts ORDER BY created_at DESC LIMIT 20 OFFSET 40;
+
+-- DB-P-007: Analytics aggregation
+SELECT
+  DATE_TRUNC('day', created_at) as day,
+  COUNT(*) as script_count,
+  AVG(sa.security_score) as avg_security
+FROM scripts s
+LEFT JOIN script_analysis sa ON s.id = sa.script_id
+WHERE s.created_at &gt;= NOW() - INTERVAL '30 days'
+GROUP BY DATE_TRUNC('day', created_at)
+ORDER BY day;
+</code></pre>
+<hr />
+<h3 id="5-cache-integration-tests">5. Cache Integration Tests</h3>
+<table>
+<thead>
+<tr>
+<th>Test ID</th>
+<th>Description</th>
+<th>Expected Behavior</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>DB-C-001</td>
+<td>Cache hit on script list</td>
+<td>Second request returns cached data</td>
+</tr>
+<tr>
+<td>DB-C-002</td>
+<td>Cache invalidation on create</td>
+<td>New script clears <code>scripts:*</code> pattern</td>
+</tr>
+<tr>
+<td>DB-C-003</td>
+<td>Cache invalidation on update</td>
+<td>Updated script clears specific key</td>
+</tr>
+<tr>
+<td>DB-C-004</td>
+<td>Cache invalidation on delete</td>
+<td>Deleted script clears cache</td>
+</tr>
+<tr>
+<td>DB-C-005</td>
+<td>Redis fallback to memory</td>
+<td>If Redis down, use in-memory cache</td>
+</tr>
+<tr>
+<td>DB-C-006</td>
+<td>TTL expiration</td>
+<td>Cache entries expire after TTL</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Cache Test Script:</strong></p>
+<pre><code class="language-bash">#!/bin/bash
+# Cache integration tests
+
+# Monitor Redis commands
+redis-cli MONITOR &amp;
+MONITOR_PID=$!
+
+# Make first request (cache miss)
+echo &quot;First request (should be cache miss)...&quot;
+curl -s &quot;http://localhost:4000/api/scripts?page=1&amp;limit=5&quot; &gt; /dev/null
+
+# Make second request (cache hit)
+echo &quot;Second request (should be cache hit)...&quot;
+curl -s &quot;http://localhost:4000/api/scripts?page=1&amp;limit=5&quot; &gt; /dev/null
+
+# Check cache keys
+echo &quot;Cache keys:&quot;
+redis-cli KEYS &quot;scripts:*&quot;
+
+# Clear cache
+echo &quot;Clearing cache...&quot;
+curl -s &quot;http://localhost:4000/api/scripts/clear-cache&quot;
+
+# Verify cleared
+echo &quot;Cache keys after clear:&quot;
+redis-cli KEYS &quot;scripts:*&quot;
+
+kill $MONITOR_PID 2&gt;/dev/null
+</code></pre>
+<hr />
+<h3 id="6-data-integrity-tests">6. Data Integrity Tests</h3>
+<table>
+<thead>
+<tr>
+<th>Test ID</th>
+<th>Description</th>
+<th>Validation</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>DB-D-001</td>
+<td>Foreign key constraints</td>
+<td>Delete parent fails if children exist (without CASCADE)</td>
+</tr>
+<tr>
+<td>DB-D-002</td>
+<td>Unique constraints</td>
+<td>Duplicate username/email rejected</td>
+</tr>
+<tr>
+<td>DB-D-003</td>
+<td>NOT NULL constraints</td>
+<td>Required fields enforced</td>
+</tr>
+<tr>
+<td>DB-D-004</td>
+<td>File hash deduplication</td>
+<td>Same content returns same hash</td>
+</tr>
+<tr>
+<td>DB-D-005</td>
+<td>Password hashing</td>
+<td>Plaintext never stored</td>
+</tr>
+<tr>
+<td>DB-D-006</td>
+<td>JSONB structure</td>
+<td>Invalid JSON rejected</td>
+</tr>
+<tr>
+<td>DB-D-007</td>
+<td>Version uniqueness</td>
+<td>Same script+version rejected</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Integrity Test Queries:</strong></p>
+<pre><code class="language-sql">-- DB-D-001: Foreign key test
+-- Try to delete user with scripts (should fail without CASCADE or show orphan risk)
+BEGIN;
+DELETE FROM users WHERE id = 1;
+ROLLBACK;
+
+-- DB-D-002: Unique constraint test
+INSERT INTO users (username, email, password_hash, role)
+VALUES ('admin', 'new@test.com', 'hash', 'user');
+-- Should fail: duplicate username
+
+-- DB-D-003: NOT NULL test
+INSERT INTO scripts (description, user_id)
+VALUES ('No title', 1);
+-- Should fail: title is required
+
+-- DB-D-004: File hash check
+SELECT file_hash, COUNT(*)
+FROM scripts
+WHERE file_hash IS NOT NULL
+GROUP BY file_hash
+HAVING COUNT(*) &gt; 1;
+-- Should return 0 rows (no duplicates)
+
+-- DB-D-005: Password storage verification
+SELECT id, username
+FROM users
+WHERE password_hash NOT LIKE '$2%';
+-- Should return 0 rows (all bcrypt hashed)
+
+-- DB-D-007: Version uniqueness
+SELECT script_id, version, COUNT(*)
+FROM script_versions
+GROUP BY script_id, version
+HAVING COUNT(*) &gt; 1;
+-- Should return 0 rows
+</code></pre>
+<hr />
+<h3 id="7-security-tests">7. Security Tests</h3>
+<table>
+<thead>
+<tr>
+<th>Test ID</th>
+<th>Description</th>
+<th>Attack Vector</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>DB-S-001</td>
+<td>SQL injection prevention</td>
+<td><code>'; DROP TABLE users; --</code></td>
+</tr>
+<tr>
+<td>DB-S-002</td>
+<td>Password timing attack</td>
+<td>Constant-time comparison</td>
+</tr>
+<tr>
+<td>DB-S-003</td>
+<td>Account lockout</td>
+<td>Brute force protection</td>
+</tr>
+<tr>
+<td>DB-S-004</td>
+<td>JWT validation</td>
+<td>Invalid/expired tokens</td>
+</tr>
+<tr>
+<td>DB-S-005</td>
+<td>Role-based access</td>
+<td>Non-admin accessing admin routes</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Security Test Commands:</strong></p>
+<pre><code class="language-bash"># DB-S-001: SQL injection test (should be safe)
+curl -X POST &quot;http://localhost:4000/api/auth/login&quot; \
+  -H &quot;Content-Type: application/json&quot; \
+  -d '{&quot;email&quot;:&quot;admin@test.com'; DROP TABLE users; --&quot;,&quot;password&quot;:&quot;test&quot;}'
+# Should return 401, not execute DROP
+
+# DB-S-003: Account lockout test
+for i in {1..10}; do
+  curl -s -X POST &quot;http://localhost:4000/api/auth/login&quot; \
+    -H &quot;Content-Type: application/json&quot; \
+    -d '{&quot;email&quot;:&quot;admin@psscript.com&quot;,&quot;password&quot;:&quot;wrongpassword&quot;}'
+done
+# After 5 attempts, should return 423 Locked
+
+# DB-S-004: Invalid JWT test
+curl -s &quot;http://localhost:4000/api/scripts&quot; \
+  -H &quot;Authorization: Bearer invalid.token.here&quot;
+# Should return 401 Unauthorized
+
+# DB-S-005: Non-admin accessing admin route
+USER_TOKEN=&quot;...&quot; # Regular user token
+curl -s -X POST &quot;http://localhost:4000/api/users&quot; \
+  -H &quot;Authorization: Bearer $USER_TOKEN&quot; \
+  -H &quot;Content-Type: application/json&quot; \
+  -d '{&quot;username&quot;:&quot;hacker&quot;,&quot;email&quot;:&quot;hack@test.com&quot;,&quot;password&quot;:&quot;hack123&quot;}'
+# Should return 403 Forbidden
+</code></pre>
+<hr />
+<h2 id="test-execution-schedule">Test Execution Schedule</h2>
+<h3 id="daily-automated-cicd">Daily (Automated CI/CD)</h3>
+<ul>
+<li>[ ] Unit tests (database.test.ts)</li>
+<li>[ ] Basic integration tests (health checks)</li>
+<li>[ ] Cache connectivity</li>
+</ul>
+<h3 id="weekly">Weekly</h3>
+<ul>
+<li>[ ] Full integration test suite</li>
+<li>[ ] Performance benchmarks</li>
+<li>[ ] Security scan</li>
+</ul>
+<h3 id="monthly">Monthly</h3>
+<ul>
+<li>[ ] End-to-end tests</li>
+<li>[ ] Load testing</li>
+<li>[ ] Backup/restore verification</li>
+</ul>
+<h3 id="quarterly">Quarterly</h3>
+<ul>
+<li>[ ] Database schema audit</li>
+<li>[ ] Index optimization review</li>
+<li>[ ] Migration verification</li>
+</ul>
+<hr />
+<h2 id="test-results-template">Test Results Template</h2>
+<pre><code class="language-markdown">## Test Run: [DATE]
+
+### Environment
+- PostgreSQL Version: [VERSION]
+- Node.js Version: [VERSION]
+- Test Runner: Jest/Playwright
+
+### Summary
+| Category | Passed | Failed | Skipped |
+|----------|--------|--------|---------|
+| Unit | X | Y | Z |
+| Integration | X | Y | Z |
+| E2E | X | Y | Z |
+| Performance | X | Y | Z |
+
+### Failed Tests
+1. [TEST_ID]: [Description]
+   - Error: [Error message]
+   - Fix: [Recommended action]
+
+### Performance Results
+| Query | Avg Time | Threshold | Status |
+|-------|----------|-----------|--------|
+| Simple SELECT | Xms | 50ms | ✅/❌ |
+
+### Notes
+[Any observations or recommendations]
+</code></pre>
+<hr />
+<h2 id="troubleshooting-guide">Troubleshooting Guide</h2>
+<h3 id="connection-issues">Connection Issues</h3>
+<pre><code class="language-bash"># Check PostgreSQL is running
+docker-compose ps postgres
+
+# Check connection from host
+psql -h localhost -p 5432 -U postgres -d psscript -c &quot;SELECT 1&quot;
+
+# Check from within Docker network
+docker exec -it psscript-backend-1 \
+  psql -h postgres -p 5432 -U postgres -d psscript -c &quot;SELECT 1&quot;
+</code></pre>
+<h3 id="test-failures">Test Failures</h3>
+<pre><code class="language-bash"># Run specific test with verbose output
+cd src/backend &amp;&amp; npm test -- --testPathPattern=database.test.ts --verbose
+
+# Check database logs
+docker-compose logs postgres | tail -100
+
+# Reset test database
+docker-compose down -v
+docker-compose up -d postgres redis
+</code></pre>
+<h3 id="performance-issues">Performance Issues</h3>
+<pre><code class="language-bash"># Check slow queries
+docker exec -it psscript-postgres-1 psql -U postgres -d psscript -c &quot;
+SELECT query, calls, mean_time, total_time
+FROM pg_stat_statements
+ORDER BY mean_time DESC
+LIMIT 10;
+&quot;
+
+# Check index usage
+docker exec -it psscript-postgres-1 psql -U postgres -d psscript -c &quot;
+SELECT schemaname, tablename, indexname, idx_scan
+FROM pg_stat_user_indexes
+ORDER BY idx_scan;
+&quot;
+</code></pre>
+<hr />
+<h2 id="appendix-quick-commands">Appendix: Quick Commands</h2>
+<pre><code class="language-bash"># Run all database tests
+cd src/backend &amp;&amp; npm test -- --testPathPattern=database
+
+# Run specific test section
+cd src/backend &amp;&amp; npm test -- --testNamePattern=&quot;Connection&quot;
+
+# Check test coverage
+cd src/backend &amp;&amp; npm test -- --coverage --testPathPattern=database
+
+# Generate HTML report
+cd src/backend &amp;&amp; npm test -- --reporters=default --reporters=jest-html-reporter
+</code></pre>
+<hr />
+<p><em>Test Plan Version: 1.0</em>
+<em>Created: January 15, 2026</em>
+<em>Next Review: April 15, 2026</em></p>
+    <div class="footer">Generated 2026-01-16 21:23 UTC</div>
+  </div>
+</body>
+</html>

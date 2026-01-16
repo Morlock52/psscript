@@ -199,7 +199,71 @@ body {
   </section>
   
     <h1 id="psscript-training-suite">PSScript Training Suite</h1>
-<p>This training suite is a structured onboarding and enablement program for PSScript Manager. It includes modules, hands-on labs, and operational checklists for script authors, security reviewers, and platform admins.</p>
+<p>AI-powered PowerShell operations training, packaged for onboarding, compliance, and day-2 operations. Built in the style of polished GitHub READMEs (à la Supabase/PostHog) but tailored to this platform.</p>
+<h2 id="what-youll-learn-at-a-glance">What you’ll learn (at a glance)</h2>
+<table>
+<thead>
+<tr>
+<th>Capability</th>
+<th>What it teaches</th>
+<th>Key screens/assets</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Script intake</td>
+<td>Uploads, tagging, versioning, hash-based dedup</td>
+<td><img alt="Scripts" src="docs/screenshots/scripts.png" /></td>
+</tr>
+<tr>
+<td>AI analysis</td>
+<td>Security scoring, fix recommendations, audit notes</td>
+<td><img alt="Analysis" src="docs/screenshots/analysis.png" /></td>
+</tr>
+<tr>
+<td>Discovery</td>
+<td>Keyword + vector search, documentation explorer, crawl</td>
+<td><img alt="Documentation" src="docs/screenshots/documentation.png" /></td>
+</tr>
+<tr>
+<td>AI copilots</td>
+<td>Chat assistant, agentic workflows, history</td>
+<td><img alt="Chat" src="docs/screenshots/chat.png" /></td>
+</tr>
+<tr>
+<td>Operations</td>
+<td>Analytics, API usage, exports, training links</td>
+<td><img alt="Analytics" src="docs/screenshots/analytics.png" /></td>
+</tr>
+</tbody>
+</table>
+<h2 id="feature-tour-readme-style-checklist">Feature tour (README-style checklist)</h2>
+<ul>
+<li>[x] Script library with categories, owners, version history, and file-hash dedup</li>
+<li>[x] AI analysis pipeline (scorecards, recommendations, remediation notes)</li>
+<li>[x] Documentation explorer + crawler for command references and context storage</li>
+<li>[x] Chat/agent experiences for “how to fix” and “explain this script” prompts</li>
+<li>[x] Analytics dashboards for adoption, security posture, and training coverage</li>
+<li>[x] Export kit (HTML, PDF, DOCX) plus Playwright screenshot automation</li>
+</ul>
+<h2 id="architecture-and-flows">Architecture and flows</h2>
+<p><img alt="Architecture" src="docs/graphics/architecture.svg" /></p>
+<p><img alt="Analysis Pipeline" src="docs/graphics/analysis-pipeline.svg" /></p>
+<p><img alt="Script Lifecycle" src="docs/graphics/lifecycle.svg" /></p>
+<p><img alt="Search Modes" src="docs/graphics/search-modes.svg" /></p>
+<p><img alt="Security Scorecard" src="docs/graphics/security-scorecard.svg" /></p>
+<h2 id="screenshot-gallery">Screenshot gallery</h2>
+<ul>
+<li>Login + default access: <img alt="Login" src="docs/screenshots/login.png" /></li>
+<li>Dashboard with stats and activity: <img alt="Dashboard" src="docs/screenshots/dashboard.png" /></li>
+<li>Script detail with metadata: <img alt="Script Detail" src="docs/screenshots/script-detail.png" /></li>
+<li>Upload with live preview: <img alt="Upload" src="docs/screenshots/upload.png" /></li>
+<li>AI analysis + recommendations: <img alt="Analysis" src="docs/screenshots/analysis.png" /></li>
+<li>Documentation explorer: <img alt="Docs" src="docs/screenshots/documentation.png" /></li>
+<li>Chat assistant: <img alt="Chat" src="docs/screenshots/chat.png" /></li>
+<li>Analytics + ops KPIs: <img alt="Analytics" src="docs/screenshots/analytics.png" /></li>
+<li>Settings with training links: <img alt="Settings" src="docs/screenshots/settings.png" /></li>
+</ul>
 <h2 id="audience-and-outcomes">Audience and outcomes</h2>
 <table>
 <thead>
@@ -227,7 +291,7 @@ body {
 </tr>
 </tbody>
 </table>
-<h2 id="training-paths">Training paths</h2>
+<h2 id="training-roadmap">Training roadmap</h2>
 <p><img alt="Training Roadmap" src="docs/graphics/training-roadmap.svg" /></p>
 <pre><code class="language-mermaid">flowchart LR
   Start[Orientation] --&gt; Foundations[Module 01: Platform Foundations]
@@ -236,45 +300,6 @@ body {
   Analysis --&gt; Search[Module 04: Search and Discovery]
   Search --&gt; Ops[Module 05: Operations]
   Ops --&gt; Labs[Hands-on Labs]
-</code></pre>
-<h2 id="workflow-visuals">Workflow visuals</h2>
-<p><img alt="Script Lifecycle" src="docs/graphics/lifecycle.svg" /></p>
-<p><img alt="Search Modes" src="docs/graphics/search-modes.svg" /></p>
-<p><img alt="Security Scorecard" src="docs/graphics/security-scorecard.svg" /></p>
-<h2 id="suggested-schedules">Suggested schedules</h2>
-<table>
-<thead>
-<tr>
-<th>Option</th>
-<th>Duration</th>
-<th>Focus</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td>Fast start</td>
-<td>1 day</td>
-<td>Core workflows and 2 labs</td>
-</tr>
-<tr>
-<td>Standard</td>
-<td>2 days</td>
-<td>All modules and all labs</td>
-</tr>
-<tr>
-<td>Deep dive</td>
-<td>3 days</td>
-<td>Modules, labs, and ops review</td>
-</tr>
-</tbody>
-</table>
-<h2 id="environment-setup">Environment setup</h2>
-<p>Required services and ports:
-- Frontend: http://localhost:3002
-- Backend API: http://localhost:4000/api
-- AI service: http://localhost:8000</p>
-<p>Mock mode setup:</p>
-<pre><code class="language-bash">./start-all-mock.sh
 </code></pre>
 <h2 id="curriculum-map">Curriculum map</h2>
 <table>
@@ -356,28 +381,55 @@ body {
 </tr>
 </tbody>
 </table>
-<h2 id="training-guide">Training guide</h2>
-<p>Use the full guide for a single, end-to-end walkthrough with screenshots and sample actions:</p>
-<ul>
-<li><code>TRAINING-GUIDE.md</code></li>
-</ul>
-<h2 id="management-resources">Management resources</h2>
-<p>For phased rollout, KPI planning, and governance cadence, use:</p>
-<ul>
-<li><code>../MANAGEMENT-PLAYBOOK.md</code></li>
-</ul>
-<h2 id="exported-formats">Exported formats</h2>
-<p>Generate HTML and PDF exports with:</p>
-<pre><code class="language-bash">scripts/export-docs.sh
+<h2 id="suggested-schedules">Suggested schedules</h2>
+<table>
+<thead>
+<tr>
+<th>Option</th>
+<th>Duration</th>
+<th>Focus</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Fast start</td>
+<td>1 day</td>
+<td>Core workflows and 2 labs</td>
+</tr>
+<tr>
+<td>Standard</td>
+<td>2 days</td>
+<td>All modules and all labs</td>
+</tr>
+<tr>
+<td>Deep dive</td>
+<td>3 days</td>
+<td>Modules, labs, and ops review</td>
+</tr>
+</tbody>
+</table>
+<h2 id="environment-setup-mock-friendly">Environment setup (mock-friendly)</h2>
+<p>1) Start everything with sample data:</p>
+<pre><code class="language-bash">./start-all-mock.sh
 </code></pre>
-<p>Outputs land in <code>docs/exports/</code>.</p>
-<p>Key exports:</p>
-<ul>
-<li><code>docs/exports/pdf/Training-Guide.pdf</code></li>
-<li><code>docs/exports/pdf/Training-Suite.pdf</code></li>
-<li><code>docs/exports/docx/Training-Guide.docx</code></li>
-<li><code>docs/exports/docx/Training-Suite.docx</code></li>
-</ul>
+<p>2) Ports:
+- Frontend: http://localhost:3002
+- Backend API: http://localhost:4000/api
+- AI service: http://localhost:8000</p>
+<p>3) Capture screenshots (Playwright):</p>
+<pre><code class="language-bash">./scripts/capture-readme-screenshots.sh
+</code></pre>
+<p>Screens land in <code>docs/screenshots/</code>.</p>
+<h2 id="exported-formats-print-kit">Exported formats (print kit)</h2>
+<p>Generate HTML, PDF, and DOCX:</p>
+<pre><code class="language-bash">scripts/export-docs.sh --all
+</code></pre>
+<p>Key outputs (after export):
+- <code>docs/exports/pdf/Training-Suite.pdf</code>
+- <code>docs/exports/pdf/Training-Guide.pdf</code>
+- <code>docs/exports/docx/Training-Suite.docx</code>
+- <code>docs/exports/docx/Training-Guide.docx</code>
+- <code>docs/exports/pdf/README.pdf</code> (project README)</p>
 <h2 id="assessment-rubric">Assessment rubric</h2>
 <table>
 <thead>
@@ -415,16 +467,14 @@ body {
 </tr>
 </tbody>
 </table>
-<h2 id="screenshot-catalog">Screenshot catalog</h2>
-<p>All training screenshots are captured via Playwright and stored in <code>../screenshots/</code>. See the root README for the capture workflow.</p>
 <h2 id="support-and-troubleshooting">Support and troubleshooting</h2>
 <ul>
-<li>Use <code>../LOGIN-CREDENTIALS.md</code> for demo accounts</li>
-<li>Use <code>../SUPPORT.md</code> for support and operational playbooks</li>
-<li>Use <code>../../DOCKER-QUICKSTART.md</code> for infrastructure setup</li>
-<li>Use GitHub Issues for bugs or feature requests</li>
+<li>Demo access: <code>../LOGIN-CREDENTIALS.md</code></li>
+<li>Support + operational playbooks: <code>../SUPPORT.md</code></li>
+<li>Infrastructure setup: <code>../../DOCKER-QUICKSTART.md</code></li>
+<li>References/inspirations: <code>../REFERENCE-SOURCES.md</code> (GitHub README patterns)</li>
 </ul>
-    <div class="footer">Generated 2026-01-13 06:26 UTC</div>
+    <div class="footer">Generated 2026-01-16 21:23 UTC</div>
   </div>
 </body>
 </html>

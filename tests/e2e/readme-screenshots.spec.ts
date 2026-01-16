@@ -22,7 +22,7 @@ test.describe('README screenshots', () => {
     await page.waitForLoadState('networkidle');
     await page.screenshot({ path: path.join(screenshotDir, 'login.png'), fullPage: true });
 
-    const defaultLoginButton = page.getByRole('button', { name: 'Use Default Login' });
+    const defaultLoginButton = page.getByRole('button', { name: /Sign in as Demo Admin/i });
     await defaultLoginButton.click();
     await page.waitForURL(/dashboard|scripts|\/$/i, { timeout: 20000 });
 

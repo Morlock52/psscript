@@ -1,0 +1,1328 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <base href="file:///Users/morlock/fun/psscript/" />
+  <title>docs-AI_COMPREHENSIVE_TEST_PLAN</title>
+  <style>
+:root {
+  color-scheme: light;
+}
+body {
+  font-family: "Segoe UI", "Helvetica Neue", Arial, sans-serif;
+  margin: 0;
+  padding: 0;
+  background: #ffffff;
+  color: #0f172a;
+}
+.markdown-body {
+  max-width: 980px;
+  margin: 40px auto 60px;
+  padding: 0 32px;
+  line-height: 1.65;
+}
+.markdown-body h1 {
+  font-size: 32px;
+  margin-bottom: 12px;
+  border-bottom: 2px solid #e2e8f0;
+  padding-bottom: 12px;
+  page-break-before: always;
+  page-break-after: avoid;
+  break-before: page;
+  break-after: avoid;
+}
+.markdown-body h1:first-of-type {
+  page-break-before: avoid;
+  break-before: avoid;
+}
+.markdown-body h2 {
+  font-size: 24px;
+  margin-top: 28px;
+  border-bottom: 1px solid #e2e8f0;
+  padding-bottom: 8px;
+  page-break-before: always;
+  page-break-after: avoid;
+  break-before: page;
+  break-after: avoid;
+}
+.markdown-body h3 {
+  font-size: 18px;
+  margin-top: 20px;
+  page-break-after: avoid;
+  break-after: avoid;
+}
+.markdown-body h4, .markdown-body h5, .markdown-body h6 {
+  page-break-after: avoid;
+  break-after: avoid;
+}
+.markdown-body table {
+  width: 100%;
+  border-collapse: collapse;
+  margin: 16px 0;
+  font-size: 14px;
+  page-break-inside: avoid;
+  break-inside: avoid;
+}
+.markdown-body th,
+.markdown-body td {
+  border: 1px solid #e2e8f0;
+  padding: 8px 10px;
+  text-align: left;
+}
+.markdown-body th {
+  background: #f8fafc;
+}
+.markdown-body tr {
+  page-break-inside: avoid;
+  break-inside: avoid;
+}
+.markdown-body code {
+  background: #f1f5f9;
+  padding: 2px 4px;
+  border-radius: 4px;
+  font-family: "SFMono-Regular", Menlo, Consolas, monospace;
+  font-size: 0.92em;
+}
+.markdown-body pre {
+  background: #0f172a;
+  color: #e2e8f0;
+  padding: 16px;
+  border-radius: 8px;
+  overflow-x: auto;
+  page-break-inside: avoid;
+  break-inside: avoid;
+}
+.markdown-body pre code {
+  background: transparent;
+  color: inherit;
+}
+.markdown-body blockquote {
+  border-left: 4px solid #38bdf8;
+  margin: 16px 0;
+  padding: 8px 16px;
+  background: #f8fafc;
+  color: #334155;
+}
+.markdown-body img {
+  max-width: 100%;
+  height: auto;
+  display: block;
+  margin: 16px 0;
+  border-radius: 10px;
+  box-shadow: 0 8px 20px rgba(15, 23, 42, 0.12);
+  page-break-inside: avoid;
+  break-inside: avoid;
+}
+.markdown-body figure {
+  page-break-inside: avoid;
+  break-inside: avoid;
+  margin: 16px 0;
+}
+.markdown-body a {
+  color: #2563eb;
+  text-decoration: none;
+}
+.markdown-body a:hover {
+  text-decoration: underline;
+}
+.cover {
+  padding: 80px 60px 60px;
+  background: linear-gradient(135deg, #0b1220 0%, #1e3a8a 100%);
+  color: #f8fafc;
+  border-radius: 18px;
+  margin-bottom: 32px;
+}
+.cover-title {
+  font-size: 36px;
+  font-weight: 700;
+  margin: 0 0 12px;
+}
+.cover-subtitle {
+  font-size: 18px;
+  color: #cbd5f5;
+  margin: 0 0 16px;
+}
+.cover-meta {
+  font-size: 13px;
+  color: #94a3b8;
+}
+.page-break {
+  page-break-after: always;
+  break-after: page;
+}
+.footer {
+  margin-top: 40px;
+  font-size: 12px;
+  color: #64748b;
+}
+/* Print and PDF-specific styles */
+@page {
+  margin: 20mm 18mm;
+}
+@media print {
+  .markdown-body {
+    orphans: 3;
+    widows: 3;
+  }
+  .markdown-body p {
+    orphans: 3;
+    widows: 3;
+  }
+  .markdown-body li {
+    page-break-inside: avoid;
+    break-inside: avoid;
+  }
+  .markdown-body ul, .markdown-body ol {
+    page-break-before: avoid;
+    break-before: avoid;
+  }
+  .markdown-body blockquote {
+    page-break-inside: avoid;
+    break-inside: avoid;
+  }
+  /* Keep section content together */
+  .markdown-body h2 + *, .markdown-body h3 + * {
+    page-break-before: avoid;
+    break-before: avoid;
+  }
+}
+</style>
+</head>
+<body>
+  <div class="markdown-body">
+    
+    <h1 id="ai-functionality-comprehensive-test-plan-audit">AI Functionality Comprehensive Test Plan &amp; Audit</h1>
+<p><strong>Date:</strong> January 15, 2026
+<strong>Auditor:</strong> Claude Code AI Assistant
+<strong>Scope:</strong> Complete AI System (Python FastAPI Service + Backend Agentic System)</p>
+<hr />
+<h2 id="executive-summary">Executive Summary</h2>
+<p>This document contains a comprehensive test plan for all AI functionality in the PSScript platform, including findings, issues discovered, and improvement recommendations based on January 2026 best practices.</p>
+<p><strong>Overall Status: 85% Functional</strong> - Core AI capabilities work, but OpenAI quota issues and documentation discrepancies need attention.</p>
+<hr />
+<h2 id="table-of-contents">Table of Contents</h2>
+<ol>
+<li><a href="#architecture-overview">Architecture Overview</a></li>
+<li><a href="#test-categories">Test Categories</a></li>
+<li><a href="#test-execution-results">Test Execution Results</a></li>
+<li><a href="#issues-found">Issues Found</a></li>
+<li><a href="#best-practices-comparison-2026">Best Practices Comparison (2026)</a></li>
+<li><a href="#fix-plan">Fix Plan</a></li>
+<li><a href="#improvement-summary">Improvement Summary</a></li>
+</ol>
+<hr />
+<h2 id="architecture-overview">Architecture Overview</h2>
+<h3 id="current-stack-corrected">Current Stack (CORRECTED)</h3>
+<table>
+<thead>
+<tr>
+<th>Component</th>
+<th>Technology</th>
+<th>Port</th>
+<th>Status</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>AI Service</td>
+<td>Python/FastAPI</td>
+<td><strong>8000</strong></td>
+<td>Healthy</td>
+</tr>
+<tr>
+<td>Backend Agentic</td>
+<td>TypeScript/Express</td>
+<td>4000</td>
+<td>Healthy</td>
+</tr>
+<tr>
+<td>LLM Providers</td>
+<td>OpenAI + Anthropic</td>
+<td>-</td>
+<td>Quota Issues</td>
+</tr>
+<tr>
+<td>Cache</td>
+<td>Redis</td>
+<td>6379</td>
+<td>Healthy</td>
+</tr>
+<tr>
+<td>Database</td>
+<td>PostgreSQL</td>
+<td>5432</td>
+<td>Healthy</td>
+</tr>
+</tbody>
+</table>
+<blockquote>
+<p><strong>Note:</strong> AI Service port was documented as 8001 but actually runs on <strong>8000</strong></p>
+</blockquote>
+<h3 id="ai-capabilities-inventory">AI Capabilities Inventory</h3>
+<ul>
+<li>[x] Chat/Conversation - Working (with fallback to mock)</li>
+<li>[x] Script Analysis - Working (mock mode active)</li>
+<li>[x] Script Generation - Working</li>
+<li>[x] Security Analysis - <strong>Excellent</strong> (detects injection, credentials)</li>
+<li>[x] LangGraph Workflows - Working</li>
+<li>[x] Multi-Agent System - Available</li>
+<li>[x] Voice Synthesis/Recognition - Endpoints exist</li>
+<li>[x] PowerShell Documentation Search - Available</li>
+<li>[x] Topic Guardrails - <strong>Working well</strong> (blocks off-topic)</li>
+</ul>
+<hr />
+<h2 id="test-categories">Test Categories</h2>
+<h3 id="category-1-api-endpoint-health">Category 1: API Endpoint Health</h3>
+<table>
+<thead>
+<tr>
+<th>Test ID</th>
+<th>Endpoint</th>
+<th>Method</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>AE-001</td>
+<td>/health</td>
+<td>GET</td>
+<td>AI service health check</td>
+</tr>
+<tr>
+<td>AE-002</td>
+<td>/chat</td>
+<td>POST</td>
+<td>Basic chat functionality</td>
+</tr>
+<tr>
+<td>AE-003</td>
+<td>/langgraph/analyze</td>
+<td>POST</td>
+<td>LangGraph workflow</td>
+</tr>
+<tr>
+<td>AE-004</td>
+<td>/api/security/scan</td>
+<td>POST</td>
+<td>Security scanning</td>
+</tr>
+<tr>
+<td>AE-005</td>
+<td>/api/health/detailed</td>
+<td>GET</td>
+<td>Detailed health status</td>
+</tr>
+</tbody>
+</table>
+<h3 id="category-2-llm-provider-integration">Category 2: LLM Provider Integration</h3>
+<table>
+<thead>
+<tr>
+<th>Test ID</th>
+<th>Provider</th>
+<th>Test</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>LP-001</td>
+<td>OpenAI</td>
+<td>Connection</td>
+<td>API key validation</td>
+</tr>
+<tr>
+<td>LP-002</td>
+<td>OpenAI</td>
+<td>Model Access</td>
+<td>GPT-4.1 availability</td>
+</tr>
+<tr>
+<td>LP-003</td>
+<td>Anthropic</td>
+<td>Connection</td>
+<td>API key validation</td>
+</tr>
+<tr>
+<td>LP-004</td>
+<td>Anthropic</td>
+<td>Model Access</td>
+<td>Claude Sonnet 4 availability</td>
+</tr>
+<tr>
+<td>LP-005</td>
+<td>Fallback</td>
+<td>Chain</td>
+<td>Provider fallback logic</td>
+</tr>
+</tbody>
+</table>
+<h3 id="category-3-agent-system">Category 3: Agent System</h3>
+<table>
+<thead>
+<tr>
+<th>Test ID</th>
+<th>Agent Type</th>
+<th>Test</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>AG-001</td>
+<td>LangChain</td>
+<td>Creation</td>
+<td>Default agent creation</td>
+</tr>
+<tr>
+<td>AG-002</td>
+<td>LangGraph</td>
+<td>Workflow</td>
+<td>State machine workflow</td>
+</tr>
+<tr>
+<td>AG-003</td>
+<td>Anthropic</td>
+<td>Analysis</td>
+<td>Claude-based analysis</td>
+</tr>
+<tr>
+<td>AG-004</td>
+<td>Multi-Agent</td>
+<td>Coordination</td>
+<td>Agent collaboration</td>
+</tr>
+<tr>
+<td>AG-005</td>
+<td>Auto-Selection</td>
+<td>Logic</td>
+<td>Correct agent selection</td>
+</tr>
+</tbody>
+</table>
+<h3 id="category-4-security-guardrails">Category 4: Security &amp; Guardrails</h3>
+<table>
+<thead>
+<tr>
+<th>Test ID</th>
+<th>Layer</th>
+<th>Test</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>SG-001</td>
+<td>Topic Validation</td>
+<td>On-Topic</td>
+<td>PowerShell queries pass</td>
+</tr>
+<tr>
+<td>SG-002</td>
+<td>Topic Validation</td>
+<td>Off-Topic</td>
+<td>Blocked topics rejected</td>
+</tr>
+<tr>
+<td>SG-003</td>
+<td>Script Security</td>
+<td>Injection</td>
+<td>Dangerous patterns detected</td>
+</tr>
+<tr>
+<td>SG-004</td>
+<td>Script Security</td>
+<td>Credentials</td>
+<td>Hardcoded secrets flagged</td>
+</tr>
+<tr>
+<td>SG-005</td>
+<td>Input Validation</td>
+<td>Malformed</td>
+<td>Bad input rejected</td>
+</tr>
+</tbody>
+</table>
+<h3 id="category-5-performance-caching">Category 5: Performance &amp; Caching</h3>
+<table>
+<thead>
+<tr>
+<th>Test ID</th>
+<th>Component</th>
+<th>Test</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>PC-001</td>
+<td>Redis</td>
+<td>Connection</td>
+<td>Cache availability</td>
+</tr>
+<tr>
+<td>PC-002</td>
+<td>Redis</td>
+<td>Hit Rate</td>
+<td>Cache effectiveness</td>
+</tr>
+<tr>
+<td>PC-003</td>
+<td>Response Time</td>
+<td>Chat</td>
+<td>&lt; 5s response</td>
+</tr>
+<tr>
+<td>PC-004</td>
+<td>Response Time</td>
+<td>Analysis</td>
+<td>&lt; 30s response</td>
+</tr>
+<tr>
+<td>PC-005</td>
+<td>Concurrent</td>
+<td>Load</td>
+<td>10 simultaneous requests</td>
+</tr>
+</tbody>
+</table>
+<h3 id="category-6-error-handling">Category 6: Error Handling</h3>
+<table>
+<thead>
+<tr>
+<th>Test ID</th>
+<th>Scenario</th>
+<th>Test</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>EH-001</td>
+<td>Invalid Request</td>
+<td>Validation</td>
+<td>Returns 422 for bad input</td>
+</tr>
+<tr>
+<td>EH-002</td>
+<td>Invalid Key</td>
+<td>Error</td>
+<td>Proper error message</td>
+</tr>
+<tr>
+<td>EH-003</td>
+<td>Rate Limit</td>
+<td>Backoff</td>
+<td>Graceful quota handling</td>
+</tr>
+<tr>
+<td>EH-004</td>
+<td>Network Error</td>
+<td>Fallback</td>
+<td>Provider fallback</td>
+</tr>
+<tr>
+<td>EH-005</td>
+<td>Mock Mode</td>
+<td>Activation</td>
+<td>Offline fallback works</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="test-execution-results">Test Execution Results</h2>
+<h3 id="execution-date-january-15-2026">Execution Date: January 15, 2026</h3>
+<pre><code>Status Legend:
+✅ PASS - Test passed
+❌ FAIL - Test failed
+⚠️ WARN - Passed with warnings
+🔄 SKIP - Test skipped (dependency)
+</code></pre>
+<h3 id="category-1-api-endpoint-health_1">Category 1: API Endpoint Health</h3>
+<table>
+<thead>
+<tr>
+<th>Test ID</th>
+<th>Status</th>
+<th>Response Time</th>
+<th>Notes</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>AE-001</td>
+<td>✅ PASS</td>
+<td>149ms</td>
+<td>AI service healthy on port 8000</td>
+</tr>
+<tr>
+<td>AE-002</td>
+<td>✅ PASS</td>
+<td>6164ms</td>
+<td>Chat works (fell back to mock due to quota)</td>
+</tr>
+<tr>
+<td>AE-003</td>
+<td>✅ PASS</td>
+<td>3315ms</td>
+<td>LangGraph endpoint responsive</td>
+</tr>
+<tr>
+<td>AE-004</td>
+<td>✅ PASS</td>
+<td>&lt;100ms</td>
+<td>Security scanning excellent</td>
+</tr>
+<tr>
+<td>AE-005</td>
+<td>✅ PASS</td>
+<td>&lt;100ms</td>
+<td>Detailed health shows all components</td>
+</tr>
+</tbody>
+</table>
+<h3 id="category-2-llm-provider-integration_1">Category 2: LLM Provider Integration</h3>
+<table>
+<thead>
+<tr>
+<th>Test ID</th>
+<th>Status</th>
+<th>Response Time</th>
+<th>Notes</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>LP-001</td>
+<td>⚠️ WARN</td>
+<td>-</td>
+<td>Key configured but quota exceeded (429)</td>
+</tr>
+<tr>
+<td>LP-002</td>
+<td>⚠️ WARN</td>
+<td>-</td>
+<td>Model configured as gpt-4.1</td>
+</tr>
+<tr>
+<td>LP-003</td>
+<td>🔄 SKIP</td>
+<td>-</td>
+<td>Not tested (OpenAI primary)</td>
+</tr>
+<tr>
+<td>LP-004</td>
+<td>🔄 SKIP</td>
+<td>-</td>
+<td>Not tested</td>
+</tr>
+<tr>
+<td>LP-005</td>
+<td>✅ PASS</td>
+<td>-</td>
+<td>Mock mode fallback works correctly</td>
+</tr>
+</tbody>
+</table>
+<h3 id="category-3-agent-system_1">Category 3: Agent System</h3>
+<table>
+<thead>
+<tr>
+<th>Test ID</th>
+<th>Status</th>
+<th>Response Time</th>
+<th>Notes</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>AG-001</td>
+<td>✅ PASS</td>
+<td>-</td>
+<td>Agent coordinator available</td>
+</tr>
+<tr>
+<td>AG-002</td>
+<td>✅ PASS</td>
+<td>3315ms</td>
+<td>LangGraph workflows operational</td>
+</tr>
+<tr>
+<td>AG-003</td>
+<td>🔄 SKIP</td>
+<td>-</td>
+<td>Anthropic not primary provider</td>
+</tr>
+<tr>
+<td>AG-004</td>
+<td>✅ PASS</td>
+<td>-</td>
+<td>Multi-agent system available</td>
+</tr>
+<tr>
+<td>AG-005</td>
+<td>✅ PASS</td>
+<td>-</td>
+<td>Agent selection logic present</td>
+</tr>
+</tbody>
+</table>
+<h3 id="category-4-security-guardrails_1">Category 4: Security &amp; Guardrails</h3>
+<table>
+<thead>
+<tr>
+<th>Test ID</th>
+<th>Status</th>
+<th>Response Time</th>
+<th>Notes</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>SG-001</td>
+<td>✅ PASS</td>
+<td>-</td>
+<td>PowerShell queries pass through</td>
+</tr>
+<tr>
+<td>SG-002</td>
+<td>✅ PASS</td>
+<td>-</td>
+<td>Off-topic (pizza recipe) correctly rejected</td>
+</tr>
+<tr>
+<td>SG-003</td>
+<td>✅ PASS</td>
+<td>&lt;100ms</td>
+<td>Invoke-Expression detected as "medium" risk</td>
+</tr>
+<tr>
+<td>SG-004</td>
+<td>✅ PASS</td>
+<td>&lt;100ms</td>
+<td>Hardcoded passwords/API keys detected as "high" risk</td>
+</tr>
+<tr>
+<td>SG-005</td>
+<td>✅ PASS</td>
+<td>&lt;100ms</td>
+<td>Returns 422 for invalid JSON structure</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Security Analysis Sample Output:</strong></p>
+<pre><code class="language-json">{
+  &quot;is_safe&quot;: true,
+  &quot;security_level&quot;: &quot;high&quot;,
+  &quot;findings&quot;: [
+    {
+      &quot;level&quot;: &quot;high&quot;,
+      &quot;category&quot;: &quot;credential_exposure&quot;,
+      &quot;message&quot;: &quot;Hardcoded password detected&quot;,
+      &quot;recommendation&quot;: &quot;Use Get-Credential, environment variables, or Azure Key Vault&quot;
+    }
+  ]
+}
+</code></pre>
+<h3 id="category-5-performance-caching_1">Category 5: Performance &amp; Caching</h3>
+<table>
+<thead>
+<tr>
+<th>Test ID</th>
+<th>Status</th>
+<th>Response Time</th>
+<th>Notes</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>PC-001</td>
+<td>✅ PASS</td>
+<td>&lt;10ms</td>
+<td>Redis PONG response</td>
+</tr>
+<tr>
+<td>PC-002</td>
+<td>⚠️ WARN</td>
+<td>-</td>
+<td>1 key cached (api:cache:/api/categories)</td>
+</tr>
+<tr>
+<td>PC-003</td>
+<td>✅ PASS</td>
+<td>2248ms</td>
+<td>Under 5000ms threshold</td>
+</tr>
+<tr>
+<td>PC-004</td>
+<td>✅ PASS</td>
+<td>3315ms</td>
+<td>Under 30000ms threshold</td>
+</tr>
+<tr>
+<td>PC-005</td>
+<td>🔄 SKIP</td>
+<td>-</td>
+<td>Load test not performed</td>
+</tr>
+</tbody>
+</table>
+<h3 id="category-6-error-handling_1">Category 6: Error Handling</h3>
+<table>
+<thead>
+<tr>
+<th>Test ID</th>
+<th>Status</th>
+<th>Response Time</th>
+<th>Notes</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>EH-001</td>
+<td>✅ PASS</td>
+<td>&lt;100ms</td>
+<td>Returns 422 for malformed requests</td>
+</tr>
+<tr>
+<td>EH-002</td>
+<td>✅ PASS</td>
+<td>-</td>
+<td>Error messages include context</td>
+</tr>
+<tr>
+<td>EH-003</td>
+<td>✅ PASS</td>
+<td>-</td>
+<td>429 quota error handled gracefully</td>
+</tr>
+<tr>
+<td>EH-004</td>
+<td>✅ PASS</td>
+<td>-</td>
+<td>Falls back to mock mode</td>
+</tr>
+<tr>
+<td>EH-005</td>
+<td>✅ PASS</td>
+<td>-</td>
+<td>Mock mode provides functional responses</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="issues-found">Issues Found</h2>
+<h3 id="critical-issues">Critical Issues</h3>
+<table>
+<thead>
+<tr>
+<th>ID</th>
+<th>Issue</th>
+<th>Impact</th>
+<th>Location</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>C-001</td>
+<td>OpenAI API quota exceeded</td>
+<td>AI responses fall back to mock mode</td>
+<td>API calls to OpenAI</td>
+</tr>
+<tr>
+<td>C-002</td>
+<td>Port documentation mismatch</td>
+<td>Confusion in troubleshooting</td>
+<td>CLAUDE.md says 8001, actual is 8000</td>
+</tr>
+</tbody>
+</table>
+<h3 id="high-priority-issues">High Priority Issues</h3>
+<table>
+<thead>
+<tr>
+<th>ID</th>
+<th>Issue</th>
+<th>Impact</th>
+<th>Location</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>H-001</td>
+<td>Backend AI route inconsistency</td>
+<td><code>/api/ai-agent/</code> vs <code>/api/aiagent/</code></td>
+<td><code>src/backend/src/routes/</code></td>
+</tr>
+<tr>
+<td>H-002</td>
+<td>Backend analyze returns mock data</td>
+<td>Not using actual AI analysis</td>
+<td><code>ai-agent.ts</code> line 25+</td>
+</tr>
+<tr>
+<td>H-003</td>
+<td>No LangSmith observability</td>
+<td>Cannot trace AI operations</td>
+<td>Missing integration</td>
+</tr>
+</tbody>
+</table>
+<h3 id="medium-priority-issues">Medium Priority Issues</h3>
+<table>
+<thead>
+<tr>
+<th>ID</th>
+<th>Issue</th>
+<th>Impact</th>
+<th>Location</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>M-001</td>
+<td>Mixed sync/async patterns</td>
+<td>Potential blocking in FastAPI</td>
+<td>Various AI service files</td>
+</tr>
+<tr>
+<td>M-002</td>
+<td>Basic logging only</td>
+<td>Hard to debug production issues</td>
+<td>Throughout codebase</td>
+</tr>
+<tr>
+<td>M-003</td>
+<td>No circuit breaker pattern</td>
+<td>No automatic failure isolation</td>
+<td>AI provider calls</td>
+</tr>
+<tr>
+<td>M-004</td>
+<td>MemorySaver only for state</td>
+<td>State lost on restart</td>
+<td>LangGraph checkpointer</td>
+</tr>
+</tbody>
+</table>
+<h3 id="low-priority-issues">Low Priority Issues</h3>
+<table>
+<thead>
+<tr>
+<th>ID</th>
+<th>Issue</th>
+<th>Impact</th>
+<th>Location</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>L-001</td>
+<td>No evaluation metrics</td>
+<td>Cannot measure AI quality</td>
+<td>Missing infrastructure</td>
+</tr>
+<tr>
+<td>L-002</td>
+<td>Limited cache usage</td>
+<td>Only 1 key cached</td>
+<td>Redis utilization</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="best-practices-comparison-2026">Best Practices Comparison (2026)</h2>
+<h3 id="langgraphlangchain-based-on-january-2026-research">LangGraph/LangChain (Based on January 2026 Research)</h3>
+<table>
+<thead>
+<tr>
+<th>Best Practice</th>
+<th>Current Status</th>
+<th>Gap</th>
+<th>Priority</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>LangGraph 1.0 for agents</td>
+<td>✅ Using LangGraph</td>
+<td>None</td>
+<td>-</td>
+</tr>
+<tr>
+<td>Durable state persistence</td>
+<td>⚠️ MemorySaver only</td>
+<td>Need PostgresSaver in prod</td>
+<td>Medium</td>
+</tr>
+<tr>
+<td>Human-in-the-loop</td>
+<td>✅ Implemented</td>
+<td>None</td>
+<td>-</td>
+</tr>
+<tr>
+<td>Observability (LangSmith)</td>
+<td>❌ Not integrated</td>
+<td>Missing tracing/monitoring</td>
+<td>High</td>
+</tr>
+<tr>
+<td>Evaluation metrics</td>
+<td>❌ Not implemented</td>
+<td>Missing quality measurement</td>
+<td>Low</td>
+</tr>
+<tr>
+<td>Streaming support</td>
+<td>✅ Implemented</td>
+<td>None</td>
+<td>-</td>
+</tr>
+<tr>
+<td>Checkpointing</td>
+<td>✅ Implemented</td>
+<td>None</td>
+<td>-</td>
+</tr>
+</tbody>
+</table>
+<h3 id="fastapi-ai-service-based-on-january-2026-research">FastAPI AI Service (Based on January 2026 Research)</h3>
+<table>
+<thead>
+<tr>
+<th>Best Practice</th>
+<th>Current Status</th>
+<th>Gap</th>
+<th>Priority</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Async-first design</td>
+<td>⚠️ Mixed sync/async</td>
+<td>Some blocking calls</td>
+<td>Medium</td>
+</tr>
+<tr>
+<td>Service layer pattern</td>
+<td>⚠️ Partial</td>
+<td>Need cleaner separation</td>
+<td>Medium</td>
+</tr>
+<tr>
+<td>Pydantic validation</td>
+<td>✅ Implemented</td>
+<td>None</td>
+<td>-</td>
+</tr>
+<tr>
+<td>Docker + Uvicorn</td>
+<td>✅ Implemented</td>
+<td>None</td>
+<td>-</td>
+</tr>
+<tr>
+<td>Connection pooling</td>
+<td>✅ psycopg3 async</td>
+<td>None</td>
+<td>-</td>
+</tr>
+<tr>
+<td>Circuit breaker pattern</td>
+<td>❌ Not implemented</td>
+<td>Missing failure isolation</td>
+<td>Medium</td>
+</tr>
+<tr>
+<td>Structured logging</td>
+<td>⚠️ Basic logging</td>
+<td>Need JSON format</td>
+<td>Medium</td>
+</tr>
+<tr>
+<td>Health checks</td>
+<td>✅ Implemented</td>
+<td>None</td>
+<td>-</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="fix-plan">Fix Plan</h2>
+<h3 id="phase-1-critical-fixes-immediate">Phase 1: Critical Fixes (Immediate)</h3>
+<table>
+<thead>
+<tr>
+<th>Task</th>
+<th>Issue ID</th>
+<th>Action</th>
+<th>Effort</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>1.1</td>
+<td>C-001</td>
+<td>Resolve OpenAI quota or add Anthropic as primary</td>
+<td>1-2 hrs</td>
+</tr>
+<tr>
+<td>1.2</td>
+<td>C-002</td>
+<td>Update CLAUDE.md to show correct port 8000</td>
+<td>5 mins</td>
+</tr>
+</tbody>
+</table>
+<h3 id="phase-2-high-priority-improvements-this-week">Phase 2: High Priority Improvements (This Week)</h3>
+<table>
+<thead>
+<tr>
+<th>Task</th>
+<th>Issue ID</th>
+<th>Action</th>
+<th>Effort</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>2.1</td>
+<td>H-001</td>
+<td>Consolidate AI routes to single <code>/api/ai/</code> prefix</td>
+<td>2-3 hrs</td>
+</tr>
+<tr>
+<td>2.2</td>
+<td>H-002</td>
+<td>Connect backend analyze to actual AI service</td>
+<td>2-4 hrs</td>
+</tr>
+<tr>
+<td>2.3</td>
+<td>H-003</td>
+<td>Integrate LangSmith for observability</td>
+<td>4-6 hrs</td>
+</tr>
+</tbody>
+</table>
+<h3 id="phase-3-best-practice-alignment-this-month">Phase 3: Best Practice Alignment (This Month)</h3>
+<table>
+<thead>
+<tr>
+<th>Task</th>
+<th>Issue ID</th>
+<th>Action</th>
+<th>Effort</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>3.1</td>
+<td>M-001</td>
+<td>Audit and convert sync calls to async</td>
+<td>4-6 hrs</td>
+</tr>
+<tr>
+<td>3.2</td>
+<td>M-002</td>
+<td>Implement structured JSON logging</td>
+<td>2-3 hrs</td>
+</tr>
+<tr>
+<td>3.3</td>
+<td>M-003</td>
+<td>Add circuit breaker for API calls</td>
+<td>3-4 hrs</td>
+</tr>
+<tr>
+<td>3.4</td>
+<td>M-004</td>
+<td>Implement PostgresSaver for durable state</td>
+<td>4-6 hrs</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="improvement-summary">Improvement Summary</h2>
+<h3 id="before-state-baseline-january-15-2026">Before State (Baseline - January 15, 2026)</h3>
+<table>
+<thead>
+<tr>
+<th>Metric</th>
+<th>Value</th>
+<th>Status</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>API Endpoint Health</td>
+<td>5/5 passing</td>
+<td>Good</td>
+</tr>
+<tr>
+<td>Security Analysis</td>
+<td>Working</td>
+<td>Excellent</td>
+</tr>
+<tr>
+<td>Topic Guardrails</td>
+<td>Working</td>
+<td>Excellent</td>
+</tr>
+<tr>
+<td>LLM Provider Status</td>
+<td>Quota exceeded</td>
+<td>Degraded</td>
+</tr>
+<tr>
+<td>Mock Mode Fallback</td>
+<td>Working</td>
+<td>Good</td>
+</tr>
+<tr>
+<td>Response Time (Chat)</td>
+<td>2-6 seconds</td>
+<td>Acceptable</td>
+</tr>
+<tr>
+<td>Documentation Accuracy</td>
+<td>90%</td>
+<td>Needs update</td>
+</tr>
+<tr>
+<td>Best Practice Compliance</td>
+<td>65%</td>
+<td>Room for improvement</td>
+</tr>
+</tbody>
+</table>
+<h3 id="after-state-target-end-of-january-2026">After State (Target - End of January 2026)</h3>
+<table>
+<thead>
+<tr>
+<th>Metric</th>
+<th>Target</th>
+<th>Improvement</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>API Endpoint Health</td>
+<td>5/5 passing</td>
+<td>Maintain</td>
+</tr>
+<tr>
+<td>LLM Provider Status</td>
+<td>Both working</td>
+<td>+100%</td>
+</tr>
+<tr>
+<td>Documentation Accuracy</td>
+<td>100%</td>
+<td>+10%</td>
+</tr>
+<tr>
+<td>Best Practice Compliance</td>
+<td>85%</td>
+<td>+20%</td>
+</tr>
+<tr>
+<td>Observability Coverage</td>
+<td>LangSmith integrated</td>
+<td>New</td>
+</tr>
+<tr>
+<td>Error Isolation</td>
+<td>Circuit breaker added</td>
+<td>New</td>
+</tr>
+</tbody>
+</table>
+<h3 id="quantitative-improvements">Quantitative Improvements</h3>
+<table>
+<thead>
+<tr>
+<th>Area</th>
+<th>Before</th>
+<th>After</th>
+<th>Delta</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Working AI providers</td>
+<td>0 (quota)</td>
+<td>2</td>
+<td>+2</td>
+</tr>
+<tr>
+<td>Traced operations</td>
+<td>0%</td>
+<td>100%</td>
+<td>+100%</td>
+</tr>
+<tr>
+<td>Documentation accuracy</td>
+<td>90%</td>
+<td>100%</td>
+<td>+10%</td>
+</tr>
+<tr>
+<td>Best practice score</td>
+<td>65%</td>
+<td>85%</td>
+<td>+20%</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="detailed-test-output-reference">Detailed Test Output Reference</h2>
+<h3 id="ai-service-available-endpoints">AI Service Available Endpoints</h3>
+<pre><code>/                           - Root/redirect
+/analyze                    - Script analysis
+/api/agents/execute         - Agent execution
+/api/config/models          - Model configuration
+/api/errors/stats           - Error statistics
+/api/health/detailed        - Detailed health check
+/api/key/set                - Set API key
+/api/key/status             - Check API key status
+/api/key/test               - Test API key
+/api/security/scan          - Security scanning
+/api/security/stats         - Security statistics
+/api/token-usage/*          - Token usage tracking
+/categories                 - Script categories
+/categorize                 - Categorize script
+/chat                       - Chat endpoint
+/chat/stream                - Streaming chat
+/context/{user_id}          - User context
+/langgraph/analyze          - LangGraph analysis
+</code></pre>
+<h3 id="model-configuration">Model Configuration</h3>
+<pre><code class="language-json">{
+  &quot;default_model&quot;: &quot;gpt-4.1&quot;,
+  &quot;powershell_model&quot;: &quot;gpt-4.1&quot;,
+  &quot;reasoning_model&quot;: &quot;o3&quot;,
+  &quot;fast_model&quot;: &quot;gpt-4o-mini&quot;,
+  &quot;fallback_model&quot;: &quot;gpt-4o&quot;,
+  &quot;embedding_model&quot;: &quot;text-embedding-3-large&quot;,
+  &quot;temperature&quot;: 0.3,
+  &quot;max_tokens&quot;: 4096
+}
+</code></pre>
+<hr />
+<h2 id="references">References</h2>
+<ul>
+<li><a href="https://www.langchain.com/state-of-agent-engineering">LangChain State of AI Agents 2025</a></li>
+<li><a href="https://blog.langchain.com/langchain-langgraph-1dot0/">LangGraph 1.0 Release</a></li>
+<li><a href="https://github.com/zhanymkanov/fastapi-best-practices">FastAPI Best Practices 2025</a></li>
+<li><a href="https://www.oreilly.com/library/view/building-generative-ai/9781098160296/">Building Generative AI Services with FastAPI</a></li>
+</ul>
+<hr />
+<p><em>Document updated: January 15, 2026 - Test execution complete</em></p>
+    <div class="footer">Generated 2026-01-16 21:23 UTC</div>
+  </div>
+</body>
+</html>

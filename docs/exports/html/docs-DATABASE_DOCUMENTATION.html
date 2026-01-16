@@ -1,0 +1,1851 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <base href="file:///Users/morlock/fun/psscript/" />
+  <title>docs-DATABASE_DOCUMENTATION</title>
+  <style>
+:root {
+  color-scheme: light;
+}
+body {
+  font-family: "Segoe UI", "Helvetica Neue", Arial, sans-serif;
+  margin: 0;
+  padding: 0;
+  background: #ffffff;
+  color: #0f172a;
+}
+.markdown-body {
+  max-width: 980px;
+  margin: 40px auto 60px;
+  padding: 0 32px;
+  line-height: 1.65;
+}
+.markdown-body h1 {
+  font-size: 32px;
+  margin-bottom: 12px;
+  border-bottom: 2px solid #e2e8f0;
+  padding-bottom: 12px;
+  page-break-before: always;
+  page-break-after: avoid;
+  break-before: page;
+  break-after: avoid;
+}
+.markdown-body h1:first-of-type {
+  page-break-before: avoid;
+  break-before: avoid;
+}
+.markdown-body h2 {
+  font-size: 24px;
+  margin-top: 28px;
+  border-bottom: 1px solid #e2e8f0;
+  padding-bottom: 8px;
+  page-break-before: always;
+  page-break-after: avoid;
+  break-before: page;
+  break-after: avoid;
+}
+.markdown-body h3 {
+  font-size: 18px;
+  margin-top: 20px;
+  page-break-after: avoid;
+  break-after: avoid;
+}
+.markdown-body h4, .markdown-body h5, .markdown-body h6 {
+  page-break-after: avoid;
+  break-after: avoid;
+}
+.markdown-body table {
+  width: 100%;
+  border-collapse: collapse;
+  margin: 16px 0;
+  font-size: 14px;
+  page-break-inside: avoid;
+  break-inside: avoid;
+}
+.markdown-body th,
+.markdown-body td {
+  border: 1px solid #e2e8f0;
+  padding: 8px 10px;
+  text-align: left;
+}
+.markdown-body th {
+  background: #f8fafc;
+}
+.markdown-body tr {
+  page-break-inside: avoid;
+  break-inside: avoid;
+}
+.markdown-body code {
+  background: #f1f5f9;
+  padding: 2px 4px;
+  border-radius: 4px;
+  font-family: "SFMono-Regular", Menlo, Consolas, monospace;
+  font-size: 0.92em;
+}
+.markdown-body pre {
+  background: #0f172a;
+  color: #e2e8f0;
+  padding: 16px;
+  border-radius: 8px;
+  overflow-x: auto;
+  page-break-inside: avoid;
+  break-inside: avoid;
+}
+.markdown-body pre code {
+  background: transparent;
+  color: inherit;
+}
+.markdown-body blockquote {
+  border-left: 4px solid #38bdf8;
+  margin: 16px 0;
+  padding: 8px 16px;
+  background: #f8fafc;
+  color: #334155;
+}
+.markdown-body img {
+  max-width: 100%;
+  height: auto;
+  display: block;
+  margin: 16px 0;
+  border-radius: 10px;
+  box-shadow: 0 8px 20px rgba(15, 23, 42, 0.12);
+  page-break-inside: avoid;
+  break-inside: avoid;
+}
+.markdown-body figure {
+  page-break-inside: avoid;
+  break-inside: avoid;
+  margin: 16px 0;
+}
+.markdown-body a {
+  color: #2563eb;
+  text-decoration: none;
+}
+.markdown-body a:hover {
+  text-decoration: underline;
+}
+.cover {
+  padding: 80px 60px 60px;
+  background: linear-gradient(135deg, #0b1220 0%, #1e3a8a 100%);
+  color: #f8fafc;
+  border-radius: 18px;
+  margin-bottom: 32px;
+}
+.cover-title {
+  font-size: 36px;
+  font-weight: 700;
+  margin: 0 0 12px;
+}
+.cover-subtitle {
+  font-size: 18px;
+  color: #cbd5f5;
+  margin: 0 0 16px;
+}
+.cover-meta {
+  font-size: 13px;
+  color: #94a3b8;
+}
+.page-break {
+  page-break-after: always;
+  break-after: page;
+}
+.footer {
+  margin-top: 40px;
+  font-size: 12px;
+  color: #64748b;
+}
+/* Print and PDF-specific styles */
+@page {
+  margin: 20mm 18mm;
+}
+@media print {
+  .markdown-body {
+    orphans: 3;
+    widows: 3;
+  }
+  .markdown-body p {
+    orphans: 3;
+    widows: 3;
+  }
+  .markdown-body li {
+    page-break-inside: avoid;
+    break-inside: avoid;
+  }
+  .markdown-body ul, .markdown-body ol {
+    page-break-before: avoid;
+    break-before: avoid;
+  }
+  .markdown-body blockquote {
+    page-break-inside: avoid;
+    break-inside: avoid;
+  }
+  /* Keep section content together */
+  .markdown-body h2 + *, .markdown-body h3 + * {
+    page-break-before: avoid;
+    break-before: avoid;
+  }
+}
+</style>
+</head>
+<body>
+  <div class="markdown-body">
+    
+    <h1 id="database-documentation">Database Documentation</h1>
+<h2 id="psscript-powershell-analysis-platform">PSScript PowerShell Analysis Platform</h2>
+<p><strong>Last Updated:</strong> January 15, 2026
+<strong>Version:</strong> 1.0.0</p>
+<hr />
+<h2 id="table-of-contents">Table of Contents</h2>
+<ol>
+<li><a href="#overview">Overview</a></li>
+<li><a href="#database-architecture">Database Architecture</a></li>
+<li><a href="#connection-configuration">Connection Configuration</a></li>
+<li><a href="#data-models">Data Models</a></li>
+<li><a href="#relationships">Relationships</a></li>
+<li><a href="#indexes">Indexes</a></li>
+<li><a href="#migrations">Migrations</a></li>
+<li><a href="#caching-strategy">Caching Strategy</a></li>
+<li><a href="#security-features">Security Features</a></li>
+<li><a href="#api-integration">API Integration</a></li>
+<li><a href="#performance-considerations">Performance Considerations</a></li>
+</ol>
+<hr />
+<h2 id="overview">Overview</h2>
+<p>PSScript uses a PostgreSQL database with Redis caching layer, managed through Sequelize ORM. The system supports:
+- PowerShell script storage and version control
+- AI-driven script analysis with security scoring
+- Vector embeddings for semantic search (pgvector)
+- User authentication with account lockout protection
+- Execution logging and analytics</p>
+<h3 id="technology-stack">Technology Stack</h3>
+<table>
+<thead>
+<tr>
+<th>Component</th>
+<th>Technology</th>
+<th>Version</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Database</td>
+<td>PostgreSQL</td>
+<td>15.x</td>
+</tr>
+<tr>
+<td>ORM</td>
+<td>Sequelize</td>
+<td>^6.32.1</td>
+</tr>
+<tr>
+<td>Cache</td>
+<td>Redis</td>
+<td>7.0</td>
+</tr>
+<tr>
+<td>Vector Search</td>
+<td>pgvector</td>
+<td>0.8.0</td>
+</tr>
+<tr>
+<td>Runtime</td>
+<td>Node.js</td>
+<td>18.x+</td>
+</tr>
+</tbody>
+</table>
+<h3 id="port-assignments-fixed">Port Assignments (Fixed)</h3>
+<table>
+<thead>
+<tr>
+<th>Service</th>
+<th>Port</th>
+<th>Notes</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>PostgreSQL</td>
+<td>5432</td>
+<td>Primary database</td>
+</tr>
+<tr>
+<td>Redis</td>
+<td>6379</td>
+<td>Cache layer</td>
+</tr>
+<tr>
+<td>Backend API</td>
+<td>4000</td>
+<td>Express server</td>
+</tr>
+<tr>
+<td>Frontend</td>
+<td>3000</td>
+<td>React app</td>
+</tr>
+<tr>
+<td>AI Service</td>
+<td>8000</td>
+<td>FastAPI</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="database-architecture">Database Architecture</h2>
+<pre><code>┌─────────────────────────────────────────────────────────────────┐
+│                        APPLICATION LAYER                         │
+├─────────────────────────────────────────────────────────────────┤
+│  Frontend (React)  │  Backend (Express)  │  AI Service (FastAPI) │
+└─────────┬───────────────────┬───────────────────┬───────────────┘
+          │                   │                   │
+          ▼                   ▼                   ▼
+┌─────────────────────────────────────────────────────────────────┐
+│                         API LAYER                                │
+│  ┌──────────┐  ┌──────────┐  ┌──────────┐  ┌──────────┐        │
+│  │ Scripts  │  │   Auth   │  │ Analysis │  │Analytics │        │
+│  │  Routes  │  │  Routes  │  │  Routes  │  │  Routes  │        │
+│  └────┬─────┘  └────┬─────┘  └────┬─────┘  └────┬─────┘        │
+└───────┼─────────────┼───────────────┼───────────────┼───────────┘
+        │             │               │               │
+        ▼             ▼               ▼               ▼
+┌─────────────────────────────────────────────────────────────────┐
+│                      SEQUELIZE ORM LAYER                         │
+│  ┌────────┐ ┌────────┐ ┌──────────┐ ┌─────────────┐ ┌────────┐ │
+│  │ User   │ │ Script │ │ Analysis │ │ Embedding   │ │ ...    │ │
+│  │ Model  │ │ Model  │ │ Model    │ │ Model       │ │        │ │
+│  └────┬───┘ └────┬───┘ └────┬─────┘ └──────┬──────┘ └───┬────┘ │
+└───────┼──────────┼──────────┼──────────────┼────────────┼──────┘
+        │          │          │              │            │
+        ▼          ▼          ▼              ▼            ▼
+┌─────────────────────────────────────────────────────────────────┐
+│                         DATA LAYER                               │
+│  ┌─────────────────────────────┐  ┌──────────────────────────┐  │
+│  │      PostgreSQL 15          │  │        Redis 7.0         │  │
+│  │  ┌───────────────────────┐  │  │  ┌────────────────────┐  │  │
+│  │  │ pgvector extension    │  │  │  │ Session Cache      │  │  │
+│  │  │ (vector similarity)   │  │  │  │ Query Cache        │  │  │
+│  │  └───────────────────────┘  │  │  │ Analysis Cache     │  │  │
+│  └─────────────────────────────┘  │  └────────────────────┘  │  │
+└─────────────────────────────────────────────────────────────────┘
+</code></pre>
+<hr />
+<h2 id="connection-configuration">Connection Configuration</h2>
+<h3 id="environment-variables">Environment Variables</h3>
+<pre><code class="language-bash"># PostgreSQL
+DB_HOST=localhost          # Database host (use 'postgres' in Docker)
+DB_PORT=5432              # Database port (DO NOT CHANGE)
+DB_NAME=psscript          # Database name
+DB_USER=postgres          # Database user
+DB_PASSWORD=postgres      # Database password
+DB_SSL=false              # Enable SSL (true in production)
+DB_SSL_CA_PATH=           # Path to SSL CA certificate
+
+# Alternative: Single connection URL
+DATABASE_URL=postgresql://user:password@host:port/database
+
+# Redis
+REDIS_HOST=localhost      # Redis host (use 'redis' in Docker)
+REDIS_PORT=6379          # Redis port (DO NOT CHANGE)
+REDIS_URL=redis://localhost:6379
+</code></pre>
+<h3 id="connection-pool-settings">Connection Pool Settings</h3>
+<table>
+<thead>
+<tr>
+<th>Setting</th>
+<th>Value</th>
+<th>Purpose</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Pool Max</td>
+<td>10</td>
+<td>Maximum concurrent connections</td>
+</tr>
+<tr>
+<td>Pool Min</td>
+<td>0</td>
+<td>Minimum idle connections</td>
+</tr>
+<tr>
+<td>Acquire Timeout</td>
+<td>30,000ms</td>
+<td>Max wait for connection</td>
+</tr>
+<tr>
+<td>Idle Timeout</td>
+<td>10,000ms</td>
+<td>Close idle connections after</td>
+</tr>
+<tr>
+<td>Connection Timeout</td>
+<td>15,000ms</td>
+<td>Initial connection timeout</td>
+</tr>
+</tbody>
+</table>
+<h3 id="retry-configuration">Retry Configuration</h3>
+<table>
+<thead>
+<tr>
+<th>Setting</th>
+<th>Value</th>
+<th>Purpose</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Max Retries</td>
+<td>5</td>
+<td>Connection retry attempts</td>
+</tr>
+<tr>
+<td>Initial Delay</td>
+<td>2,000ms</td>
+<td>First retry delay</td>
+</tr>
+<tr>
+<td>Backoff</td>
+<td>Exponential</td>
+<td>Delay doubles each retry</td>
+</tr>
+<tr>
+<td>Deadlock Retries</td>
+<td>3</td>
+<td>Automatic deadlock recovery</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="data-models">Data Models</h2>
+<h3 id="1-user">1. User</h3>
+<p><strong>Table:</strong> <code>users</code></p>
+<table>
+<thead>
+<tr>
+<th>Column</th>
+<th>Type</th>
+<th>Constraints</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>id</td>
+<td>SERIAL</td>
+<td>PK</td>
+<td>Auto-increment ID</td>
+</tr>
+<tr>
+<td>username</td>
+<td>VARCHAR(255)</td>
+<td>UNIQUE, NOT NULL</td>
+<td>User's display name</td>
+</tr>
+<tr>
+<td>email</td>
+<td>VARCHAR(255)</td>
+<td>UNIQUE, NOT NULL</td>
+<td>Email address</td>
+</tr>
+<tr>
+<td>password_hash</td>
+<td>VARCHAR(255)</td>
+<td>NOT NULL</td>
+<td>Bcrypt hashed password</td>
+</tr>
+<tr>
+<td>role</td>
+<td>VARCHAR(50)</td>
+<td>DEFAULT 'user'</td>
+<td>User role (user, admin)</td>
+</tr>
+<tr>
+<td>last_login_at</td>
+<td>TIMESTAMP</td>
+<td>NULL</td>
+<td>Last successful login</td>
+</tr>
+<tr>
+<td>login_attempts</td>
+<td>INTEGER</td>
+<td>DEFAULT 0</td>
+<td>Failed login counter</td>
+</tr>
+<tr>
+<td>locked_until</td>
+<td>TIMESTAMP</td>
+<td>NULL</td>
+<td>Account lockout expiry</td>
+</tr>
+<tr>
+<td>created_at</td>
+<td>TIMESTAMP</td>
+<td>DEFAULT NOW()</td>
+<td>Account creation time</td>
+</tr>
+<tr>
+<td>updated_at</td>
+<td>TIMESTAMP</td>
+<td>DEFAULT NOW()</td>
+<td>Last update time</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Security Features:</strong>
+- Password hashing: bcrypt with 12 rounds (OWASP recommended)
+- Account lockout after 5 failed attempts
+- 30-minute lockout duration
+- Constant-time password comparison</p>
+<hr />
+<h3 id="2-script">2. Script</h3>
+<p><strong>Table:</strong> <code>scripts</code></p>
+<table>
+<thead>
+<tr>
+<th>Column</th>
+<th>Type</th>
+<th>Constraints</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>id</td>
+<td>SERIAL</td>
+<td>PK</td>
+<td>Auto-increment ID</td>
+</tr>
+<tr>
+<td>title</td>
+<td>VARCHAR(255)</td>
+<td>NOT NULL</td>
+<td>Script title</td>
+</tr>
+<tr>
+<td>description</td>
+<td>TEXT</td>
+<td>NULL</td>
+<td>Script description</td>
+</tr>
+<tr>
+<td>content</td>
+<td>TEXT</td>
+<td>NOT NULL</td>
+<td>PowerShell script content</td>
+</tr>
+<tr>
+<td>user_id</td>
+<td>INTEGER</td>
+<td>FK → users.id</td>
+<td>Script owner</td>
+</tr>
+<tr>
+<td>category_id</td>
+<td>INTEGER</td>
+<td>FK → categories.id</td>
+<td>Script category</td>
+</tr>
+<tr>
+<td>version</td>
+<td>INTEGER</td>
+<td>DEFAULT 1</td>
+<td>Current version number</td>
+</tr>
+<tr>
+<td>is_public</td>
+<td>BOOLEAN</td>
+<td>DEFAULT false</td>
+<td>Public visibility</td>
+</tr>
+<tr>
+<td>execution_count</td>
+<td>INTEGER</td>
+<td>DEFAULT 0</td>
+<td>Times executed</td>
+</tr>
+<tr>
+<td>file_hash</td>
+<td>VARCHAR(255)</td>
+<td>NULL</td>
+<td>MD5 hash for deduplication</td>
+</tr>
+<tr>
+<td>average_execution_time</td>
+<td>FLOAT</td>
+<td>NULL</td>
+<td>Average runtime</td>
+</tr>
+<tr>
+<td>last_executed_at</td>
+<td>TIMESTAMP</td>
+<td>NULL</td>
+<td>Last execution time</td>
+</tr>
+<tr>
+<td>created_at</td>
+<td>TIMESTAMP</td>
+<td>DEFAULT NOW()</td>
+<td>Creation time</td>
+</tr>
+<tr>
+<td>updated_at</td>
+<td>TIMESTAMP</td>
+<td>DEFAULT NOW()</td>
+<td>Last update time</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Deduplication:</strong>
+- File hash (MD5) calculated on upload
+- Prevents duplicate script storage
+- Returns existing script if hash matches</p>
+<hr />
+<h3 id="3-scriptanalysis">3. ScriptAnalysis</h3>
+<p><strong>Table:</strong> <code>script_analysis</code></p>
+<table>
+<thead>
+<tr>
+<th>Column</th>
+<th>Type</th>
+<th>Constraints</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>id</td>
+<td>SERIAL</td>
+<td>PK</td>
+<td>Auto-increment ID</td>
+</tr>
+<tr>
+<td>script_id</td>
+<td>INTEGER</td>
+<td>FK → scripts.id</td>
+<td>Associated script</td>
+</tr>
+<tr>
+<td>purpose</td>
+<td>TEXT</td>
+<td>NULL</td>
+<td>Script purpose description</td>
+</tr>
+<tr>
+<td>security_score</td>
+<td>FLOAT</td>
+<td>NULL</td>
+<td>Security rating (0-100)</td>
+</tr>
+<tr>
+<td>quality_score</td>
+<td>FLOAT</td>
+<td>NULL</td>
+<td>Code quality rating</td>
+</tr>
+<tr>
+<td>risk_score</td>
+<td>FLOAT</td>
+<td>NULL</td>
+<td>Risk assessment</td>
+</tr>
+<tr>
+<td>parameter_docs</td>
+<td>JSONB</td>
+<td>DEFAULT {}</td>
+<td>Parameter documentation</td>
+</tr>
+<tr>
+<td>suggestions</td>
+<td>JSONB</td>
+<td>DEFAULT []</td>
+<td>Improvement suggestions</td>
+</tr>
+<tr>
+<td>command_details</td>
+<td>JSONB</td>
+<td>DEFAULT []</td>
+<td>PowerShell command analysis</td>
+</tr>
+<tr>
+<td>ms_docs_references</td>
+<td>JSONB</td>
+<td>DEFAULT []</td>
+<td>Microsoft docs links</td>
+</tr>
+<tr>
+<td>security_issues</td>
+<td>JSONB</td>
+<td>DEFAULT []</td>
+<td>Security vulnerabilities</td>
+</tr>
+<tr>
+<td>best_practice_violations</td>
+<td>JSONB</td>
+<td>DEFAULT []</td>
+<td>PSScriptAnalyzer issues</td>
+</tr>
+<tr>
+<td>performance_insights</td>
+<td>JSONB</td>
+<td>DEFAULT []</td>
+<td>Performance recommendations</td>
+</tr>
+<tr>
+<td>potential_risks</td>
+<td>JSONB</td>
+<td>DEFAULT []</td>
+<td>Execution risks</td>
+</tr>
+<tr>
+<td>code_complexity_metrics</td>
+<td>JSONB</td>
+<td>DEFAULT {}</td>
+<td>Complexity analysis</td>
+</tr>
+<tr>
+<td>compatibility_notes</td>
+<td>JSONB</td>
+<td>DEFAULT []</td>
+<td>Version compatibility</td>
+</tr>
+<tr>
+<td>execution_summary</td>
+<td>JSONB</td>
+<td>DEFAULT {}</td>
+<td>Resource usage summary</td>
+</tr>
+<tr>
+<td>analysis_version</td>
+<td>VARCHAR</td>
+<td>DEFAULT '1.0'</td>
+<td>Analysis engine version</td>
+</tr>
+<tr>
+<td>created_at</td>
+<td>TIMESTAMP</td>
+<td>DEFAULT NOW()</td>
+<td>Analysis time</td>
+</tr>
+<tr>
+<td>updated_at</td>
+<td>TIMESTAMP</td>
+<td>DEFAULT NOW()</td>
+<td>Last update time</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h3 id="4-scriptembedding">4. ScriptEmbedding</h3>
+<p><strong>Table:</strong> <code>script_embeddings</code></p>
+<table>
+<thead>
+<tr>
+<th>Column</th>
+<th>Type</th>
+<th>Constraints</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>id</td>
+<td>SERIAL</td>
+<td>PK</td>
+<td>Auto-increment ID</td>
+</tr>
+<tr>
+<td>script_id</td>
+<td>INTEGER</td>
+<td>FK → scripts.id, UNIQUE</td>
+<td>Associated script</td>
+</tr>
+<tr>
+<td>embedding</td>
+<td>VECTOR(1536)</td>
+<td>NOT NULL</td>
+<td>OpenAI embedding vector</td>
+</tr>
+<tr>
+<td>embedding_type</td>
+<td>VARCHAR(50)</td>
+<td>DEFAULT 'openai'</td>
+<td>Embedding provider</td>
+</tr>
+<tr>
+<td>model_version</td>
+<td>VARCHAR(50)</td>
+<td>DEFAULT 'text-embedding-ada-002'</td>
+<td>Model used</td>
+</tr>
+<tr>
+<td>created_at</td>
+<td>TIMESTAMP</td>
+<td>DEFAULT NOW()</td>
+<td>Creation time</td>
+</tr>
+<tr>
+<td>updated_at</td>
+<td>TIMESTAMP</td>
+<td>DEFAULT NOW()</td>
+<td>Last update time</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Vector Search:</strong>
+- Uses pgvector extension
+- IVFFlat index with cosine distance
+- 100 lists for approximate nearest neighbor search</p>
+<hr />
+<h3 id="5-category">5. Category</h3>
+<p><strong>Table:</strong> <code>categories</code></p>
+<table>
+<thead>
+<tr>
+<th>Column</th>
+<th>Type</th>
+<th>Constraints</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>id</td>
+<td>SERIAL</td>
+<td>PK</td>
+<td>Auto-increment ID</td>
+</tr>
+<tr>
+<td>name</td>
+<td>VARCHAR(255)</td>
+<td>UNIQUE, NOT NULL</td>
+<td>Category name</td>
+</tr>
+<tr>
+<td>description</td>
+<td>TEXT</td>
+<td>NULL</td>
+<td>Category description</td>
+</tr>
+<tr>
+<td>created_at</td>
+<td>TIMESTAMP</td>
+<td>DEFAULT NOW()</td>
+<td>Creation time</td>
+</tr>
+<tr>
+<td>updated_at</td>
+<td>TIMESTAMP</td>
+<td>DEFAULT NOW()</td>
+<td>Last update time</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h3 id="6-tag">6. Tag</h3>
+<p><strong>Table:</strong> <code>tags</code></p>
+<table>
+<thead>
+<tr>
+<th>Column</th>
+<th>Type</th>
+<th>Constraints</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>id</td>
+<td>SERIAL</td>
+<td>PK</td>
+<td>Auto-increment ID</td>
+</tr>
+<tr>
+<td>name</td>
+<td>VARCHAR(255)</td>
+<td>UNIQUE, NOT NULL</td>
+<td>Tag name</td>
+</tr>
+<tr>
+<td>created_at</td>
+<td>TIMESTAMP</td>
+<td>DEFAULT NOW()</td>
+<td>Creation time</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h3 id="7-scripttag-junction">7. ScriptTag (Junction)</h3>
+<p><strong>Table:</strong> <code>script_tags</code></p>
+<table>
+<thead>
+<tr>
+<th>Column</th>
+<th>Type</th>
+<th>Constraints</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>script_id</td>
+<td>INTEGER</td>
+<td>PK, FK → scripts.id</td>
+<td>Script reference</td>
+</tr>
+<tr>
+<td>tag_id</td>
+<td>INTEGER</td>
+<td>PK, FK → tags.id</td>
+<td>Tag reference</td>
+</tr>
+<tr>
+<td>created_at</td>
+<td>TIMESTAMP</td>
+<td>DEFAULT NOW()</td>
+<td>Association time</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h3 id="8-scriptversion">8. ScriptVersion</h3>
+<p><strong>Table:</strong> <code>script_versions</code></p>
+<table>
+<thead>
+<tr>
+<th>Column</th>
+<th>Type</th>
+<th>Constraints</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>id</td>
+<td>SERIAL</td>
+<td>PK</td>
+<td>Auto-increment ID</td>
+</tr>
+<tr>
+<td>script_id</td>
+<td>INTEGER</td>
+<td>FK → scripts.id</td>
+<td>Parent script</td>
+</tr>
+<tr>
+<td>content</td>
+<td>TEXT</td>
+<td>NOT NULL</td>
+<td>Version content</td>
+</tr>
+<tr>
+<td>version</td>
+<td>INTEGER</td>
+<td>NOT NULL</td>
+<td>Version number</td>
+</tr>
+<tr>
+<td>user_id</td>
+<td>INTEGER</td>
+<td>FK → users.id</td>
+<td>Version creator</td>
+</tr>
+<tr>
+<td>commit_message</td>
+<td>TEXT</td>
+<td>NULL</td>
+<td>Change description</td>
+</tr>
+<tr>
+<td>created_at</td>
+<td>TIMESTAMP</td>
+<td>DEFAULT NOW()</td>
+<td>Version creation time</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Unique Constraint:</strong> <code>(script_id, version)</code></p>
+<hr />
+<h3 id="9-executionlog">9. ExecutionLog</h3>
+<p><strong>Table:</strong> <code>execution_logs</code></p>
+<table>
+<thead>
+<tr>
+<th>Column</th>
+<th>Type</th>
+<th>Constraints</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>id</td>
+<td>SERIAL</td>
+<td>PK</td>
+<td>Auto-increment ID</td>
+</tr>
+<tr>
+<td>script_id</td>
+<td>INTEGER</td>
+<td>FK → scripts.id</td>
+<td>Executed script</td>
+</tr>
+<tr>
+<td>user_id</td>
+<td>INTEGER</td>
+<td>FK → users.id, SET NULL</td>
+<td>Executor</td>
+</tr>
+<tr>
+<td>status</td>
+<td>VARCHAR(50)</td>
+<td>NOT NULL</td>
+<td>Execution status</td>
+</tr>
+<tr>
+<td>execution_time</td>
+<td>FLOAT</td>
+<td>NULL</td>
+<td>Duration in ms</td>
+</tr>
+<tr>
+<td>parameters</td>
+<td>JSONB</td>
+<td>DEFAULT {}</td>
+<td>Execution parameters</td>
+</tr>
+<tr>
+<td>error_message</td>
+<td>TEXT</td>
+<td>NULL</td>
+<td>Error details</td>
+</tr>
+<tr>
+<td>ip_address</td>
+<td>VARCHAR(45)</td>
+<td>NULL</td>
+<td>Executor IP (IPv6 safe)</td>
+</tr>
+<tr>
+<td>created_at</td>
+<td>TIMESTAMP</td>
+<td>DEFAULT NOW()</td>
+<td>Execution time</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Status Values:</strong> <code>success</code>, <code>failure</code>, <code>timeout</code>, <code>cancelled</code></p>
+<hr />
+<h3 id="10-chathistory">10. ChatHistory</h3>
+<p><strong>Table:</strong> <code>chat_history</code></p>
+<table>
+<thead>
+<tr>
+<th>Column</th>
+<th>Type</th>
+<th>Constraints</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>id</td>
+<td>SERIAL</td>
+<td>PK</td>
+<td>Auto-increment ID</td>
+</tr>
+<tr>
+<td>user_id</td>
+<td>INTEGER</td>
+<td>FK → users.id, CASCADE</td>
+<td>Chat owner</td>
+</tr>
+<tr>
+<td>messages</td>
+<td>JSONB</td>
+<td>NOT NULL</td>
+<td>Conversation messages</td>
+</tr>
+<tr>
+<td>response</td>
+<td>TEXT</td>
+<td>NOT NULL</td>
+<td>AI response</td>
+</tr>
+<tr>
+<td>embedding</td>
+<td>VECTOR(1536)</td>
+<td>NULL</td>
+<td>Conversation embedding</td>
+</tr>
+<tr>
+<td>created_at</td>
+<td>TIMESTAMP</td>
+<td>DEFAULT NOW()</td>
+<td>Conversation time</td>
+</tr>
+<tr>
+<td>updated_at</td>
+<td>TIMESTAMP</td>
+<td>DEFAULT NOW()</td>
+<td>Last update time</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h3 id="11-documentation">11. Documentation</h3>
+<p><strong>Table:</strong> <code>documentation</code></p>
+<table>
+<thead>
+<tr>
+<th>Column</th>
+<th>Type</th>
+<th>Constraints</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>id</td>
+<td>SERIAL</td>
+<td>PK</td>
+<td>Auto-increment ID</td>
+</tr>
+<tr>
+<td>title</td>
+<td>VARCHAR(500)</td>
+<td>NOT NULL</td>
+<td>Document title</td>
+</tr>
+<tr>
+<td>url</td>
+<td>VARCHAR(2048)</td>
+<td>UNIQUE, NOT NULL</td>
+<td>Source URL</td>
+</tr>
+<tr>
+<td>content</td>
+<td>TEXT</td>
+<td>NULL</td>
+<td>Full content</td>
+</tr>
+<tr>
+<td>summary</td>
+<td>TEXT</td>
+<td>NULL</td>
+<td>AI summary</td>
+</tr>
+<tr>
+<td>source</td>
+<td>VARCHAR(100)</td>
+<td>DEFAULT 'Microsoft Learn'</td>
+<td>Content source</td>
+</tr>
+<tr>
+<td>content_type</td>
+<td>VARCHAR(50)</td>
+<td>DEFAULT 'article'</td>
+<td>Document type</td>
+</tr>
+<tr>
+<td>category</td>
+<td>VARCHAR(100)</td>
+<td>DEFAULT 'General'</td>
+<td>Category</td>
+</tr>
+<tr>
+<td>tags</td>
+<td>JSONB</td>
+<td>DEFAULT []</td>
+<td>Classification tags</td>
+</tr>
+<tr>
+<td>extracted_commands</td>
+<td>JSONB</td>
+<td>DEFAULT []</td>
+<td>Found cmdlets</td>
+</tr>
+<tr>
+<td>extracted_functions</td>
+<td>JSONB</td>
+<td>DEFAULT []</td>
+<td>Found functions</td>
+</tr>
+<tr>
+<td>extracted_modules</td>
+<td>JSONB</td>
+<td>DEFAULT []</td>
+<td>Found modules</td>
+</tr>
+<tr>
+<td>metadata</td>
+<td>JSONB</td>
+<td>DEFAULT {}</td>
+<td>Additional metadata</td>
+</tr>
+<tr>
+<td>crawled_at</td>
+<td>TIMESTAMP</td>
+<td>DEFAULT NOW()</td>
+<td>Crawl time</td>
+</tr>
+<tr>
+<td>last_updated</td>
+<td>TIMESTAMP</td>
+<td>NULL</td>
+<td>Source update time</td>
+</tr>
+<tr>
+<td>created_at</td>
+<td>TIMESTAMP</td>
+<td>DEFAULT NOW()</td>
+<td>Creation time</td>
+</tr>
+<tr>
+<td>updated_at</td>
+<td>TIMESTAMP</td>
+<td>DEFAULT NOW()</td>
+<td>Last update time</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="relationships">Relationships</h2>
+<h3 id="entity-relationship-diagram">Entity Relationship Diagram</h3>
+<pre><code>┌─────────┐       ┌─────────┐       ┌──────────┐
+│  User   │──1:N──│ Script  │──1:1──│ Analysis │
+└────┬────┘       └────┬────┘       └──────────┘
+     │                 │
+     │                 ├──1:N──┌──────────────┐
+     │                 │       │ ScriptVersion│
+     │                 │       └──────────────┘
+     │                 │
+     │                 ├──1:1──┌──────────────┐
+     │                 │       │ Embedding    │
+     │                 │       └──────────────┘
+     │                 │
+     │                 ├──M:N──┌─────────┐
+     │                 │       │   Tag   │
+     │                 │       └─────────┘
+     │                 │
+     │                 ├──N:1──┌──────────┐
+     │                 │       │ Category │
+     │                 │       └──────────┘
+     │                 │
+     │                 └──1:N──┌──────────────┐
+     │                         │ExecutionLog  │
+     │                         └──────────────┘
+     │
+     └──1:N──┌─────────────┐
+             │ ChatHistory │
+             └─────────────┘
+</code></pre>
+<h3 id="cascade-behaviors">Cascade Behaviors</h3>
+<table>
+<thead>
+<tr>
+<th>Parent</th>
+<th>Child</th>
+<th>On Delete</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>User</td>
+<td>Script</td>
+<td>CASCADE</td>
+</tr>
+<tr>
+<td>User</td>
+<td>ChatHistory</td>
+<td>CASCADE</td>
+</tr>
+<tr>
+<td>User</td>
+<td>ExecutionLog</td>
+<td>SET NULL</td>
+</tr>
+<tr>
+<td>Script</td>
+<td>ScriptAnalysis</td>
+<td>CASCADE</td>
+</tr>
+<tr>
+<td>Script</td>
+<td>ScriptVersion</td>
+<td>CASCADE</td>
+</tr>
+<tr>
+<td>Script</td>
+<td>ScriptEmbedding</td>
+<td>CASCADE</td>
+</tr>
+<tr>
+<td>Script</td>
+<td>ScriptTag</td>
+<td>CASCADE</td>
+</tr>
+<tr>
+<td>Script</td>
+<td>ExecutionLog</td>
+<td>CASCADE</td>
+</tr>
+<tr>
+<td>Category</td>
+<td>Script</td>
+<td>SET NULL</td>
+</tr>
+<tr>
+<td>Tag</td>
+<td>ScriptTag</td>
+<td>CASCADE</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="indexes">Indexes</h2>
+<h3 id="primary-indexes">Primary Indexes</h3>
+<table>
+<thead>
+<tr>
+<th>Table</th>
+<th>Index Name</th>
+<th>Columns</th>
+<th>Type</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>scripts</td>
+<td>idx_scripts_category</td>
+<td>category_id</td>
+<td>B-tree</td>
+</tr>
+<tr>
+<td>scripts</td>
+<td>idx_scripts_user</td>
+<td>user_id</td>
+<td>B-tree</td>
+</tr>
+<tr>
+<td>scripts</td>
+<td>idx_scripts_file_hash</td>
+<td>file_hash</td>
+<td>B-tree</td>
+</tr>
+<tr>
+<td>script_versions</td>
+<td>idx_script_versions_script</td>
+<td>script_id</td>
+<td>B-tree</td>
+</tr>
+<tr>
+<td>script_analysis</td>
+<td>idx_script_analysis_script</td>
+<td>script_id</td>
+<td>B-tree</td>
+</tr>
+<tr>
+<td>execution_logs</td>
+<td>idx_execution_logs_script</td>
+<td>script_id</td>
+<td>B-tree</td>
+</tr>
+<tr>
+<td>execution_logs</td>
+<td>idx_execution_logs_user</td>
+<td>user_id</td>
+<td>B-tree</td>
+</tr>
+<tr>
+<td>script_embeddings</td>
+<td>script_embeddings_idx</td>
+<td>embedding</td>
+<td>IVFFlat</td>
+</tr>
+</tbody>
+</table>
+<h3 id="user-security-indexes">User Security Indexes</h3>
+<table>
+<thead>
+<tr>
+<th>Index Name</th>
+<th>Columns</th>
+<th>Purpose</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>idx_users_email</td>
+<td>email</td>
+<td>Login lookup</td>
+</tr>
+<tr>
+<td>idx_users_username</td>
+<td>username</td>
+<td>Username search</td>
+</tr>
+<tr>
+<td>idx_users_role</td>
+<td>role</td>
+<td>Role filtering</td>
+</tr>
+<tr>
+<td>idx_users_email_password</td>
+<td>email, password_hash</td>
+<td>Composite login</td>
+</tr>
+<tr>
+<td>idx_users_locked_until</td>
+<td>locked_until</td>
+<td>Lockout queries</td>
+</tr>
+<tr>
+<td>idx_users_login_attempts</td>
+<td>login_attempts</td>
+<td>Security monitoring</td>
+</tr>
+<tr>
+<td>idx_users_last_login</td>
+<td>last_login_at</td>
+<td>Activity tracking</td>
+</tr>
+<tr>
+<td>idx_users_created_at</td>
+<td>created_at</td>
+<td>Registration analytics</td>
+</tr>
+</tbody>
+</table>
+<h3 id="chat-history-indexes">Chat History Indexes</h3>
+<table>
+<thead>
+<tr>
+<th>Index Name</th>
+<th>Columns</th>
+<th>Purpose</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>chat_history_user_id_idx</td>
+<td>user_id</td>
+<td>User's conversations</td>
+</tr>
+<tr>
+<td>chat_history_created_at_idx</td>
+<td>created_at</td>
+<td>Time-based queries</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="migrations">Migrations</h2>
+<h3 id="migration-files-chronological">Migration Files (Chronological)</h3>
+<table>
+<thead>
+<tr>
+<th>File</th>
+<th>Purpose</th>
+<th>Status</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>schema.sql</td>
+<td>Initial schema creation</td>
+<td>Base</td>
+</tr>
+<tr>
+<td>add_file_hash_to_scripts.sql</td>
+<td>File deduplication support</td>
+<td>Applied</td>
+</tr>
+<tr>
+<td>add_command_details_to_script_analysis.sql</td>
+<td>Enhanced analysis fields</td>
+<td>Applied</td>
+</tr>
+<tr>
+<td>add_agent_tables.sql</td>
+<td>Agentic AI system tables</td>
+<td>Applied</td>
+</tr>
+<tr>
+<td>add_account_lockout.sql</td>
+<td>User security features</td>
+<td>Applied</td>
+</tr>
+<tr>
+<td>add_performance_indexes.sql</td>
+<td>Query optimization</td>
+<td>Applied</td>
+</tr>
+<tr>
+<td>04_create_chat_history_table.sql</td>
+<td>Chat support</td>
+<td>Applied</td>
+</tr>
+<tr>
+<td>add_updated_at_to_categories.sql</td>
+<td>Category timestamps</td>
+<td>Applied</td>
+</tr>
+<tr>
+<td>update_categories.sql</td>
+<td>Category updates</td>
+<td>Applied</td>
+</tr>
+<tr>
+<td>seed_default_user.sql</td>
+<td>Default user creation</td>
+<td>Applied</td>
+</tr>
+<tr>
+<td>20260107-pgvector-upgrade.sql</td>
+<td>pgvector 0.8.0</td>
+<td>Applied</td>
+</tr>
+</tbody>
+</table>
+<h3 id="running-migrations">Running Migrations</h3>
+<pre><code class="language-bash"># Check migration status
+cd src/backend &amp;&amp; node run-migration.js status
+
+# Apply all pending migrations
+cd src/backend &amp;&amp; node run-migration.js up
+
+# Rollback last migration
+cd src/backend &amp;&amp; node run-migration.js down
+</code></pre>
+<hr />
+<h2 id="caching-strategy">Caching Strategy</h2>
+<h3 id="redis-cache-implementation">Redis Cache Implementation</h3>
+<p><strong>Cache Key Patterns:</strong></p>
+<table>
+<thead>
+<tr>
+<th>Pattern</th>
+<th>TTL</th>
+<th>Purpose</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>script:{id}</code></td>
+<td>600s</td>
+<td>Single script cache</td>
+</tr>
+<tr>
+<td><code>scripts:{page}:{limit}:{filters}</code></td>
+<td>300s</td>
+<td>Paginated list cache</td>
+</tr>
+<tr>
+<td><code>categories:all</code></td>
+<td>Indefinite</td>
+<td>Category list</td>
+</tr>
+<tr>
+<td><code>analysis:{scriptId}</code></td>
+<td>600s</td>
+<td>Analysis results</td>
+</tr>
+<tr>
+<td><code>analytics:*</code></td>
+<td>3600s</td>
+<td>Analytics data</td>
+</tr>
+</tbody>
+</table>
+<h3 id="cache-operations">Cache Operations</h3>
+<pre><code class="language-typescript">// Get cached value
+const cached = await cache.get('script:123');
+
+// Set with TTL (seconds)
+await cache.set('script:123', data, 600);
+
+// Delete single key
+await cache.del('script:123');
+
+// Clear by pattern
+await cache.clearPattern('scripts:*');
+</code></pre>
+<h3 id="fallback-behavior">Fallback Behavior</h3>
+<ol>
+<li><strong>Redis Available:</strong> Use Redis for all caching</li>
+<li><strong>Redis Unavailable:</strong> Automatic in-memory cache fallback</li>
+<li><strong>Health Checks:</strong> Every 30 seconds</li>
+<li><strong>Reconnection:</strong> Automatic with exponential backoff</li>
+</ol>
+<hr />
+<h2 id="security-features">Security Features</h2>
+<h3 id="password-security">Password Security</h3>
+<pre><code class="language-typescript">// Password hashing (12 rounds - OWASP 2025 recommended)
+const hash = await bcrypt.hash(password, 12);
+
+// Password verification (constant-time)
+const valid = await bcrypt.compare(password, hash);
+</code></pre>
+<h3 id="account-lockout">Account Lockout</h3>
+<table>
+<thead>
+<tr>
+<th>Setting</th>
+<th>Value</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Max Failed Attempts</td>
+<td>5</td>
+</tr>
+<tr>
+<td>Lockout Duration</td>
+<td>30 minutes</td>
+</tr>
+<tr>
+<td>Reset on Success</td>
+<td>Yes</td>
+</tr>
+</tbody>
+</table>
+<h3 id="sql-injection-prevention">SQL Injection Prevention</h3>
+<ul>
+<li>All queries use Sequelize ORM</li>
+<li>Parameterized queries for raw SQL</li>
+<li>Input validation on all endpoints</li>
+</ul>
+<h3 id="ssltls">SSL/TLS</h3>
+<table>
+<thead>
+<tr>
+<th>Environment</th>
+<th>Configuration</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Production</td>
+<td><code>rejectUnauthorized: true</code> (required)</td>
+</tr>
+<tr>
+<td>Development</td>
+<td><code>rejectUnauthorized: false</code> (optional)</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="api-integration">API Integration</h2>
+<h3 id="data-flow-upload-analysis-results">Data Flow: Upload → Analysis → Results</h3>
+<pre><code>1. Frontend Upload
+   └─→ POST /api/scripts/upload/async
+       └─→ AsyncUploadController.uploadFiles()
+           └─→ Multer validates file
+               └─→ Queue upload for processing
+
+2. Background Processing
+   └─→ processNextFile()
+       └─→ Calculate MD5 hash
+           └─→ Check deduplication
+               └─→ INSERT Script (if new)
+                   └─→ CREATE ScriptVersion v1
+
+3. Analysis (if requested)
+   └─→ POST /api/scripts/:id/analyze
+       └─→ Fetch script content
+           └─→ Call AI service (port 8000)
+               └─→ UPSERT ScriptAnalysis
+                   └─→ Cache results (Redis)
+
+4. Retrieval
+   └─→ GET /api/scripts/:id
+       └─→ Check cache
+           └─→ Include: User, Category, Tags, Analysis
+               └─→ Return with associations
+</code></pre>
+<h3 id="endpoint-summary">Endpoint Summary</h3>
+<table>
+<thead>
+<tr>
+<th>Category</th>
+<th>Total</th>
+<th>Public</th>
+<th>Auth Required</th>
+<th>Admin Only</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Scripts</td>
+<td>22</td>
+<td>8</td>
+<td>14</td>
+<td>0</td>
+</tr>
+<tr>
+<td>Auth</td>
+<td>5</td>
+<td>3</td>
+<td>2</td>
+<td>0</td>
+</tr>
+<tr>
+<td>Users</td>
+<td>6</td>
+<td>0</td>
+<td>6</td>
+<td>3</td>
+</tr>
+<tr>
+<td>Analytics</td>
+<td>3</td>
+<td>0</td>
+<td>3</td>
+<td>0</td>
+</tr>
+<tr>
+<td>Chat</td>
+<td>5</td>
+<td>1</td>
+<td>4</td>
+<td>0</td>
+</tr>
+<tr>
+<td>Categories</td>
+<td>6</td>
+<td>3</td>
+<td>0</td>
+<td>3</td>
+</tr>
+<tr>
+<td><strong>Total</strong></td>
+<td><strong>74+</strong></td>
+<td><strong>21</strong></td>
+<td><strong>50</strong></td>
+<td><strong>6</strong></td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="performance-considerations">Performance Considerations</h2>
+<h3 id="query-optimization-best-practices-2025-2026">Query Optimization Best Practices (2025-2026)</h3>
+<ol>
+<li><strong>Use Selective Queries</strong></li>
+<li>Avoid <code>SELECT *</code></li>
+<li>Specify only needed columns</li>
+<li>
+<p>Use Sequelize <code>attributes</code> option</p>
+</li>
+<li>
+<p><strong>Pagination</strong></p>
+</li>
+<li>Prefer cursor-based over OFFSET</li>
+<li>Use keyset pagination for large datasets</li>
+<li>
+<p>Limit default page size to 20</p>
+</li>
+<li>
+<p><strong>Indexing Strategy</strong></p>
+</li>
+<li>Index frequently queried columns</li>
+<li>Avoid over-indexing (impacts writes)</li>
+<li>
+<p>Use partial indexes for filtered queries</p>
+</li>
+<li>
+<p><strong>Connection Pooling</strong></p>
+</li>
+<li>Current: max 10, min 0</li>
+<li>Adjust based on load testing</li>
+<li>
+<p>Monitor pool utilization</p>
+</li>
+<li>
+<p><strong>Caching</strong></p>
+</li>
+<li>Cache list queries (5 min TTL)</li>
+<li>Cache single records (10 min TTL)</li>
+<li>Invalidate on mutations</li>
+</ol>
+<h3 id="monitoring-recommendations">Monitoring Recommendations</h3>
+<table>
+<thead>
+<tr>
+<th>Metric</th>
+<th>Target</th>
+<th>Action if Exceeded</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Query Time</td>
+<td>&lt; 100ms</td>
+<td>Add index or optimize</td>
+</tr>
+<tr>
+<td>Connection Pool Usage</td>
+<td>&lt; 80%</td>
+<td>Increase max pool</td>
+</tr>
+<tr>
+<td>Cache Hit Rate</td>
+<td>&gt; 90%</td>
+<td>Adjust TTL or keys</td>
+</tr>
+<tr>
+<td>Deadlocks</td>
+<td>0/hour</td>
+<td>Review transaction scope</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="appendix-quick-reference">Appendix: Quick Reference</h2>
+<h3 id="start-database-services">Start Database Services</h3>
+<pre><code class="language-bash"># Docker Compose (recommended)
+docker-compose up postgres redis
+
+# Check service health
+docker-compose ps
+</code></pre>
+<h3 id="verify-connection">Verify Connection</h3>
+<pre><code class="language-bash"># PostgreSQL
+psql -h localhost -p 5432 -U postgres -d psscript -c &quot;SELECT 1&quot;
+
+# Redis
+redis-cli -h localhost -p 6379 ping
+</code></pre>
+<h3 id="common-queries">Common Queries</h3>
+<pre><code class="language-sql">-- Script count by category
+SELECT c.name, COUNT(s.id)
+FROM categories c
+LEFT JOIN scripts s ON s.category_id = c.id
+GROUP BY c.id;
+
+-- User activity (last 30 days)
+SELECT COUNT(*) FROM scripts
+WHERE created_at &gt;= NOW() - INTERVAL '30 days';
+
+-- Security score distribution
+SELECT
+  CASE
+    WHEN security_score &gt;= 8 THEN 'High'
+    WHEN security_score &gt;= 5 THEN 'Medium'
+    ELSE 'Low'
+  END as level,
+  COUNT(*)
+FROM script_analysis
+GROUP BY level;
+</code></pre>
+<hr />
+<p><em>Document generated: January 15, 2026</em>
+<em>Next review date: April 15, 2026</em></p>
+    <div class="footer">Generated 2026-01-16 21:23 UTC</div>
+  </div>
+</body>
+</html>

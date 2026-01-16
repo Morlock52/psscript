@@ -199,45 +199,113 @@ body {
   </section>
   
     <h1 id="psscript-training-guide">PSScript Training Guide</h1>
-<p>This guide is a full training and enablement program for PSScript Manager. It includes walkthroughs, screenshots, labs, sample actions, and operational checklists.</p>
+<p>End-to-end walkthrough of the PowerShell Script Manager. Includes flows, screenshots, labs, tables, sample actions, and operational checklists. Built for hands-on enablement and printable exports.</p>
 <h2 id="table-of-contents">Table of Contents</h2>
 <ul>
 <li><a href="#program-overview">Program overview</a></li>
 <li><a href="#system-overview">System overview</a></li>
+<li><a href="#feature-cheat-sheet">Feature cheat sheet</a></li>
 <li><a href="#training-roadmap">Training roadmap</a></li>
 <li><a href="#environment-setup">Environment setup</a></li>
+<li><a href="#guided-walkthrough">Guided walkthrough</a></li>
 <li><a href="#role-based-paths">Role-based paths</a></li>
 <li><a href="#module-breakdown">Module breakdown</a></li>
 <li><a href="#hands-on-labs">Hands-on labs</a></li>
 <li><a href="#sample-actions">Sample actions</a></li>
 <li><a href="#operational-readiness">Operational readiness</a></li>
-<li><a href="#appendix-troubleshooting">Appendix: Troubleshooting</a></li>
+<li><a href="#appendix">Appendix</a></li>
 </ul>
 <h2 id="program-overview">Program overview</h2>
-<p>PSScript Manager is a full workflow platform for PowerShell scripts. This training builds capability across authoring, analysis, search, and operations.</p>
-<p>Expected outcomes:
-- Scripts are organized, tagged, and versioned
-- AI analysis is used to identify and remediate risks
-- Similar scripts can be found via vector search
-- Analytics and audit trails are used for governance</p>
+<p>PSScript Manager is a full workflow platform for PowerShell scripts—intake, AI analysis, discovery, agentic chat, and governance. This guide delivers:
+- Organized, tagged, versioned scripts with deduplication by hash
+- AI-backed analysis with scores, recommendations, and remediation notes
+- Dual-mode discovery (keyword + vector search) plus documentation crawler
+- Analytics and audit trails for compliance and release readiness</p>
 <p>Management rollout details live in <code>../MANAGEMENT-PLAYBOOK.md</code>.</p>
-<h2 id="program-phases-management-alignment">Program phases (management alignment)</h2>
-<p><img alt="Management Rollout Phases" src="docs/graphics/rollout-phases.svg" /></p>
 <h2 id="system-overview">System overview</h2>
 <p><img alt="Architecture Diagram" src="docs/graphics/architecture.svg" /></p>
 <p><img alt="Analysis Pipeline" src="docs/graphics/analysis-pipeline.svg" /></p>
 <p><img alt="Script Lifecycle" src="docs/graphics/lifecycle.svg" /></p>
 <p><img alt="Search Modes" src="docs/graphics/search-modes.svg" /></p>
+<p><img alt="Usage Metrics" src="docs/graphics/usage-metrics.svg" /></p>
+<h2 id="feature-cheat-sheet">Feature cheat sheet</h2>
+<table>
+<thead>
+<tr>
+<th>Area</th>
+<th>What to look for</th>
+<th>Screenshot</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Dashboard</td>
+<td>Stats, recent scripts, security trends</td>
+<td><img alt="Dashboard" src="docs/screenshots/dashboard.png" /></td>
+</tr>
+<tr>
+<td>Script library</td>
+<td>Categories, owners, version history</td>
+<td><img alt="Scripts" src="docs/screenshots/scripts.png" /></td>
+</tr>
+<tr>
+<td>Upload</td>
+<td>Live preview, tags, dedup hints</td>
+<td><img alt="Upload" src="docs/screenshots/upload.png" /></td>
+</tr>
+<tr>
+<td>Analysis</td>
+<td>Scores, findings, remediation</td>
+<td><img alt="Analysis" src="docs/screenshots/analysis.png" /></td>
+</tr>
+<tr>
+<td>Docs + crawl</td>
+<td>Cmdlet search, crawling, saved excerpts</td>
+<td><img alt="Documentation" src="docs/screenshots/documentation.png" /></td>
+</tr>
+<tr>
+<td>Chat/agents</td>
+<td>Quick prompts, agentic orchestration</td>
+<td><img alt="Chat" src="docs/screenshots/chat.png" /></td>
+</tr>
+<tr>
+<td>Analytics</td>
+<td>Adoption, usage, training exports</td>
+<td><img alt="Analytics" src="docs/screenshots/analytics.png" /></td>
+</tr>
+<tr>
+<td>Settings</td>
+<td>API usage, notifications, training links</td>
+<td><img alt="Settings" src="docs/screenshots/settings.png" /></td>
+</tr>
+</tbody>
+</table>
 <h2 id="training-roadmap">Training roadmap</h2>
 <p><img alt="Training Roadmap" src="docs/graphics/training-roadmap.svg" /></p>
 <h2 id="environment-setup">Environment setup</h2>
-<p>Recommended setup uses mock mode so training can run without external dependencies.</p>
+<p>Recommended mock mode so every lab works offline:</p>
 <pre><code class="language-bash">./start-all-mock.sh
 </code></pre>
-<p>Default ports:
+<p>Ports:
 - Frontend: http://localhost:3002
 - Backend API: http://localhost:4000/api
 - AI service: http://localhost:8000</p>
+<p>Verify:
+- <code>curl http://localhost:4000/health</code> → 200 OK
+- Open http://localhost:3002 and click <strong>Use Default Login</strong>
+- Confirm dashboard counters populate with mock data</p>
+<h2 id="guided-walkthrough">Guided walkthrough</h2>
+<p>Ship a vetted script in ~15 minutes:
+1. <strong>Sign in</strong> → use Default Login on the login screen.
+2. <strong>Scan the dashboard</strong> → note total scripts, AI analyses, and security score trend.
+3. <strong>Upload</strong> → go to Upload, add <code>test-script.ps1</code>, tags, and category; note dedup hints.
+4. <strong>Review detail</strong> → open the new script, confirm metadata, owner, and activity feed.
+5. <strong>Analyze</strong> → open Analysis, read findings, and log remediation notes.
+6. <strong>Search</strong> → find a similar script via keyword + vector search.
+7. <strong>Consult docs</strong> → open Documentation, search for a related cmdlet, and save an excerpt.
+8. <strong>Chat</strong> → ask the assistant “safest way to schedule this script weekly?” and record the answer.
+9. <strong>Analytics</strong> → confirm the run shows up in usage metrics and training exports.
+10. <strong>Settings</strong> → open Documentation &amp; Training and verify the PDF/DOCX links load.</p>
 <h2 id="role-based-paths">Role-based paths</h2>
 <table>
 <thead>
@@ -306,47 +374,46 @@ body {
 <h3 id="lab-01-sign-in-and-orient">Lab 01: Sign in and orient</h3>
 <ol>
 <li>Open the login screen and use Default Login.</li>
-<li>Review the dashboard stats cards and recent scripts.</li>
-<li>Locate Scripts, Documentation, and Analytics in the sidebar.</li>
+<li>Review stats cards and activity feed on the dashboard.</li>
+<li>Find Scripts, Documentation, Analytics in the sidebar.</li>
 </ol>
-<p><img alt="Login Screen" src="docs/screenshots/login.png" /></p>
-<p><img alt="Dashboard" src="docs/screenshots/dashboard.png" /></p>
+<p><img alt="Login Screen" src="docs/screenshots/login.png" />
+<img alt="Dashboard" src="docs/screenshots/dashboard.png" /></p>
 <h3 id="lab-02-upload-and-analyze-a-script">Lab 02: Upload and analyze a script</h3>
 <ol>
-<li>Navigate to Upload.</li>
-<li>Upload <code>test-script.ps1</code> and add tags.</li>
-<li>Preview analysis, then submit.</li>
-<li>Open the script detail view and review scores.</li>
+<li>Go to Upload and add <code>test-script.ps1</code> with tags + category.</li>
+<li>Observe dedup hints; submit the script.</li>
+<li>Open the script detail view and verify metadata.</li>
+<li>Run AI analysis and capture recommendations.</li>
 </ol>
-<p><img alt="Script Upload" src="docs/screenshots/upload.png" /></p>
-<p><img alt="Script Detail" src="docs/screenshots/script-detail.png" /></p>
-<p><img alt="Script Analysis" src="docs/screenshots/analysis.png" /></p>
+<p><img alt="Script Upload" src="docs/screenshots/upload.png" />
+<img alt="Script Detail" src="docs/screenshots/script-detail.png" />
+<img alt="Script Analysis" src="docs/screenshots/analysis.png" /></p>
 <h3 id="lab-03-documentation-and-ai-chat">Lab 03: Documentation and AI chat</h3>
 <ol>
-<li>Open Documentation and search for a cmdlet.</li>
-<li>Capture an example in your notes.</li>
-<li>Open AI Chat and ask for safe usage patterns.</li>
+<li>Open Documentation; search for a cmdlet (e.g., <code>Get-Process</code>).</li>
+<li>Save an excerpt to your notes.</li>
+<li>Open Chat and ask for safe usage patterns.</li>
 </ol>
-<p><img alt="Documentation Explorer" src="docs/screenshots/documentation.png" /></p>
-<p><img alt="AI Chat" src="docs/screenshots/chat.png" /></p>
+<p><img alt="Documentation Explorer" src="docs/screenshots/documentation.png" />
+<img alt="AI Chat" src="docs/screenshots/chat.png" /></p>
 <h3 id="lab-04-analytics-and-governance">Lab 04: Analytics and governance</h3>
 <ol>
-<li>Open Analytics and review usage metrics.</li>
-<li>Identify top activity areas.</li>
-<li>Document a governance checklist for releases.</li>
+<li>Open Analytics; review usage metrics and trend lines.</li>
+<li>Identify top activity areas and any gaps.</li>
+<li>Draft a governance checklist for releases.</li>
 </ol>
-<p><img alt="Analytics" src="docs/screenshots/analytics.png" /></p>
-<p><img alt="Sample Usage Metrics" src="docs/graphics/usage-metrics.svg" /></p>
+<p><img alt="Analytics" src="docs/screenshots/analytics.png" />
+<img alt="Sample Usage Metrics" src="docs/graphics/usage-metrics.svg" /></p>
 <h3 id="lab-05-settings-and-training-resources">Lab 05: Settings and training resources</h3>
 <ol>
-<li>Open Settings and review API usage and notifications.</li>
-<li>Locate the Documentation and Training section.</li>
-<li>Confirm the Training Suite link opens the guide.</li>
-<li>Verify the local PDF export loads at <code>http://localhost:4000/docs/exports/pdf/Training-Guide.pdf</code>.</li>
+<li>Open Settings; review API usage and notifications.</li>
+<li>Locate Documentation &amp; Training and open the Training Suite.</li>
+<li>Open the local PDF export at <code>http://localhost:4000/docs/exports/pdf/Training-Guide.pdf</code>.</li>
 </ol>
 <p><img alt="Settings" src="docs/screenshots/settings.png" /></p>
 <h2 id="sample-actions">Sample actions</h2>
-<h3 id="example-upload-via-api">Example: Upload via API</h3>
+<h3 id="upload-via-api">Upload via API</h3>
 <pre><code class="language-bash">curl -X POST http://localhost:4000/api/scripts \
   -H &quot;Authorization: Bearer &lt;token&gt;&quot; \
   -F &quot;file=@test-script.ps1&quot; \
@@ -354,14 +421,12 @@ body {
   -F &quot;description=Reset AD user password&quot; \
   -F &quot;tags=security,active-directory&quot;
 </code></pre>
-<h3 id="example-run-analysis">Example: Run analysis</h3>
+<h3 id="run-analysis">Run analysis</h3>
 <pre><code class="language-bash">curl -X POST http://localhost:8000/analyze \
   -H &quot;Content-Type: application/json&quot; \
   -d '{&quot;content&quot;: &quot;Get-ADUser -Filter *&quot;, &quot;type&quot;: &quot;security&quot;}'
 </code></pre>
-<h3 id="example-vector-search">Example: Vector search</h3>
-<pre><code class="language-bash">curl http://localhost:4000/api/scripts/1/similar
-</code></pre>
+<h3 id="vector-search">Vector search</h3>
 <pre><code class="language-bash">curl -X POST http://localhost:8000/similar \
   -H &quot;Content-Type: application/json&quot; \
   -d '{&quot;content&quot;: &quot;active directory onboarding&quot;, &quot;limit&quot;: 5}'
@@ -451,7 +516,12 @@ body {
 </tr>
 </tbody>
 </table>
-<p>For deeper triage and support patterns, see <code>../SUPPORT.md</code>.</p>
+<h2 id="appendix">Appendix</h2>
+<ul>
+<li>Troubleshooting and support: <code>../SUPPORT.md</code></li>
+<li>Screenshot capture: <code>./scripts/capture-readme-screenshots.sh</code></li>
+<li>Exports (HTML/PDF/DOCX): <code>scripts/export-docs.sh --all</code></li>
+</ul>
 <h2 id="appendix-troubleshooting">Appendix: Troubleshooting</h2>
 <table>
 <thead>
@@ -484,7 +554,7 @@ body {
 </tr>
 </tbody>
 </table>
-    <div class="footer">Generated 2026-01-13 06:26 UTC</div>
+    <div class="footer">Generated 2026-01-16 21:23 UTC</div>
   </div>
 </body>
 </html>

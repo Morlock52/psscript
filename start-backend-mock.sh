@@ -9,6 +9,8 @@ export USE_MOCK_SERVICES=true
 export MOCK_MODE=true
 export MOCK_AI_RESPONSES=true
 export DB_HOST=localhost
+export PORT=4000
+export BACKEND_URL=http://localhost:4000
 
 # Create necessary directories
 mkdir -p ./src/backend/uploads

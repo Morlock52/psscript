@@ -1,0 +1,479 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <base href="file:///Users/morlock/fun/psscript/" />
+  <title>docs-USER_MANAGEMENT_SECURITY_AUDIT</title>
+  <style>
+:root {
+  color-scheme: light;
+}
+body {
+  font-family: "Segoe UI", "Helvetica Neue", Arial, sans-serif;
+  margin: 0;
+  padding: 0;
+  background: #ffffff;
+  color: #0f172a;
+}
+.markdown-body {
+  max-width: 980px;
+  margin: 40px auto 60px;
+  padding: 0 32px;
+  line-height: 1.65;
+}
+.markdown-body h1 {
+  font-size: 32px;
+  margin-bottom: 12px;
+  border-bottom: 2px solid #e2e8f0;
+  padding-bottom: 12px;
+  page-break-before: always;
+  page-break-after: avoid;
+  break-before: page;
+  break-after: avoid;
+}
+.markdown-body h1:first-of-type {
+  page-break-before: avoid;
+  break-before: avoid;
+}
+.markdown-body h2 {
+  font-size: 24px;
+  margin-top: 28px;
+  border-bottom: 1px solid #e2e8f0;
+  padding-bottom: 8px;
+  page-break-before: always;
+  page-break-after: avoid;
+  break-before: page;
+  break-after: avoid;
+}
+.markdown-body h3 {
+  font-size: 18px;
+  margin-top: 20px;
+  page-break-after: avoid;
+  break-after: avoid;
+}
+.markdown-body h4, .markdown-body h5, .markdown-body h6 {
+  page-break-after: avoid;
+  break-after: avoid;
+}
+.markdown-body table {
+  width: 100%;
+  border-collapse: collapse;
+  margin: 16px 0;
+  font-size: 14px;
+  page-break-inside: avoid;
+  break-inside: avoid;
+}
+.markdown-body th,
+.markdown-body td {
+  border: 1px solid #e2e8f0;
+  padding: 8px 10px;
+  text-align: left;
+}
+.markdown-body th {
+  background: #f8fafc;
+}
+.markdown-body tr {
+  page-break-inside: avoid;
+  break-inside: avoid;
+}
+.markdown-body code {
+  background: #f1f5f9;
+  padding: 2px 4px;
+  border-radius: 4px;
+  font-family: "SFMono-Regular", Menlo, Consolas, monospace;
+  font-size: 0.92em;
+}
+.markdown-body pre {
+  background: #0f172a;
+  color: #e2e8f0;
+  padding: 16px;
+  border-radius: 8px;
+  overflow-x: auto;
+  page-break-inside: avoid;
+  break-inside: avoid;
+}
+.markdown-body pre code {
+  background: transparent;
+  color: inherit;
+}
+.markdown-body blockquote {
+  border-left: 4px solid #38bdf8;
+  margin: 16px 0;
+  padding: 8px 16px;
+  background: #f8fafc;
+  color: #334155;
+}
+.markdown-body img {
+  max-width: 100%;
+  height: auto;
+  display: block;
+  margin: 16px 0;
+  border-radius: 10px;
+  box-shadow: 0 8px 20px rgba(15, 23, 42, 0.12);
+  page-break-inside: avoid;
+  break-inside: avoid;
+}
+.markdown-body figure {
+  page-break-inside: avoid;
+  break-inside: avoid;
+  margin: 16px 0;
+}
+.markdown-body a {
+  color: #2563eb;
+  text-decoration: none;
+}
+.markdown-body a:hover {
+  text-decoration: underline;
+}
+.cover {
+  padding: 80px 60px 60px;
+  background: linear-gradient(135deg, #0b1220 0%, #1e3a8a 100%);
+  color: #f8fafc;
+  border-radius: 18px;
+  margin-bottom: 32px;
+}
+.cover-title {
+  font-size: 36px;
+  font-weight: 700;
+  margin: 0 0 12px;
+}
+.cover-subtitle {
+  font-size: 18px;
+  color: #cbd5f5;
+  margin: 0 0 16px;
+}
+.cover-meta {
+  font-size: 13px;
+  color: #94a3b8;
+}
+.page-break {
+  page-break-after: always;
+  break-after: page;
+}
+.footer {
+  margin-top: 40px;
+  font-size: 12px;
+  color: #64748b;
+}
+/* Print and PDF-specific styles */
+@page {
+  margin: 20mm 18mm;
+}
+@media print {
+  .markdown-body {
+    orphans: 3;
+    widows: 3;
+  }
+  .markdown-body p {
+    orphans: 3;
+    widows: 3;
+  }
+  .markdown-body li {
+    page-break-inside: avoid;
+    break-inside: avoid;
+  }
+  .markdown-body ul, .markdown-body ol {
+    page-break-before: avoid;
+    break-before: avoid;
+  }
+  .markdown-body blockquote {
+    page-break-inside: avoid;
+    break-inside: avoid;
+  }
+  /* Keep section content together */
+  .markdown-body h2 + *, .markdown-body h3 + * {
+    page-break-before: avoid;
+    break-before: avoid;
+  }
+}
+</style>
+</head>
+<body>
+  <div class="markdown-body">
+    
+    <h1 id="user-management-security-audit-report">User Management Security Audit Report</h1>
+<p><strong>Date:</strong> January 15, 2026
+<strong>Auditor:</strong> Automated Security Review
+<strong>Scope:</strong> Complete User Management System (Database, API, Frontend)</p>
+<hr />
+<h2 id="executive-summary">Executive Summary</h2>
+<p>A comprehensive security audit of the User Management system was conducted, covering database models, API endpoints, authentication/authorization flows, and frontend components.</p>
+<p><strong>Key Finding:</strong> A critical <strong>authorization bypass vulnerability</strong> was discovered and fixed. The caching middleware was serving admin-only responses to non-admin users.</p>
+<p><strong>Test Results:</strong> 12/12 tests passing after fixes.</p>
+<hr />
+<h2 id="critical-issue-fixed">Critical Issue Fixed</h2>
+<h3 id="cve-like-authorization-bypass-through-response-caching">CVE-Like: Authorization Bypass Through Response Caching</h3>
+<p><strong>Severity:</strong> HIGH
+<strong>OWASP Category:</strong> A01:2021 - Broken Access Control</p>
+<p><strong>Description:</strong>
+The caching middleware in <code>/src/backend/src/index.ts</code> created cache keys based solely on the request path (<code>api:cache:${req.path}</code>). When an admin fetched <code>/api/users</code>, the response was cached. Subsequent requests from ANY authenticated user received the cached admin response, completely bypassing the controller's role-based authorization check.</p>
+<p><strong>Impact:</strong>
+- Non-admin users could view all user accounts including admin accounts
+- Exposed user emails, usernames, roles, and login history
+- Could be used for account enumeration and targeted attacks</p>
+<p><strong>Fix Applied:</strong></p>
+<pre><code class="language-typescript">// Before: /api/users was cached
+const skipRoutes = ['/api/auth', '/api/health', '/api/users/me'];
+
+// After: All user management endpoints excluded from cache
+const skipRoutes = [
+  '/api/auth',
+  '/api/health',
+  '/api/users'  // All user management endpoints - role-based access control
+];
+</code></pre>
+<p><strong>File Modified:</strong> <code>src/backend/src/index.ts:529-533</code></p>
+<hr />
+<h2 id="security-strengths-found">Security Strengths Found</h2>
+<h3 id="1-password-security-owasp-compliant">1. Password Security (OWASP Compliant)</h3>
+<ul>
+<li><strong>Bcrypt hashing</strong> with 12 rounds (configurable)</li>
+<li><strong>Password validation</strong> with:</li>
+<li>Minimum 12 characters (production), 8 (development)</li>
+<li>Character diversity requirements (3+ character classes)</li>
+<li>Common password blocklist</li>
+<li>Pattern detection (sequential, repeated, keyboard patterns)</li>
+<li>Personal info detection (username/email in password)</li>
+</ul>
+<h3 id="2-authentication-security">2. Authentication Security</h3>
+<ul>
+<li><strong>Timing attack prevention</strong>: Constant 100ms delay on all login attempts</li>
+<li><strong>User enumeration prevention</strong>: Generic "Invalid email or password" message</li>
+<li><strong>Dummy hash computation</strong>: Bcrypt compare runs even for non-existent users</li>
+<li><strong>Account lockout</strong>: 10 failed attempts = 15-minute lockout</li>
+</ul>
+<h3 id="3-token-security">3. Token Security</h3>
+<ul>
+<li><strong>JWT tokens</strong> with configurable expiration</li>
+<li><strong>Refresh tokens</strong> for session extension</li>
+<li><strong>Proper token validation</strong> middleware</li>
+</ul>
+<h3 id="4-rate-limiting">4. Rate Limiting</h3>
+<ul>
+<li><strong>Auth endpoint</strong>: 10 requests/15 minutes per IP+email combination</li>
+<li><strong>AI endpoints</strong>: 20 requests/minute</li>
+<li><strong>Upload endpoints</strong>: 10 uploads/5 minutes</li>
+<li><strong>Script operations</strong>: Rate limited</li>
+</ul>
+<h3 id="5-input-security">5. Input Security</h3>
+<ul>
+<li><strong>Request sanitization</strong> middleware</li>
+<li><strong>SQL injection protection</strong> via Sequelize ORM</li>
+<li><strong>XSS protection</strong> via input sanitization</li>
+<li><strong>Request size limits</strong> (50MB)</li>
+</ul>
+<hr />
+<h2 id="remaining-security-recommendations">Remaining Security Recommendations</h2>
+<h3 id="high-priority">High Priority</h3>
+<ol>
+<li><strong>Token Storage (XSS Vulnerability)</strong></li>
+<li><strong>Current:</strong> Tokens stored in localStorage</li>
+<li><strong>Risk:</strong> XSS attacks can steal tokens</li>
+<li>
+<p><strong>Recommendation:</strong> Use httpOnly cookies for token storage</p>
+</li>
+<li>
+<p><strong>CSRF Protection</strong></p>
+</li>
+<li><strong>Current:</strong> No CSRF tokens implemented</li>
+<li><strong>Risk:</strong> Cross-site request forgery attacks possible</li>
+<li>
+<p><strong>Recommendation:</strong> Implement CSRF tokens for state-changing operations</p>
+</li>
+<li>
+<p><strong>Token Refresh Logic (Frontend)</strong></p>
+</li>
+<li><strong>Current:</strong> No automatic token refresh in frontend</li>
+<li><strong>Risk:</strong> Users get logged out unexpectedly</li>
+<li><strong>Recommendation:</strong> Implement automatic token refresh before expiration</li>
+</ol>
+<h3 id="medium-priority">Medium Priority</h3>
+<ol>
+<li><strong>Email Verification</strong></li>
+<li><strong>Current:</strong> No email verification on registration</li>
+<li><strong>Risk:</strong> Fake accounts, spam</li>
+<li>
+<p><strong>Recommendation:</strong> Add email verification flow</p>
+</li>
+<li>
+<p><strong>Password Reset Flow</strong></p>
+</li>
+<li><strong>Current:</strong> Admin-only password reset</li>
+<li><strong>Risk:</strong> Users cannot self-recover accounts</li>
+<li>
+<p><strong>Recommendation:</strong> Implement self-service password reset with email</p>
+</li>
+<li>
+<p><strong>Token Revocation</strong></p>
+</li>
+<li><strong>Current:</strong> No token blacklist on logout</li>
+<li><strong>Risk:</strong> Tokens remain valid after logout</li>
+<li><strong>Recommendation:</strong> Implement token blacklist or use short-lived tokens</li>
+</ol>
+<h3 id="low-priority">Low Priority</h3>
+<ol>
+<li><strong>Multi-Factor Authentication (MFA)</strong></li>
+<li><strong>Current:</strong> Single-factor (password only)</li>
+<li>
+<p><strong>Recommendation:</strong> Add optional TOTP/SMS 2FA</p>
+</li>
+<li>
+<p><strong>Session Management</strong></p>
+</li>
+<li><strong>Current:</strong> Basic JWT sessions</li>
+<li><strong>Recommendation:</strong> Add "active sessions" view and remote logout</li>
+</ol>
+<hr />
+<h2 id="test-coverage-summary">Test Coverage Summary</h2>
+<h3 id="registration-tests">Registration Tests</h3>
+<table>
+<thead>
+<tr>
+<th>Test</th>
+<th>Status</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Register new user</td>
+<td>✅ PASS</td>
+</tr>
+<tr>
+<td>Reject duplicate email</td>
+<td>✅ PASS</td>
+</tr>
+<tr>
+<td>Reject duplicate username</td>
+<td>✅ PASS</td>
+</tr>
+<tr>
+<td>Reject weak password</td>
+<td>✅ PASS</td>
+</tr>
+<tr>
+<td>Reject invalid email format</td>
+<td>✅ PASS</td>
+</tr>
+</tbody>
+</table>
+<h3 id="authentication-tests">Authentication Tests</h3>
+<table>
+<thead>
+<tr>
+<th>Test</th>
+<th>Status</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Login with valid credentials</td>
+<td>✅ PASS</td>
+</tr>
+<tr>
+<td>Reject wrong password</td>
+<td>✅ PASS</td>
+</tr>
+<tr>
+<td>Generic error for non-existent user</td>
+<td>✅ PASS</td>
+</tr>
+</tbody>
+</table>
+<h3 id="token-tests">Token Tests</h3>
+<table>
+<thead>
+<tr>
+<th>Test</th>
+<th>Status</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Get user info with valid token</td>
+<td>✅ PASS</td>
+</tr>
+<tr>
+<td>Reject missing token</td>
+<td>✅ PASS</td>
+</tr>
+<tr>
+<td>Reject invalid token</td>
+<td>✅ PASS</td>
+</tr>
+<tr>
+<td>Refresh token</td>
+<td>✅ PASS</td>
+</tr>
+</tbody>
+</table>
+<h3 id="authorization-tests">Authorization Tests</h3>
+<table>
+<thead>
+<tr>
+<th>Test</th>
+<th>Status</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Non-admin blocked from user list</td>
+<td>✅ PASS</td>
+</tr>
+<tr>
+<td>Admin can access user list</td>
+<td>✅ PASS</td>
+</tr>
+<tr>
+<td>Admin CRUD operations</td>
+<td>✅ PASS</td>
+</tr>
+</tbody>
+</table>
+<h3 id="security-tests">Security Tests</h3>
+<table>
+<thead>
+<tr>
+<th>Test</th>
+<th>Status</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Reject SQL injection</td>
+<td>✅ PASS</td>
+</tr>
+<tr>
+<td>Handle XSS in input</td>
+<td>✅ PASS</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="files-reviewed">Files Reviewed</h2>
+<ul>
+<li><code>src/backend/src/models/User.ts</code> - User model with password hashing</li>
+<li><code>src/backend/src/routes/auth.ts</code> - Authentication endpoints</li>
+<li><code>src/backend/src/routes/users.ts</code> - User management endpoints</li>
+<li><code>src/backend/src/controllers/UserController.ts</code> - User CRUD logic</li>
+<li><code>src/backend/src/middleware/authMiddleware.ts</code> - JWT authentication</li>
+<li><code>src/backend/src/middleware/security.ts</code> - Security middleware</li>
+<li><code>src/backend/src/utils/passwordValidation.ts</code> - Password strength validation</li>
+<li><code>src/backend/src/index.ts</code> - Main app configuration</li>
+<li><code>src/frontend/src/utils/errorUtils.ts</code> - Error handling utilities</li>
+<li><code>src/frontend/src/pages/Settings/UserManagement.tsx</code> - Admin UI</li>
+</ul>
+<hr />
+<h2 id="conclusion">Conclusion</h2>
+<p>The user management system demonstrates strong security practices in authentication and password handling. The critical authorization bypass vulnerability was identified and fixed. The system now passes all security tests.</p>
+<p><strong>Recommended Next Steps:</strong>
+1. Migrate token storage from localStorage to httpOnly cookies
+2. Implement CSRF protection
+3. Add frontend token refresh logic
+4. Consider email verification for new registrations</p>
+<hr />
+<p><em>Report generated by comprehensive security testing suite.</em></p>
+    <div class="footer">Generated 2026-01-16 21:23 UTC</div>
+  </div>
+</body>
+</html>

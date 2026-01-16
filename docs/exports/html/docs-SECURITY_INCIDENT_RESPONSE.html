@@ -1,0 +1,703 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <base href="file:///Users/morlock/fun/psscript/" />
+  <title>docs-SECURITY_INCIDENT_RESPONSE</title>
+  <style>
+:root {
+  color-scheme: light;
+}
+body {
+  font-family: "Segoe UI", "Helvetica Neue", Arial, sans-serif;
+  margin: 0;
+  padding: 0;
+  background: #ffffff;
+  color: #0f172a;
+}
+.markdown-body {
+  max-width: 980px;
+  margin: 40px auto 60px;
+  padding: 0 32px;
+  line-height: 1.65;
+}
+.markdown-body h1 {
+  font-size: 32px;
+  margin-bottom: 12px;
+  border-bottom: 2px solid #e2e8f0;
+  padding-bottom: 12px;
+  page-break-before: always;
+  page-break-after: avoid;
+  break-before: page;
+  break-after: avoid;
+}
+.markdown-body h1:first-of-type {
+  page-break-before: avoid;
+  break-before: avoid;
+}
+.markdown-body h2 {
+  font-size: 24px;
+  margin-top: 28px;
+  border-bottom: 1px solid #e2e8f0;
+  padding-bottom: 8px;
+  page-break-before: always;
+  page-break-after: avoid;
+  break-before: page;
+  break-after: avoid;
+}
+.markdown-body h3 {
+  font-size: 18px;
+  margin-top: 20px;
+  page-break-after: avoid;
+  break-after: avoid;
+}
+.markdown-body h4, .markdown-body h5, .markdown-body h6 {
+  page-break-after: avoid;
+  break-after: avoid;
+}
+.markdown-body table {
+  width: 100%;
+  border-collapse: collapse;
+  margin: 16px 0;
+  font-size: 14px;
+  page-break-inside: avoid;
+  break-inside: avoid;
+}
+.markdown-body th,
+.markdown-body td {
+  border: 1px solid #e2e8f0;
+  padding: 8px 10px;
+  text-align: left;
+}
+.markdown-body th {
+  background: #f8fafc;
+}
+.markdown-body tr {
+  page-break-inside: avoid;
+  break-inside: avoid;
+}
+.markdown-body code {
+  background: #f1f5f9;
+  padding: 2px 4px;
+  border-radius: 4px;
+  font-family: "SFMono-Regular", Menlo, Consolas, monospace;
+  font-size: 0.92em;
+}
+.markdown-body pre {
+  background: #0f172a;
+  color: #e2e8f0;
+  padding: 16px;
+  border-radius: 8px;
+  overflow-x: auto;
+  page-break-inside: avoid;
+  break-inside: avoid;
+}
+.markdown-body pre code {
+  background: transparent;
+  color: inherit;
+}
+.markdown-body blockquote {
+  border-left: 4px solid #38bdf8;
+  margin: 16px 0;
+  padding: 8px 16px;
+  background: #f8fafc;
+  color: #334155;
+}
+.markdown-body img {
+  max-width: 100%;
+  height: auto;
+  display: block;
+  margin: 16px 0;
+  border-radius: 10px;
+  box-shadow: 0 8px 20px rgba(15, 23, 42, 0.12);
+  page-break-inside: avoid;
+  break-inside: avoid;
+}
+.markdown-body figure {
+  page-break-inside: avoid;
+  break-inside: avoid;
+  margin: 16px 0;
+}
+.markdown-body a {
+  color: #2563eb;
+  text-decoration: none;
+}
+.markdown-body a:hover {
+  text-decoration: underline;
+}
+.cover {
+  padding: 80px 60px 60px;
+  background: linear-gradient(135deg, #0b1220 0%, #1e3a8a 100%);
+  color: #f8fafc;
+  border-radius: 18px;
+  margin-bottom: 32px;
+}
+.cover-title {
+  font-size: 36px;
+  font-weight: 700;
+  margin: 0 0 12px;
+}
+.cover-subtitle {
+  font-size: 18px;
+  color: #cbd5f5;
+  margin: 0 0 16px;
+}
+.cover-meta {
+  font-size: 13px;
+  color: #94a3b8;
+}
+.page-break {
+  page-break-after: always;
+  break-after: page;
+}
+.footer {
+  margin-top: 40px;
+  font-size: 12px;
+  color: #64748b;
+}
+/* Print and PDF-specific styles */
+@page {
+  margin: 20mm 18mm;
+}
+@media print {
+  .markdown-body {
+    orphans: 3;
+    widows: 3;
+  }
+  .markdown-body p {
+    orphans: 3;
+    widows: 3;
+  }
+  .markdown-body li {
+    page-break-inside: avoid;
+    break-inside: avoid;
+  }
+  .markdown-body ul, .markdown-body ol {
+    page-break-before: avoid;
+    break-before: avoid;
+  }
+  .markdown-body blockquote {
+    page-break-inside: avoid;
+    break-inside: avoid;
+  }
+  /* Keep section content together */
+  .markdown-body h2 + *, .markdown-body h3 + * {
+    page-break-before: avoid;
+    break-before: avoid;
+  }
+}
+</style>
+</head>
+<body>
+  <div class="markdown-body">
+    
+    <h1 id="security-incident-response-procedure">Security Incident Response Procedure</h1>
+<p><strong>Document ID:</strong> SEC-IRP-001<br />
+<strong>Version:</strong> 1.0<br />
+<strong>Effective Date:</strong> January 16, 2026<br />
+<strong>Owner:</strong> Quality Management<br />
+<strong>Classification:</strong> Internal  </p>
+<hr />
+<h2 id="1-purpose">1. Purpose</h2>
+<p>This procedure establishes a structured approach for detecting, responding to, and recovering from security incidents affecting the PSScript platform. It ensures consistent handling of security events while minimizing impact and enabling continuous improvement.</p>
+<hr />
+<h2 id="2-scope">2. Scope</h2>
+<p>This procedure applies to:
+- All security incidents affecting PSScript infrastructure
+- All team members who discover or respond to security incidents
+- Third-party integrations and services
+- Development, staging, and production environments</p>
+<hr />
+<h2 id="3-definitions">3. Definitions</h2>
+<table>
+<thead>
+<tr>
+<th>Term</th>
+<th>Definition</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Security Incident</strong></td>
+<td>Any event that compromises confidentiality, integrity, or availability of systems or data</td>
+</tr>
+<tr>
+<td><strong>Security Event</strong></td>
+<td>An observable occurrence relevant to security (may or may not be an incident)</td>
+</tr>
+<tr>
+<td><strong>Incident Commander</strong></td>
+<td>Person responsible for coordinating incident response</td>
+</tr>
+<tr>
+<td><strong>CAPA</strong></td>
+<td>Corrective and Preventive Action</td>
+</tr>
+<tr>
+<td><strong>RCA</strong></td>
+<td>Root Cause Analysis</td>
+</tr>
+<tr>
+<td><strong>MTTR</strong></td>
+<td>Mean Time to Recovery</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="4-incident-classification">4. Incident Classification</h2>
+<h3 id="41-severity-levels">4.1 Severity Levels</h3>
+<table>
+<thead>
+<tr>
+<th>Level</th>
+<th>Name</th>
+<th>Description</th>
+<th>Response Time</th>
+<th>Examples</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>S1</strong></td>
+<td>Critical</td>
+<td>Active exploitation, data breach, system compromise</td>
+<td>Immediate (&lt; 15 min)</td>
+<td>Active attack, credential leak, ransomware</td>
+</tr>
+<tr>
+<td><strong>S2</strong></td>
+<td>High</td>
+<td>Significant vulnerability, potential data exposure</td>
+<td>&lt; 1 hour</td>
+<td>Auth bypass, SQL injection, privilege escalation</td>
+</tr>
+<tr>
+<td><strong>S3</strong></td>
+<td>Medium</td>
+<td>Limited vulnerability, no active exploitation</td>
+<td>&lt; 4 hours</td>
+<td>XSS, CSRF, misconfiguration</td>
+</tr>
+<tr>
+<td><strong>S4</strong></td>
+<td>Low</td>
+<td>Minor issue, minimal risk</td>
+<td>&lt; 24 hours</td>
+<td>Info disclosure, deprecated protocols</td>
+</tr>
+</tbody>
+</table>
+<h3 id="42-incident-categories">4.2 Incident Categories</h3>
+<ul>
+<li><strong>Access Control</strong>: Unauthorized access, authentication bypass, privilege escalation</li>
+<li><strong>Data Breach</strong>: Unauthorized data access, exfiltration, exposure</li>
+<li><strong>Malware</strong>: Virus, ransomware, cryptominer, backdoor</li>
+<li><strong>Denial of Service</strong>: Service disruption, resource exhaustion</li>
+<li><strong>Injection</strong>: SQL injection, command injection, code injection</li>
+<li><strong>Configuration</strong>: Misconfiguration, exposed credentials, insecure defaults</li>
+<li><strong>Supply Chain</strong>: Compromised dependencies, malicious packages</li>
+</ul>
+<hr />
+<h2 id="5-incident-response-phases">5. Incident Response Phases</h2>
+<h3 id="phase-1-detection-identification">Phase 1: Detection &amp; Identification</h3>
+<p><strong>Objective:</strong> Recognize and confirm security incidents</p>
+<p><strong>Detection Sources:</strong>
+- [ ] Automated monitoring alerts (logs, metrics)
+- [ ] Security scanning tools (Trivy, TruffleHog)
+- [ ] User/customer reports
+- [ ] CI/CD pipeline security checks
+- [ ] Third-party vulnerability disclosures
+- [ ] Penetration testing findings</p>
+<p><strong>Identification Checklist:</strong></p>
+<pre><code>□ What systems/data are affected?
+□ When did the incident start?
+□ Is it ongoing or contained?
+□ What is the initial severity assessment?
+□ Who discovered it?
+</code></pre>
+<p><strong>Action:</strong> Create GitHub issue using Security Vulnerability template</p>
+<hr />
+<h3 id="phase-2-containment">Phase 2: Containment</h3>
+<p><strong>Objective:</strong> Limit the scope and impact of the incident</p>
+<p><strong>Immediate Containment (S1/S2):</strong></p>
+<pre><code class="language-bash"># 1. Isolate affected services
+docker-compose stop &lt;affected-service&gt;
+
+# 2. Revoke compromised credentials
+# Rotate API keys, tokens, passwords immediately
+
+# 3. Block malicious IPs (if applicable)
+# Update firewall/WAF rules
+
+# 4. Preserve evidence
+docker logs &lt;container&gt; &gt; incident-logs-$(date +%Y%m%d-%H%M%S).txt
+</code></pre>
+<p><strong>Short-term Containment:</strong>
+- Deploy temporary patches or workarounds
+- Enable enhanced logging/monitoring
+- Implement additional access controls
+- Notify affected users if required</p>
+<p><strong>Evidence Preservation:</strong>
+- [ ] Capture system logs
+- [ ] Document timeline of events
+- [ ] Screenshot/record anomalies
+- [ ] Preserve affected artifacts</p>
+<hr />
+<h3 id="phase-3-eradication">Phase 3: Eradication</h3>
+<p><strong>Objective:</strong> Remove the threat and underlying vulnerability</p>
+<p><strong>Eradication Steps:</strong>
+1. <strong>Identify root cause</strong> - What vulnerability was exploited?
+2. <strong>Develop fix</strong> - Create and test patch
+3. <strong>Code review</strong> - Security-focused review of fix
+4. <strong>Deploy fix</strong> - Follow standard deployment procedures
+5. <strong>Verify remediation</strong> - Confirm vulnerability is resolved</p>
+<p><strong>Verification Checklist:</strong></p>
+<pre><code>□ Vulnerability scan shows clean
+□ Exploit attempt fails
+□ Security tests pass
+□ No residual malicious artifacts
+</code></pre>
+<hr />
+<h3 id="phase-4-recovery">Phase 4: Recovery</h3>
+<p><strong>Objective:</strong> Restore normal operations safely</p>
+<p><strong>Recovery Steps:</strong>
+1. <strong>Validate systems</strong> - Confirm integrity of restored services
+2. <strong>Restore from backup</strong> - If data corruption occurred
+3. <strong>Monitor closely</strong> - Enhanced monitoring for 48-72 hours
+4. <strong>Gradual restoration</strong> - Phased service restoration if needed</p>
+<p><strong>Recovery Verification:</strong>
+- [ ] All services operational
+- [ ] Data integrity confirmed
+- [ ] Security controls functioning
+- [ ] No signs of persistence</p>
+<hr />
+<h3 id="phase-5-post-incident-activities">Phase 5: Post-Incident Activities</h3>
+<p><strong>Objective:</strong> Learn from the incident and prevent recurrence</p>
+<h4 id="51-root-cause-analysis-rca">5.1 Root Cause Analysis (RCA)</h4>
+<p><strong>RCA Template:</strong></p>
+<pre><code class="language-markdown">## Incident Summary
+- **Incident ID:** SEC-YYYY-NNN
+- **Date:** YYYY-MM-DD
+- **Severity:** S1/S2/S3/S4
+- **Duration:** X hours
+
+## Timeline
+| Time | Event |
+|------|-------|
+| HH:MM | Initial detection |
+| HH:MM | Containment started |
+| HH:MM | Fix deployed |
+| HH:MM | Recovery complete |
+
+## Root Cause
+[Detailed description of the underlying cause]
+
+## Contributing Factors
+1. [Factor 1]
+2. [Factor 2]
+
+## Impact
+- Systems affected:
+- Data exposed:
+- Users impacted:
+
+## Resolution
+[Description of the fix implemented]
+</code></pre>
+<h4 id="52-capa-corrective-and-preventive-action">5.2 CAPA (Corrective and Preventive Action)</h4>
+<table>
+<thead>
+<tr>
+<th>Action Type</th>
+<th>Description</th>
+<th>Owner</th>
+<th>Due Date</th>
+<th>Status</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Corrective</td>
+<td>[Fix the immediate issue]</td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td>Preventive</td>
+<td>[Prevent similar issues]</td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+</tbody>
+</table>
+<h4 id="53-lessons-learned">5.3 Lessons Learned</h4>
+<p><strong>Post-Incident Review Meeting:</strong>
+- Schedule within 5 business days of incident closure
+- Include all responders and stakeholders
+- Document in <code>/docs/incidents/</code> directory</p>
+<p><strong>Review Questions:</strong>
+1. What worked well in our response?
+2. What could be improved?
+3. Were our tools and processes adequate?
+4. What training or resources are needed?</p>
+<hr />
+<h2 id="6-communication">6. Communication</h2>
+<h3 id="61-internal-communication">6.1 Internal Communication</h3>
+<table>
+<thead>
+<tr>
+<th>Audience</th>
+<th>When</th>
+<th>Method</th>
+<th>Content</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Incident Team</td>
+<td>Immediately</td>
+<td>Slack/Call</td>
+<td>Technical details, status</td>
+</tr>
+<tr>
+<td>Leadership</td>
+<td>S1/S2: Immediate, S3/S4: Daily</td>
+<td>Email</td>
+<td>Summary, impact, ETA</td>
+</tr>
+<tr>
+<td>All Staff</td>
+<td>After containment</td>
+<td>Email</td>
+<td>Awareness, any actions needed</td>
+</tr>
+</tbody>
+</table>
+<h3 id="62-external-communication">6.2 External Communication</h3>
+<table>
+<thead>
+<tr>
+<th>Scenario</th>
+<th>Requirement</th>
+<th>Timeline</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Data breach affecting users</td>
+<td>Notification required</td>
+<td>Within 72 hours (GDPR)</td>
+</tr>
+<tr>
+<td>Service disruption</td>
+<td>Status page update</td>
+<td>Immediately</td>
+</tr>
+<tr>
+<td>Vulnerability disclosure</td>
+<td>Coordinated disclosure</td>
+<td>After fix deployed</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Communication Templates:</strong> See <code>/docs/templates/incident-communications/</code></p>
+<hr />
+<h2 id="7-roles-and-responsibilities">7. Roles and Responsibilities</h2>
+<table>
+<thead>
+<tr>
+<th>Role</th>
+<th>Responsibilities</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Incident Commander</strong></td>
+<td>Overall coordination, decision-making, communication</td>
+</tr>
+<tr>
+<td><strong>Technical Lead</strong></td>
+<td>Technical analysis, fix development, deployment</td>
+</tr>
+<tr>
+<td><strong>Security Lead</strong></td>
+<td>Threat assessment, evidence preservation, compliance</td>
+</tr>
+<tr>
+<td><strong>Communications Lead</strong></td>
+<td>Internal/external communications, status updates</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="8-tools-and-resources">8. Tools and Resources</h2>
+<h3 id="81-detection-tools">8.1 Detection Tools</h3>
+<ul>
+<li>GitHub Actions security scanning (Trivy, TruffleHog)</li>
+<li>Application logs (<code>/logs/</code> directory)</li>
+<li>Docker container health checks</li>
+</ul>
+<h3 id="82-response-tools">8.2 Response Tools</h3>
+<pre><code class="language-bash"># View container logs
+docker-compose logs --tail=1000 &lt;service&gt;
+
+# Check for suspicious processes
+docker exec &lt;container&gt; ps aux
+
+# Network connections
+docker exec &lt;container&gt; netstat -tuln
+
+# Database audit
+psql -h localhost -U postgres -d psscript -c &quot;SELECT * FROM pg_stat_activity&quot;
+</code></pre>
+<h3 id="83-documentation">8.3 Documentation</h3>
+<ul>
+<li>Incident issues: GitHub Issues (Security Vulnerability template)</li>
+<li>RCA documents: <code>/docs/incidents/</code></li>
+<li>Runbooks: <code>/docs/runbooks/</code></li>
+</ul>
+<hr />
+<h2 id="9-metrics-and-reporting">9. Metrics and Reporting</h2>
+<h3 id="91-key-metrics">9.1 Key Metrics</h3>
+<table>
+<thead>
+<tr>
+<th>Metric</th>
+<th>Target</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>MTTD</strong></td>
+<td>&lt; 1 hour</td>
+<td>Mean Time to Detect</td>
+</tr>
+<tr>
+<td><strong>MTTR</strong></td>
+<td>S1: &lt; 4h, S2: &lt; 24h</td>
+<td>Mean Time to Recovery</td>
+</tr>
+<tr>
+<td><strong>Incidents/Month</strong></td>
+<td>Trending down</td>
+<td>Total incident count</td>
+</tr>
+<tr>
+<td><strong>Repeat Incidents</strong></td>
+<td>0</td>
+<td>Same root cause recurrence</td>
+</tr>
+</tbody>
+</table>
+<h3 id="92-quarterly-review">9.2 Quarterly Review</h3>
+<ul>
+<li>Review all incidents from quarter</li>
+<li>Analyze trends and patterns</li>
+<li>Update procedures as needed</li>
+<li>Report to leadership</li>
+</ul>
+<hr />
+<h2 id="10-training-and-exercises">10. Training and Exercises</h2>
+<h3 id="101-training-requirements">10.1 Training Requirements</h3>
+<table>
+<thead>
+<tr>
+<th>Role</th>
+<th>Training</th>
+<th>Frequency</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>All developers</td>
+<td>Security awareness</td>
+<td>Annual</td>
+</tr>
+<tr>
+<td>Incident responders</td>
+<td>Incident response procedures</td>
+<td>Semi-annual</td>
+</tr>
+<tr>
+<td>Leadership</td>
+<td>Executive briefing on security</td>
+<td>Annual</td>
+</tr>
+</tbody>
+</table>
+<h3 id="102-exercises">10.2 Exercises</h3>
+<ul>
+<li><strong>Tabletop exercises:</strong> Quarterly</li>
+<li><strong>Simulated incidents:</strong> Semi-annual</li>
+<li><strong>Full response drills:</strong> Annual</li>
+</ul>
+<hr />
+<h2 id="11-document-control">11. Document Control</h2>
+<table>
+<thead>
+<tr>
+<th>Version</th>
+<th>Date</th>
+<th>Author</th>
+<th>Changes</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>1.0</td>
+<td>2026-01-16</td>
+<td>QMR</td>
+<td>Initial release</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="appendix-a-quick-reference-card">Appendix A: Quick Reference Card</h2>
+<pre><code>┌─────────────────────────────────────────────────────────┐
+│           SECURITY INCIDENT QUICK REFERENCE             │
+├─────────────────────────────────────────────────────────┤
+│ 1. DETECT: Confirm the incident is real                 │
+│ 2. CLASSIFY: Assign severity (S1-S4)                    │
+│ 3. REPORT: Create GitHub issue (Security template)      │
+│ 4. CONTAIN: Stop the bleeding                           │
+│ 5. NOTIFY: Alert appropriate stakeholders               │
+│ 6. ERADICATE: Remove the threat                         │
+│ 7. RECOVER: Restore normal operations                   │
+│ 8. REVIEW: Conduct RCA, document lessons learned        │
+└─────────────────────────────────────────────────────────┘
+
+SEVERITY RESPONSE TIMES:
+  S1 Critical: Immediate (&lt; 15 min)
+  S2 High:     &lt; 1 hour
+  S3 Medium:   &lt; 4 hours
+  S4 Low:      &lt; 24 hours
+</code></pre>
+<hr />
+<h2 id="appendix-b-incident-checklist">Appendix B: Incident Checklist</h2>
+<pre><code>INCIDENT RESPONSE CHECKLIST
+
+□ Incident detected and confirmed
+□ Severity level assigned: S___
+□ GitHub issue created
+□ Incident Commander assigned
+□ Stakeholders notified
+□ Containment actions taken
+□ Evidence preserved
+□ Root cause identified
+□ Fix developed and tested
+□ Fix deployed to production
+□ Recovery verified
+□ Enhanced monitoring enabled
+□ Post-incident review scheduled
+□ RCA document completed
+□ CAPA actions assigned
+□ Incident closed
+</code></pre>
+    <div class="footer">Generated 2026-01-16 21:23 UTC</div>
+  </div>
+</body>
+</html>

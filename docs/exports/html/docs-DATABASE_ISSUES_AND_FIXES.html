@@ -1,0 +1,555 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <base href="file:///Users/morlock/fun/psscript/" />
+  <title>docs-DATABASE_ISSUES_AND_FIXES</title>
+  <style>
+:root {
+  color-scheme: light;
+}
+body {
+  font-family: "Segoe UI", "Helvetica Neue", Arial, sans-serif;
+  margin: 0;
+  padding: 0;
+  background: #ffffff;
+  color: #0f172a;
+}
+.markdown-body {
+  max-width: 980px;
+  margin: 40px auto 60px;
+  padding: 0 32px;
+  line-height: 1.65;
+}
+.markdown-body h1 {
+  font-size: 32px;
+  margin-bottom: 12px;
+  border-bottom: 2px solid #e2e8f0;
+  padding-bottom: 12px;
+  page-break-before: always;
+  page-break-after: avoid;
+  break-before: page;
+  break-after: avoid;
+}
+.markdown-body h1:first-of-type {
+  page-break-before: avoid;
+  break-before: avoid;
+}
+.markdown-body h2 {
+  font-size: 24px;
+  margin-top: 28px;
+  border-bottom: 1px solid #e2e8f0;
+  padding-bottom: 8px;
+  page-break-before: always;
+  page-break-after: avoid;
+  break-before: page;
+  break-after: avoid;
+}
+.markdown-body h3 {
+  font-size: 18px;
+  margin-top: 20px;
+  page-break-after: avoid;
+  break-after: avoid;
+}
+.markdown-body h4, .markdown-body h5, .markdown-body h6 {
+  page-break-after: avoid;
+  break-after: avoid;
+}
+.markdown-body table {
+  width: 100%;
+  border-collapse: collapse;
+  margin: 16px 0;
+  font-size: 14px;
+  page-break-inside: avoid;
+  break-inside: avoid;
+}
+.markdown-body th,
+.markdown-body td {
+  border: 1px solid #e2e8f0;
+  padding: 8px 10px;
+  text-align: left;
+}
+.markdown-body th {
+  background: #f8fafc;
+}
+.markdown-body tr {
+  page-break-inside: avoid;
+  break-inside: avoid;
+}
+.markdown-body code {
+  background: #f1f5f9;
+  padding: 2px 4px;
+  border-radius: 4px;
+  font-family: "SFMono-Regular", Menlo, Consolas, monospace;
+  font-size: 0.92em;
+}
+.markdown-body pre {
+  background: #0f172a;
+  color: #e2e8f0;
+  padding: 16px;
+  border-radius: 8px;
+  overflow-x: auto;
+  page-break-inside: avoid;
+  break-inside: avoid;
+}
+.markdown-body pre code {
+  background: transparent;
+  color: inherit;
+}
+.markdown-body blockquote {
+  border-left: 4px solid #38bdf8;
+  margin: 16px 0;
+  padding: 8px 16px;
+  background: #f8fafc;
+  color: #334155;
+}
+.markdown-body img {
+  max-width: 100%;
+  height: auto;
+  display: block;
+  margin: 16px 0;
+  border-radius: 10px;
+  box-shadow: 0 8px 20px rgba(15, 23, 42, 0.12);
+  page-break-inside: avoid;
+  break-inside: avoid;
+}
+.markdown-body figure {
+  page-break-inside: avoid;
+  break-inside: avoid;
+  margin: 16px 0;
+}
+.markdown-body a {
+  color: #2563eb;
+  text-decoration: none;
+}
+.markdown-body a:hover {
+  text-decoration: underline;
+}
+.cover {
+  padding: 80px 60px 60px;
+  background: linear-gradient(135deg, #0b1220 0%, #1e3a8a 100%);
+  color: #f8fafc;
+  border-radius: 18px;
+  margin-bottom: 32px;
+}
+.cover-title {
+  font-size: 36px;
+  font-weight: 700;
+  margin: 0 0 12px;
+}
+.cover-subtitle {
+  font-size: 18px;
+  color: #cbd5f5;
+  margin: 0 0 16px;
+}
+.cover-meta {
+  font-size: 13px;
+  color: #94a3b8;
+}
+.page-break {
+  page-break-after: always;
+  break-after: page;
+}
+.footer {
+  margin-top: 40px;
+  font-size: 12px;
+  color: #64748b;
+}
+/* Print and PDF-specific styles */
+@page {
+  margin: 20mm 18mm;
+}
+@media print {
+  .markdown-body {
+    orphans: 3;
+    widows: 3;
+  }
+  .markdown-body p {
+    orphans: 3;
+    widows: 3;
+  }
+  .markdown-body li {
+    page-break-inside: avoid;
+    break-inside: avoid;
+  }
+  .markdown-body ul, .markdown-body ol {
+    page-break-before: avoid;
+    break-before: avoid;
+  }
+  .markdown-body blockquote {
+    page-break-inside: avoid;
+    break-inside: avoid;
+  }
+  /* Keep section content together */
+  .markdown-body h2 + *, .markdown-body h3 + * {
+    page-break-before: avoid;
+    break-before: avoid;
+  }
+}
+</style>
+</head>
+<body>
+  <div class="markdown-body">
+    
+    <h1 id="database-issues-and-recommended-fixes">Database Issues and Recommended Fixes</h1>
+<h2 id="psscript-platform-january-15-2026-audit">PSScript Platform - January 15, 2026 Audit</h2>
+<hr />
+<h2 id="summary">Summary</h2>
+<table>
+<thead>
+<tr>
+<th>Priority</th>
+<th>Count</th>
+<th>Status</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Critical</td>
+<td>2</td>
+<td>Needs Immediate Fix</td>
+</tr>
+<tr>
+<td>High</td>
+<td>5</td>
+<td>Fix This Sprint</td>
+</tr>
+<tr>
+<td>Medium</td>
+<td>8</td>
+<td>Backlog</td>
+</tr>
+<tr>
+<td>Low</td>
+<td>4</td>
+<td>Nice to Have</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="critical-issues">Critical Issues</h2>
+<h3 id="crit-001-missing-exports-in-database-connection-module">CRIT-001: Missing Exports in Database Connection Module</h3>
+<p><strong>File:</strong> <code>src/backend/src/models/index.ts</code></p>
+<p><strong>Issue:</strong> The models index file imports <code>dbConnectionInfo</code> and <code>connectionEvents</code> from the connection module, but these exports don't exist in <code>src/backend/src/database/connection.ts</code>.</p>
+<pre><code class="language-typescript">// Current (BROKEN):
+import { dbConnectionInfo, connectionEvents } from '../database/connection';
+
+// connection.ts does NOT export these
+</code></pre>
+<p><strong>Impact:</strong>
+- Application may crash on import
+- TypeScript errors silently ignored due to <code>@ts-nocheck</code></p>
+<p><strong>Fix:</strong></p>
+<pre><code class="language-typescript">// Option 1: Add exports to connection.ts
+export const dbConnectionInfo = {
+  host: process.env.DB_HOST,
+  port: process.env.DB_PORT,
+  database: process.env.DB_NAME,
+  poolSize: POOL_MAX
+};
+
+export const connectionEvents = new EventEmitter();
+
+// Option 2: Remove unused imports from index.ts
+// Remove the import line entirely if not needed
+</code></pre>
+<p><strong>Priority:</strong> CRITICAL
+<strong>Effort:</strong> 30 minutes
+<strong>Risk if unfixed:</strong> Application instability</p>
+<hr />
+<h3 id="crit-002-schema-mismatch-between-sql-and-models">CRIT-002: Schema Mismatch Between SQL and Models</h3>
+<p><strong>Issue:</strong> The base <code>schema.sql</code> doesn't include several columns that migrations add, creating potential sync issues on fresh installs.</p>
+<p><strong>Missing from schema.sql:</strong>
+- <code>scripts.file_hash</code> (added by migration)
+- <code>users.last_login_at</code> (added by migration)
+- <code>users.login_attempts</code> (added by migration)
+- <code>users.locked_until</code> (added by migration)
+- Extended <code>script_analysis</code> JSONB columns</p>
+<p><strong>Impact:</strong>
+- Fresh database setup may have incomplete schema
+- Migration order dependencies
+- Docker initialization inconsistency</p>
+<p><strong>Fix:</strong>
+Update <code>src/db/schema.sql</code> to include all current columns:</p>
+<pre><code class="language-sql">-- Add to users table:
+last_login_at TIMESTAMP WITH TIME ZONE,
+login_attempts INTEGER DEFAULT 0,
+locked_until TIMESTAMP WITH TIME ZONE,
+
+-- Add to scripts table:
+file_hash VARCHAR(255),
+
+-- Update script_analysis with all JSONB fields
+</code></pre>
+<p><strong>Priority:</strong> CRITICAL
+<strong>Effort:</strong> 2 hours
+<strong>Risk if unfixed:</strong> Data inconsistency on new deployments</p>
+<hr />
+<h2 id="high-priority-issues">High Priority Issues</h2>
+<h3 id="high-001-missing-cascade-on-user-script-relationship">HIGH-001: Missing CASCADE on User-Script Relationship</h3>
+<p><strong>File:</strong> <code>src/db/schema.sql</code></p>
+<p><strong>Issue:</strong> The <code>scripts.user_id</code> foreign key doesn't specify cascade behavior.</p>
+<pre><code class="language-sql">-- Current:
+user_id INTEGER REFERENCES users(id),
+
+-- Should be:
+user_id INTEGER REFERENCES users(id) ON DELETE CASCADE,
+</code></pre>
+<p><strong>Impact:</strong> Orphaned scripts when users are deleted</p>
+<p><strong>Fix:</strong> Add migration to alter foreign key constraint</p>
+<p><strong>Priority:</strong> HIGH
+<strong>Effort:</strong> 1 hour</p>
+<hr />
+<h3 id="high-002-missing-index-on-file_hash-column">HIGH-002: Missing Index on file_hash Column</h3>
+<p><strong>File:</strong> Index configuration</p>
+<p><strong>Issue:</strong> The <code>file_hash</code> column is used for deduplication queries but may not have an index in the migration.</p>
+<p><strong>Current Query Pattern:</strong></p>
+<pre><code class="language-sql">SELECT * FROM scripts WHERE file_hash = 'abc123...'
+</code></pre>
+<p><strong>Fix:</strong></p>
+<pre><code class="language-sql">CREATE INDEX IF NOT EXISTS idx_scripts_file_hash ON scripts(file_hash);
+</code></pre>
+<p><strong>Priority:</strong> HIGH
+<strong>Effort:</strong> 15 minutes</p>
+<hr />
+<h3 id="high-003-inadequate-connection-pool-size-for-production">HIGH-003: Inadequate Connection Pool Size for Production</h3>
+<p><strong>File:</strong> <code>src/backend/src/database/connection.ts</code></p>
+<p><strong>Issue:</strong> Pool max of 10 connections may be insufficient for production traffic.</p>
+<p><strong>Current:</strong></p>
+<pre><code class="language-typescript">const POOL_MAX = 10;
+</code></pre>
+<p><strong>Recommendation:</strong>
+- Development: 5-10
+- Staging: 15-20
+- Production: 25-50 (based on load testing)</p>
+<p><strong>Fix:</strong></p>
+<pre><code class="language-typescript">const POOL_MAX = parseInt(process.env.DB_POOL_MAX || '10');
+</code></pre>
+<p><strong>Priority:</strong> HIGH
+<strong>Effort:</strong> 30 minutes</p>
+<hr />
+<h3 id="high-004-no-index-on-chat_historyembedding-column">HIGH-004: No Index on chat_history.embedding Column</h3>
+<p><strong>Issue:</strong> Vector similarity searches on chat history will be slow without an index.</p>
+<p><strong>Fix:</strong></p>
+<pre><code class="language-sql">CREATE INDEX IF NOT EXISTS chat_history_embedding_idx
+ON chat_history USING ivfflat (embedding vector_cosine_ops)
+WITH (lists = 100);
+</code></pre>
+<p><strong>Priority:</strong> HIGH
+<strong>Effort:</strong> 30 minutes</p>
+<hr />
+<h3 id="high-005-raw-sql-queries-in-analytics-controller">HIGH-005: Raw SQL Queries in Analytics Controller</h3>
+<p><strong>File:</strong> Analytics routes</p>
+<p><strong>Issue:</strong> Mixed use of Sequelize ORM and raw SQL queries reduces consistency and may have SQL injection vectors.</p>
+<p><strong>Example:</strong></p>
+<pre><code class="language-typescript">// Raw SQL mixed with ORM
+await sequelize.query(`SELECT ... FROM script_analysis ...`);
+</code></pre>
+<p><strong>Fix:</strong> Convert to Sequelize query methods or ensure parameterization</p>
+<p><strong>Priority:</strong> HIGH
+<strong>Effort:</strong> 4 hours</p>
+<hr />
+<h2 id="medium-priority-issues">Medium Priority Issues</h2>
+<h3 id="med-001-missing-updatedat-trigger-for-automatic-timestamps">MED-001: Missing updatedAt Trigger for Automatic Timestamps</h3>
+<p><strong>Issue:</strong> PostgreSQL doesn't automatically update <code>updated_at</code> columns. Sequelize handles this, but raw SQL updates won't.</p>
+<p><strong>Fix:</strong></p>
+<pre><code class="language-sql">CREATE OR REPLACE FUNCTION update_updated_at_column()
+RETURNS TRIGGER AS $$
+BEGIN
+    NEW.updated_at = CURRENT_TIMESTAMP;
+    RETURN NEW;
+END;
+$$ language 'plpgsql';
+
+CREATE TRIGGER update_scripts_updated_at
+    BEFORE UPDATE ON scripts
+    FOR EACH ROW
+    EXECUTE FUNCTION update_updated_at_column();
+</code></pre>
+<p><strong>Priority:</strong> MEDIUM
+<strong>Effort:</strong> 1 hour</p>
+<hr />
+<h3 id="med-002-no-soft-delete-implementation">MED-002: No Soft Delete Implementation</h3>
+<p><strong>Issue:</strong> All deletes are hard deletes, making recovery impossible.</p>
+<p><strong>Recommendation:</strong> Add <code>deleted_at</code> column for soft deletes on critical tables (scripts, users).</p>
+<pre><code class="language-sql">ALTER TABLE scripts ADD COLUMN deleted_at TIMESTAMP WITH TIME ZONE;
+CREATE INDEX idx_scripts_deleted_at ON scripts(deleted_at);
+</code></pre>
+<p><strong>Priority:</strong> MEDIUM
+<strong>Effort:</strong> 4 hours</p>
+<hr />
+<h3 id="med-003-script-content-not-compressed">MED-003: Script Content Not Compressed</h3>
+<p><strong>Issue:</strong> Large PowerShell scripts stored as plain TEXT consume significant storage.</p>
+<p><strong>Recommendation:</strong> Consider TOAST compression or application-level compression for scripts &gt; 10KB.</p>
+<p><strong>Priority:</strong> MEDIUM
+<strong>Effort:</strong> 8 hours</p>
+<hr />
+<h3 id="med-004-no-database-backup-automation">MED-004: No Database Backup Automation</h3>
+<p><strong>Issue:</strong> No automated backup strategy documented or implemented.</p>
+<p><strong>Fix:</strong> Add pg_dump scheduled backup:</p>
+<pre><code class="language-bash"># Add to cron (daily at 2 AM)
+0 2 * * * pg_dump -h localhost -U postgres psscript | gzip &gt; /backups/psscript_$(date +\%Y\%m\%d).sql.gz
+</code></pre>
+<p><strong>Priority:</strong> MEDIUM
+<strong>Effort:</strong> 2 hours</p>
+<hr />
+<h3 id="med-005-missing-unique-constraint-on-scriptanalysis">MED-005: Missing Unique Constraint on ScriptAnalysis</h3>
+<p><strong>Issue:</strong> One-to-one relationship between Script and ScriptAnalysis not enforced at DB level.</p>
+<p><strong>Fix:</strong></p>
+<pre><code class="language-sql">ALTER TABLE script_analysis ADD CONSTRAINT script_analysis_script_id_unique UNIQUE (script_id);
+</code></pre>
+<p><strong>Priority:</strong> MEDIUM
+<strong>Effort:</strong> 30 minutes</p>
+<hr />
+<h3 id="med-006-execution_logs-growing-unbounded">MED-006: execution_logs Growing Unbounded</h3>
+<p><strong>Issue:</strong> No retention policy for execution logs. Table will grow indefinitely.</p>
+<p><strong>Fix:</strong> Add partition by date or scheduled cleanup:</p>
+<pre><code class="language-sql">-- Delete logs older than 90 days
+DELETE FROM execution_logs WHERE created_at &lt; NOW() - INTERVAL '90 days';
+</code></pre>
+<p><strong>Priority:</strong> MEDIUM
+<strong>Effort:</strong> 2 hours</p>
+<hr />
+<h3 id="med-007-redis-cache-key-collision-risk">MED-007: Redis Cache Key Collision Risk</h3>
+<p><strong>Issue:</strong> Cache key patterns may collide across different filter combinations.</p>
+<p><strong>Current:</strong></p>
+<pre><code class="language-typescript">const cacheKey = `scripts:${page}:${limit}:${categoryId}`;
+</code></pre>
+<p><strong>Fix:</strong> Use deterministic hashing for complex filter combinations:</p>
+<pre><code class="language-typescript">const filterHash = crypto.createHash('md5').update(JSON.stringify(filters)).digest('hex');
+const cacheKey = `scripts:${filterHash}`;
+</code></pre>
+<p><strong>Priority:</strong> MEDIUM
+<strong>Effort:</strong> 2 hours</p>
+<hr />
+<h3 id="med-008-no-connection-monitoringalerting">MED-008: No Connection Monitoring/Alerting</h3>
+<p><strong>Issue:</strong> No metrics collection for database connection health.</p>
+<p><strong>Recommendation:</strong> Add Prometheus metrics:
+- Connection pool utilization
+- Query execution time histogram
+- Error rate by type</p>
+<p><strong>Priority:</strong> MEDIUM
+<strong>Effort:</strong> 8 hours</p>
+<hr />
+<h2 id="low-priority-issues">Low Priority Issues</h2>
+<h3 id="low-001-inconsistent-timestamp-column-names">LOW-001: Inconsistent Timestamp Column Names</h3>
+<p><strong>Issue:</strong> Mixed naming conventions: <code>created_at</code> vs <code>createdAt</code>, <code>updated_at</code> vs <code>updatedAt</code>.</p>
+<p><strong>Tables with underscore:</strong> PostgreSQL schema
+<strong>Tables with camelCase:</strong> Sequelize defaults</p>
+<p><strong>Fix:</strong> Standardize on one convention (underscore recommended for PostgreSQL)</p>
+<p><strong>Priority:</strong> LOW
+<strong>Effort:</strong> 4 hours</p>
+<hr />
+<h3 id="low-002-no-database-comments-on-all-tables">LOW-002: No Database Comments on All Tables</h3>
+<p><strong>Issue:</strong> Only <code>script_analysis</code> has column comments. Other tables lack documentation.</p>
+<p><strong>Fix:</strong></p>
+<pre><code class="language-sql">COMMENT ON TABLE scripts IS 'PowerShell scripts uploaded by users';
+COMMENT ON COLUMN scripts.file_hash IS 'MD5 hash for deduplication';
+</code></pre>
+<p><strong>Priority:</strong> LOW
+<strong>Effort:</strong> 2 hours</p>
+<hr />
+<h3 id="low-003-ts-nocheck-in-models-index">LOW-003: @ts-nocheck in Models Index</h3>
+<p><strong>Issue:</strong> TypeScript checking disabled, hiding potential type errors.</p>
+<p><strong>File:</strong> <code>src/backend/src/models/index.ts</code></p>
+<pre><code class="language-typescript">// @ts-nocheck - Required for circular model references
+</code></pre>
+<p><strong>Fix:</strong> Properly type associations to remove @ts-nocheck</p>
+<p><strong>Priority:</strong> LOW
+<strong>Effort:</strong> 8 hours</p>
+<hr />
+<h3 id="low-004-missing-documentation-model-validation">LOW-004: Missing Documentation Model Validation</h3>
+<p><strong>Issue:</strong> URL length (2048 chars) may be insufficient for some Microsoft Learn URLs with query strings.</p>
+<p><strong>Fix:</strong> Consider TEXT type or validate URL length on input</p>
+<p><strong>Priority:</strong> LOW
+<strong>Effort:</strong> 1 hour</p>
+<hr />
+<h2 id="performance-optimization-recommendations">Performance Optimization Recommendations</h2>
+<h3 id="perf-001-add-partial-indexes-for-common-queries">PERF-001: Add Partial Indexes for Common Queries</h3>
+<pre><code class="language-sql">-- Only index public scripts (most common query)
+CREATE INDEX idx_scripts_public ON scripts(created_at) WHERE is_public = true;
+
+-- Only index active users (not locked)
+CREATE INDEX idx_users_active ON users(last_login_at) WHERE locked_until IS NULL;
+</code></pre>
+<h3 id="perf-002-consider-read-replicas">PERF-002: Consider Read Replicas</h3>
+<p>For production with &gt; 1000 concurrent users, implement read replicas for:
+- Script listings
+- Search queries
+- Analytics</p>
+<h3 id="perf-003-implement-query-result-caching">PERF-003: Implement Query Result Caching</h3>
+<p>Current caching covers basic lists. Extend to:
+- Search results (with short TTL)
+- Analytics aggregations (longer TTL)
+- User profiles</p>
+<h3 id="perf-004-optimize-vector-search">PERF-004: Optimize Vector Search</h3>
+<p>Current IVFFlat index with 100 lists. For &gt; 100,000 scripts:
+- Increase lists to 300-500
+- Consider HNSW index for better recall
+- Implement approximate search with result reranking</p>
+<hr />
+<h2 id="migration-checklist-for-fixes">Migration Checklist for Fixes</h2>
+<h3 id="sprint-1-immediate">Sprint 1 (Immediate)</h3>
+<ul>
+<li>[ ] CRIT-001: Fix connection module exports</li>
+<li>[ ] CRIT-002: Update schema.sql with all columns</li>
+<li>[ ] HIGH-002: Add file_hash index</li>
+</ul>
+<h3 id="sprint-2-this-week">Sprint 2 (This Week)</h3>
+<ul>
+<li>[ ] HIGH-001: Add CASCADE to foreign keys</li>
+<li>[ ] HIGH-003: Make pool size configurable</li>
+<li>[ ] HIGH-004: Add chat_history embedding index</li>
+</ul>
+<h3 id="sprint-3-this-month">Sprint 3 (This Month)</h3>
+<ul>
+<li>[ ] HIGH-005: Refactor raw SQL queries</li>
+<li>[ ] MED-001: Add updated_at triggers</li>
+<li>[ ] MED-005: Add unique constraint on script_analysis</li>
+</ul>
+<h3 id="backlog">Backlog</h3>
+<ul>
+<li>[ ] MED-002: Implement soft deletes</li>
+<li>[ ] MED-006: Add execution_logs retention</li>
+<li>[ ] All LOW priority items</li>
+</ul>
+<hr />
+<h2 id="testing-requirements">Testing Requirements</h2>
+<p>After implementing fixes, verify:</p>
+<ol>
+<li>
+<p><strong>Schema Consistency</strong>
+   <code>bash
+   # Compare schema.sql with actual database
+   pg_dump -h localhost -U postgres --schema-only psscript &gt; actual_schema.sql
+   diff schema.sql actual_schema.sql</code></p>
+</li>
+<li>
+<p><strong>Index Verification</strong>
+   <code>sql
+   SELECT indexname, indexdef
+   FROM pg_indexes
+   WHERE tablename IN ('scripts', 'users', 'script_analysis');</code></p>
+</li>
+<li>
+<p><strong>Foreign Key Integrity</strong>
+   <code>sql
+   SELECT conname, conrelid::regclass, confrelid::regclass
+   FROM pg_constraint
+   WHERE contype = 'f';</code></p>
+</li>
+<li>
+<p><strong>Performance Baseline</strong></p>
+</li>
+<li>Run query performance tests before/after index changes</li>
+<li>Document response times for common queries</li>
+</ol>
+<hr />
+<p><em>Audit completed: January 15, 2026</em>
+<em>Next audit scheduled: April 15, 2026</em>
+<em>Auditor: Claude Code (Opus 4.5)</em></p>
+    <div class="footer">Generated 2026-01-16 21:23 UTC</div>
+  </div>
+</body>
+</html>
