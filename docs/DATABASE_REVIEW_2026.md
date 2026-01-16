@@ -241,7 +241,8 @@ CREATE INDEX idx_scripts_content_trgm ON scripts USING GIN (content gin_trgm_ops
 ### Sprint 2 (High - Next 2 Weeks)
 - [ ] Fix N+1 queries with eager loading
 - [ ] Increase pool min to 2
-- [ ] Create Sequelize models for agent tables
+- [x] Create Sequelize models for missing tables (Comment, UserFavorite, ScriptDependency - completed 2026-01-16)
+- [ ] Create Sequelize models for agent tables (agent_state, conversation_history, tool_execution_results)
 
 ### Sprint 3 (Medium - This Month)
 - [ ] Add composite indexes for common queries
@@ -312,5 +313,14 @@ tool_execution_results (id, agent_id, tool_name, input, output, created_at)
 ---
 
 *Generated: January 15, 2026*
+*Updated: January 16, 2026*
 *Review Frequency: Quarterly*
 *Next Review: April 15, 2026*
+
+---
+
+## Update History
+
+| Date | Change | Document |
+|------|--------|----------|
+| 2026-01-16 | Added 4 FK indexes, 3 Sequelize models, monitoring panel | [DATABASE_UPDATE_2026-01-16.md](./DATABASE_UPDATE_2026-01-16.md) |
