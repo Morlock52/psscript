@@ -13,6 +13,7 @@ import { Sequelize, Options } from 'sequelize';
 import winston from 'winston';
 import fs from 'fs';
 import path from 'path';
+import { EventEmitter } from 'events';
 import { IS_PRODUCTION, IS_DEVELOPMENT } from '../utils/envValidation';
 
 // Configure logger
@@ -351,6 +352,22 @@ export default db;
 
 // Export sequelize instance for model initialization
 export const sequelize = db.sequelize;
+
+// Connection events emitter for diagnostics and monitoring
+// Emits: 'connected', 'disconnected', 'error', 'retry'
+export const connectionEvents = new EventEmitter();
+
+// Connection info for diagnostics (safe to expose - no passwords)
+export const dbConnectionInfo = {
+  host: process.env.DB_HOST || 'localhost',
+  port: parseInt(process.env.DB_PORT || '5432'),
+  database: process.env.DB_NAME || 'psscript',
+  poolMax: parseInt(process.env.DB_POOL_MAX || String(POOL_MAX)),
+  poolMin: POOL_MIN,
+  connectionTimeout: CONNECTION_TIMEOUT_MS,
+  maxRetries: MAX_CONNECTION_RETRIES,
+  dialect: 'postgres' as const
+};
 
 // Debug: Log to verify sequelize is defined
 if (!sequelize) {

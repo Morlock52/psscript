@@ -65,8 +65,9 @@ services:
     depends_on:
       - postgres
     environment:
-      - OPENAI_API_KEY=demo-key-for-development
-      - MOCK_MODE=true
+      - OPENAI_API_KEY=${OPENAI_API_KEY:-demo-key-for-development}
+      - ANTHROPIC_API_KEY=${ANTHROPIC_API_KEY:-}
+      - MOCK_MODE=${MOCK_MODE:-true}
       - DB_HOST=postgres
       - DB_PORT=5432
       - DB_NAME=psscript

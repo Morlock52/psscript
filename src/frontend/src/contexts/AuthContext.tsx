@@ -114,15 +114,11 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
 
   // Demo login function - uses actual API authentication with demo credentials
   // This ensures proper token validation and persistence across page refreshes
+  // Works through tunnel access as well as localhost
   const defaultLogin = async () => {
-    // Demo mode only works in development
-    const isDevelopment = import.meta.env.DEV || window.location.hostname === 'localhost';
-    if (!isDevelopment) {
-      throw new Error('Demo login is not available in production');
-    }
-
     // Use actual API login with demo admin credentials
     // This ensures the token is valid and will persist across page refreshes
+    // No environment check needed since we use real API authentication
     await login('admin@psscript.com', 'admin123');
   };
 

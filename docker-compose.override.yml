@@ -40,8 +40,9 @@ services:
     environment:
       FLASK_ENV: development
       FLASK_DEBUG: 1
-      MOCK_MODE: "true"  # Enable mock mode for development
+      MOCK_MODE: ${MOCK_MODE:-false}  # Set to true for mock mode, false for real AI
       OPENAI_API_KEY: ${OPENAI_API_KEY:-demo-key-for-development}
+      ANTHROPIC_API_KEY: ${ANTHROPIC_API_KEY:-}
     command: uvicorn main:app --host=0.0.0.0 --port=8000 --reload
     ports:
       - "8000:8000"

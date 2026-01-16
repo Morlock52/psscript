@@ -14,13 +14,13 @@ Think of this document as a painted map with fixed constellations. The colors ar
 The repository is a multi-service PowerShell script analysis platform with agentic AI capabilities. The core services are backend (TypeScript/Express), frontend (React/Vite), AI service (Python/FastAPI), and a PostgreSQL + Redis data layer. Ports are fixed and must not change. Docker Compose can bring the stack up or down, and there is a dedicated start script for the agentic system. The backend and frontend each provide standard npm workflows, and the AI service can be started directly via Python. A Cloudflare tunnel exposes the frontend with a production build.
 
 Key facts from the core guidance:
-- Ports are fixed: 3000 (frontend), 4000 (backend), 8001 (AI), 5432 (PostgreSQL), 6379 (Redis).
+- Ports are fixed: 3000 (frontend), 4000 (backend), 8000 (AI), 5432 (PostgreSQL), 6379 (Redis).
 - Use `./scripts/ensure-ports.sh` to check or free ports.
 - `docker-compose up` and `docker-compose down` are the stack toggles.
 - `./start-all-agentic.sh` starts the full agentic system.
 - Backend commands live under `src/backend` and use npm.
 - Frontend commands live under `src/frontend` and use npm.
-- AI service starts via `cd src/ai && python main.py` on port 8001.
+- AI service starts via `cd src/ai && python main.py` on port 8000.
 - Cloudflare tunnel URL and config are fixed; production frontend build is required.
 
 ## Immutable Rules (The Red Line)
@@ -61,7 +61,7 @@ Use the Vite dev server for local work, and use the production build for tunnel 
 
 ### AI Service (Python/FastAPI)
 - `cd src/ai && python main.py` - Start AI service directly.
-- AI service runs on port 8001 by default.
+- AI service runs on port 8000 by default.
 
 The AI service is a separate runtime. Start it explicitly when you need AI operations.
 
@@ -70,7 +70,7 @@ The AI service is a separate runtime. Start it explicitly when you need AI opera
 |-----------|------|------------------------------------------|
 | Frontend  | 3000 | React app (prod build for tunnel access) |
 | Backend   | 4000 | Express API server                       |
-| AI Service| 8001 | FastAPI Python service                   |
+| AI Service| 8000 | FastAPI Python service                   |
 | PostgreSQL| 5432 | Database                                 |
 | Redis     | 6379 | Cache                                    |
 
@@ -178,7 +178,7 @@ In Crimson mode, prefer short, sharp loops: observe, act, verify, and write a si
 Signals that the color is working: the right service is on the right port, the frontend, backend, AI service, and data layer stay in their lanes, and the logs are quiet. If any of those drift, pause and re-anchor to the core.
 Wild note: Crimson is not chaos, it is controlled brightness. Use it to keep the work vivid, but let the facts drive the steering.
 Anchors:
-- Ports are fixed: 3000, 4000, 8001, 5432, 6379.
+- Ports are fixed: 3000, 4000, 8000, 5432, 6379.
 - Use ./scripts/ensure-ports.sh status and kill-frontend/kill-backend.
 Rituals:
 - State the service and port before you touch anything.
@@ -539,7 +539,7 @@ Signals that the color is working: the right service is on the right port, the f
 Wild note: Teal is not chaos, it is controlled brightness. Use it to keep the work vivid, but let the facts drive the steering.
 Anchors:
 - AI service start: cd src/ai && python main.py.
-- AI service runs on port 8001.
+- AI service runs on port 8000.
 Rituals:
 - State the service and port before you touch anything.
 - Pick one command from the core list and run only that.
@@ -1136,7 +1136,7 @@ Micro-checklist:
 - Agentic system: The workflow engine and tools that coordinate multi-step AI analysis.
 - Backend: The TypeScript/Express service at `src/backend`.
 - Frontend: The React/Vite web UI at `src/frontend`.
-- AI service: The Python/FastAPI service at `src/ai` on port 8001.
+- AI service: The Python/FastAPI service at `src/ai` on port 8000.
 - RunEngine: Orchestrator for multi-step AI workflows in `RunEngine.ts`.
 - Tool: A modular AI unit under `src/backend/src/services/agentic/tools`.
 - ScriptGenerator: Tool that generates PowerShell scripts.
@@ -1172,7 +1172,7 @@ Q: If I only need backend work, what do I run?
 A: Use the backend npm scripts from `src/backend`.
 
 Q: How do I start the AI service on its own?
-A: `cd src/ai && python main.py` starts it on port 8001.
+A: `cd src/ai && python main.py` starts it on port 8000.
 
 Q: Where does security analysis happen?
 A: In the backend agentic tools, including `SecurityAnalyzer.ts`.
@@ -1199,7 +1199,7 @@ These are short, action-focused playbooks. Each one is vivid, but every step is 
 ### Playbook: Agentic Sprint
 - Goal: run the agentic workflow with the full stack in place.
 - Run: `./start-all-agentic.sh`.
-- Verify: the AI service is on port 8001 and the backend is on 4000.
+- Verify: the AI service is on port 8000 and the backend is on 4000.
 - Confirm: RunEngine and tools are responding to requests.
 - If uncertain: return to Core Commands and re-align.
 
@@ -1225,7 +1225,7 @@ These are short, action-focused playbooks. Each one is vivid, but every step is 
 ### Playbook: AI Service Solo
 - Goal: run and test AI service directly.
 - Run: `cd src/ai && python main.py`.
-- Verify: the AI service stays on port 8001.
+- Verify: the AI service stays on port 8000.
 - Confirm: endpoints respond as expected.
 
 ### Playbook: Port Conflict Rescue
@@ -1252,7 +1252,7 @@ These are short, action-focused playbooks. Each one is vivid, but every step is 
 - Goal: validate semantic search storage and retrieval.
 - Confirm: vector embeddings are written after analysis.
 - Verify: query uses the vector database path.
-- Keep the AI service running on port 8001.
+- Keep the AI service running on port 8000.
 
 ### Playbook: Calm Shutdown
 - Goal: stop services cleanly and free ports.
@@ -1287,13 +1287,13 @@ Frontend:
 
 Backend:
 - Owns API, orchestration, and the agentic system.
-- Talks to AI service on port 8001.
+- Talks to AI service on port 8000.
 - Talks to database and cache.
 - Runs on port 4000.
 
 AI Service:
 - Owns model-backed analysis and vector operations.
-- Runs on port 8001.
+- Runs on port 8000.
 - Exposes FastAPI endpoints.
 
 Database and Cache:
@@ -1332,7 +1332,7 @@ Database and Cache:
 - Yellow storm: startup confusion -> use the canonical start command.
 - Blue storm: backend is down -> start backend and confirm port 4000.
 - Green storm: frontend is down -> start frontend and confirm port 3000.
-- Teal storm: AI errors -> restart AI service on port 8001.
+- Teal storm: AI errors -> restart AI service on port 8000.
 - Silver storm: tests failing -> rerun tests after confirming ports.
 - Black storm: multiple failures -> stop everything, reset, and start clean.
 
@@ -1353,7 +1353,7 @@ Database and Cache:
 ## Practice Drills (Use to Stay Sharp)
 - Drill 1: Start the backend and confirm port 4000.
 - Drill 2: Start the frontend and confirm port 3000.
-- Drill 3: Start AI service and confirm port 8001.
+- Drill 3: Start AI service and confirm port 8000.
 - Drill 4: Run an upload and confirm dedup.
 - Drill 5: Run analysis and confirm results arrive.
 
@@ -1403,14 +1403,14 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ### AI Service (Python/FastAPI)
 - `cd src/ai && python main.py` - Start AI service directly
-- AI service runs on port 8001 by default
+- AI service runs on port 8000 by default
 
 ### Port Assignments (DO NOT CHANGE)
 | Service   | Port | Notes                                    |
 |-----------|------|------------------------------------------|
 | Frontend  | 3000 | React app (prod build for tunnel access) |
 | Backend   | 4000 | Express API server                       |
-| AI Service| 8001 | FastAPI Python service                   |
+| AI Service| 8000 | FastAPI Python service                   |
 | PostgreSQL| 5432 | Database                                 |
 | Redis     | 6379 | Cache                                    |
 

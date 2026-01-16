@@ -8,13 +8,10 @@ export default class ExecutionLog extends Model {
   public userId!: number | null;
   public parameters!: object;
   public status!: string;
-  public output!: string | null;
   public errorMessage!: string | null;
   public executionTime!: number;
-  public ipAddress!: string | null;
   
   public readonly createdAt!: Date;
-  public readonly updatedAt!: Date;
 
   // References
   public readonly script?: Script;
@@ -50,12 +47,11 @@ export default class ExecutionLog extends Model {
         defaultValue: {}
       },
       status: {
-        type: DataTypes.ENUM('success', 'failure', 'timeout', 'cancelled'),
-        allowNull: false
-      },
-      output: {
-        type: DataTypes.TEXT,
-        allowNull: true
+        type: DataTypes.STRING(50), // Matches VARCHAR(50) in database
+        allowNull: false,
+        validate: {
+          isIn: [['success', 'failure', 'timeout', 'cancelled']]
+        }
       },
       errorMessage: {
         type: DataTypes.TEXT,
@@ -66,14 +62,11 @@ export default class ExecutionLog extends Model {
         allowNull: false,
         defaultValue: 0
       },
-      ipAddress: {
-        type: DataTypes.STRING(45), // IPv6 can be up to 45 chars
-        allowNull: true
-      }
     }, {
       sequelize,
       tableName: 'execution_logs',
       underscored: true,
+      updatedAt: false, // execution_logs table only has created_at
       indexes: [
         {
           fields: ['scriptId']

@@ -3,9 +3,6 @@ import { Model, DataTypes, Sequelize } from 'sequelize';
 export default class ScriptTag extends Model {
   public scriptId!: number;
   public tagId!: number;
-  
-  public readonly createdAt!: Date;
-  public readonly updatedAt!: Date;
 
   static initialize(sequelize: Sequelize) {
     ScriptTag.init({
@@ -32,7 +29,7 @@ export default class ScriptTag extends Model {
     }, {
       sequelize,
       tableName: 'script_tags',
-      timestamps: true,
+      timestamps: false, // Junction table has no timestamps
       underscored: true
     });
   }

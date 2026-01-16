@@ -26,7 +26,8 @@ export default class Tag extends Model {
     }, {
       sequelize,
       tableName: 'tags',
-      underscored: true
+      underscored: true,
+      updatedAt: false // tags table only has created_at
     });
   }
 
