@@ -44,10 +44,11 @@ export async function getVersionHistory(
       return res.status(404).json({ error: 'Script not found' });
     }
 
-    // Fetch all versions for this script
+    // Fetch all versions for this script with content included
+    // This avoids N+1 queries by fetching everything in one query
     const versions = await ScriptVersion.findAll({
       where: { scriptId },
-      attributes: ['id', 'version', 'changelog', 'userId', 'createdAt'],
+      attributes: ['id', 'version', 'changelog', 'userId', 'createdAt', 'content'],
       include: [
         { model: User, as: 'user', attributes: ['id', 'username'] }
       ],
@@ -65,32 +66,35 @@ export async function getVersionHistory(
       linesChanged?: number;
     };
 
+    // Build a map of version number to line count for O(1) lookup
+    const lineCountMap = new Map<number, number>();
+    for (const v of versions) {
+      lineCountMap.set(v.version, v.content.split('\n').length);
+    }
+
     // Calculate basic diff stats for each version (lines changed)
-    const versionsWithStats = await Promise.all(
-      versions.map(async (v, index): Promise<VersionData> => {
-        const versionData = v.toJSON() as VersionData;
+    // Now O(n) with no additional database queries
+    // NOTE: linesChanged uses v.version - 1, which assumes sequential version numbers.
+    // If versions are deleted (e.g., versions 1,2,5 exist), version 5 will show no linesChanged
+    // because version 4 does not exist. This matches the original behavior.
+    const versionsWithStats: VersionData[] = versions.map((v, index) => {
+      const versionData = v.toJSON() as VersionData & { content?: string };
 
-        // Get content for this version and previous version
-        if (index < versions.length - 1) {
-          const currentContent = await ScriptVersion.findOne({
-            where: { scriptId, version: v.version },
-            attributes: ['content']
-          });
-          const previousContent = await ScriptVersion.findOne({
-            where: { scriptId, version: v.version - 1 },
-            attributes: ['content']
-          });
+      // Calculate lines changed compared to previous version number
+      if (index < versions.length - 1) {
+        const currentLines = lineCountMap.get(v.version);
+        const previousLines = lineCountMap.get(v.version - 1);
 
-          if (currentContent && previousContent) {
-            const currentLines = currentContent.content.split('\n').length;
-            const previousLines = previousContent.content.split('\n').length;
-            versionData.linesChanged = Math.abs(currentLines - previousLines);
-          }
+        if (currentLines !== undefined && previousLines !== undefined) {
+          versionData.linesChanged = Math.abs(currentLines - previousLines);
         }
+      }
 
-        return versionData;
-      })
-    );
+      // Remove content from response (not needed in version list)
+      delete versionData.content;
+
+      return versionData;
+    });
 
     logger.info(`[GetVersionHistory] Found ${versions.length} versions for script ${scriptId}`);
 

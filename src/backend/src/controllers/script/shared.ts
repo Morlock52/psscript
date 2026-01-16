@@ -31,6 +31,36 @@ export const AI_SERVICE_URL: string = isDocker
   ? (process.env.AI_SERVICE_URL || 'http://ai-service:8000')
   : (process.env.AI_SERVICE_URL || 'http://localhost:8000');
 
+/**
+ * Timeout constants for API requests (in milliseconds)
+ * Centralized to enable consistent configuration across all controllers
+ */
+export const TIMEOUTS = {
+  /** Quick operations like status checks */
+  QUICK: 15_000,           // 15 seconds
+  /** Standard analysis requests */
+  STANDARD: 20_000,        // 20 seconds
+  /** Full analysis with more processing */
+  FULL_ANALYSIS: 30_000,   // 30 seconds
+  /** Extended operations like batch processing */
+  EXTENDED: 120_000,       // 2 minutes
+  /** Long-running agentic AI workflows */
+  AGENTIC_WORKFLOW: 300_000 // 5 minutes
+} as const;
+
+/**
+ * Cache TTL constants (in seconds)
+ * Used for Redis/in-memory caching of results
+ */
+export const CACHE_TTL = {
+  /** Short-lived cache for frequently changing data */
+  SHORT: 300,      // 5 minutes
+  /** Standard cache for analysis results */
+  STANDARD: 3600,  // 1 hour
+  /** Long cache for rarely changing data */
+  LONG: 86400      // 24 hours
+} as const;
+
 // Re-export for use in controllers
 export {
   Request, Response, NextFunction,
@@ -180,6 +210,53 @@ export const fetchScriptAnalysis = async (scriptId: string | number): Promise<An
   } catch (error) {
     logger.error(`Error fetching analysis for script ${scriptId}:`, error);
     return null;
+  }
+};
+
+/**
+ * Batch fetch analyses for multiple scripts in a single query
+ * Returns a Map of scriptId -> AnalysisResult for O(1) lookups
+ *
+ * @param scriptIds - Array of script IDs to fetch analyses for
+ * @returns Map with script ID as key and AnalysisResult as value.
+ *          Returns empty Map if scriptIds is empty or on error.
+ */
+export const fetchScriptAnalysesBatch = async (
+  scriptIds: (string | number)[]
+): Promise<Map<number, AnalysisResult>> => {
+  const resultMap = new Map<number, AnalysisResult>();
+
+  // Filter out invalid IDs (null, undefined, NaN)
+  const validIds = scriptIds.filter(id => id != null && !isNaN(Number(id)));
+
+  if (validIds.length === 0) {
+    return resultMap;
+  }
+
+  try {
+    // Single query to fetch all analyses at once
+    const results = await sequelize.query(
+      `SELECT * FROM script_analysis WHERE script_id IN (:scriptIds)`,
+      {
+        replacements: { scriptIds: validIds },
+        type: 'SELECT' as const,
+        raw: true
+      }
+    );
+
+    // Cast and transform results
+    const rows = results as unknown as RawAnalysisRow[];
+
+    for (const row of rows) {
+      const scriptId = Number(row.script_id);
+      const analysis = transformAnalysisRow(row);
+      resultMap.set(scriptId, analysis);
+    }
+
+    return resultMap;
+  } catch (error) {
+    logger.error(`Error batch fetching analyses for scripts:`, error);
+    return resultMap;
   }
 };
 

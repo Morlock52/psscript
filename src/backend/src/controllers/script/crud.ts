@@ -21,9 +21,12 @@ import {
   logger,
   axios,
   AI_SERVICE_URL,
+  CACHE_TTL,
+  TIMEOUTS,
   getDbSortField,
   clearScriptCaches,
   fetchScriptAnalysis,
+  fetchScriptAnalysesBatch,
   isAuthorizedForScript,
   getScriptIncludes,
   parsePaginationParams
@@ -82,9 +85,13 @@ export async function getScripts(
       distinct: true
     });
 
-    // Fetch analysis data separately for each script
+    // Batch fetch all analyses in a single query (avoids N+1)
+    const scriptIds = rows.map(script => script.id);
+    const analysisMap = await fetchScriptAnalysesBatch(scriptIds);
+
+    // Assign analyses using O(1) Map lookup
     for (const script of rows) {
-      const analysis = await fetchScriptAnalysis(script.id);
+      const analysis = analysisMap.get(script.id);
       if (analysis) {
         script.setDataValue('analysis', analysis);
       }
@@ -97,7 +104,7 @@ export async function getScripts(
       totalPages: Math.ceil(count / limit)
     };
 
-    cache.set(cacheKey, response, 300);
+    cache.set(cacheKey, response, CACHE_TTL.SHORT);
     return res.json(response);
   } catch (error) {
     next(error);
@@ -135,7 +142,7 @@ export async function getScript(
       script.setDataValue('analysis', analysis);
     }
 
-    cache.set(cacheKey, script, 300);
+    cache.set(cacheKey, script, CACHE_TTL.SHORT);
     return res.json(script);
   } catch (error) {
     next(error);
@@ -217,7 +224,7 @@ export async function createScript(
       const openaiApiKey = req.headers['x-openai-api-key'] as string;
       const analysisConfig: { headers: Record<string, string>; timeout: number } = {
         headers: {},
-        timeout: 15000
+        timeout: TIMEOUTS.QUICK
       };
 
       if (openaiApiKey) {
@@ -234,7 +241,7 @@ export async function createScript(
           fetch_ms_docs: true
         }, analysisConfig),
         new Promise<never>((_, reject) =>
-          setTimeout(() => reject(new Error('Analysis request timed out')), 15000)
+          setTimeout(() => reject(new Error('Analysis request timed out')), TIMEOUTS.QUICK)
         )
       ]);
 
@@ -446,7 +453,7 @@ export async function updateScript(
         const openaiApiKey = req.headers['x-openai-api-key'] as string;
         const analysisConfig: { headers: Record<string, string>; timeout: number } = {
           headers: {},
-          timeout: 15000
+          timeout: TIMEOUTS.QUICK
         };
 
         if (openaiApiKey) {

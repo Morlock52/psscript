@@ -15,7 +15,8 @@ import {
   Op,
   sequelize,
   logger,
-  findSimilarScriptsByVector
+  findSimilarScriptsByVector,
+  CACHE_TTL
 } from './shared';
 
 // Import cache directly for typing
@@ -115,7 +116,7 @@ export async function searchScripts(
       query
     };
 
-    cache.set(cacheKey, response, 300); // Cache for 5 minutes
+    cache.set(cacheKey, response, CACHE_TTL.SHORT);
 
     return res.json(response);
   } catch (error) {

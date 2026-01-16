@@ -24,7 +24,8 @@ import {
   calculateBufferMD5,
   checkFileExists,
   clearScriptCaches,
-  AI_SERVICE_URL
+  AI_SERVICE_URL,
+  TIMEOUTS
 } from './shared';
 
 // Import PDFKit for PDF generation
@@ -727,7 +728,7 @@ async function performAsyncAnalysis(
     // Prepare analysis request with API key if provided
     const analysisConfig: { headers: Record<string, string>; timeout: number } = {
       headers: {},
-      timeout: 30000 // 30 second timeout
+      timeout: TIMEOUTS.FULL_ANALYSIS
     };
 
     if (openaiApiKey) {

@@ -16,6 +16,8 @@ import {
   logger,
   axios,
   AI_SERVICE_URL,
+  TIMEOUTS,
+  CACHE_TTL,
   fetchScriptAnalysis,
   crypto
 } from './shared';
@@ -119,7 +121,7 @@ export async function analyzeScript(
 
       const analysisConfig: { headers: Record<string, string>; timeout: number } = {
         headers: {},
-        timeout: 20000 // 20 second timeout
+        timeout: TIMEOUTS.STANDARD
       };
 
       if (openaiApiKey) {
@@ -143,7 +145,7 @@ export async function analyzeScript(
 
       // Create a timeout promise
       const timeoutPromise = new Promise<never>((_, reject) => {
-        setTimeout(() => reject(new Error('Analysis request timed out after 20 seconds')), 20000);
+        setTimeout(() => reject(new Error('Analysis request timed out')), TIMEOUTS.STANDARD);
       });
 
       // Race the analysis against the timeout
@@ -240,7 +242,7 @@ export async function analyzeScriptAndSave(
 
       const analysisConfig: { headers: Record<string, string>; timeout: number } = {
         headers: {},
-        timeout: 30000 // 30 second timeout for full analysis
+        timeout: TIMEOUTS.FULL_ANALYSIS
       };
 
       if (openaiApiKey) {
@@ -377,7 +379,7 @@ export async function analyzeScriptWithAssistant(
         'X-Request-ID': requestId,
         'x-api-key': openaiApiKey
       },
-      timeout: 300000 // 5 minute timeout for agentic analysis workflows
+      timeout: TIMEOUTS.AGENTIC_WORKFLOW
     };
 
     // Determine analysis mode based on request type
@@ -435,7 +437,7 @@ export async function analyzeScriptWithAssistant(
       if (process.env.ENABLE_ANALYSIS_CACHE === 'true') {
         try {
           const contentHash = crypto.createHash('sha256').update(content).digest('hex');
-          cache.set(`analysis_${contentHash}`, result, 3600); // Cache for 1 hour
+          cache.set(`analysis_${contentHash}`, result, CACHE_TTL.STANDARD);
           logger.debug(`[${requestId}] Cached analysis results for future use`);
         } catch (cacheError) {
           logger.warn(`[${requestId}] Failed to cache analysis results: ${(cacheError as Error).message}`);
@@ -519,7 +521,7 @@ export async function analyzeLangGraph(
       headers: {
         'Content-Type': 'application/json'
       },
-      timeout: 120000 // 2 minute timeout for full analysis
+      timeout: TIMEOUTS.EXTENDED // 2 minute timeout for full analysis
     };
 
     if (openaiApiKey) {
@@ -679,7 +681,7 @@ export async function streamAnalysis(
       headers: {
         'Content-Type': 'application/json'
       } as Record<string, string>,
-      timeout: 120000,
+      timeout: TIMEOUTS.EXTENDED,
       responseType: 'stream' as const
     };
 
@@ -791,7 +793,7 @@ export async function provideFeedback(
       headers: {
         'Content-Type': 'application/json'
       },
-      timeout: 120000
+      timeout: TIMEOUTS.EXTENDED
     };
 
     if (openaiApiKey) {
