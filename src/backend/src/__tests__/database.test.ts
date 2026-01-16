@@ -68,10 +68,10 @@ describe('Database Integration Tests', () => {
       ScriptTag = models.ScriptTag;
       ScriptVersion = models.ScriptVersion;
       ScriptAnalysis = models.ScriptAnalysis;
-      ScriptEmbedding = models.ScriptEmbedding;
+      _ScriptEmbedding = models.ScriptEmbedding;
       ExecutionLog = models.ExecutionLog;
-      ChatHistory = models.ChatHistory;
-      Documentation = models.Documentation;
+      _ChatHistory = models.ChatHistory;
+      _Documentation = models.Documentation;
 
       // Ensure database connection
       await sequelize.authenticate();
