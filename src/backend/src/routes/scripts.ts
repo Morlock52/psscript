@@ -1,6 +1,14 @@
 // @ts-nocheck - Required for middleware integration and route parameter handling
 import express from 'express';
-import ScriptController from '../controllers/ScriptController';
+// New modular controllers (migrated from legacy ScriptController)
+import {
+  ScriptCrudController,
+  ScriptSearchController,
+  ScriptAnalysisController,
+  ScriptExecutionController,
+  ScriptVersionController,
+  ScriptExportController
+} from '../controllers/script';
 import { authenticateJWT } from '../middleware/authMiddleware';
 import upload, { handleMulterError, diskUpload, handleUploadProgress } from '../middleware/uploadMiddleware';
 import { corsMiddleware, uploadCorsMiddleware } from '../middleware/corsMiddleware';
@@ -110,7 +118,7 @@ router.get('/upload/status/:uploadId', AsyncUploadController.getUploadStatus);
  *       200:
  *         description: A list of scripts
  */
-router.get('/', ScriptController.getScripts);
+router.get('/', ScriptCrudController.getScripts);
 
 /**
  * @swagger
@@ -148,7 +156,7 @@ router.get('/', ScriptController.getScripts);
  *       200:
  *         description: Search results
  */
-router.get('/search', ScriptController.searchScripts);
+router.get('/search', ScriptSearchController.searchScripts);
 
 /**
  * @swagger
@@ -169,7 +177,7 @@ router.get('/search', ScriptController.searchScripts);
  *       404:
  *         description: Script not found
  */
-router.get('/:id', ScriptController.getScript);
+router.get('/:id', ScriptCrudController.getScript);
 
 /**
  * @swagger
@@ -208,7 +216,7 @@ router.get('/:id', ScriptController.getScript);
  *         description: Unauthorized
  */
 // Route for handling JSON uploads
-router.post('/', authenticateJWT, ScriptController.createScript);
+router.post('/', authenticateJWT, ScriptCrudController.createScript);
 
 /**
  * @swagger
@@ -252,7 +260,7 @@ router.post('/', authenticateJWT, ScriptController.createScript);
  *         description: Unauthorized
  */
 // Use special CORS middleware and network error handling for upload endpoints
-router.post('/upload', uploadCorsMiddleware, handleNetworkErrors, handleUploadProgress, upload.single('script_file'), handleMulterError, ScriptController.uploadScript);
+router.post('/upload', uploadCorsMiddleware, handleNetworkErrors, handleUploadProgress, upload.single('script_file'), handleMulterError, ScriptExportController.uploadScript);
 
 /**
  * @swagger
@@ -312,7 +320,7 @@ router.get('/clear-cache', async (req, res) => {
  *         description: Unauthorized
  */
 // Use special CORS middleware and network error handling for large upload endpoint as well
-router.post('/upload/large', uploadCorsMiddleware, handleNetworkErrors, handleUploadProgress, diskUpload.single('script_file'), handleMulterError, ScriptController.uploadScript);
+router.post('/upload/large', uploadCorsMiddleware, handleNetworkErrors, handleUploadProgress, diskUpload.single('script_file'), handleMulterError, ScriptExportController.uploadScript);
 
 /**
  * @swagger
@@ -360,7 +368,7 @@ router.post('/upload/large', uploadCorsMiddleware, handleNetworkErrors, handleUp
  *       404:
  *         description: Script not found
  */
-router.put('/:id', authenticateJWT, ScriptController.updateScript);
+router.put('/:id', authenticateJWT, ScriptCrudController.updateScript);
 
 /**
  * @swagger
@@ -387,7 +395,7 @@ router.put('/:id', authenticateJWT, ScriptController.updateScript);
  *       404:
  *         description: Script not found
  */
-router.delete('/:id', authenticateJWT, ScriptController.deleteScript);
+router.delete('/:id', authenticateJWT, ScriptCrudController.deleteScript);
 
 /**
  * @swagger
@@ -408,7 +416,7 @@ router.delete('/:id', authenticateJWT, ScriptController.deleteScript);
  *       404:
  *         description: Analysis not found
  */
-router.get('/:id/analysis', ScriptController.getScriptAnalysis);
+router.get('/:id/analysis', ScriptAnalysisController.getScriptAnalysis);
 
 /**
  * @swagger
@@ -434,7 +442,7 @@ router.get('/:id/analysis', ScriptController.getScriptAnalysis);
  *       404:
  *         description: Script not found
  */
-router.get('/:id/export-analysis', ScriptController.exportAnalysis);
+router.get('/:id/export-analysis', ScriptExportController.exportAnalysis);
 
 /**
  * @swagger
@@ -459,7 +467,7 @@ router.get('/:id/export-analysis', ScriptController.exportAnalysis);
  *       404:
  *         description: Script not found
  */
-router.post('/:id/analyze', authenticateJWT, ScriptController.analyzeScriptAndSave);
+router.post('/:id/analyze', authenticateJWT, ScriptAnalysisController.analyzeScriptAndSave);
 
 /**
  * @swagger
@@ -501,7 +509,7 @@ router.post('/:id/analyze', authenticateJWT, ScriptController.analyzeScriptAndSa
  *       503:
  *         description: AI service unavailable
  */
-router.post('/:id/analyze-langgraph', authenticateJWT, ScriptController.analyzeLangGraph);
+router.post('/:id/analyze-langgraph', authenticateJWT, ScriptAnalysisController.analyzeLangGraph);
 
 /**
  * @swagger
@@ -545,7 +553,7 @@ router.post('/:id/analyze-langgraph', authenticateJWT, ScriptController.analyzeL
  *       404:
  *         description: Script not found
  */
-router.get('/:id/analysis-stream', authenticateJWT, ScriptController.streamAnalysis);
+router.get('/:id/analysis-stream', authenticateJWT, ScriptAnalysisController.streamAnalysis);
 
 /**
  * @swagger
@@ -588,7 +596,7 @@ router.get('/:id/analysis-stream', authenticateJWT, ScriptController.streamAnaly
  *       404:
  *         description: Script or workflow not found
  */
-router.post('/:id/provide-feedback', authenticateJWT, ScriptController.provideFeedback);
+router.post('/:id/provide-feedback', authenticateJWT, ScriptAnalysisController.provideFeedback);
 
 /**
  * @swagger
@@ -621,7 +629,7 @@ router.post('/:id/provide-feedback', authenticateJWT, ScriptController.provideFe
  *       404:
  *         description: Script not found
  */
-router.post('/:id/execute', authenticateJWT, ScriptController.executeScript);
+router.post('/:id/execute', authenticateJWT, ScriptExecutionController.executeScript);
 
 /**
  * @swagger
@@ -652,7 +660,7 @@ router.post('/:id/execute', authenticateJWT, ScriptController.executeScript);
  *       404:
  *         description: Script not found
  */
-router.get('/:id/execution-history', authenticateJWT, ScriptController.getExecutionHistory);
+router.get('/:id/execution-history', authenticateJWT, ScriptExecutionController.getExecutionHistory);
 
 /**
  * @swagger
@@ -671,7 +679,7 @@ router.get('/:id/execution-history', authenticateJWT, ScriptController.getExecut
  *       200:
  *         description: Similar scripts
  */
-router.get('/:id/similar', ScriptController.findSimilarScripts);
+router.get('/:id/similar', ScriptSearchController.findSimilarScripts);
 
 // ===== VERSION CONTROL ROUTES =====
 
@@ -694,7 +702,7 @@ router.get('/:id/similar', ScriptController.findSimilarScripts);
  *       404:
  *         description: Script not found
  */
-router.get('/:id/versions', ScriptController.getVersionHistory);
+router.get('/:id/versions', ScriptVersionController.getVersionHistory);
 
 /**
  * @swagger
@@ -727,7 +735,7 @@ router.get('/:id/versions', ScriptController.getVersionHistory);
  *       404:
  *         description: Version not found
  */
-router.get('/:id/versions/compare', ScriptController.compareVersions);
+router.get('/:id/versions/compare', ScriptVersionController.compareVersions);
 
 /**
  * @swagger
@@ -754,7 +762,7 @@ router.get('/:id/versions/compare', ScriptController.compareVersions);
  *       404:
  *         description: Version not found
  */
-router.get('/:id/versions/:versionNumber', ScriptController.getVersion);
+router.get('/:id/versions/:versionNumber', ScriptVersionController.getVersion);
 
 /**
  * @swagger
@@ -787,7 +795,7 @@ router.get('/:id/versions/:versionNumber', ScriptController.getVersion);
  *       404:
  *         description: Version not found
  */
-router.post('/:id/revert/:versionNumber', authenticateJWT, ScriptController.revertToVersion);
+router.post('/:id/revert/:versionNumber', authenticateJWT, ScriptVersionController.revertToVersion);
 
 /**
  * @swagger
@@ -812,7 +820,7 @@ router.post('/:id/revert/:versionNumber', authenticateJWT, ScriptController.reve
  *       400:
  *         description: Bad request
  */
-router.post('/analyze', ScriptController.analyzeScript);
+router.post('/analyze', ScriptAnalysisController.analyzeScript);
 
 /**
  * @swagger
@@ -1018,7 +1026,7 @@ router.post('/generate', async (req, res) => {
 });
 
 // Add a new route for analyzing scripts with OpenAI Assistant
-router.post('/analyze/assistant', authenticateJWT, ScriptController.analyzeScriptWithAssistant.bind(ScriptController));
+router.post('/analyze/assistant', authenticateJWT, ScriptAnalysisController.analyzeScriptWithAssistant);
 
 /**
  * Endpoint to handle AI assistant question answering
