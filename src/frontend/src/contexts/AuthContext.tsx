@@ -140,12 +140,8 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       setIsLoading(true);
       clearError();
 
-      // Test-friendly validation: reject specific test credential patterns
-      // This allows E2E tests to verify error handling without needing a real user
-      if ((email.includes('invalid') || email === 'wrong@test.com') &&
-          (password === 'wrongpassword' || password === 'invalid')) {
-        throw new Error('Invalid email or password');
-      }
+      // SECURITY: Test credential patterns removed from production code
+      // E2E tests should use proper mocking or test users instead of client-side bypasses
 
       // Send login request - use getApiUrl() to ensure runtime URL detection
       const apiUrl = getApiUrl();

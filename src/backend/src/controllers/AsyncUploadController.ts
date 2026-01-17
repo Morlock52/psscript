@@ -74,7 +74,9 @@ export class AsyncUploadController {
   
   constructor() {
     this.AI_SERVICE_URL = process.env.AI_SERVICE_URL || 'http://localhost:8000';
-    this.USE_MOCK_SERVICES = process.env.USE_MOCK_SERVICES === 'true' || process.env.MOCK_MODE === 'true' || true; // Force mock services for local development
+    // SECURITY: Mock services should only be enabled via explicit environment variables
+    // Never force mock services in production - they bypass real service validation
+    this.USE_MOCK_SERVICES = process.env.USE_MOCK_SERVICES === 'true' || process.env.MOCK_MODE === 'true';
     
     // Bind methods to ensure 'this' context
     this.uploadFiles = this.uploadFiles.bind(this);
