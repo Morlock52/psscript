@@ -86,7 +86,7 @@ const ChatHistory: React.FC = () => {
     if (searchQuery.trim()) {
       const query = searchQuery.toLowerCase();
       const hasMatch = session.messages.some(msg =>
-        msg.content.toLowerCase().includes(query)
+        msg.content && msg.content.toLowerCase().includes(query)
       );
       return hasMatch;
     }

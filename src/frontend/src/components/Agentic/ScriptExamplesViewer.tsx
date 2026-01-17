@@ -190,11 +190,11 @@ const ScriptExamplesViewer: React.FC<ScriptExamplesViewerProps> = ({
                   
                   {/* Tags */}
                   <Box display="flex" gap={0.5} mt={1} flexWrap="wrap" className="tabpanel-tags">
-                    {example.tags.map((tag, i) => (
-                      <Chip 
-                        key={i} 
-                        label={tag} 
-                        size="small" 
+                    {(example.tags || []).map((tag, i) => (
+                      <Chip
+                        key={i}
+                        label={tag}
+                        size="small"
                         variant="outlined"
                         className="tabpanel-tag"
                       />

@@ -68,22 +68,27 @@ const Documentation: React.FC = () => {
     // Filter by search query (client-side for responsiveness)
     if (query.trim()) {
       const lowerQuery = query.toLowerCase();
-      filtered = filtered.filter(item =>
-        item.title.toLowerCase().includes(lowerQuery) ||
-        (item.content && item.content.toLowerCase().includes(lowerQuery)) ||
-        (item.summary && item.summary.toLowerCase().includes(lowerQuery))
-      );
+      filtered = filtered.filter(item => {
+        const title = (item.title || '').toLowerCase();
+        const content = (item.content || '').toLowerCase();
+        const summary = (item.summary || '').toLowerCase();
+        return (
+          title.includes(lowerQuery) ||
+          (!!content && content.includes(lowerQuery)) ||
+          (!!summary && summary.includes(lowerQuery))
+        );
+      });
     }
 
     // Filter by selected sources
     if (selectedSources.length > 0) {
-      filtered = filtered.filter(item => selectedSources.includes(item.source));
+      filtered = filtered.filter(item => item.source && selectedSources.includes(item.source));
     }
 
     // Filter by selected tags
     if (selectedTags.length > 0) {
       filtered = filtered.filter(item =>
-        item.tags && item.tags.some(tag => selectedTags.includes(tag))
+        Array.isArray(item.tags) && item.tags.some(tag => selectedTags.includes(tag))
       );
     }
 
@@ -93,7 +98,7 @@ const Documentation: React.FC = () => {
         filtered.sort((a, b) => new Date(b.crawledAt).getTime() - new Date(a.crawledAt).getTime());
         break;
       case 'title':
-        filtered.sort((a, b) => a.title.localeCompare(b.title));
+        filtered.sort((a, b) => (a.title || '').localeCompare(b.title || ''));
         break;
       case 'relevance':
         filtered.sort((a, b) => (b.similarity || 0) - (a.similarity || 0));
@@ -173,11 +178,12 @@ const Documentation: React.FC = () => {
 
   // Check if a document might be corrupted (e.g., binary data in title)
   const isCorruptedEntry = (item: DocItem): boolean => {
+    const safeTitle = item.title || '';
     // Check for PNG/binary signatures or unusual characters
     // eslint-disable-next-line no-control-regex -- Intentionally detecting binary/corrupted data
-    const hasNonPrintable = /[\x00-\x08\x0E-\x1F]/.test(item.title);
-    const hasPngSignature = item.title.includes('PNG') && item.title.includes('IHDR');
-    const hasFileExtension = /\.(png|jpg|gif|pdf|exe|dll)\?/.test(item.title.toLowerCase());
+    const hasNonPrintable = /[\x00-\x08\x0E-\x1F]/.test(safeTitle);
+    const hasPngSignature = safeTitle.includes('PNG') && safeTitle.includes('IHDR');
+    const hasFileExtension = /\.(png|jpg|gif|pdf|exe|dll)\?/.test(safeTitle.toLowerCase());
     return hasNonPrintable || hasPngSignature || hasFileExtension;
   };
 
