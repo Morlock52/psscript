@@ -34,6 +34,7 @@ import aiAgentRoutes from './routes/ai-agent';
 import assistantsRoutes from './routes/assistants';
 import documentationRoutes from './routes/documentation';
 import { errorHandler } from './middleware/errorHandler';
+import { authenticateJWT, requireAdmin } from './middleware/auth';
 import { setupSwagger } from './utils/swagger';
 import path from 'path';
 import { existsSync } from 'fs';
@@ -691,10 +692,11 @@ const startServer = async () => {
     }
     
     // Add endpoint to clear cache
-    app.get('/api/cache/clear', (req, res) => {
+    // SECURITY: Requires authentication and admin role
+    app.get('/api/cache/clear', authenticateJWT, requireAdmin, (req, res) => {
       const pattern = req.query.pattern as string;
       let count = 0;
-      
+
       if (pattern) {
         count = cache.clearPattern(pattern);
         logger.info(`Cache cleared for pattern: ${pattern}, removed ${count} entries`);
@@ -713,7 +715,8 @@ const startServer = async () => {
     });
     
     // Add enhanced endpoint to get detailed cache stats
-    app.get('/api/cache/stats', (req, res) => {
+    // SECURITY: Requires authentication and admin role
+    app.get('/api/cache/stats', authenticateJWT, requireAdmin, (req, res) => {
       const stats = cache.stats();
       const memUsage = process.memoryUsage();
       
@@ -744,7 +747,8 @@ const startServer = async () => {
     });
     
     // Add endpoint to test cache with random data
-    app.get('/api/cache/test', (req, res) => {
+    // SECURITY: Requires authentication and admin role
+    app.get('/api/cache/test', authenticateJWT, requireAdmin, (req, res) => {
       const count = parseInt(req.query.count as string, 10) || 100;
       const sizeKB = parseInt(req.query.sizeKB as string, 10) || 1;
       const ttl = parseInt(req.query.ttl as string, 10) || 60;
@@ -789,14 +793,27 @@ const startServer = async () => {
     });
     
     // Add endpoint to persist cache to file
-    app.post('/api/cache/persist', async (req, res) => {
+    // SECURITY: Requires authentication, admin role, and validates file path
+    app.post('/api/cache/persist', authenticateJWT, requireAdmin, async (req, res) => {
       try {
-        const filePath = req.query.path as string || './cache-backup.json';
-        const success = await cache.persistence.saveToFile(filePath);
-        
+        // SECURITY: Only allow saving to predefined safe directory
+        const allowedDir = path.resolve(process.cwd(), 'cache-backups');
+        const requestedFile = path.basename(req.query.path as string || 'cache-backup.json');
+
+        // Validate filename: only alphanumeric, dashes, underscores, and .json extension
+        if (!/^[a-zA-Z0-9_-]+\.json$/.test(requestedFile)) {
+          return res.status(400).json({
+            success: false,
+            message: 'Invalid filename. Use only alphanumeric characters, dashes, underscores, and .json extension'
+          });
+        }
+
+        const safePath = path.join(allowedDir, requestedFile);
+        const success = await cache.persistence.saveToFile(safePath);
+
         res.json({
           success,
-          message: success ? `Cache persisted to ${filePath}` : `Failed to persist cache to ${filePath}`,
+          message: success ? `Cache persisted to ${requestedFile}` : `Failed to persist cache`,
           cacheSize: cache.stats().size
         });
       } catch (error) {
@@ -807,16 +824,29 @@ const startServer = async () => {
         });
       }
     });
-    
+
     // Add endpoint to load cache from file
-    app.post('/api/cache/load', async (req, res) => {
+    // SECURITY: Requires authentication, admin role, and validates file path
+    app.post('/api/cache/load', authenticateJWT, requireAdmin, async (req, res) => {
       try {
-        const filePath = req.query.path as string || './cache-backup.json';
-        const success = await cache.persistence.loadFromFile(filePath);
-        
+        // SECURITY: Only allow loading from predefined safe directory
+        const allowedDir = path.resolve(process.cwd(), 'cache-backups');
+        const requestedFile = path.basename(req.query.path as string || 'cache-backup.json');
+
+        // Validate filename: only alphanumeric, dashes, underscores, and .json extension
+        if (!/^[a-zA-Z0-9_-]+\.json$/.test(requestedFile)) {
+          return res.status(400).json({
+            success: false,
+            message: 'Invalid filename. Use only alphanumeric characters, dashes, underscores, and .json extension'
+          });
+        }
+
+        const safePath = path.join(allowedDir, requestedFile);
+        const success = await cache.persistence.loadFromFile(safePath);
+
         res.json({
           success,
-          message: success ? `Cache loaded from ${filePath}` : `Failed to load cache from ${filePath}`,
+          message: success ? `Cache loaded from ${requestedFile}` : `Failed to load cache`,
           cacheSize: cache.stats().size
         });
       } catch (error) {

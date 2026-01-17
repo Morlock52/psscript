@@ -99,6 +99,53 @@ setup_logging(level=log_level, json_format=log_json, log_file=log_file)
 
 logger = get_logger("psscript_api")
 
+
+def sanitize_for_prompt(value: str, max_length: int = 100) -> str:
+    """
+    Sanitize user-provided values before interpolating into system prompts.
+
+    SECURITY: Prevents prompt injection by:
+    1. Removing special characters that could break prompt structure
+    2. Limiting length to prevent context flooding
+    3. Stripping common injection patterns
+
+    Args:
+        value: User-provided string to sanitize
+        max_length: Maximum allowed length (default 100)
+
+    Returns:
+        Sanitized string safe for prompt interpolation
+    """
+    import re
+    if not value:
+        return ""
+
+    # Remove common prompt injection patterns
+    injection_patterns = [
+        r'ignore\s+(previous|above|all)',
+        r'disregard\s+(previous|above|all)',
+        r'forget\s+(previous|above|all)',
+        r'system\s*:',
+        r'assistant\s*:',
+        r'user\s*:',
+        r'<\|.*?\|>',  # Special tokens
+        r'\[\[.*?\]\]',  # Bracket injection
+        r'```.*?```',  # Code block injection
+    ]
+
+    sanitized = value
+    for pattern in injection_patterns:
+        sanitized = re.sub(pattern, '', sanitized, flags=re.IGNORECASE)
+
+    # Remove special characters that could break prompt structure
+    sanitized = re.sub(r'[{}\[\]<>\\|]', '', sanitized)
+
+    # Limit length and strip whitespace
+    sanitized = sanitized[:max_length].strip()
+
+    return sanitized
+
+
 # Initialize security guard (singleton)
 security_guard = PowerShellSecurityGuard(strict_mode=os.getenv('STRICT_SECURITY', 'false').lower() == 'true')
 
@@ -186,13 +233,34 @@ app = FastAPI(
     lifespan=lifespan
 )
 
-# Add CORS middleware
+# CORS Configuration - SECURITY FIX
+# Read allowed origins from environment variable
+# In development: CORS_ORIGINS="http://localhost:3000,http://localhost:4000"
+# In production: CORS_ORIGINS="https://yourdomain.com"
+cors_origins_env = os.getenv("CORS_ORIGINS", "")
+if cors_origins_env:
+    # Parse comma-separated list of allowed origins
+    allowed_origins = [origin.strip() for origin in cors_origins_env.split(",") if origin.strip()]
+    logging.info(f"CORS enabled for origins: {allowed_origins}")
+else:
+    # Development default: allow common local development ports
+    # WARNING: In production, always set CORS_ORIGINS explicitly
+    allowed_origins = [
+        "http://localhost:3000",
+        "http://localhost:4000",
+        "http://127.0.0.1:3000",
+        "http://127.0.0.1:4000"
+    ]
+    logging.warning("CORS_ORIGINS not set, using development defaults. Set CORS_ORIGINS in production!")
+
+# Add CORS middleware with explicit origin list
+# NOTE: allow_credentials=True requires explicit origins (not "*")
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],  # In production, replace with specific origins
+    allow_origins=allowed_origins,
     allow_credentials=True,
-    allow_methods=["*"],
-    allow_headers=["*"],
+    allow_methods=["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+    allow_headers=["Authorization", "Content-Type", "X-API-Key", "X-Request-ID"],
 )
 
 # Add voice router
@@ -306,15 +374,26 @@ print(f"Vector operations enabled: {VECTOR_ENABLED}")
 
 
 # Request/Response Models
+# SECURITY: Max content sizes to prevent DoS and excessive token consumption
+MAX_SCRIPT_SIZE = 1_000_000  # 1MB max for scripts
+MAX_EMBEDDING_SIZE = 100_000  # 100KB max for embedding requests (token limit)
+
 class ScriptContent(BaseModel):
-    content: str = Field(..., description="PowerShell script content to analyze")
+    content: str = Field(
+        ...,
+        max_length=MAX_SCRIPT_SIZE,
+        description="PowerShell script content to analyze (max 1MB)"
+    )
     script_id: Optional[int] = Field(None, description="Script ID if already stored")
     script_name: Optional[str] = Field(None, description="Name of the script")
 
 
 class ScriptEmbeddingRequest(BaseModel):
-    content: str = Field(..., 
-                        description="PowerShell script content to generate embedding for")
+    content: str = Field(
+        ...,
+        max_length=MAX_EMBEDDING_SIZE,
+        description="PowerShell script content to generate embedding for (max 100KB)"
+    )
 
 
 class SimilarScriptsRequest(BaseModel):
@@ -367,18 +446,34 @@ class VisualizationResponse(BaseModel):
                                    description="Type of visualization that was generated")
 
 
+# SECURITY: Max sizes for chat messages to prevent DoS
+MAX_MESSAGE_SIZE = 50_000  # 50KB max per message
+MAX_MESSAGES = 50  # Max messages in conversation history
+
 class ChatMessage(BaseModel):
     role: str = Field(..., description="The role of the message sender (user or assistant)")
-    content: str = Field(..., description="The content of the message")
+    content: str = Field(
+        ...,
+        max_length=MAX_MESSAGE_SIZE,
+        description="The content of the message (max 50KB)"
+    )
 
 
 class ChatRequest(BaseModel):
-    messages: List[ChatMessage] = Field(..., description="The chat messages")
-    system_prompt: Optional[str] = Field(None, description="System prompt to use")
+    messages: List[ChatMessage] = Field(
+        ...,
+        max_length=MAX_MESSAGES,
+        description="The chat messages (max 50 messages)"
+    )
+    system_prompt: Optional[str] = Field(
+        None,
+        max_length=10_000,
+        description="System prompt to use (max 10KB)"
+    )
     api_key: Optional[str] = Field(None, description="Optional API key to use")
-    agent_type: Optional[str] = Field(None, 
+    agent_type: Optional[str] = Field(None,
                                      description="Type of agent to use")
-    session_id: Optional[str] = Field(None, 
+    session_id: Optional[str] = Field(None,
                                      description="Session ID for persistent conversations")
 
 
@@ -1890,7 +1985,10 @@ Is there a specific PowerShell topic you'd like me to cover?"""
 
 
 @app.post("/chat", response_model=ChatResponse, tags=["Chat"])
-async def chat_with_powershell_expert(request: ChatRequest):
+async def chat_with_powershell_expert(
+    request: ChatRequest,
+    x_api_key: Optional[str] = Header(None, alias="x-api-key")
+):
     """
     Chat with a PowerShell expert AI assistant.
 
@@ -1898,13 +1996,14 @@ async def chat_with_powershell_expert(request: ChatRequest):
     - Topic guardrails: Validates requests are PowerShell/scripting related
     - Script generation: Can create new PowerShell scripts from requirements
     - Context-aware: Uses conversation history for better responses
+
+    API Key: Pass via X-API-Key header (recommended) or use server-configured key.
     """
     start_time = time.time()
     try:
-        # Extract API key from request if provided
-        api_key = getattr(request, 'api_key', None)
-        # Use the provided API key or fall back to the configured API key
-        api_key = api_key or config.api_keys.openai
+        # SECURITY: API key from header takes precedence (safer than body)
+        # Fall back to server-configured API key if not provided
+        api_key = x_api_key or config.api_keys.openai
 
         # Get the latest user message for guardrail validation
         latest_user_message = ""
@@ -2020,9 +2119,9 @@ Before generating any script, internally review:
 4. Does it follow least-privilege principles?
 5. Are there any injection vulnerabilities in dynamic code?
 
-TARGET SYSTEM: {script_requirements.get('target_system', 'windows') if script_requirements else 'windows'}
-COMPLEXITY LEVEL: {script_requirements.get('complexity', 'medium') if script_requirements else 'medium'}
-REQUESTED FEATURES: {', '.join(script_requirements.get('features', [])) if script_requirements else 'standard'}
+TARGET SYSTEM: {sanitize_for_prompt(script_requirements.get('target_system', 'windows')) if script_requirements else 'windows'}
+COMPLEXITY LEVEL: {sanitize_for_prompt(script_requirements.get('complexity', 'medium')) if script_requirements else 'medium'}
+REQUESTED FEATURES: {', '.join(sanitize_for_prompt(f) for f in script_requirements.get('features', [])) if script_requirements else 'standard'}
 
 ═══════════════════════════════════════════════════════════════════
 OUTPUT FORMAT:
@@ -2174,7 +2273,10 @@ I CAN HELP WITH:
 
 
 @app.post("/chat/stream", tags=["Chat"])
-async def stream_chat_with_powershell_expert(request: ChatRequest):
+async def stream_chat_with_powershell_expert(
+    request: ChatRequest,
+    x_api_key: Optional[str] = Header(None, alias="x-api-key")
+):
     """
     Stream chat responses using Server-Sent Events (SSE).
 
@@ -2185,8 +2287,13 @@ async def stream_chat_with_powershell_expert(request: ChatRequest):
     - token: Individual token in the stream
     - error: Error message
     - done: Stream complete with metadata
+
+    API Key: Pass via X-API-Key header (recommended) or use server-configured key.
     """
     import asyncio
+
+    # SECURITY: Resolve API key outside generator (header > config)
+    resolved_api_key = x_api_key or config.api_keys.openai
 
     async def generate_stream():
         """Async generator for SSE streaming."""
@@ -2194,7 +2301,7 @@ async def stream_chat_with_powershell_expert(request: ChatRequest):
             # Import OpenAI client for streaming
             from openai import AsyncOpenAI
 
-            api_key = getattr(request, 'api_key', None) or config.api_keys.openai
+            api_key = resolved_api_key
             if not api_key:
                 yield f"data: {json.dumps({'type': 'error', 'content': 'No API key configured'})}\n\n"
                 return

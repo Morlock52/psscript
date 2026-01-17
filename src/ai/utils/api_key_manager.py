@@ -251,8 +251,10 @@ class APIKeyManager:
 
         current_key = self.get_api_key(prompt_if_missing=False)
         if current_key:
-            masked_key = f"{current_key[:7]}...{current_key[-4:]}"
-            print(f"\nCurrent key: {masked_key}")
+            # SECURITY: Only show that a key exists, never show any portion of it
+            # Even partial exposure (first/last chars) aids brute-force attacks
+            key_length = len(current_key)
+            print(f"\nCurrent key: [REDACTED - {key_length} characters]")
 
         return self.prompt_for_key()
 

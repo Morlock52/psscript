@@ -654,15 +654,17 @@ export const chatService = {
         console.warn("Backend chat service failed, trying direct AI service:", backendError);
         
         // Fall back to direct AI service if backend fails
-        const response = await axios.post(`${AI_SERVICE_URL}/chat`, { 
+        // SECURITY: API key passed in header, NOT in request body
+        // Headers are easier to redact in logs and won't be cached by proxies
+        const response = await axios.post(`${AI_SERVICE_URL}/chat`, {
           messages: messages.map(msg => ({
             role: msg.role,
             content: msg.content
-          })),
-          api_key: apiKey // Pass the API key in the request body
+          }))
         }, {
           headers: {
-            'Content-Type': 'application/json'
+            'Content-Type': 'application/json',
+            ...(apiKey ? { 'X-API-Key': apiKey } : {})
           },
           timeout: 30000 // 30 second timeout
         });

@@ -91,11 +91,24 @@ export const searchByVector = async (
 ): Promise<any[]> => {
   try {
     // Convert embedding to PostgreSQL vector format
+    // Validate embedding is an array of numbers to prevent injection
+    if (!Array.isArray(embedding) || !embedding.every(n => typeof n === 'number' && isFinite(n))) {
+      throw new Error('Invalid embedding format: must be an array of finite numbers');
+    }
     const vectorString = `[${embedding.join(',')}]`;
-    
-    // Build WHERE clause for additional filters
-    let whereClause = `1 - (s.embedding <=> '${vectorString}') > ${threshold}`;
-    const replacements: any = {};
+
+    // Validate threshold is a number between 0 and 1
+    if (typeof threshold !== 'number' || threshold < 0 || threshold > 1) {
+      throw new Error('Invalid threshold: must be a number between 0 and 1');
+    }
+
+    // Build WHERE clause using parameterized values for threshold
+    // Note: vector comparison uses parameterized vectorString in replacements
+    let whereClause = `1 - (s.embedding <=> :vectorString::vector) > :threshold`;
+    const replacements: any = {
+      vectorString,
+      threshold
+    };
     
     if (filters.categoryId) {
       whereClause += ' AND s.category_id = :categoryId';
@@ -134,9 +147,15 @@ export const searchByVector = async (
       });
     }
     
-    // Execute the query with vector search
+    // Validate limit is a positive integer to prevent injection
+    if (typeof limit !== 'number' || !Number.isInteger(limit) || limit < 1 || limit > 100) {
+      throw new Error('Invalid limit: must be a positive integer between 1 and 100');
+    }
+    replacements.limit = limit;
+
+    // Execute the query with vector search using fully parameterized query
     const [results] = await sequelize.query(`
-      SELECT 
+      SELECT
         s.id,
         s.title,
         s.description,
@@ -150,14 +169,14 @@ export const searchByVector = async (
         s.updated_at as "updatedAt",
         s.file_path as "filePath",
         s.file_hash as "fileHash",
-        1 - (s.embedding <=> '${vectorString}') as similarity
-      FROM 
+        1 - (s.embedding <=> :vectorString::vector) as similarity
+      FROM
         scripts s
-      WHERE 
+      WHERE
         ${whereClause}
-      ORDER BY 
+      ORDER BY
         similarity DESC
-      LIMIT ${limit};
+      LIMIT :limit;
     `, {
       replacements,
       type: 'SELECT',
