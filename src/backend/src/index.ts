@@ -7,6 +7,8 @@ import cors from 'cors';
 import dotenv from 'dotenv';
 import compression from 'compression';
 import morgan from 'morgan';
+import https from 'https';
+import { readFileSync } from 'fs';
 // Enhanced security middleware with helmet, rate limiting, input sanitization, and CSRF protection
 import {
   securityHeaders,
@@ -858,8 +860,11 @@ const startServer = async () => {
       }
     });
     
-    console.log('Starting HTTP server on port', port);
-    
+    // Determine if TLS is enabled (certificates mounted)
+    const tlsEnabled = process.env.TLS_CERT && process.env.TLS_KEY;
+    const protocol = tlsEnabled ? 'HTTPS' : 'HTTP';
+    console.log(`Starting ${protocol} server on port ${port}`);
+
     // Initialize default categories
     try {
       // eslint-disable-next-line @typescript-eslint/no-require-imports
@@ -870,13 +875,35 @@ const startServer = async () => {
       logger.error('Error initializing default categories:', error);
     }
     
-    // Start HTTP server
-    const server = app.listen(port, '0.0.0.0', () => {
-      console.log(`Server is now running on http://0.0.0.0:${port}`);
-      logger.info(`Server running in ${process.env.NODE_ENV || 'development'} mode on port ${port}`);
-      logger.info(`API documentation available at http://localhost:${port}/api-docs`);
-      logger.info(`In-memory cache initialized and ready`);
-    });
+    // Start HTTP or HTTPS server based on certificate availability
+    let server;
+    if (tlsEnabled) {
+      // mTLS: Load certificates for secure tunnel-to-origin communication
+      const httpsOptions = {
+        key: readFileSync(process.env.TLS_KEY!),
+        cert: readFileSync(process.env.TLS_CERT!),
+        // Optional: Load CA for client certificate verification (full mTLS)
+        ...(process.env.TLS_CA && {
+          ca: readFileSync(process.env.TLS_CA),
+          requestCert: true,
+          rejectUnauthorized: true
+        })
+      };
+
+      server = https.createServer(httpsOptions, app).listen(port, '0.0.0.0', () => {
+        console.log(`HTTPS server is now running on https://0.0.0.0:${port}`);
+        logger.info(`Server running in ${process.env.NODE_ENV || 'development'} mode on port ${port} (TLS enabled)`);
+        logger.info(`API documentation available at https://localhost:${port}/api-docs`);
+        logger.info(`mTLS origin protection active`);
+      });
+    } else {
+      server = app.listen(port, '0.0.0.0', () => {
+        console.log(`HTTP server is now running on http://0.0.0.0:${port}`);
+        logger.info(`Server running in ${process.env.NODE_ENV || 'development'} mode on port ${port}`);
+        logger.info(`API documentation available at http://localhost:${port}/api-docs`);
+        logger.info(`In-memory cache initialized and ready`);
+      });
+    }
     
     // Set server timeouts
     server.timeout = 60000; // 60 seconds

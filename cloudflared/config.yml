@@ -1,12 +1,28 @@
 tunnel: de34187a-1d92-4d21-a99f-504533e2acbd
 credentials-file: /etc/cloudflared/de34187a-1d92-4d21-a99f-504533e2acbd.json
 
+# Global origin request settings for mTLS
+originRequest:
+  # Path to the Certificate Authority that signed origin certificates
+  caPool: /certs/ca.crt
+  # Do NOT skip TLS verification - we want mTLS protection
+  noTLSVerify: false
+  # Connection timeouts
+  connectTimeout: 30s
+  tlsTimeout: 10s
+
 ingress:
-  # Route API requests to backend service
+  # Route API requests to backend service (HTTPS with mTLS)
   - hostname: psscript.morloksmaze.com
     path: /api/*
-    service: http://backend:4000
-  # Route all other requests to frontend
+    service: https://backend:4000
+    originRequest:
+      originServerName: backend
+      http2Origin: true
+  # Route all other requests to frontend (HTTPS with mTLS)
   - hostname: psscript.morloksmaze.com
-    service: http://frontend:3000
+    service: https://frontend:3000
+    originRequest:
+      originServerName: frontend
+      http2Origin: true
   - service: http_status:404

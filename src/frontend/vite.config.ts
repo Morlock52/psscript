@@ -1,6 +1,21 @@
 /// <reference types="vitest" />
 import { defineConfig } from 'vite'
 import react from '@vitejs/plugin-react-swc'
+import fs from 'fs'
+
+// Check if TLS certificates are available
+const tlsEnabled = process.env.TLS_CERT && process.env.TLS_KEY &&
+  fs.existsSync(process.env.TLS_CERT) && fs.existsSync(process.env.TLS_KEY);
+
+// HTTPS options for mTLS tunnel-to-origin communication
+const httpsConfig = tlsEnabled ? {
+  key: fs.readFileSync(process.env.TLS_KEY!),
+  cert: fs.readFileSync(process.env.TLS_CERT!),
+} : undefined;
+
+if (tlsEnabled) {
+  console.log('🔒 TLS enabled for frontend server (mTLS origin protection active)');
+}
 
 // https://vitejs.dev/config/
 export default defineConfig({
@@ -8,6 +23,7 @@ export default defineConfig({
   server: {
     port: 3002, // Changed from 3001 to 3002 to match project configuration
     host: '0.0.0.0',
+    https: httpsConfig,
     allowedHosts: [
       'localhost',
       '127.0.0.1',
@@ -24,6 +40,7 @@ export default defineConfig({
   preview: {
     port: 3000,
     host: '0.0.0.0',
+    https: httpsConfig,
     headers: {
       // Prevent caching of HTML to ensure fresh assets on deployment
       'Cache-Control': 'no-cache, no-store, must-revalidate',
