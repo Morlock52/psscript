@@ -12,6 +12,7 @@
  */
 
 import { apiClient } from './api';
+import { getApiUrl } from '../utils/apiUrl';
 
 // ============================================================================
 // Types
@@ -171,7 +172,9 @@ export function streamAnalysis(
     params.append('token', token);
   }
 
-  const url = `${apiClient.defaults.baseURL}/scripts/${scriptId}/analysis-stream?${params.toString()}`;
+  // apiClient intentionally has no static baseURL (it is computed at request time).
+  // For EventSource we must compute it explicitly.
+  const url = `${getApiUrl()}/scripts/${scriptId}/analysis-stream?${params.toString()}`;
 
   // Create EventSource for SSE with credentials
   // Note: withCredentials is required for CORS with credentials

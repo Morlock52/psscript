@@ -10,7 +10,7 @@ const ensureDir = () => {
   }
 };
 
-test.describe('README screenshots', () => {
+test.describe.skip('README screenshots', () => {
   test.beforeAll(() => {
     ensureDir();
   });

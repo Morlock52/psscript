@@ -1119,7 +1119,7 @@ router.post('/analyze/assistant', async (req, res) => {
       },
       metadata: {
         processingTime: 0.85,
-        model: "gpt-4o",
+        model: "gpt-5.2",
         threadId: `thread_${Date.now().toString(36)}`,
         assistantId: `asst_${Date.now().toString(36)}`,
         requestId: `req_${Date.now().toString(36)}`

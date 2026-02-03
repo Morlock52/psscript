@@ -7,6 +7,55 @@ import aiService from '../utils/aiService';
 import * as cheerio from 'cheerio';
 import crypto from 'crypto';
 
+type AICrawlJobStatus = 'queued' | 'running' | 'completed' | 'error';
+
+type AICrawlProgress = {
+  pagesProcessed: number;
+  totalPages: number;
+  scriptsFound: number;
+  scriptsSaved: number;
+  currentUrl?: string;
+  stage?: string;
+};
+
+type AICrawlJob = {
+  id: string;
+  status: AICrawlJobStatus;
+  createdAt: string;
+  startedAt?: string;
+  finishedAt?: string;
+  request: {
+    url: string;
+    maxPages: number;
+    depth: number;
+  };
+  progress: AICrawlProgress;
+  result?: {
+    data: any[];
+    total: number;
+    scriptsSaved: number;
+    scriptsFound: number;
+    message: string;
+  };
+  error?: string;
+};
+
+const aiCrawlJobs = new Map<string, AICrawlJob>();
+const AI_CRAWL_JOB_TTL_MS = 1000 * 60 * 60; // 1 hour
+
+const cleanupAICrawlJobs = () => {
+  const now = Date.now();
+  for (const [id, job] of aiCrawlJobs.entries()) {
+    const createdAt = Date.parse(job.createdAt);
+    if (!Number.isNaN(createdAt) && now - createdAt > AI_CRAWL_JOB_TTL_MS) {
+      aiCrawlJobs.delete(id);
+    }
+  }
+};
+
+const cleanupTimer = setInterval(cleanupAICrawlJobs, 10 * 60 * 1000);
+cleanupTimer.unref?.();
+
 /**
  * Documentation Controller
  *
@@ -14,6 +63,460 @@ import crypto from 'crypto';
  * Supports crawling from external sources and storing locally.
  */
 export class DocumentationController {
+  constructor() {
+    // Express route handlers are passed as bare function references.
+    // Bind `this` so helpers (like performAICrawl) are available.
+    this.crawlWithAI = this.crawlWithAI.bind(this);
+    this.startAICrawlJob = this.startAICrawlJob.bind(this);
+    this.getAICrawlJobStatus = this.getAICrawlJobStatus.bind(this);
+  }
+
+  private async performAICrawl(opts: {
+    url: string;
+    maxPages: number;
+    depth: number;
+    onProgress?: (update: Partial<AICrawlProgress> & { message?: string }) => void;
+  }) {
+    const { url, maxPages, depth, onProgress } = opts;
+
+    const crawledDocs: any[] = [];
+    const visitedUrls = new Set<string>();
+    let scriptsFoundSoFar = 0;
+    let scriptsSavedSoFar = 0;
+
+    const reportProgress = (update: Partial<AICrawlProgress> & { message?: string }) => {
+      onProgress?.({
+        totalPages: maxPages,
+        ...update
+      });
+    };
+
+    const timeoutAfter = (ms: number) =>
+      new Promise<never>((_, reject) => {
+        setTimeout(() => reject(new Error(`Timed out after ${ms}ms`)), ms);
+      });
+
+    const withTimeout = async <T>(promise: Promise<T>, ms: number): Promise<T> => {
+      return (await Promise.race([promise, timeoutAfter(ms)])) as T;
+    };
+
+    // Helper to fetch and parse a URL
+    const fetchPage = async (pageUrl: string): Promise<{ html: string; status: number } | null> => {
+      const controller = new AbortController();
+      const timer = setTimeout(() => controller.abort(), 15_000);
+      try {
+        const response = await withTimeout(
+          axios.get(pageUrl, {
+            timeout: 15_000,
+            signal: controller.signal,
+            // Prefer IPv4 to avoid environments where IPv6 connect attempts hang.
+            family: 4,
+            headers: {
+              'User-Agent': 'Mozilla/5.0 (compatible; PSScriptCrawler/1.0; +https://psscript.app)'
+            }
+          }),
+          20_000
+        );
+        return { html: response.data, status: response.status };
+      } catch (error) {
+        console.error(`Failed to fetch ${pageUrl}:`, error);
+        return null;
+      } finally {
+        clearTimeout(timer);
+      }
+    };
+
+    // Helper to extract PowerShell scripts from HTML
+    const extractScripts = (html: string): string[] => {
+      const $ = cheerio.load(html);
+      const scripts: string[] = [];
+
+      // Look for code blocks with PowerShell content
+      $('pre code, code, .code-block, .powershell, [class*="language-powershell"], [class*="lang-ps"]').each((_, elem) => {
+        const code = $(elem).text().trim();
+        // Check if it looks like PowerShell (contains common cmdlets or PS syntax)
+        if (code && (
+          code.includes('Get-') ||
+          code.includes('Set-') ||
+          code.includes('New-') ||
+          code.includes('Remove-') ||
+          code.includes('$') ||
+          code.includes('param(') ||
+          code.includes('function ') ||
+          code.includes('Write-Host') ||
+          code.includes('Write-Output') ||
+          code.includes('ForEach-Object') ||
+          code.includes('Where-Object') ||
+          code.match(/\|\s*(Select|Where|ForEach|Sort|Group)/)
+        )) {
+          if (code.length > 20 && code.length < 10000) {
+            scripts.push(code);
+          }
+        }
+      });
+
+      return scripts;
+    };
+
+    // Helper to generate title/summary/category (deterministic + fast)
+    const generateAITitleAndSummary = async (
+      content: string,
+      pageUrl: string,
+      _scripts: string[] = []
+    ): Promise<{ title: string; summary: string; category: string; aiInsights: string[]; codeExample: string }> => {
+      // Smart title extraction from URL and content
+      const urlParts = pageUrl.split('/').filter(Boolean);
+      let fallbackTitle = urlParts[urlParts.length - 1]?.replace(/-/g, ' ').replace(/_/g, ' ') || '';
+
+      // Try to extract title from content (look for heading patterns)
+      const headingMatch = content.match(/^#\s+(.+)|^(.+?)\n=+|<h1[^>]*>([^<]+)/m);
+      if (headingMatch) {
+        fallbackTitle = (headingMatch[1] || headingMatch[2] || headingMatch[3]).trim();
+      }
+
+      // Clean up title
+      fallbackTitle = fallbackTitle
+        .replace(/\s+/g, ' ')
+        .replace(/[|•·]/g, ' - ')
+        .trim()
+        .substring(0, 60);
+
+      if (!fallbackTitle || fallbackTitle.length < 3) {
+        fallbackTitle = 'Documentation Page';
+      }
+
+      // Title case the fallback
+      fallbackTitle = fallbackTitle
+        .split(' ')
+        .map(word => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
+        .join(' ');
+
+      // Try to detect category from content keywords
+      let category = 'General';
+      const lowerContent = content.toLowerCase();
+      if (lowerContent.includes('get-process') || lowerContent.includes('process management')) category = 'Process Management';
+      else if (lowerContent.includes('file system') || lowerContent.includes('get-childitem')) category = 'File System';
+      else if (lowerContent.includes('service') || lowerContent.includes('get-service')) category = 'Service Management';
+      else if (lowerContent.includes('network') || lowerContent.includes('test-connection')) category = 'Network';
+      else if (lowerContent.includes('security') || lowerContent.includes('execution policy')) category = 'Security';
+      else if (lowerContent.includes('module') || lowerContent.includes('import-module')) category = 'Module Management';
+      else if (lowerContent.includes('json') || lowerContent.includes('convert')) category = 'Data Conversion';
+      else if (lowerContent.includes('pipeline') || lowerContent.includes('foreach-object')) category = 'Pipeline';
+
+      // Generate smart summary from first meaningful paragraph
+      let summary = content
+        .replace(/Table of contents.*?Focus mode/gi, '')
+        .replace(/Exit editor mode.*?Ask Learn/gi, '')
+        .replace(/\s+/g, ' ')
+        .trim()
+        .substring(0, 250);
+
+      // Try to get first complete sentence
+      const sentenceEnd = summary.search(/[.!?]\s/);
+      if (sentenceEnd > 50) {
+        summary = summary.substring(0, sentenceEnd + 1);
+      }
+
+      return {
+        title: fallbackTitle,
+        summary: summary || 'PowerShell documentation page.',
+        category,
+        aiInsights: [],
+        codeExample: ''
+      };
+    };
+
+    // Helper to analyze extracted scripts with AI
+      const analyzeScripts = async (scripts: string[]): Promise<{ name: string; description: string; code: string }[]> => {
+        const analyzedScripts: { name: string; description: string; code: string }[] = [];
+
+        for (const script of scripts.slice(0, 5)) { // Limit to 5 scripts per page
+          try {
+          const analysisResult = await withTimeout(aiService.analyzeScript(script, undefined, 'quick'), 60_000);
+
+            if (analysisResult?.analysis) {
+              // Generate a name based on purpose
+              let name = 'PowerShell Script';
+              const purpose = analysisResult.analysis.purpose || '';
+
+            if (purpose.toLowerCase().includes('process')) name = 'Process Manager Script';
+            else if (purpose.toLowerCase().includes('file')) name = 'File Operations Script';
+            else if (purpose.toLowerCase().includes('service')) name = 'Service Manager Script';
+            else if (purpose.toLowerCase().includes('network')) name = 'Network Utility Script';
+            else if (purpose.toLowerCase().includes('user')) name = 'User Management Script';
+            else if (purpose.toLowerCase().includes('security')) name = 'Security Script';
+            else if (script.includes('function ')) {
+              const funcMatch = script.match(/function\s+(\w+)/);
+              if (funcMatch) name = `${funcMatch[1]} Function`;
+            }
+
+            analyzedScripts.push({
+              name,
+              description: purpose,
+              code: script
+            });
+          }
+        } catch (error) {
+          console.error('Script analysis failed:', error);
+          analyzedScripts.push({
+            name: 'PowerShell Script',
+            description: 'Script extracted from documentation',
+            code: script
+          });
+        }
+      }
+
+      return analyzedScripts;
+    };
+
+    // Crawl the initial URL
+    const crawlPage = async (pageUrl: string, currentDepth: number) => {
+      if (visitedUrls.has(pageUrl) || crawledDocs.length >= maxPages) return;
+      visitedUrls.add(pageUrl);
+
+      reportProgress({
+        currentUrl: pageUrl,
+        pagesProcessed: crawledDocs.length,
+        scriptsFound: scriptsFoundSoFar,
+        scriptsSaved: scriptsSavedSoFar,
+        stage: 'fetch',
+        message: `Crawling: ${pageUrl}`
+      });
+
+      console.log(`Crawling: ${pageUrl}`);
+      const pageData = await fetchPage(pageUrl);
+      if (!pageData) return;
+
+      reportProgress({
+        currentUrl: pageUrl,
+        pagesProcessed: crawledDocs.length,
+        scriptsFound: scriptsFoundSoFar,
+        scriptsSaved: scriptsSavedSoFar,
+        stage: 'extract'
+      });
+
+      const $ = cheerio.load(pageData.html);
+
+      // Extract text content
+      $('script, style, nav, footer, header').remove();
+      const textContent = $('article, main, .content, .documentation, body').first().text()
+        .replace(/\s+/g, ' ')
+        .trim();
+
+      // Skip if too little content
+      if (textContent.length < 100) return;
+
+      // Extract scripts FIRST so we can include them in the summary
+      const extractedScripts = extractScripts(pageData.html);
+
+      reportProgress({
+        currentUrl: pageUrl,
+        pagesProcessed: crawledDocs.length,
+        scriptsFound: scriptsFoundSoFar,
+        scriptsSaved: scriptsSavedSoFar,
+        stage: 'summarize'
+      });
+
+      // Generate AI title and summary - now passes scripts for better summaries with examples
+      const { title, summary, category, aiInsights, codeExample } = await generateAITitleAndSummary(textContent, pageUrl, extractedScripts);
+
+      reportProgress({
+        currentUrl: pageUrl,
+        pagesProcessed: crawledDocs.length,
+        scriptsFound: scriptsFoundSoFar,
+        scriptsSaved: scriptsSavedSoFar,
+        stage: extractedScripts.length > 0 ? 'analyze_scripts_start' : 'no_scripts'
+      });
+
+      const analyzedScripts = extractedScripts.length > 0
+        ? await analyzeScripts(extractedScripts)
+        : [];
+
+      scriptsFoundSoFar += analyzedScripts.length;
+
+      reportProgress({
+        currentUrl: pageUrl,
+        pagesProcessed: crawledDocs.length,
+        scriptsFound: scriptsFoundSoFar,
+        scriptsSaved: scriptsSavedSoFar,
+        stage: analyzedScripts.length > 0 ? 'analyze_scripts' : 'scripts_none'
+      });
+
+      // Extract commands mentioned in the content
+      const commandPattern = /\b(Get|Set|New|Remove|Start|Stop|Add|Clear|Copy|Move|Rename|Test|Import|Export|Invoke|Register|Unregister|Update|Write|Read)-[A-Z][a-zA-Z]+\b/g;
+      const extractedCommands = [...new Set(textContent.match(commandPattern) || [])];
+
+      // Extract module names
+      const modulePattern = /\b(Microsoft\.[A-Z][a-zA-Z.]+|PSReadLine|Pester|PSScriptAnalyzer|Az\.[A-Z][a-zA-Z]+)\b/g;
+      const extractedModules = [...new Set(textContent.match(modulePattern) || [])];
+
+      // Determine source from URL
+      let source = 'Web';
+      if (pageUrl.includes('microsoft.com')) source = 'Microsoft Learn';
+      else if (pageUrl.includes('github.com')) source = 'GitHub';
+      else if (pageUrl.includes('powershellgallery.com')) source = 'PowerShell Gallery';
+
+      // Generate tags based on content
+      const tags: string[] = [];
+      if (extractedCommands.length > 0) tags.push('cmdlet');
+      if (textContent.toLowerCase().includes('module')) tags.push('module');
+      if (textContent.toLowerCase().includes('function')) tags.push('function');
+      if (textContent.toLowerCase().includes('tutorial')) tags.push('tutorial');
+      if (textContent.toLowerCase().includes('script')) tags.push('script');
+      if (analyzedScripts.length > 0) tags.push('has-scripts');
+
+      reportProgress({
+        currentUrl: pageUrl,
+        pagesProcessed: crawledDocs.length,
+        scriptsFound: scriptsFoundSoFar,
+        scriptsSaved: scriptsSavedSoFar,
+        stage: 'save_scripts'
+      });
+
+      // Save extracted scripts to Script table
+      const savedScriptIds: number[] = [];
+      for (const analyzedScript of analyzedScripts) {
+        try {
+          // Generate file hash for deduplication
+          const fileHash = crypto.createHash('md5').update(analyzedScript.code).digest('hex');
+
+          // Check if script with same hash already exists
+          const existingScript = await Script.findOne({ where: { fileHash } });
+          if (existingScript) {
+            savedScriptIds.push(existingScript.id);
+            console.log(`Script already exists with hash ${fileHash}, skipping`);
+            continue;
+          }
+
+          // Create new script
+          const newScript = await Script.create({
+            title: analyzedScript.name.substring(0, 100),
+            description: `${analyzedScript.description}\n\nSource: ${pageUrl}`,
+            content: analyzedScript.code,
+            userId: 1, // Default system user
+            isPublic: true,
+            version: 1,
+            executionCount: 0,
+            fileHash
+          });
+          savedScriptIds.push(newScript.id);
+          console.log(`Saved script: ${analyzedScript.name} with ID ${newScript.id}`);
+        } catch (scriptError) {
+          console.error(`Error saving script ${analyzedScript.name}:`, scriptError);
+        }
+      }
+
+      scriptsSavedSoFar += savedScriptIds.length;
+
+      reportProgress({
+        currentUrl: pageUrl,
+        pagesProcessed: crawledDocs.length,
+        scriptsFound: scriptsFoundSoFar,
+        scriptsSaved: scriptsSavedSoFar,
+        stage: 'doc_entry'
+      });
+
+      // Create document entry - now includes full script code in metadata
+      const docEntry = {
+        title,
+        url: pageUrl,
+        content: textContent.substring(0, 10000),
+        summary,
+        source,
+        contentType: extractedScripts.length > 0 ? 'example' : 'article',
+        category,
+        tags: [...new Set(tags)],
+        extractedCommands,
+        extractedFunctions: analyzedScripts.map(s => s.name),
+        extractedModules,
+        metadata: {
+          scriptsFound: analyzedScripts.length,
+          scripts: analyzedScripts.map(s => ({
+            name: s.name,
+            description: s.description,
+            code: s.code  // Now includes the actual script code!
+          })),
+          savedScriptIds,  // Reference to saved Script records
+          crawledDepth: currentDepth,
+          // AI-generated insights for card display
+          aiInsights: aiInsights,  // Array of key learning points
+          codeExample: codeExample  // Short code snippet
+        },
+        crawledAt: new Date().toISOString()
+      };
+
+      crawledDocs.push(docEntry);
+
+      reportProgress({
+        pagesProcessed: crawledDocs.length,
+        scriptsFound: scriptsFoundSoFar,
+        scriptsSaved: scriptsSavedSoFar,
+        stage: 'page_done'
+      });
+
+      // If we should go deeper, find links to other pages
+      if (currentDepth < depth && crawledDocs.length < maxPages) {
+        const links: string[] = [];
+        $('a[href]').each((_, elem) => {
+          const href = $(elem).attr('href');
+          if (href && !href.startsWith('#') && !href.startsWith('javascript:')) {
+            try {
+              const fullUrl = new URL(href, pageUrl).href;
+              // Only follow links from the same domain
+              const baseUrl = new URL(pageUrl);
+              const linkUrl = new URL(fullUrl);
+              if (linkUrl.hostname === baseUrl.hostname && !visitedUrls.has(fullUrl)) {
+                links.push(fullUrl);
+              }
+            } catch {
+              // Invalid URL, skip
+            }
+          }
+        });
+
+        // Crawl linked pages (limit to a few per page)
+        for (const link of links.slice(0, 3)) {
+          if (crawledDocs.length >= maxPages) break;
+          await crawlPage(link, currentDepth + 1);
+        }
+      }
+    };
+
+    // Start crawling
+    await crawlPage(url, 0);
+
+    reportProgress({
+      stage: 'db_upsert',
+      message: 'Saving crawled documents to database...'
+    });
+
+    // Save all crawled docs to database
+    const savedDocs: any[] = [];
+    for (const doc of crawledDocs) {
+      try {
+        const [savedDoc, created] = await Documentation.upsertDoc({
+          ...doc,
+          crawledAt: new Date()
+        });
+        savedDocs.push({ doc: savedDoc, created });
+      } catch (err) {
+        console.error(`Error saving doc ${doc.url}:`, err);
+      }
+    }
+
+    // Count total scripts saved
+    const totalScriptsSaved = crawledDocs.reduce((sum, d) => sum + (d.metadata?.savedScriptIds?.length || 0), 0);
+    const totalScriptsFound = crawledDocs.reduce((sum, d) => sum + (d.metadata?.scriptsFound || 0), 0);
+
+    return {
+      data: savedDocs,
+      total: savedDocs.length,
+      scriptsSaved: totalScriptsSaved,
+      scriptsFound: totalScriptsFound,
+      message: `AI-powered crawl complete: ${savedDocs.length} documents saved, ${totalScriptsSaved} scripts saved to library (${totalScriptsFound} found)`
+    };
+  }
+
   /**
    * Get recent documentation entries
    */
@@ -403,428 +906,142 @@ export class DocumentationController {
           error: 'URL is required'
         });
       }
-
-      const crawledDocs: any[] = [];
-      const visitedUrls = new Set<string>();
-
-      // Helper to fetch and parse a URL
-      const fetchPage = async (pageUrl: string): Promise<{ html: string; status: number } | null> => {
-        try {
-          const response = await axios.get(pageUrl, {
-            timeout: 15000,
-            headers: {
-              'User-Agent': 'Mozilla/5.0 (compatible; PSScriptCrawler/1.0; +https://psscript.app)'
-            }
-          });
-          return { html: response.data, status: response.status };
-        } catch (error) {
-          console.error(`Failed to fetch ${pageUrl}:`, error);
-          return null;
-        }
-      };
-
-      // Helper to extract PowerShell scripts from HTML
-      const extractScripts = (html: string): string[] => {
-        const $ = cheerio.load(html);
-        const scripts: string[] = [];
-
-        // Look for code blocks with PowerShell content
-        $('pre code, code, .code-block, .powershell, [class*="language-powershell"], [class*="lang-ps"]').each((_, elem) => {
-          const code = $(elem).text().trim();
-          // Check if it looks like PowerShell (contains common cmdlets or PS syntax)
-          if (code && (
-            code.includes('Get-') ||
-            code.includes('Set-') ||
-            code.includes('New-') ||
-            code.includes('Remove-') ||
-            code.includes('$') ||
-            code.includes('param(') ||
-            code.includes('function ') ||
-            code.includes('Write-Host') ||
-            code.includes('Write-Output') ||
-            code.includes('ForEach-Object') ||
-            code.includes('Where-Object') ||
-            code.match(/\|\s*(Select|Where|ForEach|Sort|Group)/)
-          )) {
-            if (code.length > 20 && code.length < 10000) {
-              scripts.push(code);
-            }
-          }
-        });
-
-        return scripts;
-      };
-
-      // Helper to use AI for title and summary generation
-      const generateAITitleAndSummary = async (content: string, pageUrl: string, scripts: string[] = []): Promise<{ title: string; summary: string; category: string; aiInsights: string[]; codeExample: string }> => {
-        try {
-          // Build script examples section for the prompt
-          const scriptExamples = scripts.slice(0, 2).map((script, i) => {
-            // Get a meaningful snippet of each script (first 300 chars or up to a logical break)
-            const snippet = script.length > 300
-              ? script.substring(0, script.indexOf('\n', 250) > 0 ? script.indexOf('\n', 250) : 300) + '...'
-              : script;
-            return `Script ${i + 1}:\n\`\`\`powershell\n${snippet}\n\`\`\``;
-          }).join('\n\n');
-
-          // Use AI to analyze the content with enhanced prompt
-          const prompt = `Analyze this PowerShell documentation and create a comprehensive summary card.
-
-**Generate:**
-1. **title** (max 60 chars): Clear, descriptive title for the content
-2. **summary** (max 150 chars): One-line overview of what this covers
-3. **aiInsights** (array of 3-4 strings): Key learning points as bullet items, each 50-80 chars. Focus on:
-   - Main cmdlets or functions covered
-   - Key use cases or scenarios
-   - Important parameters or options
-   - Best practices mentioned
-4. **codeExample** (max 100 chars): One short PowerShell example from the page, or empty if none
-5. **category**: One of: Process Management, File System, Service Management, Network, Security, Module Management, Data Conversion, Pipeline, Output, Web Requests, Active Directory, Azure, AWS, General
-
-**Page Content:**
-${content.substring(0, 2500)}
-
-${scripts.length > 0 ? `**PowerShell Code Found:**\n${scriptExamples}` : ''}
-
-**Respond ONLY with valid JSON:**
-{
-  "title": "Getting Started with Get-Process",
-  "summary": "Learn to monitor and manage Windows processes using PowerShell cmdlets.",
-  "aiInsights": [
-    "Use Get-Process to list all running processes",
-    "Filter by name with -Name parameter",
-    "Pipe to Stop-Process for termination",
-    "Check CPU usage with CPU property"
-  ],
-  "codeExample": "Get-Process | Where-Object {$_.CPU -gt 100}",
-  "category": "Process Management"
-}`;
-
-          // Call AI service chat endpoint directly
-          const AI_SERVICE_URL = process.env.AI_SERVICE_URL || 'http://ai-service:8000';
-          const chatResponse = await axios.post(`${AI_SERVICE_URL}/chat`, {
-            messages: [{ role: 'user', content: prompt }]
-          }, { timeout: 30000 });
-
-          if (chatResponse.data?.response) {
-            try {
-              // Clean up the response - remove quotes if wrapped
-              let responseText = chatResponse.data.response;
-              if (responseText.startsWith('"') && responseText.endsWith('"')) {
-                responseText = responseText.slice(1, -1);
-              }
-
-              // Try to parse JSON from the response
-              const jsonMatch = responseText.match(/\{[\s\S]*\}/);
-              if (jsonMatch) {
-                const parsed = JSON.parse(jsonMatch[0]);
-                return {
-                  title: parsed.title || 'Untitled Document',
-                  summary: parsed.summary || '',
-                  category: parsed.category || 'General',
-                  aiInsights: Array.isArray(parsed.aiInsights) ? parsed.aiInsights : [],
-                  codeExample: parsed.codeExample || ''
-                };
-              }
-            } catch (_parseError) {
-              console.log('JSON parse failed, using text response');
-              // If JSON parsing fails, extract from text
-              return {
-                title: content.substring(0, 60).replace(/\n/g, ' ').trim() || 'Untitled Document',
-                summary: chatResponse.data.response.substring(0, 200),
-                category: 'General',
-                aiInsights: [],
-                codeExample: ''
-              };
-            }
-          }
-        } catch (error) {
-          console.error('AI title/summary generation failed:', (error as any)?.message || error);
-        }
-
-        // Fallback: Smart title extraction from URL and content
-        const urlParts = pageUrl.split('/').filter(Boolean);
-        let fallbackTitle = urlParts[urlParts.length - 1]?.replace(/-/g, ' ').replace(/_/g, ' ') || '';
-
-        // Try to extract title from content (look for heading patterns)
-        const headingMatch = content.match(/^#\s+(.+)|^(.+?)\n=+|<h1[^>]*>([^<]+)/m);
-        if (headingMatch) {
-          fallbackTitle = (headingMatch[1] || headingMatch[2] || headingMatch[3]).trim();
-        }
-
-        // Clean up title
-        fallbackTitle = fallbackTitle
-          .replace(/\s+/g, ' ')
-          .replace(/[|•·]/g, ' - ')
-          .trim()
-          .substring(0, 60);
-
-        if (!fallbackTitle || fallbackTitle.length < 3) {
-          fallbackTitle = 'Documentation Page';
-        }
-
-        // Title case the fallback
-        fallbackTitle = fallbackTitle
-          .split(' ')
-          .map(word => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
-          .join(' ');
-
-        // Try to detect category from content keywords
-        let category = 'General';
-        const lowerContent = content.toLowerCase();
-        if (lowerContent.includes('get-process') || lowerContent.includes('process management')) category = 'Process Management';
-        else if (lowerContent.includes('file system') || lowerContent.includes('get-childitem')) category = 'File System';
-        else if (lowerContent.includes('service') || lowerContent.includes('get-service')) category = 'Service Management';
-        else if (lowerContent.includes('network') || lowerContent.includes('test-connection')) category = 'Network';
-        else if (lowerContent.includes('security') || lowerContent.includes('execution policy')) category = 'Security';
-        else if (lowerContent.includes('module') || lowerContent.includes('import-module')) category = 'Module Management';
-        else if (lowerContent.includes('json') || lowerContent.includes('convert')) category = 'Data Conversion';
-        else if (lowerContent.includes('pipeline') || lowerContent.includes('foreach-object')) category = 'Pipeline';
-
-        // Generate smart summary from first meaningful paragraph
-        let summary = content
-          .replace(/Table of contents.*?Focus mode/gi, '')
-          .replace(/Exit editor mode.*?Ask Learn/gi, '')
-          .replace(/\s+/g, ' ')
-          .trim()
-          .substring(0, 250);
-
-        // Try to get first complete sentence
-        const sentenceEnd = summary.search(/[.!?]\s/);
-        if (sentenceEnd > 50) {
-          summary = summary.substring(0, sentenceEnd + 1);
-        }
-
-        return {
-          title: fallbackTitle,
-          summary: summary || 'PowerShell documentation page.',
-          category,
-          aiInsights: [],
-          codeExample: ''
-        };
-      };
-
-      // Helper to analyze extracted scripts with AI
-      const analyzeScripts = async (scripts: string[]): Promise<{ name: string; description: string; code: string }[]> => {
-        const analyzedScripts: { name: string; description: string; code: string }[] = [];
-
-        for (const script of scripts.slice(0, 5)) { // Limit to 5 scripts per page
-          try {
-            const analysisResult = await aiService.analyzeScript(script, undefined, 'quick');
-
-            if (analysisResult?.analysis) {
-              // Generate a name based on purpose
-              let name = 'PowerShell Script';
-              const purpose = analysisResult.analysis.purpose || '';
-
-              if (purpose.toLowerCase().includes('process')) name = 'Process Manager Script';
-              else if (purpose.toLowerCase().includes('file')) name = 'File Operations Script';
-              else if (purpose.toLowerCase().includes('service')) name = 'Service Manager Script';
-              else if (purpose.toLowerCase().includes('network')) name = 'Network Utility Script';
-              else if (purpose.toLowerCase().includes('user')) name = 'User Management Script';
-              else if (purpose.toLowerCase().includes('security')) name = 'Security Script';
-              else if (script.includes('function ')) {
-                const funcMatch = script.match(/function\s+(\w+)/);
-                if (funcMatch) name = `${funcMatch[1]} Function`;
-              }
-
-              analyzedScripts.push({
-                name,
-                description: purpose,
-                code: script
-              });
-            }
-          } catch (error) {
-            console.error('Script analysis failed:', error);
-            analyzedScripts.push({
-              name: 'PowerShell Script',
-              description: 'Script extracted from documentation',
-              code: script
-            });
-          }
-        }
-
-        return analyzedScripts;
-      };
-
-      // Crawl the initial URL
-      const crawlPage = async (pageUrl: string, currentDepth: number) => {
-        if (visitedUrls.has(pageUrl) || crawledDocs.length >= maxPages) return;
-        visitedUrls.add(pageUrl);
-
-        console.log(`Crawling: ${pageUrl}`);
-        const pageData = await fetchPage(pageUrl);
-        if (!pageData) return;
-
-        const $ = cheerio.load(pageData.html);
-
-        // Extract text content
-        $('script, style, nav, footer, header').remove();
-        const textContent = $('article, main, .content, .documentation, body').first().text()
-          .replace(/\s+/g, ' ')
-          .trim();
-
-        // Skip if too little content
-        if (textContent.length < 100) return;
-
-        // Extract scripts FIRST so we can include them in the summary
-        const extractedScripts = extractScripts(pageData.html);
-
-        // Generate AI title and summary - now passes scripts for better summaries with examples
-        const { title, summary, category, aiInsights, codeExample } = await generateAITitleAndSummary(textContent, pageUrl, extractedScripts);
-        const analyzedScripts = extractedScripts.length > 0
-          ? await analyzeScripts(extractedScripts)
-          : [];
-
-        // Extract commands mentioned in the content
-        const commandPattern = /\b(Get|Set|New|Remove|Start|Stop|Add|Clear|Copy|Move|Rename|Test|Import|Export|Invoke|Register|Unregister|Update|Write|Read)-[A-Z][a-zA-Z]+\b/g;
-        const extractedCommands = [...new Set(textContent.match(commandPattern) || [])];
-
-        // Extract module names
-        const modulePattern = /\b(Microsoft\.[A-Z][a-zA-Z.]+|PSReadLine|Pester|PSScriptAnalyzer|Az\.[A-Z][a-zA-Z]+)\b/g;
-        const extractedModules = [...new Set(textContent.match(modulePattern) || [])];
-
-        // Determine source from URL
-        let source = 'Web';
-        if (pageUrl.includes('microsoft.com')) source = 'Microsoft Learn';
-        else if (pageUrl.includes('github.com')) source = 'GitHub';
-        else if (pageUrl.includes('powershellgallery.com')) source = 'PowerShell Gallery';
-
-        // Generate tags based on content
-        const tags: string[] = [];
-        if (extractedCommands.length > 0) tags.push('cmdlet');
-        if (textContent.toLowerCase().includes('module')) tags.push('module');
-        if (textContent.toLowerCase().includes('function')) tags.push('function');
-        if (textContent.toLowerCase().includes('tutorial')) tags.push('tutorial');
-        if (textContent.toLowerCase().includes('script')) tags.push('script');
-        if (analyzedScripts.length > 0) tags.push('has-scripts');
-
-        // Save extracted scripts to Script table
-        const savedScriptIds: number[] = [];
-        for (const analyzedScript of analyzedScripts) {
-          try {
-            // Generate file hash for deduplication
-            const fileHash = crypto.createHash('md5').update(analyzedScript.code).digest('hex');
-
-            // Check if script with same hash already exists
-            const existingScript = await Script.findOne({ where: { fileHash } });
-            if (existingScript) {
-              savedScriptIds.push(existingScript.id);
-              console.log(`Script already exists with hash ${fileHash}, skipping`);
-              continue;
-            }
-
-            // Create new script
-            const newScript = await Script.create({
-              title: analyzedScript.name.substring(0, 100),
-              description: `${analyzedScript.description}\n\nSource: ${pageUrl}`,
-              content: analyzedScript.code,
-              userId: 1, // Default system user
-              isPublic: true,
-              version: 1,
-              executionCount: 0,
-              fileHash
-            });
-            savedScriptIds.push(newScript.id);
-            console.log(`Saved script: ${analyzedScript.name} with ID ${newScript.id}`);
-          } catch (scriptError) {
-            console.error(`Error saving script ${analyzedScript.name}:`, scriptError);
-          }
-        }
-
-        // Create document entry - now includes full script code in metadata
-        const docEntry = {
-          title,
-          url: pageUrl,
-          content: textContent.substring(0, 10000),
-          summary,
-          source,
-          contentType: extractedScripts.length > 0 ? 'example' : 'article',
-          category,
-          tags: [...new Set(tags)],
-          extractedCommands,
-          extractedFunctions: analyzedScripts.map(s => s.name),
-          extractedModules,
-          metadata: {
-            scriptsFound: analyzedScripts.length,
-            scripts: analyzedScripts.map(s => ({
-              name: s.name,
-              description: s.description,
-              code: s.code  // Now includes the actual script code!
-            })),
-            savedScriptIds,  // Reference to saved Script records
-            crawledDepth: currentDepth,
-            // AI-generated insights for card display
-            aiInsights: aiInsights,  // Array of key learning points
-            codeExample: codeExample  // Short code snippet
-          },
-          crawledAt: new Date().toISOString()
-        };
-
-        crawledDocs.push(docEntry);
-
-        // If we should go deeper, find links to other pages
-        if (currentDepth < depth && crawledDocs.length < maxPages) {
-          const links: string[] = [];
-          $('a[href]').each((_, elem) => {
-            const href = $(elem).attr('href');
-            if (href && !href.startsWith('#') && !href.startsWith('javascript:')) {
-              try {
-                const fullUrl = new URL(href, pageUrl).href;
-                // Only follow links from the same domain
-                const baseUrl = new URL(pageUrl);
-                const linkUrl = new URL(fullUrl);
-                if (linkUrl.hostname === baseUrl.hostname && !visitedUrls.has(fullUrl)) {
-                  links.push(fullUrl);
-                }
-              } catch {
-                // Invalid URL, skip
-              }
-            }
-          });
-
-          // Crawl linked pages (limit to a few per page)
-          for (const link of links.slice(0, 3)) {
-            if (crawledDocs.length >= maxPages) break;
-            await crawlPage(link, currentDepth + 1);
-          }
-        }
-      };
-
-      // Start crawling
-      await crawlPage(url, 0);
-
-      // Save all crawled docs to database
-      const savedDocs: any[] = [];
-      for (const doc of crawledDocs) {
-        try {
-          const [savedDoc, created] = await Documentation.upsertDoc({
-            ...doc,
-            crawledAt: new Date()
-          });
-          savedDocs.push({ doc: savedDoc, created });
-        } catch (err) {
-          console.error(`Error saving doc ${doc.url}:`, err);
-        }
-      }
-
-      // Count total scripts saved
-      const totalScriptsSaved = crawledDocs.reduce((sum, d) => sum + (d.metadata?.savedScriptIds?.length || 0), 0);
-      const totalScriptsFound = crawledDocs.reduce((sum, d) => sum + (d.metadata?.scriptsFound || 0), 0);
-
-      res.json({
-        success: true,
-        data: savedDocs,
-        total: savedDocs.length,
-        scriptsSaved: totalScriptsSaved,
-        scriptsFound: totalScriptsFound,
-        message: `AI-powered crawl complete: ${savedDocs.length} documents saved, ${totalScriptsSaved} scripts saved to library (${totalScriptsFound} found)`
+      const result = await this.performAICrawl({
+        url,
+        maxPages,
+        depth
       });
+
+      res.json({ success: true, ...result });
     } catch (error) {
       console.error('Error in AI crawl:', error);
       res.status(500).json({
         success: false,
         error: 'AI-powered crawl failed'
+      });
+    }
+  }
+
+  /**
+   * Starts an AI crawl job asynchronously and returns a jobId immediately.
+   * The UI can poll /api/documentation/crawl/ai/status/:jobId for progress/results.
+   */
+  async startAICrawlJob(req: Request, res: Response) {
+    try {
+      const { url, maxPages = 10, depth = 1 } = req.body;
+
+      if (!url) {
+        return res.status(400).json({
+          success: false,
+          error: 'URL is required'
+        });
+      }
+
+      const jobId = crypto.randomUUID();
+      const createdAt = new Date().toISOString();
+
+      const job: AICrawlJob = {
+        id: jobId,
+        status: 'queued',
+        createdAt,
+        request: {
+          url,
+          maxPages,
+          depth
+        },
+        progress: {
+          pagesProcessed: 0,
+          totalPages: maxPages,
+          scriptsFound: 0,
+          scriptsSaved: 0,
+          stage: 'queued'
+        }
+      };
+
+      aiCrawlJobs.set(jobId, job);
+
+      // Run in background (best-effort for development). If the backend restarts, jobs are lost.
+      setImmediate(async () => {
+        const runningJob = aiCrawlJobs.get(jobId);
+        if (!runningJob) return;
+
+        runningJob.status = 'running';
+        runningJob.startedAt = new Date().toISOString();
+
+        try {
+          const result = await this.performAICrawl({
+            url,
+            maxPages,
+            depth,
+            onProgress: (update) => {
+              const j = aiCrawlJobs.get(jobId);
+              if (!j) return;
+              if (typeof update.pagesProcessed === 'number') j.progress.pagesProcessed = update.pagesProcessed;
+              if (typeof update.totalPages === 'number') j.progress.totalPages = update.totalPages;
+              if (typeof update.scriptsFound === 'number') j.progress.scriptsFound = update.scriptsFound;
+              if (typeof update.scriptsSaved === 'number') j.progress.scriptsSaved = update.scriptsSaved;
+              if (typeof update.currentUrl === 'string') j.progress.currentUrl = update.currentUrl;
+              if (typeof update.stage === 'string') j.progress.stage = update.stage;
+              // message is currently only used client-side; store in result/message once completed.
+            }
+          });
+
+          const completedJob = aiCrawlJobs.get(jobId);
+          if (!completedJob) return;
+          completedJob.status = 'completed';
+          completedJob.finishedAt = new Date().toISOString();
+          completedJob.result = result;
+          // ensure progress matches final values
+          completedJob.progress.pagesProcessed = result.total;
+          completedJob.progress.totalPages = maxPages;
+          completedJob.progress.scriptsFound = result.scriptsFound;
+          completedJob.progress.scriptsSaved = result.scriptsSaved;
+        } catch (err) {
+          const failedJob = aiCrawlJobs.get(jobId);
+          if (!failedJob) return;
+          failedJob.status = 'error';
+          failedJob.finishedAt = new Date().toISOString();
+          failedJob.error = (err as any)?.message || 'AI crawl failed';
+        }
+      });
+
+      return res.status(202).json({
+        success: true,
+        jobId
+      });
+    } catch (error) {
+      console.error('Error starting AI crawl job:', error);
+      return res.status(500).json({
+        success: false,
+        error: 'Failed to start AI crawl job'
+      });
+    }
+  }
+
+  /**
+   * Get AI crawl job status (and result when completed).
+   */
+  async getAICrawlJobStatus(req: Request, res: Response) {
+    try {
+      const { jobId } = req.params;
+      const job = aiCrawlJobs.get(jobId);
+
+      if (!job) {
+        return res.status(404).json({
+          success: false,
+          error: 'Job not found'
+        });
+      }
+
+      return res.json({
+        success: true,
+        data: job
+      });
+    } catch (error) {
+      console.error('Error fetching AI crawl job status:', error);
+      return res.status(500).json({
+        success: false,
+        error: 'Failed to fetch AI crawl job status'
       });
     }
   }

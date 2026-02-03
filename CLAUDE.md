@@ -3,22 +3,22 @@
 PowerShell script analysis platform with agentic AI. Four services: backend (TypeScript/Express), frontend (React/Vite), AI service (Python/FastAPI), PostgreSQL + Redis.
 
 ## Immutable Rules
-- **Never change ports** - resolve conflicts by freeing ports, not renumbering
+- **Keep ports consistent** - prefer freeing conflicting ports, but if you do change a port, update compose/config/tests/docs together
 - **Never mix tunnel with Vite dev server** - use production build for tunnel
 - **Never bypass security** - file hash deduplication, security analysis, validation steps
 - **Keep service boundaries crisp** - frontend, backend, AI service, data layer stay distinct
 - **Use existing commands** - don't invent new scripts when canonical ones exist
 
-## Port Assignments (FIXED)
+## Port Assignments (Current)
 | Service    | Port | Command                                  |
 |------------|------|------------------------------------------|
-| Frontend   | 3000 | `cd src/frontend && npm run dev`         |
+| Frontend   | 3090 | `cd src/frontend && npm run dev`         |
 | Backend    | 4000 | `cd src/backend && npm run dev`          |
 | AI Service | 8000 | `cd src/ai && python main.py`            |
 | PostgreSQL | 5432 | via docker-compose                       |
 | Redis      | 6379 | via docker-compose                       |
 
-**Port conflicts:** `./scripts/ensure-ports.sh status` | `kill-frontend` | `kill-backend`
+**Port conflicts:** `./scripts/ensure-ports.sh status` → `./scripts/ensure-ports.sh kill-frontend` or `./scripts/ensure-ports.sh kill-backend`
 
 ---
 
@@ -43,7 +43,7 @@ PowerShell script analysis platform with agentic AI. Four services: backend (Typ
 ### Frontend (`src/frontend/`)
 | Command | Purpose | When to Use |
 |---------|---------|-------------|
-| `npm run dev` | Dev server (port 3000) | Local UI development only |
+| `npm run dev` | Dev server (port 3090) | Local UI development only |
 | `npm run build` | Production bundle | Before tunnel access, deployment |
 | `npm run preview` | Serve production build locally | Test prod build before deploy |
 
@@ -65,7 +65,7 @@ PowerShell script analysis platform with agentic AI. Four services: backend (Typ
 ┌─────────────────┐     ┌─────────────────┐     ┌─────────────────┐
 │    Frontend     │────▶│     Backend     │────▶│   AI Service    │
 │   React/Vite    │     │ Express/Node.js │     │ Python/FastAPI  │
-│    Port 3000    │     │    Port 4000    │     │    Port 8000    │
+│    Port 3090    │     │    Port 4000    │     │    Port 8000    │
 └─────────────────┘     └────────┬────────┘     └─────────────────┘
                                  │
                     ┌────────────┴────────────┐
@@ -91,14 +91,14 @@ PowerShell script analysis platform with agentic AI. Four services: backend (Typ
 #### Backend (`src/backend/`)
 | Path | Component | Responsibility |
 |------|-----------|----------------|
-| `src/services/agentic/RunEngine.ts` | RunEngine | Orchestrates multi-step AI workflows, tool selection, execution sequencing |
-| `src/services/agentic/tools/` | Tool modules | Modular AI capabilities (ScriptGenerator, SecurityAnalyzer, etc.) |
-| `src/services/agentic/tools/ScriptGenerator.ts` | ScriptGenerator | Generates PowerShell scripts from requirements |
-| `src/services/agentic/tools/SecurityAnalyzer.ts` | SecurityAnalyzer | Analyzes scripts for security vulnerabilities |
-| `src/controllers/ScriptController.ts` | ScriptController | Main API for script CRUD and analysis triggers |
-| `src/controllers/AsyncUploadController.ts` | AsyncUploadController | Chunked uploads, progress tracking, dedup checks |
-| `src/database/connection.ts` | DB Connection | Centralized Sequelize connection management |
-| `src/database/models/index.ts` | Models | Sequelize models: Script, AnalysisResult, User, etc. |
+| `src/backend/src/services/agentic/RunEngine.ts` | RunEngine | Orchestrates multi-step AI workflows, tool selection, execution sequencing |
+| `src/backend/src/services/agentic/tools/` | Tool modules | Modular AI capabilities (ScriptGenerator, SecurityAnalyzer, etc.) |
+| `src/backend/src/services/agentic/tools/ScriptGenerator.ts` | ScriptGenerator | Generates PowerShell scripts from requirements |
+| `src/backend/src/services/agentic/tools/SecurityAnalyzer.ts` | SecurityAnalyzer | Analyzes scripts for security vulnerabilities |
+| `src/backend/src/controllers/ScriptController.ts` | ScriptController | Main API for script CRUD and analysis triggers |
+| `src/backend/src/controllers/AsyncUploadController.ts` | AsyncUploadController | Chunked uploads, progress tracking, dedup checks |
+| `src/backend/src/database/connection.ts` | DB Connection | Centralized Sequelize connection management |
+| `src/backend/src/database/models/index.ts` | Models | Sequelize models: Script, AnalysisResult, User, etc. |
 
 #### AI Service (`src/ai/`)
 | Path | Component | Responsibility |
@@ -250,7 +250,7 @@ User Request
 
 ### Debug Ladder (Follow In Order)
 1. **Check ports:** `./scripts/ensure-ports.sh status`
-2. **Free conflicts:** `kill-frontend` or `kill-backend` as needed
+2. **Free conflicts:** `./scripts/ensure-ports.sh kill-frontend` or `./scripts/ensure-ports.sh kill-backend` as needed
 3. **Verify services:** Each on correct port, logs clean
 4. **Check boundaries:** Is each service doing only its job?
 5. **Validate data flow:** Upload → dedup → analysis → results working?
@@ -314,7 +314,7 @@ psscript/
 │   │       ├── services/agentic/   # RunEngine + tools
 │   │       ├── database/
 │   │       └── ...
-│   ├── frontend/         # React/Vite UI (port 3000)
+│   ├── frontend/         # React/Vite UI (port 3090)
 │   └── ai/               # Python/FastAPI (port 8000)
 ├── scripts/              # Operational scripts (ensure-ports.sh, etc.)
 ├── docker-compose.yml    # Full stack orchestration
@@ -333,7 +333,7 @@ psscript/
 6. Run quality checks before committing: `lint`, `typecheck`, `test`
 
 ## Never Do
-- Change port assignments (free conflicting processes instead)
+- Change port assignments without updating compose/config/tests/docs together
 - Mix tunnel with Vite dev server
 - Bypass AsyncUploadController for uploads
 - Skip hash checks or security analysis

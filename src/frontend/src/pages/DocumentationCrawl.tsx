@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { Link } from 'react-router-dom';
 import documentationApi from '../services/documentationApi';
 
@@ -25,17 +25,29 @@ interface CrawlStatus {
 const DocumentationCrawl: React.FC = () => {
   const [config, setConfig] = useState<CrawlConfig>({
     url: 'https://learn.microsoft.com/en-us/powershell/',
-    maxPages: 10,
-    depth: 2,
+    maxPages: 5,
+    depth: 1,
     includeExternalLinks: false,
     fileTypes: ['ps1', 'psm1', 'psd1'],
     useAI: true
   });
 
+  const [aiJobId, setAiJobId] = useState<string | null>(null);
+  const pollTimerRef = useRef<number | null>(null);
+
   const [crawlStatus, setCrawlStatus] = useState<CrawlStatus>({
     status: 'idle',
     message: 'Configure your import settings and click "Start Import" to begin.'
   });
+
+  useEffect(() => {
+    return () => {
+      if (pollTimerRef.current) {
+        window.clearInterval(pollTimerRef.current);
+        pollTimerRef.current = null;
+      }
+    };
+  }, []);
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
     const { name, value, type } = e.target as HTMLInputElement;
@@ -81,29 +93,86 @@ const DocumentationCrawl: React.FC = () => {
     // If AI mode is enabled, use the AI crawl endpoint
     if (config.useAI) {
       try {
-        const result = await documentationApi.crawlWithAI({
+        if (pollTimerRef.current) {
+          window.clearInterval(pollTimerRef.current);
+          pollTimerRef.current = null;
+        }
+
+        const jobId = await documentationApi.startAICrawlJob({
           url: config.url,
           maxPages: config.maxPages,
           depth: config.depth
         });
 
-        if (result.status === 'completed') {
-          setCrawlStatus({
-            status: 'completed',
-            message: result.message || `AI import complete! ${result.pagesProcessed} documents with ${result.scriptsFound} scripts analyzed.`,
-            progress: {
-              pagesProcessed: result.pagesProcessed,
-              totalPages: result.totalPages,
-              scriptsFound: result.scriptsFound
+        setAiJobId(jobId);
+
+        const poll = async () => {
+          try {
+            const status = await documentationApi.getAICrawlJobStatus(jobId);
+
+            if (status.status === 'completed') {
+              if (pollTimerRef.current) {
+                window.clearInterval(pollTimerRef.current);
+                pollTimerRef.current = null;
+              }
+
+              setCrawlStatus({
+                status: 'completed',
+                message:
+                  status.result?.message ||
+                  `AI import complete! ${status.progress.pagesProcessed} documents processed.`,
+                progress: {
+                  pagesProcessed: status.progress.pagesProcessed,
+                  totalPages: status.progress.totalPages,
+                  scriptsFound: status.progress.scriptsFound
+                }
+              });
+              return;
             }
-          });
-        } else {
-          setCrawlStatus({
-            status: 'error',
-            message: result.message || 'AI import failed',
-            error: result.message
-          });
-        }
+
+            if (status.status === 'error') {
+              if (pollTimerRef.current) {
+                window.clearInterval(pollTimerRef.current);
+                pollTimerRef.current = null;
+              }
+
+              setCrawlStatus({
+                status: 'error',
+                message: 'AI import failed.',
+                error: status.error || 'Unknown error'
+              });
+              return;
+            }
+
+            setCrawlStatus(prev => ({
+              status: 'crawling',
+              message: status.progress.currentUrl
+                ? `AI import in progress... Crawling: ${status.progress.currentUrl}`
+                : 'AI import in progress...',
+              progress: {
+                pagesProcessed: status.progress.pagesProcessed,
+                totalPages: status.progress.totalPages,
+                scriptsFound: status.progress.scriptsFound
+              },
+              error: prev.error
+            }));
+          } catch (pollError) {
+            if (pollTimerRef.current) {
+              window.clearInterval(pollTimerRef.current);
+              pollTimerRef.current = null;
+            }
+
+            setCrawlStatus({
+              status: 'error',
+              message: 'AI import failed while checking status.',
+              error: pollError instanceof Error ? pollError.message : 'Unknown error'
+            });
+          }
+        };
+
+        // Poll immediately, then every 2 seconds
+        await poll();
+        pollTimerRef.current = window.setInterval(poll, 2000);
       } catch (error) {
         setCrawlStatus({
           status: 'error',
@@ -204,18 +273,21 @@ const DocumentationCrawl: React.FC = () => {
     if (!crawlStatus.progress) return null;
 
     const { pagesProcessed, totalPages } = crawlStatus.progress;
-    const percentage = Math.min(Math.round((pagesProcessed / totalPages) * 100), 100);
+    const percentage = Math.min(Math.round((pagesProcessed / Math.max(totalPages, 1)) * 100), 100);
 
     return (
-      <div className="mt-4">
-        <div className="flex justify-between text-sm text-gray-400 mb-1">
+      <div className="mt-4 w-full">
+        <div className="flex justify-between text-xs text-[var(--color-text-tertiary)] mb-1">
           <span>{percentage}% Complete</span>
           <span>{pagesProcessed} of {totalPages} pages</span>
         </div>
-        <div className="w-full bg-gray-800 rounded-full h-2.5">
+        <div
+          className="w-full rounded-full h-2.5"
+          style={{ backgroundColor: 'var(--color-bg-tertiary)' }}
+        >
           <div
-            className="bg-blue-600 h-2.5 rounded-full"
-            style={{ width: `${percentage}%` }}
+            className="h-2.5 rounded-full"
+            style={{ width: `${percentage}%`, backgroundColor: 'var(--color-primary)' }}
           ></div>
         </div>
       </div>

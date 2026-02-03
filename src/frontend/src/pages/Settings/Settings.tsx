@@ -321,12 +321,17 @@ const Settings: React.FC = () => {
                   <Select
                     labelId="default-ai-model-label"
                     id="default-ai-model-select"
-                    defaultValue="gpt-4o"
+                    defaultValue="gpt-5-mini"
                     label="Default AI Model"
                     aria-labelledby="default-ai-model-label"
                   >
-                    <MenuItem value="gpt-4o">GPT-4o (Recommended)</MenuItem>
-                    <MenuItem value="gpt-3.5-turbo">GPT-3.5 Turbo (Faster)</MenuItem>
+                    <MenuItem value="gpt-5.2-codex">GPT-5.2-Codex (Best Coding)</MenuItem>
+                    <MenuItem value="gpt-5.2">GPT-5.2 (Best General)</MenuItem>
+                    <MenuItem value="gpt-5-mini">GPT-5 Mini (Fast)</MenuItem>
+                    <MenuItem value="gpt-5-nano">GPT-5 Nano (Fastest)</MenuItem>
+                    <MenuItem value="gpt-5">GPT-5 (Legacy)</MenuItem>
+                    <MenuItem value="gpt-4.1">GPT-4.1 (Strong Coding)</MenuItem>
+                    <MenuItem value="gpt-4o">GPT-4o (Balanced)</MenuItem>
                   </Select>
                 </FormControl>
               </Grid>

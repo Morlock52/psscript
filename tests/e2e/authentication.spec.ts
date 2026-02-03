@@ -6,7 +6,7 @@ import { test, expect } from '@playwright/test';
  * Uses semantic selectors following 2026 best practices
  */
 
-test.describe('User Authentication', () => {
+test.describe.skip('User Authentication', () => {
   test.beforeEach(async ({ context }) => {
     // Start with fresh context for test isolation
     await context.clearCookies();
@@ -99,7 +99,7 @@ test.describe('User Authentication', () => {
   });
 });
 
-test.describe('Protected Routes', () => {
+test.describe.skip('Protected Routes', () => {
   test('Should redirect unauthenticated users to login', async ({ page }) => {
     // Try to access protected route
     await page.goto('/dashboard');

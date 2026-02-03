@@ -42,30 +42,24 @@ class RateLimits(BaseModel):
     alpha_vantage_rpm: int = Field(5, description="Alpha Vantage requests per minute")
 
 class AgentConfig(BaseModel):
-    """Agent configuration - Updated January 2026.
+    """Agent configuration - Updated February 2026.
 
-    Based on latest OpenAI model recommendations and benchmarks:
-    - gpt-4.1: Best for code generation (54.6% SWE-bench, 52.9% code diff accuracy)
-    - o3: Best reasoning model for complex analysis tasks
-    - gpt-4o: Good general-purpose model
-    - gpt-4o-mini: Fast model for quick tasks
+    Notes:
+    - We default to GPT-5.2 for best agentic/coding performance.
+    - We default to GPT-5 Mini for fast interactive UX.
 
     Reference: https://platform.openai.com/docs/models
-    PowerShell-specific: GPT-4.1 recommended for script generation due to:
-    - 1M token context window (handles large scripts)
-    - 60% higher coding benchmarks vs GPT-4o
-    - Better instruction following for scripting tasks
     """
     default_agent: str = Field("langgraph", description="Default agent type (langgraph recommended)")
     max_steps: int = Field(15, description="Maximum steps for agent workflows")
     memory_size: int = Field(20, description="Number of messages to keep in memory")
 
-    # Updated models for January 2026 - Optimized for PowerShell
-    default_model: str = Field("gpt-4.1", description="Default model - best for code generation")
-    powershell_model: str = Field("gpt-4.1", description="PowerShell script generation model")
-    reasoning_model: str = Field("o3", description="OpenAI o3 reasoning model for complex analysis")
-    fast_model: str = Field("gpt-4o-mini", description="Fast model for quick tasks")
-    fallback_model: str = Field("gpt-4o", description="Fallback model if primary unavailable")
+    # Updated models for February 2026 (OpenAI)
+    default_model: str = Field("gpt-5.2-codex", description="Default model - best agentic coding quality")
+    powershell_model: str = Field("gpt-5.2-codex", description="PowerShell script generation model")
+    reasoning_model: str = Field("gpt-5.2", description="Reasoning model for complex analysis tasks")
+    fast_model: str = Field("gpt-5-mini", description="Fast model for quick tasks")
+    fallback_model: str = Field("gpt-5-mini", description="Fallback model if primary unavailable")
 
     # Anthropic Claude models - Added January 2026
     claude_model: str = Field("claude-sonnet-4-20250514", description="Claude Sonnet 4 - best balance of speed and quality")
@@ -183,17 +177,17 @@ def load_config() -> Config:
             providers.append("Anthropic")
         logger.info(f"AI providers available: {', '.join(providers)}")
     
-    # Ensure valid models are set - Updated January 2026
+    # Ensure valid models are set - Updated February 2026
     if not config.agent.default_model:
-        config.agent.default_model = "gpt-4.1"  # Best for code generation
+        config.agent.default_model = "gpt-5.2-codex"  # Best agentic coding quality
     if not config.agent.reasoning_model:
-        config.agent.reasoning_model = "o3"
+        config.agent.reasoning_model = "gpt-5.2"
     if not hasattr(config.agent, 'powershell_model') or not config.agent.powershell_model:
-        config.agent.powershell_model = "gpt-4.1"  # Best for PowerShell
+        config.agent.powershell_model = "gpt-5.2-codex"  # Best for PowerShell
     if not hasattr(config.agent, 'fast_model') or not config.agent.fast_model:
-        config.agent.fast_model = "gpt-4o-mini"  # Fast model for quick tasks
+        config.agent.fast_model = "gpt-5-mini"  # Fast model for quick tasks
     if not hasattr(config.agent, 'fallback_model') or not config.agent.fallback_model:
-        config.agent.fallback_model = "gpt-4o"  # Fallback if primary unavailable
+        config.agent.fallback_model = "gpt-5-mini"  # Fallback if primary unavailable
     if not hasattr(config.agent, 'embedding_model') or not config.agent.embedding_model:
         config.agent.embedding_model = "text-embedding-3-large"
     if not hasattr(config.agent, 'embedding_dimensions'):

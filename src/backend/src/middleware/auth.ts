@@ -1,6 +1,14 @@
 import { Request, Response, NextFunction } from 'express';
 import jwt from 'jsonwebtoken';
 
+const AUTH_DISABLED = process.env.DISABLE_AUTH === 'true';
+const DEV_USER = {
+  userId: 0,
+  username: 'dev',
+  email: 'dev@local',
+  role: 'admin'
+};
+
 // Interface for JWT payload
 interface JwtPayload {
   userId: number;
@@ -24,6 +32,11 @@ declare global {
  * Supports tokens in Authorization header or query parameter (for SSE)
  */
 export const authenticateJWT = (req: Request, res: Response, next: NextFunction) => {
+  if (AUTH_DISABLED) {
+    req.user = DEV_USER;
+    return next();
+  }
+
   let token: string | undefined;
 
   // Try to get token from Authorization header first
@@ -62,6 +75,11 @@ export const authenticateJWT = (req: Request, res: Response, next: NextFunction)
  * Middleware to check if user has admin role
  */
 export const requireAdmin = (req: Request, res: Response, next: NextFunction) => {
+  if (AUTH_DISABLED) {
+    req.user = DEV_USER;
+    return next();
+  }
+
   if (!req.user) {
     return res.status(401).json({ message: 'Authentication required' });
   }

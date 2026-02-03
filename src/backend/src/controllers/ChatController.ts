@@ -1,26 +1,34 @@
 import { Request, Response } from 'express';
-import axios from 'axios';
 import logger from '../utils/logger';
 import { ChatHistory } from '../models';
 import { sequelize } from '../database/connection';
 import { Op } from 'sequelize';
 import { cache } from '../index';
+import { getEmbeddingModel, getOpenAIClient, getOpenAIModel } from '../services/ai/openaiClient';
 
 /**
  * Chat Controller
  * Handles chat interactions with the AI service and manages chat history
  */
 export class ChatController {
-  private aiServiceUrl: string;
-  
   constructor() {
-    // Get AI service URL from environment variables or use default
-    const isDocker = process.env.DOCKER_ENV === 'true';
-    this.aiServiceUrl = isDocker 
-      ? (process.env.AI_SERVICE_URL || 'http://ai-service:8000') 
-      : (process.env.AI_SERVICE_URL || 'http://localhost:8000');
-    logger.info(`ChatController initialized with AI service URL: ${this.aiServiceUrl}`);
+    logger.info('ChatController initialized with direct OpenAI client');
   }
+
+  private static readonly ALLOWED_MODELS = new Set<string>([
+    'gpt-5.2-codex',
+    'gpt-5.2',
+    'gpt-5-mini',
+    'gpt-5-nano',
+    'gpt-5',
+    'gpt-4.1',
+    'gpt-4.1-mini',
+    'gpt-4.1-nano',
+    'gpt-4o',
+    'gpt-4o-mini',
+    'gpt-4-turbo',
+    'gpt-3.5-turbo',
+  ]);
   
   /**
    * Send a message to the AI service
@@ -33,7 +41,7 @@ export class ChatController {
     
     try {
       // eslint-disable-next-line camelcase -- API request body uses snake_case
-      const { messages, system_prompt, api_key, agent_type, session_id } = req.body;
+      const { messages, system_prompt, api_key, model: requestedModel, agent_type, session_id } = req.body;
       
       // Validate request parameters
       if (!messages || !Array.isArray(messages) || messages.length === 0) {
@@ -43,7 +51,8 @@ export class ChatController {
       }
       
       // Use server API key if one is not provided by the client
-      const effectiveApiKey = api_key || process.env.OPENAI_API_KEY; // eslint-disable-line camelcase
+      const headerApiKey = req.headers['x-openai-api-key'] as string | undefined;
+      const effectiveApiKey = api_key || headerApiKey || process.env.OPENAI_API_KEY; // eslint-disable-line camelcase
       
       if (!effectiveApiKey) {
         logger.warn(`[${requestId}] Invalid request: No API key provided and no server API key configured`);
@@ -63,34 +72,44 @@ export class ChatController {
       }
       
       // Log the request for debugging (with sensitive info redacted)
-      logger.debug(`[${requestId}] Sending chat request to ${this.aiServiceUrl}/chat with ${messages.length} messages`);
+      logger.debug(`[${requestId}] Sending chat request to OpenAI with ${messages.length} messages`);
       
-      // Forward request to AI service with the effective API key
+      const client = getOpenAIClient(effectiveApiKey);
+
+      let model = getOpenAIModel();
+      if (requestedModel) {
+        if (typeof requestedModel !== 'string' || !ChatController.ALLOWED_MODELS.has(requestedModel)) {
+          res.status(400).json({ error: `Unsupported model: ${String(requestedModel)}` });
+          return;
+        }
+        model = requestedModel;
+      }
       const startTime = Date.now();
-      // eslint-disable-next-line camelcase -- API endpoint expects snake_case
-      const response = await axios.post(`${this.aiServiceUrl}/chat`, {
-        messages,
-        system_prompt, // eslint-disable-line camelcase
-        api_key: effectiveApiKey,
-        agent_type, // eslint-disable-line camelcase
-        session_id // eslint-disable-line camelcase
-      }, {
-        headers: {
-          'Content-Type': 'application/json',
-          'X-Request-ID': requestId
-        },
-        timeout: 60000 // 60 second timeout for LLM responses
+      
+      const finalMessages = system_prompt
+        ? [{ role: 'system', content: system_prompt }, ...messages]
+        : messages;
+      
+      const response = await client.chat.completions.create({
+        model,
+        messages: finalMessages
       });
-      
+
+      // Expose usage/model to the AI analytics middleware without leaking it to clients.
+      // (res.json() is wrapped by AIAnalyticsMiddleware.trackUsage()).
+      res.locals.model = model;
+      // The OpenAI SDK includes usage on the response; keep it optional for compatibility.
+      res.locals.usage = (response as any)?.usage;
+
       const duration = Date.now() - startTime;
-      logger.info(`[${requestId}] AI service responded in ${duration}ms`);
+      logger.info(`[${requestId}] OpenAI responded in ${duration}ms`);
       
-      // Validate response format
-      if (!response.data || !response.data.response) {
-        logger.warn(`[${requestId}] Invalid response format from AI service`);
+      const responseText = response.choices[0]?.message?.content;
+      if (!responseText) {
+        logger.warn(`[${requestId}] OpenAI response missing content`);
         res.status(502).json({ 
-          error: 'Invalid response from AI service',
-          details: 'The AI service returned an unexpected response format'
+          error: 'Invalid response from OpenAI',
+          details: 'No response content received'
         });
         return;
       }
@@ -98,7 +117,7 @@ export class ChatController {
       // Store in chat history if user is authenticated
       if (req.user && req.user.id) {
         try {
-          await this.storeChatHistory(req.user.id, messages, response.data.response);
+          await this.storeChatHistory(req.user.id, messages, responseText);
           logger.debug(`[${requestId}] Chat history stored for user ${req.user.id}`);
         } catch (historyError) {
           // Log but don't fail the request if history storage fails
@@ -106,59 +125,18 @@ export class ChatController {
         }
       }
       
-      res.status(200).json(response.data);
+      res.status(200).json({ response: responseText, model });
     } catch (error) {
       // Generate a user-friendly error message while logging the technical details
       logger.error(`[${requestId}] Error in sendMessage:`, error);
       
       // Handle different types of errors with appropriate responses
-      if (axios.isAxiosError(error)) {
-        if (error.code === 'ECONNABORTED') {
-          // Timeout error
-          logger.warn(`[${requestId}] Request to AI service timed out after ${error.config?.timeout || 60000}ms`);
-          res.status(504).json({ 
-            error: 'Request timeout',
-            details: 'The AI service took too long to respond. Please try again with a simpler query.'
-          });
-        } else if (!error.response) {
-          // Network error
-          logger.warn(`[${requestId}] Network error connecting to AI service: ${error.message}`);
-          res.status(503).json({ 
-            error: 'AI service unavailable',
-            details: 'Could not connect to the AI service. Please check your internet connection and try again.'
-          });
-        } else if (error.response.status === 429) {
-          // Rate limiting
-          logger.warn(`[${requestId}] Rate limited by AI service: ${error.response.data?.message || 'No details provided'}`);
-          res.status(429).json({ 
-            error: 'Too many requests',
-            details: 'The AI service is currently experiencing high demand. Please wait a moment and try again.'
-          });
-        } else if (error.response.status === 401 || error.response.status === 403) {
-          // Authentication or authorization error
-          logger.warn(`[${requestId}] Authentication error with AI service: ${error.response.status}`);
-          res.status(401).json({ 
-            error: 'Invalid API key',
-            details: 'The provided API key was rejected by the AI service. Please check your API key and try again.'
-          });
-        } else {
-          // Other API errors
-          logger.warn(`[${requestId}] AI service error (${error.response.status}): ${error.response.data?.message || error.message}`);
-          res.status(error.response.status).json({ 
-            error: 'AI service error',
-            details: error.response.data?.message || error.message,
-            status: error.response.status
-          });
-        }
-      } else {
-        // Generic error
-        logger.error(`[${requestId}] Unexpected error in sendMessage:`, error);
-        res.status(500).json({ 
-          error: 'Failed to communicate with AI service',
-          details: 'An unexpected error occurred. Please try again later.',
-          requestId: requestId // Include request ID for troubleshooting
-        });
-      }
+      logger.error(`[${requestId}] Error in sendMessage:`, error);
+      res.status(500).json({ 
+        error: 'Failed to communicate with OpenAI',
+        details: (error as Error).message,
+        requestId: requestId // Include request ID for troubleshooting
+      });
       
       // Track error in metrics
       try {
@@ -484,34 +462,21 @@ export class ChatController {
         logger.debug(`Truncated text from ${text.length} to ${maxLength} characters for embedding generation`);
       }
       
-      // Call AI service to generate embedding with timeout
-      const response = await axios.post(`${this.aiServiceUrl}/embedding`, {
-        content: truncatedText
-      }, {
-        timeout: 10000 // 10 second timeout
+      const client = getOpenAIClient();
+      const response = await client.embeddings.create({
+        model: getEmbeddingModel(),
+        input: truncatedText
       });
-      
-      if (!response.data || !response.data.embedding || !Array.isArray(response.data.embedding)) {
-        logger.warn('Invalid embedding response format from AI service:', response.data);
+      const embedding = response.data[0]?.embedding;
+      if (!embedding) {
+        logger.warn('Invalid embedding response from OpenAI');
         return [];
       }
-      
-      logger.debug(`Successfully generated embedding with ${response.data.embedding.length} dimensions`);
-      return response.data.embedding;
+
+      logger.debug(`Successfully generated embedding with ${embedding.length} dimensions`);
+      return embedding;
     } catch (error) {
-      // Handle different types of errors
-      if (axios.isAxiosError(error)) {
-        if (error.code === 'ECONNABORTED') {
-          logger.warn('Embedding generation timed out');
-        } else if (!error.response) {
-          logger.warn('Network error when generating embedding:', error.message);
-        } else {
-          logger.error(`AI service error (${error.response.status}) when generating embedding:`, error.message);
-        }
-      } else {
-        logger.error('Unexpected error generating embedding:', error);
-      }
-      
+      logger.error('Unexpected error generating embedding:', error);
       return []; // Return empty array on error
     }
   }

@@ -8,6 +8,7 @@ It selects the appropriate agent based on the user's request and available API k
 
 import logging
 from typing import Dict, List, Any, Optional
+from config import config
 
 # Import agent implementations
 from .langchain_agent import LangChainAgent
@@ -59,7 +60,7 @@ class AgentFactory:
     def __init__(self):
         """Initialize the agent factory."""
         self.agents = {}
-        self.default_agent_type = "langchain"
+        self.default_agent_type = config.agent.default_agent
         logger.info("Agent factory initialized")
         
         # Log available agent types
@@ -100,19 +101,19 @@ class AgentFactory:
         try:
             if agent_type == "langchain":
                 logger.info("Creating new LangChain agent")
-                agent = LangChainAgent(api_key=api_key)
+                agent = LangChainAgent(api_key=api_key, model=config.agent.default_model)
             elif agent_type == "autogpt":
                 logger.info("Creating new AutoGPT agent")
-                agent = AutoGPTAgent(api_key=api_key)
+                agent = AutoGPTAgent(api_key=api_key, model=config.agent.default_model)
             elif agent_type == "hybrid":
                 logger.info("Creating new Hybrid agent")
-                agent = HybridAgent(api_key=api_key)
+                agent = HybridAgent(api_key=api_key, model=config.agent.default_model)
             elif agent_type == "langgraph":
                 if not LANGGRAPH_AVAILABLE:
                     logger.warning("LangGraph agent requested but not available, falling back to hybrid")
                     return self.get_agent("hybrid", api_key)
                 logger.info("Creating new LangGraph agent")
-                agent = LangGraphAgent(api_key=api_key)
+                agent = LangGraphAgent(api_key=api_key, model=config.agent.default_model)
             elif agent_type == "pyg":
                 if not PYG_AVAILABLE:
                     logger.warning("Py-g agent requested but not available, falling back to hybrid")

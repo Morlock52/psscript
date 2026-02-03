@@ -9,6 +9,7 @@ internet data access.
 import os
 import logging
 from typing import Dict, List, Any, Optional
+from config import config
 
 # LangGraph 1.0 imports - January 2026
 from langgraph.prebuilt import create_react_agent
@@ -36,7 +37,7 @@ class LangChainAgent:
     planning, and execution with access to external data sources.
     """
 
-    def __init__(self, api_key: Optional[str] = None, model: str = "gpt-4o"):
+    def __init__(self, api_key: Optional[str] = None, model: str = config.agent.default_model):
         """
         Initialize the LangGraph agent.
 

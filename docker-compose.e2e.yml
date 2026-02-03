@@ -1,0 +1,19 @@
+services:
+  e2e:
+    image: mcr.microsoft.com/playwright:v1.57.0-jammy
+    working_dir: /work
+    volumes:
+      - ./:/work
+      # Avoid clobbering host node_modules (macOS) with Linux installs.
+      - /work/node_modules
+    environment:
+      # When running inside Docker, use the host's forwarded ports.
+      - PW_BASE_URL=http://host.docker.internal:3090
+      - PW_BACKEND_URL=http://host.docker.internal:4000
+      - CI=true
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    depends_on:
+      - frontend
+      - backend
+

@@ -1,5 +1,13 @@
-// Available AI models for the application (updated March 2025)
+// Available AI models for the application (updated February 2026)
 export const AI_MODELS = [
+  { id: 'gpt-5.2-codex', name: 'GPT-5.2-Codex (Best Coding)', description: 'Most intelligent coding model optimized for long-horizon, agentic coding tasks' },
+  { id: 'gpt-5.2', name: 'GPT-5.2 (Best General)', description: 'Best overall for complex reasoning and code-heavy, multi-step tasks' },
+  { id: 'gpt-5-mini', name: 'GPT-5 Mini (Fast)', description: 'Lower latency, strong quality for interactive coding help' },
+  { id: 'gpt-5-nano', name: 'GPT-5 Nano (Fastest)', description: 'Lowest latency/lowest cost for lightweight tasks' },
+  { id: 'gpt-5', name: 'GPT-5 (Legacy)', description: 'Previous generation GPT-5 model (kept for compatibility)' },
+  { id: 'gpt-4.1', name: 'GPT-4.1 (Best Overall)', description: 'Top-tier general model with strong code understanding and reasoning' },
+  { id: 'gpt-4.1-nano', name: 'GPT-4.1 Nano (Fastest)', description: 'Lowest latency model in the 4.1 family for quick responses' },
+  { id: 'gpt-4.1-mini', name: 'GPT-4.1 Mini (Fast)', description: 'Efficient model for quick analysis with strong accuracy' },
   { id: 'o3-mini', name: 'o3-mini (Efficient)', description: 'OpenAI\'s lightweight model optimized for speed and efficiency' },
   { id: 'gpt-4o', name: 'GPT-4o (Optimal)', description: 'OpenAI\'s most advanced model with optimal balance of intelligence, speed, and cost' },
   { id: 'gpt-4-turbo', name: 'GPT-4 Turbo (Powerful)', description: 'High-performance model with improved reasoning and context length' },
@@ -15,7 +23,8 @@ export const AI_MODELS = [
 
 // Default settings
 const DEFAULT_SETTINGS: AppSettings = {
-  aiModel: 'o3-mini',
+  // Default to a fast model for interactive UX; backend deep analysis uses OPENAI_SMART_MODEL.
+  aiModel: 'gpt-5-mini',
   theme: 'dark',
   autoRunAnalysis: true,
   executionTimeout: 60,

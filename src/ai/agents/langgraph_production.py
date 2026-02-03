@@ -406,7 +406,7 @@ async def analyze_node(state: PowerShellAnalysisState, config: RunnableConfig) -
 
     # Get the LLM with tools
     llm = ChatOpenAI(
-        model=config.get("configurable", {}).get("model", "gpt-4o"),
+        model=config.get("configurable", {}).get("model", "gpt-5-mini"),
         temperature=0,
         streaming=True
     )
@@ -469,7 +469,7 @@ async def synthesis_node(state: PowerShellAnalysisState, config: RunnableConfig)
     logger.info(f"Synthesizing results for workflow {state.get('workflow_id')}")
 
     llm = ChatOpenAI(
-        model=config.get("configurable", {}).get("model", "gpt-4o"),
+        model=config.get("configurable", {}).get("model", "gpt-5-mini"),
         temperature=0.3,
         streaming=True
     )
@@ -647,7 +647,7 @@ class LangGraphProductionOrchestrator:
     def __init__(
         self,
         api_key: Optional[str] = None,
-        model: str = "gpt-4o",
+        model: str = "gpt-5-mini",
         use_postgres_checkpointing: bool = False,
         postgres_connection_string: Optional[str] = None
     ):
@@ -688,7 +688,8 @@ class LangGraphProductionOrchestrator:
         script_content: str,
         thread_id: Optional[str] = None,
         require_human_review: bool = False,
-        stream: bool = False
+        stream: bool = False,
+        model: Optional[str] = None
     ):
         """
         Analyze a PowerShell script using the LangGraph workflow.
@@ -729,10 +730,12 @@ class LangGraphProductionOrchestrator:
         }
 
         # Configuration
+        # NOTE: We pass the model per request via LangGraph's configurable config
+        # instead of mutating self.model (which is shared when the orchestrator is global).
         config = {
             "configurable": {
                 "thread_id": workflow_id,
-                "model": self.model
+                "model": model or self.model
             }
         }
 
@@ -876,7 +879,7 @@ class LangGraphProductionOrchestrator:
 async def analyze_powershell_script_simple(
     script_content: str,
     api_key: Optional[str] = None,
-    model: str = "gpt-4o"
+    model: str = "gpt-5-mini"
 ) -> Dict[str, Any]:
     """
     Simple convenience function for analyzing PowerShell scripts.

@@ -131,20 +131,31 @@ function checkSecurityPatterns(script: string): any[] {
  */
 async function analyzeWithAI(script: string): Promise<string> {
   try {
-    const response = await openai.chat.completions.create({
-      model: 'gpt-4o',
+    const request = {
+      model: process.env.OPENAI_SMART_MODEL || process.env.OPENAI_MODEL || 'gpt-5.2-codex',
       messages: [
         {
-          role: 'system',
+          role: 'system' as const,
           content: 'You are a PowerShell security expert. Analyze the provided PowerShell script for security vulnerabilities, poor practices, and potential improvements. Focus on security issues not covered by standard pattern matching such as logic flaws, authorization issues, sensitive data handling, etc.'
         },
         {
-          role: 'user',
+          role: 'user' as const,
           content: `Analyze this PowerShell script for security issues:\n\n${script}\n\nProvide a detailed but concise analysis focusing on security vulnerabilities, with specific line references where appropriate.`
         }
       ],
       max_tokens: 1024,
-    });
+    };
+
+    const response = await openai.chat.completions
+      .create(request)
+      .catch(async (err: any) => {
+        const msg = String(err?.message || err);
+        if (msg.includes('max_tokens')) {
+          const { max_tokens: _maxTokens, ...fallback } = request as any;
+          return openai.chat.completions.create(fallback);
+        }
+        throw err;
+      });
 
     return response.choices[0]?.message?.content || 'AI analysis not available.';
   } catch (error) {

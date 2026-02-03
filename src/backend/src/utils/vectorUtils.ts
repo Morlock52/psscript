@@ -3,13 +3,7 @@
  */
 import { sequelize } from '../database/connection';
 import logger from './logger';
-import axios from 'axios';
-
-// Determine AI service URL based on environment
-const isDocker = process.env.DOCKER_ENV === 'true';
-const AI_SERVICE_URL = isDocker 
-  ? (process.env.AI_SERVICE_URL || 'http://ai-service:8000')
-  : (process.env.AI_SERVICE_URL || 'http://localhost:8000');
+import { getEmbeddingModel, getOpenAIClient } from '../services/ai/openaiClient';
 
 /**
  * Generate embedding for text using the AI service
@@ -18,26 +12,17 @@ const AI_SERVICE_URL = isDocker
  */
 export const generateEmbedding = async (text: string): Promise<number[]> => {
   try {
-    // Get OpenAI API key from environment
-    const openaiApiKey = process.env.OPENAI_API_KEY;
-    
-    // Prepare request configuration
-    const config = {
-      headers: {},
-      timeout: 15000 // 15 second timeout
-    };
-    
-    if (openaiApiKey) {
-      config.headers['x-api-key'] = openaiApiKey;
+    const client = getOpenAIClient();
+    const response = await client.embeddings.create({
+      model: getEmbeddingModel(),
+      input: text.substring(0, 8000)
+    });
+
+    const embedding = response.data[0]?.embedding;
+    if (!embedding) {
+      throw new Error('Empty embedding response');
     }
-    
-    // Request embedding from AI service
-    const response = await axios.post(`${AI_SERVICE_URL}/embed`, {
-      text: text.substring(0, 8000), // Limit text length
-      model: process.env.EMBEDDING_MODEL || 'text-embedding-3-small'
-    }, config);
-    
-    return response.data.embedding;
+    return embedding;
   } catch (error) {
     logger.error('Error generating embedding:', error);
     throw error;

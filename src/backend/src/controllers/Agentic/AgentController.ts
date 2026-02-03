@@ -120,6 +120,7 @@ export class AgentController {
   public async createRun(req: Request, res: Response): Promise<void> {
     try {
       const { threadId } = req.params;
+      const apiKey = req.headers['x-openai-api-key'] as string | undefined;
       
       // Validate request
       if (!threadId) {
@@ -128,7 +129,7 @@ export class AgentController {
       }
       
       // Create the run
-      const run = await agentOrchestrator.createRun(threadId);
+      const run = await agentOrchestrator.createRun(threadId, apiKey);
       
       res.status(201).json(run);
     } catch (error) {

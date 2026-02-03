@@ -2,11 +2,16 @@
  * AI Service Utility
  * Handles communication with the AI service for PowerShell script analysis and generation
  */
-import axios from 'axios';
 import logger from './logger';
+import {
+  analyzeScriptAssistant,
+  analyzeScriptAssistantQuick,
+  answerQuestion,
+  explainScript,
+  generateExamples,
+  generateScript
+} from '../services/ai/aiEngine';
 
-// Use the AI service URL from environment variables
-const AI_SERVICE_URL = process.env.AI_SERVICE_URL || 'http://localhost:8000';
 
 /**
  * AI Service client for handling all AI-related operations
@@ -17,18 +22,8 @@ class AiServiceClient {
    */
   async askQuestion(question: string, context?: string, useAgent: boolean = true) {
     try {
-      const response = await axios.post(`${AI_SERVICE_URL}/api/ask`, {
-        question,
-        context,
-        useAgent
-      }, {
-        timeout: 60000, // 60 seconds timeout
-        headers: {
-          'Content-Type': 'application/json'
-        }
-      });
-      
-      return response.data;
+      const response = await answerQuestion(question, context);
+      return { response };
     } catch (error) {
       logger.error('Error calling AI service for question:', error);
       
@@ -57,16 +52,8 @@ class AiServiceClient {
    */
   async generateScript(description: string) {
     try {
-      const response = await axios.post(`${AI_SERVICE_URL}/api/generate`, {
-        description
-      }, {
-        timeout: 60000,
-        headers: {
-          'Content-Type': 'application/json'
-        }
-      });
-      
-      return response.data;
+      const content = await generateScript(description);
+      return { content };
     } catch (error) {
       logger.error('Error calling AI service for script generation:', error);
       
@@ -127,19 +114,12 @@ Main
    */
   async analyzeScript(content: string, filename?: string, requestType: string = 'standard', analysisOptions?: any) {
     try {
-      const response = await axios.post(`${AI_SERVICE_URL}/api/analyze`, {
-        content,
-        filename,
-        requestType,
-        analysisOptions
-      }, {
-        timeout: 60000,
-        headers: {
-          'Content-Type': 'application/json'
-        }
-      });
-      
-      return response.data;
+      const normalizedType = String(requestType || 'standard').toLowerCase();
+      const result =
+        normalizedType === 'quick'
+          ? await analyzeScriptAssistantQuick(content, filename || 'script.ps1')
+          : await analyzeScriptAssistant(content, filename || 'script.ps1');
+      return result;
     } catch (error) {
       logger.error('Error calling AI service for script analysis:', error);
       
@@ -210,17 +190,8 @@ Main
    */
   async explainScript(content: string, type: string = 'simple') {
     try {
-      const response = await axios.post(`${AI_SERVICE_URL}/api/explain`, {
-        content,
-        type
-      }, {
-        timeout: 60000,
-        headers: {
-          'Content-Type': 'application/json'
-        }
-      });
-      
-      return response.data;
+      const explanation = await explainScript(content, type);
+      return { explanation };
     } catch (error) {
       logger.error('Error calling AI service for explanation:', error);
       
@@ -267,17 +238,8 @@ This is a fallback explanation generated when the AI service is unavailable.`;
    */
   async getSimilarExamples(description: string, limit: number = 5) {
     try {
-      const response = await axios.post(`${AI_SERVICE_URL}/api/examples`, {
-        description,
-        limit
-      }, {
-        timeout: 60000,
-        headers: {
-          'Content-Type': 'application/json'
-        }
-      });
-      
-      return response.data;
+      const examples = await generateExamples(description, limit);
+      return { examples };
     } catch (error) {
       logger.error('Error calling AI service for examples:', error);
       

@@ -17,11 +17,13 @@ const openai = new OpenAI({
  */
 export async function generatePowerShellScript(requirements: string): Promise<string> {
   try {
-    const response = await openai.chat.completions.create({
-      model: 'gpt-4o',
+    const model = process.env.OPENAI_SMART_MODEL || process.env.OPENAI_MODEL || 'gpt-5.2-codex';
+
+    const request = {
+      model,
       messages: [
         {
-          role: 'system',
+          role: 'system' as const,
           content: `You are an expert PowerShell script generator. Your task is to create well-structured, secure, and efficient PowerShell scripts that meet user requirements.
 
 Guidelines for generating scripts:
@@ -70,12 +72,24 @@ When scripts involve remote computers (Invoke-Command, Enter-PSSession, remoting
 Format your response as a complete, ready-to-run PowerShell script.`
         },
         {
-          role: 'user',
+          role: 'user' as const,
           content: `Generate a PowerShell script that satisfies these requirements:\n\n${requirements}`
         }
       ],
       max_tokens: 2048,
-    });
+    };
+
+    const response = await openai.chat.completions
+      .create(request)
+      .catch(async (err: any) => {
+        // Some newer models/endpoint variants may reject max_tokens; retry with the minimal payload.
+        const msg = String(err?.message || err);
+        if (msg.includes('max_tokens')) {
+          const { max_tokens: _maxTokens, ...fallback } = request as any;
+          return openai.chat.completions.create(fallback);
+        }
+        throw err;
+      });
 
     const script = response.choices[0]?.message?.content || 'Script generation failed.';
     

@@ -82,8 +82,10 @@ export interface OrchestrationError {
   isRetryable: boolean;
 }
 
-// Base URL for API endpoints
-const AGENT_API_BASE_URL = '/api/agents';
+// Base URL for API endpoints.
+// IMPORTANT: apiClient already prefixes requests with `${getApiUrl()}` which includes `/api`,
+// so these routes must NOT include `/api` or you'll end up with `/api/api/...`.
+const AGENT_API_BASE_URL = '/agents';
 
 /**
  * Error handler for agent orchestration API

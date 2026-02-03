@@ -9,12 +9,19 @@ const { createLogger, format, transports } = winston;
 const logDir = path.join(process.cwd(), 'logs');
 const testResultsLogDir = path.join(process.cwd(), '../../test-results/logs');
 
-// Create both log directories
-[logDir, testResultsLogDir].forEach(dir => {
-  if (!fs.existsSync(dir)) {
-    fs.mkdirSync(dir, { recursive: true });
+const ensureDir = (dir: string): boolean => {
+  try {
+    if (!fs.existsSync(dir)) {
+      fs.mkdirSync(dir, { recursive: true });
+    }
+    return true;
+  } catch {
+    return false;
   }
-});
+};
+
+const hasLogDir = ensureDir(logDir);
+const hasTestResultsLogDir = ensureDir(testResultsLogDir);
 
 // Define custom log levels
 const levels = {
@@ -57,33 +64,45 @@ const consoleFormat = format.combine(
 const logLevel = process.env.LOG_LEVEL || 
   (process.env.NODE_ENV === 'production' ? 'info' : 'debug');
 
+const handleExceptions = process.env.DISABLE_LOG_EXCEPTION_HANDLER !== 'true';
+
 // Create transports array - simplified for development
-const transportList = [
+const transportList: winston.transport[] = [
   new transports.Console({
     format: consoleFormat,
-    handleExceptions: true,
-  }),
-  // Regular app logs
-  new transports.File({
-    filename: path.join(logDir, 'error.log'),
-    level: 'error',
-  }),
-  new transports.File({
-    filename: path.join(logDir, 'combined.log'),
-  }),
-  // Test result logs for troubleshooting
-  new transports.File({
-    filename: path.join(testResultsLogDir, 'error.log'),
-    level: 'error',
-  }),
-  new transports.File({
-    filename: path.join(testResultsLogDir, 'combined.log'),
-  }),
-  new transports.File({
-    filename: path.join(testResultsLogDir, 'debug.log'),
-    level: 'debug',
+    handleExceptions,
   }),
 ];
+
+if (hasLogDir) {
+  // Regular app logs
+  transportList.push(
+    new transports.File({
+      filename: path.join(logDir, 'error.log'),
+      level: 'error',
+    }),
+    new transports.File({
+      filename: path.join(logDir, 'combined.log'),
+    })
+  );
+}
+
+if (hasTestResultsLogDir) {
+  // Test result logs for troubleshooting
+  transportList.push(
+    new transports.File({
+      filename: path.join(testResultsLogDir, 'error.log'),
+      level: 'error',
+    }),
+    new transports.File({
+      filename: path.join(testResultsLogDir, 'combined.log'),
+    }),
+    new transports.File({
+      filename: path.join(testResultsLogDir, 'debug.log'),
+      level: 'debug',
+    })
+  );
+}
 
 // Create logger instance
 const logger = createLogger({

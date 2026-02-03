@@ -201,7 +201,7 @@ export function createRun(params: CreateRunParams): Run {
     cancelled_at: null,
     failed_at: null,
     completed_at: null,
-    model: params.model || 'gpt-4o',
+    model: params.model || 'gpt-5-mini',
     instructions: params.instructions || null,
     tools: params.tools || [],
     file_ids: [],

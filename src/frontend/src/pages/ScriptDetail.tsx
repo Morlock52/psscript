@@ -208,46 +208,6 @@ const ScriptDetail: React.FC = () => {
             </div>
           </div>
 
-          {/* Parameters Section */}
-          {analysis?.parameters && Object.keys(analysis.parameters).length > 0 && (
-            <div className={`${cardStyles} mb-6`}>
-              <div className={cardHeaderStyles}>
-                <h2 className="text-lg font-medium text-[var(--color-text-primary)]">Execute Script</h2>
-              </div>
-              <div className="p-4">
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  {Object.entries(analysis.parameters).map(([name, info]: [string, any]) => (
-                    <div key={name} className="space-y-2">
-                      <label className="block text-sm font-medium text-[var(--color-text-secondary)]">
-                        {name}
-                        {info.mandatory && <span className="text-red-500 ml-1">*</span>}
-                      </label>
-                      <input
-                        type="text"
-                        className="w-full bg-[var(--color-bg-primary)] border border-[var(--color-border-default)] rounded-md text-[var(--color-text-primary)] px-3 py-2 text-sm focus:ring-2 focus:ring-[var(--color-primary)]/50 focus:border-[var(--color-primary)]"
-                        placeholder={info.type || 'String'}
-                        value={parameters[name] || ''}
-                        onChange={(e) => handleParameterChange(name, e.target.value)}
-                      />
-                      {info.description && (
-                        <p className="text-xs text-[var(--color-text-tertiary)]">{info.description}</p>
-                      )}
-                    </div>
-                  ))}
-                </div>
-                <div className="mt-4 flex justify-end">
-                  <button
-                    className="px-4 py-2 bg-emerald-600 text-white rounded-lg hover:bg-emerald-700 disabled:opacity-50 transition-colors"
-                    onClick={handleExecute}
-                    disabled={executeMutation.isPending}
-                  >
-                    {executeMutation.isPending ? 'Executing...' : 'Execute Script'}
-                  </button>
-                </div>
-              </div>
-            </div>
-          )}
-
           {/* Execution Result */}
           {executeMutation.data && (
             <div className={`${cardStyles} mb-6`}>

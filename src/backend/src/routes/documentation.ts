@@ -287,6 +287,59 @@ router.post('/crawl/ai', documentationController.crawlWithAI);
 
 /**
  * @swagger
+ * /api/documentation/crawl/ai/start:
+ *   post:
+ *     summary: Start an AI-powered web crawl job (async)
+ *     description: Starts an AI crawl in the background and returns a jobId immediately.
+ *     tags: [Documentation]
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - url
+ *             properties:
+ *               url:
+ *                 type: string
+ *               maxPages:
+ *                 type: integer
+ *                 default: 10
+ *               depth:
+ *                 type: integer
+ *                 default: 1
+ *     responses:
+ *       202:
+ *         description: Job accepted
+ *       400:
+ *         description: Invalid request
+ */
+router.post('/crawl/ai/start', documentationController.startAICrawlJob);
+
+/**
+ * @swagger
+ * /api/documentation/crawl/ai/status/{jobId}:
+ *   get:
+ *     summary: Get AI crawl job status (async)
+ *     description: Returns progress and result (when completed) for a given crawl job.
+ *     tags: [Documentation]
+ *     parameters:
+ *       - in: path
+ *         name: jobId
+ *         required: true
+ *         schema:
+ *           type: string
+ *     responses:
+ *       200:
+ *         description: Job status
+ *       404:
+ *         description: Job not found
+ */
+router.get('/crawl/ai/status/:jobId', documentationController.getAICrawlJobStatus);
+
+/**
+ * @swagger
  * /api/documentation/{id}:
  *   delete:
  *     summary: Delete documentation

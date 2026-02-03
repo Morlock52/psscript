@@ -2,7 +2,7 @@ import { defineConfig, devices } from '@playwright/test';
 
 /**
  * Playwright Configuration for PSScript Platform
- * Tests: React Frontend (3000), Express Backend (4000), FastAPI AI Service (8000)
+   * Tests: React Frontend (3090), Express Backend (4000), FastAPI AI Service (8000)
  * @see https://playwright.dev/docs/test-configuration
  */
 export default defineConfig({
@@ -30,7 +30,7 @@ export default defineConfig({
   // Shared settings for all the projects below
   use: {
     // Base URL for page.goto('/')
-    baseURL: 'http://localhost:3002',
+    baseURL: process.env.PW_BASE_URL || process.env.BASE_URL || 'http://127.0.0.1:3090',
 
     // Collect trace when retrying the failed test
     trace: 'on-first-retry',
@@ -49,32 +49,45 @@ export default defineConfig({
   },
 
   // Configure projects for major browsers
-  projects: [
-    {
+  projects: (() => {
+    const allBrowsers = process.env.PW_ALL_BROWSERS === 'true';
+    const useSystemChrome = process.env.PW_USE_SYSTEM_CHROME === 'true' || process.platform === 'darwin';
+
+    const chromium = {
       name: 'chromium',
-      use: { ...devices['Desktop Chrome'] },
-    },
+      use: {
+        ...devices['Desktop Chrome'],
+        // Use system Chrome on macOS by default; use bundled Playwright Chromium elsewhere (e.g. Docker).
+        ...(useSystemChrome
+          ? {
+              channel: 'chrome',
+              ...(process.env.PLAYWRIGHT_CHROMIUM_EXECUTABLE_PATH
+                ? { executablePath: process.env.PLAYWRIGHT_CHROMIUM_EXECUTABLE_PATH }
+                : {}),
+            }
+          : {}),
+      },
+    } as const;
 
-    {
-      name: 'firefox',
-      use: { ...devices['Desktop Firefox'] },
-    },
+    const projects = [
+      chromium,
+      // Mobile viewports for responsive testing (Chromium)
+      {
+        name: 'Mobile Chrome',
+        use: { ...devices['Pixel 5'], ...(useSystemChrome ? { channel: 'chrome' } : {}) },
+      },
+    ];
 
-    {
-      name: 'webkit',
-      use: { ...devices['Desktop Safari'] },
-    },
+    if (allBrowsers) {
+      projects.push(
+        { name: 'firefox', use: { ...devices['Desktop Firefox'] } },
+        { name: 'webkit', use: { ...devices['Desktop Safari'] } },
+        { name: 'Mobile Safari', use: { ...devices['iPhone 12'] } },
+      );
+    }
 
-    // Mobile viewports for responsive testing
-    {
-      name: 'Mobile Chrome',
-      use: { ...devices['Pixel 5'] },
-    },
-    {
-      name: 'Mobile Safari',
-      use: { ...devices['iPhone 12'] },
-    },
-  ],
+    return projects;
+  })(),
 
   // Run your local dev server before starting the tests
   // NOTE: Disabled because services are running in Docker

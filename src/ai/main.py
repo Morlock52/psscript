@@ -39,7 +39,12 @@ import psycopg2
 from psycopg2.extras import RealDictCursor
 
 from voice_endpoints import router as voice_router
-from langgraph_endpoints import router as langgraph_router
+try:
+    from langgraph_endpoints import router as langgraph_router
+    LANGGRAPH_AVAILABLE = True
+except Exception as e:
+    LANGGRAPH_AVAILABLE = False
+    logging.warning(f"LangGraph endpoints disabled due to import error: {e}")
 
 # Import configuration
 from config import config
@@ -267,7 +272,8 @@ app.add_middleware(
 app.include_router(voice_router)
 
 # Add LangGraph router
-app.include_router(langgraph_router)
+if LANGGRAPH_AVAILABLE:
+    app.include_router(langgraph_router)
 
 # Initialize script analyzer
 script_analyzer = ScriptAnalyzer(use_cache=True)
@@ -296,6 +302,26 @@ print(f"Vector operations enabled: {hasattr(config, 'vector_db_enabled') and con
 
 # Initialize agent coordinator (will be set in lifespan)
 agent_coordinator = None
+
+
+def create_agent_coordinator(api_key: str) -> Optional[AgentCoordinator]:
+    """Create a per-request agent coordinator for a specific API key."""
+    try:
+        memory_storage_path = os.path.join(os.path.dirname(__file__), "memory_storage")
+        os.makedirs(memory_storage_path, exist_ok=True)
+
+        visualization_output_dir = os.path.join(os.path.dirname(__file__), "visualizations")
+        os.makedirs(visualization_output_dir, exist_ok=True)
+
+        return AgentCoordinator(
+            api_key=api_key,
+            memory_storage_path=memory_storage_path,
+            visualization_output_dir=visualization_output_dir,
+            model=config.agent.default_model
+        )
+    except Exception as e:
+        logger.error(f"Error creating agent coordinator for request: {e}")
+        return None
 
 
 # Database connection dependency (2026 best practice: use dependency injection)
@@ -740,6 +766,87 @@ async def analyze_script(
     
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Analysis failed: {str(e)}")
+
+
+def _format_agentic_analysis(raw: Dict[str, Any]) -> Dict[str, Any]:
+    """Normalize analysis output to the agentic assistant response schema."""
+    security_score = float(raw.get("security_score", raw.get("securityScore", 0)) or 0)
+    code_quality_score = float(raw.get("code_quality_score", raw.get("codeQualityScore", 0)) or 0)
+    risk_score = float(raw.get("risk_score", raw.get("riskScore", 100)) or 100)
+
+    return {
+        "purpose": raw.get("purpose", "Purpose not identified"),
+        "securityScore": security_score,
+        "codeQualityScore": code_quality_score,
+        "riskScore": risk_score,
+        "suggestions": raw.get("optimization", raw.get("suggestions", [])) or [],
+        "commandDetails": raw.get("command_details", raw.get("commandDetails", {})) or {},
+        "msDocsReferences": raw.get("ms_docs_references", raw.get("msDocsReferences", [])) or [],
+        "examples": raw.get("examples", []) or [],
+        "rawAnalysis": raw
+    }
+
+
+@app.post("/analyze/assistant", tags=["Analysis"])
+async def analyze_script_with_assistant(
+    request: Dict[str, Any],
+    x_api_key: Optional[str] = Header(None, alias="x-api-key")
+):
+    """
+    Agentic analysis endpoint compatible with backend /scripts/analyze/assistant.
+    Returns a response with an `analysis` object plus metadata.
+    """
+    start_time = time.time()
+    content = request.get("content")
+    filename = request.get("filename", "script.ps1")
+
+    if not content:
+        raise HTTPException(status_code=400, detail="Script content is required")
+
+    api_key = x_api_key or config.api_keys.openai
+    if not api_key and not MOCK_MODE:
+        raise HTTPException(status_code=400, detail="OpenAI API key is required")
+
+    coordinator = agent_coordinator
+    if api_key and (not coordinator or coordinator.api_key != api_key):
+        coordinator = create_agent_coordinator(api_key)
+
+    if coordinator and not MOCK_MODE:
+        analysis_raw = await coordinator.analyze_script(
+            script_content=content,
+            script_name=filename,
+            metadata={
+                "include_command_details": True,
+                "fetch_ms_docs": True
+            }
+        )
+    else:
+        agent = agent_factory.get_agent("hybrid", api_key or config.api_keys.openai)
+        analysis_raw = await agent.analyze_script(
+            "temp",
+            content,
+            include_command_details=True,
+            fetch_ms_docs=True
+        )
+
+    analysis = _format_agentic_analysis(analysis_raw)
+
+    return {
+        "analysis": analysis,
+        "processingTime": round(time.time() - start_time, 3),
+        "model": config.agent.default_model,
+        "threadId": None,
+        "assistantId": None
+    }
+
+
+@app.post("/analyze/assistant/detailed", tags=["Analysis"])
+async def analyze_script_with_assistant_detailed(
+    request: Dict[str, Any],
+    x_api_key: Optional[str] = Header(None, alias="x-api-key")
+):
+    """Detailed agentic analysis endpoint with the same schema as /analyze/assistant."""
+    return await analyze_script_with_assistant(request, x_api_key)
 
 
 @app.post("/security-analysis", tags=["Analysis"])
@@ -1227,13 +1334,13 @@ async def route_to_model(request: RouteRequest):
         logger.error(f"Routing error: {str(e)}")
         # Fallback to default model
         return RouteResponse(
-            model_id="gpt-4.1",
-            model_name="GPT-4.1 (Fallback)",
+            model_id="gpt-5-mini",
+            model_name="GPT-5 Mini (Fallback)",
             reason=f"Routing failed, using default: {str(e)}",
             task_type="chat",
             complexity="moderate",
-            estimated_cost=0.015,
-            estimated_latency_ms=2000
+            estimated_cost=0.00225,
+            estimated_latency_ms=800
         )
 
 
@@ -1259,7 +1366,7 @@ async def list_available_models():
             }
             for model in router.MODELS.values()
         ],
-        "default": "gpt-4.1"
+        "default": "gpt-5-mini"
     }
 
 

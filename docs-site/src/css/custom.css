@@ -1,0 +1,38 @@
+:root {
+  --ifm-color-primary: #3b82f6;
+  --ifm-color-primary-dark: #1e40af;
+  --ifm-color-primary-darker: #1e3a8a;
+  --ifm-color-primary-light: #60a5fa;
+  --ifm-color-primary-lighter: #93c5fd;
+  --ifm-color-primary-lightest: #dbeafe;
+  --ifm-background-color: #ffffff;
+  --ifm-background-surface-color: #f8fafc;
+  --ifm-font-color-base: #0f172a;
+  --ifm-font-color-base-inverse: #f8fafc;
+  --ifm-link-color: #3b82f6;
+  --ifm-menu-color-active: #3b82f6;
+}
+
+[data-theme='dark'] {
+  --ifm-color-primary: #60a5fa;
+  --ifm-color-primary-dark: #2563eb;
+  --ifm-color-primary-darker: #1e40af;
+  --ifm-color-primary-light: #93c5fd;
+  --ifm-color-primary-lighter: #bfdbfe;
+  --ifm-color-primary-lightest: #e0f2fe;
+  --ifm-background-color: #0f172a;
+  --ifm-background-surface-color: #1e293b;
+  --ifm-font-color-base: #f8fafc;
+  --ifm-font-color-base-inverse: #0f172a;
+  --ifm-link-color: #93c5fd;
+  --ifm-menu-color-active: #93c5fd;
+}
+
+.theme-doc-markdown.markdown {
+  line-height: 1.7;
+}
+
+.theme-doc-markdown.markdown img {
+  border-radius: 12px;
+  box-shadow: 0 6px 24px rgba(15, 23, 42, 0.08);
+}

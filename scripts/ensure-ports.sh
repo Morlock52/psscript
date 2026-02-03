@@ -1,8 +1,8 @@
 #!/bin/bash
 # Ensure standard ports are available and used correctly
-# Frontend: 3000, Backend: 4000
+# Frontend: 3090, Backend: 4000
 
-FRONTEND_PORT=3000
+FRONTEND_PORT=3090
 BACKEND_PORT=4000
 
 kill_port() {

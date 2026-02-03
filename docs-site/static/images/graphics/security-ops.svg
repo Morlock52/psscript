@@ -1,0 +1,23 @@
+<svg width="1200" height="600" viewBox="0 0 1200 600" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Security operations illustration">
+  <defs>
+    <linearGradient id="bg-sec" x1="0" x2="1" y1="0" y2="1">
+      <stop offset="0%" stop-color="#dbeafe"/>
+      <stop offset="100%" stop-color="#ede9fe"/>
+    </linearGradient>
+    <linearGradient id="shield" x1="0" x2="1" y1="0" y2="1">
+      <stop offset="0%" stop-color="#3b82f6"/>
+      <stop offset="100%" stop-color="#8b5cf6"/>
+    </linearGradient>
+  </defs>
+  <rect width="1200" height="600" rx="32" fill="url(#bg-sec)"/>
+  <rect x="120" y="120" width="960" height="360" rx="28" fill="#ffffff" opacity="0.9"/>
+  <path d="M600 170c80 0 150 30 150 30v120c0 90-64 160-150 190-86-30-150-100-150-190V200s70-30 150-30z" fill="url(#shield)"/>
+  <circle cx="600" cy="270" r="48" fill="#ffffff" opacity="0.9"/>
+  <path d="M600 240v60M570 270h60" stroke="#1e3a8a" stroke-width="10" stroke-linecap="round"/>
+  <rect x="260" y="220" width="200" height="24" rx="12" fill="#e2e8f0"/>
+  <rect x="260" y="260" width="240" height="24" rx="12" fill="#c7d2fe"/>
+  <rect x="260" y="300" width="180" height="24" rx="12" fill="#e2e8f0"/>
+  <rect x="740" y="220" width="200" height="24" rx="12" fill="#e2e8f0"/>
+  <rect x="700" y="260" width="240" height="24" rx="12" fill="#bfdbfe"/>
+  <rect x="760" y="300" width="180" height="24" rx="12" fill="#e2e8f0"/>
+</svg>

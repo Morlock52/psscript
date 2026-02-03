@@ -2,11 +2,15 @@ import express from 'express';
 import { authenticateJWT } from '../middleware/authMiddleware';
 import analyticsController from '../controllers/AnalyticsController';
 import logger from '../utils/logger';
+import analyticsAiRoutes from './analytics-ai';
 
 const router = express.Router();
 
 // Apply authentication middleware to all analytics routes
 router.use(authenticateJWT);
+
+// AI analytics endpoints (usage/cost/perf)
+router.use('/ai', analyticsAiRoutes);
 
 /**
  * Endpoint to get security metrics and statistics

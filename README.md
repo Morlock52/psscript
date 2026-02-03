@@ -20,13 +20,13 @@ PSScript provides intelligent analysis, generation, and management of PowerShell
 ├─────────────┬─────────────┬─────────────┬──────────────────┤
 │  Frontend   │   Backend   │ AI Service  │   Data Layer     │
 │  React/Vite │  Express/TS │ FastAPI/Py  │  PostgreSQL      │
-│  Port 3000  │  Port 4000  │  Port 8000  │  + Redis Cache   │
+│  Port 3090  │  Port 4000  │  Port 8000  │  + Redis Cache   │
 └─────────────┴─────────────┴─────────────┴──────────────────┘
 ```
 
 | Service | Technology | Port | Description |
 |---------|------------|------|-------------|
-| Frontend | React + Vite | 3000 | Web application UI |
+| Frontend | React + Vite | 3090 | Web application UI |
 | Backend | Express + TypeScript | 4000 | API server with agentic tools |
 | AI Service | FastAPI + Python | 8000 | AI/ML operations |
 | PostgreSQL | PostgreSQL 15+ | 5432 | Primary database with pgvector |

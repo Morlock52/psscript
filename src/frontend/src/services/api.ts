@@ -3,11 +3,37 @@
 import axios, { AxiosRequestConfig, AxiosError } from "axios";
 import { getApiUrl, isLocalhost as checkIsLocalhost } from "../utils/apiUrl";
 import { extractApiError, ErrorCodes as _ErrorCodes } from "../utils/errorUtils";
+import { loadSettings } from "./settings";
 
 // Determine if we're running in a development environment
 // This is evaluated at runtime in the browser
 const isDevelopment = import.meta.env.DEV ||
   (typeof window !== 'undefined' && checkIsLocalhost());
+
+const AI_ENDPOINT_PREFIXES = [
+  // Backend AI routes (all under /api via getApiUrl())
+  '/api/chat',
+  '/api/ai-agent',
+  '/api/agents',
+  '/api/assistants',
+  '/api/documentation',
+  // Convenience proxy routes
+  '/api/scripts/please',
+  '/api/scripts/analyze',
+  '/api/scripts/generate',
+  '/api/scripts/explain',
+  '/api/scripts/examples',
+];
+
+const shouldAttachOpenAiKey = (url: string): boolean => {
+  try {
+    const parsed = new URL(url);
+    return AI_ENDPOINT_PREFIXES.some((prefix) => parsed.pathname.startsWith(prefix));
+  } catch (_err) {
+    // If URL parsing fails (should be rare), be conservative and don't attach.
+    return false;
+  }
+};
 
 // Create axios instance WITHOUT baseURL - we'll add it dynamically via interceptor
 // This ensures the URL is computed at RUNTIME, not BUILD time
@@ -40,6 +66,18 @@ apiClient.interceptors.request.use(
     // or if we specifically want to authenticate the file upload
     if (token && (!isFileUpload || localStorage.getItem("authenticate_uploads") === "true")) {
       config.headers["Authorization"] = `Bearer ${token}`;
+    }
+
+    // Step 3: Attach OpenAI API key (if configured in Settings) only to AI endpoints.
+    // This keeps the key scoped to the minimal set of routes that need it.
+    try {
+      const openAiKey = localStorage.getItem('openai_api_key');
+      const hasHeader = !!config.headers?.['x-openai-api-key'];
+      if (!hasHeader && openAiKey && config.url && shouldAttachOpenAiKey(config.url)) {
+        config.headers['x-openai-api-key'] = openAiKey;
+      }
+    } catch (_err) {
+      // Ignore localStorage failures (private browsing / disabled storage).
     }
 
     // Log requests in development
@@ -611,119 +649,52 @@ interface ChatResponse {
 }
 
 // AI service URL
-const AI_SERVICE_URL = import.meta.env.VITE_AI_SERVICE_URL || "http://localhost:8000";
 
 // Chat service
 export const chatService = {
   // Send a chat message to the AI
   sendMessage: async (messages: ChatMessage[]): Promise<ChatResponse> => {
     try {
-      // Get the user's OpenAI API key from local storage
-      const openaiApiKey = localStorage.getItem('openai_api_key');
       const useMockMode = localStorage.getItem('psscript_mock_mode') === 'true';
-      
-      // Only use valid API keys, not placeholder values
-      const apiKey = openaiApiKey || "";
-      
-      // Check if API key is missing and not in mock mode
-      if (!apiKey && !useMockMode) {
-        console.warn("No OpenAI API key found in local storage");
-        throw new Error("Please set your OpenAI API key in Settings before using the chat. Go to Settings > API Settings to enter your API key.");
-      }
-      
-      // Log if we're in mock mode
+      const openAiKey = localStorage.getItem('openai_api_key') || '';
+
+      // If the user explicitly enabled mock mode, don't call the backend.
       if (useMockMode) {
-        console.log("Using mock mode for chat service");
+        console.log('[chatService] Mock mode enabled, returning mock response');
+        const lastUserMessage = messages.filter(m => m.role === 'user').pop()?.content || '';
+        if (lastUserMessage.toLowerCase().includes('powershell')) {
+          return { response: "PowerShell is a cross-platform task automation solution made up of a command-line shell, a scripting language, and a configuration management framework. PowerShell runs on Windows, Linux, and macOS." };
+        }
+        if (lastUserMessage.toLowerCase().includes('script')) {
+          return { response: "Scripts are a great way to automate repetitive tasks. In PowerShell, scripts are stored in .ps1 files and can be executed directly from the PowerShell console or scheduled to run at specific times." };
+        }
+        if (lastUserMessage.toLowerCase().includes('error') || lastUserMessage.toLowerCase().includes('help')) {
+          return { response: "I'm sorry you're experiencing an issue. When troubleshooting PowerShell scripts, it's helpful to use Write-Debug statements, try/catch blocks for error handling, and ensuring you have the right execution policy set with 'Set-ExecutionPolicy'." };
+        }
+        return { response: `This is a mock response (mock mode enabled). Your message: "${lastUserMessage.substring(0, 80)}${lastUserMessage.length > 80 ? '...' : ''}"` };
       }
+
+      // Use the backend endpoint. If no per-user key is configured, the backend may
+      // still work using its server-side OPENAI_API_KEY.
+      const selectedModel = loadSettings().aiModel;
+      const response = await apiClient.post("/chat", { 
+        messages: messages.map(msg => ({
+          role: msg.role,
+          content: msg.content
+        })),
+        model: selectedModel
+      }, {
+        timeout: 30000, // 30 second timeout
+        headers: {
+          ...(openAiKey ? { 'x-openai-api-key': openAiKey } : {})
+        }
+      });
       
-      console.log(`Sending chat request to ${AI_SERVICE_URL}/chat with ${messages.length} messages`);
-      
-      // Try using the backend endpoint first
-      try {
-        const response = await apiClient.post("/chat/message", { 
-          messages: messages.map(msg => ({
-            role: msg.role,
-            content: msg.content
-          }))
-        }, {
-          timeout: 30000 // 30 second timeout
-        });
-        
-        return response.data;
-      } catch (backendError) {
-        console.warn("Backend chat service failed, trying direct AI service:", backendError);
-        
-        // Fall back to direct AI service if backend fails
-        // SECURITY: API key passed in header, NOT in request body
-        // Headers are easier to redact in logs and won't be cached by proxies
-        const response = await axios.post(`${AI_SERVICE_URL}/chat`, {
-          messages: messages.map(msg => ({
-            role: msg.role,
-            content: msg.content
-          }))
-        }, {
-          headers: {
-            'Content-Type': 'application/json',
-            ...(apiKey ? { 'X-API-Key': apiKey } : {})
-          },
-          timeout: 30000 // 30 second timeout
-        });
-        
-        return response.data;
-      }
+      return response.data;
     } catch (error) {
       console.error("Error sending chat message:", error);
-      
-      // Return more specific error messages based on error type
-      if (axios.isAxiosError(error)) {
-        if (!error.response) {
-          // Network error
-          throw new Error("Network error. Please check your connection and try again.");
-        } else if (error.response.status === 429) {
-          // Rate limiting
-          throw new Error("You've sent too many messages. Please wait a moment and try again.");
-        } else if (error.response.status >= 500) {
-          // Server error
-          throw new Error("The AI service is currently unavailable. Please try again later.");
-        } else if (error.response.status === 401) {
-          // Authentication error
-          throw new Error("Authentication failed. Please check your API key in settings.");
-        }
-      }
-      
-      // Mock response for development or when mock mode is enabled
-      const useMockMode = localStorage.getItem('psscript_mock_mode') === 'true' || 
-                          import.meta.env.DEV;
-      
-      if (useMockMode) {
-        console.log("Returning mock response in mock/development mode");
-        
-        // Generate a more helpful mock response based on the last user message
-        const lastUserMessage = messages.filter(m => m.role === 'user').pop()?.content || '';
-        
-        // Match certain keywords to give more contextual responses
-        if (lastUserMessage.toLowerCase().includes('powershell')) {
-          return {
-            response: "PowerShell is a cross-platform task automation solution made up of a command-line shell, a scripting language, and a configuration management framework. PowerShell runs on Windows, Linux, and macOS."
-          };
-        } else if (lastUserMessage.toLowerCase().includes('script')) {
-          return {
-            response: "Scripts are a great way to automate repetitive tasks. In PowerShell, scripts are stored in .ps1 files and can be executed directly from the PowerShell console or scheduled to run at specific times."
-          };
-        } else if (lastUserMessage.toLowerCase().includes('error') || lastUserMessage.toLowerCase().includes('help')) {
-          return {
-            response: "I'm sorry you're experiencing an issue. When troubleshooting PowerShell scripts, it's helpful to use Write-Debug statements, try/catch blocks for error handling, and ensuring you have the right execution policy set with 'Set-ExecutionPolicy'."
-          };
-        }
-        
-        // Default mock response
-        return {
-          response: "This is a mock response since the AI service is in mock mode. Your message contained: \"" + lastUserMessage.substring(0, 50) + (lastUserMessage.length > 50 ? '...' : '') + "\""
-        };
-      }
-      
-      // Generic error
-      throw new Error("Sorry, I encountered an error processing your request. Please try again.");
+      const apiError = extractApiError(error);
+      throw new Error(apiError.message);
     }
   },
   

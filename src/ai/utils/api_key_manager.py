@@ -231,11 +231,11 @@ class APIKeyManager:
             return False
 
         try:
-            import openai
-            openai.api_key = api_key
+            from openai import OpenAI
+            client = OpenAI(api_key=api_key)
 
             # Make a minimal API call to test
-            openai.models.list()
+            client.models.list()
             logger.info("API key validated successfully")
             return True
 

@@ -1,8 +1,7 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
-import { scriptService } from '../services/api';
-import axios from 'axios';
+import { apiClient, scriptService } from '../services/api';
 import ReactMarkdown from 'react-markdown';
 import { FaExclamationTriangle, FaCheckCircle, FaInfoCircle, FaLightbulb, FaChartLine, FaPaperPlane, FaRobot } from 'react-icons/fa';
 // LangGraph Integration
@@ -35,12 +34,15 @@ const ScriptAnalysis: React.FC = () => {
   const cleanupRef = useRef<(() => void) | null>(null);
 
   // AI Model selection state - Multi-model support
-  const [selectedModel, setSelectedModel] = useState('gpt-4');
+  const [selectedModel, setSelectedModel] = useState('gpt-5.2-codex');
   const availableModels = [
-    { value: 'gpt-4', label: 'GPT-4 (OpenAI)', provider: 'openai' },
-    { value: 'gpt-4o', label: 'GPT-4o (OpenAI)', provider: 'openai' },
-    { value: 'gpt-4o-mini', label: 'GPT-4o Mini (Fast)', provider: 'openai' },
-    { value: 'gpt-4.1', label: 'GPT-4.1 (Code)', provider: 'openai' },
+    { value: 'gpt-5.2-codex', label: 'GPT-5.2-Codex (Best Coding)', provider: 'openai' },
+    { value: 'gpt-5.2', label: 'GPT-5.2 (Best General)', provider: 'openai' },
+    { value: 'gpt-5-mini', label: 'GPT-5 Mini (Fast)', provider: 'openai' },
+    { value: 'gpt-5-nano', label: 'GPT-5 Nano (Fastest)', provider: 'openai' },
+    { value: 'gpt-5', label: 'GPT-5 (Legacy)', provider: 'openai' },
+    { value: 'gpt-4.1', label: 'GPT-4.1 (Strong Coding)', provider: 'openai' },
+    { value: 'gpt-4o', label: 'GPT-4o (Balanced)', provider: 'openai' },
     { value: 'claude-sonnet-4-20250514', label: 'Claude Sonnet 4 (Anthropic)', provider: 'anthropic' },
     { value: 'claude-opus-4-20250514', label: 'Claude Opus 4 (Best)', provider: 'anthropic' },
     { value: 'claude-3-5-haiku-20241022', label: 'Claude Haiku (Fast)', provider: 'anthropic' },
@@ -137,18 +139,11 @@ When generating or modifying scripts:
 - Implement proper error handling with try/catch
 - Follow Verb-Noun naming conventions`;
 
-      // Get the API URL from environment or use dynamic hostname
-      const apiUrl = import.meta.env.VITE_API_URL ||
-        `http://${window.location.hostname}:4000/api`;
-
       // Call AI service with guardrails enabled on backend
-      const response = await axios.post(`${apiUrl}/chat`, {
+      const response = await apiClient.post(`/chat`, {
         messages: [...messages, userMessage],
         system_prompt: systemPrompt
       }, {
-        headers: {
-          'Content-Type': 'application/json'
-        },
         timeout: 60000 // 60 second timeout for script generation
       });
 

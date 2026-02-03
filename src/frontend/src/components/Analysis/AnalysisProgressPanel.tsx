@@ -175,11 +175,29 @@ export const AnalysisProgressPanel: React.FC<AnalysisProgressPanelProps> = ({
         <Collapse in={expanded}>
           {/* Progress Bar */}
           {status === 'analyzing' && (
-            <Box mb={2}>
-              <LinearProgress variant="determinate" value={progress} />
-              <Typography variant="caption" color="text.secondary" sx={{ mt: 0.5 }}>
-                {Math.round(progress)}% Complete
-              </Typography>
+            <Box mb={2} sx={{ width: '100%', display: 'flex', flexDirection: 'column', gap: 0.75 }}>
+              <Box display="flex" alignItems="center" justifyContent="space-between">
+                <Typography variant="caption" color="text.secondary">
+                  {Math.round(progress)}% Complete
+                </Typography>
+                <Typography variant="caption" color="text.secondary">
+                  {STAGE_LABELS[currentStage] || currentStage}
+                </Typography>
+              </Box>
+              <LinearProgress
+                variant="determinate"
+                value={progress}
+                sx={{
+                  width: '100%',
+                  height: 8,
+                  borderRadius: 999,
+                  backgroundColor: 'var(--color-bg-tertiary)',
+                  '& .MuiLinearProgress-bar': {
+                    borderRadius: 999,
+                    backgroundColor: 'var(--color-primary)',
+                  },
+                }}
+              />
             </Box>
           )}
 

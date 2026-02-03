@@ -6,7 +6,11 @@ import { test, expect } from '@playwright/test';
  */
 
 test.describe('Service Health Checks', () => {
-  test('Frontend should be accessible', async ({ page }) => {
+  const backendBase = process.env.PW_BACKEND_URL || process.env.BACKEND_URL || 'http://127.0.0.1:4000';
+  const apiBase = `${backendBase}/api`;
+  const ui = process.env.PW_UI === 'true' ? test : test.skip;
+
+  ui('Frontend should be accessible', async ({ page }) => {
     await page.goto('/');
 
     // Check that page loads without errors
@@ -25,7 +29,7 @@ test.describe('Service Health Checks', () => {
   });
 
   test('Backend health endpoint should return OK', async ({ request }) => {
-    const response = await request.get('http://localhost:4005/health');
+    const response = await request.get(`${backendBase}/health`);
 
     expect(response.status()).toBe(200);
 
@@ -33,17 +37,18 @@ test.describe('Service Health Checks', () => {
     expect(data).toHaveProperty('status', 'ok');
   });
 
-  test('AI Service health endpoint should return OK', async ({ request }) => {
-    const response = await request.get('http://localhost:8001/health');
+  test('AI agent router should be available', async ({ request }) => {
+    const response = await request.post(`${apiBase}/ai-agent/route`, { data: {} });
 
     expect(response.status()).toBe(200);
 
     const data = await response.json();
-    expect(data).toHaveProperty('status');
+    expect(data).toHaveProperty('model');
+    expect(data).toHaveProperty('reason');
   });
 
   test('Database connection should be healthy', async ({ request }) => {
-    const response = await request.get('http://localhost:4005/health');
+    const response = await request.get(`${backendBase}/health`);
     const data = await response.json();
 
     // Health endpoint should include database status
@@ -52,7 +57,7 @@ test.describe('Service Health Checks', () => {
   });
 
   test('Redis connection should be healthy', async ({ request }) => {
-    const response = await request.get('http://localhost:4005/health');
+    const response = await request.get(`${backendBase}/health`);
     const data = await response.json();
 
     // Health endpoint should include Redis status
@@ -62,19 +67,23 @@ test.describe('Service Health Checks', () => {
 });
 
 test.describe('API Endpoints Availability', () => {
+  const backendBase = process.env.PW_BACKEND_URL || process.env.BACKEND_URL || 'http://127.0.0.1:4000';
+  const apiBase = `${backendBase}/api`;
+
   test('Analytics AI endpoints should be accessible', async ({ request }) => {
     // Test summary endpoint
-    const summaryResponse = await request.get('http://localhost:4005/api/analytics/ai/summary');
+    const summaryResponse = await request.get(`${apiBase}/analytics/ai/summary`);
     expect([200, 401, 403]).toContain(summaryResponse.status()); // Allow auth errors
 
     // Test budget alerts endpoint
-    const budgetResponse = await request.get('http://localhost:4005/api/analytics/ai/budget-alerts');
+    const budgetResponse = await request.get(`${apiBase}/analytics/ai/budget-alerts`);
     expect([200, 401, 403]).toContain(budgetResponse.status());
   });
 
   test('AI agent endpoints should be accessible', async ({ request }) => {
-    // Test agent coordinator endpoint
-    const response = await request.get('http://localhost:8001/api/agents');
-    expect([200, 401, 404]).toContain(response.status());
+    const response = await request.post(`${apiBase}/ai-agent/diff`, {
+      data: { original: 'Write-Host \"Hello\"', improved: 'Write-Host \"Hello world\"' }
+    });
+    expect([200, 400]).toContain(response.status());
   });
 });

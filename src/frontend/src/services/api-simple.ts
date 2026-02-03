@@ -1,5 +1,4 @@
-import axios from 'axios';
-import { getAiServiceUrl } from '../utils/apiUrl';
+import { apiClient } from './api';
 
 // Simulate network delay
 const delay = (ms: number) => new Promise(resolve => setTimeout(resolve, ms));
@@ -73,55 +72,39 @@ const findBestResponse = (input: string): string => {
 export const chatService = {
   // Send a chat message to the AI
   sendMessage: async (messages: Message[], agent_type?: string, session_id?: string) => {
-    try {
-      // First try the real API - AI service has the API key configured
-      try {
-        console.log("Attempting to use real AI service");
-        // AI service URL - backend has API key configured
-        const AI_SERVICE_URL = getAiServiceUrl();
+    const useMockMode = localStorage.getItem('psscript_mock_mode') === 'true';
 
-        console.log('api-simple.ts AI Service URL:', AI_SERVICE_URL);
-
-        const response = await axios.post(`${AI_SERVICE_URL}/chat`, {
-          messages: messages,
-          agent_type: agent_type || "assistant",
-          session_id: session_id
-        }, {
-          headers: {
-            'Content-Type': 'application/json'
-          },
-          timeout: 30000 // 30 second timeout for AI responses
-        });
-        return response.data;
-      } catch (error) {
-        console.warn("Real AI service failed, using mock:", error);
-      }
-      
-      // If real API fails or no API key, use mock
-      console.log("Using mock response service");
-      
-      // Simulate network delay (1-2 seconds)
-      await delay(1000 + Math.random() * 1000);
-      
-      // Get the last user message
-      const lastUserMessage = messages
-        .filter(msg => msg.role === 'user')
-        .pop();
-      
-      if (!lastUserMessage) {
-        return { response: "I don't see a question. How can I help you?" };
-      }
-      
-      // Generate a response based on the user's input
-      const response = findBestResponse(lastUserMessage.content);
-      
-      return { response };
-    } catch (error) {
-      console.error('Error sending chat message:', error);
-      return { 
-        response: 'Sorry, I encountered an error. Please try again later.'
-      };
+    // Default: always use the real backend (which can use either a per-user key
+    // via x-openai-api-key OR a server-side OPENAI_API_KEY).
+    if (!useMockMode) {
+      const apiKey = localStorage.getItem('openai_api_key') || '';
+      const response = await apiClient.post(`/chat`, {
+        messages: messages,
+        agent_type: agent_type || "assistant",
+        session_id: session_id
+      }, {
+        headers: {
+          'Content-Type': 'application/json',
+          ...(apiKey ? { 'x-openai-api-key': apiKey } : {})
+        },
+        timeout: 30000
+      });
+      return response.data;
     }
+
+    // Explicit mock mode (only when the user enables it).
+    console.log("Using mock response service (psscript_mock_mode=true)");
+    await delay(250 + Math.random() * 250);
+
+    const lastUserMessage = messages
+      .filter(msg => msg.role === 'user')
+      .pop();
+
+    if (!lastUserMessage) {
+      return { response: "I don't see a question. How can I help you?" };
+    }
+
+    return { response: findBestResponse(lastUserMessage.content) };
   },
 
   // Stream a chat message using Server-Sent Events (SSE)
@@ -134,72 +117,24 @@ export const chatService = {
     agent_type?: string,
     session_id?: string
   ): Promise<void> => {
-    const AI_SERVICE_URL = getAiServiceUrl();
-
     try {
-      console.log("Starting SSE streaming from:", `${AI_SERVICE_URL}/chat/stream`);
+      const start = Date.now();
+      const result = await chatService.sendMessage(messages, agent_type, session_id);
+      const responseText = result?.response || '';
+      const tokens = responseText.split(' ');
 
-      const response = await fetch(`${AI_SERVICE_URL}/chat/stream`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Accept': 'text/event-stream',
-        },
-        body: JSON.stringify({
-          messages: messages,
-          agent_type: agent_type || "assistant",
-          session_id: session_id
-        })
+      for (const token of tokens) {
+        onToken(token + ' ');
+        // Light delay for streaming feel
+        // eslint-disable-next-line no-await-in-loop
+        await delay(10);
+      }
+
+      onDone({
+        session_id,
+        tokens: tokens.length,
+        time: Date.now() - start
       });
-
-      if (!response.ok) {
-        throw new Error(`Streaming failed: ${response.status} ${response.statusText}`);
-      }
-
-      const reader = response.body?.getReader();
-      if (!reader) {
-        throw new Error('No readable stream available');
-      }
-
-      const decoder = new TextDecoder();
-      let buffer = '';
-
-      while (true) {
-        const { done, value } = await reader.read();
-        if (done) break;
-
-        buffer += decoder.decode(value, { stream: true });
-
-        // Process complete SSE events
-        const lines = buffer.split('\n');
-        buffer = lines.pop() || ''; // Keep incomplete line in buffer
-
-        for (const line of lines) {
-          if (line.startsWith('data: ')) {
-            try {
-              const data = JSON.parse(line.slice(6));
-
-              switch (data.type) {
-                case 'token':
-                  onToken(data.content);
-                  break;
-                case 'done':
-                  onDone({
-                    session_id: data.session_id,
-                    tokens: data.tokens,
-                    time: data.time
-                  });
-                  break;
-                case 'error':
-                  if (onError) onError(data.content);
-                  break;
-              }
-            } catch {
-              // Ignore JSON parse errors for incomplete data
-            }
-          }
-        }
-      }
     } catch (error) {
       console.error('Streaming error:', error);
       if (onError) {
@@ -260,15 +195,17 @@ export const chatService = {
 
   // Generate diff between original and improved code
   generateDiff: async (original: string, improved: string, detectImprovements: boolean = true) => {
-    const AI_SERVICE_URL = getAiServiceUrl();
-
     try {
-      const response = await axios.post(`${AI_SERVICE_URL}/diff`, {
+      const apiKey = localStorage.getItem('openai_api_key') || '';
+      const response = await apiClient.post(`/ai-agent/diff`, {
         original,
         improved,
         detect_improvements: detectImprovements
       }, {
-        headers: { 'Content-Type': 'application/json' },
+        headers: {
+          'Content-Type': 'application/json',
+          ...(apiKey ? { 'x-openai-api-key': apiKey } : {})
+        },
         timeout: 30000
       });
       return response.data;
@@ -280,13 +217,15 @@ export const chatService = {
 
   // Improve a script and get the diff
   improveScript: async (script: string) => {
-    const AI_SERVICE_URL = getAiServiceUrl();
-
     try {
-      const response = await axios.post(`${AI_SERVICE_URL}/improve`, {
-        messages: [{ role: 'user', content: script }]
+      const apiKey = localStorage.getItem('openai_api_key') || '';
+      const response = await apiClient.post(`/ai-agent/improve`, {
+        script
       }, {
-        headers: { 'Content-Type': 'application/json' },
+        headers: {
+          'Content-Type': 'application/json',
+          ...(apiKey ? { 'x-openai-api-key': apiKey } : {})
+        },
         timeout: 60000 // 60 second timeout for AI improvements
       });
       return response.data;
@@ -298,14 +237,16 @@ export const chatService = {
 
   // Lint PowerShell script using PSScriptAnalyzer
   lintScript: async (script: string, format?: string) => {
-    const AI_SERVICE_URL = getAiServiceUrl();
-
     try {
-      const response = await axios.post(`${AI_SERVICE_URL}/lint`, {
+      const apiKey = localStorage.getItem('openai_api_key') || '';
+      const response = await apiClient.post(`/ai-agent/lint`, {
         content: script,  // Backend expects 'content' field
         format: format || 'json'
       }, {
-        headers: { 'Content-Type': 'application/json' },
+        headers: {
+          'Content-Type': 'application/json',
+          ...(apiKey ? { 'x-openai-api-key': apiKey } : {})
+        },
         timeout: 30000
       });
       return response.data;
@@ -317,15 +258,17 @@ export const chatService = {
 
   // Generate Pester tests for a script
   generateTests: async (script: string, scriptName?: string, coverage?: string) => {
-    const AI_SERVICE_URL = getAiServiceUrl();
-
     try {
-      const response = await axios.post(`${AI_SERVICE_URL}/generate-tests`, {
+      const apiKey = localStorage.getItem('openai_api_key') || '';
+      const response = await apiClient.post(`/ai-agent/generate-tests`, {
         content: script,  // Backend expects 'content' field
         script_name: scriptName || 'Script.ps1',
         coverage: coverage || 'standard'
       }, {
-        headers: { 'Content-Type': 'application/json' },
+        headers: {
+          'Content-Type': 'application/json',
+          ...(apiKey ? { 'x-openai-api-key': apiKey } : {})
+        },
         timeout: 30000
       });
       return response.data;
@@ -337,14 +280,16 @@ export const chatService = {
 
   // Execute a script in the sandbox
   executeScript: async (script: string, timeout?: number) => {
-    const AI_SERVICE_URL = getAiServiceUrl();
-
     try {
-      const response = await axios.post(`${AI_SERVICE_URL}/execute`, {
+      const apiKey = localStorage.getItem('openai_api_key') || '';
+      const response = await apiClient.post(`/ai-agent/execute`, {
         script,
         timeout: timeout || 30
       }, {
-        headers: { 'Content-Type': 'application/json' },
+        headers: {
+          'Content-Type': 'application/json',
+          ...(apiKey ? { 'x-openai-api-key': apiKey } : {})
+        },
         timeout: 60000 // Long timeout for execution
       });
       return response.data;
@@ -356,14 +301,16 @@ export const chatService = {
 
   // Route a query to the appropriate model
   routeQuery: async (query: string, context?: Message[]) => {
-    const AI_SERVICE_URL = getAiServiceUrl();
-
     try {
-      const response = await axios.post(`${AI_SERVICE_URL}/route`, {
+      const apiKey = localStorage.getItem('openai_api_key') || '';
+      const response = await apiClient.post(`/ai-agent/route`, {
         query,
         context: context || []
       }, {
-        headers: { 'Content-Type': 'application/json' },
+        headers: {
+          'Content-Type': 'application/json',
+          ...(apiKey ? { 'x-openai-api-key': apiKey } : {})
+        },
         timeout: 10000
       });
       return response.data;

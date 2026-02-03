@@ -16,7 +16,7 @@ from typing import Dict, List, Any, Optional
 import uuid
 
 from openai import OpenAI, AsyncOpenAI
-from openai.types.beta.threads import Run, ThreadMessage
+from openai.types.beta.threads import Run, Message
 
 # Configure logging
 logging.basicConfig(
@@ -42,7 +42,7 @@ class OpenAIAssistantAgent:
     def __init__(
         self,
         api_key: Optional[str] = None,
-        model: str = "gpt-4o",
+        model: str = "gpt-4.1",
         name: str = "PSScript Assistant",
         description: str = "PowerShell script analysis assistant with expertise in security, optimization, and best practices",
         instructions: Optional[str] = None,
@@ -495,7 +495,7 @@ class OpenAIAssistantAgent:
         
         return tool_outputs
     
-    def _extract_message_content(self, message: ThreadMessage) -> str:
+    def _extract_message_content(self, message: Message) -> str:
         """
         Extract content from a message.
         

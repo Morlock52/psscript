@@ -11,6 +11,7 @@
 import { v4 as uuidv4 } from 'uuid';
 import logger from '../../utils/logger';
 import { cache as _cache } from '../../index';
+import { getOpenAIClient, getSmartModel } from '../ai/openaiClient';
 
 // Types for the orchestrator
 export interface Agent {
@@ -86,6 +87,8 @@ export class AgentOrchestrator {
   private threads: Map<string, Thread> = new Map();
   private runs: Map<string, Run> = new Map();
   private tools: Map<string, Tool> = new Map();
+  // Never store API keys on Run metadata (it is returned to callers). Keep them in-memory only.
+  private runApiKeys: Map<string, string> = new Map();
 
   constructor() {
     logger.info('Agent Orchestrator initialized');
@@ -162,7 +165,7 @@ export class AgentOrchestrator {
       name: params.name || 'Unnamed Agent',
       description: params.description || '',
       capabilities: params.capabilities || [],
-      model: params.model || 'gpt-4o',
+      model: params.model || getSmartModel(),
       tools: params.tools || [],
       metadata: params.metadata || {},
       createdAt: now,
@@ -250,7 +253,7 @@ export class AgentOrchestrator {
   /**
    * Start a run to process a thread with the associated agent
    */
-  public async createRun(threadId: string): Promise<Run> {
+  public async createRun(threadId: string, apiKey?: string): Promise<Run> {
     const thread = this.threads.get(threadId);
     if (!thread) {
       throw new Error(`Thread not found: ${threadId}`);
@@ -275,6 +278,9 @@ export class AgentOrchestrator {
     };
     
     this.runs.set(runId, run);
+    if (apiKey) {
+      this.runApiKeys.set(runId, apiKey);
+    }
     
     // Update run status to in progress
     run.status = 'in_progress';
@@ -306,24 +312,47 @@ export class AgentOrchestrator {
         throw new Error(`Agent not found: ${run.agentId}`);
       }
       
-      // In a real implementation, this would call an LLM API with the thread messages
-      // For now, we'll simulate the LLM response
-      
-      // Simulate agent processing time
-      await new Promise(resolve => setTimeout(resolve, 1000));
-      
-      // Create a simple response based on the last user message
-      const lastUserMessage = [...thread.messages].reverse().find(m => m.role === 'user');
-      let simulatedResponse;
-      
-      if (lastUserMessage) {
-        simulatedResponse = `I've processed your message: "${lastUserMessage.content}". This is a simulated response from the agent orchestrator.`;
-      } else {
-        simulatedResponse = "Hello! How can I assist you with PowerShell scripting today?";
+      const model = agent.model || getSmartModel();
+      const apiKey = this.runApiKeys.get(run.id);
+      const client = getOpenAIClient(apiKey);
+
+      const systemPromptParts = [
+        `You are ${agent.name}.`,
+        agent.description ? agent.description : '',
+        agent.capabilities?.length ? `Capabilities: ${agent.capabilities.join(', ')}` : '',
+        'You are an expert PowerShell assistant. Be practical and precise. Provide safe scripts and explain assumptions.',
+      ].filter(Boolean);
+
+      // Build conversation history for the model.
+      const messages = [
+        { role: 'system' as const, content: systemPromptParts.join('\n') },
+        ...thread.messages
+          .filter(m => typeof m.content === 'string' && m.content.trim().length > 0)
+          .map(m => ({
+            // OpenAI chat roles: system | user | assistant | tool.
+            role: (m.role === 'tool' ? 'assistant' : m.role) as 'user' | 'assistant' | 'system',
+            content: m.content as string,
+          })),
+      ];
+
+      const openAiTimeoutMs = Number(process.env.AGENTIC_OPENAI_TIMEOUT_MS || 45_000);
+      const completion = await Promise.race([
+        client.chat.completions.create({
+          model,
+          messages,
+        }),
+        new Promise<never>((_resolve, reject) =>
+          setTimeout(() => reject(new Error(`OpenAI request timed out after ${openAiTimeoutMs}ms`)), openAiTimeoutMs)
+        ),
+      ]);
+
+      const assistantText = (completion as any).choices?.[0]?.message?.content?.trim();
+      if (!assistantText) {
+        throw new Error('No response from OpenAI');
       }
-      
-      // Add the assistant's response to the thread
-      this.addMessage(thread.id, 'assistant', simulatedResponse);
+
+      // Add the assistant's response to the thread.
+      this.addMessage(thread.id, 'assistant', assistantText);
       
       // Complete the run
       run.status = 'completed';
@@ -334,7 +363,24 @@ export class AgentOrchestrator {
       logger.error(`Error in run ${run.id}:`, error);
       run.status = 'failed';
       run.metadata.error = error.message;
+
+      // Surface the error in the thread so the UI doesn't look "stuck".
+      try {
+        const thread = this.threads.get(run.threadId);
+        if (thread) {
+          const message =
+            `I couldn't complete that request due to an AI error.\n\n` +
+            `Error: ${error instanceof Error ? error.message : String(error)}\n\n` +
+            `If you're running locally, confirm your OPENAI_API_KEY is set for the backend container.`;
+          this.addMessage(thread.id, 'assistant', message);
+        }
+      } catch (_err) {
+        // Ignore secondary failures while reporting the original error.
+      }
       throw error;
+    } finally {
+      // Ensure we don't retain API keys in memory beyond the run lifecycle.
+      this.runApiKeys.delete(run.id);
     }
   }
   

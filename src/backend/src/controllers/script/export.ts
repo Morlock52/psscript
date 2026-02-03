@@ -19,14 +19,13 @@ import {
   Transaction,
   path,
   fs,
-  axios,
   logger,
   calculateBufferMD5,
   checkFileExists,
   clearScriptCaches,
-  AI_SERVICE_URL,
   TIMEOUTS
 } from './shared';
+import { analyzeScriptBasic } from '../../services/ai/aiEngine';
 
 // Import PDFKit for PDF generation
 import PDFDocument from 'pdfkit';
@@ -725,47 +724,8 @@ async function performAsyncAnalysis(
   openaiApiKey: string | undefined
 ): Promise<void> {
   try {
-    // Prepare analysis request with API key if provided
-    const analysisConfig: { headers: Record<string, string>; timeout: number } = {
-      headers: {},
-      timeout: TIMEOUTS.FULL_ANALYSIS
-    };
-
-    if (openaiApiKey) {
-      analysisConfig.headers['x-api-key'] = openaiApiKey;
-    }
-
     logger.info(`Starting AI analysis for script ${scriptId}`);
-
-    // Set a timeout for the analysis request
-    const analysisPromise = axios.post(`${AI_SERVICE_URL}/analyze`, {
-      script_id: scriptId,
-      content: scriptContent,
-      include_command_details: true,
-      fetch_ms_docs: true
-    }, analysisConfig);
-
-    // Create a timeout promise
-    const timeoutPromise = new Promise<never>((_, reject) => {
-      setTimeout(() => reject(new Error('Analysis request timed out after 30 seconds')), 30000);
-    });
-
-    // Race the analysis against the timeout
-    const analysisResponse = await Promise.race([analysisPromise, timeoutPromise]);
-
-    type AnalysisResponseData = {
-      purpose?: string;
-      parameters?: Record<string, unknown>;
-      security_score?: number;
-      code_quality_score?: number;
-      risk_score?: number;
-      optimization?: string[];
-      command_details?: Record<string, unknown>;
-      ms_docs_references?: unknown[];
-      category_id?: number;
-    };
-
-    const analysis = (analysisResponse as { data: AnalysisResponseData }).data;
+    const analysis = await analyzeScriptBasic(scriptContent, openaiApiKey);
 
     // Create analysis record with transaction
     const analysisTransaction = await sequelize.transaction();

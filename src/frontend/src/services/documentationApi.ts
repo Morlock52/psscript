@@ -39,6 +39,28 @@ export interface CrawlResult {
   data?: DocItem[];
 }
 
+export interface AICrawlJobStatus {
+  id: string;
+  status: 'queued' | 'running' | 'completed' | 'error';
+  createdAt: string;
+  startedAt?: string;
+  finishedAt?: string;
+  progress: {
+    pagesProcessed: number;
+    totalPages: number;
+    scriptsFound: number;
+    scriptsSaved: number;
+    currentUrl?: string;
+  };
+  result?: {
+    total: number;
+    scriptsFound: number;
+    scriptsSaved: number;
+    message: string;
+  };
+  error?: string;
+}
+
 export interface SearchParams {
   query?: string;
   sources?: string[];
@@ -273,6 +295,35 @@ const documentationApi = {
         message: error instanceof Error ? error.message : 'AI crawl failed'
       };
     }
+  },
+
+  // Async AI crawl job (recommended): start job and poll status
+  startAICrawlJob: async (config: { url: string; maxPages: number; depth: number }): Promise<string> => {
+    const response = await axios.post(`${getApiUrl()}/documentation/crawl/ai/start`, {
+      url: config.url,
+      maxPages: config.maxPages,
+      depth: config.depth
+    }, {
+      timeout: 15000
+    });
+
+    if (response.data?.success && response.data?.jobId) {
+      return response.data.jobId as string;
+    }
+
+    throw new Error(response.data?.error || 'Failed to start AI crawl job');
+  },
+
+  getAICrawlJobStatus: async (jobId: string): Promise<AICrawlJobStatus> => {
+    const response = await axios.get(`${getApiUrl()}/documentation/crawl/ai/status/${jobId}`, {
+      timeout: 15000
+    });
+
+    if (response.data?.success && response.data?.data) {
+      return response.data.data as AICrawlJobStatus;
+    }
+
+    throw new Error(response.data?.error || 'Failed to fetch AI crawl job status');
   }
 };
 

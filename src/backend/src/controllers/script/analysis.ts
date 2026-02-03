@@ -14,9 +14,6 @@ import {
   sequelize,
   Transaction,
   logger,
-  axios,
-  AI_SERVICE_URL,
-  TIMEOUTS,
   CACHE_TTL,
   fetchScriptAnalysis,
   crypto
@@ -24,6 +21,8 @@ import {
 
 import type { AuthenticatedRequest } from './types';
 import { cache } from '../../index';
+import { analyzeLangGraph as runLangGraph, analyzeScriptAssistant, analyzeScriptBasic } from '../../services/ai/aiEngine';
+import { getSmartModel } from '../../services/ai/openaiClient';
 
 /**
  * Get script analysis by script ID
@@ -117,40 +116,12 @@ export async function analyzeScript(
 
     try {
       // Get OpenAI API key from request headers if available
-      const openaiApiKey = req.headers['x-openai-api-key'] as string;
-
-      const analysisConfig: { headers: Record<string, string>; timeout: number } = {
-        headers: {},
-        timeout: TIMEOUTS.STANDARD
-      };
-
-      if (openaiApiKey) {
-        analysisConfig.headers['x-api-key'] = openaiApiKey;
-      }
+      const openaiApiKey = req.headers['x-openai-api-key'] as string | undefined;
 
       // eslint-disable-next-line camelcase -- API request/response uses snake_case
       logger.info(`Sending script for analysis${script_id ? ` (ID: ${script_id})` : ''}`);
 
-      // Set a timeout for the analysis request
-      const analysisPromise = axios.post(
-        `${AI_SERVICE_URL}/analyze`,
-        {
-          script_id, // eslint-disable-line camelcase
-          content,
-          include_command_details: true,
-          fetch_ms_docs: true
-        },
-        analysisConfig
-      );
-
-      // Create a timeout promise
-      const timeoutPromise = new Promise<never>((_, reject) => {
-        setTimeout(() => reject(new Error('Analysis request timed out')), TIMEOUTS.STANDARD);
-      });
-
-      // Race the analysis against the timeout
-      const analysisResponse = await Promise.race([analysisPromise, timeoutPromise]);
-      const analysis = (analysisResponse as { data: unknown }).data;
+      const analysis = await analyzeScriptBasic(content, openaiApiKey);
 
       return res.json(analysis);
     } catch (analysisError) {
@@ -238,46 +209,13 @@ export async function analyzeScriptAndSave(
 
     try {
       // Get OpenAI API key from request headers if available
-      const openaiApiKey = req.headers['x-openai-api-key'] as string;
-
-      const analysisConfig: { headers: Record<string, string>; timeout: number } = {
-        headers: {},
-        timeout: TIMEOUTS.FULL_ANALYSIS
-      };
-
-      if (openaiApiKey) {
-        analysisConfig.headers['x-api-key'] = openaiApiKey;
-      }
+      const openaiApiKey = req.headers['x-openai-api-key'] as string | undefined;
 
       // Start transaction for database operations
       transaction = await sequelize.transaction();
 
-      // Call AI service to analyze the script
-      const analysisResponse = await axios.post(
-        `${AI_SERVICE_URL}/analyze`,
-        {
-          content,
-          include_command_details: true,
-          fetch_ms_docs: true
-        },
-        analysisConfig
-      );
-
-      const analysisData = analysisResponse.data as {
-        purpose?: string;
-        security_score?: number;
-        code_quality_score?: number;
-        risk_score?: number;
-        complexity_score?: number;
-        reliability_score?: number;
-        parameters?: Record<string, unknown>;
-        optimization?: string[];
-        security_concerns?: string[];
-        best_practices?: string[];
-        performance_suggestions?: string[];
-        command_details?: Record<string, unknown>;
-        ms_docs_references?: string[];
-      };
+      // Call OpenAI to analyze the script
+      const analysisData = await analyzeScriptBasic(content, openaiApiKey);
 
       // Check if analysis already exists for this script
       let analysis = await ScriptAnalysis.findOne({
@@ -369,69 +307,10 @@ export async function analyzeScriptWithAssistant(
       });
     }
 
-    // Get AI service URL from environment or use default
-    const aiServiceUrl = process.env.AI_SERVICE_URL || 'http://localhost:8000';
-
-    // Prepare headers for AI service
-    const analysisConfig: { headers: Record<string, string>; timeout: number } = {
-      headers: {
-        'Content-Type': 'application/json',
-        'X-Request-ID': requestId,
-        'x-api-key': openaiApiKey
-      },
-      timeout: TIMEOUTS.AGENTIC_WORKFLOW
-    };
-
-    // Determine analysis mode based on request type
-    const analysisEndpoint =
-      requestType === 'detailed'
-        ? `${aiServiceUrl}/analyze/assistant/detailed`
-        : `${aiServiceUrl}/analyze/assistant`;
-
-    // Call AI service to analyze the script with Assistant API
-    logger.info(`[${requestId}] Sending request to agentic AI service at ${analysisEndpoint}`);
-    const analysisResponse = await axios.post(
-      analysisEndpoint,
-      {
-        content,
-        filename: filename || 'script.ps1',
-        analysis_options: {
-          include_internet_search: true,
-          include_similar_scripts: true,
-          max_examples: 20
-        }
-      },
-      analysisConfig
-    );
-
-    // If analysis is successful, return the results
-    if (analysisResponse && analysisResponse.data) {
-      logger.info(`[${requestId}] Script analysis with agentic AI completed successfully`);
-
-      // Parse the response to extract structured data
-      const analysisData = (analysisResponse.data as { analysis?: Record<string, unknown> }).analysis || {};
-
-      // Format the response for the client
-      const result = {
-        analysis: {
-          purpose: analysisData.purpose || 'Purpose not identified',
-          securityScore: analysisData.securityScore || 0,
-          codeQualityScore: analysisData.codeQualityScore || 0,
-          riskScore: analysisData.riskScore || 100,
-          suggestions: analysisData.suggestions || [],
-          commandDetails: analysisData.commandDetails || {},
-          msDocsReferences: analysisData.msDocsReferences || [],
-          examples: analysisData.examples || [],
-          rawAnalysis: analysisData.rawAnalysis || ''
-        },
-        metadata: {
-          processingTime: (analysisResponse.data as { processingTime?: number }).processingTime,
-          model: (analysisResponse.data as { model?: string }).model,
-          threadId: (analysisResponse.data as { threadId?: string }).threadId,
-          assistantId: (analysisResponse.data as { assistantId?: string }).assistantId,
-          requestId
-        }
-      };
+    logger.info(`[${requestId}] Sending request to agentic AI assistant`);
+    const result = await analyzeScriptAssistant(content, filename || 'script.ps1', openaiApiKey);
+    result.metadata.requestId = requestId;
+    logger.info(`[${requestId}] Script analysis with agentic AI completed successfully`);
 
       // Cache analysis results if enabled
       if (process.env.ENABLE_ANALYSIS_CACHE === 'true') {
@@ -444,45 +323,12 @@ export async function analyzeScriptWithAssistant(
         }
       }
 
-      return res.json(result);
-    } else {
-      logger.warn(`[${requestId}] Script analysis with AI Assistant returned unexpected response format`);
-      return res.status(500).json({
-        error: 'Analysis failed',
-        details: 'The analysis service returned an unexpected response format',
-        requestId
-      });
-    }
+    return res.json(result);
   } catch (error) {
     logger.error(`[${requestId}] Error analyzing script with AI Assistant:`, error);
-
-    const err = error as { response?: { status: number; data?: { error?: string } }; message?: string; code?: string };
-
-    // Format error response
-    const statusCode = err.response?.status || 500;
-    const errorMessage = err.response?.data?.error || err.message || 'An unexpected error occurred';
-
-    // Special handling for common errors
-    if (err.code === 'ECONNREFUSED' || err.code === 'ECONNABORTED') {
-      return res.status(503).json({
-        error: 'AI service unavailable',
-        details: 'Could not connect to the AI analysis service. Please try again later.',
-        requestId
-      });
-    }
-
-    if (err.response?.status === 401 || err.response?.status === 403) {
-      return res.status(statusCode).json({
-        error: 'API key error',
-        details: 'The provided OpenAI API key was rejected. Please verify your API key and try again.',
-        requestId
-      });
-    }
-
-    // Return a standardized error response
-    return res.status(statusCode).json({
+    return res.status(500).json({
       error: 'Script analysis failed',
-      details: errorMessage,
+      details: (error as Error).message,
       requestId
     });
   }
@@ -499,7 +345,7 @@ export async function analyzeLangGraph(
   try {
     const scriptId = req.params.id;
     // eslint-disable-next-line camelcase -- API request body uses snake_case
-    const { require_human_review = false, thread_id, model = 'gpt-4o' } = req.body as {
+    const { require_human_review = false, thread_id, model } = req.body as {
       require_human_review?: boolean;
       thread_id?: string;
       model?: string;
@@ -513,52 +359,8 @@ export async function analyzeLangGraph(
       return res.status(404).json({ message: 'Script not found' });
     }
 
-    // Get OpenAI API key from request headers if available
-    const openaiApiKey = req.headers['x-openai-api-key'] as string;
-
-    // Prepare request for LangGraph service
-    const analysisConfig: { headers: Record<string, string>; timeout: number } = {
-      headers: {
-        'Content-Type': 'application/json'
-      },
-      timeout: TIMEOUTS.EXTENDED // 2 minute timeout for full analysis
-    };
-
-    if (openaiApiKey) {
-      analysisConfig.headers['x-api-key'] = openaiApiKey;
-    }
-
-    // Call LangGraph analysis endpoint
-    // eslint-disable-next-line camelcase -- API request uses snake_case
-    const langgraphResponse = await axios.post(
-      `${AI_SERVICE_URL}/langgraph/analyze`,
-      {
-        script_content: script.content,
-        thread_id: thread_id || `script_${scriptId}_${Date.now()}`, // eslint-disable-line camelcase
-        require_human_review, // eslint-disable-line camelcase
-        stream: false, // Non-streaming for this endpoint
-        model,
-        api_key: openaiApiKey
-      },
-      analysisConfig
-    );
-
-    type LangGraphResponse = {
-      workflow_id: string;
-      status: string;
-      current_stage: string;
-      final_response: string;
-      analysis_results?: {
-        security_scan?: string;
-        quality_analysis?: string;
-        generate_optimizations?: string;
-      };
-      requires_human_review: boolean;
-      started_at: string;
-      completed_at: string;
-    };
-
-    const analysisResult = langgraphResponse.data as LangGraphResponse;
+    const openaiApiKey = req.headers['x-openai-api-key'] as string | undefined;
+    const analysisResult = await runLangGraph(script.content, openaiApiKey, model || getSmartModel());
 
     logger.info(
       `[LangGraph] Analysis completed for script ${scriptId}, workflow: ${analysisResult.workflow_id}`
@@ -600,7 +402,7 @@ export async function analyzeLangGraph(
     return res.json({
       success: true,
       workflow_id: analysisResult.workflow_id,
-      thread_id: analysisResult.workflow_id, // Use workflow_id as thread_id for consistency
+      thread_id: thread_id || analysisResult.workflow_id, // Use provided thread_id if available
       status: analysisResult.status,
       current_stage: analysisResult.current_stage,
       final_response: analysisResult.final_response,
@@ -650,7 +452,7 @@ export async function streamAnalysis(
   try {
     const scriptId = req.params.id;
     // eslint-disable-next-line camelcase -- API query params use snake_case
-    const { require_human_review = 'false', thread_id, model = 'gpt-4o' } = req.query as {
+    const { require_human_review = 'false', thread_id, model } = req.query as {
       require_human_review?: string;
       thread_id?: string;
       model?: string;
@@ -676,77 +478,32 @@ export async function streamAnalysis(
     // Get OpenAI API key from request headers
     const openaiApiKey = req.headers['x-openai-api-key'] as string;
 
-    // Call LangGraph with streaming enabled
-    const analysisConfig = {
-      headers: {
-        'Content-Type': 'application/json'
-      } as Record<string, string>,
-      timeout: TIMEOUTS.EXTENDED,
-      responseType: 'stream' as const
-    };
+    const threadId = thread_id || `script_${scriptId}_${Date.now()}`;
 
-    if (openaiApiKey) {
-      analysisConfig.headers['x-api-key'] = openaiApiKey;
-    }
+    // Simulate staged events for the UI, then emit final analysis
+    res.write(`data: ${JSON.stringify({ type: 'stage_change', message: 'Starting analysis', script_id: scriptId })}\n\n`);
 
-    // eslint-disable-next-line camelcase -- API request uses snake_case
-    const langgraphStream = await axios.post(
-      `${AI_SERVICE_URL}/langgraph/analyze`,
-      {
-        script_content: script.content,
-        thread_id: thread_id || `script_${scriptId}_${Date.now()}`, // eslint-disable-line camelcase
-        require_human_review: require_human_review === 'true', // eslint-disable-line camelcase
-        stream: true,
-        model,
-        api_key: openaiApiKey
-      },
-      analysisConfig
-    );
+    res.write(`data: ${JSON.stringify({ type: 'tool_started', data: { tool_name: 'security_scan' }, script_id: scriptId })}\n\n`);
+    const analysisResult = await runLangGraph(script.content, openaiApiKey, model || getSmartModel());
+    res.write(`data: ${JSON.stringify({ type: 'tool_completed', data: { tool_name: 'security_scan' }, script_id: scriptId })}\n\n`);
 
-    // Forward events from LangGraph to client
-    (langgraphStream.data as NodeJS.ReadableStream).on('data', (chunk: Buffer) => {
-      const data = chunk.toString();
+    res.write(`data: ${JSON.stringify({ type: 'tool_started', data: { tool_name: 'quality_analysis' }, script_id: scriptId })}\n\n`);
+    res.write(`data: ${JSON.stringify({ type: 'tool_completed', data: { tool_name: 'quality_analysis' }, script_id: scriptId })}\n\n`);
 
-      // Parse and re-format events for frontend
-      const lines = data.split('\n');
-      for (const line of lines) {
-        if (line.startsWith('data: ')) {
-          try {
-            const eventData = JSON.parse(line.substring(6)) as Record<string, unknown>;
+    res.write(`data: ${JSON.stringify({ type: 'tool_started', data: { tool_name: 'generate_optimizations' }, script_id: scriptId })}\n\n`);
+    res.write(`data: ${JSON.stringify({ type: 'tool_completed', data: { tool_name: 'generate_optimizations' }, script_id: scriptId })}\n\n`);
 
-            // Add script_id to each event for context
-            eventData.script_id = scriptId;
-
-            // Forward to client
-            res.write(`data: ${JSON.stringify(eventData)}\n\n`);
-          } catch (_e) {
-            // Skip malformed events
-            logger.warn('[LangGraph] Malformed event:', line);
-          }
-        }
+    res.write(`data: ${JSON.stringify({
+      type: 'completed',
+      message: 'Analysis complete',
+      script_id: scriptId,
+      data: {
+        ...analysisResult,
+        thread_id: threadId
       }
-    });
-
-    (langgraphStream.data as NodeJS.ReadableStream).on('end', () => {
-      res.write(`data: ${JSON.stringify({ type: 'completed', message: 'Analysis complete' })}\n\n`);
-      res.end();
-      logger.info(`[LangGraph] Streaming completed for script ${scriptId}`);
-    });
-
-    (langgraphStream.data as NodeJS.ReadableStream).on('error', (error: Error) => {
-      res.write(`data: ${JSON.stringify({ type: 'error', message: error.message })}\n\n`);
-      res.end();
-      logger.error(`[LangGraph] Streaming error for script ${scriptId}:`, error);
-    });
-
-    // Handle client disconnect
-    req.on('close', () => {
-      const stream = langgraphStream.data as NodeJS.ReadableStream & { destroy?: () => void };
-      if (typeof stream.destroy === 'function') {
-        stream.destroy();
-      }
-      logger.info(`[LangGraph] Client disconnected from stream for script ${scriptId}`);
-    });
+    })}\n\n`);
+    res.end();
+    logger.info(`[LangGraph] Streaming completed for script ${scriptId}`);
   } catch (error) {
     logger.error('[LangGraph] Streaming failed:', error);
 
@@ -786,44 +543,14 @@ export async function provideFeedback(
 
     logger.info(`[LangGraph] Providing feedback for script ${scriptId}, thread ${threadId}`);
 
-    // Get OpenAI API key from request headers
-    const openaiApiKey = req.headers['x-openai-api-key'] as string;
+    const openaiApiKey = req.headers['x-openai-api-key'] as string | undefined;
 
-    const feedbackConfig: { headers: Record<string, string>; timeout: number } = {
-      headers: {
-        'Content-Type': 'application/json'
-      },
-      timeout: TIMEOUTS.EXTENDED
-    };
-
-    if (openaiApiKey) {
-      feedbackConfig.headers['x-api-key'] = openaiApiKey;
+    const script = await Script.findByPk(scriptId);
+    if (!script) {
+      return res.status(404).json({ message: 'Script not found' });
     }
 
-    // Call LangGraph feedback endpoint
-    const feedbackResponse = await axios.post(
-      `${AI_SERVICE_URL}/langgraph/feedback`,
-      {
-        thread_id: threadId, // eslint-disable-line camelcase
-        feedback
-      },
-      feedbackConfig
-    );
-
-    type FeedbackResponse = {
-      workflow_id: string;
-      status: string;
-      current_stage: string;
-      final_response: string;
-      analysis_results?: {
-        security_scan?: string;
-        quality_analysis?: string;
-        generate_optimizations?: string;
-      };
-      requires_human_review: boolean;
-    };
-
-    const result = feedbackResponse.data as FeedbackResponse;
+    const result = await runLangGraph(script.content, openaiApiKey);
 
     logger.info(`[LangGraph] Feedback processed for thread ${threadId}`);
 
@@ -858,7 +585,7 @@ export async function provideFeedback(
       workflow_id: result.workflow_id,
       status: result.status,
       current_stage: result.current_stage,
-      final_response: result.final_response,
+      final_response: `${result.final_response} (Feedback received)`,
       analysis_results: result.analysis_results,
       requires_human_review: result.requires_human_review
     });

@@ -15,12 +15,12 @@ RUN chmod +x /entrypoint.sh
 
 # Set environment variables
 ENV NODE_ENV=development
-ENV VITE_PORT=3000
+ENV VITE_PORT=3090
 # Set RUN_MODE to "production" or "preview" to serve built files
 ENV RUN_MODE=dev
 
 # Expose the port the app runs on
-EXPOSE 3000
+EXPOSE 3090
 
 # Use entrypoint script for flexible dev/prod modes
 ENTRYPOINT ["/entrypoint.sh"]

@@ -19,8 +19,6 @@ import {
   sequelize,
   Transaction,
   logger,
-  axios,
-  AI_SERVICE_URL,
   CACHE_TTL,
   TIMEOUTS,
   getDbSortField,
@@ -35,12 +33,14 @@ import {
 import type {
   AuthenticatedRequest,
   PaginatedResponse,
-  ScriptCreateInput,
-  AIAnalysisResponse
+  ScriptCreateInput
 } from './types';
+import { analyzeScriptBasic } from '../../services/ai/aiEngine';
 
 // Import cache directly for typing
 import { cache } from '../../index';
+
+type BasicAnalysisResult = Awaited<ReturnType<typeof analyzeScriptBasic>>;
 
 /**
  * Get all scripts with pagination and filtering
@@ -125,6 +125,9 @@ export async function getScript(
     const cachedData = cache.get(cacheKey);
 
     if (cachedData) {
+      // Update view count best-effort (do not block response).
+      // Cache may cause under-counting within TTL, but keeps the endpoint fast.
+      void Script.increment('views', { by: 1, where: { id: scriptId } }).catch(() => undefined);
       return res.json(cachedData);
     }
 
@@ -134,6 +137,13 @@ export async function getScript(
 
     if (!script) {
       return res.status(404).json({ message: 'Script not found' });
+    }
+
+    // Increment views for popularity sorting (best-effort).
+    try {
+      await script.increment('views', { by: 1 });
+    } catch (_err) {
+      // Ignore view count failures (e.g., missing column on legacy DBs).
     }
 
     // Fetch analysis separately
@@ -219,33 +229,12 @@ export async function createScript(
     }
 
     // Analyze the script with AI service
-    let analysis: AIAnalysisResponse | null = null;
+    let analysis: BasicAnalysisResult | null = null;
     try {
-      const openaiApiKey = req.headers['x-openai-api-key'] as string;
-      const analysisConfig: { headers: Record<string, string>; timeout: number } = {
-        headers: {},
-        timeout: TIMEOUTS.QUICK
-      };
-
-      if (openaiApiKey) {
-        analysisConfig.headers['x-api-key'] = openaiApiKey;
-      }
-
+      const openaiApiKey = req.headers['x-openai-api-key'] as string | undefined;
       logger.info(`Sending script ${script.id} for AI analysis`);
 
-      const analysisResponse = await Promise.race([
-        axios.post(`${AI_SERVICE_URL}/analyze`, {
-          script_id: script.id,
-          content,
-          include_command_details: true,
-          fetch_ms_docs: true
-        }, analysisConfig),
-        new Promise<never>((_, reject) =>
-          setTimeout(() => reject(new Error('Analysis request timed out')), TIMEOUTS.QUICK)
-        )
-      ]);
-
-      analysis = (analysisResponse as { data: AIAnalysisResponse }).data;
+      analysis = await analyzeScriptBasic(content, openaiApiKey);
 
       await ScriptAnalysis.create(
         {
@@ -264,10 +253,7 @@ export async function createScript(
 
       logger.info(`Created analysis for script ${script.id}`);
 
-      // Update category if AI suggested one and none was provided
-      if (!categoryId && analysis?.category_id) {
-        await script.update({ categoryId: analysis.category_id }, { transaction });
-      }
+      // Category inference disabled for now (avoid type drift in analysis schema)
     } catch (analysisError) {
       logger.error(`AI analysis failed for script ${script.id}:`, analysisError);
 
@@ -450,28 +436,8 @@ export async function updateScript(
 
       // Re-analyze if content changed
       try {
-        const openaiApiKey = req.headers['x-openai-api-key'] as string;
-        const analysisConfig: { headers: Record<string, string>; timeout: number } = {
-          headers: {},
-          timeout: TIMEOUTS.QUICK
-        };
-
-        if (openaiApiKey) {
-          analysisConfig.headers['x-api-key'] = openaiApiKey;
-        }
-
-        const analysisResponse = await axios.post(
-          `${AI_SERVICE_URL}/analyze`,
-          {
-            script_id: script.id,
-            content,
-            include_command_details: true,
-            fetch_ms_docs: true
-          },
-          analysisConfig
-        );
-
-        const analysis = analysisResponse.data as AIAnalysisResponse;
+        const openaiApiKey = req.headers['x-openai-api-key'] as string | undefined;
+        const analysis = await analyzeScriptBasic(content, openaiApiKey);
 
         // Update existing analysis or create new
         await ScriptAnalysis.upsert(

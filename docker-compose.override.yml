@@ -13,7 +13,7 @@ services:
     command: npm run dev
 
   # Frontend configuration for Cloudflare tunnel access
-  # Uses production build served via vite preview
+  # Local development server (fast startup; no full production build loop)
   frontend:
     build:
       context: ./src/frontend
@@ -22,11 +22,12 @@ services:
       - ./src/frontend:/app
       - /app/node_modules
     environment:
-      NODE_ENV: production
-      VITE_API_URL: https://psscript.morloksmaze.com/api
+      NODE_ENV: development
+      VITE_DISABLE_AUTH: "true"
+      VITE_USE_MOCKS: "false"
     ports:
-      - "3000:3000"
-    command: sh -c "npx vite build && npx vite preview --host 0.0.0.0 --port 3000"
+      - "3090:3090"
+    command: npm run dev -- --host 0.0.0.0 --port 3090
 
   # Development configuration for AI service
   ai-service:

@@ -5,6 +5,14 @@ import { User } from '../models';
 import logger from '../utils/logger';
 import { getAuthConfig, IS_PRODUCTION } from '../utils/envValidation';
 
+const AUTH_DISABLED = process.env.DISABLE_AUTH === 'true';
+const DEV_USER = {
+  id: 'dev-user',
+  username: 'dev',
+  email: 'dev@local',
+  role: 'admin'
+};
+
 // Extend the Express Request interface to include user and auth info
 declare module 'express' {
   interface Request {
@@ -42,6 +50,22 @@ const getClientIp = (req: Request): string => {
  * Adds the user information to the request object if authenticated
  */
 export const authenticateJWT = async (req: Request, res: Response, next: NextFunction) => {
+  if (AUTH_DISABLED) {
+    req.user = DEV_USER;
+    req.authInfo = {
+      tokenType: 'disabled',
+      requestId: generateRequestId(),
+      timestamp: Date.now(),
+      ipAddress: getClientIp(req),
+      userAgent: req.headers['user-agent'] || 'unknown'
+    };
+    logger.warn('Authentication bypassed via DISABLE_AUTH=true', {
+      path: req.path,
+      method: req.method
+    });
+    return next();
+  }
+
   const startTime = Date.now();
   const requestId = generateRequestId();
   const ipAddress = getClientIp(req);
@@ -213,6 +237,11 @@ export const authenticateJWT = async (req: Request, res: Response, next: NextFun
  * Must be used after authenticateJWT
  */
 export const requireAdmin = (req: Request, res: Response, next: NextFunction) => {
+  if (AUTH_DISABLED) {
+    req.user = DEV_USER;
+    return next();
+  }
+
   const requestId = req.authInfo?.requestId || generateRequestId();
   
   if (!req.user) {
@@ -257,6 +286,22 @@ export const requireAdmin = (req: Request, res: Response, next: NextFunction) =>
  * Adds user information to request if token is valid, but continues if no token or invalid token
  */
 export const optionalAuth = async (req: Request, res: Response, next: NextFunction) => {
+  if (AUTH_DISABLED) {
+    req.user = DEV_USER;
+    req.authInfo = {
+      tokenType: 'disabled',
+      requestId: generateRequestId(),
+      timestamp: Date.now(),
+      ipAddress: getClientIp(req),
+      userAgent: req.headers['user-agent'] || 'unknown'
+    };
+    logger.warn('Optional auth bypassed via DISABLE_AUTH=true', {
+      path: req.path,
+      method: req.method
+    });
+    return next();
+  }
+
   const requestId = generateRequestId();
   const startTime = Date.now();
   

@@ -1,0 +1,367 @@
+[
+  {
+    "source": "docs/ARCHITECTURE-EVALUATION-AND-REBUILD-STRATEGY.md",
+    "destination": "docs-site/docs/explanation/ARCHITECTURE-EVALUATION-AND-REBUILD-STRATEGY.md",
+    "category": "explanation"
+  },
+  {
+    "source": "docs/DOCKER-INFRASTRUCTURE-SUMMARY.md",
+    "destination": "docs-site/docs/explanation/DOCKER-INFRASTRUCTURE-SUMMARY.md",
+    "category": "explanation"
+  },
+  {
+    "source": "docs/DOCKER-INFRASTRUCTURE.md",
+    "destination": "docs-site/docs/explanation/DOCKER-INFRASTRUCTURE.md",
+    "category": "explanation"
+  },
+  {
+    "source": "docs/INFRASTRUCTURE-FEATURES.md",
+    "destination": "docs-site/docs/explanation/INFRASTRUCTURE-FEATURES.md",
+    "category": "explanation"
+  },
+  {
+    "source": "docs/LANGGRAPH-IMPLEMENTATION.md",
+    "destination": "docs-site/docs/explanation/LANGGRAPH-IMPLEMENTATION.md",
+    "category": "explanation"
+  },
+  {
+    "source": "docs/LANGGRAPH-MIGRATION-PLAN.md",
+    "destination": "docs-site/docs/explanation/LANGGRAPH-MIGRATION-PLAN.md",
+    "category": "explanation"
+  },
+  {
+    "source": "docs/VOICE-API-ARCHITECTURE.md",
+    "destination": "docs-site/docs/explanation/VOICE-API-ARCHITECTURE.md",
+    "category": "explanation"
+  },
+  {
+    "source": "docs/agentic-framework.md",
+    "destination": "docs-site/docs/explanation/agentic-framework.md",
+    "category": "explanation"
+  },
+  {
+    "source": "docs/AUTHENTICATION-IMPROVEMENTS.md",
+    "destination": "docs-site/docs/how-to/AUTHENTICATION-IMPROVEMENTS.md",
+    "category": "how-to"
+  },
+  {
+    "source": "docs/DATABASE_ISSUES_AND_FIXES.md",
+    "destination": "docs-site/docs/how-to/DATABASE_ISSUES_AND_FIXES.md",
+    "category": "how-to"
+  },
+  {
+    "source": "docs/DOCKER-SETUP.md",
+    "destination": "docs-site/docs/how-to/DOCKER-SETUP.md",
+    "category": "how-to"
+  },
+  {
+    "source": "docs/DOCS-BUILD-CHECKLIST.md",
+    "destination": "docs-site/docs/how-to/DOCS-BUILD-CHECKLIST.md",
+    "category": "how-to"
+  },
+  {
+    "source": "docs/LANGGRAPH-SETUP-SUMMARY.md",
+    "destination": "docs-site/docs/how-to/LANGGRAPH-SETUP-SUMMARY.md",
+    "category": "how-to"
+  },
+  {
+    "source": "docs/MANAGEMENT-PLAYBOOK.md",
+    "destination": "docs-site/docs/how-to/MANAGEMENT-PLAYBOOK.md",
+    "category": "how-to"
+  },
+  {
+    "source": "docs/README-FILE-HASH-TESTING.md",
+    "destination": "docs-site/docs/how-to/README-FILE-HASH-TESTING.md",
+    "category": "how-to"
+  },
+  {
+    "source": "docs/README-FIXES.md",
+    "destination": "docs-site/docs/how-to/README-FIXES.md",
+    "category": "how-to"
+  },
+  {
+    "source": "docs/README-GITHUB.md",
+    "destination": "docs-site/docs/how-to/README-GITHUB.md",
+    "category": "how-to"
+  },
+  {
+    "source": "docs/SCRIPT-ANALYSIS-IMPROVEMENTS.md",
+    "destination": "docs-site/docs/how-to/SCRIPT-ANALYSIS-IMPROVEMENTS.md",
+    "category": "how-to"
+  },
+  {
+    "source": "docs/SECURITY_INCIDENT_RESPONSE.md",
+    "destination": "docs-site/docs/how-to/SECURITY_INCIDENT_RESPONSE.md",
+    "category": "how-to"
+  },
+  {
+    "source": "docs/SUPPORT.md",
+    "destination": "docs-site/docs/how-to/SUPPORT.md",
+    "category": "how-to"
+  },
+  {
+    "source": "docs/VOICE-API-IMPLEMENTATION-STEPS.md",
+    "destination": "docs-site/docs/how-to/VOICE-API-IMPLEMENTATION-STEPS.md",
+    "category": "how-to"
+  },
+  {
+    "source": "docs/VOICE-API-INTEGRATION-SUMMARY.md",
+    "destination": "docs-site/docs/how-to/VOICE-API-INTEGRATION-SUMMARY.md",
+    "category": "how-to"
+  },
+  {
+    "source": "docs/VOICE-API-INTEGRATION.md",
+    "destination": "docs-site/docs/how-to/VOICE-API-INTEGRATION.md",
+    "category": "how-to"
+  },
+  {
+    "source": "docs/VOICE-API-NEXT-STEPS.md",
+    "destination": "docs-site/docs/how-to/VOICE-API-NEXT-STEPS.md",
+    "category": "how-to"
+  },
+  {
+    "source": "docs/CLAUDE.md",
+    "destination": "docs-site/docs/reference/CLAUDE.md",
+    "category": "reference"
+  },
+  {
+    "source": "docs/DATABASE_DOCUMENTATION.md",
+    "destination": "docs-site/docs/reference/DATABASE_DOCUMENTATION.md",
+    "category": "reference"
+  },
+  {
+    "source": "docs/DATABASE_TEST_PLAN.md",
+    "destination": "docs-site/docs/reference/DATABASE_TEST_PLAN.md",
+    "category": "reference"
+  },
+  {
+    "source": "docs/LOGIN-CREDENTIALS.md",
+    "destination": "docs-site/docs/reference/LOGIN-CREDENTIALS.md",
+    "category": "reference"
+  },
+  {
+    "source": "docs/README-FILE-HASH.md",
+    "destination": "docs-site/docs/reference/README-FILE-HASH.md",
+    "category": "reference"
+  },
+  {
+    "source": "docs/README-VECTOR-SEARCH.md",
+    "destination": "docs-site/docs/reference/README-VECTOR-SEARCH.md",
+    "category": "reference"
+  },
+  {
+    "source": "docs/README-VOICE-API.md",
+    "destination": "docs-site/docs/reference/README-VOICE-API.md",
+    "category": "reference"
+  },
+  {
+    "source": "docs/REFERENCE-SOURCES.md",
+    "destination": "docs-site/docs/reference/REFERENCE-SOURCES.md",
+    "category": "reference"
+  },
+  {
+    "source": "docs/TOKEN-COUNTER-API-KEY-FEATURES.md",
+    "destination": "docs-site/docs/reference/TOKEN-COUNTER-API-KEY-FEATURES.md",
+    "category": "reference"
+  },
+  {
+    "source": "docs/VOICE-API-IMPLEMENTATION-EXAMPLES.md",
+    "destination": "docs-site/docs/reference/VOICE-API-IMPLEMENTATION-EXAMPLES.md",
+    "category": "reference"
+  },
+  {
+    "source": "docs/AI-ANALYZER-FIXES.md",
+    "destination": "docs-site/docs/reports/AI-ANALYZER-FIXES.md",
+    "category": "reports"
+  },
+  {
+    "source": "docs/AI_COMPREHENSIVE_TEST_PLAN.md",
+    "destination": "docs-site/docs/reports/AI_COMPREHENSIVE_TEST_PLAN.md",
+    "category": "reports"
+  },
+  {
+    "source": "docs/APP-FUNCTIONALITY-COMPLETE-FIX-REPORT-2026-01-09.md",
+    "destination": "docs-site/docs/reports/APP-FUNCTIONALITY-COMPLETE-FIX-REPORT-2026-01-09.md",
+    "category": "reports"
+  },
+  {
+    "source": "docs/AUTHENTICATION-FIX-REPORT-2026-01-08.md",
+    "destination": "docs-site/docs/reports/AUTHENTICATION-FIX-REPORT-2026-01-08.md",
+    "category": "reports"
+  },
+  {
+    "source": "docs/COMPREHENSIVE-FEATURE-TEST-REPORT-2026-01-09.md",
+    "destination": "docs-site/docs/reports/COMPREHENSIVE-FEATURE-TEST-REPORT-2026-01-09.md",
+    "category": "reports"
+  },
+  {
+    "source": "docs/COMPREHENSIVE-STATUS-REPORT-2026-01-07.md",
+    "destination": "docs-site/docs/reports/COMPREHENSIVE-STATUS-REPORT-2026-01-07.md",
+    "category": "reports"
+  },
+  {
+    "source": "docs/COMPREHENSIVE-TEST-RESULTS-2026-01-08.md",
+    "destination": "docs-site/docs/reports/COMPREHENSIVE-TEST-RESULTS-2026-01-08.md",
+    "category": "reports"
+  },
+  {
+    "source": "docs/COMPREHENSIVE-TESTING-PLAN-2026.md",
+    "destination": "docs-site/docs/reports/COMPREHENSIVE-TESTING-PLAN-2026.md",
+    "category": "reports"
+  },
+  {
+    "source": "docs/DASHBOARD-FIX-REPORT-2026-01-08.md",
+    "destination": "docs-site/docs/reports/DASHBOARD-FIX-REPORT-2026-01-08.md",
+    "category": "reports"
+  },
+  {
+    "source": "docs/DATABASE-IMPROVEMENTS.md",
+    "destination": "docs-site/docs/reports/DATABASE-IMPROVEMENTS.md",
+    "category": "reports"
+  },
+  {
+    "source": "docs/DATABASE_REVIEW_2026.md",
+    "destination": "docs-site/docs/reports/DATABASE_REVIEW_2026.md",
+    "category": "reports"
+  },
+  {
+    "source": "docs/DATABASE_UPDATE_2026-01-16.md",
+    "destination": "docs-site/docs/reports/DATABASE_UPDATE_2026-01-16.md",
+    "category": "reports"
+  },
+  {
+    "source": "docs/DEPLOYMENT-STATUS.md",
+    "destination": "docs-site/docs/reports/DEPLOYMENT-STATUS.md",
+    "category": "reports"
+  },
+  {
+    "source": "docs/DEPLOYMENT-SUMMARY-2026-01-26.md",
+    "destination": "docs-site/docs/reports/DEPLOYMENT-SUMMARY-2026-01-26.md",
+    "category": "reports"
+  },
+  {
+    "source": "docs/E2E-COMPREHENSIVE-FIX-FINAL-RESULTS-2026-01-08.md",
+    "destination": "docs-site/docs/reports/E2E-COMPREHENSIVE-FIX-FINAL-RESULTS-2026-01-08.md",
+    "category": "reports"
+  },
+  {
+    "source": "docs/E2E-COMPREHENSIVE-FIX-FINAL-SUMMARY-2026-01-08.md",
+    "destination": "docs-site/docs/reports/E2E-COMPREHENSIVE-FIX-FINAL-SUMMARY-2026-01-08.md",
+    "category": "reports"
+  },
+  {
+    "source": "docs/E2E-COMPREHENSIVE-FIX-IMPLEMENTATION-2026-01-08.md",
+    "destination": "docs-site/docs/reports/E2E-COMPREHENSIVE-FIX-IMPLEMENTATION-2026-01-08.md",
+    "category": "reports"
+  },
+  {
+    "source": "docs/E2E-COMPREHENSIVE-FIX-PLAN-2026-01-08.md",
+    "destination": "docs-site/docs/reports/E2E-COMPREHENSIVE-FIX-PLAN-2026-01-08.md",
+    "category": "reports"
+  },
+  {
+    "source": "docs/E2E-TEST-FIXES-2026-01-08.md",
+    "destination": "docs-site/docs/reports/E2E-TEST-FIXES-2026-01-08.md",
+    "category": "reports"
+  },
+  {
+    "source": "docs/E2E-TEST-FIXES-PHASE-4-RESULTS-2026-01-08.md",
+    "destination": "docs-site/docs/reports/E2E-TEST-FIXES-PHASE-4-RESULTS-2026-01-08.md",
+    "category": "reports"
+  },
+  {
+    "source": "docs/E2E-TEST-ISSUES-2026-01-08.md",
+    "destination": "docs-site/docs/reports/E2E-TEST-ISSUES-2026-01-08.md",
+    "category": "reports"
+  },
+  {
+    "source": "docs/FILE-HASH-IMPLEMENTATION-REPORT.md",
+    "destination": "docs-site/docs/reports/FILE-HASH-IMPLEMENTATION-REPORT.md",
+    "category": "reports"
+  },
+  {
+    "source": "docs/FINAL-DEPLOYMENT-SUMMARY.md",
+    "destination": "docs-site/docs/reports/FINAL-DEPLOYMENT-SUMMARY.md",
+    "category": "reports"
+  },
+  {
+    "source": "docs/FINAL-TEST-REPORT-2026-01-08.md",
+    "destination": "docs-site/docs/reports/FINAL-TEST-REPORT-2026-01-08.md",
+    "category": "reports"
+  },
+  {
+    "source": "docs/FIXES.md",
+    "destination": "docs-site/docs/reports/FIXES.md",
+    "category": "reports"
+  },
+  {
+    "source": "docs/IMPLEMENTATION-SUMMARY-2026-01-26.md",
+    "destination": "docs-site/docs/reports/IMPLEMENTATION-SUMMARY-2026-01-26.md",
+    "category": "reports"
+  },
+  {
+    "source": "docs/MODEL-UPDATE-2026-01-08.md",
+    "destination": "docs-site/docs/reports/MODEL-UPDATE-2026-01-08.md",
+    "category": "reports"
+  },
+  {
+    "source": "docs/PHASE-1-COMPLETE-READY-TO-TEST-2026-01-09.md",
+    "destination": "docs-site/docs/reports/PHASE-1-COMPLETE-READY-TO-TEST-2026-01-09.md",
+    "category": "reports"
+  },
+  {
+    "source": "docs/PHASE-1-IMPLEMENTATION-COMPLETE-2026-01-09.md",
+    "destination": "docs-site/docs/reports/PHASE-1-IMPLEMENTATION-COMPLETE-2026-01-09.md",
+    "category": "reports"
+  },
+  {
+    "source": "docs/REACT-QUERY-V5-MIGRATION-STATUS.md",
+    "destination": "docs-site/docs/reports/REACT-QUERY-V5-MIGRATION-STATUS.md",
+    "category": "reports"
+  },
+  {
+    "source": "docs/SCRIPT-ANALYSIS-COMPREHENSIVE-FIX-PLAN-2026-01-09.md",
+    "destination": "docs-site/docs/reports/SCRIPT-ANALYSIS-COMPREHENSIVE-FIX-PLAN-2026-01-09.md",
+    "category": "reports"
+  },
+  {
+    "source": "docs/TECH-REVIEW-2026.md",
+    "destination": "docs-site/docs/reports/TECH-REVIEW-2026.md",
+    "category": "reports"
+  },
+  {
+    "source": "docs/TEST-RESULTS-2026-01-08.md",
+    "destination": "docs-site/docs/reports/TEST-RESULTS-2026-01-08.md",
+    "category": "reports"
+  },
+  {
+    "source": "docs/UPDATES.md",
+    "destination": "docs-site/docs/reports/UPDATES.md",
+    "category": "reports"
+  },
+  {
+    "source": "docs/USER_MANAGEMENT_SECURITY_AUDIT.md",
+    "destination": "docs-site/docs/reports/USER_MANAGEMENT_SECURITY_AUDIT.md",
+    "category": "reports"
+  },
+  {
+    "source": "docs/GETTING-STARTED.md",
+    "destination": "docs-site/docs/tutorials/GETTING-STARTED.md",
+    "category": "tutorials"
+  },
+  {
+    "source": "docs/LANGGRAPH-QUICK-START.md",
+    "destination": "docs-site/docs/tutorials/LANGGRAPH-QUICK-START.md",
+    "category": "tutorials"
+  },
+  {
+    "source": "docs/training-suite/README.md",
+    "destination": "docs-site/docs/tutorials/README.md",
+    "category": "tutorials"
+  },
+  {
+    "source": "docs/training-suite/TRAINING-GUIDE.md",
+    "destination": "docs-site/docs/tutorials/TRAINING-GUIDE.md",
+    "category": "tutorials"
+  }
+]

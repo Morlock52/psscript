@@ -13,7 +13,8 @@ import time
 from typing import Dict, List, Any, Optional
 from enum import Enum
 
-import openai
+from openai import AsyncOpenAI
+from config import config
 from tenacity import retry, stop_after_attempt, wait_exponential, retry_if_exception_type
 
 # Configure logging
@@ -36,7 +37,7 @@ class AutoGPTAgent:
     AutoGPT-inspired agent capable of autonomous planning and execution.
     """
     
-    def __init__(self, api_key: Optional[str] = None, model: str = "gpt-4o"):
+    def __init__(self, api_key: Optional[str] = None, model: str = config.agent.default_model):
         """
         Initialize the AutoGPT agent.
         
@@ -49,7 +50,7 @@ class AutoGPTAgent:
         if not self.api_key:
             raise ValueError("OpenAI API key is required")
         
-        openai.api_key = self.api_key
+        self.client = AsyncOpenAI(api_key=self.api_key)
         self.model = model
         self.state = AgentState.IDLE
         self.memory = []
@@ -80,13 +81,13 @@ class AutoGPTAgent:
             The model's response as a string
         """
         try:
-            response = await openai.chat.completions.create(
+            response = await self.client.chat.completions.create(
                 model=self.model,
                 messages=messages,
                 temperature=temperature,
                 max_tokens=1500
             )
-            return response.choices[0].message.content
+            return response.choices[0].message.content or ""
         except Exception as e:
             logger.error(f"Error calling OpenAI API: {e}")
             raise

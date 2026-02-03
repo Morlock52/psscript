@@ -12,6 +12,7 @@ export default class Script extends Model {
   public userId!: number;
   public categoryId!: number;
   public version!: number;
+  public views!: number;
   public executionCount!: number;
   public isPublic!: boolean;
   public fileHash?: string;
@@ -63,6 +64,10 @@ export default class Script extends Model {
       version: {
         type: DataTypes.INTEGER,
         defaultValue: 1
+      },
+      views: {
+        type: DataTypes.INTEGER,
+        defaultValue: 0
       },
       executionCount: {
         type: DataTypes.INTEGER,

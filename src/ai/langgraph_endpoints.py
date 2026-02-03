@@ -13,6 +13,7 @@ from fastapi.responses import StreamingResponse, JSONResponse
 from pydantic import BaseModel, Field
 
 from agents.langgraph_production import LangGraphProductionOrchestrator
+from config import config
 
 # Configure logging
 logging.basicConfig(level=logging.INFO)
@@ -43,7 +44,7 @@ class LangGraphAnalysisRequest(BaseModel):
     thread_id: Optional[str] = Field(None, description="Thread ID for conversation continuity")
     require_human_review: bool = Field(False, description="Whether to require human review")
     stream: bool = Field(False, description="Whether to stream responses")
-    model: Optional[str] = Field("gpt-4o", description="Model to use for analysis (default: gpt-4o)")
+    model: Optional[str] = Field(config.agent.default_model, description="Model to use for analysis (default: configured best coding model)")
     api_key: Optional[str] = Field(None, description="Optional OpenAI API key")
 
 
@@ -121,7 +122,8 @@ async def analyze_script(request: LangGraphAnalysisRequest):
                         script_content=request.script_content,
                         thread_id=request.thread_id,
                         require_human_review=request.require_human_review,
-                        stream=True
+                        stream=True,
+                        model=request.model
                     )
 
                     # Stream the events from the orchestrator
@@ -164,7 +166,8 @@ async def analyze_script(request: LangGraphAnalysisRequest):
             script_content=request.script_content,
             thread_id=request.thread_id,
             require_human_review=request.require_human_review,
-            stream=False
+            stream=False,
+            model=request.model
         )
 
         logger.info(f"Analysis completed for workflow: {result.get('workflow_id')}")
@@ -295,9 +298,10 @@ async def orchestrator_info():
             }
         ],
         "supported_models": [
-            "gpt-4o",        # Default general-purpose model (January 2026)
-            "o3",            # Reasoning model for complex analysis
-            "gpt-4o-mini"    # Fast model for quick tasks
+            "gpt-5.2-codex",  # Best agentic coding model
+            "gpt-5.2",        # Best general complex reasoning
+            "gpt-5-mini",     # Fast interactive UX
+            "gpt-5-nano"      # Fastest/high throughput
         ],
         "features": {
             "checkpointing": {

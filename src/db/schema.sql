@@ -67,6 +67,9 @@ CREATE TABLE scripts (
     updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
     version INTEGER NOT NULL DEFAULT 1,
     is_public BOOLEAN NOT NULL DEFAULT false,
+    -- Used by the UI for "popular scripts" sorting.
+    -- Incremented when a script is viewed (optional feature).
+    views INTEGER NOT NULL DEFAULT 0,
     execution_count INTEGER NOT NULL DEFAULT 0,
     average_execution_time FLOAT,
     last_executed_at TIMESTAMP WITH TIME ZONE,

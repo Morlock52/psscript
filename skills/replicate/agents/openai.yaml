@@ -1,0 +1,10 @@
+interface:
+  display_name: "Replicate MCP"
+  short_description: "Run Replicate models via MCP"
+  default_prompt: "Use $replicate to run a Replicate model for a media task."
+
+dependencies:
+  tools:
+    - type: "mcp"
+      value: "replicate"
+      description: "Replicate MCP server"

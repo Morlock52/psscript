@@ -4,7 +4,7 @@
  */
 import express from 'express';
 import cors from 'cors';
-import dotenv from 'dotenv';
+import 'dotenv/config';
 import compression from 'compression';
 import morgan from 'morgan';
 import https from 'https';
@@ -21,7 +21,6 @@ import {
   validateRequestSize,
   csrfProtection,
 } from './middleware/security';
-import logger from './utils/logger';
 import authRoutes from './routes/auth';
 import scriptRoutes from './routes/scripts';
 import userRoutes from './routes/users';
@@ -33,6 +32,7 @@ import chatRoutes from './routes/chat';
 // Voice routes are imported differently or disabled
 // import voiceRoutes from './routes/voiceRoutes';
 import aiAgentRoutes from './routes/ai-agent';
+import agentRoutes from './routes/agents';
 import assistantsRoutes from './routes/assistants';
 import documentationRoutes from './routes/documentation';
 import { errorHandler } from './middleware/errorHandler';
@@ -40,9 +40,11 @@ import { authenticateJWT, requireAdmin } from './middleware/auth';
 import { setupSwagger } from './utils/swagger';
 import path from 'path';
 import { existsSync } from 'fs';
-
-// Load environment variables
-dotenv.config();
+import logger from './utils/logger';
+import db, { sequelize } from './database/connection';
+import { validateTlsConfiguration } from './utils/secureHttpClient';
+import AIAnalyticsMiddleware, { AIMetric, initAIMetricsModel } from './middleware/aiAnalytics';
+import { Documentation } from './models';
 
 // Create Express app
 const app = express();
@@ -61,8 +63,6 @@ const _isProduction = process.env.NODE_ENV === 'production';
 // Log startup details
 console.log(`Starting server: PORT=${port}, ENV=${process.env.NODE_ENV || 'development'}, DOCKER=${process.env.DOCKER_ENV || 'false'}`);
 
-import db from './database/connection';
-import { validateTlsConfiguration } from './utils/secureHttpClient';
 
 // SECURITY: Validate SSL/TLS configuration at startup
 // This ensures certificate validation is properly enforced
@@ -81,7 +81,7 @@ const isDevelopment = process.env.NODE_ENV !== 'production';
 // Enable mock mode for faster development
 if (isDevelopment) {
   process.env.USE_MOCK_SERVICES = 'false';
-  logger.info('Development mode - mock services enabled');
+  logger.info('Development mode - mock services disabled');
 }
 
 // Set up in-memory caching for development
@@ -497,20 +497,28 @@ if (process.env.NODE_ENV !== 'test') {
 // Compression middleware to reduce response size
 app.use(compression());
 
-// Apply endpoint-specific rate limiting for enhanced protection
-// Auth: Stricter limits to prevent brute force (10 attempts per 15 min, successful requests don't count)
-app.use('/api/auth', authLimiter);
+// Apply endpoint-specific rate limiting for enhanced protection.
+// In local development the limits can be a nuisance (especially for automated UI/API tests),
+// so enable by default only in production.
+const enableRateLimiting = process.env.DISABLE_RATE_LIMIT !== 'true' && process.env.NODE_ENV === 'production';
+if (enableRateLimiting) {
+  // Auth: Stricter limits to prevent brute force (10 attempts per 15 min, successful requests don't count)
+  app.use('/api/auth', authLimiter);
 
-// AI endpoints: 20 requests per minute (AI operations are expensive)
-app.use('/api/ai-agent', aiLimiter);
-app.use('/api/assistants', aiLimiter);
-app.use('/api/chat', aiLimiter);
+  // AI endpoints: 20 requests per minute (AI operations are expensive)
+  app.use('/api/ai-agent', aiLimiter);
+  app.use('/api/agents', aiLimiter);
+  app.use('/api/assistants', aiLimiter);
+  app.use('/api/chat', aiLimiter);
 
-// Script operations: 30 requests per 5 minutes
-app.use('/api/scripts', scriptLimiter);
+  // Script operations: 30 requests per 5 minutes
+  app.use('/api/scripts', scriptLimiter);
 
-// Upload endpoints: 10 uploads per 5 minutes
-app.use('/api/scripts/upload', uploadLimiter);
+  // Upload endpoints: 10 uploads per 5 minutes
+  app.use('/api/scripts/upload', uploadLimiter);
+} else {
+  logger.info('Rate limiting disabled (non-production mode)');
+}
 
 // Request size validation - rejects requests exceeding 50MB before parsing
 app.use(validateRequestSize(50));
@@ -532,7 +540,14 @@ const cacheMiddleware = (req: express.Request, res: express.Response, next: expr
   const skipRoutes = [
     '/api/auth',
     '/api/health',
-    '/api/users'  // All user management endpoints - role-based access control
+    '/api/users', // All user management endpoints - role-based access control
+    // Dynamic/interactive endpoints (must not be cached)
+    '/api/ai-agent',
+    '/api/agents',
+    '/api/assistants',
+    '/api/chat',
+    '/api/analytics',
+    '/api/scripts',
   ];
   
   if (skipRoutes.some(route => req.path.startsWith(route))) {
@@ -595,7 +610,11 @@ const cacheMiddleware = (req: express.Request, res: express.Response, next: expr
 app.use(cacheMiddleware);
 
 // Setup Swagger API documentation
-setupSwagger(app);
+if (process.env.DISABLE_SWAGGER !== 'true') {
+  setupSwagger(app);
+} else {
+  logger.info('Swagger documentation disabled');
+}
 
 // API routes
 app.use('/api/auth', authRoutes);
@@ -606,12 +625,13 @@ app.use('/api/tags', tagRoutes);
 app.use('/api/analytics', analyticsRoutes);
 app.use('/api/health', healthRoutes);
 app.use('/health', healthRoutes); // Standard health check endpoint
-app.use('/api/chat', chatRoutes);
+app.use('/api/chat', AIAnalyticsMiddleware.trackUsage(), chatRoutes);
 // Voice API is disabled for now
 // app.use('/api/voice', voiceRoutes);
-app.use('/api/ai-agent', aiAgentRoutes);
-app.use('/api/assistants', assistantsRoutes);
-app.use('/api/documentation', documentationRoutes);
+app.use('/api/ai-agent', AIAnalyticsMiddleware.trackUsage(), aiAgentRoutes);
+app.use('/api/agents', AIAnalyticsMiddleware.trackUsage(), agentRoutes);
+app.use('/api/assistants', AIAnalyticsMiddleware.trackUsage(), assistantsRoutes);
+app.use('/api/documentation', AIAnalyticsMiddleware.trackUsage(), documentationRoutes);
 
 // Create proxy routes for the frontend to use
 // This ensures the frontend can directly call /scripts/please instead of /api/ai-agent/please
@@ -670,26 +690,57 @@ app.use(errorHandler);
 // Create HTTP server with proper error handling
 const startServer = async () => {
   try {
-    // Test database connection with retry
-    let connected = false;
-    let attempts = 0;
-    const maxAttempts = 5;
-    
-    while (!connected && attempts < maxAttempts) {
-      try {
-        attempts++;
-        await db.connect();
-        connected = true;
-        logger.info('Database connection established successfully');
-      } catch (error) {
-        logger.error(`Database connection attempt ${attempts} failed:`, error);
-        
-        if (attempts >= maxAttempts) {
-          throw error;
+    const skipDb = process.env.DISABLE_DB === 'true';
+    if (skipDb) {
+      logger.warn('Database connection skipped because DISABLE_DB=true');
+    } else {
+      // Test database connection with retry
+      let connected = false;
+      let attempts = 0;
+      let lastError: unknown;
+      const maxAttempts = 5;
+      
+      while (!connected && attempts < maxAttempts) {
+        try {
+          attempts++;
+          await db.connect();
+          connected = true;
+          logger.info('Database connection established successfully');
+
+          // Initialize optional AI analytics model (creates table if missing).
+          // This powers /api/analytics/ai/* endpoints and usage tracking.
+          try {
+            if (!AIMetric.sequelize) {
+              initAIMetricsModel(sequelize);
+            }
+            await AIMetric.sync();
+          } catch (error) {
+            logger.warn('AI analytics metrics table unavailable - continuing without analytics', error);
+          }
+
+          // Ensure documentation storage table exists (creates if missing).
+          // This fixes /api/documentation/* failing on fresh databases.
+          try {
+            await Documentation.sync();
+          } catch (error) {
+            logger.warn('Documentation table unavailable - continuing without documentation features', error);
+          }
+        } catch (error) {
+          lastError = error;
+          logger.error(`Database connection attempt ${attempts} failed:`, error);
+          
+          if (attempts >= maxAttempts) {
+            const allowDbFailure = process.env.ALLOW_DB_FAILURE === 'true' || isDevelopment;
+            if (allowDbFailure) {
+              logger.warn('Database unavailable - continuing without DB (ALLOW_DB_FAILURE enabled)');
+              break;
+            }
+            throw error;
+          }
+          
+          // Wait before next attempt
+          await new Promise(resolve => setTimeout(resolve, 5000));
         }
-        
-        // Wait before next attempt
-        await new Promise(resolve => setTimeout(resolve, 5000));
       }
     }
     
@@ -862,6 +913,7 @@ const startServer = async () => {
     
     // Determine if TLS is enabled (certificates mounted)
     const tlsEnabled = process.env.TLS_CERT && process.env.TLS_KEY;
+    const bindHost = process.env.BIND_HOST || '0.0.0.0';
     const protocol = tlsEnabled ? 'HTTPS' : 'HTTP';
     console.log(`Starting ${protocol} server on port ${port}`);
 
@@ -890,15 +942,15 @@ const startServer = async () => {
         })
       };
 
-      server = https.createServer(httpsOptions, app).listen(port, '0.0.0.0', () => {
-        console.log(`HTTPS server is now running on https://0.0.0.0:${port}`);
+      server = https.createServer(httpsOptions, app).listen(port, bindHost, () => {
+        console.log(`HTTPS server is now running on https://${bindHost}:${port}`);
         logger.info(`Server running in ${process.env.NODE_ENV || 'development'} mode on port ${port} (TLS enabled)`);
         logger.info(`API documentation available at https://localhost:${port}/api-docs`);
         logger.info(`mTLS origin protection active`);
       });
     } else {
-      server = app.listen(port, '0.0.0.0', () => {
-        console.log(`HTTP server is now running on http://0.0.0.0:${port}`);
+      server = app.listen(port, bindHost, () => {
+        console.log(`HTTP server is now running on http://${bindHost}:${port}`);
         logger.info(`Server running in ${process.env.NODE_ENV || 'development'} mode on port ${port}`);
         logger.info(`API documentation available at http://localhost:${port}/api-docs`);
         logger.info(`In-memory cache initialized and ready`);

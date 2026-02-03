@@ -46,7 +46,7 @@ export function getApiUrl(): string {
   // Runtime detection in browser
   const protocol = window.location.protocol === 'https:' ? 'https' : 'http';
   const hostname = window.location.hostname;
-  const isLocalhost = hostname === 'localhost' || hostname === '127.0.0.1';
+  const isLocalhost = hostname === 'localhost' || hostname === '127.0.0.1' || hostname === 'host.docker.internal';
 
   // When accessed via tunnel/proxy (non-localhost), don't include port
   // The tunnel/proxy routes /api to the backend
@@ -89,7 +89,7 @@ export function getAiServiceUrl(): string {
   // Runtime detection in browser
   const protocol = window.location.protocol === 'https:' ? 'https' : 'http';
   const hostname = window.location.hostname;
-  const isLocalhost = hostname === 'localhost' || hostname === '127.0.0.1';
+  const isLocalhost = hostname === 'localhost' || hostname === '127.0.0.1' || hostname === 'host.docker.internal';
 
   // When accessed via tunnel/proxy, use /ai path (tunnel routes it)
   // When local, use port 8000
@@ -112,7 +112,7 @@ export function getAssistantsApiUrl(): string {
 
   const protocol = window.location.protocol === 'https:' ? 'https' : 'http';
   const hostname = window.location.hostname;
-  const isLocalhost = hostname === 'localhost' || hostname === '127.0.0.1';
+  const isLocalhost = hostname === 'localhost' || hostname === '127.0.0.1' || hostname === 'host.docker.internal';
 
   // When accessed via tunnel/proxy, use /assistants-api path
   // When local, use port 4001
@@ -137,7 +137,7 @@ export function isLocalhost(): boolean {
     return true; // Assume localhost during SSR
   }
   const hostname = window.location.hostname;
-  return hostname === 'localhost' || hostname === '127.0.0.1';
+  return hostname === 'localhost' || hostname === '127.0.0.1' || hostname === 'host.docker.internal';
 }
 
 /**

@@ -75,7 +75,7 @@ export function initAIMetricsModel(sequelize: Sequelize): void {
       model: {
         type: DataTypes.STRING,
         allowNull: false,
-        comment: 'AI model used (e.g., gpt-4o, gpt-4o-mini, o3-mini)',
+        comment: 'AI model used (e.g., gpt-5, gpt-5-mini, gpt-4.1)',
       },
       promptTokens: {
         type: DataTypes.INTEGER,
@@ -143,7 +143,10 @@ export function initAIMetricsModel(sequelize: Sequelize): void {
       timestamps: false,
       indexes: [
         {
-          fields: ['user_id'],
+          // NOTE: Column is currently created as `userId` (camelCase) because we don't
+          // specify a `field` mapping for the attribute. Keep the index consistent to
+          // avoid startup warnings.
+          fields: ['userId'],
         },
         {
           fields: ['endpoint'],
@@ -173,8 +176,26 @@ export function calculateCost(
   promptTokens: number,
   completionTokens: number
 ): number {
-  // Prices per 1M tokens (January 2026)
+  // Prices per 1M tokens (see OpenAI pricing page; keep in sync with production defaults)
   const pricing: Record<string, { prompt: number; completion: number }> = {
+    // GPT-5.2 family (latest as of Feb 2026)
+    'gpt-5.2': { prompt: 1.75, completion: 14.00 },
+    'gpt-5.2-codex': { prompt: 1.75, completion: 14.00 },
+    // NOTE: gpt-5.2-pro is Responses API only; included here for analytics compatibility.
+    'gpt-5.2-pro': { prompt: 21.00, completion: 168.00 },
+    // Alias used in some SDK examples/docs
+    'gpt-5.2-chat-latest': { prompt: 1.75, completion: 14.00 },
+
+    // GPT-5 family
+    'gpt-5': { prompt: 1.25, completion: 10.00 },
+    'gpt-5-mini': { prompt: 0.25, completion: 2.00 },
+    'gpt-5-nano': { prompt: 0.05, completion: 0.40 },
+
+    // GPT-4.1 family
+    'gpt-4.1': { prompt: 2.00, completion: 8.00 },
+    'gpt-4.1-mini': { prompt: 0.40, completion: 1.60 },
+    'gpt-4.1-nano': { prompt: 0.10, completion: 0.40 },
+
     'gpt-4o': { prompt: 2.50, completion: 10.00 },
     'gpt-4o-mini': { prompt: 0.15, completion: 0.60 },
     'o3-mini': { prompt: 1.10, completion: 4.40 },
@@ -184,7 +205,7 @@ export function calculateCost(
     'text-embedding-3-large': { prompt: 0.13, completion: 0 },
   };
 
-  const modelPricing = pricing[model] || pricing['gpt-4o-mini']; // Fallback to mini
+  const modelPricing = pricing[model] || pricing['gpt-5-mini']; // Fallback to fast model
 
   const promptCost = (promptTokens / 1_000_000) * modelPricing.prompt;
   const completionCost = (completionTokens / 1_000_000) * modelPricing.completion;
@@ -212,9 +233,15 @@ export class AIAnalyticsMiddleware {
         const endTime = Date.now();
         const latency = endTime - startTime;
 
+        // Prefer the mounted route + path (avoids losing the baseUrl when routers are mounted at /api/*).
+        const endpoint =
+          `${req.baseUrl || ''}${req.path || ''}` ||
+          (req.originalUrl ? req.originalUrl.split('?')[0] : '') ||
+          req.path;
+
         // Extract usage data from response if available
         const usage = data?.usage || res.locals.usage;
-        const model = req.body?.model || res.locals.model || 'gpt-4o-mini';
+        const model = req.body?.model || res.locals.model || 'gpt-5-mini';
 
         if (usage) {
           const promptTokens = usage.prompt_tokens || 0;
@@ -225,7 +252,7 @@ export class AIAnalyticsMiddleware {
           // Save metrics asynchronously (don't block response)
           AIMetric.create({
             userId: (req as any).user?.id,
-            endpoint: req.path,
+            endpoint,
             model,
             promptTokens,
             completionTokens,
@@ -236,7 +263,7 @@ export class AIAnalyticsMiddleware {
             errorMessage: res.statusCode >= 400 ? data?.error : undefined,
             requestPayload: {
               method: req.method,
-              path: req.path,
+              path: endpoint,
               // Don't store sensitive data
               hasBody: !!req.body,
             },
@@ -249,7 +276,7 @@ export class AIAnalyticsMiddleware {
           });
 
           logger.info('AI Request Tracked', {
-            endpoint: req.path,
+            endpoint,
             model,
             tokens: totalTokens,
             cost: totalCost,

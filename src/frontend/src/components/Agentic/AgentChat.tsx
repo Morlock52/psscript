@@ -59,7 +59,7 @@ const AgentChat: React.FC<AgentChatProps> = ({
       'debugging',
       'automation'
     ],
-    model: 'gpt-4o'
+    model: 'gpt-5.2-codex'
   },
   initialMessage = `Hello! I'm your **PSScript AI Assistant** - specialized in PowerShell and scripting.
 

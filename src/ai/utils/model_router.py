@@ -1,20 +1,14 @@
 """
-Multi-Model Router - January 2026
+Multi-Model Router - February 2026
 
-Intelligently routes requests to the most appropriate AI model
-based on task complexity, cost optimization, and performance needs.
+Routes requests to an OpenAI model based on task type + complexity.
+This repo is a coding/PowerShell-first app, so we bias toward strong coding models.
 
-Routing Strategy:
-- Simple queries → Fast model (gpt-4o-mini)
-- Code generation → Code-specialized model (gpt-4.1)
-- Complex reasoning → Reasoning model (o3-mini or gpt-4o)
-- Creative tasks → Creative model (gpt-4o)
-
-Supports:
-- Automatic complexity detection
-- Cost-aware routing
-- Latency optimization
-- Fallback handling
+Routing Strategy (performance-leaning by default):
+- Simple chat/explanations → GPT-5 Mini
+- Very simple/high-throughput → GPT-5 Nano (only when cost_sensitive=True)
+- Code generation/review/debugging/security → GPT-5.2-Codex for complex; GPT-5 Mini for simpler cases
+- Architecture/complex reasoning → GPT-5.2 (or GPT-5.2-Codex when code-heavy)
 """
 
 import re
@@ -82,47 +76,48 @@ class ModelRouter:
         print(f"Using {decision.model_name}: {decision.reason}")
     """
 
-    # Model configurations (January 2026 pricing)
+    # Model configurations (February 2026 pricing; USD per 1K tokens).
+    # NOTE: "input" roughly maps to prompt tokens; "output" maps to completion tokens.
     MODELS = {
-        "gpt-4o-mini": ModelConfig(
-            name="GPT-4o Mini",
-            model_id="gpt-4o-mini",
-            max_tokens=16384,
-            cost_per_1k_input=0.00015,
-            cost_per_1k_output=0.0006,
-            avg_latency_ms=500,
-            strengths=["fast", "cheap", "good for simple tasks"],
-            weaknesses=["less accurate on complex tasks"]
-        ),
-        "gpt-4o": ModelConfig(
-            name="GPT-4o",
-            model_id="gpt-4o",
+        "gpt-5-nano": ModelConfig(
+            name="GPT-5 Nano",
+            model_id="gpt-5-nano",
             max_tokens=128000,
-            cost_per_1k_input=0.0025,
-            cost_per_1k_output=0.01,
-            avg_latency_ms=1500,
-            strengths=["multimodal", "creative", "balanced"],
-            weaknesses=["higher cost"]
+            cost_per_1k_input=0.00005,   # $0.05 / 1M input
+            cost_per_1k_output=0.00040,  # $0.40 / 1M output
+            avg_latency_ms=350,
+            strengths=["fast", "high throughput", "cheap", "simple tasks"],
+            weaknesses=["weaker at complex code and multi-step reasoning"]
         ),
-        "gpt-4.1": ModelConfig(
-            name="GPT-4.1 (January 2026)",
-            model_id="gpt-4.1",
+        "gpt-5-mini": ModelConfig(
+            name="GPT-5 Mini",
+            model_id="gpt-5-mini",
             max_tokens=128000,
-            cost_per_1k_input=0.003,
-            cost_per_1k_output=0.012,
-            avg_latency_ms=2000,
-            strengths=["code generation", "technical accuracy", "best practices"],
-            weaknesses=["slower", "higher cost"]
+            cost_per_1k_input=0.00025,  # $0.25 / 1M input
+            cost_per_1k_output=0.00200, # $2.00 / 1M output
+            avg_latency_ms=800,
+            strengths=["fast", "strong coding", "great default for UX"],
+            weaknesses=["less capable than GPT-5.2 on hardest problems"]
         ),
-        "o3-mini": ModelConfig(
-            name="O3 Mini (Reasoning)",
-            model_id="o3-mini",
-            max_tokens=100000,
-            cost_per_1k_input=0.0015,
-            cost_per_1k_output=0.006,
-            avg_latency_ms=3000,
-            strengths=["complex reasoning", "step-by-step", "math"],
-            weaknesses=["slower", "verbose"]
+        "gpt-5.2": ModelConfig(
+            name="GPT-5.2",
+            model_id="gpt-5.2",
+            max_tokens=128000,
+            cost_per_1k_input=0.00175,  # $1.75 / 1M input
+            cost_per_1k_output=0.01400, # $14.00 / 1M output
+            avg_latency_ms=1800,
+            strengths=["best general reasoning", "agentic workflows", "code-heavy tasks"],
+            weaknesses=["higher cost than GPT-5 Mini"]
+        ),
+        "gpt-5.2-codex": ModelConfig(
+            name="GPT-5.2-Codex",
+            model_id="gpt-5.2-codex",
+            max_tokens=128000,
+            cost_per_1k_input=0.00175,  # same as GPT-5.2
+            cost_per_1k_output=0.01400, # same as GPT-5.2
+            avg_latency_ms=2200,
+            strengths=["agentic coding", "long-horizon changes", "deep code review"],
+            weaknesses=["higher latency/cost than GPT-5 Mini for small tasks"]
         ),
     }
 
@@ -164,7 +159,7 @@ class ModelRouter:
         r'\battack|malicious\b',
     ]
 
-    def __init__(self, default_model: str = "gpt-4.1", cost_sensitive: bool = False):
+    def __init__(self, default_model: str = "gpt-5-mini", cost_sensitive: bool = False):
         """
         Initialize the model router.
 
@@ -286,63 +281,78 @@ class ModelRouter:
         # Route based on task type and complexity
         if task_type == TaskType.CODE_GENERATION:
             if complexity in (TaskComplexity.COMPLEX, TaskComplexity.EXPERT):
-                model = self.MODELS["gpt-4.1"]
-                reason = "Complex code generation requires GPT-4.1 for best practices"
-            elif self.cost_sensitive:
-                model = self.MODELS["gpt-4o-mini"]
-                reason = "Simple code generation, using cost-effective model"
+                model = self.MODELS["gpt-5.2-codex"]
+                reason = "Complex code generation benefits from GPT-5.2-Codex long-horizon agentic coding strength"
+            elif self.cost_sensitive and complexity == TaskComplexity.SIMPLE:
+                model = self.MODELS["gpt-5-nano"]
+                reason = "Simple code generation (cost-sensitive), using GPT-5 Nano"
             else:
-                model = self.MODELS["gpt-4.1"]
-                reason = "Code generation benefits from GPT-4.1's technical accuracy"
+                model = self.MODELS["gpt-5-mini"]
+                reason = "Code generation with GPT-5 Mini for strong quality + fast latency"
 
         elif task_type == TaskType.CODE_REVIEW:
-            model = self.MODELS["gpt-4.1"]
-            reason = "Code review requires technical accuracy of GPT-4.1"
+            if complexity >= TaskComplexity.COMPLEX:
+                model = self.MODELS["gpt-5.2-codex"]
+                reason = "Complex code review benefits from GPT-5.2-Codex"
+            else:
+                model = self.MODELS["gpt-5-mini"]
+                reason = "Code review with GPT-5 Mini (fast + strong technical accuracy)"
 
         elif task_type == TaskType.DEBUGGING:
             if complexity >= TaskComplexity.COMPLEX:
-                model = self.MODELS["o3-mini"]
-                reason = "Complex debugging benefits from O3's reasoning capabilities"
+                model = self.MODELS["gpt-5.2-codex"]
+                reason = "Complex debugging benefits from GPT-5.2-Codex"
             else:
-                model = self.MODELS["gpt-4.1"]
-                reason = "Standard debugging with GPT-4.1"
+                model = self.MODELS["gpt-5-mini"]
+                reason = "Standard debugging with GPT-5 Mini"
 
         elif task_type == TaskType.EXPLANATION:
             if complexity == TaskComplexity.SIMPLE and self.cost_sensitive:
-                model = self.MODELS["gpt-4o-mini"]
-                reason = "Simple explanation, using fast model"
+                model = self.MODELS["gpt-5-nano"]
+                reason = "Simple explanation (cost-sensitive), using GPT-5 Nano"
+            elif complexity >= TaskComplexity.COMPLEX:
+                model = self.MODELS["gpt-5.2"]
+                reason = "Complex explanation benefits from GPT-5.2"
             else:
-                model = self.MODELS["gpt-4o"]
-                reason = "Explanations benefit from GPT-4o's clarity"
+                model = self.MODELS["gpt-5-mini"]
+                reason = "Explanation with GPT-5 Mini"
 
         elif task_type == TaskType.ARCHITECTURE:
-            model = self.MODELS["o3-mini"]
-            reason = "Architecture decisions benefit from O3's step-by-step reasoning"
+            if complexity >= TaskComplexity.COMPLEX:
+                model = self.MODELS["gpt-5.2"]
+                reason = "Architecture decisions benefit from GPT-5.2"
+            else:
+                model = self.MODELS["gpt-5-mini"]
+                reason = "Architecture guidance with GPT-5 Mini"
 
         elif task_type == TaskType.SECURITY_ANALYSIS:
-            model = self.MODELS["gpt-4.1"]
-            reason = "Security analysis requires GPT-4.1's technical precision"
+            if complexity >= TaskComplexity.MODERATE:
+                model = self.MODELS["gpt-5.2-codex"]
+                reason = "Security analysis benefits from GPT-5.2-Codex depth and coding focus"
+            else:
+                model = self.MODELS["gpt-5-mini"]
+                reason = "Quick security analysis with GPT-5 Mini"
 
         else:  # General chat
             if complexity == TaskComplexity.SIMPLE and self.cost_sensitive:
-                model = self.MODELS["gpt-4o-mini"]
-                reason = "Simple chat query, using fast model"
+                model = self.MODELS["gpt-5-nano"]
+                reason = "Simple chat query (cost-sensitive), using GPT-5 Nano"
             elif complexity >= TaskComplexity.COMPLEX:
-                model = self.MODELS["gpt-4o"]
-                reason = "Complex query benefits from GPT-4o"
+                model = self.MODELS["gpt-5.2"]
+                reason = "Complex query benefits from GPT-5.2"
             else:
-                model = self.MODELS.get(self.default_model, self.MODELS["gpt-4.1"])
-                reason = f"Using default model for moderate complexity"
+                model = self.MODELS.get(self.default_model, self.MODELS["gpt-5-mini"])
+                reason = "Using default model for moderate complexity"
 
         # Estimate cost (rough, based on ~500 token query, ~1000 token response)
         estimated_cost = (0.5 * model.cost_per_1k_input) + (1.0 * model.cost_per_1k_output)
 
         # Determine alternative
         alternative = None
-        if model.model_id != "gpt-4o-mini" and self.cost_sensitive:
-            alternative = "gpt-4o-mini"
-        elif model.model_id == "gpt-4o-mini" and complexity >= TaskComplexity.MODERATE:
-            alternative = "gpt-4o"
+        if model.model_id != "gpt-5-mini":
+            alternative = "gpt-5-mini"
+        elif model.model_id == "gpt-5-nano" and complexity >= TaskComplexity.MODERATE:
+            alternative = "gpt-5-mini"
 
         return RoutingDecision(
             model_id=model.model_id,

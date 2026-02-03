@@ -85,7 +85,7 @@ export interface AIAnalysisResponse {
   code_quality_score?: number;
   risk_score?: number;
   optimization?: string[];
-  command_details?: unknown[];
+  command_details?: unknown[] | Record<string, unknown>;
   ms_docs_references?: string[];
   category_id?: number;
 }

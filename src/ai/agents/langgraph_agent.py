@@ -63,8 +63,8 @@ class AgentState(TypedDict):
 class PowerShellAnalysisTool(BaseTool):
     """Tool for analyzing PowerShell scripts."""
     
-    name = "powershell_analysis"
-    description = "Analyze a PowerShell script to identify its purpose, security risks, and code quality"
+    name: str = "powershell_analysis"
+    description: str = "Analyze a PowerShell script to identify its purpose, security risks, and code quality"
     
     def _run(self, script_content: str, run_manager: Optional[CallbackManagerForToolRun] = None) -> str:
         """
@@ -100,8 +100,8 @@ class PowerShellAnalysisTool(BaseTool):
 class SecurityAnalysisTool(BaseTool):
     """Tool for analyzing security aspects of PowerShell scripts."""
     
-    name = "security_analysis"
-    description = "Analyze a PowerShell script for security vulnerabilities, risks, and best practices"
+    name: str = "security_analysis"
+    description: str = "Analyze a PowerShell script for security vulnerabilities, risks, and best practices"
     
     def _run(self, script_content: str, run_manager: Optional[CallbackManagerForToolRun] = None) -> str:
         """
@@ -168,8 +168,8 @@ class SecurityAnalysisTool(BaseTool):
 class ScriptCategorizationTool(BaseTool):
     """Tool for categorizing PowerShell scripts."""
     
-    name = "script_categorization"
-    description = "Categorize a PowerShell script into predefined categories based on its purpose and functionality"
+    name: str = "script_categorization"
+    description: str = "Categorize a PowerShell script into predefined categories based on its purpose and functionality"
     
     def _run(self, script_content: str, run_manager: Optional[CallbackManagerForToolRun] = None) -> str:
         """
@@ -261,8 +261,8 @@ class ScriptCategorizationTool(BaseTool):
 class MSDocsReferenceTool(BaseTool):
     """Tool for finding Microsoft documentation references for PowerShell commands."""
     
-    name = "ms_docs_reference"
-    description = "Find Microsoft documentation references for PowerShell commands used in a script"
+    name: str = "ms_docs_reference"
+    description: str = "Find Microsoft documentation references for PowerShell commands used in a script"
     
     def _run(self, script_content: str, run_manager: Optional[CallbackManagerForToolRun] = None) -> str:
         """
@@ -311,7 +311,7 @@ class LangGraphAgent(BaseAgent):
     Updated for January 2026 with LangGraph 0.2.x+ and latest model configurations.
     """
 
-    def __init__(self, api_key: Optional[str] = None, model: str = "gpt-4o"):
+    def __init__(self, api_key: Optional[str] = None, model: str = "gpt-4.1"):
         """
         Initialize the LangGraph agent.
 

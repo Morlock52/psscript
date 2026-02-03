@@ -6,8 +6,8 @@
   "scripts": {
     "frontend:dev": "cd src/frontend && npm run dev",
     "backend:dev": "cd src/backend && npm run dev",
-    "ai:dev": "cd src/ai && python -m uvicorn main:app --reload",
-    "dev": "concurrently \"npm run frontend:dev\" \"npm run backend:dev\" \"npm run ai:dev\"",
+    "ai:dev": "cd src/ai && ./.venv/bin/python -m uvicorn main:app --reload",
+    "dev": "concurrently \"npm run frontend:dev\" \"npm run backend:dev\"",
     "install:all": "npm install && cd src/frontend && npm install && cd ../backend && npm install"
   },
   "keywords": [

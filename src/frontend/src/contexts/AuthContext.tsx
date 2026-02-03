@@ -55,6 +55,7 @@ interface AuthProviderProps {
 
 // Create AuthProvider component
 export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
+  const AUTH_DISABLED = import.meta.env.VITE_DISABLE_AUTH === 'true';
   const [user, setUser] = useState<User | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -69,6 +70,17 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   useEffect(() => {
     const loadUser = async () => {
       try {
+        if (AUTH_DISABLED) {
+          setUser({
+            id: 'dev-user',
+            username: 'dev',
+            email: 'dev@local',
+            role: 'admin',
+            created_at: new Date().toISOString()
+          });
+          return;
+        }
+
         // Check if we have a token
         const token = localStorage.getItem('auth_token');
         if (!token) {
@@ -136,6 +148,18 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
 
   // Login function
   const login = async (email: string, password: string) => {
+    if (AUTH_DISABLED) {
+      setUser({
+        id: 'dev-user',
+        username: 'dev',
+        email: 'dev@local',
+        role: 'admin',
+        created_at: new Date().toISOString()
+      });
+      setIsLoading(false);
+      return;
+    }
+
     try {
       setIsLoading(true);
       clearError();
@@ -201,6 +225,18 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
 
   // Register function
   const register = async (username: string, email: string, password: string) => {
+    if (AUTH_DISABLED) {
+      setUser({
+        id: 'dev-user',
+        username,
+        email,
+        role: 'admin',
+        created_at: new Date().toISOString()
+      });
+      setIsLoading(false);
+      return;
+    }
+
     try {
       setIsLoading(true);
       clearError();
@@ -255,6 +291,17 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
 
   // Logout function
   const logout = () => {
+    if (AUTH_DISABLED) {
+      setUser({
+        id: 'dev-user',
+        username: 'dev',
+        email: 'dev@local',
+        role: 'admin',
+        created_at: new Date().toISOString()
+      });
+      return;
+    }
+
     // Clear token from localStorage
     localStorage.removeItem('auth_token');
     localStorage.removeItem('refresh_token');

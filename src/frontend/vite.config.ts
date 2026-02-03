@@ -17,16 +17,19 @@ if (tlsEnabled) {
   console.log('🔒 TLS enabled for frontend server (mTLS origin protection active)');
 }
 
+const devHost = process.env.VITE_HOST || '0.0.0.0';
+
 // https://vitejs.dev/config/
 export default defineConfig({
   plugins: [react()], // SWC is 20-70x faster than Babel
   server: {
-    port: 3002, // Changed from 3001 to 3002 to match project configuration
-    host: '0.0.0.0',
+    port: 3090, // Updated to match requested port
+    host: devHost,
     https: httpsConfig,
     allowedHosts: [
       'localhost',
       '127.0.0.1',
+      'host.docker.internal',
       'psscript.morloksmaze.com',
       '.morloksmaze.com'
     ],
@@ -38,8 +41,8 @@ export default defineConfig({
     }
   },
   preview: {
-    port: 3000,
-    host: '0.0.0.0',
+    port: 3090,
+    host: devHost,
     https: httpsConfig,
     headers: {
       // Prevent caching of HTML to ensure fresh assets on deployment

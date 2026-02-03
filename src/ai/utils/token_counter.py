@@ -12,8 +12,14 @@ from pathlib import Path
 
 logger = logging.getLogger("token_counter")
 
-# OpenAI Pricing as of January 2026 (per 1M tokens)
+# OpenAI Pricing as of February 2026 (per 1M tokens)
 PRICING = {
+    # GPT-5 family (latest as of Feb 2026)
+    "gpt-5.2": {"input": 1.75, "output": 14.00},
+    "gpt-5.2-codex": {"input": 1.75, "output": 14.00},
+    "gpt-5-mini": {"input": 0.25, "output": 2.00},
+    "gpt-5-nano": {"input": 0.05, "output": 0.40},
+
     # GPT-4 Series - Updated January 2026
     "gpt-4o": {
         "input": 2.50,

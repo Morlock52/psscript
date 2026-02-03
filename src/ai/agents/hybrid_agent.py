@@ -9,6 +9,7 @@ import os
 import json
 import logging
 from typing import Dict, List, Any, Optional
+from config import config
 
 # Import base agent classes
 from .langchain_agent import LangChainAgent
@@ -28,7 +29,7 @@ class HybridAgent:
     3. Enhanced PowerShell-specific analysis with MS Docs integration
     """
     
-    def __init__(self, api_key: Optional[str] = None, model: str = "gpt-4o"):
+    def __init__(self, api_key: Optional[str] = None, model: str = config.agent.default_model):
         """
         Initialize the hybrid agent.
 

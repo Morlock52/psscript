@@ -2,29 +2,36 @@
  * AI Agent Routes
  * Handles AI agent interactions including question answering, script generation, and analysis
  *
- * This consolidated route file calls the real AI service at port 8000
+ * This consolidated route file calls OpenAI directly
  */
 import express from 'express';
-import axios from 'axios';
 import { corsMiddleware } from '../middleware/corsMiddleware';
 import logger from '../utils/logger';
+import {
+  analyzeLangGraph as runLangGraph,
+  analyzeScriptAssistant,
+  answerQuestion,
+  explainScript,
+  generateExamples,
+  generateScript,
+  generateTests,
+  improveScript,
+  lintScript,
+  routeQuery
+} from '../services/ai/aiEngine';
 
 const router = express.Router();
 
 // Apply CORS middleware
 router.use(corsMiddleware);
 
-// Determine AI service URL based on environment
-const isDocker = process.env.DOCKER_ENV === 'true';
-const AI_SERVICE_URL = isDocker
-  ? (process.env.AI_SERVICE_URL || 'http://ai-service:8000')
-  : (process.env.AI_SERVICE_URL || 'http://localhost:8000');
+logger.info('AI Agent routes initialized with direct OpenAI client');
 
-logger.info(`AI Agent routes initialized with AI_SERVICE_URL: ${AI_SERVICE_URL}`);
+const getApiKey = (req: express.Request) => req.headers['x-openai-api-key'] as string | undefined;
 
 /**
  * Answer a question about PowerShell using the AI agent
- * Calls the AI service /chat endpoint
+ * Calls OpenAI directly
  */
 router.post('/please', async (req, res) => {
   try {
@@ -40,30 +47,15 @@ router.post('/please', async (req, res) => {
     logger.info(`Processing AI agent question: "${question.substring(0, 50)}..."`);
 
     try {
-      // Call the real AI service /chat endpoint
-      // Using 45s timeout (server timeout is 60s, need buffer for fallback)
-      const aiResponse = await axios.post(`${AI_SERVICE_URL}/chat`, {
-        messages: [
-          ...(context ? [{ role: 'system', content: `Context: ${context}` }] : []),
-          { role: 'user', content: question }
-        ]
-      }, {
-        timeout: 45000, // 45 second timeout (server timeout is 60s)
-        headers: {
-          'Content-Type': 'application/json'
-        }
-      });
-
-      // Extract response from AI service
-      const response = aiResponse.data.response || aiResponse.data.message || aiResponse.data;
+      const response = await answerQuestion(question, context, getApiKey(req));
 
       return res.json({
-        response: typeof response === 'string' ? response : JSON.stringify(response),
-        source: 'ai_service'
+        response,
+        source: 'openai'
       });
     } catch (aiError) {
       // Log the error and fall back to mock response
-      logger.warn(`AI service unavailable, using fallback response: ${aiError instanceof Error ? aiError.message : String(aiError)}`);
+      logger.warn(`OpenAI unavailable, using fallback response: ${aiError instanceof Error ? aiError.message : String(aiError)}`);
 
       // Generate a fallback response based on the question type
       let response = '';
@@ -94,7 +86,7 @@ router.post('/please', async (req, res) => {
 
 /**
  * Generate a PowerShell script based on a description
- * Uses the AI service /chat endpoint with script generation prompt
+ * Uses OpenAI directly with script generation prompt
  */
 router.post('/generate', async (req, res) => {
   try {
@@ -110,33 +102,14 @@ router.post('/generate', async (req, res) => {
     logger.info(`Processing script generation request: "${description.substring(0, 50)}..."`);
 
     try {
-      // Call the real AI service /chat endpoint with generation prompt
-      const aiResponse = await axios.post(`${AI_SERVICE_URL}/chat`, {
-        messages: [
-          {
-            role: 'system',
-            content: 'You are a PowerShell expert. Generate production-ready PowerShell scripts with proper error handling, parameter validation, and comments. Return ONLY the script content without markdown code blocks.'
-          },
-          {
-            role: 'user',
-            content: `Generate a PowerShell script that: ${description}`
-          }
-        ]
-      }, {
-        timeout: 45000, // Keep under server timeout (60s)
-        headers: {
-          'Content-Type': 'application/json'
-        }
-      });
-
-      const content = aiResponse.data.response || aiResponse.data.message || aiResponse.data;
+      const content = await generateScript(description, getApiKey(req));
 
       return res.json({
-        content: typeof content === 'string' ? content : JSON.stringify(content),
-        source: 'ai_service'
+        content,
+        source: 'openai'
       });
     } catch (aiError) {
-      logger.warn(`AI service unavailable for script generation, using fallback: ${aiError instanceof Error ? aiError.message : String(aiError)}`);
+      logger.warn(`OpenAI unavailable for script generation, using fallback: ${aiError instanceof Error ? aiError.message : String(aiError)}`);
 
       // Generate a fallback PowerShell script based on the description
       const scriptContent = `# PowerShell Script: ${description}
@@ -198,7 +171,7 @@ Main
 
 /**
  * Explain a PowerShell script or command
- * Uses the AI service /chat endpoint with explanation prompt
+ * Uses OpenAI directly with explanation prompt
  */
 router.post('/explain', async (req, res) => {
   try {
@@ -214,34 +187,14 @@ router.post('/explain', async (req, res) => {
     logger.info(`Processing script explanation request (${type})`);
 
     try {
-      // Build the explanation prompt based on type
-      let systemPrompt = 'You are a PowerShell expert. Explain the following script in a clear, educational manner.';
-      if (type === 'detailed') {
-        systemPrompt = 'You are a PowerShell expert. Provide a detailed line-by-line explanation of this script, including its purpose, structure, and how each component works.';
-      } else if (type === 'security') {
-        systemPrompt = 'You are a security-focused PowerShell expert. Analyze this script for security implications, potential vulnerabilities, and best practices. Include warnings for dangerous patterns.';
-      }
-
-      const aiResponse = await axios.post(`${AI_SERVICE_URL}/chat`, {
-        messages: [
-          { role: 'system', content: systemPrompt },
-          { role: 'user', content: `Explain this PowerShell script:\n\n${content}` }
-        ]
-      }, {
-        timeout: 45000, // Keep under server timeout (60s)
-        headers: {
-          'Content-Type': 'application/json'
-        }
-      });
-
-      const explanation = aiResponse.data.response || aiResponse.data.message || aiResponse.data;
+      const explanation = await explainScript(content, type, getApiKey(req));
 
       return res.json({
-        explanation: typeof explanation === 'string' ? explanation : JSON.stringify(explanation),
-        source: 'ai_service'
+        explanation,
+        source: 'openai'
       });
     } catch (aiError) {
-      logger.warn(`AI service unavailable for explanation, using fallback: ${aiError instanceof Error ? aiError.message : String(aiError)}`);
+      logger.warn(`OpenAI unavailable for explanation, using fallback: ${aiError instanceof Error ? aiError.message : String(aiError)}`);
 
       // Generate fallback explanation based on content analysis
       let explanation = "This PowerShell script ";
@@ -312,7 +265,7 @@ router.post('/explain', async (req, res) => {
 
 /**
  * Get examples of similar scripts
- * Uses the AI service /chat endpoint to generate relevant examples
+ * Uses OpenAI directly to generate relevant examples
  */
 router.get('/examples', async (req, res) => {
   try {
@@ -328,50 +281,12 @@ router.get('/examples', async (req, res) => {
     logger.info(`Processing script examples request: "${description.toString().substring(0, 50)}..."`);
 
     try {
-      // Call the AI service to get contextual examples
-      const aiResponse = await axios.post(`${AI_SERVICE_URL}/chat`, {
-        messages: [
-          {
-            role: 'system',
-            content: `You are a PowerShell expert. Provide ${limit} relevant PowerShell script examples as a JSON array. Each example should have: title, snippet (complete working script), and complexity (Low/Medium/High).`
-          },
-          {
-            role: 'user',
-            content: `Give me ${limit} PowerShell script examples related to: ${description}`
-          }
-        ]
-      }, {
-        timeout: 45000, // Keep under server timeout (60s)
-        headers: {
-          'Content-Type': 'application/json'
-        }
-      });
+      const safeLimit = Number(limit) || 10;
+      const examples = await generateExamples(description.toString(), safeLimit, getApiKey(req));
 
-      // Try to parse AI response as JSON
-      const response = aiResponse.data.response || aiResponse.data.message || aiResponse.data;
-      let examples;
-
-      try {
-        // Try to extract JSON from the response
-        const jsonMatch = response.match(/\[[\s\S]*\]/);
-        if (jsonMatch) {
-          examples = JSON.parse(jsonMatch[0]);
-        } else {
-          throw new Error('No JSON array found in response');
-        }
-      } catch {
-        // If parsing fails, create a simple example from the response
-        examples = [{
-          id: `ex_${Date.now().toString(36)}_0`,
-          title: `Example for: ${description}`,
-          snippet: typeof response === 'string' ? response : JSON.stringify(response),
-          complexity: 'Medium'
-        }];
-      }
-
-      return res.json({ examples, source: 'ai_service' });
+      return res.json({ examples, source: 'openai' });
     } catch (aiError) {
-      logger.warn(`AI service unavailable for examples, using fallback: ${aiError instanceof Error ? aiError.message : String(aiError)}`);
+      logger.warn(`OpenAI unavailable for examples, using fallback: ${aiError instanceof Error ? aiError.message : String(aiError)}`);
 
       // Generate fallback examples
       const examples = [];
@@ -446,8 +361,144 @@ Main
 });
 
 /**
+ * Improve a PowerShell script
+ */
+router.post('/improve', async (req, res) => {
+  try {
+    const { script, messages } = req.body as { script?: string; messages?: Array<{ content?: string }> };
+    const content = script || messages?.[messages.length - 1]?.content;
+
+    if (!content) {
+      return res.status(400).json({ message: 'Script content is required', status: 'error' });
+    }
+
+    const improved = await improveScript(content, getApiKey(req));
+    return res.json({ improved });
+  } catch (error) {
+    logger.error('Error improving script:', error);
+    return res.status(500).json({ message: 'Failed to improve script', status: 'error' });
+  }
+});
+
+/**
+ * Lint a PowerShell script (AI-assisted)
+ */
+router.post('/lint', async (req, res) => {
+  try {
+    const { content } = req.body as { content?: string };
+    if (!content) {
+      return res.status(400).json({ message: 'Script content is required', status: 'error' });
+    }
+
+    const result = await lintScript(content, getApiKey(req));
+    return res.json(result);
+  } catch (error) {
+    logger.error('Error linting script:', error);
+    return res.status(500).json({ message: 'Failed to lint script', status: 'error' });
+  }
+});
+
+/**
+ * Generate Pester tests for a script
+ */
+router.post('/generate-tests', async (req, res) => {
+  try {
+    const { content, script_name, coverage } = req.body as {
+      content?: string;
+      script_name?: string;
+      coverage?: string;
+    };
+    if (!content) {
+      return res.status(400).json({ message: 'Script content is required', status: 'error' });
+    }
+
+    const result = await generateTests(content, script_name, coverage, getApiKey(req));
+    return res.json(result);
+  } catch (error) {
+    logger.error('Error generating tests:', error);
+    return res.status(500).json({ message: 'Failed to generate tests', status: 'error' });
+  }
+});
+
+/**
+ * Execute a script (simulated)
+ */
+router.post('/execute', async (req, res) => {
+  try {
+    // Backwards-compat: some clients send { content }, others send { script }.
+    const { script, content } = req.body as { script?: string; content?: string };
+    const scriptText = script ?? content;
+    if (!scriptText) {
+      return res.status(400).json({ message: 'Script content is required', status: 'error' });
+    }
+
+    return res.json({
+      status: 'success',
+      stdout: 'Execution simulated. Run this script in PowerShell to execute it.',
+      stderr: '',
+      blocked_commands: []
+    });
+  } catch (error) {
+    logger.error('Error executing script:', error);
+    return res.status(500).json({ message: 'Failed to execute script', status: 'error' });
+  }
+});
+
+/**
+ * Generate a simple diff summary between two scripts
+ */
+router.post('/diff', async (req, res) => {
+  try {
+    const { original, improved } = req.body as { original?: string; improved?: string };
+    if (!original || !improved) {
+      return res.status(400).json({ message: 'Both original and improved scripts are required', status: 'error' });
+    }
+
+    const originalLines = original.split('\n');
+    const improvedLines = improved.split('\n');
+    const originalSet = new Set(originalLines);
+    const improvedSet = new Set(improvedLines);
+
+    let linesAdded = 0;
+    let linesRemoved = 0;
+    originalLines.forEach(line => {
+      if (!improvedSet.has(line)) linesRemoved += 1;
+    });
+    improvedLines.forEach(line => {
+      if (!originalSet.has(line)) linesAdded += 1;
+    });
+
+    const similarityRatio = Math.max(0, 1 - (linesAdded + linesRemoved) / Math.max(1, originalLines.length + improvedLines.length));
+
+    return res.json({
+      original_lines: originalLines.length,
+      improved_lines: improvedLines.length,
+      lines_added: linesAdded,
+      lines_removed: linesRemoved,
+      lines_modified: 0,
+      hunks: [],
+      improvements: [],
+      unified_diff: '',
+      similarity_ratio: Number(similarityRatio.toFixed(3)),
+      summary: 'Simple diff summary generated'
+    });
+  } catch (error) {
+    logger.error('Error generating diff:', error);
+    return res.status(500).json({ message: 'Failed to generate diff', status: 'error' });
+  }
+});
+
+/**
+ * Route a query to the appropriate model
+ */
+router.post('/route', async (_req, res) => {
+  const result = await routeQuery();
+  return res.json(result);
+});
+
+/**
  * Analyze a script using the AI assistant
- * Calls the AI service /analyze endpoint directly
+ * Calls OpenAI directly for analysis
  */
 router.post('/analyze/assistant', async (req, res) => {
   try {
@@ -463,47 +514,12 @@ router.post('/analyze/assistant', async (req, res) => {
     logger.info(`Processing AI assistant analysis request: ${filename || 'unnamed script'}`);
 
     try {
-      // Call the real AI service /analyze endpoint
-      const aiResponse = await axios.post(`${AI_SERVICE_URL}/analyze`, {
-        script_content: content,
-        script_name: filename,
-        analysis_type: requestType,
-        options: analysisOptions
-      }, {
-        timeout: 120000, // 2 minute timeout for analysis
-        headers: {
-          'Content-Type': 'application/json'
-        }
-      });
+      const analysisResult = await analyzeScriptAssistant(content, filename || 'script.ps1', getApiKey(req));
+      analysisResult.metadata.requestId = `req_${Date.now().toString(36)}`;
 
-      // Transform AI service response to expected format
-      const aiData = aiResponse.data;
-
-      const analysisResult = {
-        analysis: {
-          purpose: aiData.purpose || aiData.summary || "PowerShell script for system administration tasks.",
-          securityScore: aiData.security_score || aiData.securityScore || Math.floor(Math.random() * 30) + 70,
-          codeQualityScore: aiData.quality_score || aiData.codeQualityScore || Math.floor(Math.random() * 30) + 70,
-          riskScore: aiData.risk_score || aiData.riskScore || Math.floor(Math.random() * 20) + 10,
-          suggestions: aiData.suggestions || aiData.recommendations || [],
-          commandDetails: aiData.commands || aiData.commandDetails || {},
-          msDocsReferences: aiData.references || aiData.msDocsReferences || [],
-          examples: aiData.examples || [],
-          rawAnalysis: aiData.raw_analysis || aiData.rawAnalysis || "Script analyzed successfully"
-        },
-        metadata: {
-          processingTime: aiData.processing_time || 1.0,
-          model: aiData.model || "ai-service",
-          threadId: `thread_${Date.now().toString(36)}`,
-          assistantId: `asst_${Date.now().toString(36)}`,
-          requestId: `req_${Date.now().toString(36)}`
-        },
-        source: 'ai_service'
-      };
-
-      return res.json(analysisResult);
+      return res.json({ ...analysisResult, source: 'openai' });
     } catch (aiError) {
-      logger.warn(`AI service unavailable for analysis, using fallback: ${aiError instanceof Error ? aiError.message : String(aiError)}`);
+      logger.warn(`OpenAI unavailable for analysis, using fallback: ${aiError instanceof Error ? aiError.message : String(aiError)}`);
 
       // Generate fallback mock analysis
       const analysisResult = {
@@ -576,7 +592,7 @@ router.post('/analyze/assistant', async (req, res) => {
 
 /**
  * Analyze a script using LangGraph workflow
- * Calls the AI service /langgraph/analyze endpoint
+ * Calls OpenAI directly for LangGraph-style analysis
  */
 router.post('/analyze/langgraph', async (req, res) => {
   try {
@@ -592,29 +608,19 @@ router.post('/analyze/langgraph', async (req, res) => {
     logger.info(`Processing LangGraph analysis request: ${filename || 'unnamed script'}`);
 
     try {
-      // Call the real AI service /langgraph/analyze endpoint
-      const aiResponse = await axios.post(`${AI_SERVICE_URL}/langgraph/analyze`, {
-        script_content: content,
-        script_name: filename,
-        require_human_review: requireHumanReview
-      }, {
-        timeout: 120000,
-        headers: {
-          'Content-Type': 'application/json'
-        }
-      });
-
+      const result = await runLangGraph(content, getApiKey(req));
       return res.json({
-        ...aiResponse.data,
-        source: 'ai_service'
+        ...result,
+        requires_human_review: Boolean(requireHumanReview),
+        source: 'openai'
       });
     } catch (aiError) {
-      logger.warn(`AI service unavailable for LangGraph analysis: ${aiError instanceof Error ? aiError.message : String(aiError)}`);
+      logger.warn(`OpenAI unavailable for LangGraph analysis: ${aiError instanceof Error ? aiError.message : String(aiError)}`);
 
       return res.status(503).json({
-        message: 'AI service temporarily unavailable',
+        message: 'OpenAI temporarily unavailable',
         status: 'error',
-        suggestion: 'The LangGraph analysis service is unavailable. Please try again later.'
+        suggestion: 'The analysis service is unavailable. Please try again later.'
       });
     }
   } catch (error) {

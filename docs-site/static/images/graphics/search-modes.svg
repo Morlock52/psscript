@@ -1,0 +1,16 @@
+<svg width="1000" height="260" viewBox="0 0 1000 260" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <rect width="1000" height="260" rx="20" fill="#0f172a"/>
+  <text x="32" y="40" fill="#f8fafc" font-family="Segoe UI, Arial, sans-serif" font-size="18" font-weight="600">Search Modes</text>
+
+  <rect x="60" y="80" width="260" height="140" rx="16" fill="#111827" stroke="#38bdf8" stroke-width="2"/>
+  <text x="90" y="120" fill="#e2e8f0" font-family="Segoe UI, Arial, sans-serif" font-size="14" font-weight="600">Keyword Search</text>
+  <text x="90" y="148" fill="#94a3b8" font-family="Segoe UI, Arial, sans-serif" font-size="12">Exact matches for cmdlets and strings</text>
+
+  <rect x="370" y="80" width="260" height="140" rx="16" fill="#111827" stroke="#22c55e" stroke-width="2"/>
+  <text x="400" y="120" fill="#e2e8f0" font-family="Segoe UI, Arial, sans-serif" font-size="14" font-weight="600">Vector Search</text>
+  <text x="400" y="148" fill="#94a3b8" font-family="Segoe UI, Arial, sans-serif" font-size="12">Semantic matches via embeddings</text>
+
+  <rect x="680" y="80" width="260" height="140" rx="16" fill="#111827" stroke="#f59e0b" stroke-width="2"/>
+  <text x="710" y="120" fill="#e2e8f0" font-family="Segoe UI, Arial, sans-serif" font-size="14" font-weight="600">Hybrid Search</text>
+  <text x="710" y="148" fill="#94a3b8" font-family="Segoe UI, Arial, sans-serif" font-size="12">Keyword + semantic ranking</text>
+</svg>

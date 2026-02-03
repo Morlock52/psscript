@@ -8,7 +8,7 @@ import multer from 'multer';
 import { sequelize } from '../database/connection';
 import logger from '../utils/logger';
 import { Script, ScriptVersion } from '../models';
-import axios from 'axios';
+import { analyzeScriptBasic } from '../services/ai/aiEngine';
 
 const readFileAsync = promisify(fs.readFile);
 const unlinkAsync = promisify(fs.unlink);
@@ -69,11 +69,9 @@ interface QueueItem {
 export class AsyncUploadController {
   private processingQueue: QueueItem[] = [];
   private isProcessing: boolean = false;
-  private readonly AI_SERVICE_URL: string;
   private readonly USE_MOCK_SERVICES: boolean;
   
   constructor() {
-    this.AI_SERVICE_URL = process.env.AI_SERVICE_URL || 'http://localhost:8000';
     // SECURITY: Mock services should only be enabled via explicit environment variables
     // Never force mock services in production - they bypass real service validation
     this.USE_MOCK_SERVICES = process.env.USE_MOCK_SERVICES === 'true' || process.env.MOCK_MODE === 'true';
@@ -297,14 +295,11 @@ export class AsyncUploadController {
             };
           } else {
             try {
-              // Use real AI service
-              logger.info(`Sending request to AI service at ${this.AI_SERVICE_URL}`);
-              const response = await axios.post(`${this.AI_SERVICE_URL}/analyze-script`, {
-                content: fileContent
-              });
-              analysisResult = response.data;
+              // Use OpenAI directly
+              logger.info('Sending request to OpenAI for analysis');
+              analysisResult = await analyzeScriptBasic(fileContent);
             } catch (error) {
-              logger.error('Error analyzing script with AI service:', error);
+              logger.error('Error analyzing script with OpenAI:', error);
               // Continue with default values if AI service fails
               analysisResult = {
                 title: originalFilename,
