@@ -61,6 +61,16 @@ export interface AICrawlJobStatus {
   error?: string;
 }
 
+export class AICrawlJobStartError extends Error {
+  status?: number;
+
+  constructor(message: string, status?: number) {
+    super(message);
+    this.name = 'AICrawlJobStartError';
+    this.status = status;
+  }
+}
+
 export interface SearchParams {
   query?: string;
   sources?: string[];
@@ -299,19 +309,28 @@ const documentationApi = {
 
   // Async AI crawl job (recommended): start job and poll status
   startAICrawlJob: async (config: { url: string; maxPages: number; depth: number }): Promise<string> => {
-    const response = await axios.post(`${getApiUrl()}/documentation/crawl/ai/start`, {
-      url: config.url,
-      maxPages: config.maxPages,
-      depth: config.depth
-    }, {
-      timeout: 15000
-    });
+    try {
+      const response = await axios.post(`${getApiUrl()}/documentation/crawl/ai/start`, {
+        url: config.url,
+        maxPages: config.maxPages,
+        depth: config.depth
+      }, {
+        timeout: 15000
+      });
 
-    if (response.data?.success && response.data?.jobId) {
-      return response.data.jobId as string;
+      if (response.data?.success && response.data?.jobId) {
+        return response.data.jobId as string;
+      }
+
+      throw new AICrawlJobStartError(response.data?.error || 'Failed to start AI crawl job', response.status);
+    } catch (error) {
+      if (axios.isAxiosError(error)) {
+        const status = error.response?.status;
+        const message = error.response?.data?.error || error.message || 'Failed to start AI crawl job';
+        throw new AICrawlJobStartError(message, status);
+      }
+      throw error;
     }
-
-    throw new Error(response.data?.error || 'Failed to start AI crawl job');
   },
 
   getAICrawlJobStatus: async (jobId: string): Promise<AICrawlJobStatus> => {

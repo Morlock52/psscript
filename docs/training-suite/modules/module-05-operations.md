@@ -14,9 +14,9 @@
 
 ## Operations visuals
 
-![Analytics](../../screenshots/analytics.png)
+![Analytics](../../screenshots/analytics-v7.png)
 
-![Usage Metrics](../../graphics/usage-metrics.svg)
+![Usage Metric../../graphics/usage-metrics-v4.svgsvg)
 
 ## Operational signals
 

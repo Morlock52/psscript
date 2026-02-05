@@ -161,13 +161,13 @@ CREATE INDEX idx_scripts_content_trgm ON scripts USING GIN (content gin_trgm_ops
 
 | Query Type | Time | Threshold | Status |
 |------------|------|-----------|--------|
-| Simple SELECT | 3-17ms | <100ms | PASS |
-| JOIN query | 10-21ms | <1000ms | PASS |
-| COUNT query | 5-10ms | <200ms | PASS |
-| ILIKE search | 5-18ms | <2000ms | PASS |
-| Transaction commit | ~800ms | <2000ms | PASS |
-| Concurrent creates | 660-1374ms | <3000ms | PASS |
-| Vector distance | <5ms | <100ms | PASS |
+| Simple SELECT | 3-17ms | &lt;100ms | PASS |
+| JOIN query | 10-21ms | &lt;1000ms | PASS |
+| COUNT query | 5-10ms | &lt;200ms | PASS |
+| ILIKE search | 5-18ms | &lt;2000ms | PASS |
+| Transaction commit | ~800ms | &lt;2000ms | PASS |
+| Concurrent creates | 660-1374ms | &lt;3000ms | PASS |
+| Vector distance | &lt;5ms | &lt;100ms | PASS |
 
 ---
 

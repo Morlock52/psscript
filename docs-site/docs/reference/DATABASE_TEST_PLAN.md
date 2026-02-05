@@ -184,13 +184,13 @@ test.describe('Database E2E Tests', () => {
 
 | Test ID | Description | Threshold | Query |
 |---------|-------------|-----------|-------|
-| DB-P-001 | Simple SELECT | < 50ms | `SELECT * FROM scripts LIMIT 10` |
-| DB-P-002 | JOIN query | < 100ms | Scripts with User, Category |
-| DB-P-003 | COUNT aggregation | < 30ms | `SELECT COUNT(*) FROM scripts` |
-| DB-P-004 | ILIKE search | < 200ms | `WHERE content ILIKE '%Get-%'` |
-| DB-P-005 | Vector similarity | < 500ms | pgvector cosine distance |
-| DB-P-006 | Paginated list | < 100ms | LIMIT/OFFSET with ORDER |
-| DB-P-007 | Analytics aggregation | < 300ms | GROUP BY with calculations |
+| DB-P-001 | Simple SELECT | &lt; 50ms | `SELECT * FROM scripts LIMIT 10` |
+| DB-P-002 | JOIN query | &lt; 100ms | Scripts with User, Category |
+| DB-P-003 | COUNT aggregation | &lt; 30ms | `SELECT COUNT(*) FROM scripts` |
+| DB-P-004 | ILIKE search | &lt; 200ms | `WHERE content ILIKE '%Get-%'` |
+| DB-P-005 | Vector similarity | &lt; 500ms | pgvector cosine distance |
+| DB-P-006 | Paginated list | &lt; 100ms | LIMIT/OFFSET with ORDER |
+| DB-P-007 | Analytics aggregation | &lt; 300ms | GROUP BY with calculations |
 
 **Performance Test Script:**
 ```sql

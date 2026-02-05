@@ -1,0 +1,44 @@
+<svg width="1100" height="360" viewBox="0 0 1100 360" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <rect width="1100" height="360" rx="22" fill="#0f172a"/>
+  <text x="32" y="44" fill="#f8fafc" font-family="Segoe UI, Arial, sans-serif" font-size="18" font-weight="600">KPI Dashboard (Sample)</text>
+
+  <rect x="40" y="80" width="240" height="120" rx="16" fill="#111827" stroke="#38bdf8" stroke-width="2"/>
+  <text x="60" y="114" fill="#94a3b8" font-family="Segoe UI, Arial, sans-serif" font-size="12">Coverage</text>
+  <text x="60" y="156" fill="#f8fafc" font-family="Segoe UI, Arial, sans-serif" font-size="32" font-weight="700">82%</text>
+  <text x="120" y="156" fill="#22c55e" font-family="Segoe UI, Arial, sans-serif" font-size="12" font-weight="600">On target</text>
+
+  <rect x="300" y="80" width="240" height="120" rx="16" fill="#111827" stroke="#22c55e" stroke-width="2"/>
+  <text x="320" y="114" fill="#94a3b8" font-family="Segoe UI, Arial, sans-serif" font-size="12">High-risk closure</text>
+  <text x="320" y="156" fill="#f8fafc" font-family="Segoe UI, Arial, sans-serif" font-size="32" font-weight="700">94%</text>
+  <text x="382" y="156" fill="#f59e0b" font-family="Segoe UI, Arial, sans-serif" font-size="12" font-weight="600">3 open</text>
+
+  <rect x="560" y="80" width="240" height="120" rx="16" fill="#111827" stroke="#f59e0b" stroke-width="2"/>
+  <text x="580" y="114" fill="#94a3b8" font-family="Segoe UI, Arial, sans-serif" font-size="12">Review cadence</text>
+  <text x="580" y="156" fill="#f8fafc" font-family="Segoe UI, Arial, sans-serif" font-size="32" font-weight="700">27d</text>
+  <text x="640" y="156" fill="#22c55e" font-family="Segoe UI, Arial, sans-serif" font-size="12" font-weight="600">Within SLA</text>
+
+  <rect x="820" y="80" width="240" height="120" rx="16" fill="#111827" stroke="#a855f7" stroke-width="2"/>
+  <text x="840" y="114" fill="#94a3b8" font-family="Segoe UI, Arial, sans-serif" font-size="12">Active users</text>
+  <text x="840" y="156" fill="#f8fafc" font-family="Segoe UI, Arial, sans-serif" font-size="32" font-weight="700">46</text>
+  <text x="880" y="156" fill="#22c55e" font-family="Segoe UI, Arial, sans-serif" font-size="12" font-weight="600">+12%</text>
+
+  <rect x="40" y="220" width="1020" height="100" rx="16" fill="#111827" stroke="#64748b" stroke-width="2"/>
+  <text x="60" y="254" fill="#94a3b8" font-family="Segoe UI, Arial, sans-serif" font-size="12">Weekly trend</text>
+  <polyline points="70,290 160,270 250,280 340,255 430,265 520,245 610,255 700,230 790,245 880,220 970,230" fill="none" stroke="#38bdf8" stroke-width="3"/>
+  <circle cx="70" cy="290" r="4" fill="#38bdf8"/>
+  <circle cx="160" cy="270" r="4" fill="#38bdf8"/>
+  <circle cx="250" cy="280" r="4" fill="#38bdf8"/>
+  <circle cx="340" cy="255" r="4" fill="#38bdf8"/>
+  <circle cx="430" cy="265" r="4" fill="#38bdf8"/>
+  <circle cx="520" cy="245" r="4" fill="#38bdf8"/>
+  <circle cx="610" cy="255" r="4" fill="#38bdf8"/>
+  <circle cx="700" cy="230" r="4" fill="#38bdf8"/>
+  <circle cx="790" cy="245" r="4" fill="#38bdf8"/>
+  <circle cx="880" cy="220" r="4" fill="#38bdf8"/>
+  <circle cx="970" cy="230" r="4" fill="#38bdf8"/>
+
+  <g opacity="0.5">
+    <circle cx="150" cy="12" r="5" fill="#0ea5e9" />
+    <text x="150" y="15" font-size="6" text-anchor="middle" fill="#ffffff">v2</text>
+  </g>
+</svg>

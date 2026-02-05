@@ -26,7 +26,7 @@
 - `[Mobile Chrome] › ai-agents.spec.ts:145:7 › Should support parallel agent execution`
 - (Mobile Safari not shown but likely failed)
 
-**Root Cause**: TBD - needs research into parallel async operations in Playwright
+**Root Cause**: Pending investigation as of February 4, 2026; review Playwright parallelization logs and worker isolation.
 
 ### 2. Error Handling - Timeout Scenarios (5 tests)
 **Failed Tests**:
@@ -37,7 +37,7 @@
 - `[Mobile Chrome] › ai-agents.spec.ts:243:7 › Should handle timeout scenarios`
 - (Mobile Safari not shown but likely failed)
 
-**Root Cause**: TBD - needs research into timeout testing patterns
+**Root Cause**: Pending investigation as of February 4, 2026; review timeout handling and retry configuration in Playwright.
 
 ### 3. Authentication - Validation Errors (5 tests)
 **Failed Tests**:

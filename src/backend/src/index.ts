@@ -2,6 +2,7 @@
  * @ts-nocheck - Required for flexible middleware integration and error handling
  * Application entry point
  */
+import './types/express';
 import express from 'express';
 import cors from 'cors';
 import 'dotenv/config';

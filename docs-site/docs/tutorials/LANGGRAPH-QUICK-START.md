@@ -77,9 +77,9 @@ asyncio.run(main())
 
 ## Documentation
 
-- **Setup Summary**: [LANGGRAPH-SETUP-SUMMARY.md](./LANGGRAPH-SETUP-SUMMARY.md)
-- **Implementation Guide**: [LANGGRAPH-IMPLEMENTATION.md](./LANGGRAPH-IMPLEMENTATION.md)
-- **Migration Plan**: [LANGGRAPH-MIGRATION-PLAN.md](./LANGGRAPH-MIGRATION-PLAN.md)
+- **Setup Summary**: [LangGraph setup summary](/how-to/LANGGRAPH-SETUP-SUMMARY)
+- **Implementation Guide**: [LangGraph implementation](/explanation/LANGGRAPH-IMPLEMENTATION)
+- **Migration Plan**: [LangGraph migration plan](/explanation/LANGGRAPH-MIGRATION-PLAN)
 
 ## API Endpoints
 
@@ -152,8 +152,8 @@ uvicorn main:app --port 8002
 ## Next Steps
 
 1. ✅ Run `test_langgraph_setup.py`
-2. 🔲 Read [LANGGRAPH-IMPLEMENTATION.md](./LANGGRAPH-IMPLEMENTATION.md)
-3. 🔲 Review [LANGGRAPH-MIGRATION-PLAN.md](./LANGGRAPH-MIGRATION-PLAN.md)
+2. 🔲 Read [LangGraph implementation](/explanation/LANGGRAPH-IMPLEMENTATION)
+3. 🔲 Review [LangGraph migration plan](/explanation/LANGGRAPH-MIGRATION-PLAN)
 4. 🔲 Test with your PowerShell scripts
 5. 🔲 Deploy to staging
 

@@ -34,7 +34,7 @@ Key outcomes:
 
 ## Rollout phases
 
-![Management Rollout Phases](graphics/rollout-phases.svg)
+![Management Rollout Phases](/images/graphics/rollout-phases.svg)
 
 ## Phase deliverables and success signals
 
@@ -59,11 +59,11 @@ Key outcomes:
 
 | KPI | Definition | Target | Owner |
 | --- | --- | --- | --- |
-| Coverage | % scripts with analysis results | >= 80% | Platform admin |
+| Coverage | % scripts with analysis results | ≥ 80% | Platform admin |
 | Risk reduction | High-risk findings closed | 100% in 30 days | Security lead |
 | Owner coverage | Scripts with owner tag | 100% | Script owners |
-| Search adoption | Weekly search sessions | >= 3 per user | Enablement lead |
-| Review cadence | Days between reviews | <= 30 | Program manager |
+| Search adoption | Weekly search sessions | ≥ 3 per user | Enablement lead |
+| Review cadence | Days between reviews | ≤ 30 | Program manager |
 
 ## Risk register
 
@@ -77,7 +77,7 @@ Key outcomes:
 
 ## Governance cadence
 
-![Governance Loop](graphics/governance-loop.svg)
+![Governance Loop](/images/graphics/governance-loop.svg)
 
 Recommended cadence:
 
@@ -114,11 +114,11 @@ Sample dashboard views:
 
 ![Analytics Dashboard](/images/screenshots/variants/analytics-v2.png)
 
-![Sample Usage Metrics](graphics/usage-metrics.svg)
+![Sample Usage Metrics](/images/graphics/usage-metrics-v2.svg)
 
-![Security Scorecard](graphics/security-scorecard.svg)
+![Security Scorecard](/images/graphics/security-scorecard-v2.svg)
 
-![KPI Dashboard](graphics/kpi-dashboard.svg)
+![KPI Dashboard](/images/graphics/kpi-dashboard-v2.svg)
 
 Suggested monthly report template:
 

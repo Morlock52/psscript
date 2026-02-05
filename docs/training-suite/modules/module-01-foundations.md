@@ -20,13 +20,13 @@
 
 ## Visual references
 
-![Login Screen](../../screenshots/login.png)
+![Login Screen](../../screenshots/login-v4.png)
 
-![Dashboard](../../screenshots/dashboard.png)
+![Dashboar../../screenshots/dashboard-v5.pngpng)
 
-![Settings](../../screenshots/settings.png)
+![Sett../../screenshots/settings-v5.pnggs.png)
 
-![Architecture Diagram](../../graphics/architecture.svg)
+![Architecture ../../graphics/architecture-v4.svgcture.svg)
 
 ## Service map
 

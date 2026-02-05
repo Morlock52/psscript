@@ -4,7 +4,7 @@ import { useQuery, useMutation } from '@tanstack/react-query';
 import { scriptService } from '../services/api';
 import ScriptDownloadButton from '../components/ScriptDownloadButton';
 import FullScreenEditor from '../components/FullScreenEditor';
-import toast from 'react-hot-toast';
+import { toast } from 'react-toastify';
 
 const ScriptDetail: React.FC = () => {
   const { id } = useParams<{ id: string }>();
@@ -206,6 +206,48 @@ const ScriptDetail: React.FC = () => {
                 {script.content}
               </pre>
             </div>
+            {(() => {
+              const sourceUrl =
+                (script as any)?.sourceUrl ||
+                (script as any)?.source_url ||
+                (script as any)?.source?.url ||
+                (script as any)?.originalUrl ||
+                (script as any)?.original_url;
+
+              if (!sourceUrl || typeof sourceUrl !== 'string') {
+                return (
+                  <div className="border-t border-[var(--color-border-default)] p-4 text-sm text-[var(--color-text-tertiary)]">
+                    Original source: not available.
+                  </div>
+                );
+              }
+
+              return (
+                <div className="border-t border-[var(--color-border-default)]">
+                  <div className="px-4 py-3 flex items-center justify-between text-sm text-[var(--color-text-secondary)]">
+                    <span>Original Source</span>
+                    <a
+                      href={sourceUrl}
+                      target="_blank"
+                      rel="noreferrer"
+                      className="text-[var(--color-primary)] hover:underline"
+                    >
+                      Open in new tab
+                    </a>
+                  </div>
+                  <div className="px-4 pb-4">
+                    <div className="rounded-md overflow-hidden border border-[var(--color-border-default)]">
+                      <iframe
+                        title="Original Source"
+                        src={sourceUrl}
+                        className="w-full h-[360px] bg-[var(--color-bg-primary)]"
+                        sandbox="allow-same-origin allow-scripts allow-popups allow-forms"
+                      />
+                    </div>
+                  </div>
+                </div>
+              );
+            })()}
           </div>
 
           {/* Execution Result */}

@@ -840,7 +840,7 @@ def route_to_specialists(state: PowerShellAnalysisState) -> List[str]:
 **Testing Scenarios:**
 
 1. **Simple Script** (10 lines, no issues)
-   - Expected: Fast analysis (<5s), green scores, no recommendations
+   - Expected: Fast analysis (&lt;5s), green scores, no recommendations
 2. **Complex Script** (500 lines, multiple functions)
    - Expected: Deep analysis (30-60s), multiple tool calls, detailed findings
 3. **Malicious Script** (Invoke-Expression, downloadstring)
@@ -905,15 +905,15 @@ def route_to_specialists(state: PowerShellAnalysisState) -> List[str]:
 
 ### **Performance**
 
-- [ ] Analysis completion time < 60 seconds for 95% of scripts
-- [ ] Streaming latency < 500ms per event
+- [ ] Analysis completion time &lt; 60 seconds for 95% of scripts
+- [ ] Streaming latency &lt; 500ms per event
 - [ ] Frontend responsiveness maintained during analysis
 - [ ] No memory leaks during long-running analyses
 
 ### **Quality**
 
 - [ ] Security vulnerability detection rate > 95%
-- [ ] False positive rate < 5%
+- [ ] False positive rate &lt; 5%
 - [ ] User satisfaction score > 4.0/5.0
 - [ ] Recommendation acceptance rate > 60%
 
@@ -922,7 +922,7 @@ def route_to_specialists(state: PowerShellAnalysisState) -> List[str]:
 - [ ] Analysis success rate > 99%
 - [ ] Recovery from checkpoint success rate > 95%
 - [ ] Uptime > 99.5%
-- [ ] Error rate < 0.5%
+- [ ] Error rate &lt; 0.5%
 
 ### **Adoption**
 
@@ -949,7 +949,7 @@ def route_to_specialists(state: PowerShellAnalysisState) -> List[str]:
 #### Risk: Frontend performance degradation
 
 - **Mitigation**: Virtual scrolling for long logs, debounce updates
-- **Monitoring**: Measure frame rate, optimize if <30 FPS
+- **Monitoring**: Measure frame rate, optimize if &lt;30 FPS
 
 #### Risk: Database checkpoint storage growth
 
@@ -1007,7 +1007,7 @@ def route_to_specialists(state: PowerShellAnalysisState) -> List[str]:
 
 - **Brave Search API**: $5/month (free tier may suffice initially)
 - **GitHub API**: Free for personal/organization use
-- **OpenAI API**: Pay-as-you-go (GPT-5.2-codex pricing TBD)
+- **OpenAI API**: Pay-as-you-go (confirm current GPT-5.2-codex pricing as of February 4, 2026)
 
 ---
 
@@ -1157,7 +1157,7 @@ ENABLE_VULNERABILITY_CHECK=true
 
 If critical issues arise post-deployment:
 
-1. **Immediate Rollback** (< 5 minutes)
+1. **Immediate Rollback** (&lt; 5 minutes)
    - Revert frontend to previous version via Git
    - Disable `/langgraph/analyze` endpoint via feature flag
    - Fall back to legacy `/chat` endpoint

@@ -1,0 +1,10 @@
+{
+  "baseURL": "http://host.docker.internal:3090",
+  "visited": [
+    "http://host.docker.internal:3090/"
+  ],
+  "failures": [],
+  "consoleErrors": [],
+  "skippedDestructive": [],
+  "externalLinks": []
+}

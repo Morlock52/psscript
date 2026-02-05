@@ -51,3 +51,7 @@ UI tests (Dockerized runner):
 docker compose -f docker-compose.yml -f docker-compose.override.yml -f docker-compose.e2e.yml run --rm -e PW_UI=true e2e \
   bash -lc "npm ci && PW_UI=true npx playwright test tests/e2e/health-checks.spec.ts tests/e2e/script-management.spec.ts tests/e2e/button_link_smoke.spec.ts --project=chromium --workers=1"
 ```
+
+## Link/Button Integrity
+- All UI links and buttons must be tested and must lead somewhere (including a future feature placeholder page).
+- Any non-working link or button must be recorded in `docs/non-working-links.md` with page/route, label, expected destination, and date discovered.

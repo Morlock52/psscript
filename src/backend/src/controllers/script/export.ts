@@ -26,6 +26,7 @@ import {
   TIMEOUTS
 } from './shared';
 import { analyzeScriptBasic } from '../../services/ai/aiEngine';
+import type { AuthenticatedRequest } from './types';
 
 // Import PDFKit for PDF generation
 import PDFDocument from 'pdfkit';
@@ -432,17 +433,11 @@ export async function exportAnalysis(
   }
 }
 
-// Extend Request with user for authenticated uploads
-// Note: `file` property is already typed by multer via Express.Multer.File
-interface UploadRequest extends Request {
-  user?: { id: number; role?: string };
-}
-
 /**
  * Upload a script file and store it in the database with enhanced error handling
  */
 export async function uploadScript(
-  req: UploadRequest,
+  req: AuthenticatedRequest,
   res: Response,
   _next: NextFunction
 ): Promise<void | Response> {

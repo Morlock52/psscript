@@ -1,3 +1,4 @@
+import '../types/express';
 import { Request, Response, NextFunction } from 'express';
 import jwt, { JsonWebTokenError, TokenExpiredError, NotBeforeError } from 'jsonwebtoken';
 import crypto from 'crypto';
@@ -13,19 +14,14 @@ const DEV_USER = {
   role: 'admin'
 };
 
-// Extend the Express Request interface to include user and auth info
-declare module 'express' {
-  interface Request {
-    user?: any;
-    authInfo?: {
-      tokenType: string;
-      requestId: string;
-      timestamp: number;
-      ipAddress: string;
-      userAgent: string;
-    };
-  }
-}
+const getUser = (req: Request) => (req as any).user;
+const setUser = (req: Request, user: any) => {
+  (req as any).user = user;
+};
+const getAuthInfo = (req: Request) => (req as any).authInfo;
+const setAuthInfo = (req: Request, info: any) => {
+  (req as any).authInfo = info;
+};
 
 /**
  * Generate a cryptographically secure request ID for tracking auth requests
@@ -51,14 +47,14 @@ const getClientIp = (req: Request): string => {
  */
 export const authenticateJWT = async (req: Request, res: Response, next: NextFunction) => {
   if (AUTH_DISABLED) {
-    req.user = DEV_USER;
-    req.authInfo = {
+    setUser(req, DEV_USER);
+    setAuthInfo(req, {
       tokenType: 'disabled',
       requestId: generateRequestId(),
       timestamp: Date.now(),
       ipAddress: getClientIp(req),
       userAgent: req.headers['user-agent'] || 'unknown'
-    };
+    });
     logger.warn('Authentication bypassed via DISABLE_AUTH=true', {
       path: req.path,
       method: req.method
@@ -72,13 +68,13 @@ export const authenticateJWT = async (req: Request, res: Response, next: NextFun
   const userAgent = req.headers['user-agent'] || 'unknown';
   
   // Add auth info to request for logging purposes
-  req.authInfo = {
+  setAuthInfo(req, {
     tokenType: 'none',
     requestId,
     timestamp: startTime,
     ipAddress,
     userAgent
-  };
+  });
   
   logger.debug('Authentication attempt', {
     requestId,
@@ -115,7 +111,18 @@ export const authenticateJWT = async (req: Request, res: Response, next: NextFun
   }
   
   // Update auth info with token type
-  req.authInfo.tokenType = 'jwt';
+  const authInfo = getAuthInfo(req);
+  if (authInfo) {
+    authInfo.tokenType = 'jwt';
+  } else {
+    setAuthInfo(req, {
+      tokenType: 'jwt',
+      requestId,
+      timestamp: startTime,
+      ipAddress,
+      userAgent
+    });
+  }
 
   // SECURITY: Demo tokens have been removed entirely
   // They were a security risk even in development mode because:
@@ -169,12 +176,12 @@ export const authenticateJWT = async (req: Request, res: Response, next: NextFun
     }
     
     // Add user information to request
-    req.user = {
+    setUser(req, {
       id: user.id,
       username: user.username,
       email: user.email,
       role: user.role
-    };
+    });
     
     const processingTime = Date.now() - startTime;
     logger.debug('Authentication successful', {
@@ -238,13 +245,13 @@ export const authenticateJWT = async (req: Request, res: Response, next: NextFun
  */
 export const requireAdmin = (req: Request, res: Response, next: NextFunction) => {
   if (AUTH_DISABLED) {
-    req.user = DEV_USER;
+    setUser(req, DEV_USER);
     return next();
   }
 
-  const requestId = req.authInfo?.requestId || generateRequestId();
+  const requestId = getAuthInfo(req)?.requestId || generateRequestId();
   
-  if (!req.user) {
+  if (!getUser(req)) {
     logger.warn('Admin access denied: Not authenticated', {
       requestId,
       path: req.path,
@@ -257,13 +264,13 @@ export const requireAdmin = (req: Request, res: Response, next: NextFunction) =>
     });
   }
   
-  if (req.user.role !== 'admin') {
+  if (getUser(req)?.role !== 'admin') {
     logger.warn('Admin access denied: Insufficient privileges', {
       requestId,
       path: req.path,
       method: req.method,
-      userRole: req.user.role,
-      userId: req.user.id
+      userRole: getUser(req)?.role,
+      userId: getUser(req)?.id
     });
     return res.status(403).json({ 
       message: 'Access denied. Admin privileges required.',
@@ -275,7 +282,7 @@ export const requireAdmin = (req: Request, res: Response, next: NextFunction) =>
   logger.debug('Admin access granted', {
     requestId,
     path: req.path,
-    userId: req.user.id
+    userId: getUser(req)?.id
   });
   
   next();
@@ -287,14 +294,14 @@ export const requireAdmin = (req: Request, res: Response, next: NextFunction) =>
  */
 export const optionalAuth = async (req: Request, res: Response, next: NextFunction) => {
   if (AUTH_DISABLED) {
-    req.user = DEV_USER;
-    req.authInfo = {
+    setUser(req, DEV_USER);
+    setAuthInfo(req, {
       tokenType: 'disabled',
       requestId: generateRequestId(),
       timestamp: Date.now(),
       ipAddress: getClientIp(req),
       userAgent: req.headers['user-agent'] || 'unknown'
-    };
+    });
     logger.warn('Optional auth bypassed via DISABLE_AUTH=true', {
       path: req.path,
       method: req.method
@@ -306,13 +313,13 @@ export const optionalAuth = async (req: Request, res: Response, next: NextFuncti
   const startTime = Date.now();
   
   // Add auth info to request for logging purposes
-  req.authInfo = {
+  setAuthInfo(req, {
     tokenType: 'none',
     requestId,
     timestamp: startTime,
     ipAddress: getClientIp(req),
     userAgent: req.headers['user-agent'] || 'unknown'
-  };
+  });
   
   // Get token from Authorization header
   const authHeader = req.headers.authorization;
@@ -339,7 +346,18 @@ export const optionalAuth = async (req: Request, res: Response, next: NextFuncti
   }
   
   // Update auth info with token type
-  req.authInfo.tokenType = token.startsWith('demo-token-') ? 'demo' : 'jwt';
+  const optionalAuthInfo = getAuthInfo(req);
+  if (optionalAuthInfo) {
+    optionalAuthInfo.tokenType = token.startsWith('demo-token-') ? 'demo' : 'jwt';
+  } else {
+    setAuthInfo(req, {
+      tokenType: token.startsWith('demo-token-') ? 'demo' : 'jwt',
+      requestId,
+      timestamp: startTime,
+      ipAddress: getClientIp(req),
+      userAgent: req.headers['user-agent'] || 'unknown'
+    });
+  }
   
   try {
     // Verify token
@@ -362,12 +380,12 @@ export const optionalAuth = async (req: Request, res: Response, next: NextFuncti
     
     if (user) {
       // Add user information to request
-      req.user = {
+      setUser(req, {
         id: user.id,
         username: user.username,
         email: user.email,
         role: user.role
-      };
+      });
       
       logger.debug('Optional auth: User authenticated', {
         requestId,

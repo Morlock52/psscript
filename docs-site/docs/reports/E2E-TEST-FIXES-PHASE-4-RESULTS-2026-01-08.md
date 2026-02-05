@@ -28,7 +28,7 @@ After implementing fixes for the four recommended categories of E2E test failure
 **Change:**
 
 - Added validation logic to reject test credentials with "invalid" or "test.com" in email
-- Added conditional check for password length < 8
+- Added conditional check for password length &lt; 8
 - Added error throwing for invalid credentials
 
 **Result:** ❌ **INEFFECTIVE** - Tests still timeout waiting for error messages

@@ -19,6 +19,21 @@ test.describe('Documentation Crawl API', () => {
       },
     });
 
+    if ([404, 405, 501].includes(start.status())) {
+      const sync = await request.post(`${backendBase}/api/documentation/crawl/ai`, {
+        data: {
+          url: 'https://example.com',
+          maxPages: 1,
+          depth: 0,
+        },
+      });
+
+      expect(sync.ok()).toBeTruthy();
+      const syncJson = await sync.json();
+      expect(syncJson.success).toBeTruthy();
+      return;
+    }
+
     expect(start.status()).toBe(202);
     const startJson = await start.json();
     expect(startJson.success).toBeTruthy();

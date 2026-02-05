@@ -38,6 +38,7 @@ from langgraph.graph.message import add_messages
 # LangChain imports
 from langchain_core.messages import BaseMessage, HumanMessage, SystemMessage, ToolMessage
 from langchain_openai import ChatOpenAI
+from config import ensure_chat_model
 from langchain_core.tools import tool
 from langchain_core.runnables import RunnableConfig
 
@@ -666,7 +667,7 @@ class LangGraphProductionOrchestrator:
 
         os.environ["OPENAI_API_KEY"] = self.api_key
 
-        self.model = model
+        self.model = ensure_chat_model(model)
 
         # Setup checkpointing
         if use_postgres_checkpointing and postgres_connection_string and POSTGRES_AVAILABLE:
@@ -681,7 +682,7 @@ class LangGraphProductionOrchestrator:
         # Create the graph
         self.graph = create_production_graph(checkpointer=self.checkpointer)
 
-        logger.info(f"LangGraph Production Orchestrator initialized with model: {model}")
+        logger.info(f"LangGraph Production Orchestrator initialized with model: {self.model}")
 
     async def analyze_script(
         self,
@@ -735,7 +736,7 @@ class LangGraphProductionOrchestrator:
         config = {
             "configurable": {
                 "thread_id": workflow_id,
-                "model": model or self.model
+                "model": ensure_chat_model(model or self.model)
             }
         }
 

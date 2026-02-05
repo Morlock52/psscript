@@ -18,7 +18,7 @@ from openai import OpenAI, AsyncOpenAI
 import numpy as np
 from tenacity import retry, stop_after_attempt, wait_exponential, retry_if_exception_type
 from dotenv import load_dotenv
-from config import config
+from config import config, ensure_chat_model
 from redis import Redis
 from diskcache import Cache
 
@@ -67,8 +67,8 @@ if os.getenv("REDIS_URL"):
 
 # Constants - Updated for January 2026 best models
 EMBEDDING_MODEL = os.getenv("EMBEDDING_MODEL", "text-embedding-3-large")
-ANALYSIS_MODEL = os.getenv("ANALYSIS_MODEL", config.agent.default_model)
-FAST_MODEL = os.getenv("FAST_MODEL", config.agent.fast_model)
+ANALYSIS_MODEL = ensure_chat_model(os.getenv("ANALYSIS_MODEL", config.agent.default_model))
+FAST_MODEL = ensure_chat_model(os.getenv("FAST_MODEL", config.agent.fast_model))
 EMBEDDING_DIMENSION = 3072  # text-embedding-3-large dimension (can be customized 256-3072)
 CACHE_TTL = int(os.getenv("CACHE_TTL", "86400"))  # Default: 1 day in seconds
 MAX_WORKERS = int(os.getenv("MAX_WORKERS", "5"))  # Default: 5 concurrent workers

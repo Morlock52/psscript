@@ -1,0 +1,15 @@
+{
+  "completed_at": 1770166399,
+  "created_at": 1770166284,
+  "error": null,
+  "expires_at": 1770169999,
+  "id": "video_6982980caf688191833c52ecd148b7ab084a4977eda3bd95",
+  "model": "sora-2",
+  "object": "video",
+  "progress": 100,
+  "prompt": "Primary request: Same shot and framing; increase saturation and contrast, make the neon signage brighter, and boost floor reflections. Keep action and camera move identical.",
+  "remixed_from_video_id": "video_6982975c8d7c81939fd4d8bb6bb4c2340473fd1d3fb77e4c",
+  "seconds": "4",
+  "size": "1280x720",
+  "status": "completed"
+}

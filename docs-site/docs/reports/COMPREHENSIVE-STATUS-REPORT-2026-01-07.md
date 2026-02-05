@@ -327,9 +327,9 @@ After conducting a comprehensive review of all documentation, log files, and val
 ### Next 30 Days
 
 1. **Performance Monitoring**
-   - Track vector search latency (target: <25ms)
+   - Track vector search latency (target: &lt;25ms)
    - Monitor AI token costs (target: 30-50% reduction)
-   - Track API response times (target: <300ms p95)
+   - Track API response times (target: &lt;300ms p95)
 2. **User Acceptance Testing**
    - Test all workflows end-to-end
    - Gather user feedback

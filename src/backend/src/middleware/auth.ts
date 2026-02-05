@@ -17,16 +17,6 @@ interface JwtPayload {
   role: string;
 }
 
-// Extend Express Request type
-declare global {
-  // eslint-disable-next-line @typescript-eslint/no-namespace -- Required for Express type augmentation
-  namespace Express {
-    interface Request {
-      user?: JwtPayload;
-    }
-  }
-}
-
 /**
  * Middleware to authenticate JWT tokens
  * Supports tokens in Authorization header or query parameter (for SSE)

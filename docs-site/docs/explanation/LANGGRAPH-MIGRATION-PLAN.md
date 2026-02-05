@@ -103,7 +103,7 @@ END
 **Success Criteria**:
 
 - LangGraph orchestrator handles 100% of test cases
-- Response times < 5 seconds for typical scripts
+- Response times &lt; 5 seconds for typical scripts
 - Zero data loss with checkpointing
 - All API endpoints functional
 
@@ -313,7 +313,7 @@ async def test_full_workflow():
 
 ### Performance Testing
 
-- Benchmark response times: Target < 5s for typical scripts
+- Benchmark response times: Target &lt; 5s for typical scripts
 - Load testing: Handle 100 concurrent analyses
 - Memory usage: Monitor state size growth
 - Database impact: Query performance with checkpointing
@@ -372,7 +372,7 @@ LANGGRAPH_TRAFFIC_PERCENTAGE=100
 
 If issues occur during migration:
 
-1. **Immediate Rollback** (< 5 minutes)
+1. **Immediate Rollback** (&lt; 5 minutes)
    ```bash
    # Disable LangGraph routing
    ENABLE_LANGGRAPH=false
@@ -401,8 +401,8 @@ If issues occur during migration:
 ### Week 3-4 Metrics
 
 - [ ] 50% traffic on LangGraph
-- [ ] Error rate < 1%
-- [ ] Response time < 5s p95
+- [ ] Error rate &lt; 1%
+- [ ] Response time &lt; 5s p95
 - [ ] Zero data loss events
 
 ### Week 5-6 Metrics

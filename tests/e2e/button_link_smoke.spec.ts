@@ -1,5 +1,6 @@
 import { test, expect } from '@playwright/test';
 import fs from 'fs';
+import waitForFrontend from './utils/waitForFrontend';
 
 const maxPages = Number(process.env.MAX_PAGES || 40);
 const destructivePattern = /delete|remove|destroy|reset|revert|purge|drop|execute|run|clear|terminate|kill/i;
@@ -12,12 +13,14 @@ const normalizeUrl = (url: string, baseURL: string) => {
 
 const uiTest = process.env.PW_UI === 'true' ? test : test.skip;
 
-uiTest('button/link sweep (non-destructive)', async ({ page }, testInfo) => {
+uiTest('button/link sweep (non-destructive)', async ({ page, request }, testInfo) => {
   const baseURL =
     process.env.BASE_URL ||
     (typeof testInfo.project.use.baseURL === 'string' ? testInfo.project.use.baseURL : '') ||
     'http://127.0.0.1:3090';
   const origin = new URL(baseURL).origin;
+
+  await waitForFrontend(request, origin);
 
   const visited = new Set<string>();
   const queue: string[] = [normalizeUrl(baseURL, baseURL)];

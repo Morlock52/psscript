@@ -553,7 +553,7 @@ Once Issue #1 is resolved, conduct comprehensive testing of:
    - Confirm security findings display
    - Test recommendations
 5. **Performance Testing**
-   - Simple script (< 50 lines): expect 10-20 sec
+   - Simple script (&lt; 50 lines): expect 10-20 sec
    - Medium script (50-200 lines): expect 20-40 sec
    - Complex script (200+ lines): expect 40-90 sec
    - Monitor token usage
@@ -575,7 +575,7 @@ Based on LangGraph documentation, expected performance:
 | Simple Script Analysis | 10-20 sec | Not tested | ⏸️ Blocked |
 | Medium Script Analysis | 20-40 sec | Not tested | ⏸️ Blocked |
 | Complex Script Analysis | 40-90 sec | Not tested | ⏸️ Blocked |
-| SSE Event Latency | < 500 ms | Not tested | ⏸️ Blocked |
+| SSE Event Latency | &lt; 500 ms | Not tested | ⏸️ Blocked |
 | Tool: security_scan | 1-2 sec | Not tested | ⏸️ Blocked |
 | Tool: quality_analysis | 2-4 sec | Not tested | ⏸️ Blocked |
 | Tool: generate_optimizations | 3-6 sec | Not tested | ⏸️ Blocked |

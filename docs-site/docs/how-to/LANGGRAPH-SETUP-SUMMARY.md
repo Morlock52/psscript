@@ -298,7 +298,7 @@ asyncio.run(analyze())
 - 🔲 Performance tuning
 - 🔲 Advanced monitoring
 
-See [LANGGRAPH-MIGRATION-PLAN.md](./LANGGRAPH-MIGRATION-PLAN.md) for details.
+See [LangGraph migration plan](/explanation/LANGGRAPH-MIGRATION-PLAN) for details.
 
 ## API Examples
 
@@ -370,10 +370,10 @@ curl -X POST http://localhost:8001/langgraph/batch-analyze \
 
 ### Expected Metrics
 
-- **Response Time**: < 5 seconds (typical script)
+- **Response Time**: &lt; 5 seconds (typical script)
 - **Throughput**: 100+ concurrent analyses
 - **Success Rate**: > 99%
-- **State Size**: < 1MB per workflow
+- **State Size**: &lt; 1MB per workflow
 
 ### Optimization Tips
 
@@ -477,8 +477,8 @@ orchestrator = LangGraphProductionOrchestrator(
 
 ### Documentation
 
-- **Implementation Guide**: [LANGGRAPH-IMPLEMENTATION.md](./LANGGRAPH-IMPLEMENTATION.md)
-- **Migration Plan**: [LANGGRAPH-MIGRATION-PLAN.md](./LANGGRAPH-MIGRATION-PLAN.md)
+- **Implementation Guide**: [LangGraph implementation](/explanation/LANGGRAPH-IMPLEMENTATION)
+- **Migration Plan**: [LangGraph migration plan](/explanation/LANGGRAPH-MIGRATION-PLAN)
 - **LangGraph Docs**: https://docs.langchain.com/oss/python/langgraph/
 
 ### Code

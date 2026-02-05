@@ -29,32 +29,32 @@ Management rollout details live in `../MANAGEMENT-PLAYBOOK.md`.
 
 ## System overview
 
-![Architecture Diagram](../graphics/architecture.svg)
+![Architecture Diagram](../graphics/architecture-v3.svg)
 
-![Analysis Pipeline](../graphics/analysis-pipeline.svg)
+![Analysis Pipeline](../graphics/analysis-pipeline-v3.svg)
 
-![Script Lifecycle](../graphics/lifecycle.svg)
+![Script Lifecycle](../graphics/lifecycle-v3.svg)
 
-![Search Modes](../graphics/search-modes.svg)
+![Search Modes](../graphics/search-modes-v3.svg)
 
-![Usage Metrics](../graphics/usage-metrics.svg)
+![Usage Metrics](../graphics/usage-metrics-v3.svg)
 
 ## Feature cheat sheet
 
 | Area | What to look for | Screenshot |
 | --- | --- | --- |
-| Dashboard | Stats, recent scripts, security trends | ![Dashboard](../screenshots/dashboard.png) |
-| Script library | Categories, owners, version history | ![Scripts](../screenshots/scripts.png) |
-| Upload | Live preview, tags, dedup hints | ![Upload](../screenshots/upload.png) |
-| Analysis | Scores, findings, remediation | ![Analysis](../screenshots/analysis.png) |
-| Docs + crawl | Cmdlet search, crawling, saved excerpts | ![Documentation](../screenshots/documentation.png) |
-| Chat/agents | Quick prompts, agentic orchestration | ![Chat](../screenshots/chat.png) |
-| Analytics | Adoption, usage, training exports | ![Analytics](../screenshots/analytics.png) |
-| Settings | API usage, notifications, training links | ![Settings](../screenshots/settings.png) |
+| Dashboard | Stats, recent scripts, security trends | ![Dashboard](../screenshots/dashboard-v3.png) |
+| Script library | Categories, owners, version history | ![Scripts](../screenshots/scripts-v2.png) |
+| Upload | Live preview, tags, dedup hints | ![Upload](../screenshots/upload-v4.png) |
+| Analysis | Scores, findings, remediation | ![Analysis](../screenshots/analysis-v4.png) |
+| Docs + crawl | Cmdlet search, crawling, saved excerpts | ![Documentation](../screenshots/documentation-v4.png) |
+| Chat/agents | Quick prompts, agentic orchestration | ![Chat](../screenshots/chat-v4.png) |
+| Analytics | Adoption, usage, training exports | ![Analytics](../screenshots/analytics-v3.png) |
+| Settings | API usage, notifications, training links | ![Settings](../screenshots/settings-v4.png) |
 
 ## Training roadmap
 
-![Training Roadmap](../graphics/training-roadmap.svg)
+![Training Roadmap](../graphics/training-roadmap-v2.svg)
 
 ## Environment setup
 
@@ -113,8 +113,8 @@ Ship a vetted script in ~15 minutes:
 2. Review stats cards and activity feed on the dashboard.
 3. Find Scripts, Documentation, Analytics in the sidebar.
 
-![Login Screen](../screenshots/login.png)
-![Dashboard](../screenshots/dashboard.png)
+![Login Screen](../screenshots/login-v3.png)
+![Dashb../screenshots/dashboard-v3.pngrd.png)
 
 ### Lab 02: Upload and analyze a script
 1. Go to Upload and add `test-script.ps1` with tags + category.
@@ -122,32 +122,32 @@ Ship a vetted script in ~15 minutes:
 3. Open the script detail view and verify metadata.
 4. Run AI analysis and capture recommendations.
 
-![Script Upload](../screenshots/upload.png)
-![Script Detail](../screenshots/script-detail.png)
-![Script Analysis](../screenshots/analysis.png)
+![Upload](../screenshots/upload-v3.png)
+![Script Detail](../screenshots/script-detail-v3.png)
+![Analysis](../screenshots/analysis-v3.png)
 
 ### Lab 03: Documentation and AI chat
 1. Open Documentation; search for a cmdlet (e.g., `Get-Process`).
 2. Save an excerpt to your notes.
 3. Open Chat and ask for safe usage patterns.
 
-![Documentation Explorer](../screenshots/documentation.png)
-![AI Chat](../screenshots/chat.png)
+![Documentation](../screenshots/documentation-v3.png)
+![AI Chat](../screenshots/chat-v3.png)
 
 ### Lab 04: Analytics and governance
 1. Open Analytics; review usage metrics and trend lines.
 2. Identify top activity areas and any gaps.
 3. Draft a governance checklist for releases.
 
-![Analytics](../screenshots/analytics.png)
-![Sample Usage Metrics](../graphics/usage-metrics.svg)
+![Analytics](../screenshots/analytics-v4.png)
+![Sample Usage Metrics](../graphics/usage-metrics-v4.svg)
 
 ### Lab 05: Settings and training resources
 1. Open Settings; review API usage and notifications.
 2. Locate Documentation & Training and open the Training Suite.
 3. Open the local PDF export at `http://localhost:4000/docs/exports/pdf/Training-Guide.pdf`.
 
-![Settings](../screenshots/settings.png)
+![Settings](../screenshots/settings-v3.png)
 
 ## Sample actions
 
@@ -185,11 +185,9 @@ curl -X POST http://localhost:8000/similar \
 - Security score is reviewed and exceptions are documented
 - Duplicates are prevented by hash check
 - Analysis results are logged and stored
-- Analytics reflect script usage and review cadence
+- Analytics reflect script usage and re../graphics/security-scorecard-v3.svgrd
 
-### Security scorecard
-
-![Security Scorecard](../graphics/security-scorecard.svg)
+![Security Scorecard](../graphics/security-scorecard-v3.svg)
 
 ### Scorecard rubric
 

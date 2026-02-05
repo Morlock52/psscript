@@ -1,0 +1,41 @@
+<svg width="1200" height="300" viewBox="0 0 1200 300" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <marker id="arrow" markerWidth="10" markerHeight="10" refX="6" refY="3" orient="auto" markerUnits="strokeWidth">
+      <path d="M0,0 L0,6 L6,3 z" fill="#64748b"/>
+    </marker>
+  </defs>
+
+  <rect width="1200" height="300" rx="20" fill="#111827"/>
+  <text x="32" y="40" fill="#f8fafc" font-family="Segoe UI, Arial, sans-serif" font-size="18" font-weight="600">Script Lifecycle</text>
+
+  <g font-family="Segoe UI, Arial, sans-serif" font-size="12">
+    <rect x="60" y="110" width="150" height="70" rx="12" fill="#111827" stroke="#38bdf8" stroke-width="2"/>
+    <text x="105" y="148" fill="#e2e8f0">Author</text>
+
+    <rect x="240" y="110" width="150" height="70" rx="12" fill="#111827" stroke="#22c55e" stroke-width="2"/>
+    <text x="280" y="148" fill="#e2e8f0">Upload</text>
+
+    <rect x="420" y="110" width="150" height="70" rx="12" fill="#111827" stroke="#f59e0b" stroke-width="2"/>
+    <text x="455" y="148" fill="#e2e8f0">Analyze</text>
+
+    <rect x="600" y="110" width="150" height="70" rx="12" fill="#111827" stroke="#60a5fa" stroke-width="2"/>
+    <text x="640" y="148" fill="#e2e8f0">Review</text>
+
+    <rect x="780" y="110" width="150" height="70" rx="12" fill="#111827" stroke="#818cf8" stroke-width="2"/>
+    <text x="820" y="148" fill="#e2e8f0">Execute</text>
+
+    <rect x="960" y="110" width="180" height="70" rx="12" fill="#111827" stroke="#14b8a6" stroke-width="2"/>
+    <text x="1010" y="148" fill="#e2e8f0">Monitor</text>
+  </g>
+
+  <line x1="210" y1="145" x2="240" y2="145" stroke="#64748b" stroke-width="2" marker-end="url(#arrow)"/>
+  <line x1="390" y1="145" x2="420" y2="145" stroke="#64748b" stroke-width="2" marker-end="url(#arrow)"/>
+  <line x1="570" y1="145" x2="600" y2="145" stroke="#64748b" stroke-width="2" marker-end="url(#arrow)"/>
+  <line x1="750" y1="145" x2="780" y2="145" stroke="#64748b" stroke-width="2" marker-end="url(#arrow)"/>
+  <line x1="930" y1="145" x2="960" y2="145" stroke="#64748b" stroke-width="2" marker-end="url(#arrow)"/>
+
+  <g opacity="0.5">
+    <circle cx="1192.0" cy="8.0" r="5" fill="#0ea5e9" />
+    <text x="1192.0" y="11.0" font-size="6" text-anchor="middle" fill="#ffffff">v3</text>
+  </g>
+</svg>

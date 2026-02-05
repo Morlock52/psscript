@@ -1,6 +1,7 @@
 import { test, expect } from '@playwright/test';
 import * as path from 'path';
 import * as fs from 'fs';
+import waitForFrontend from './utils/waitForFrontend';
 
 /**
  * Script Management Tests
@@ -59,7 +60,14 @@ async function loginAsTestUser(page: any, testInfo?: any) {
 const uiDescribe = process.env.PW_UI === 'true' ? test.describe : test.describe.skip;
 
 uiDescribe('Script Upload', () => {
-  test.beforeEach(async ({ page }, testInfo) => {
+  test.beforeEach(async ({ page, request }, testInfo) => {
+    const baseURL =
+      process.env.PW_BASE_URL ||
+      process.env.BASE_URL ||
+      (typeof testInfo.project.use.baseURL === 'string' ? testInfo.project.use.baseURL : '') ||
+      'http://127.0.0.1:3090';
+    await waitForFrontend(request, new URL(baseURL).origin);
+
     // Login first if auth is enabled
     await loginAsTestUser(page, testInfo);
 
@@ -175,6 +183,13 @@ Get-Date
 
 test.describe('Script Analysis', () => {
   test('Should trigger AI analysis on uploaded script', async ({ page, request }, testInfo) => {
+    const baseURL =
+      process.env.PW_BASE_URL ||
+      process.env.BASE_URL ||
+      (typeof testInfo.project.use.baseURL === 'string' ? testInfo.project.use.baseURL : '') ||
+      'http://127.0.0.1:3090';
+    await waitForFrontend(request, new URL(baseURL).origin);
+
     // Login first before accessing protected routes
     await loginAsTestUser(page, testInfo);
 
@@ -234,7 +249,14 @@ Invoke-WebRequest -Uri "http://example.com"
 });
 
 test.describe('Script List View', () => {
-  test('Should display list of uploaded scripts', async ({ page }, testInfo) => {
+  test('Should display list of uploaded scripts', async ({ page, request }, testInfo) => {
+    const baseURL =
+      process.env.PW_BASE_URL ||
+      process.env.BASE_URL ||
+      (typeof testInfo.project.use.baseURL === 'string' ? testInfo.project.use.baseURL : '') ||
+      'http://127.0.0.1:3090';
+    await waitForFrontend(request, new URL(baseURL).origin);
+
     // Login first before accessing protected routes
     await loginAsTestUser(page, testInfo);
 

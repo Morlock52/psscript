@@ -115,10 +115,11 @@ export class ChatController {
       }
       
       // Store in chat history if user is authenticated
-      if (req.user && req.user.id) {
+      const userId = Number(req.user?.id);
+      if (Number.isFinite(userId) && userId > 0) {
         try {
-          await this.storeChatHistory(req.user.id, messages, responseText);
-          logger.debug(`[${requestId}] Chat history stored for user ${req.user.id}`);
+          await this.storeChatHistory(userId, messages, responseText);
+          logger.debug(`[${requestId}] Chat history stored for user ${userId}`);
         } catch (historyError) {
           // Log but don't fail the request if history storage fails
           logger.error(`[${requestId}] Failed to store chat history:`, historyError);
@@ -157,13 +158,11 @@ export class ChatController {
    */
   public async getChatHistory(req: Request, res: Response): Promise<void> {
     try {
-      // Ensure user is authenticated
-      if (!req.user || !req.user.id) {
+      const userId = Number(req.user?.id);
+      if (!Number.isFinite(userId) || userId <= 0) {
         res.status(401).json({ error: 'Authentication required' });
         return;
       }
-      
-      const userId = req.user.id;
       const page = parseInt(req.query.page as string) || 1;
       const limit = parseInt(req.query.limit as string) || 10;
       const offset = (page - 1) * limit;
@@ -223,14 +222,13 @@ export class ChatController {
    */
   public async saveChatHistory(req: Request, res: Response): Promise<void> {
     try {
-      // Ensure user is authenticated
-      if (!req.user || !req.user.id) {
+      const userId = Number(req.user?.id);
+      if (!Number.isFinite(userId) || userId <= 0) {
         res.status(401).json({ error: 'Authentication required' });
         return;
       }
       
       const { messages } = req.body;
-      const userId = req.user.id;
       
       if (!messages || !Array.isArray(messages)) {
         res.status(400).json({ error: 'Messages array is required' });
@@ -273,13 +271,11 @@ export class ChatController {
    */
   public async clearChatHistory(req: Request, res: Response): Promise<void> {
     try {
-      // Ensure user is authenticated
-      if (!req.user || !req.user.id) {
+      const userId = Number(req.user?.id);
+      if (!Number.isFinite(userId) || userId <= 0) {
         res.status(401).json({ error: 'Authentication required' });
         return;
       }
-      
-      const userId = req.user.id;
       
       // Delete chat history from database
       // Get the model instance from the sequelize import
@@ -311,13 +307,11 @@ export class ChatController {
    */
   public async searchChatHistory(req: Request, res: Response): Promise<void> {
     try {
-      // Ensure user is authenticated
-      if (!req.user || !req.user.id) {
+      const userId = Number(req.user?.id);
+      if (!Number.isFinite(userId) || userId <= 0) {
         res.status(401).json({ error: 'Authentication required' });
         return;
       }
-      
-      const userId = req.user.id;
       const query = req.query.q as string;
       
       if (!query) {

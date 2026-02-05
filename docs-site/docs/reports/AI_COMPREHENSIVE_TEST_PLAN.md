@@ -96,8 +96,8 @@ This document contains a comprehensive test plan for all AI functionality in the
 |---------|-----------|------|-------------|
 | PC-001 | Redis | Connection | Cache availability |
 | PC-002 | Redis | Hit Rate | Cache effectiveness |
-| PC-003 | Response Time | Chat | < 5s response |
-| PC-004 | Response Time | Analysis | < 30s response |
+| PC-003 | Response Time | Chat | &lt; 5s response |
+| PC-004 | Response Time | Analysis | &lt; 30s response |
 | PC-005 | Concurrent | Load | 10 simultaneous requests |
 
 ### Category 6: Error Handling
@@ -129,8 +129,8 @@ Status Legend:
 | AE-001 | ✅ PASS | 149ms | AI service healthy on port 8000 |
 | AE-002 | ✅ PASS | 6164ms | Chat works (fell back to mock due to quota) |
 | AE-003 | ✅ PASS | 3315ms | LangGraph endpoint responsive |
-| AE-004 | ✅ PASS | <100ms | Security scanning excellent |
-| AE-005 | ✅ PASS | <100ms | Detailed health shows all components |
+| AE-004 | ✅ PASS | &lt;100ms | Security scanning excellent |
+| AE-005 | ✅ PASS | &lt;100ms | Detailed health shows all components |
 
 ### Category 2: LLM Provider Integration
 | Test ID | Status | Response Time | Notes |
@@ -155,9 +155,9 @@ Status Legend:
 |---------|--------|---------------|-------|
 | SG-001 | ✅ PASS | - | PowerShell queries pass through |
 | SG-002 | ✅ PASS | - | Off-topic (pizza recipe) correctly rejected |
-| SG-003 | ✅ PASS | <100ms | Invoke-Expression detected as "medium" risk |
-| SG-004 | ✅ PASS | <100ms | Hardcoded passwords/API keys detected as "high" risk |
-| SG-005 | ✅ PASS | <100ms | Returns 422 for invalid JSON structure |
+| SG-003 | ✅ PASS | &lt;100ms | Invoke-Expression detected as "medium" risk |
+| SG-004 | ✅ PASS | &lt;100ms | Hardcoded passwords/API keys detected as "high" risk |
+| SG-005 | ✅ PASS | &lt;100ms | Returns 422 for invalid JSON structure |
 
 **Security Analysis Sample Output:**
 ```json
@@ -178,7 +178,7 @@ Status Legend:
 ### Category 5: Performance & Caching
 | Test ID | Status | Response Time | Notes |
 |---------|--------|---------------|-------|
-| PC-001 | ✅ PASS | <10ms | Redis PONG response |
+| PC-001 | ✅ PASS | &lt;10ms | Redis PONG response |
 | PC-002 | ⚠️ WARN | - | 1 key cached (api:cache:/api/categories) |
 | PC-003 | ✅ PASS | 2248ms | Under 5000ms threshold |
 | PC-004 | ✅ PASS | 3315ms | Under 30000ms threshold |
@@ -187,7 +187,7 @@ Status Legend:
 ### Category 6: Error Handling
 | Test ID | Status | Response Time | Notes |
 |---------|--------|---------------|-------|
-| EH-001 | ✅ PASS | <100ms | Returns 422 for malformed requests |
+| EH-001 | ✅ PASS | &lt;100ms | Returns 422 for malformed requests |
 | EH-002 | ✅ PASS | - | Error messages include context |
 | EH-003 | ✅ PASS | - | 429 quota error handled gracefully |
 | EH-004 | ✅ PASS | - | Falls back to mock mode |

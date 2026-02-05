@@ -15,11 +15,11 @@
 
 ## Scorecard snapshot
 
-![Security Scorecard](../../graphics/security-scorecard.svg)
+![Security Scorecard](../../graphics/security-scorecard-v5.svg)
 
 ## Screenshots
 
-![Script Analysis](../../screenshots/analysis.png)
+![Script Analysis](../../screenshots/analysis-v6.png)
 
 ## Score interpretation
 

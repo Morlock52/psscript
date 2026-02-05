@@ -108,11 +108,11 @@ Recommended minimum training completion per phase:
 
 Sample dashboard views:
 
-![Analytics Dashboard](screenshots/analytics.png)
+![Analytics Dashboard](screenshots/analytics-v2.png)
 
 ![Sample Usage Metrics](graphics/usage-metrics.svg)
 
-![Security Scorecard](graphics/security-scorecard.svg)
+![Security Scorecargraphics/security-scorecard-v2.svgsvg)
 
 ![KPI Dashboard](graphics/kpi-dashboard.svg)
 

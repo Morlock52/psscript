@@ -175,8 +175,19 @@ export const AnalysisProgressPanel: React.FC<AnalysisProgressPanelProps> = ({
         <Collapse in={expanded}>
           {/* Progress Bar */}
           {status === 'analyzing' && (
-            <Box mb={2} sx={{ width: '100%', display: 'flex', flexDirection: 'column', gap: 0.75 }}>
-              <Box display="flex" alignItems="center" justifyContent="space-between">
+            <Box
+              mb={2}
+              sx={{
+                width: '100%',
+                maxWidth: '100%',
+                minWidth: 0,
+                overflow: 'hidden',
+                display: 'flex',
+                flexDirection: 'column',
+                gap: 0.75,
+              }}
+            >
+              <Box display="flex" alignItems="center" justifyContent="space-between" sx={{ minWidth: 0 }}>
                 <Typography variant="caption" color="text.secondary">
                   {Math.round(progress)}% Complete
                 </Typography>
@@ -189,6 +200,9 @@ export const AnalysisProgressPanel: React.FC<AnalysisProgressPanelProps> = ({
                 value={progress}
                 sx={{
                   width: '100%',
+                  maxWidth: '100%',
+                  minWidth: 0,
+                  overflow: 'hidden',
                   height: 8,
                   borderRadius: 999,
                   backgroundColor: 'var(--color-bg-tertiary)',

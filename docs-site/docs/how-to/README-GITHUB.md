@@ -35,11 +35,11 @@ AI-powered PowerShell script management: intake, analysis, discovery, agentic ch
 
 Architecture and flows:
 
-- Architecture: ![Architecture](graphics/architecture.svg)
-- Analysis pipeline: ![Analysis Pipeline](graphics/analysis-pipeline.svg)
-- Script lifecycle: ![Script Lifecycle](graphics/lifecycle.svg)
-- Search modes: ![Search Modes](graphics/search-modes.svg)
-- Security scorecard: ![Security Scorecard](graphics/security-scorecard.svg)
+- Architecture: ![Architecture](/images/graphics/architecture-v2.svg)
+- Analysis pipeline: ![Analysis Pipeline](/images/graphics/analysis-pipeline-v2.svg)
+- Script lifecycle: ![Script Lifecycle](/images/graphics/lifecycle-v2.svg)
+- Search modes: ![Search Modes](/images/graphics/search-modes-v2.svg)
+- Security scorecard: ![Security Scorecard](/images/graphics/security-scorecard-v3.svg)
 
 ## Getting started
 

@@ -1,6 +1,6 @@
 # Claude Code Reference
 
-> **Note:** The main Claude Code guide is at the project root: [../CLAUDE.md](../CLAUDE.md)
+> **Note:** The main Claude Code guide is at the project root: [CLAUDE.md](https://github.com/Morlock52/psscript/blob/main/CLAUDE.md)
 
 This file provides quick reference commands for common development tasks.
 
@@ -61,4 +61,4 @@ cd src/backend && node test-redis.js
 
 ---
 
-For the complete development guide, see [../CLAUDE.md](../CLAUDE.md)
+For the complete development guide, see [CLAUDE.md](https://github.com/Morlock52/psscript/blob/main/CLAUDE.md)

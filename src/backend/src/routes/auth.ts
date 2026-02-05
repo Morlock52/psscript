@@ -1,3 +1,4 @@
+import '../types/express';
 import express, { Request, Response } from 'express';
 import jwt, { Secret } from 'jsonwebtoken';
 import { body, validationResult } from 'express-validator';
@@ -8,21 +9,10 @@ import { getAuthConfig, IS_PRODUCTION, obfuscateEmail } from '../utils/envValida
 import { passwordStrengthValidator, MIN_PASSWORD_LENGTH } from '../utils/passwordValidation';
 import bcrypt from 'bcrypt';
 
-// Extend the Express Request interface to include user and auth info
-declare module 'express' {
-  interface Request {
-    user?: any;
-    authInfo?: {
-      tokenType: string;
-      requestId: string;
-      timestamp: number;
-      ipAddress: string;
-      userAgent: string;
-    };
-  }
-}
-
 const router = express.Router();
+
+const getRequestUser = (req: Request) => (req as any).user;
+const getAuthInfo = (req: Request) => (req as any).authInfo;
 
 // Get configuration from validated environment
 const authConfig = getAuthConfig();
@@ -107,7 +97,7 @@ router.post(
       .custom(passwordStrengthValidator),
   ],
   async (req: Request, res: Response) => {
-    const requestId = req.authInfo?.requestId;
+    const requestId = getAuthInfo(req)?.requestId;
     const startTime = Date.now();
 
     try {
@@ -279,10 +269,10 @@ router.post(
     body('password').notEmpty().withMessage('Password is required'),
   ],
   async (req: Request, res: Response) => {
-    const requestId = req.authInfo?.requestId;
+    const requestId = getAuthInfo(req)?.requestId;
     const startTime = Date.now();
-    const ipAddress = req.authInfo?.ipAddress || 'unknown';
-    const userAgent = req.authInfo?.userAgent || 'unknown';
+    const ipAddress = getAuthInfo(req)?.ipAddress || 'unknown';
+    const userAgent = getAuthInfo(req)?.userAgent || 'unknown';
     
     try {
       // Validate request
@@ -509,7 +499,7 @@ router.post(
  *         description: Invalid refresh token
  */
 router.post('/refresh', logAuthAttempt, async (req: Request, res: Response) => {
-  const requestId = req.authInfo?.requestId;
+  const requestId = getAuthInfo(req)?.requestId;
   const startTime = Date.now();
   
   try {
@@ -648,22 +638,22 @@ router.post('/refresh', logAuthAttempt, async (req: Request, res: Response) => {
  *         description: Not authenticated
  */
 router.get('/me', authenticateJWT, async (req: Request, res: Response) => {
-  const requestId = req.authInfo?.requestId;
+  const requestId = getAuthInfo(req)?.requestId;
   const startTime = Date.now();
   
   try {
     logger.debug('Processing get user info request', {
       requestId,
-      userId: req.user.id
+      userId: getRequestUser(req)?.id
     });
     
     // req.user is set by authMiddleware
-    const user = await User.findByPk(req.user.id);
+    const user = await User.findByPk(getRequestUser(req)?.id);
     
     if (!user) {
       logger.warn('Get user info failed: User not found', {
         requestId,
-        userId: req.user.id
+        userId: getRequestUser(req)?.id
       });
       
       return sendErrorResponse(
@@ -700,7 +690,7 @@ router.get('/me', authenticateJWT, async (req: Request, res: Response) => {
     
     logger.error('Get user info error:', {
       requestId,
-      userId: req.user?.id,
+      userId: getRequestUser(req)?.id,
       error: error instanceof Error ? error.message : 'Unknown error',
       stack: error instanceof Error ? error.stack : undefined,
       processingTime
@@ -744,23 +734,23 @@ router.get('/me', authenticateJWT, async (req: Request, res: Response) => {
  *         description: Not authenticated
  */
 router.put('/user', authenticateJWT, async (req: Request, res: Response) => {
-  const requestId = req.authInfo?.requestId;
+  const requestId = getAuthInfo(req)?.requestId;
   const startTime = Date.now();
   
   try {
     logger.debug('Processing update user request', {
       requestId,
-      userId: req.user.id
+      userId: getRequestUser(req)?.id
     });
     
     // eslint-disable-next-line camelcase -- API request body uses snake_case
     const { username, email, avatar_url: _avatar_url } = req.body;
-    const user = await User.findByPk(req.user.id);
+    const user = await User.findByPk(getRequestUser(req)?.id);
     
     if (!user) {
       logger.warn('Update user failed: User not found', {
         requestId,
-        userId: req.user.id
+        userId: getRequestUser(req)?.id
       });
       
       return sendErrorResponse(
@@ -778,7 +768,7 @@ router.put('/user', authenticateJWT, async (req: Request, res: Response) => {
       if (existingUsername) {
         logger.warn('Update user failed: Username already taken', {
           requestId,
-          userId: req.user.id,
+          userId: getRequestUser(req)?.id,
           username
         });
         
@@ -799,7 +789,7 @@ router.put('/user', authenticateJWT, async (req: Request, res: Response) => {
       if (existingEmail) {
         logger.warn('Update user failed: Email already in use', {
           requestId,
-          userId: req.user.id,
+          userId: getRequestUser(req)?.id,
           email
         });
         
@@ -848,7 +838,7 @@ router.put('/user', authenticateJWT, async (req: Request, res: Response) => {
     
     logger.error('Update user error:', {
       requestId,
-      userId: req.user?.id,
+      userId: getRequestUser(req)?.id,
       error: error instanceof Error ? error.message : 'Unknown error',
       stack: error instanceof Error ? error.stack : undefined,
       processingTime

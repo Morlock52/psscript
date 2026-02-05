@@ -70,8 +70,13 @@ export {
   calculateBufferMD5, checkFileExists, findSimilarScriptsByVector, crypto
 };
 
-// Type the cache properly for internal use
-const typedCache = cache as CacheService;
+// Type the cache properly for internal use (guard against import cycles)
+const typedCache: CacheService = (cache as CacheService) ?? {
+  get: () => null,
+  set: () => undefined,
+  del: () => undefined,
+  clearPattern: () => undefined
+};
 
 /**
  * Send a successful response with data

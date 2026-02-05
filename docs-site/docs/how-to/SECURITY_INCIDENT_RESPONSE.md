@@ -44,10 +44,10 @@ This procedure applies to:
 
 | Level | Name | Description | Response Time | Examples |
 |-------|------|-------------|---------------|----------|
-| **S1** | Critical | Active exploitation, data breach, system compromise | Immediate (< 15 min) | Active attack, credential leak, ransomware |
-| **S2** | High | Significant vulnerability, potential data exposure | < 1 hour | Auth bypass, SQL injection, privilege escalation |
-| **S3** | Medium | Limited vulnerability, no active exploitation | < 4 hours | XSS, CSRF, misconfiguration |
-| **S4** | Low | Minor issue, minimal risk | < 24 hours | Info disclosure, deprecated protocols |
+| **S1** | Critical | Active exploitation, data breach, system compromise | Immediate (&lt; 15 min) | Active attack, credential leak, ransomware |
+| **S2** | High | Significant vulnerability, potential data exposure | &lt; 1 hour | Auth bypass, SQL injection, privilege escalation |
+| **S3** | Medium | Limited vulnerability, no active exploitation | &lt; 4 hours | XSS, CSRF, misconfiguration |
+| **S4** | Low | Minor issue, minimal risk | &lt; 24 hours | Info disclosure, deprecated protocols |
 
 ### 4.2 Incident Categories
 
@@ -298,8 +298,8 @@ psql -h localhost -U postgres -d psscript -c "SELECT * FROM pg_stat_activity"
 
 | Metric | Target | Description |
 |--------|--------|-------------|
-| **MTTD** | < 1 hour | Mean Time to Detect |
-| **MTTR** | S1: < 4h, S2: < 24h | Mean Time to Recovery |
+| **MTTD** | &lt; 1 hour | Mean Time to Detect |
+| **MTTR** | S1: &lt; 4h, S2: &lt; 24h | Mean Time to Recovery |
 | **Incidents/Month** | Trending down | Total incident count |
 | **Repeat Incidents** | 0 | Same root cause recurrence |
 

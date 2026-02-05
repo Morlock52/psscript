@@ -403,14 +403,14 @@ Based on testing:
 
 | Script Size | Expected Duration | Tools Executed |
 |------------|-------------------|----------------|
-| Simple (< 50 lines) | 10-20 seconds | 4 tools |
+| Simple (&lt; 50 lines) | 10-20 seconds | 4 tools |
 | Medium (50-200 lines) | 20-40 seconds | 4 tools |
 | Complex (200+ lines) | 40-90 seconds | 4 tools |
 
-**Streaming Latency**: < 500ms per event
+**Streaming Latency**: &lt; 500ms per event
 **Progress Updates**: Every 0.5-2 seconds
 **Total API Calls**: 1 (SSE connection)
-**Memory Usage**: < 50MB during analysis
+**Memory Usage**: &lt; 50MB during analysis
 
 ---
 

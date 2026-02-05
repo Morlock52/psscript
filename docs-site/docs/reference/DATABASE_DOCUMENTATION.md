@@ -633,8 +633,8 @@ const valid = await bcrypt.compare(password, hash);
 
 | Metric | Target | Action if Exceeded |
 |--------|--------|-------------------|
-| Query Time | < 100ms | Add index or optimize |
-| Connection Pool Usage | < 80% | Increase max pool |
+| Query Time | &lt; 100ms | Add index or optimize |
+| Connection Pool Usage | &lt; 80% | Increase max pool |
 | Cache Hit Rate | > 90% | Adjust TTL or keys |
 | Deadlocks | 0/hour | Review transaction scope |
 

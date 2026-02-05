@@ -880,7 +880,7 @@ export class DocumentationController {
           total,
           sources: sourceCounts,
           tagsCount: tags.length,
-          lastCrawled: await Documentation.max('crawled_at')
+          lastCrawled: await Documentation.max('crawledAt')
         }
       });
     } catch (error) {

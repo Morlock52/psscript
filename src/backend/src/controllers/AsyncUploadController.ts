@@ -110,9 +110,9 @@ export class AsyncUploadController {
       
       try {
         const files = req.files as Express.Multer.File[];
-        const userId = req.user?.id;
+        const userId: number = Number(req.user?.id);
         
-        if (!userId) {
+        if (!Number.isFinite(userId) || userId <= 0) {
           // Clean up uploaded files
           for (const file of files) {
             await unlinkAsync(file.path);

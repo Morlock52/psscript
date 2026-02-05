@@ -621,8 +621,7 @@ async def voice_synthesis(text: str, voice_id: Optional[str] = None, output_form
             text = text[:max_length]
         
         # Use a TTS service to synthesize speech
-        # This is a placeholder - replace with actual TTS service integration
-        # For example, using Google Cloud Text-to-Speech:
+        # Example integration using Google Cloud Text-to-Speech:
         
         from google.cloud import texttospeech
         
@@ -730,8 +729,7 @@ async def voice_recognition(audio_data: str, language: str = "en-US") -> Dict[st
             }
         
         # Use a speech recognition service to recognize speech
-        # This is a placeholder - replace with actual speech recognition service integration
-        # For example, using Google Cloud Speech-to-Text:
+        # Example integration using Google Cloud Speech-to-Text:
         
         from google.cloud import speech
         

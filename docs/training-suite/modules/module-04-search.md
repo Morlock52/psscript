@@ -15,11 +15,11 @@
 
 ## Search modes
 
-![Search Modes](../../graphics/search-modes.svg)
+![Search Modes](../../graphics/search-modes-v4.svg)
 
 ## Screenshots
 
-![Script Library](../../screenshots/scripts.png)
+![Script Library](../../screenshots/scripts-v4.png)
 
 ## Query patterns
 

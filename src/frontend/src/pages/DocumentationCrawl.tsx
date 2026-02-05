@@ -1,6 +1,6 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { Link } from 'react-router-dom';
-import documentationApi from '../services/documentationApi';
+import documentationApi, { AICrawlJobStartError } from '../services/documentationApi';
 
 interface CrawlConfig {
   url: string;
@@ -90,6 +90,32 @@ const DocumentationCrawl: React.FC = () => {
       }
     });
 
+    const runSyncAICrawl = async () => {
+      const result = await documentationApi.crawlWithAI({
+        url: config.url,
+        maxPages: config.maxPages,
+        depth: config.depth
+      });
+
+      if (result.status === 'completed') {
+        setCrawlStatus({
+          status: 'completed',
+          message: result.message || `AI import complete! ${result.pagesProcessed} documents with ${result.scriptsFound} scripts analyzed.`,
+          progress: {
+            pagesProcessed: result.pagesProcessed,
+            totalPages: result.totalPages,
+            scriptsFound: result.scriptsFound
+          }
+        });
+      } else {
+        setCrawlStatus({
+          status: 'error',
+          message: result.message || 'AI import failed',
+          error: result.message
+        });
+      }
+    };
+
     // If AI mode is enabled, use the AI crawl endpoint
     if (config.useAI) {
       try {
@@ -174,6 +200,23 @@ const DocumentationCrawl: React.FC = () => {
         await poll();
         pollTimerRef.current = window.setInterval(poll, 2000);
       } catch (error) {
+        if (error instanceof AICrawlJobStartError) {
+          const unsupportedStatus = error.status && [404, 405, 501].includes(error.status);
+          if (unsupportedStatus) {
+            setCrawlStatus({
+              status: 'crawling',
+              message: 'Async crawl unavailable. Running direct AI crawl...',
+              progress: {
+                pagesProcessed: 0,
+                totalPages: config.maxPages,
+                scriptsFound: 0
+              }
+            });
+            await runSyncAICrawl();
+            return;
+          }
+        }
+
         setCrawlStatus({
           status: 'error',
           message: 'AI import failed. Please try again.',
@@ -276,13 +319,13 @@ const DocumentationCrawl: React.FC = () => {
     const percentage = Math.min(Math.round((pagesProcessed / Math.max(totalPages, 1)) * 100), 100);
 
     return (
-      <div className="mt-4 w-full">
-        <div className="flex justify-between text-xs text-[var(--color-text-tertiary)] mb-1">
+      <div className="mt-4 w-full max-w-full overflow-hidden">
+        <div className="flex justify-between text-xs text-[var(--color-text-tertiary)] mb-1 min-w-0">
           <span>{percentage}% Complete</span>
           <span>{pagesProcessed} of {totalPages} pages</span>
         </div>
         <div
-          className="w-full rounded-full h-2.5"
+          className="w-full max-w-full rounded-full h-2.5 overflow-hidden"
           style={{ backgroundColor: 'var(--color-bg-tertiary)' }}
         >
           <div
@@ -451,7 +494,7 @@ const DocumentationCrawl: React.FC = () => {
               </span>
             </div>
 
-            <p className="text-sm">
+            <p className="text-sm break-words">
               {crawlStatus.message}
             </p>
 

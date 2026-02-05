@@ -6,11 +6,11 @@ AI-powered PowerShell operations training, packaged for onboarding, compliance, 
 
 | Capability | What it teaches | Key screens/assets |
 | --- | --- | --- |
-| Script intake | Uploads, tagging, versioning, hash-based dedup | ![Scripts](../screenshots/scripts.png) |
-| AI analysis | Security scoring, fix recommendations, audit notes | ![Analysis](../screenshots/analysis.png) |
-| Discovery | Keyword + vector search, documentation explorer, crawl | ![Documentation](../screenshots/documentation.png) |
-| AI copilots | Chat assistant, agentic workflows, history | ![Chat](../screenshots/chat.png) |
-| Operations | Analytics, API usage, exports, training links | ![Analytics](../screenshots/analytics.png) |
+| Script intake | Uploads, tagging, versioning, hash-based dedup | ![Scripts](../screenshots/scripts-v3.png) |
+| AI analysis | Security scoring, fix recommendations, audit notes | ![Analysi../screenshots/analysis-v4.pngpng) |
+| Discovery | Keyword + vector search, documentation explorer, crawl | ![Documenta../screenshots/documentation-v4.pngon.png) |
+| AI copilots | Chat assistant, agentic workflows, history |../screenshots/chat-v4.png/chat.png) |
+| Operations | Analytics, API usage, exports, training links | !../screenshots/analytics-v5.pngnalytics.png) |
 
 ## Feature tour (README-style checklist)
 
@@ -23,27 +23,27 @@ AI-powered PowerShell operations training, packaged for onboarding, compliance, 
 
 ## Architecture and flows
 
-![Architecture](../graphics/architecture.svg)
+![Architecture](../graphics/architecture-v2.svg)
 
-![Analysis Pipeline](../graphics/analysis-pipeline.svg)
+![Analysis Pipeline](../graphics/analysis-pipeline-v2.svg)
 
-![Script Lifecycle](../graphics/lifecycle.svg)
+![Script Lifecycle](../graphics/lifecycle-v2.svg)
 
-![Search Modes](../graphics/search-modes.svg)
+![Search Modes](../graphics/search-modes-v2.svg)
 
-![Security Scorecard](../graphics/security-scorecard.svg)
+![Security Scorecard](../graphics/security-scorecard-v2.svg)
 
 ## Screenshot gallery
 
-- Login + default access: ![Login](../screenshots/login.png)
-- Dashboard with stats and activity: ![Dashboard](../screenshots/dashboard.png)
-- Script detail with metadata: ![Script Detail](../screenshots/script-detail.png)
-- Upload with live preview: ![Upload](../screenshots/upload.png)
-- AI analysis + recommendations: ![Analysis](../screenshots/analysis.png)
-- Documentation explorer: ![Docs](../screenshots/documentation.png)
-- Chat assistant: ![Chat](../screenshots/chat.png)
-- Analytics + ops KPIs: ![Analytics](../screenshots/analytics.png)
-- Settings with training links: ![Settings](../screenshots/settings.png)
+- Login + default access: ![Login](../screenshots/login-v2.png)
+- Dashboard with stats and activity: ![Dashboard](../screenshots/dashboard-v2.png)
+- Script detail with metadata: ![Script Detail](../screenshots/script-detail-v2.png)
+- Upload with live preview: ![Upload](../screenshots/upload-v2.png)
+- AI analysis + recommendations: ![Analysis](../screenshots/analysis-v2.png)
+- Documentation explorer: ![Docs](../screenshots/documentation-v2.png)
+- Chat assistant: ![Chat](../screenshots/chat-v2.png)
+- Analytics + ops KPIs: ![Analytics](../screenshots/analytics-v2.png)
+- Settings with training links: ![Settings](../screenshots/settings-v2.png)
 
 ## Audience and outcomes
 
@@ -52,8 +52,6 @@ AI-powered PowerShell operations training, packaged for onboarding, compliance, 
 | Script authors | Upload, categorize, analyze, and improve scripts | Curated script library with analysis reports |
 | Security reviewers | Evaluate risk, audit findings, track fixes | Security scorecards and remediation notes |
 | Platform admins | Operate services, manage users, tune data | Environment runbook and health checklist |
-
-## Training roadmap
 
 ![Training Roadmap](../graphics/training-roadmap.svg)
 

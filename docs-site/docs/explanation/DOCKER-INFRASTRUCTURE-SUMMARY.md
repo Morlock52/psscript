@@ -297,7 +297,7 @@ AWS_SECRET_ACCESS_KEY=
 **After**: Automatic failover with Sentinel
 
 - Detection time: 5 seconds
-- Failover time: <10 seconds
+- Failover time: &lt;10 seconds
 - No manual intervention
 - No data loss (replication)
 
@@ -326,7 +326,7 @@ AWS_SECRET_ACCESS_KEY=
 **Expected Results**:
 
 - RPO (Recovery Point Objective): 4-6 hours
-- RTO (Recovery Time Objective): <30 minutes
+- RTO (Recovery Time Objective): &lt;30 minutes
 - 30 days of backup history
 - Cloud backup redundancy (optional)
 
@@ -383,10 +383,10 @@ deploy:
 
 | Scenario | RTO | RPO |
 |----------|-----|-----|
-| Redis Master Failure | <10 seconds | 0 (no data loss) |
-| PostgreSQL Full Restore | <30 minutes | Up to 24 hours |
-| PostgreSQL Point-in-Time | <1 hour | Up to 6 hours |
-| Redis Full Restore | <10 minutes | Up to 4 hours |
+| Redis Master Failure | &lt;10 seconds | 0 (no data loss) |
+| PostgreSQL Full Restore | &lt;30 minutes | Up to 24 hours |
+| PostgreSQL Point-in-Time | &lt;1 hour | Up to 6 hours |
+| Redis Full Restore | &lt;10 minutes | Up to 4 hours |
 
 ## Monitoring and Observability
 

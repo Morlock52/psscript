@@ -213,14 +213,14 @@ This document outlines a comprehensive testing strategy for the PSScript PowerSh
 
 #### Performance Test Cases:
 
-- [ ] **PERF-01**: Page load time < 3s (Lighthouse)
-- [ ] **PERF-02**: Time to Interactive < 5s
-- [ ] **PERF-03**: First Contentful Paint < 1.5s
-- [ ] **PERF-04**: API response time < 200ms (avg)
-- [ ] **PERF-05**: Database query time < 100ms (avg)
+- [ ] **PERF-01**: Page load time &lt; 3s (Lighthouse)
+- [ ] **PERF-02**: Time to Interactive &lt; 5s
+- [ ] **PERF-03**: First Contentful Paint &lt; 1.5s
+- [ ] **PERF-04**: API response time &lt; 200ms (avg)
+- [ ] **PERF-05**: Database query time &lt; 100ms (avg)
 - [ ] **PERF-06**: 100 concurrent users supported
 - [ ] **PERF-07**: No memory leaks in React components
-- [ ] **PERF-08**: Bundle size < 500KB (main chunk)
+- [ ] **PERF-08**: Bundle size &lt; 500KB (main chunk)
 - [ ] **PERF-09**: Images optimized (WebP/AVIF)
 - [ ] **PERF-10**: Code splitting implemented
 

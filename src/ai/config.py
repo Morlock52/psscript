@@ -21,6 +21,28 @@ logger = logging.getLogger("config")
 # Default configuration file path
 CONFIG_FILE_PATH = os.getenv("CONFIG_FILE_PATH", "config.json")
 
+# Chat model guardrails
+CHAT_MODEL_FALLBACK = "gpt-5-mini"
+NON_CHAT_MODEL_HINTS = (
+    "-instruct",
+    "instruct",
+    "text-",
+    "davinci",
+    "curie",
+    "babbage",
+    "ada",
+)
+
+def ensure_chat_model(model: Optional[str]) -> str:
+    """Ensure a chat-capable model for chat.completions usage."""
+    if not model:
+        return CHAT_MODEL_FALLBACK
+    model_lower = model.lower()
+    if model_lower.startswith("text-") or any(hint in model_lower for hint in NON_CHAT_MODEL_HINTS):
+        logger.warning(f"Non-chat model '{model}' detected; falling back to {CHAT_MODEL_FALLBACK}")
+        return CHAT_MODEL_FALLBACK
+    return model
+
 class APIKeys(BaseModel):
     """API keys configuration."""
     openai: Optional[str] = Field(None, description="OpenAI API key")
@@ -156,6 +178,18 @@ def load_config() -> Config:
     
     if os.getenv("SERPAPI_API_KEY"):
         config.api_keys.serpapi = os.getenv("SERPAPI_API_KEY")
+
+    # Model overrides (align with backend env naming)
+    if os.getenv("OPENAI_SMART_MODEL"):
+        config.agent.default_model = os.getenv("OPENAI_SMART_MODEL")
+    elif os.getenv("OPENAI_MODEL"):
+        config.agent.default_model = os.getenv("OPENAI_MODEL")
+
+    if os.getenv("OPENAI_FAST_MODEL"):
+        config.agent.fast_model = os.getenv("OPENAI_FAST_MODEL")
+
+    if os.getenv("OPENAI_REASONING_MODEL"):
+        config.agent.reasoning_model = os.getenv("OPENAI_REASONING_MODEL")
     
     # Other settings
     if os.getenv("MOCK_MODE", "").lower() in ("true", "1", "yes"):
@@ -192,6 +226,13 @@ def load_config() -> Config:
         config.agent.embedding_model = "text-embedding-3-large"
     if not hasattr(config.agent, 'embedding_dimensions'):
         config.agent.embedding_dimensions = 3072
+
+    # Guard against non-chat models for chat.completions usage
+    config.agent.default_model = ensure_chat_model(config.agent.default_model)
+    config.agent.powershell_model = ensure_chat_model(config.agent.powershell_model)
+    config.agent.reasoning_model = ensure_chat_model(config.agent.reasoning_model)
+    config.agent.fast_model = ensure_chat_model(config.agent.fast_model)
+    config.agent.fallback_model = ensure_chat_model(config.agent.fallback_model)
 
     logger.info(f"Models configured - Default: {config.agent.default_model}, PowerShell: {config.agent.powershell_model}")
     return config

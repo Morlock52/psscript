@@ -6,7 +6,7 @@ import CategoryPieChart from '../components/charts/CategoryPieChart';
 // Reusable style constants for theme-aware styling
 const cardStyles = "rounded-lg shadow-[var(--shadow-md)] p-6 bg-[var(--color-bg-elevated)] border border-[var(--color-border-default)]";
 const statCardStyles = "rounded-lg p-4 shadow-[var(--shadow-sm)] bg-[var(--color-bg-tertiary)]";
-const progressBarBgStyles = "w-full rounded-full h-2.5 bg-[var(--color-bg-primary)]";
+const progressBarBgStyles = "w-full max-w-full rounded-full h-2.5 bg-[var(--color-bg-primary)] overflow-hidden";
 const categoryItemStyles = "flex items-center justify-between p-3 rounded bg-[var(--color-bg-tertiary)]";
 
 const Analytics: React.FC = () => {

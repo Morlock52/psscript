@@ -1,0 +1,53 @@
+<svg width="1000" height="340" viewBox="0 0 1000 340" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <rect width="1000" height="340" rx="22" fill="#0f172a"/>
+  <text x="32" y="44" fill="#f8fafc" font-family="Segoe UI, Arial, sans-serif" font-size="18" font-weight="600">Security Scorecard</text>
+
+  <rect x="40" y="70" width="280" height="240" rx="16" fill="#111827" stroke="#22c55e" stroke-width="2"/>
+  <text x="64" y="108" fill="#e2e8f0" font-family="Segoe UI, Arial, sans-serif" font-size="14" font-weight="600">Overall score</text>
+  <text x="64" y="156" fill="#f8fafc" font-family="Segoe UI, Arial, sans-serif" font-size="42" font-weight="700">8.1</text>
+  <text x="128" y="156" fill="#94a3b8" font-family="Segoe UI, Arial, sans-serif" font-size="14" font-weight="500">/ 10</text>
+  <text x="64" y="182" fill="#22c55e" font-family="Segoe UI, Arial, sans-serif" font-size="12" font-weight="600">Low risk</text>
+
+  <text x="64" y="212" fill="#94a3b8" font-family="Segoe UI, Arial, sans-serif" font-size="11">Secrets</text>
+  <rect x="130" y="204" width="150" height="8" rx="4" fill="#1f2937"/>
+  <rect x="130" y="204" width="126" height="8" rx="4" fill="#22c55e"/>
+
+  <text x="64" y="236" fill="#94a3b8" font-family="Segoe UI, Arial, sans-serif" font-size="11">Validation</text>
+  <rect x="130" y="228" width="150" height="8" rx="4" fill="#1f2937"/>
+  <rect x="130" y="228" width="108" height="8" rx="4" fill="#f59e0b"/>
+
+  <text x="64" y="260" fill="#94a3b8" font-family="Segoe UI, Arial, sans-serif" font-size="11">Logging</text>
+  <rect x="130" y="252" width="150" height="8" rx="4" fill="#1f2937"/>
+  <rect x="130" y="252" width="120" height="8" rx="4" fill="#38bdf8"/>
+
+  <rect x="340" y="70" width="320" height="240" rx="16" fill="#111827" stroke="#60a5fa" stroke-width="2"/>
+  <text x="364" y="108" fill="#e2e8f0" font-family="Segoe UI, Arial, sans-serif" font-size="14" font-weight="600">Top findings</text>
+  <text x="364" y="140" fill="#94a3b8" font-family="Segoe UI, Arial, sans-serif" font-size="12">- 2 credential hardcodes</text>
+  <text x="364" y="164" fill="#94a3b8" font-family="Segoe UI, Arial, sans-serif" font-size="12">- 4 missing parameter guards</text>
+  <text x="364" y="188" fill="#94a3b8" font-family="Segoe UI, Arial, sans-serif" font-size="12">- 3 verbose logging gaps</text>
+  <text x="364" y="212" fill="#94a3b8" font-family="Segoe UI, Arial, sans-serif" font-size="12">- 1 high-risk cmdlet chain</text>
+  <text x="364" y="236" fill="#94a3b8" font-family="Segoe UI, Arial, sans-serif" font-size="12">- 6 scripts need owner tags</text>
+
+  <rect x="680" y="70" width="280" height="240" rx="16" fill="#111827" stroke="#f59e0b" stroke-width="2"/>
+  <text x="704" y="108" fill="#e2e8f0" font-family="Segoe UI, Arial, sans-serif" font-size="14" font-weight="600">Remediation status</text>
+
+  <rect x="704" y="136" width="200" height="14" rx="7" fill="#1f2937"/>
+  <rect x="704" y="136" width="56" height="14" rx="7" fill="#ef4444"/>
+  <text x="914" y="147" fill="#94a3b8" font-family="Segoe UI, Arial, sans-serif" font-size="11">Open 2</text>
+
+  <rect x="704" y="168" width="200" height="14" rx="7" fill="#1f2937"/>
+  <rect x="704" y="168" width="90" height="14" rx="7" fill="#f59e0b"/>
+  <text x="914" y="179" fill="#94a3b8" font-family="Segoe UI, Arial, sans-serif" font-size="11">In progress 3</text>
+
+  <rect x="704" y="200" width="200" height="14" rx="7" fill="#1f2937"/>
+  <rect x="704" y="200" width="150" height="14" rx="7" fill="#22c55e"/>
+  <text x="914" y="211" fill="#94a3b8" font-family="Segoe UI, Arial, sans-serif" font-size="11">Closed 9</text>
+
+  <text x="704" y="244" fill="#94a3b8" font-family="Segoe UI, Arial, sans-serif" font-size="11">Last review: 2026-01-09</text>
+  <text x="704" y="266" fill="#94a3b8" font-family="Segoe UI, Arial, sans-serif" font-size="11">Next review: 2026-02-01</text>
+
+  <g opacity="0.5">
+    <circle cx="150" cy="12" r="5" fill="#0ea5e9" />
+    <text x="150" y="15" font-size="6" text-anchor="middle" fill="#ffffff">v3</text>
+  </g>
+</svg>

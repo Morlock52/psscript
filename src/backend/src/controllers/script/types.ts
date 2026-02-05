@@ -8,11 +8,13 @@ import type { Transaction } from 'sequelize';
 // Extend Express Request with user info
 export interface AuthenticatedRequest extends Request {
   user?: {
-    id: number;
-    username: string;
-    role: 'admin' | 'user';
+    id?: number;
+    username?: string;
+    role?: 'admin' | 'user';
+    [key: string]: any;
   };
 }
+
 
 // Standard API response types
 export interface ApiResponse<T = unknown> {

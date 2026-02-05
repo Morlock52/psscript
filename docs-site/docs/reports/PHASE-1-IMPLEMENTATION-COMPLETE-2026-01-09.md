@@ -443,7 +443,7 @@ All dependencies are already in package.json:
 
 Based on LangGraph orchestrator capabilities:
 
-- **Simple scripts** (< 50 lines): 10-20 seconds
+- **Simple scripts** (&lt; 50 lines): 10-20 seconds
 - **Medium scripts** (50-200 lines): 20-40 seconds
 - **Complex scripts** (200+ lines): 40-90 seconds
 
@@ -458,7 +458,7 @@ Based on LangGraph orchestrator capabilities:
 **Streaming Updates:**
 
 - Events arrive every 0.5-2 seconds
-- Low latency (<500ms typically)
+- Low latency (&lt;500ms typically)
 - No buffering issues with SSE
 
 ---

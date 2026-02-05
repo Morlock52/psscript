@@ -62,8 +62,8 @@ router.get('/categories', async (req, res) => {
 
 // General analytics summary
 router.get('/summary', (req, res) => {
-  // TODO: Implement comprehensive analytics summary
-  res.json({ message: 'Analytics summary endpoint (to be implemented)' });
+  const controller = new analyticsController();
+  return controller.getSummary(req, res);
 });
 
 export default router;

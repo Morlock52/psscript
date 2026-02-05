@@ -79,7 +79,86 @@ app.get('/health', (req, res) => {
 });
 
 // API routes
-// TODO: Add API routes for scripts, categories, tags, search, etc.
+const {
+  searchScripts,
+  searchScriptsByCategory,
+  searchScriptsByTag,
+  findSimilarScripts
+} = require('./services/search/searchService');
+
+const clamp = (value, min, max) => Math.min(Math.max(value, min), max);
+const toInt = (value, fallback) => {
+  const parsed = parseInt(value, 10);
+  return Number.isFinite(parsed) ? parsed : fallback;
+};
+const toFloat = (value, fallback) => {
+  const parsed = parseFloat(value);
+  return Number.isFinite(parsed) ? parsed : fallback;
+};
+
+app.get('/api/search', async (req, res, next) => {
+  try {
+    const query = (req.query.q || '').toString().trim();
+    if (!query) {
+      return res.status(400).json({ error: 'Missing required query parameter: q' });
+    }
+
+    const limit = clamp(toInt(req.query.limit, 10), 1, 50);
+    const threshold = clamp(toFloat(req.query.threshold, 0.7), 0, 1);
+
+    const results = await searchScripts(query, limit, threshold);
+    return res.json({ query, limit, threshold, results });
+  } catch (error) {
+    return next(error);
+  }
+});
+
+app.get('/api/search/category', async (req, res, next) => {
+  try {
+    const category = (req.query.category || '').toString().trim();
+    if (!category) {
+      return res.status(400).json({ error: 'Missing required query parameter: category' });
+    }
+
+    const limit = clamp(toInt(req.query.limit, 10), 1, 50);
+    const results = await searchScriptsByCategory(category, limit);
+    return res.json({ category, limit, results });
+  } catch (error) {
+    return next(error);
+  }
+});
+
+app.get('/api/search/tag', async (req, res, next) => {
+  try {
+    const tag = (req.query.tag || '').toString().trim();
+    if (!tag) {
+      return res.status(400).json({ error: 'Missing required query parameter: tag' });
+    }
+
+    const limit = clamp(toInt(req.query.limit, 10), 1, 50);
+    const results = await searchScriptsByTag(tag, limit);
+    return res.json({ tag, limit, results });
+  } catch (error) {
+    return next(error);
+  }
+});
+
+app.get('/api/search/similar', async (req, res, next) => {
+  try {
+    const scriptId = toInt(req.query.scriptId, null);
+    if (!scriptId) {
+      return res.status(400).json({ error: 'Missing required query parameter: scriptId' });
+    }
+
+    const limit = clamp(toInt(req.query.limit, 5), 1, 50);
+    const threshold = clamp(toFloat(req.query.threshold, 0.7), 0, 1);
+
+    const results = await findSimilarScripts(scriptId, limit, threshold);
+    return res.json({ scriptId, limit, threshold, results });
+  } catch (error) {
+    return next(error);
+  }
+});
 
 // Error handling middleware
 app.use((err, req, res, next) => {

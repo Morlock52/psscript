@@ -1,29 +1,7 @@
 import express from 'express';
 import logger from '../utils/logger';
-import { sequelize } from '../database/connection';
+import { sequelize, dbConnectionInfo as baseDbConnectionInfo, connectionEvents } from '../database/connection';
 import { QueryTypes } from 'sequelize';
-
-// TODO: Restore dbConnectionInfo and connectionEvents functionality
-// These were removed in the database connection refactor
-const dbConnectionInfo = {
-  isConnected: () => true,
-  lastSuccessfulConnection: () => Date.now(),
-  retryCount: () => 0,
-  consecutiveFailures: () => 0,
-  tables: () => [],
-  lastError: () => null,
-  errorStats: () => ({}),
-  pgPoolStatus: () => ({}),
-  config: () => ({
-    pool: {},
-    host: process.env.DB_HOST || 'localhost',
-    port: parseInt(process.env.DB_PORT || '5432', 10),
-    database: process.env.DB_NAME || 'psscript',
-    username: process.env.DB_USER || 'postgres'
-  }),
-  validateConnection: async () => true
-};
-const _connectionEvents = {};
 import dns from 'dns';
 import net from 'net';
 import os from 'os';
@@ -43,6 +21,75 @@ const MAX_MEMORY_USAGE = process.env.MAX_CACHE_MEMORY ? parseInt(process.env.MAX
 const CLEANUP_INTERVAL = 5 * 60 * 1000; // 5 minutes
 
 const router = express.Router();
+let dbConnected = false;
+let lastSuccessfulConnection: number | null = null;
+let retryCount = 0;
+let consecutiveFailures = 0;
+let lastError: Error | null = null;
+let cachedTables: string[] = [];
+const errorStats: Record<string, number> = {};
+
+const recordSuccess = () => {
+  dbConnected = true;
+  lastSuccessfulConnection = Date.now();
+  consecutiveFailures = 0;
+  lastError = null;
+  connectionEvents.emit('connected', { time: lastSuccessfulConnection });
+};
+
+const recordFailure = (error: Error) => {
+  dbConnected = false;
+  lastError = error;
+  retryCount += 1;
+  consecutiveFailures += 1;
+  const type = error.name || 'Error';
+  errorStats[type] = (errorStats[type] || 0) + 1;
+  connectionEvents.emit('error', { time: Date.now(), error });
+};
+
+const getPoolStatus = () => {
+  const pool = (sequelize as any)?.connectionManager?.pool;
+  if (!pool) {
+    return { available: null, using: null, size: null, pending: null };
+  }
+  return {
+    available: pool.available ?? pool._availableObjects?.length ?? null,
+    using: pool.using ?? pool._inUseObjects?.length ?? null,
+    size: pool.size ?? pool._allObjects?.length ?? null,
+    pending: pool.pending ?? pool._pendingQueue?.length ?? null
+  };
+};
+
+const dbConnectionInfo = {
+  isConnected: () => dbConnected,
+  lastSuccessfulConnection: () => lastSuccessfulConnection,
+  retryCount: () => retryCount,
+  consecutiveFailures: () => consecutiveFailures,
+  tables: () => cachedTables,
+  lastError: () => lastError,
+  errorStats: () => errorStats,
+  pgPoolStatus: () => getPoolStatus(),
+  config: () => ({
+    pool: {
+      max: baseDbConnectionInfo.poolMax,
+      min: baseDbConnectionInfo.poolMin
+    },
+    host: baseDbConnectionInfo.host,
+    port: baseDbConnectionInfo.port,
+    database: baseDbConnectionInfo.database,
+    username: process.env.DB_USER || 'postgres'
+  }),
+  validateConnection: async () => {
+    try {
+      await sequelize.authenticate();
+      recordSuccess();
+      return true;
+    } catch (error: any) {
+      recordFailure(error);
+      return false;
+    }
+  }
+};
 
 // Enhanced basic health check
 router.get('/', async (req, res) => {
@@ -54,10 +101,12 @@ router.get('/', async (req, res) => {
     try {
       await sequelize.authenticate();
       dbStatus = 'connected';
+      recordSuccess();
     } catch (error: any) {
       logger.error('Database authentication failed: ' + error.message);
       dbStatus = 'disconnected';
       authErrorMessage = error.message;
+      recordFailure(error);
     }
     
     // Only try to fetch tables if the database is connected
@@ -67,7 +116,17 @@ router.get('/', async (req, res) => {
           "SELECT table_name FROM information_schema.tables WHERE table_schema = 'public' ORDER BY table_name",
           { type: QueryTypes.SELECT }
         );
-        tables = results.map((r: any) => r.table_name as string);
+        tables = results
+          .map((row: any) => {
+            if (typeof row === 'string') return row;
+            if (!row || typeof row !== 'object') return null;
+            const direct = (row as any).table_name ?? (row as any).tableName;
+            if (typeof direct === 'string') return direct;
+            const fallback = Object.values(row)[0];
+            return typeof fallback === 'string' ? fallback : null;
+          })
+          .filter((name: string | null): name is string => !!name && name.length > 0);
+        cachedTables = tables;
         logger.info("Health check - fetched tables: " + tables.join(", "));
       } catch (error: any) {
         logger.error("Error fetching tables in health endpoint: " + error.message);

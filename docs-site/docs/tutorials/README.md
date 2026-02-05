@@ -1,3 +1,8 @@
+---
+title: Training Suite Overview
+slug: /tutorials/training-suite
+---
+
 # PSScript Training Suite
 
 AI-powered PowerShell operations training, packaged for onboarding, compliance, and day-2 operations. Built in the style of polished GitHub READMEs (à la Supabase/PostHog) but tailored to this platform.
@@ -23,15 +28,15 @@ AI-powered PowerShell operations training, packaged for onboarding, compliance, 
 
 ## Architecture and flows
 
-![Architecture](../graphics/architecture.svg)
+![Architecture](/images/graphics/architecture-v3.svg)
 
-![Analysis Pipeline](../graphics/analysis-pipeline.svg)
+![Analysis Pipeline](/images/graphics/analysis-pipeline-v3.svg)
 
-![Script Lifecycle](../graphics/lifecycle.svg)
+![Script Lifecycle](/images/graphics/lifecycle-v3.svg)
 
-![Search Modes](../graphics/search-modes.svg)
+![Search Modes](/images/graphics/search-modes-v3.svg)
 
-![Security Scorecard](../graphics/security-scorecard.svg)
+![Security Scorecard](/images/graphics/security-scorecard-v4.svg)
 
 ## Screenshot gallery
 
@@ -55,7 +60,7 @@ AI-powered PowerShell operations training, packaged for onboarding, compliance, 
 
 ## Training roadmap
 
-![Training Roadmap](../graphics/training-roadmap.svg)
+![Training Roadmap](/images/graphics/training-roadmap-v2.svg)
 
 ```mermaid
 flowchart LR

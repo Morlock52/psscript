@@ -349,8 +349,8 @@ curl http://localhost:4000/api/analytics/ai/summary
 
 ### Performance Tests
 
-- [ ] Vector search latency < 25ms (was ~200ms)
-- [ ] API response time < 300ms p95 (was ~800ms)
+- [ ] Vector search latency &lt; 25ms (was ~200ms)
+- [ ] API response time &lt; 300ms p95 (was ~800ms)
 - [ ] Concurrent connections: 1000+ supported
 - [ ] Token usage reduced by 30-50%
 

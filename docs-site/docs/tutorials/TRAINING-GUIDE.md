@@ -30,15 +30,15 @@ Management rollout details live in `../MANAGEMENT-PLAYBOOK.md`.
 
 ## System overview
 
-![Architecture Diagram](../graphics/architecture.svg)
+![Architecture Diagram](/images/graphics/architecture-v4.svg)
 
-![Analysis Pipeline](../graphics/analysis-pipeline.svg)
+![Analysis Pipeline](/images/graphics/analysis-pipeline-v4.svg)
 
-![Script Lifecycle](../graphics/lifecycle.svg)
+![Script Lifecycle](/images/graphics/lifecycle-v4.svg)
 
-![Search Modes](../graphics/search-modes.svg)
+![Search Modes](/images/graphics/search-modes-v4.svg)
 
-![Usage Metrics](../graphics/usage-metrics.svg)
+![Usage Metrics](/images/graphics/usage-metrics-v3.svg)
 
 ## Feature cheat sheet
 
@@ -55,7 +55,7 @@ Management rollout details live in `../MANAGEMENT-PLAYBOOK.md`.
 
 ## Training roadmap
 
-![Training Roadmap](../graphics/training-roadmap.svg)
+![Training Roadmap](/images/graphics/training-roadmap-v3.svg)
 
 ## Environment setup
 
@@ -148,7 +148,8 @@ Ship a vetted script in ~15 minutes:
 3. Draft a governance checklist for releases.
 
 ![Analytics](/images/screenshots/variants/analytics-v10.png)
-![Sample Usage Metrics](../graphics/usage-metrics.svg)
+
+![Usage Metrics](/images/graphics/usage-metrics-v4.svg)
 
 ### Lab 05: Settings and training resources
 
@@ -199,17 +200,17 @@ curl -X POST http://localhost:8000/similar \
 
 ### Security scorecard
 
-![Security Scorecard](../graphics/security-scorecard.svg)
+![Security Scorecard](/images/graphics/security-scorecard-v5.svg)
 
 ### Scorecard rubric
 
 | Signal | Description | Target |
 | --- | --- | --- |
-| Security score | Weighted risk score from AI analysis | >= 7.5 |
+| Security score | Weighted risk score from AI analysis | ≥ 7.5 |
 | High-risk findings | Count of high severity issues | 0 |
-| Remediation SLA | Days to close high-risk findings | <= 7 |
+| Remediation SLA | Days to close high-risk findings | ≤ 7 |
 | Ownership coverage | Scripts with owner tag | 100% |
-| Review cadence | Days between audits | <= 30 |
+| Review cadence | Days between audits | ≤ 30 |
 
 ### Operational checks
 
@@ -219,7 +220,7 @@ curl -X POST http://localhost:8000/similar \
 | Database | pgvector enabled | true |
 | AI service | Analyze endpoint | 200 OK |
 | Cache | Redis reachable | Optional |
-| UI | Dashboard load | < 3 seconds |
+| UI | Dashboard load | &lt; 3 seconds |
 
 ## Appendix
 

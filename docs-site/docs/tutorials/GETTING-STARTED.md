@@ -166,10 +166,10 @@ If the application is running slowly:
 
 ## Additional Resources
 
-- **Database Documentation**: See [DATABASE-IMPROVEMENTS.md](DATABASE-IMPROVEMENTS.md)
-- **Authentication Documentation**: See [AUTHENTICATION-IMPROVEMENTS.md](AUTHENTICATION-IMPROVEMENTS.md)
-- **Vector Search**: See [README-VECTOR-SEARCH.md](README-VECTOR-SEARCH.md)
-- **Voice API Integration**: See [README-VOICE-API.md](README-VOICE-API.md)
+- **Database Documentation**: See [DATABASE-IMPROVEMENTS.md](/reports/DATABASE-IMPROVEMENTS)
+- **Authentication Documentation**: See [AUTHENTICATION-IMPROVEMENTS.md](/how-to/AUTHENTICATION-IMPROVEMENTS)
+- **Vector Search**: See [README-VECTOR-SEARCH.md](/reference/README-VECTOR-SEARCH)
+- **Voice API Integration**: See [README-VOICE-API.md](/reference/README-VOICE-API)
 
 ## Support
 

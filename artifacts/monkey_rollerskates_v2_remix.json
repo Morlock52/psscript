@@ -1,0 +1,15 @@
+{
+  "completed_at": null,
+  "created_at": 1770166108,
+  "error": null,
+  "expires_at": null,
+  "id": "video_6982975c8d7c81939fd4d8bb6bb4c2340473fd1d3fb77e4c",
+  "model": "sora-2",
+  "object": "video",
+  "progress": 0,
+  "prompt": "Primary request: Same shot and framing; change the scene to a neon-lit indoor roller rink at night with reflective floor and soft colored spotlights. Keep action and camera move identical.",
+  "remixed_from_video_id": "video_698296f464d48190ab41a42f160550460535ef8b3fa6a0c2",
+  "seconds": "4",
+  "size": "1280x720",
+  "status": "queued"
+}

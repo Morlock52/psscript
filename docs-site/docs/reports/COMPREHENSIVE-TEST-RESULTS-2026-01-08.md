@@ -82,7 +82,7 @@
 **Method:** curl command
 **Endpoint:** POST /api/auth/login
 **Result:** Returns success=true, JWT token, user object
-**Response Time:** < 100ms
+**Response Time:** &lt; 100ms
 
 ### ST-09: Database connection active
 **Status:** ✅ PASS

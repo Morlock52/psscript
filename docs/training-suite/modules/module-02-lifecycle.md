@@ -15,13 +15,13 @@
 
 ## Lifecycle snapshot
 
-![Script Lifecycle](../../graphics/lifecycle.svg)
+![Script Lifecycle](../../graphics/lifecycle-v4.svg)
 
 ## Screenshots
 
-![Script Upload](../../screenshots/upload.png)
+![Script Upload](../../screenshots/upload-v5.png)
 
-![Script Detail](../../screenshots/script-detail.png)
+![Script De../../screenshots/script-detail-v3.pngil.png)
 
 ## Metadata checklist
 

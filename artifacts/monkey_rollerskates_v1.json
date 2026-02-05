@@ -1,0 +1,32 @@
+{
+  "create": {
+    "completed_at": null,
+    "created_at": 1770166004,
+    "error": null,
+    "expires_at": null,
+    "id": "video_698296f464d48190ab41a42f160550460535ef8b3fa6a0c2",
+    "model": "sora-2",
+    "object": "video",
+    "progress": 0,
+    "prompt": "Use case: short playful social clip\nPrimary request: a monkey on roller skates\nScene/background: sunny beach boardwalk with pastel storefronts and palm trees, gentle sea breeze\nSubject: a small stylized monkey wearing retro helmet and elbow pads\nAction: glides forward, does a small spin, then waves at the camera\nCamera: medium tracking shot, low angle, smooth dolly alongside\nLighting/mood: warm afternoon sunlight, cheerful\nColor palette: teal, coral, sand, sunny yellow\nStyle/format: stylized 3D animation, clean render\nTiming/beats: 0-2s glide, 2-3s spin, 3-4s wave\nConstraints: no text, no logos\nAvoid: flicker, jitter, heavy motion blur",
+    "remixed_from_video_id": null,
+    "seconds": "4",
+    "size": "1280x720",
+    "status": "queued"
+  },
+  "final": {
+    "completed_at": 1770166068,
+    "created_at": 1770166004,
+    "error": null,
+    "expires_at": 1770169668,
+    "id": "video_698296f464d48190ab41a42f160550460535ef8b3fa6a0c2",
+    "model": "sora-2",
+    "object": "video",
+    "progress": 100,
+    "prompt": "Use case: short playful social clip\nPrimary request: a monkey on roller skates\nScene/background: sunny beach boardwalk with pastel storefronts and palm trees, gentle sea breeze\nSubject: a small stylized monkey wearing retro helmet and elbow pads\nAction: glides forward, does a small spin, then waves at the camera\nCamera: medium tracking shot, low angle, smooth dolly alongside\nLighting/mood: warm afternoon sunlight, cheerful\nColor palette: teal, coral, sand, sunny yellow\nStyle/format: stylized 3D animation, clean render\nTiming/beats: 0-2s glide, 2-3s spin, 3-4s wave\nConstraints: no text, no logos\nAvoid: flicker, jitter, heavy motion blur",
+    "remixed_from_video_id": null,
+    "seconds": "4",
+    "size": "1280x720",
+    "status": "completed"
+  }
+}

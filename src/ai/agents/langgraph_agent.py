@@ -37,6 +37,7 @@ def create_openai_tools_agent(llm, tools, prompt):
 # Local imports (after wrapper function) - noqa: E402
 from .base_agent import BaseAgent  # noqa: E402
 from analysis.script_analyzer import ScriptAnalyzer  # noqa: E402
+from config import config, ensure_chat_model  # noqa: E402
 
 # Configure logging
 logging.basicConfig(
@@ -311,7 +312,7 @@ class LangGraphAgent(BaseAgent):
     Updated for January 2026 with LangGraph 0.2.x+ and latest model configurations.
     """
 
-    def __init__(self, api_key: Optional[str] = None, model: str = "gpt-4.1"):
+    def __init__(self, api_key: Optional[str] = None, model: str = config.agent.default_model):
         """
         Initialize the LangGraph agent.
 
@@ -330,8 +331,10 @@ class LangGraphAgent(BaseAgent):
         ]
 
         # Initialize the LLM with updated model - gpt-4o is current best as of Jan 2026
+        safe_model = ensure_chat_model(model)
+
         self.llm = ChatOpenAI(
-            model=model,
+            model=safe_model,
             temperature=0.3,  # Lower temperature for more consistent analysis
             streaming=True,
             api_key=api_key or os.getenv("OPENAI_API_KEY"),
@@ -348,7 +351,7 @@ class LangGraphAgent(BaseAgent):
         # Build the graph
         self.graph = self._build_graph()
 
-        logger.info(f"LangGraph agent initialized with model {model}")
+        logger.info(f"LangGraph agent initialized with model {safe_model}")
     
     def _create_tool_executor(self) -> Callable:
         """Create a tool executor for the agent."""

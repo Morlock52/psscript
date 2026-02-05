@@ -931,7 +931,7 @@ def route_to_specialists(state: PowerShellAnalysisState) -> List[str]:
 ### **External Services**
 - **Brave Search API**: $5/month (free tier may suffice initially)
 - **GitHub API**: Free for personal/organization use
-- **OpenAI API**: Pay-as-you-go (GPT-5.2-codex pricing TBD)
+- **OpenAI API**: Pay-as-you-go (confirm current GPT-5.2-codex pricing as of February 4, 2026)
 
 ---
 

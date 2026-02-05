@@ -35,7 +35,7 @@ This PowerShell Script Analysis Platform includes production-ready infrastructur
 
 - 1 Master + 2 Replicas for redundancy
 - 3 Sentinel nodes for monitoring
-- Automatic failover in <10 seconds
+- Automatic failover in &lt;10 seconds
 - No data loss during failover
 - Read scaling via replicas
 
@@ -92,9 +92,9 @@ tail -f backups/logs/backup.log
 
 | Scenario | Downtime | Recovery | Data Loss |
 |----------|----------|----------|-----------|
-| Redis Master Failure | <10 sec | Automatic | None |
-| Manual Failover | <5 sec | Manual | None |
-| Network Partition | <15 sec | Automatic | None |
+| Redis Master Failure | &lt;10 sec | Automatic | None |
+| Manual Failover | &lt;5 sec | Manual | None |
+| Network Partition | &lt;15 sec | Automatic | None |
 
 ### Backup & Recovery Metrics
 
@@ -103,7 +103,7 @@ tail -f backups/logs/backup.log
 | Full Backup | 5-10 min | 24h | 30 min |
 | Incremental Backup | 1-2 min | 6h | 1h |
 | Full Restore | 10-20 min | - | 30 min |
-| Redis Snapshot | <1 min | 4h | 10 min |
+| Redis Snapshot | &lt;1 min | 4h | 10 min |
 
 ## Quick Start Commands
 
@@ -413,7 +413,7 @@ services:
 
 ### For Developers
 
-1. Read the [Quick Start Guide](../DOCKER-QUICKSTART.md)
+1. Read the [Quick Start Guide](https://github.com/Morlock52/psscript/blob/main/docs/archive/recovery-2026-01-14/DOCKER-QUICKSTART.md)
 2. Start services: `./docker-manage.sh start`
 3. Check health: `./docker-manage.sh health`
 4. Start coding!
@@ -429,16 +429,16 @@ services:
 ### For Architects
 
 1. Review [Architecture Summary](DOCKER-INFRASTRUCTURE-SUMMARY.md)
-2. Understand [Backup Strategy](../docker/backup/README.md)
+2. Understand [Backup Strategy](https://github.com/Morlock52/psscript/blob/main/docker/backup/README.md)
 3. Plan scaling strategy
 4. Design disaster recovery procedures
 
 ## Support Resources
 
-- **Quick Reference**: `/DOCKER-QUICKSTART.md`
+- **Quick Reference**: https://github.com/Morlock52/psscript/blob/main/docs/archive/recovery-2026-01-14/DOCKER-QUICKSTART.md
 - **Full Documentation**: `/docs/DOCKER-INFRASTRUCTURE.md`
 - **Architecture Summary**: `/docs/DOCKER-INFRASTRUCTURE-SUMMARY.md`
-- **Backup Guide**: `/docker/backup/README.md`
+- **Backup Guide**: https://github.com/Morlock52/psscript/blob/main/docker/backup/README.md
 - **Management Tool**: `./docker-manage.sh help`
 
 ## Feature Roadmap

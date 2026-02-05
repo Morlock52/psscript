@@ -381,14 +381,14 @@ const ScriptUpload: React.FC = () => {
                 )}
                 
                 {uploadMutation.isPending && (
-                  <div className="mt-4">
-                    <div className="w-full bg-gray-700 rounded-full h-2.5">
+                  <div className="mt-4 w-full max-w-full overflow-hidden">
+                    <div className="w-full max-w-full bg-gray-700 rounded-full h-2.5 overflow-hidden">
                       <div
                         className="bg-blue-600 h-2.5 rounded-full transition-all duration-300"
                         style={{ width: `${uploadProgress}%` }}
                       ></div>
                     </div>
-                    <p className="text-gray-400 text-sm mt-1 text-center">
+                    <p className="text-gray-400 text-sm mt-1 text-center break-words">
                       {uploadProgress < 100 ? 'Uploading...' : 'Processing...'} {Math.round(uploadProgress)}%
                     </p>
                   </div>

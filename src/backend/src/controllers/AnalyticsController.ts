@@ -232,4 +232,54 @@ export default class AnalyticsController {
       res.status(500).json({ message: 'Failed to fetch category distribution' });
     }
   }
+
+  /**
+   * Get a lightweight analytics summary for dashboards
+   */
+  async getSummary(req: Request, res: Response) {
+    try {
+      const totals = await db.query(`
+        SELECT
+          (SELECT COUNT(*) FROM scripts) as scripts,
+          (SELECT COUNT(*) FROM users) as users,
+          (SELECT COUNT(*) FROM script_analysis) as analyses
+      `);
+
+      const recent = await db.query(`
+        SELECT
+          (SELECT COUNT(*) FROM scripts WHERE created_at >= NOW() - INTERVAL '24 hours') as scripts_24h,
+          (SELECT COUNT(*) FROM script_analysis WHERE updated_at >= NOW() - INTERVAL '24 hours') as analyses_24h
+      `);
+
+      const topCategories = await db.query(`
+        SELECT
+          c.name,
+          COUNT(s.id) as script_count
+        FROM categories c
+        LEFT JOIN scripts s ON s.category_id = c.id
+        GROUP BY c.name
+        ORDER BY COUNT(s.id) DESC
+        LIMIT 5
+      `);
+
+      res.status(200).json({
+        totals: {
+          scripts: parseInt(totals[0]?.scripts || 0),
+          users: parseInt(totals[0]?.users || 0),
+          analyses: parseInt(totals[0]?.analyses || 0)
+        },
+        last24h: {
+          scripts: parseInt(recent[0]?.scripts_24h || 0),
+          analyses: parseInt(recent[0]?.analyses_24h || 0)
+        },
+        topCategories: topCategories.map((row: any) => ({
+          name: row.name,
+          count: parseInt(row.script_count || 0)
+        }))
+      });
+    } catch (error) {
+      console.error('Error fetching analytics summary:', error);
+      res.status(500).json({ message: 'Failed to fetch analytics summary' });
+    }
+  }
 }
