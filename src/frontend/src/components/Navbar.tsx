@@ -1,7 +1,8 @@
-import React, { useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { useTheme } from '../contexts/ThemeContext';
 import { useAuth } from '../hooks/useAuth';
+import { getApiUrl } from '../utils/apiUrl';
 
 // Define props for Navbar
 interface NavbarProps {
@@ -16,6 +17,13 @@ const Navbar: React.FC<NavbarProps> = ({ onMenuClick }) => {
 
   const [showUserMenu, setShowUserMenu] = useState(false);
   const [showNotifications, setShowNotifications] = useState(false);
+  const [apiStatus, setApiStatus] = useState<'checking' | 'ok' | 'down'>('checking');
+  const [apiStatusMessage, setApiStatusMessage] = useState('Checking API…');
+
+  const apiHealthUrl = useMemo(() => {
+    const base = getApiUrl();
+    return `${base.replace(/\/$/, '')}/health`;
+  }, []);
 
   // Toggle user menu
   const toggleUserMenu = () => {
@@ -35,6 +43,48 @@ const Navbar: React.FC<NavbarProps> = ({ onMenuClick }) => {
     setShowUserMenu(false);
     navigate('/login');
   };
+
+  useEffect(() => {
+    let isMounted = true;
+    let timeoutId: ReturnType<typeof setTimeout> | null = null;
+
+    const checkHealth = async () => {
+      try {
+        const controller = new AbortController();
+        timeoutId = setTimeout(() => controller.abort(), 5000);
+        const response = await fetch(apiHealthUrl, {
+          method: 'GET',
+          headers: { 'Cache-Control': 'no-cache' },
+          signal: controller.signal,
+        });
+
+        if (!isMounted) return;
+
+        if (response.ok) {
+          setApiStatus('ok');
+          setApiStatusMessage('API online');
+        } else {
+          setApiStatus('down');
+          setApiStatusMessage(`API error (${response.status})`);
+        }
+      } catch (error) {
+        if (!isMounted) return;
+        setApiStatus('down');
+        setApiStatusMessage('API unreachable');
+      } finally {
+        if (timeoutId) clearTimeout(timeoutId);
+      }
+    };
+
+    checkHealth();
+    const intervalId = setInterval(checkHealth, 30000);
+
+    return () => {
+      isMounted = false;
+      if (timeoutId) clearTimeout(timeoutId);
+      clearInterval(intervalId);
+    };
+  }, [apiHealthUrl]);
 
   // Get page title based on current route
   const getPageTitle = () => {
@@ -96,6 +146,22 @@ const Navbar: React.FC<NavbarProps> = ({ onMenuClick }) => {
 
         {/* Right side - Actions */}
         <div className="flex items-center gap-1">
+          {/* API status indicator */}
+          <div className="hidden sm:flex items-center gap-2 px-2 py-1 rounded-lg border border-[var(--color-border-default)] bg-[var(--color-bg-tertiary)] text-xs text-[var(--color-text-secondary)]">
+            <span
+              className={`inline-flex h-2.5 w-2.5 rounded-full ${
+                apiStatus === 'ok'
+                  ? 'bg-emerald-400'
+                  : apiStatus === 'down'
+                  ? 'bg-red-400'
+                  : 'bg-amber-400'
+              }`}
+              aria-hidden="true"
+            />
+            <span title={`${apiStatusMessage} • ${apiHealthUrl}`}>
+              {apiStatusMessage}
+            </span>
+          </div>
           {/* Search button */}
           <button
             className={iconButtonStyles}

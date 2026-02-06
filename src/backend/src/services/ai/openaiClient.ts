@@ -2,6 +2,14 @@ import OpenAI from 'openai';
 
 const CHAT_MODEL_FALLBACK = 'gpt-5-mini';
 
+// GPT-5 + Codex family models are Responses-first and may not support the legacy
+// Chat Completions endpoint. Route them to Responses API automatically.
+const shouldUseResponsesApi = (model: string | undefined): boolean => {
+  if (!model) return false;
+  const normalized = model.toLowerCase().trim();
+  return normalized.includes('codex') || normalized.startsWith('gpt-5');
+};
+
 const isNonChatModel = (model: string): boolean => {
   const normalized = model.toLowerCase().trim();
   return (
@@ -41,10 +49,62 @@ export const getOpenAIClient = (apiKey?: string): OpenAI => {
     throw new Error('OpenAI API key is required');
   }
   const timeout = Number(process.env.OPENAI_TIMEOUT_MS || 120_000);
-  return new OpenAI({
+  const client = new OpenAI({
     apiKey: key,
     timeout: Number.isFinite(timeout) ? timeout : 120_000
   });
+
+  // Patch chat.completions.create so existing code can keep using the Chat
+  // Completions SDK surface, while GPT-5/Codex requests transparently go through
+  // the Responses API (which supports these models).
+  const originalCreate = (client as any)?.chat?.completions?.create?.bind((client as any).chat.completions);
+  if (typeof originalCreate === 'function') {
+    (client as any).chat.completions.create = async (params: any, options?: any) => {
+      const model = params?.model;
+      if (!shouldUseResponsesApi(model)) {
+        return originalCreate(params, options);
+      }
+
+      const response = await (client as any).responses.create(
+        {
+          model,
+          input: params?.messages,
+          // Map JSON mode request shape.
+          ...(params?.response_format?.type === 'json_object'
+            ? { text: { format: { type: 'json_object' } } }
+            : undefined),
+          // Best-effort mappings for common fields.
+          ...(typeof params?.max_tokens === 'number' ? { max_output_tokens: params.max_tokens } : undefined),
+          ...(typeof params?.temperature === 'number' ? { temperature: params.temperature } : undefined),
+          ...(typeof params?.top_p === 'number' ? { top_p: params.top_p } : undefined),
+          ...(Array.isArray(params?.stop) ? { stop: params.stop } : undefined),
+          ...(typeof params?.stop === 'string' ? { stop: [params.stop] } : undefined),
+          ...(typeof params?.presence_penalty === 'number' ? { presence_penalty: params.presence_penalty } : undefined),
+          ...(typeof params?.frequency_penalty === 'number' ? { frequency_penalty: params.frequency_penalty } : undefined),
+          ...(typeof params?.seed === 'number' ? { seed: params.seed } : undefined),
+          ...(typeof params?.user === 'string' ? { user: params.user } : undefined),
+        },
+        options
+      );
+
+      const outputText = response?.output_text ?? '';
+      return {
+        id: response?.id,
+        model: response?.model ?? model,
+        created: Math.floor(Date.now() / 1000),
+        usage: response?.usage,
+        choices: [
+          {
+            index: 0,
+            finish_reason: response?.status === 'completed' ? 'stop' : 'length',
+            message: { role: 'assistant', content: outputText },
+          },
+        ],
+      };
+    };
+  }
+
+  return client;
 };
 
 export const extractJson = (raw: string): Record<string, any> | null => {

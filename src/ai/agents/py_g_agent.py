@@ -353,19 +353,19 @@ class PyGAgent(BaseAgent):
         """
         try:
             # Use the OpenAI API to get documentation information
-            response = self.client.chat.completions.create(
+            response = self.client.responses.create(
                 model="gpt-4o",
-                messages=[
+                input=[
                     {"role": "system", "content": "You are a PowerShell documentation expert. Provide concise, accurate information about PowerShell commands, concepts, and best practices."},
                     {"role": "user", "content": query}
                 ],
                 temperature=0.7,
-                max_tokens=500
+                max_output_tokens=500
             )
             
             return {
                 "section": "PowerShell Information",
-                "content": response.choices[0].message.content
+                "content": response.output_text
             }
         except Exception as e:
             logger.error(f"Error looking up documentation: {e}")
@@ -386,18 +386,18 @@ class PyGAgent(BaseAgent):
         """
         try:
             # Use the OpenAI API to get improvement suggestions
-            response = self.client.chat.completions.create(
+            response = self.client.responses.create(
                 model="gpt-4o",
-                messages=[
+                input=[
                     {"role": "system", "content": "You are a PowerShell expert. Analyze the provided script and suggest specific improvements for better performance, readability, security, and adherence to best practices. Provide concise, actionable suggestions."},
                     {"role": "user", "content": f"Suggest improvements for this PowerShell script:\n\n```powershell\n{content}\n```"}
                 ],
                 temperature=0.7,
-                max_tokens=500
+                max_output_tokens=500
             )
             
             # Extract suggestions from the response
-            suggestions_text = response.choices[0].message.content
+            suggestions_text = response.output_text
             
             # Parse suggestions into a list
             suggestions = []

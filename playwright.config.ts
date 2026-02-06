@@ -22,8 +22,8 @@ export default defineConfig({
 
   // Reporter to use
   reporter: [
-    ['html', { outputFolder: 'playwright-report' }],
-    ['json', { outputFile: 'playwright-results.json' }],
+    ['html', { outputFolder: process.env.PW_HTML_REPORT_DIR || 'playwright-report' }],
+    ['json', { outputFile: process.env.PW_JSON_REPORT_FILE || 'playwright-results.json' }],
     ['list']
   ],
 
@@ -47,6 +47,10 @@ export default defineConfig({
     // Navigation timeout (2026 best practice: generous timeout for initial loads)
     navigationTimeout: 30000,
   },
+
+  // Where Playwright writes per-test artifacts (screenshots, traces, videos).
+  // When running in Docker, set PW_OUTPUT_DIR=/tmp/... to avoid writing into the repo volume.
+  outputDir: process.env.PW_OUTPUT_DIR || 'test-results',
 
   // Configure projects for major browsers
   projects: (() => {

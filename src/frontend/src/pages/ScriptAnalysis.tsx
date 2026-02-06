@@ -2,6 +2,7 @@ import React, { useState, useRef, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import { apiClient, scriptService } from '../services/api';
+import { getApiUrl } from '../utils/apiUrl';
 import ReactMarkdown from 'react-markdown';
 import { FaExclamationTriangle, FaCheckCircle, FaInfoCircle, FaLightbulb, FaChartLine, FaPaperPlane, FaRobot } from 'react-icons/fa';
 // LangGraph Integration
@@ -48,21 +49,30 @@ const ScriptAnalysis: React.FC = () => {
     { value: 'claude-3-5-haiku-20241022', label: 'Claude Haiku (Fast)', provider: 'anthropic' },
   ];
   
-  const { data: script, isLoading: scriptLoading } = useQuery({
+  const { data: script, isLoading: scriptLoading, error: scriptError, refetch: refetchScript } = useQuery({
     queryKey: ['script', id],
     queryFn: () => scriptService.getScript(id || ''),
     enabled: !!id,
     refetchOnWindowFocus: false,
+    retry: (failureCount, error) => {
+      if (failureCount >= 2) return false;
+      return Boolean((error as any)?.isNetworkError);
+    },
   });
 
-  const { data: analysis, isLoading: analysisLoading } = useQuery({
+  const { data: analysis, isLoading: analysisLoading, error: analysisQueryError, refetch: refetchAnalysis } = useQuery({
     queryKey: ['scriptAnalysis', id],
     queryFn: () => scriptService.getScriptAnalysis(id || ''),
     enabled: !!id,
     refetchOnWindowFocus: false,
+    retry: (failureCount, error) => {
+      if (failureCount >= 2) return false;
+      return Boolean((error as any)?.isNetworkError);
+    },
   });
   
   const isDataLoading = scriptLoading || analysisLoading;
+  const apiBaseUrl = getApiUrl();
   
   // Scroll to bottom of messages when they change
   useEffect(() => {
@@ -279,6 +289,43 @@ When generating or modifying scripts:
     return (
       <div className="flex justify-center items-center h-96">
         <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-blue-500"></div>
+      </div>
+    );
+  }
+
+  if (scriptError || analysisQueryError) {
+    const err = (analysisQueryError || scriptError) as any;
+    const message = err?.message || 'Unable to reach the API service.';
+    const isNetworkError = Boolean(err?.isNetworkError);
+
+    return (
+      <div className="bg-gray-700 rounded-lg p-8 shadow text-center">
+        <h2 className="text-2xl font-bold text-white mb-3">Analysis Unavailable</h2>
+        <p className="text-gray-200 mb-2">{message}</p>
+        {isNetworkError && (
+          <p className="text-gray-300 mb-6">
+            The API appears unreachable. Make sure the backend is running and accessible at
+            {' '}
+            <span className="font-mono text-gray-100">{apiBaseUrl}</span>.
+          </p>
+        )}
+        <div className="flex flex-col sm:flex-row items-center justify-center gap-3">
+          <button
+            onClick={() => {
+              refetchScript();
+              refetchAnalysis();
+            }}
+            className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
+          >
+            Retry
+          </button>
+          <button
+            onClick={() => navigate(`/scripts/${id}`)}
+            className="px-4 py-2 bg-gray-600 text-white rounded-lg hover:bg-gray-700"
+          >
+            Back to Script
+          </button>
+        </div>
       </div>
     );
   }

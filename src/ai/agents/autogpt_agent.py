@@ -81,13 +81,13 @@ class AutoGPTAgent:
             The model's response as a string
         """
         try:
-            response = await self.client.chat.completions.create(
+            response = await self.client.responses.create(
                 model=self.model,
-                messages=messages,
+                input=messages,
                 temperature=temperature,
-                max_tokens=1500
+                max_output_tokens=1500
             )
-            return response.choices[0].message.content or ""
+            return response.output_text or ""
         except Exception as e:
             logger.error(f"Error calling OpenAI API: {e}")
             raise

@@ -278,19 +278,19 @@ class ScriptAnalyzer:
         
         # Use async OpenAI client directly
         try:
-            response = await async_client.chat.completions.create(
+            response = await async_client.responses.create(
                 model=ANALYSIS_MODEL,
-                messages=[
+                input=[
                     {"role": "system", "content": system_prompt},
                     {"role": "user", "content": user_prompt}
                 ],
                 temperature=0.2,
-                response_format={"type": "json_object"},
+                text={"format": {"type": "json_object"}},
                 timeout=60  # 60 second timeout
             )
             
             # Parse the JSON response
-            analysis_text = response.choices[0].message.content
+            analysis_text = response.output_text
             analysis = json.loads(analysis_text)
             
             # Ensure all expected keys are present

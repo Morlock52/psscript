@@ -104,6 +104,20 @@ setup_logging(level=log_level, json_format=log_json, log_file=log_file)
 
 logger = get_logger("psscript_api")
 
+def get_openai_client(api_key: Optional[str] = None):
+    """
+    Return an AsyncOpenAI client.
+
+    NOTE: We intentionally use the Responses API for GPT-5/Codex models; callers
+    should prefer client.responses.* over client.chat.completions.*.
+    """
+    from openai import AsyncOpenAI
+
+    key = api_key or config.api_keys.openai or os.getenv("OPENAI_API_KEY")
+    if not key:
+        raise HTTPException(status_code=400, detail="No OpenAI API key configured")
+    return AsyncOpenAI(api_key=key)
+
 
 def sanitize_for_prompt(value: str, max_length: int = 100) -> str:
     """
@@ -1703,14 +1717,14 @@ Original script:
 Improved script:"""
 
         client = get_openai_client()
-        response = await client.chat.completions.create(
+        response = await client.responses.create(
             model=config.agent.default_model,
-            messages=[{"role": "user", "content": improvement_prompt}],
+            input=[{"role": "user", "content": improvement_prompt}],
             temperature=0.3,
-            max_tokens=4096
+            max_output_tokens=4096
         )
 
-        improved_script = response.choices[0].message.content.strip()
+        improved_script = (response.output_text or "").strip()
 
         # Extract code from markdown if present
         if "```powershell" in improved_script:
@@ -2490,22 +2504,21 @@ TARGET: {script_requirements.get('target_system', 'windows') if script_requireme
             total_tokens = 0
             full_response = ""
 
-            stream = await client.chat.completions.create(
+            stream = await client.responses.create(
                 model=config.agent.default_model,
-                messages=messages,
+                input=messages,
                 stream=True,
                 temperature=0.7,
-                max_tokens=4096
+                max_output_tokens=4096
             )
 
             async for chunk in stream:
-                if chunk.choices and len(chunk.choices) > 0:
-                    delta = chunk.choices[0].delta
-                    if delta.content:
-                        content = delta.content
+                # Responses streaming emits SSE events. We only forward output text deltas.
+                if getattr(chunk, "type", "") == "response.output_text.delta":
+                    content = getattr(chunk, "delta", None)
+                    if isinstance(content, str) and content:
                         full_response += content
                         total_tokens += 1
-                        # Escape the content for JSON
                         yield f"data: {json.dumps({'type': 'token', 'content': content})}\n\n"
 
             # Stream complete - send done event with metadata

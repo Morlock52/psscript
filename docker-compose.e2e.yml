@@ -11,9 +11,12 @@ services:
       - PW_BASE_URL=http://host.docker.internal:3090
       - PW_BACKEND_URL=http://host.docker.internal:4000
       - CI=true
+      # Keep Playwright artifacts inside the container (not in the repo mount).
+      - PW_OUTPUT_DIR=/tmp/pw/test-results
+      - PW_HTML_REPORT_DIR=/tmp/pw/playwright-report
+      - PW_JSON_REPORT_FILE=/tmp/pw/playwright-results.json
     extra_hosts:
       - "host.docker.internal:host-gateway"
     depends_on:
       - frontend
       - backend
-

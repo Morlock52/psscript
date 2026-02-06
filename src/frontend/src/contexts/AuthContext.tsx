@@ -55,7 +55,10 @@ interface AuthProviderProps {
 
 // Create AuthProvider component
 export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
-  const AUTH_DISABLED = import.meta.env.VITE_DISABLE_AUTH === 'true';
+  // Auth bypass is meant for local dev UX only. Unit tests should always exercise
+  // the real auth logic (mocked network), even if VITE_DISABLE_AUTH is set in env.
+  const AUTH_DISABLED =
+    import.meta.env.VITE_DISABLE_AUTH === 'true' && import.meta.env.MODE !== 'test';
   const [user, setUser] = useState<User | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -122,7 +125,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     };
 
     loadUser();
-  }, []);
+  }, [AUTH_DISABLED]);
 
   // Demo login function - uses actual API authentication with demo credentials
   // This ensures proper token validation and persistence across page refreshes
