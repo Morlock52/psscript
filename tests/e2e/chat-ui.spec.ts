@@ -9,6 +9,16 @@ test.describe('Chat UI', () => {
   test.setTimeout(180_000);
 
   test('Can send a message and receive an assistant response', async ({ page }) => {
+    // Avoid stale keys/settings from previous runs overriding the server-side OPENAI_API_KEY.
+    await page.addInitScript(() => {
+      try {
+        localStorage.removeItem('openai_api_key');
+        localStorage.removeItem('psscript_mock_mode');
+      } catch {
+        // ignore
+      }
+    });
+
     // Uses Playwright baseURL (PW_BASE_URL / BASE_URL) from playwright.config.ts
     await page.goto('/chat', { waitUntil: 'networkidle' });
 

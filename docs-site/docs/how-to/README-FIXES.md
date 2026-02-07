@@ -217,7 +217,7 @@ This script will:
 
 #### Testing Script Deletion:
 
-1. Navigate to the script management page (http://localhost:3000/manage)
+1. Navigate to the script management page (http://localhost:3090/manage)
 2. Find a script in the list
 3. Click the 'Delete' button (trash can icon)
 4. Confirm the deletion in the dialog
@@ -225,7 +225,7 @@ This script will:
 
 #### Testing Script Upload:
 
-1. Navigate to the upload page (http://localhost:3000/upload)
+1. Navigate to the upload page (http://localhost:3090/upload)
 2. Click 'Choose File' or drag and drop a PowerShell script
 3. Fill in the title and description
 4. Click 'Upload'

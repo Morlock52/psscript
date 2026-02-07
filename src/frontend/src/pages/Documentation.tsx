@@ -1,9 +1,12 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useLocation } from 'react-router-dom';
 import documentationApi, { DocItem, DocStats } from '../services/documentationApi';
 import SummaryCard from '../components/SummaryCard';
+import { useCommandExplain } from '../contexts/CommandExplainContext';
 
 const Documentation: React.FC = () => {
+  const location = useLocation();
+  const { openCommand } = useCommandExplain();
   const [query, setQuery] = useState<string>('');
   const [isSearching, setIsSearching] = useState<boolean>(false);
   const [isLoading, setIsLoading] = useState<boolean>(true);
@@ -55,6 +58,29 @@ const Documentation: React.FC = () => {
 
     loadInitialData();
   }, []);
+
+  // Allow linking into this page with a pre-filled search query (used by the Explain drawer).
+  useEffect(() => {
+    try {
+      const params = new URLSearchParams(location.search || '');
+      const q = (params.get('q') || params.get('query') || '').trim();
+      if (!q) return;
+      setQuery(q);
+      // Best-effort auto search (non-blocking).
+      setIsSearching(true);
+      documentationApi.searchDocumentation({ query: q, sortBy: 'relevance', limit: 50 })
+        .then((result) => {
+          setDocItems(result.items);
+          setFilteredItems(result.items);
+        })
+        .catch((_err) => {
+          // fall back to client-side filtering only
+        })
+        .finally(() => setIsSearching(false));
+    } catch (_e) {
+      // ignore
+    }
+  }, [location.search]);
 
   // Filter items based on search query, selected sources, tags, and category
   useEffect(() => {
@@ -765,12 +791,14 @@ const Documentation: React.FC = () => {
                   </div>
                   <div className="flex flex-wrap gap-2">
                     {selectedDoc.extractedCommands.map((cmd, idx) => (
-                      <code
+                      <button
                         key={idx}
-                        className="px-3 py-1.5 bg-green-900/40 text-green-300 rounded-lg font-mono text-sm border border-green-600/30"
+                        type="button"
+                        onClick={() => openCommand(cmd, 'documentation')}
+                        className="px-3 py-1.5 bg-green-900/40 text-green-300 rounded-lg font-mono text-sm border border-green-600/30 cursor-pointer hover:bg-green-900/55 hover:border-green-400/40 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-green-400"
                       >
                         {cmd}
-                      </code>
+                      </button>
                     ))}
                   </div>
                 </div>

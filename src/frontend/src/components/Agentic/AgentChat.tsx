@@ -25,6 +25,8 @@ import { Prism as SyntaxHighlighter } from 'react-syntax-highlighter';
 import { atomDark } from 'react-syntax-highlighter/dist/esm/styles/prism';
 import { useAuth } from '../../hooks/useAuth';
 import ReactMarkdown from 'react-markdown';
+import { useCommandExplain } from '../../contexts/CommandExplainContext';
+import { extractFirstCommandLine, isCmdletToken } from '../../utils/powershellCommandUtils';
 
 // Import agentic framework
 import {
@@ -74,6 +76,7 @@ What PowerShell challenge can I help you with today?`,
   placeholder = 'Ask about PowerShell scripting, request a new script, or get help debugging...',
   showToolbar = true
 }) => {
+  const { openCommand } = useCommandExplain();
   const theme = useTheme();
   const { isAuthenticated } = useAuth();
   const messagesEndRef = useRef<HTMLDivElement>(null);
@@ -272,16 +275,60 @@ What PowerShell challenge can I help you with today?`,
                   components={{
                     code({inline, className, children, ...props}) {
                       const match = /language-(\w+)/.exec(className || '');
-                      return !inline && match ? (
-                        <SyntaxHighlighter
-                          style={atomDark}
-                          language={match[1]}
-                          PreTag="div"
-                          {...props}
-                        >
-                          {String(children).replace(/\n$/, '')}
-                        </SyntaxHighlighter>
-                      ) : (
+                      if (inline) {
+                        const text = String(children || '').trim();
+                        if (isCmdletToken(text)) {
+                          return (
+                            <button
+                              type="button"
+                              onClick={() => openCommand(text, 'agent-chat')}
+                              className="bg-gray-100/10 px-1 py-0.5 rounded font-mono text-sm text-yellow-200 hover:bg-gray-100/20 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500"
+                              title="Explain command"
+                            >
+                              {text}
+                            </button>
+                          );
+                        }
+                        return (
+                          <code className={className} {...props}>
+                            {children}
+                          </code>
+                        );
+                      }
+
+                      if (!inline && match) {
+                        const code = String(children).replace(/\n$/, '');
+                        const lang = match[1] || 'powershell';
+                        const isPs = lang === 'powershell' || lang === 'ps1';
+
+                        return (
+                          <Box position="relative">
+                            {isPs && (
+                              <Box position="absolute" top={8} right={8} zIndex={2}>
+                                <Button
+                                  size="small"
+                                  variant="contained"
+                                  color="success"
+                                  onClick={() => openCommand(extractFirstCommandLine(code) || code, 'agent-chat')}
+                                  sx={{ textTransform: 'none', fontSize: '0.75rem', py: 0.25, minWidth: 0 }}
+                                >
+                                  Explain
+                                </Button>
+                              </Box>
+                            )}
+                            <SyntaxHighlighter
+                              style={atomDark}
+                              language={lang}
+                              PreTag="div"
+                              {...props}
+                            >
+                              {code}
+                            </SyntaxHighlighter>
+                          </Box>
+                        );
+                      }
+
+                      return (
                         <code className={className} {...props}>
                           {children}
                         </code>

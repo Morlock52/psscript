@@ -12,9 +12,10 @@ This document explains how to run the PSScript application using Docker, both fo
 
 The application consists of several services:
 
-- **Frontend**: React application running on port 3002
+- **Frontend**: React application running on port 3090
 - **Backend**: Node.js API service running on port 4000
 - **AI Service**: Python service for AI analysis running on port 8000
+- **PowerShell Tools**: PowerShell Editor Services + PSScriptAnalyzer (LSP + lint/format). Exposes 7001 (WS) and 7002 (HTTP) in local dev.
 - **PostgreSQL**: Database with pgvector extension for vector search
 - **Redis**: Caching service
 
@@ -43,7 +44,7 @@ The application consists of several services:
 To run the application in development mode:
 
 ```bash
-docker-compose up -d
+docker compose --env-file .env up -d --build
 ```
 
 This will start all services with hot-reloading enabled.
@@ -70,8 +71,12 @@ docker-compose -f docker-compose.prod.yml up -d
 
 ## Accessing the Application
 
-- Frontend: [http://localhost:3002](http://localhost:3002)
+- Frontend: [http://localhost:3090](http://localhost:3090)
 - Backend API: [http://localhost:4000](http://localhost:4000)
+- AI Service: [http://localhost:8000](http://localhost:8000)
+- PowerShell Tools (optional direct access):
+  - LSP WebSocket: `ws://localhost:7001`
+  - Lint/Format HTTP: [http://localhost:7002](http://localhost:7002)
 - API Documentation: [http://localhost:4000/api-docs](http://localhost:4000/api-docs)
 
 ## Troubleshooting

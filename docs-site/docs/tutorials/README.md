@@ -22,6 +22,7 @@ AI-powered PowerShell operations training, packaged for onboarding, compliance, 
 - [x] Script library with categories, owners, version history, and file-hash dedup
 - [x] AI analysis pipeline (scorecards, recommendations, remediation notes)
 - [x] Documentation explorer + crawler for command references and context storage
+- [x] Clickable cmdlets + Explain drawer (breakdown, flags, and AI-enriched cmdlet cards)
 - [x] Chat/agent experiences for “how to fix” and “explain this script” prompts
 - [x] Analytics dashboards for adoption, security posture, and training coverage
 - [x] Export kit (HTML, PDF, DOCX) plus Playwright screenshot automation
@@ -46,6 +47,7 @@ AI-powered PowerShell operations training, packaged for onboarding, compliance, 
 - Upload with live preview: ![Upload](/images/screenshots/variants/upload-v1.png)
 - AI analysis + recommendations: ![Analysis](/images/screenshots/variants/analysis-v3.png)
 - Documentation explorer: ![Docs](/images/screenshots/variants/documentation-v4.png)
+- Explain drawer + cmdlet card: ![Explain](/images/screenshots/variants/command-explain-v1.png)
 - Chat assistant: ![Chat](/images/screenshots/variants/chat-v2.png)
 - Analytics + ops KPIs: ![Analytics](/images/screenshots/variants/analytics-v8.png)
 - Settings with training links: ![Settings](/images/screenshots/variants/settings-v1.png)
@@ -110,8 +112,8 @@ flowchart LR
 
 2) Ports:
 
-- Frontend: http://localhost:3002
-- Backend API: http://localhost:4000/api
+- Frontend: http://localhost:3090
+- Backend API: http://localhost:4000
 - AI service: http://localhost:8000
 
 3) Capture screenshots (Playwright):

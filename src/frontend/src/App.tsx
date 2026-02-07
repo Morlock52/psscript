@@ -12,6 +12,9 @@ import Navbar from './components/Navbar';
 import Sidebar from './components/Sidebar';
 import ProtectedRoute from './components/ProtectedRoute';
 import LoadingScreen from './components/LoadingScreen';
+import GlobalLoadingBar from './components/GlobalLoadingBar';
+import CommandExplainDrawer from './components/CommandExplainDrawer';
+import { CommandExplainProvider } from './contexts/CommandExplainContext';
 
 // Eagerly load all pages to avoid Cloudflare Access blocking dynamic imports
 // Note: Code splitting with lazyWithRetry doesn't work through Cloudflare Access
@@ -102,48 +105,54 @@ const App: React.FC = () => {
   return (
     <QueryClientProvider client={queryClient}>
       <Router future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>
-        <ToastContainer position="top-right" theme="colored" />
-        <AppLayout>
-          <Routes>
-            <Route path="/" element={<Home />} />
-            <Route path="/login" element={<Login />} />
-            <Route path="/register" element={<Register />} />
-            <Route path="/dashboard" element={<ProtectedRoute><Dashboard /></ProtectedRoute>} />
-            <Route path="/analytics" element={<ProtectedRoute><Analytics /></ProtectedRoute>} />
+        <CommandExplainProvider>
+          <GlobalLoadingBar />
+          <ToastContainer position="top-right" theme="colored" />
+          <AppLayout>
+            <Routes>
+              <Route path="/" element={<Home />} />
+              <Route path="/login" element={<Login />} />
+              <Route path="/register" element={<Register />} />
+              <Route path="/dashboard" element={<ProtectedRoute><Dashboard /></ProtectedRoute>} />
+              <Route path="/analytics" element={<ProtectedRoute><Analytics /></ProtectedRoute>} />
 
-            {/* Script Management */}
-            <Route path="/scripts" element={<ProtectedRoute><ScriptManagement /></ProtectedRoute>} />
-            <Route path="/scripts/upload" element={<ProtectedRoute><ScriptUpload /></ProtectedRoute>} />
-            <Route path="/scripts/:id" element={<ScriptDetail />} />
-            <Route path="/scripts/:id/edit" element={<ProtectedRoute><ScriptEditor /></ProtectedRoute>} />
-            <Route path="/scripts/:id/analysis" element={<ScriptAnalysis />} />
+              {/* Script Management */}
+              <Route path="/scripts" element={<ProtectedRoute><ScriptManagement /></ProtectedRoute>} />
+              <Route path="/scripts/upload" element={<ProtectedRoute><ScriptUpload /></ProtectedRoute>} />
+              <Route path="/scripts/:id" element={<ScriptDetail />} />
+              <Route path="/scripts/:id/edit" element={<ProtectedRoute><ScriptEditor /></ProtectedRoute>} />
+              <Route path="/scripts/:id/analysis" element={<ScriptAnalysis />} />
 
-            {/* AI Features */}
-            <Route path="/chat" element={<SimpleChatWithAI />} />
-            <Route path="/chat/history" element={<ProtectedRoute><ChatHistory /></ProtectedRoute>} />
-            <Route path="/ai/assistant" element={<AgenticAIPage />} />
-            <Route path="/ai/agents" element={<ProtectedRoute><AgentOrchestrationPage /></ProtectedRoute>} />
+              {/* AI Features */}
+              <Route path="/chat" element={<SimpleChatWithAI />} />
+              <Route path="/chat/history" element={<ProtectedRoute><ChatHistory /></ProtectedRoute>} />
+              <Route path="/ai/assistant" element={<AgenticAIPage />} />
+              <Route path="/ai/agents" element={<ProtectedRoute><AgentOrchestrationPage /></ProtectedRoute>} />
 
-            {/* Documentation */}
-            <Route path="/documentation" element={<Documentation />} />
-            <Route path="/documentation/crawl" element={<ProtectedRoute><DocumentationCrawl /></ProtectedRoute>} />
-            <Route path="/documentation/data" element={<CrawledData />} />
-            <Route path="/ui-components" element={<UIComponentsDemo />} />
+              {/* Documentation */}
+              <Route path="/documentation" element={<Documentation />} />
+              <Route path="/documentation/crawl" element={<ProtectedRoute><DocumentationCrawl /></ProtectedRoute>} />
+              <Route path="/documentation/data" element={<CrawledData />} />
+              <Route path="/ui-components" element={<UIComponentsDemo />} />
 
-            {/* Settings */}
-            <Route path="/settings" element={<ProtectedRoute><Settings /></ProtectedRoute>} />
-            <Route path="/settings/profile" element={<ProtectedRoute><ProfileSettings /></ProtectedRoute>} />
-            <Route path="/settings/appearance" element={<ProtectedRoute><AppearanceSettings /></ProtectedRoute>} />
-            <Route path="/settings/security" element={<ProtectedRoute><SecuritySettings /></ProtectedRoute>} />
-            <Route path="/settings/notifications" element={<ProtectedRoute><NotificationSettings /></ProtectedRoute>} />
-            <Route path="/settings/api" element={<ProtectedRoute><ApiSettings /></ProtectedRoute>} />
-            <Route path="/settings/users" element={<ProtectedRoute><UserManagement /></ProtectedRoute>} />
+              {/* Settings */}
+              <Route path="/settings" element={<ProtectedRoute><Settings /></ProtectedRoute>} />
+              <Route path="/settings/profile" element={<ProtectedRoute><ProfileSettings /></ProtectedRoute>} />
+              <Route path="/settings/appearance" element={<ProtectedRoute><AppearanceSettings /></ProtectedRoute>} />
+              <Route path="/settings/security" element={<ProtectedRoute><SecuritySettings /></ProtectedRoute>} />
+              <Route path="/settings/notifications" element={<ProtectedRoute><NotificationSettings /></ProtectedRoute>} />
+              <Route path="/settings/api" element={<ProtectedRoute><ApiSettings /></ProtectedRoute>} />
+              <Route path="/settings/users" element={<ProtectedRoute><UserManagement /></ProtectedRoute>} />
 
-            {/* Fallbacks */}
-            <Route path="/404" element={<NotFound />} />
-            <Route path="*" element={<Navigate to="/404" replace />} />
-          </Routes>
-        </AppLayout>
+              {/* Fallbacks */}
+              <Route path="/404" element={<NotFound />} />
+              <Route path="*" element={<Navigate to="/404" replace />} />
+            </Routes>
+          </AppLayout>
+
+          {/* Global, app-wide drawer (opens from anywhere). */}
+          <CommandExplainDrawer />
+        </CommandExplainProvider>
       </Router>
     </QueryClientProvider>
   );

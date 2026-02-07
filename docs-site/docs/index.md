@@ -29,5 +29,6 @@ Welcome to the professional documentation hub for PSScript, a multi-service Powe
 ![Dashboard overview](/images/screenshots/variants/dashboard-v5.png)
 ![Analytics overview](/images/screenshots/variants/analytics-v5.png)
 ![Script details view](/images/screenshots/variants/script-detail-v4.png)
+![Modern script editor](/images/screenshots/variants/script-editor-v1.png)
 
-**Last updated:** February 3, 2026
+**Last updated:** February 7, 2026

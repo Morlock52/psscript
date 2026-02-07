@@ -138,7 +138,11 @@ export const searchByVector = async (
     }
     replacements.limit = limit;
 
-    // Execute the query with vector search using fully parameterized query
+    const modelVersion = getEmbeddingModel();
+    replacements.modelVersion = modelVersion;
+
+    // Execute the query with vector search using fully parameterized query.
+    // Note: embeddings live in `script_embeddings`, not `scripts`.
     const [results] = await sequelize.query(`
       SELECT
         s.id,
@@ -152,13 +156,14 @@ export const searchByVector = async (
         s.is_public as "isPublic",
         s.created_at as "createdAt",
         s.updated_at as "updatedAt",
-        s.file_path as "filePath",
         s.file_hash as "fileHash",
-        1 - (s.embedding <=> :vectorString::vector) as similarity
+        1 - (se.embedding <=> :vectorString::vector) as similarity
       FROM
-        scripts s
+        script_embeddings se
+      JOIN
+        scripts s ON s.id = se.script_id
       WHERE
-        ${whereClause}
+        se.model_version = :modelVersion AND ${whereClause.split('s.embedding').join('se.embedding')}
       ORDER BY
         similarity DESC
       LIMIT :limit;
@@ -223,30 +228,18 @@ export const findSimilarScripts = async (
   threshold: number = 0.7
 ): Promise<any[]> => {
   try {
-    // Get the script's embedding
-    const result = await sequelize.query(`
-      SELECT embedding FROM scripts WHERE id = :scriptId;
-    `, {
-      replacements: { scriptId },
-      type: 'SELECT',
-      raw: true
-    });
-    
-    // Get the first result
-    const scriptResult = result[0] as any;
-    
-    if (!scriptResult || !scriptResult.embedding) {
-      throw new Error(`Script with ID ${scriptId} not found or has no embedding`);
-    }
-    
-    // Convert embedding to array if it's not already
-    const embedding = Array.isArray(scriptResult.embedding) 
-      ? scriptResult.embedding 
-      : JSON.parse(scriptResult.embedding);
-    
-    // Search for similar scripts
-    const [results] = await sequelize.query(`
-      SELECT 
+    const modelVersion = getEmbeddingModel();
+
+    // Find similar scripts using the `script_embeddings` table.
+    const [results] = await sequelize.query(
+      `
+      WITH base AS (
+        SELECT embedding
+        FROM script_embeddings
+        WHERE script_id = :scriptId AND model_version = :modelVersion
+        LIMIT 1
+      )
+      SELECT
         s.id,
         s.title,
         s.description,
@@ -257,27 +250,54 @@ export const findSimilarScripts = async (
         s.is_public as "isPublic",
         s.created_at as "createdAt",
         s.updated_at as "updatedAt",
-        1 - (s.embedding <=> :embedding) as similarity
-      FROM 
-        scripts s
-      WHERE 
+        1 - (se.embedding <=> (SELECT embedding FROM base)) as similarity
+      FROM
+        script_embeddings se
+      JOIN
+        scripts s ON s.id = se.script_id
+      WHERE
         s.id != :scriptId AND
-        1 - (s.embedding <=> :embedding) > :threshold
-      ORDER BY 
+        se.model_version = :modelVersion AND
+        (SELECT embedding FROM base) IS NOT NULL AND
+        1 - (se.embedding <=> (SELECT embedding FROM base)) > :threshold
+      ORDER BY
         similarity DESC
       LIMIT :limit;
-    `, {
-      replacements: { 
-        scriptId,
-        embedding: JSON.stringify(embedding),
-        threshold,
-        limit
-      },
-      type: 'SELECT',
-      raw: true
-    });
-    
-    return results;
+      `,
+      {
+        replacements: {
+          scriptId,
+          modelVersion,
+          threshold,
+          limit,
+        },
+        type: 'SELECT',
+        raw: true,
+      }
+    );
+
+    // If there was no base embedding, this query returns 0 rows. Make it explicit.
+    if (!results || (results as any[]).length === 0) {
+      const [baseCheck] = await sequelize.query(
+        `
+        SELECT 1
+        FROM script_embeddings
+        WHERE script_id = :scriptId AND model_version = :modelVersion
+        LIMIT 1;
+        `,
+        {
+          replacements: { scriptId, modelVersion },
+          type: 'SELECT',
+          raw: true,
+        }
+      );
+
+      if (!baseCheck || (baseCheck as any[]).length === 0) {
+        throw new Error(`Script with ID ${scriptId} has no embedding for model ${modelVersion}`);
+      }
+    }
+
+    return results as any[];
   } catch (error) {
     logger.error('Error finding similar scripts:', error);
     throw error;

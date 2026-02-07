@@ -34,8 +34,8 @@ export default class Tag extends Model {
   static associate() {
     Tag.belongsToMany(Script, { 
       through: ScriptTag,
-      foreignKey: 'tag_id',
-      otherKey: 'script_id',
+      foreignKey: 'tagId',
+      otherKey: 'scriptId',
       as: 'scripts'
     });
   }

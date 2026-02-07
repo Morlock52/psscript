@@ -9,8 +9,4 @@ Use this list to track any UI links or buttons that do not navigate to a valid d
 - Add the date discovered.
 
 ## Open Items
-- Page/Route: `/login`
-  Label: "Forgot password?"
-  Current Target: `href="#"`
-  Expected Destination: Future "Reset Password" page (e.g., `/forgot-password`)
-  Date Discovered: 2026-02-05
+None (last reviewed: 2026-02-07).

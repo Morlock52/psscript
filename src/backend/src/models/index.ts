@@ -13,6 +13,8 @@ import Documentation from './Documentation';
 import Comment from './Comment';
 import UserFavorite from './UserFavorite';
 import ScriptDependency from './ScriptDependency';
+import CommandInsight from './CommandInsight';
+import CommandEnrichmentJob from './CommandEnrichmentJob';
 
 import dotenv from 'dotenv';
 dotenv.config();
@@ -35,6 +37,8 @@ Documentation.initialize(sequelize);
 Comment.initialize(sequelize);
 UserFavorite.initialize(sequelize);
 ScriptDependency.initialize(sequelize);
+CommandInsight.initialize(sequelize);
+CommandEnrichmentJob.initialize(sequelize);
 
 // Set up associations - check if method exists first
 function safeAssociate(model) {
@@ -62,6 +66,8 @@ safeAssociate(Documentation);
 safeAssociate(Comment);
 safeAssociate(UserFavorite);
 safeAssociate(ScriptDependency);
+safeAssociate(CommandInsight);
+safeAssociate(CommandEnrichmentJob);
 
 // Track connection events and diagnostics
 import { dbConnectionInfo, connectionEvents } from '../database/connection';
@@ -83,5 +89,7 @@ export {
   Documentation,
   Comment,
   UserFavorite,
-  ScriptDependency
+  ScriptDependency,
+  CommandInsight,
+  CommandEnrichmentJob
 };

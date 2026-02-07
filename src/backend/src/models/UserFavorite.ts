@@ -50,11 +50,13 @@ export default class UserFavorite extends Model {
 
   static associate() {
     UserFavorite.belongsTo(User, {
-      foreignKey: 'user_id',
+      // Use model attribute names; field mapping handles snake_case columns.
+      foreignKey: 'userId',
       as: 'user'
     });
     UserFavorite.belongsTo(Script, {
-      foreignKey: 'script_id',
+      // Use model attribute names; field mapping handles snake_case columns.
+      foreignKey: 'scriptId',
       as: 'script'
     });
   }

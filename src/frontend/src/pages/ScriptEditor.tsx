@@ -1,13 +1,11 @@
-import React, { useState, useEffect, useMemo } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { Card } from '../components/ui-enhanced';
-import MonacoEditor from 'react-monaco-editor';
-import 'monaco-editor/esm/vs/basic-languages/powershell/powershell';
 import { scriptService } from '../services/api';
 import { toast } from 'react-toastify';
+import ScriptEditorShell from '../components/editor/ScriptEditorShell';
 
 // Reusable style constants for theme-aware styling
-const inputStyles = "w-full px-3 py-2 rounded-md bg-[var(--color-bg-primary)] text-[var(--color-text-primary)] border border-[var(--color-border-default)] focus:outline-none focus:ring-2 focus:ring-[var(--color-primary)]";
 const buttonSecondaryStyles = "px-4 py-2 rounded-md bg-[var(--color-bg-tertiary)] hover:bg-[var(--color-bg-primary)] text-[var(--color-text-primary)] border border-[var(--color-border-default)]";
 
 const ScriptEditor: React.FC = () => {
@@ -96,18 +94,6 @@ const ScriptEditor: React.FC = () => {
     setIsDirty(false);
   };
 
-  const editorOptions = useMemo(
-    () => ({
-      automaticLayout: true,
-      wordWrap: 'on' as const,
-      minimap: { enabled: false },
-      fontSize: 13,
-      lineNumbers: 'on' as const,
-      scrollBeyondLastLine: false
-    }),
-    []
-  );
-
   if (isLoading) {
     return (
       <div className="flex justify-center items-center h-full">
@@ -131,80 +117,54 @@ const ScriptEditor: React.FC = () => {
     <div className="container mx-auto px-4 py-6">
       <Card className="mb-6">
         <div className="flex justify-between items-center mb-4">
-          <h1 className="text-2xl font-bold text-[var(--color-text-primary)]">Edit Script: {script?.title}</h1>
-          <div className="space-x-2">
-            <button
-              onClick={handleCancel}
-              className={buttonSecondaryStyles}
-            >
-              Cancel
-            </button>
-            <button
-              onClick={handleReset}
-              disabled={!isDirty}
-              className={`${buttonSecondaryStyles} ${!isDirty ? 'opacity-60 cursor-not-allowed' : ''}`}
-            >
-              Reset
-            </button>
-            <button
-              onClick={handleSave}
-              disabled={isSaving || !isDirty}
-              className={`px-4 py-2 rounded-md bg-[var(--color-primary)] hover:bg-[var(--color-primary-dark)] text-white ${isSaving || !isDirty ? 'opacity-70 cursor-not-allowed' : ''}`}
-            >
-              {isSaving ? 'Saving...' : 'Save'}
-            </button>
-          </div>
+          <h1 className="text-2xl font-bold text-[var(--color-text-primary)]">Edit Script</h1>
+          <button onClick={handleCancel} className={buttonSecondaryStyles}>
+            Back
+          </button>
         </div>
 
-        <div className="mb-4">
-          <label htmlFor="title" className="block mb-2 font-medium text-[var(--color-text-secondary)]">
-            Title
-          </label>
-          <input
-            id="title"
-            value={title}
-            onChange={(event) => {
-              setTitle(event.target.value);
-              setIsDirty(true);
-            }}
-            className={inputStyles}
-          />
-        </div>
+        <ScriptEditorShell
+          scriptId={id}
+          title={title}
+          description={description}
+          onTitleChange={(t) => {
+            setTitle(t);
+            setIsDirty(true);
+          }}
+          onDescriptionChange={(d) => {
+            setDescription(d);
+            setIsDirty(true);
+          }}
+          content={content}
+          onContentChange={handleContentChange}
+          onReset={handleReset}
+          initialSaveState={isDirty ? 'dirty' : 'saved'}
+          onSave={async (_reason) => {
+            if (!id) return;
+            setIsSaving(true);
+            try {
+              const payload = {
+                title: title.trim() || script?.title || 'Untitled Script',
+                description: description.trim(),
+                content
+              };
+              const response = await scriptService.updateScript(id, payload);
+              const updatedScript = response?.script || response;
+              setScript(updatedScript);
+              setLastSavedAt(updatedScript?.updatedAt || new Date().toISOString());
+              setIsDirty(false);
+            } catch (saveError: any) {
+              toast.error(saveError?.message || 'Failed to save script.');
+              throw saveError;
+            } finally {
+              setIsSaving(false);
+            }
+          }}
+        />
 
-        <div className="mb-4">
-          <label htmlFor="description" className="block mb-2 font-medium text-[var(--color-text-secondary)]">
-            Description
-          </label>
-          <input
-            type="text"
-            id="description"
-            value={description}
-            onChange={(event) => {
-              setDescription(event.target.value);
-              setIsDirty(true);
-            }}
-            className={inputStyles}
-          />
-        </div>
-
-        <div>
-          <label htmlFor="content" className="block mb-2 font-medium text-[var(--color-text-secondary)]">
-            Script Content
-          </label>
-          <div className="border border-[var(--color-border-default)] rounded-md overflow-hidden">
-            <MonacoEditor
-              language="powershell"
-              theme="vs-dark"
-              value={content}
-              options={editorOptions}
-              onChange={handleContentChange}
-              height={460}
-            />
-          </div>
-          <div className="mt-2 text-xs text-[var(--color-text-secondary)] flex justify-between">
-            <span>{isDirty ? 'Unsaved changes' : 'All changes saved'}</span>
-            <span>{lastSavedAt ? `Last saved: ${new Date(lastSavedAt).toLocaleString()}` : 'Not saved yet'}</span>
-          </div>
+        <div className="mt-2 text-xs text-[var(--color-text-secondary)] flex justify-between">
+          <span>{isDirty ? 'Unsaved changes' : 'All changes saved'}</span>
+          <span>{lastSavedAt ? `Last saved: ${new Date(lastSavedAt).toLocaleString()}` : 'Not saved yet'}</span>
         </div>
       </Card>
     </div>

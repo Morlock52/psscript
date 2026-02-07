@@ -162,7 +162,11 @@ const Login: React.FC = () => {
                 <label htmlFor="password" className="block text-sm font-medium text-[var(--color-text-secondary)]">
                   Password
                 </label>
-                <a href="#" className={`text-sm ${linkStyles}`}>
+                <a
+                  href="/settings/security"
+                  className={`text-sm ${linkStyles}`}
+                  title="Password reset is managed from Security settings in local/dev mode"
+                >
                   Forgot password?
                 </a>
               </div>

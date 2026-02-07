@@ -4,6 +4,7 @@ import axios, { AxiosRequestConfig, AxiosError } from "axios";
 import { getApiUrl, isLocalhost as checkIsLocalhost } from "../utils/apiUrl";
 import { extractApiError, ErrorCodes as _ErrorCodes } from "../utils/errorUtils";
 import { loadSettings } from "./settings";
+import { requestTracker } from "./requestTracker";
 
 // Determine if we're running in a development environment
 // This is evaluated at runtime in the browser
@@ -47,6 +48,15 @@ const apiClient = axios.create({
 // Request interceptor to dynamically set baseURL at runtime AND add auth token
 apiClient.interceptors.request.use(
   (config) => {
+    // Track in-flight requests for global loading UI.
+    // (Use a per-request flag to avoid double-decrementing.)
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const anyConfig = config as any;
+    if (!anyConfig.__psscript_tracked) {
+      anyConfig.__psscript_tracked = true;
+      requestTracker.increment();
+    }
+
     // Step 1: Prepend API URL if the request URL is relative (doesn't start with http)
     if (config.url && !config.url.startsWith('http')) {
       const apiUrl = getApiUrl();
@@ -99,7 +109,19 @@ export default apiClient;
 
 // Response interceptor for handling errors
 apiClient.interceptors.response.use(
-  (response) => response,
+  (response) => {
+    try {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const anyConfig = response.config as any;
+      if (anyConfig?.__psscript_tracked) {
+        anyConfig.__psscript_tracked = false;
+        requestTracker.decrement();
+      }
+    } catch (_err) {
+      // ignore
+    }
+    return response;
+  },
   async (error: AxiosError) => {
     const originalRequest = error.config as AxiosRequestConfig;
     
@@ -108,6 +130,18 @@ apiClient.interceptors.response.use(
       _retry?: boolean;
     }
     
+    // Ensure we decrement global request tracking on errors as well.
+    try {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const anyConfig = originalRequest as any;
+      if (anyConfig?.__psscript_tracked) {
+        anyConfig.__psscript_tracked = false;
+        requestTracker.decrement();
+      }
+    } catch (_err) {
+      // ignore
+    }
+
     // Handle token expiration (401 errors)
     const config = originalRequest as ExtendedRequestConfig;
     if (error.response?.status === 401 && !config._retry) {
@@ -176,7 +210,11 @@ const scriptService = {
     }
   },
   
-  uploadScript: async (scriptData: any, isLargeFile: boolean = false) => {
+  uploadScript: async (
+    scriptData: any,
+    isLargeFile: boolean = false,
+    options?: { onProgress?: (percent: number) => void }
+  ) => {
     try {
       // Check if we're dealing with FormData or JSON
        const isFormData = scriptData instanceof FormData;
@@ -203,7 +241,9 @@ const scriptService = {
       // Choose the appropriate endpoint based on file size and type
       const endpoint = isFormData
         ? isLargeFile
-          ? "/scripts/upload/async" // Use async endpoint for large files
+          // Backend expects `script_file` for large uploads at /upload/large (disk storage).
+          // /upload/async is a different API for batching `files[]` and isn't used by this UI.
+          ? "/scripts/upload/large"
           : "/scripts/upload"
         : "/scripts";
 
@@ -236,6 +276,29 @@ const scriptService = {
          hasAuthHeader: !!uploadConfig.headers.Authorization
        });
         
+       // Upload progress (browser-provided; falls back to an indeterminate-ish progression).
+       const onProgress = options?.onProgress;
+       let lastPercent = 0;
+       if (onProgress) {
+         (uploadConfig as any).onUploadProgress = (evt: any) => {
+           try {
+             const total = Number(evt.total);
+             const loaded = Number(evt.loaded);
+             if (Number.isFinite(total) && total > 0 && Number.isFinite(loaded)) {
+               const pct = Math.max(0, Math.min(100, Math.round((loaded / total) * 100)));
+               lastPercent = pct;
+               onProgress(pct);
+             } else {
+               // Some browsers/requests don't report total; keep UI moving but don't hit 100% until completion.
+               lastPercent = Math.min(95, lastPercent + 1);
+               onProgress(lastPercent);
+             }
+           } catch (_err) {
+             // ignore
+           }
+         };
+       }
+
        // Use the main apiClient with our custom config
        const response = await apiClient.post(endpoint, scriptData, uploadConfig).catch(err => {
          console.log('[UPLOAD DEBUG] Upload error details:', {
@@ -466,6 +529,26 @@ const scriptService = {
     } catch (error) {
       console.error(`Error fetching versions for script ${id}:`, error);
       return { versions: [] };
+    }
+  },
+
+  getScriptVersion: async (id: string, versionNumber: number) => {
+    try {
+      const response = await apiClient.get(`/scripts/${id}/versions/${versionNumber}`);
+      return response.data;
+    } catch (error) {
+      console.error(`Error fetching version ${versionNumber} for script ${id}:`, error);
+      throw error;
+    }
+  },
+
+  revertToVersion: async (id: string, versionNumber: number) => {
+    try {
+      const response = await apiClient.post(`/scripts/${id}/revert/${versionNumber}`);
+      return response.data;
+    } catch (error) {
+      console.error(`Error reverting script ${id} to version ${versionNumber}:`, error);
+      throw error;
     }
   },
 

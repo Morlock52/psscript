@@ -50,7 +50,10 @@ const ReadmeViewer: React.FC<ReadmeViewerProps> = ({ isOpen, onClose }) => {
       // Format inline code
       .replace(/`([^`]+)`/g, '<code class="font-mono bg-gray-100 dark:bg-gray-800 rounded px-1 py-0.5 text-sm">$1</code>')
       // Format links
-      .replace(/\[([^\]]+)\]\(([^)]+)\)/g, '<a href="$2" class="text-blue-600 dark:text-blue-400 hover:underline">$1</a>')
+      .replace(
+        /\[([^\]]+)\]\(([^)]+)\)/g,
+        '<a href="$2" target="_blank" rel="noreferrer noopener" class="text-blue-600 dark:text-blue-400 hover:underline">$1</a>'
+      )
       // Format unordered lists (basic)
       .replace(/^- (.+)$/gm, '<li class="ml-6 list-disc">$1</li>')
       // Format paragraphs (lines not captured by other patterns)

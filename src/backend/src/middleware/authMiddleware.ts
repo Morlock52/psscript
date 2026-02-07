@@ -8,9 +8,10 @@ import { getAuthConfig, IS_PRODUCTION } from '../utils/envValidation';
 
 const AUTH_DISABLED = process.env.DISABLE_AUTH === 'true';
 const DEV_USER = {
-  id: 'dev-user',
-  username: 'dev',
-  email: 'dev@local',
+  // Match DB schema: user_id is an integer FK. Seed data creates the first admin user.
+  id: 1,
+  username: 'admin',
+  email: 'admin@example.com',
   role: 'admin'
 };
 

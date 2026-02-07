@@ -8,10 +8,10 @@ export default class ScriptVersion extends Model {
   public version!: number;
   public content!: string;
   public changelog!: string | null;
-  public userId!: number;
+  public userId!: number | null;
 
   public readonly createdAt!: Date;
-  public readonly updatedAt!: Date;
+  // NOTE: script_versions does not have updated_at in our schema.
 
   // References
   public readonly script?: Script;
@@ -23,6 +23,11 @@ export default class ScriptVersion extends Model {
         type: DataTypes.INTEGER,
         autoIncrement: true,
         primaryKey: true
+      },
+      createdAt: {
+        type: DataTypes.DATE,
+        allowNull: false,
+        field: 'created_at'
       },
       scriptId: {
         type: DataTypes.INTEGER,
@@ -49,7 +54,7 @@ export default class ScriptVersion extends Model {
       },
       userId: {
         type: DataTypes.INTEGER,
-        allowNull: false,
+        allowNull: true,
         references: {
           model: 'users',
           key: 'id'

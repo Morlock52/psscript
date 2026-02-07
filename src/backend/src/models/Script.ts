@@ -3,6 +3,7 @@ import User from './User';
 import Category from './Category';
 import ScriptAnalysis from './ScriptAnalysis';
 import Tag from './Tag';
+import ScriptTag from './ScriptTag';
 
 export default class Script extends Model {
   public id!: number;
@@ -76,7 +77,8 @@ export default class Script extends Model {
       },
       isPublic: {
         type: DataTypes.BOOLEAN,
-        defaultValue: true,
+        // Default should match DB schema (src/db/schema.sql): `is_public BOOLEAN NOT NULL DEFAULT false`
+        defaultValue: false,
         field: 'is_public'
       },
       fileHash: {
@@ -101,9 +103,9 @@ export default class Script extends Model {
     Script.belongsTo(Category, { foreignKey: 'categoryId', as: 'category' });
     Script.hasOne(ScriptAnalysis, { foreignKey: 'scriptId', as: 'analysis' });
     Script.belongsToMany(Tag, { 
-      through: 'script_tags',
-      foreignKey: 'script_id',
-      otherKey: 'tag_id',
+      through: ScriptTag,
+      foreignKey: 'scriptId',
+      otherKey: 'tagId',
       as: 'tags'
     });
   }

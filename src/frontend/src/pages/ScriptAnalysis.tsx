@@ -4,6 +4,8 @@ import { useQuery } from '@tanstack/react-query';
 import { apiClient, scriptService } from '../services/api';
 import { getApiUrl } from '../utils/apiUrl';
 import ReactMarkdown from 'react-markdown';
+import { useCommandExplain } from '../contexts/CommandExplainContext';
+import { extractFirstCommandLine, isCmdletToken } from '../utils/powershellCommandUtils';
 import { FaExclamationTriangle, FaCheckCircle, FaInfoCircle, FaLightbulb, FaChartLine, FaPaperPlane, FaRobot } from 'react-icons/fa';
 // LangGraph Integration
 import { streamAnalysis, AnalysisEvent } from '../services/langgraphService';
@@ -16,6 +18,7 @@ interface Message {
 }
 
 const ScriptAnalysis: React.FC = () => {
+  const { openCommand } = useCommandExplain();
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState<string>('overview');
@@ -271,12 +274,23 @@ When generating or modifying scripts:
       <div className="relative rounded-md overflow-hidden bg-gray-800 my-4">
         <div className="flex justify-between items-center px-4 py-2 text-xs border-b border-gray-700">
           <span>{language}</span>
-          <button
-            onClick={() => navigator.clipboard.writeText(String(children))}
-            className="px-2 py-1 rounded text-xs bg-gray-700 hover:bg-gray-600 text-gray-300"
-          >
-            Copy
-          </button>
+          <div className="flex items-center gap-2">
+            {(language === 'powershell' || language === 'ps1') && (
+              <button
+                type="button"
+                onClick={() => openCommand(extractFirstCommandLine(String(children)) || String(children), 'script-analysis')}
+                className="px-2 py-1 rounded text-xs bg-emerald-600 hover:bg-emerald-500 text-white"
+              >
+                Explain
+              </button>
+            )}
+            <button
+              onClick={() => navigator.clipboard.writeText(String(children))}
+              className="px-2 py-1 rounded text-xs bg-gray-700 hover:bg-gray-600 text-gray-300"
+            >
+              Copy
+            </button>
+          </div>
         </div>
         <pre className="p-4 overflow-x-auto">
           <code className="text-gray-300">{children}</code>
@@ -1229,6 +1243,19 @@ This script follows the PowerShell cmdlet naming convention "Verb-Noun" and uses
                           components={{
                             code({inline, className, children, ...props}) {
                               if (inline) {
+                                const text = String(children || '').trim();
+                                if (isCmdletToken(text)) {
+                                  return (
+                                    <button
+                                      type="button"
+                                      onClick={() => openCommand(text, 'script-analysis')}
+                                      className="bg-gray-900 px-1 rounded font-mono text-yellow-300 cursor-pointer hover:bg-gray-800 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500"
+                                      title="Explain command"
+                                    >
+                                      {text}
+                                    </button>
+                                  );
+                                }
                                 return <code className="bg-gray-900 px-1 rounded font-mono text-yellow-300" {...props}>{children}</code>;
                               }
                               return <CodeBlock className={className}>{children}</CodeBlock>;

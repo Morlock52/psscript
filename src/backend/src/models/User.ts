@@ -245,7 +245,8 @@ export default class User extends Model {
       lockedUntil: {
         type: DataTypes.DATE,
         allowNull: true,
-        field: 'lockout_until'
+        // DB column is `locked_until` (see src/db/schema.sql + migrations/add_account_lockout.sql)
+        field: 'locked_until'
       }
     }, { 
       sequelize,

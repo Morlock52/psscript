@@ -26,5 +26,10 @@
     "useUnknownInCatchVariables": false
   },
   "include": ["src"],
+  "exclude": [
+    "**/*.test.*",
+    "**/*.spec.*",
+    "**/__tests__/**"
+  ],
   "references": [{ "path": "./tsconfig.node.json" }]
 }

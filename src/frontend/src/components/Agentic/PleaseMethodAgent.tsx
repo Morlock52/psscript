@@ -24,6 +24,8 @@ import ReactMarkdown from 'react-markdown';
 import SyntaxHighlighter from 'react-syntax-highlighter';
 import { vs2015 } from 'react-syntax-highlighter/dist/esm/styles/hljs';
 import { styled } from '@mui/material/styles';
+import { useCommandExplain } from '../../contexts/CommandExplainContext';
+import { extractFirstCommandLine, isCmdletToken } from '../../utils/powershellCommandUtils';
 
 // Interface for a message in the conversation
 interface Message {
@@ -95,34 +97,6 @@ const SystemMessage = styled(MessageCard)(({ theme }) => ({
   fontStyle: 'italic',
 }));
 
-// Component for rendering code blocks in markdown
-const CodeBlock = ({ language, value }: { language: string; value: string }) => {
-  return (
-    <Box position="relative" mb={2} mt={1}>
-      <Box position="absolute" top={8} right={8} zIndex={1}>
-        <Tooltip title="Copy code">
-          <IconButton
-            size="small"
-            onClick={() => navigator.clipboard.writeText(value)}
-            sx={{ color: 'white', opacity: 0.7, '&:hover': { opacity: 1 } }}
-          >
-            <ContentCopyIcon fontSize="small" />
-          </IconButton>
-        </Tooltip>
-      </Box>
-      <SyntaxHighlighter
-        language={language || 'powershell'}
-        style={vs2015}
-        wrapLines
-        wrapLongLines
-        customStyle={{ borderRadius: '4px' }}
-      >
-        {value}
-      </SyntaxHighlighter>
-    </Box>
-  );
-};
-
 interface PleaseMethodAgentProps {
   activeScript?: string;
   onScriptGenerated?: (script: string) => void;
@@ -136,11 +110,53 @@ const PleaseMethodAgent: React.FC<PleaseMethodAgentProps> = ({
   activeScript,
   onScriptGenerated,
 }) => {
+  const { openCommand } = useCommandExplain();
   const [messages, setMessages] = useState<Message[]>([]);
   const [input, setInput] = useState<string>('');
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
+
+  // Component for rendering code blocks in markdown (needs access to openCommand)
+  const CodeBlock = ({ language, value }: { language: string; value: string }) => {
+    const lang = (language || 'powershell').toLowerCase();
+    const isPs = lang === 'powershell' || lang === 'ps1';
+    return (
+      <Box position="relative" mb={2} mt={1}>
+        <Box position="absolute" top={8} right={8} zIndex={1} display="flex" gap={0.5}>
+          {isPs && (
+            <Tooltip title="Explain command">
+              <IconButton
+                size="small"
+                onClick={() => openCommand(extractFirstCommandLine(value) || value, 'agent-chat')}
+                sx={{ color: 'white', opacity: 0.7, '&:hover': { opacity: 1 } }}
+              >
+                <SearchIcon fontSize="small" />
+              </IconButton>
+            </Tooltip>
+          )}
+          <Tooltip title="Copy code">
+            <IconButton
+              size="small"
+              onClick={() => navigator.clipboard.writeText(value)}
+              sx={{ color: 'white', opacity: 0.7, '&:hover': { opacity: 1 } }}
+            >
+              <ContentCopyIcon fontSize="small" />
+            </IconButton>
+          </Tooltip>
+        </Box>
+        <SyntaxHighlighter
+          language={lang}
+          style={vs2015}
+          wrapLines
+          wrapLongLines
+          customStyle={{ borderRadius: '4px' }}
+        >
+          {value}
+        </SyntaxHighlighter>
+      </Box>
+    );
+  };
 
   // Add initial welcome message
   useEffect(() => {
@@ -345,9 +361,37 @@ const PleaseMethodAgent: React.FC<PleaseMethodAgentProps> = ({
                     value={String(children).replace(/\n$/, '')}
                   />
                 ) : (
-                  <code className={className} {...props}>
-                    {children}
-                  </code>
+                  (() => {
+                    if (inline) {
+                      const text = String(children || '').trim();
+                      if (isCmdletToken(text)) {
+                        return (
+                          <Button
+                            size="small"
+                            variant="outlined"
+                            color="success"
+                            onClick={() => openCommand(text, 'agent-chat')}
+                            sx={{
+                              textTransform: 'none',
+                              fontFamily: 'monospace',
+                              minWidth: 0,
+                              py: 0,
+                              px: 0.75,
+                              fontSize: '0.8rem',
+                              lineHeight: 1.2,
+                            }}
+                          >
+                            {text}
+                          </Button>
+                        );
+                      }
+                    }
+                    return (
+                      <code className={className} {...props}>
+                        {children}
+                      </code>
+                    );
+                  })()
                 );
               },
             }}

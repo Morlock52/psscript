@@ -36,6 +36,10 @@ import aiAgentRoutes from './routes/ai-agent';
 import agentRoutes from './routes/agents';
 import assistantsRoutes from './routes/assistants';
 import documentationRoutes from './routes/documentation';
+import commandsRoutes from './routes/commands';
+import docsMetaRoutes from './routes/docsMeta';
+import editorRoutes from './routes/editor';
+import { attachEditorLspProxy } from './ws/editorLspProxy';
 import { errorHandler } from './middleware/errorHandler';
 import { authenticateJWT, requireAdmin } from './middleware/auth';
 import { setupSwagger } from './utils/swagger';
@@ -45,7 +49,7 @@ import logger from './utils/logger';
 import db, { sequelize } from './database/connection';
 import { validateTlsConfiguration } from './utils/secureHttpClient';
 import AIAnalyticsMiddleware, { AIMetric, initAIMetricsModel } from './middleware/aiAnalytics';
-import { Documentation } from './models';
+import { Documentation, CommandInsight, CommandEnrichmentJob } from './models';
 
 // Create Express app
 const app = express();
@@ -633,6 +637,9 @@ app.use('/api/ai-agent', AIAnalyticsMiddleware.trackUsage(), aiAgentRoutes);
 app.use('/api/agents', AIAnalyticsMiddleware.trackUsage(), agentRoutes);
 app.use('/api/assistants', AIAnalyticsMiddleware.trackUsage(), assistantsRoutes);
 app.use('/api/documentation', AIAnalyticsMiddleware.trackUsage(), documentationRoutes);
+app.use('/api/commands', AIAnalyticsMiddleware.trackUsage(), commandsRoutes);
+app.use('/api/docs', AIAnalyticsMiddleware.trackUsage(), docsMetaRoutes);
+app.use('/api/editor', AIAnalyticsMiddleware.trackUsage(), editorRoutes);
 
 // Create proxy routes for the frontend to use
 // This ensures the frontend can directly call /scripts/please instead of /api/ai-agent/please
@@ -725,6 +732,15 @@ const startServer = async () => {
             await Documentation.sync();
           } catch (error) {
             logger.warn('Documentation table unavailable - continuing without documentation features', error);
+          }
+
+          // Ensure command insights + enrichment jobs tables exist (creates if missing).
+          // This powers /api/commands/* and cmdlet enrichment used by the UI.
+          try {
+            await CommandInsight.sync();
+            await CommandEnrichmentJob.sync();
+          } catch (error) {
+            logger.warn('Command insights tables unavailable - continuing without command enrichment features', error);
           }
         } catch (error) {
           lastError = error;
@@ -957,6 +973,10 @@ const startServer = async () => {
         logger.info(`In-memory cache initialized and ready`);
       });
     }
+
+    // Attach WS upgrade handler for the editor LSP proxy.
+    // This keeps LSP traffic on the same origin as the backend.
+    attachEditorLspProxy(server);
     
     // Set server timeouts
     server.timeout = 60000; // 60 seconds

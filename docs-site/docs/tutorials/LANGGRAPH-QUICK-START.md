@@ -23,23 +23,23 @@ python test_langgraph_setup.py
 cd /Users/morlock/fun/psscript/src/ai
 python main.py
 
-# Server runs on: http://localhost:8001
+# Server runs on: http://localhost:8000
 ```
 
 ## Test Endpoints
 
 ```bash
 # Health check
-curl http://localhost:8001/langgraph/health
+curl http://localhost:8000/langgraph/health
 
 # Service info
-curl http://localhost:8001/langgraph/info
+curl http://localhost:8000/langgraph/info
 
 # Test analysis
-curl -X POST http://localhost:8001/langgraph/test
+curl -X POST http://localhost:8000/langgraph/test
 
 # Analyze your script
-curl -X POST http://localhost:8001/langgraph/analyze \
+curl -X POST http://localhost:8000/langgraph/analyze \
   -H "Content-Type: application/json" \
   -d '{
     "script_content": "Get-Process | Select-Object Name, CPU"
@@ -95,7 +95,7 @@ asyncio.run(main())
 ## Example Analysis
 
 ```bash
-curl -X POST http://localhost:8001/langgraph/analyze \
+curl -X POST http://localhost:8000/langgraph/analyze \
   -H "Content-Type: application/json" \
   -d '{
     "script_content": "param([string]$Path)\nGet-ChildItem -Path $Path -Recurse"
@@ -143,7 +143,7 @@ export OPENAI_API_KEY=sk-your-key-here
 **Service won't start?**
 ```bash
 # Check if port is in use
-lsof -i :8001
+lsof -i :8000
 
 # Use different port
 uvicorn main:app --port 8002

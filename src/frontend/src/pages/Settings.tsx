@@ -1,6 +1,9 @@
-import React, { useState } from 'react';
+import React, { useMemo, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { useTheme } from '../hooks/useTheme';
+import { useQuery } from '@tanstack/react-query';
+import { getApiUrl } from '../utils/apiUrl';
+import ReadmeViewer from '../components/ReadmeViewer';
 
 // Reusable style constants for theme-aware styling
 const cardStyles = "rounded-lg shadow-[var(--shadow-md)] p-6 bg-[var(--color-bg-elevated)] border border-[var(--color-border-default)]";
@@ -29,10 +32,74 @@ const Settings: React.FC = () => {
     showApiKey: false
   });
 
-  const docsBaseUrl = import.meta.env.VITE_DOCS_URL || `http://${window.location.hostname}:4000`;
-  const docsRepoPdfBaseUrl = 'https://github.com/Morlock52/psscript-manager/blob/main/docs/exports/pdf';
-  const docsRepoBaseUrl = 'https://github.com/Morlock52/psscript-manager/blob/main/docs';
-  const docsRepoDocxBaseUrl = 'https://github.com/Morlock52/psscript-manager/blob/main/docs/exports/docx';
+  const apiUrl = getApiUrl();
+  // `getApiUrl()` typically returns something like `http://host:port/api`.
+  // Static assets (like `/docs/exports/...`) are served from the backend root.
+  const backendBaseUrl = apiUrl.replace(/\/api\/?$/, '');
+
+  type ExportEntry = {
+    filename: string;
+    localUrl: string;
+    githubRawUrl: string;
+    bytes: number;
+    modifiedAt: string;
+  };
+
+  type ExportsResponse = {
+    repo: string;
+    branch: string;
+    pdf: ExportEntry[];
+    docx: ExportEntry[];
+  };
+
+  const exportsQuery = useQuery({
+    queryKey: ['docsExports'],
+    queryFn: async (): Promise<ExportsResponse> => {
+      const resp = await fetch(`${apiUrl}/docs/exports`, { cache: 'no-store' });
+      if (!resp.ok) {
+        throw new Error(`Failed to load exports (${resp.status})`);
+      }
+      return (await resp.json()) as ExportsResponse;
+    },
+    staleTime: 30_000,
+    retry: 0
+  });
+
+  const githubRepo = exportsQuery.data?.repo || 'Morlock52/psscript';
+  const githubBranch = exportsQuery.data?.branch || 'main';
+  const githubBlobBase = `https://github.com/${githubRepo}/blob/${githubBranch}`;
+  const githubTreeBase = `https://github.com/${githubRepo}/tree/${githubBranch}`;
+
+  const [docsFilter, setDocsFilter] = useState('');
+  const [showReadme, setShowReadme] = useState(false);
+
+  const filteredPdf = useMemo(() => {
+    const items = exportsQuery.data?.pdf || [];
+    const q = docsFilter.trim().toLowerCase();
+    if (!q) return items;
+    return items.filter((x) => x.filename.toLowerCase().includes(q));
+  }, [exportsQuery.data?.pdf, docsFilter]);
+
+  const filteredDocx = useMemo(() => {
+    const items = exportsQuery.data?.docx || [];
+    const q = docsFilter.trim().toLowerCase();
+    if (!q) return items;
+    return items.filter((x) => x.filename.toLowerCase().includes(q));
+  }, [exportsQuery.data?.docx, docsFilter]);
+
+  const formatBytes = (bytes: number) => {
+    if (!Number.isFinite(bytes) || bytes <= 0) return '0 B';
+    const units = ['B', 'KB', 'MB', 'GB', 'TB'];
+    const i = Math.min(units.length - 1, Math.floor(Math.log(bytes) / Math.log(1024)));
+    const val = bytes / Math.pow(1024, i);
+    return `${val.toFixed(val >= 10 || i === 0 ? 0 : 1)} ${units[i]}`;
+  };
+
+  const formatModifiedAt = (iso: string) => {
+    const d = new Date(iso);
+    if (Number.isNaN(d.getTime())) return iso;
+    return d.toLocaleString();
+  };
 
   // Display settings
   const [displaySettings, setDisplaySettings] = useState({
@@ -323,302 +390,250 @@ const Settings: React.FC = () => {
 
       {/* Documentation & Training */}
       <div className={`mt-6 ${cardStyles}`}>
-        <h2 className="text-xl font-bold mb-4 text-[var(--color-text-primary)]">Documentation &amp; Training</h2>
-        <p className="mb-4 text-[var(--color-text-secondary)]">
-          Open the project documentation and training suite for guided onboarding.
-        </p>
-        <div className="flex flex-col sm:flex-row gap-3">
-          <a
-            href="https://github.com/Morlock52/psscript-manager/blob/main/README.md"
-            target="_blank"
-            rel="noreferrer"
-            className={linkButtonStyles}
-          >
-            Project README
-          </a>
-          <a
-            href="https://github.com/Morlock52/psscript-manager/tree/main/docs/training-suite"
-            target="_blank"
-            rel="noreferrer"
-            className="bg-[var(--color-primary)] text-white px-4 py-2 rounded-md hover:bg-[var(--color-primary-dark)] transition text-center"
-          >
-            Training Suite
-          </a>
-          <a
-            href={`${docsRepoBaseUrl}/MANAGEMENT-PLAYBOOK.md`}
-            target="_blank"
-            rel="noreferrer"
-            className={linkButtonStyles}
-          >
-            Management Playbook
-          </a>
-          <a
-            href={`${docsBaseUrl}/docs/exports/pdf/Training-Suite.pdf`}
-            target="_blank"
-            rel="noreferrer"
-            className="bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700 transition text-center"
-          >
-            Training Suite PDF (Local)
-          </a>
-          <a
-            href={`${docsRepoPdfBaseUrl}/Training-Suite.pdf`}
-            target="_blank"
-            rel="noreferrer"
-            className="bg-blue-700 text-white px-4 py-2 rounded-md hover:bg-blue-800 transition text-center"
-          >
-            Training Suite PDF (GitHub)
-          </a>
-          <a
-            href={`${docsBaseUrl}/docs/exports/pdf/Training-Guide.pdf`}
-            target="_blank"
-            rel="noreferrer"
-            className="bg-green-600 text-white px-4 py-2 rounded-md hover:bg-green-700 transition text-center"
-          >
-            Training Guide PDF (Local)
-          </a>
-          <a
-            href="https://github.com/Morlock52/psscript-manager/blob/main/docs/exports/pdf/Training-Guide.pdf"
-            target="_blank"
-            rel="noreferrer"
-            className="bg-green-700 text-white px-4 py-2 rounded-md hover:bg-green-800 transition text-center"
-          >
-            Training Guide PDF (GitHub)
-          </a>
-        </div>
-        <div className="mt-4">
-          <p className="text-sm mb-2 text-[var(--color-text-tertiary)]">Management Playbook (PDF)</p>
+        <div className="flex flex-col lg:flex-row lg:items-start lg:justify-between gap-4">
+          <div>
+            <h2 className="text-xl font-bold mb-1 text-[var(--color-text-primary)]">Documentation &amp; Training</h2>
+            <p className="text-[var(--color-text-secondary)]">
+              Project docs, training suite exports, and the live README rendered in-app.
+            </p>
+            <p className="text-xs mt-2 text-[var(--color-text-tertiary)]">
+              Repo: <span className="font-mono">{githubRepo}</span> ({githubBranch})
+            </p>
+          </div>
+
           <div className="flex flex-col sm:flex-row gap-2">
+            <button
+              type="button"
+              onClick={() => setShowReadme(true)}
+              className="bg-[var(--color-primary)] text-white px-4 py-2 rounded-md hover:bg-[var(--color-primary-dark)] transition text-center"
+            >
+              View README (In App)
+            </button>
             <a
-              href={`${docsBaseUrl}/docs/exports/pdf/Management-Playbook.pdf`}
+              href={`${githubBlobBase}/README.md`}
               target="_blank"
               rel="noreferrer"
-              className={moduleLinkStyles}
+              className={linkButtonStyles}
             >
-              Management Playbook PDF (Local)
-            </a>
-            <a
-              href={`${docsRepoPdfBaseUrl}/Management-Playbook.pdf`}
-              target="_blank"
-              rel="noreferrer"
-              className={moduleLinkStyles}
-            >
-              Management Playbook PDF (GitHub)
+              README (GitHub)
             </a>
           </div>
         </div>
+
+        <div className="mt-4 grid grid-cols-1 md:grid-cols-3 gap-3">
+          <a
+            href={`${githubTreeBase}/docs/training-suite`}
+            target="_blank"
+            rel="noreferrer"
+            className={linkButtonStyles}
+          >
+            Training Suite (GitHub)
+          </a>
+          <a
+            href={`${githubBlobBase}/MANAGEMENT-PLAYBOOK.md`}
+            target="_blank"
+            rel="noreferrer"
+            className={linkButtonStyles}
+          >
+            Management Playbook (GitHub)
+          </a>
+          <a
+            href={`${githubTreeBase}/docs/exports`}
+            target="_blank"
+            rel="noreferrer"
+            className={linkButtonStyles}
+          >
+            Exports Folder (GitHub)
+          </a>
+        </div>
+
+        <div className="mt-6">
+          <label className={labelStyles}>Search exports</label>
+          <input
+            value={docsFilter}
+            onChange={(e) => setDocsFilter(e.target.value)}
+            className={inputStyles}
+            placeholder="Filter by filename (e.g. Training, Playbook, module, lab)"
+          />
+        </div>
+
         <div className="mt-4">
-          <p className="text-sm mb-2 text-[var(--color-text-tertiary)]">Module PDFs (Local)</p>
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2">
-            <a
-              href={`${docsBaseUrl}/docs/exports/pdf/docs-training-suite-modules-module-01-foundations.pdf`}
-              target="_blank"
-              rel="noreferrer"
-              className={moduleLinkStyles}
-            >
-              Module 01: Foundations
-            </a>
-            <a
-              href={`${docsBaseUrl}/docs/exports/pdf/docs-training-suite-modules-module-02-lifecycle.pdf`}
-              target="_blank"
-              rel="noreferrer"
-              className={moduleLinkStyles}
-            >
-              Module 02: Lifecycle
-            </a>
-            <a
-              href={`${docsBaseUrl}/docs/exports/pdf/docs-training-suite-modules-module-03-analysis.pdf`}
-              target="_blank"
-              rel="noreferrer"
-              className={moduleLinkStyles}
-            >
-              Module 03: Analysis
-            </a>
-            <a
-              href={`${docsBaseUrl}/docs/exports/pdf/docs-training-suite-modules-module-04-search.pdf`}
-              target="_blank"
-              rel="noreferrer"
-              className={moduleLinkStyles}
-            >
-              Module 04: Search
-            </a>
-            <a
-              href={`${docsBaseUrl}/docs/exports/pdf/docs-training-suite-modules-module-05-operations.pdf`}
-              target="_blank"
-              rel="noreferrer"
-              className={moduleLinkStyles}
-            >
-              Module 05: Operations
-            </a>
-          </div>
+          {exportsQuery.isLoading ? (
+            <div className="p-4 rounded-md bg-[var(--color-bg-tertiary)] border border-[var(--color-border-default)]">
+              <div className="text-sm text-[var(--color-text-secondary)]">Loading exports…</div>
+              <div className="mt-3 w-full rounded-full h-2.5 bg-[var(--color-bg-primary)] overflow-hidden">
+                <div className="bg-[var(--color-primary)] h-2.5 rounded-full animate-pulse w-2/3"></div>
+              </div>
+            </div>
+          ) : exportsQuery.isError ? (
+            <div className="p-4 rounded-md bg-red-500/10 border border-red-500/30">
+              <div className="text-sm text-red-400">
+                Failed to load documentation exports from the backend. The static docs links will be unavailable until the backend is online.
+              </div>
+              <div className="text-xs mt-2 text-[var(--color-text-tertiary)]">
+                Endpoint: <span className="font-mono">{apiUrl}/docs/exports</span>
+              </div>
+            </div>
+          ) : (
+            <div className="space-y-4">
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+                <div className="p-4 rounded-md bg-[var(--color-bg-tertiary)] border border-[var(--color-border-default)]">
+                  <div className="flex items-center justify-between">
+                    <div className="text-sm font-semibold text-[var(--color-text-primary)]">PDF Exports</div>
+                    <div className="text-xs text-[var(--color-text-tertiary)]">{filteredPdf.length} files</div>
+                  </div>
+                  <div className="mt-3 space-y-2">
+                    {filteredPdf.slice(0, 6).map((f) => (
+                      <div
+                        key={`pdf-${f.filename}`}
+                        data-testid={`docs-export-pdf-${f.filename}`}
+                        className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 p-3 rounded-md bg-[var(--color-bg-elevated)] border border-[var(--color-border-default)]"
+                      >
+                        <div className="min-w-0">
+                          <div className="font-mono text-sm text-[var(--color-text-primary)] truncate">{f.filename}</div>
+                          <div className="text-xs text-[var(--color-text-tertiary)]">
+                            {formatBytes(f.bytes)} · {formatModifiedAt(f.modifiedAt)}
+                          </div>
+                        </div>
+                        <div className="flex gap-2 shrink-0">
+                          <a
+                            href={`${backendBaseUrl}${f.localUrl}`}
+                            target="_blank"
+                            rel="noreferrer"
+                            className={moduleLinkStyles}
+                          >
+                            Open (Local)
+                          </a>
+                          <a
+                            href={f.githubRawUrl}
+                            target="_blank"
+                            rel="noreferrer"
+                            className={moduleLinkStyles}
+                          >
+                            Download (GitHub)
+                          </a>
+                        </div>
+                      </div>
+                    ))}
+                    {filteredPdf.length > 6 && (
+                      <div className="text-xs text-[var(--color-text-tertiary)]">
+                        Showing 6 of {filteredPdf.length}. Use the filter box above to narrow results.
+                      </div>
+                    )}
+                    {filteredPdf.length === 0 && (
+                      <div className="text-sm text-[var(--color-text-secondary)]">No PDF exports found.</div>
+                    )}
+                  </div>
+                </div>
+
+                <div className="p-4 rounded-md bg-[var(--color-bg-tertiary)] border border-[var(--color-border-default)]">
+                  <div className="flex items-center justify-between">
+                    <div className="text-sm font-semibold text-[var(--color-text-primary)]">DOCX Exports</div>
+                    <div className="text-xs text-[var(--color-text-tertiary)]">{filteredDocx.length} files</div>
+                  </div>
+                  <div className="mt-3 space-y-2">
+                    {filteredDocx.slice(0, 6).map((f) => (
+                      <div
+                        key={`docx-${f.filename}`}
+                        data-testid={`docs-export-docx-${f.filename}`}
+                        className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 p-3 rounded-md bg-[var(--color-bg-elevated)] border border-[var(--color-border-default)]"
+                      >
+                        <div className="min-w-0">
+                          <div className="font-mono text-sm text-[var(--color-text-primary)] truncate">{f.filename}</div>
+                          <div className="text-xs text-[var(--color-text-tertiary)]">
+                            {formatBytes(f.bytes)} · {formatModifiedAt(f.modifiedAt)}
+                          </div>
+                        </div>
+                        <div className="flex gap-2 shrink-0">
+                          <a
+                            href={`${backendBaseUrl}${f.localUrl}`}
+                            target="_blank"
+                            rel="noreferrer"
+                            className={moduleLinkStyles}
+                          >
+                            Open (Local)
+                          </a>
+                          <a
+                            href={f.githubRawUrl}
+                            target="_blank"
+                            rel="noreferrer"
+                            className={moduleLinkStyles}
+                          >
+                            Download (GitHub)
+                          </a>
+                        </div>
+                      </div>
+                    ))}
+                    {filteredDocx.length > 6 && (
+                      <div className="text-xs text-[var(--color-text-tertiary)]">
+                        Showing 6 of {filteredDocx.length}. Use the filter box above to narrow results.
+                      </div>
+                    )}
+                    {filteredDocx.length === 0 && (
+                      <div className="text-sm text-[var(--color-text-secondary)]">No DOCX exports found.</div>
+                    )}
+                  </div>
+                </div>
+              </div>
+
+              <details className="p-4 rounded-md bg-[var(--color-bg-tertiary)] border border-[var(--color-border-default)]">
+                <summary className="cursor-pointer text-sm font-semibold text-[var(--color-text-primary)]">
+                  View full export lists
+                </summary>
+                <div className="mt-4 space-y-4">
+                  <div>
+                    <div className="text-sm font-semibold text-[var(--color-text-primary)] mb-2">All PDFs</div>
+                    <div className="grid grid-cols-1 lg:grid-cols-2 gap-2">
+                      {filteredPdf.map((f) => (
+                        <div key={`pdf-all-${f.filename}`} className="flex items-center justify-between gap-2 p-3 rounded-md bg-[var(--color-bg-elevated)] border border-[var(--color-border-default)]">
+                          <div className="min-w-0">
+                            <div className="font-mono text-sm text-[var(--color-text-primary)] truncate">{f.filename}</div>
+                            <div className="text-xs text-[var(--color-text-tertiary)]">
+                              {formatBytes(f.bytes)} · {formatModifiedAt(f.modifiedAt)}
+                            </div>
+                          </div>
+                          <div className="flex gap-2 shrink-0">
+                            <a href={`${backendBaseUrl}${f.localUrl}`} target="_blank" rel="noreferrer" className={moduleLinkStyles}>Local</a>
+                            <a href={f.githubRawUrl} target="_blank" rel="noreferrer" className={moduleLinkStyles}>GitHub</a>
+                          </div>
+                        </div>
+                      ))}
+                      {filteredPdf.length === 0 && (
+                        <div className="text-sm text-[var(--color-text-secondary)]">No PDF exports found.</div>
+                      )}
+                    </div>
+                  </div>
+
+                  <div>
+                    <div className="text-sm font-semibold text-[var(--color-text-primary)] mb-2">All DOCX</div>
+                    <div className="grid grid-cols-1 lg:grid-cols-2 gap-2">
+                      {filteredDocx.map((f) => (
+                        <div key={`docx-all-${f.filename}`} className="flex items-center justify-between gap-2 p-3 rounded-md bg-[var(--color-bg-elevated)] border border-[var(--color-border-default)]">
+                          <div className="min-w-0">
+                            <div className="font-mono text-sm text-[var(--color-text-primary)] truncate">{f.filename}</div>
+                            <div className="text-xs text-[var(--color-text-tertiary)]">
+                              {formatBytes(f.bytes)} · {formatModifiedAt(f.modifiedAt)}
+                            </div>
+                          </div>
+                          <div className="flex gap-2 shrink-0">
+                            <a href={`${backendBaseUrl}${f.localUrl}`} target="_blank" rel="noreferrer" className={moduleLinkStyles}>Local</a>
+                            <a href={f.githubRawUrl} target="_blank" rel="noreferrer" className={moduleLinkStyles}>GitHub</a>
+                          </div>
+                        </div>
+                      ))}
+                      {filteredDocx.length === 0 && (
+                        <div className="text-sm text-[var(--color-text-secondary)]">No DOCX exports found.</div>
+                      )}
+                    </div>
+                  </div>
+                </div>
+              </details>
+            </div>
+          )}
         </div>
-        <div className="mt-4">
-          <p className="text-sm mb-2 text-[var(--color-text-tertiary)]">Module PDFs (GitHub)</p>
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2">
-            <a
-              href={`${docsRepoPdfBaseUrl}/docs-training-suite-modules-module-01-foundations.pdf`}
-              target="_blank"
-              rel="noreferrer"
-              className={moduleLinkStyles}
-            >
-              Module 01: Foundations
-            </a>
-            <a
-              href={`${docsRepoPdfBaseUrl}/docs-training-suite-modules-module-02-lifecycle.pdf`}
-              target="_blank"
-              rel="noreferrer"
-              className={moduleLinkStyles}
-            >
-              Module 02: Lifecycle
-            </a>
-            <a
-              href={`${docsRepoPdfBaseUrl}/docs-training-suite-modules-module-03-analysis.pdf`}
-              target="_blank"
-              rel="noreferrer"
-              className={moduleLinkStyles}
-            >
-              Module 03: Analysis
-            </a>
-            <a
-              href={`${docsRepoPdfBaseUrl}/docs-training-suite-modules-module-04-search.pdf`}
-              target="_blank"
-              rel="noreferrer"
-              className={moduleLinkStyles}
-            >
-              Module 04: Search
-            </a>
-            <a
-              href={`${docsRepoPdfBaseUrl}/docs-training-suite-modules-module-05-operations.pdf`}
-              target="_blank"
-              rel="noreferrer"
-              className={moduleLinkStyles}
-            >
-              Module 05: Operations
-            </a>
-          </div>
-        </div>
-        <div className="mt-4">
-          <p className="text-sm mb-2 text-[var(--color-text-tertiary)]">Lab PDFs (Local)</p>
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2">
-            <a
-              href={`${docsBaseUrl}/docs/exports/pdf/docs-training-suite-labs-lab-01-upload-analyze.pdf`}
-              target="_blank"
-              rel="noreferrer"
-              className={moduleLinkStyles}
-            >
-              Lab 01: Upload + Analyze
-            </a>
-            <a
-              href={`${docsBaseUrl}/docs/exports/pdf/docs-training-suite-labs-lab-02-vector-search.pdf`}
-              target="_blank"
-              rel="noreferrer"
-              className={moduleLinkStyles}
-            >
-              Lab 02: Vector Search
-            </a>
-            <a
-              href={`${docsBaseUrl}/docs/exports/pdf/docs-training-suite-labs-lab-03-docs-chat.pdf`}
-              target="_blank"
-              rel="noreferrer"
-              className={moduleLinkStyles}
-            >
-              Lab 03: Docs + Chat
-            </a>
-            <a
-              href={`${docsBaseUrl}/docs/exports/pdf/docs-training-suite-labs-lab-04-analytics.pdf`}
-              target="_blank"
-              rel="noreferrer"
-              className={moduleLinkStyles}
-            >
-              Lab 04: Analytics
-            </a>
-          </div>
-        </div>
-        <div className="mt-4">
-          <p className="text-sm mb-2 text-[var(--color-text-tertiary)]">Lab PDFs (GitHub)</p>
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2">
-            <a
-              href={`${docsRepoPdfBaseUrl}/docs-training-suite-labs-lab-01-upload-analyze.pdf`}
-              target="_blank"
-              rel="noreferrer"
-              className={moduleLinkStyles}
-            >
-              Lab 01: Upload + Analyze
-            </a>
-            <a
-              href={`${docsRepoPdfBaseUrl}/docs-training-suite-labs-lab-02-vector-search.pdf`}
-              target="_blank"
-              rel="noreferrer"
-              className={moduleLinkStyles}
-            >
-              Lab 02: Vector Search
-            </a>
-            <a
-              href={`${docsRepoPdfBaseUrl}/docs-training-suite-labs-lab-03-docs-chat.pdf`}
-              target="_blank"
-              rel="noreferrer"
-              className={moduleLinkStyles}
-            >
-              Lab 03: Docs + Chat
-            </a>
-            <a
-              href={`${docsRepoPdfBaseUrl}/docs-training-suite-labs-lab-04-analytics.pdf`}
-              target="_blank"
-              rel="noreferrer"
-              className={moduleLinkStyles}
-            >
-              Lab 04: Analytics
-            </a>
-          </div>
-        </div>
-        <div className="mt-4">
-          <p className="text-sm mb-2 text-[var(--color-text-tertiary)]">DOCX exports (GitHub)</p>
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2">
-            <a
-              href={`${docsRepoDocxBaseUrl}/README.docx`}
-              target="_blank"
-              rel="noreferrer"
-              className={moduleLinkStyles}
-            >
-              README (DOCX)
-            </a>
-            <a
-              href={`${docsRepoDocxBaseUrl}/Training-Guide.docx`}
-              target="_blank"
-              rel="noreferrer"
-              className={moduleLinkStyles}
-            >
-              Training Guide (DOCX)
-            </a>
-            <a
-              href={`${docsRepoDocxBaseUrl}/Training-Suite.docx`}
-              target="_blank"
-              rel="noreferrer"
-              className={moduleLinkStyles}
-            >
-              Training Suite (DOCX)
-            </a>
-            <a
-              href={`${docsRepoDocxBaseUrl}/Management-Playbook.docx`}
-              target="_blank"
-              rel="noreferrer"
-              className={moduleLinkStyles}
-            >
-              Management Playbook (DOCX)
-            </a>
-            <a
-              href={`${docsRepoDocxBaseUrl}/Support.docx`}
-              target="_blank"
-              rel="noreferrer"
-              className={moduleLinkStyles}
-            >
-              Support (DOCX)
-            </a>
-          </div>
-        </div>
-        <p className="text-xs mt-3 text-[var(--color-text-tertiary)]">
-          Local path: docs/training-suite/README.md
-        </p>
       </div>
+
+      <ReadmeViewer isOpen={showReadme} onClose={() => setShowReadme(false)} />
 
       {/* Account Security */}
       <div className={`mt-6 ${cardStyles}`}>

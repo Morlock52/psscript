@@ -86,9 +86,16 @@ export class ChatController {
       }
       const startTime = Date.now();
       
+      // The OpenAI API rejects unknown keys on message objects (e.g. `timestamp` from the frontend).
+      // Sanitize messages down to the minimal accepted shape before sending.
+      const cleanedMessages = (messages as any[]).map((m) => ({
+        role: m.role,
+        content: m.content,
+      }));
+
       const finalMessages = system_prompt
-        ? [{ role: 'system', content: system_prompt }, ...messages]
-        : messages;
+        ? [{ role: 'system', content: system_prompt }, ...cleanedMessages]
+        : cleanedMessages;
       
       const response = await client.chat.completions.create({
         model,

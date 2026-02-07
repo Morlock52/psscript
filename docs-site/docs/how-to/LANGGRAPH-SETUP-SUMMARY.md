@@ -179,10 +179,10 @@ python main.py
 
 ```bash
 # Test with curl
-curl -X POST http://localhost:8001/langgraph/test
+curl -X POST http://localhost:8000/langgraph/test
 
 # Analyze a script
-curl -X POST http://localhost:8001/langgraph/analyze \
+curl -X POST http://localhost:8000/langgraph/analyze \
   -H "Content-Type: application/json" \
   -d '{
     "script_content": "Get-Process | Where-Object CPU -gt 100",
@@ -305,7 +305,7 @@ See [LangGraph migration plan](/explanation/LANGGRAPH-MIGRATION-PLAN) for detail
 ### Basic Analysis
 
 ```bash
-curl -X POST http://localhost:8001/langgraph/analyze \
+curl -X POST http://localhost:8000/langgraph/analyze \
   -H "Content-Type: application/json" \
   -d '{
     "script_content": "Get-Service | Where-Object Status -eq '\''Running'\''"
@@ -334,7 +334,7 @@ Response:
 
 ```bash
 # Request analysis with human review
-curl -X POST http://localhost:8001/langgraph/analyze \
+curl -X POST http://localhost:8000/langgraph/analyze \
   -H "Content-Type: application/json" \
   -d '{
     "script_content": "Invoke-Expression $userInput",
@@ -344,7 +344,7 @@ curl -X POST http://localhost:8001/langgraph/analyze \
 # Response: workflow paused, requires_human_review=true
 
 # Provide feedback
-curl -X POST http://localhost:8001/langgraph/feedback \
+curl -X POST http://localhost:8000/langgraph/feedback \
   -H "Content-Type: application/json" \
   -d '{
     "thread_id": "analysis_1704649200.123",
@@ -355,7 +355,7 @@ curl -X POST http://localhost:8001/langgraph/feedback \
 ### Batch Analysis
 
 ```bash
-curl -X POST http://localhost:8001/langgraph/batch-analyze \
+curl -X POST http://localhost:8000/langgraph/batch-analyze \
   -H "Content-Type: application/json" \
   -d '{
     "scripts": [
@@ -425,7 +425,7 @@ python -c "import langgraph; print(langgraph.__version__)"
 echo $OPENAI_API_KEY
 
 # Test with simple request
-curl -X POST http://localhost:8001/langgraph/test
+curl -X POST http://localhost:8000/langgraph/test
 ```
 
 ### Checkpointing Issues

@@ -2,6 +2,8 @@ import React, { useState, useCallback, useRef } from 'react';
 import ReactMarkdown from 'react-markdown';
 import { Prism as SyntaxHighlighter } from 'react-syntax-highlighter';
 import { vscDarkPlus } from 'react-syntax-highlighter/dist/esm/styles/prism';
+import { useCommandExplain } from '../contexts/CommandExplainContext';
+import { extractFirstCommandLine, isCmdletToken } from '../utils/powershellCommandUtils';
 import Layout from '../components/Layout';
 import { useChat } from '../hooks/useChat';
 import { chatService } from '../services/api-simple';
@@ -31,6 +33,7 @@ interface DiffViewState {
 }
 
 const ChatWithAI: React.FC = () => {
+  const { openCommand } = useCommandExplain();
   // Use the enhanced useChat hook with streaming support
   const {
     messages,
@@ -232,6 +235,14 @@ Use the toolbar below to quickly lint, improve, test, or execute your scripts!
               title="Improve this script"
             >
               Improve
+            </button>
+            <button
+              type="button"
+              onClick={() => openCommand(extractFirstCommandLine(code) || code, 'chat')}
+              className="px-2 py-1 bg-emerald-600 text-white text-xs rounded hover:bg-emerald-700"
+              title="Explain this command"
+            >
+              Explain
             </button>
           </div>
         )}
@@ -442,6 +453,19 @@ Use the toolbar below to quickly lint, improve, test, or execute your scripts!
                         code({ className, children, ...props }) {
                           const isInline = !className && typeof children === 'string' && !children.includes('\n');
                           if (isInline) {
+                            const text = String(children || '').trim();
+                            if (isCmdletToken(text)) {
+                              return (
+                                <button
+                                  type="button"
+                                  onClick={() => openCommand(text, 'chat')}
+                                  className="bg-gray-700 px-1 rounded font-mono text-yellow-300 cursor-pointer hover:bg-gray-600 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500"
+                                  title="Explain command"
+                                >
+                                  {text}
+                                </button>
+                              );
+                            }
                             return <code className="bg-gray-700 px-1 rounded font-mono text-yellow-300" {...props}>{children}</code>;
                           }
                           return <CodeBlock className={className}>{children}</CodeBlock>;

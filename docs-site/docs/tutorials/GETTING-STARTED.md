@@ -21,39 +21,18 @@ PSScript is a PowerShell script management system that allows users to:
 ## Quick Start
 
 1. Clone the repository
-2. Install dependencies:
+2. Create `.env` from the template and set `OPENAI_API_KEY`:
    ```bash
-   npm install
-   ```
-
-3. Set up the environment variables:
-   ```bash
-   # Copy the example environment file
    cp .env.example .env
-   
-   # Edit the .env file with your configuration
    ```
-
-4. Initialize the database:
+3. Start all services (Docker, recommended):
    ```bash
-   node setup-database.js
+   docker compose --env-file .env up -d --build
    ```
-
-5. Start the application:
-   ```bash
-   # Start all services
-   npm run start:all
-   
-   # Or start components individually
-   npm run start:backend
-   npm run start:frontend
-   npm run start:ai
-   ```
-
-6. Access the application:
-   - Frontend: http://localhost:3000
-   - Backend API: http://localhost:4001
-   - AI Service: http://localhost:5001
+4. Access the application:
+   - Frontend: http://localhost:3090
+   - Backend API: http://localhost:4000
+   - AI Service: http://localhost:8000
 
 ## Default Admin Account
 
@@ -79,9 +58,9 @@ It's recommended to change the default password after first login.
    CREATE EXTENSION IF NOT EXISTS vector;
    ```
 
-3. Run the database initialization script:
+3. Local-only database setup helper (optional):
    ```bash
-   node setup-database.js
+   node src/backend/setup-local-db.js
    ```
 
 ### Redis Configuration (Optional)

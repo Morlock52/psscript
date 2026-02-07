@@ -22,6 +22,7 @@ const ScriptUpload: React.FC = () => {
   const [fileType, setFileType] = useState('');
   const [isLargeFile, setIsLargeFile] = useState(false);
   const [uploadProgress, setUploadProgress] = useState(0);
+  const [hasRealProgress, setHasRealProgress] = useState(false);
   const [showAnalysisPreview, setShowAnalysisPreview] = useState(false);
   const [analysisPreview, setAnalysisPreview] = useState<any>(null);
   const [isNetworkError, setIsNetworkError] = useState(false);
@@ -42,11 +43,19 @@ const ScriptUpload: React.FC = () => {
   
   // Script upload mutation
   const uploadMutation = useMutation({
-    mutationFn: (scriptData: any) => scriptService.uploadScript(scriptData, isLargeFile),
+    mutationFn: (scriptData: any) =>
+      scriptService.uploadScript(scriptData, isLargeFile, {
+        onProgress: (pct) => {
+          setHasRealProgress(true);
+          // Keep <100 until server returns to avoid "stuck at 100%" while processing.
+          setUploadProgress(Math.min(99, Math.max(0, pct)));
+        },
+      }),
     onSuccess: (data) => {
         console.log("Script uploaded successfully:", data);
         // Reset states
-        setUploadProgress(0);
+        setUploadProgress(100);
+        setHasRealProgress(false);
         setIsNetworkError(false);
         setRetryCount(0);
         
@@ -64,6 +73,7 @@ const ScriptUpload: React.FC = () => {
       onError: (error: unknown) => {
         console.error("Error uploading script:", error);
         setUploadProgress(0);
+        setHasRealProgress(false);
 
         // Use centralized error detection for reliable network error identification
         setIsNetworkError(isRetryableError(error));
@@ -77,6 +87,8 @@ const ScriptUpload: React.FC = () => {
       onMutate: () => {
         setFileError('');
         setIsNetworkError(false);
+        setUploadProgress(0);
+        setHasRealProgress(false);
       }
   });
   
@@ -195,7 +207,9 @@ const ScriptUpload: React.FC = () => {
   // Track upload progress and retry count
   useEffect(() => {
     if (uploadMutation.isPending) {
-      // Simulate upload progress
+      // If the browser doesn't report upload progress (or we didn't receive any events),
+      // simulate a slow ramp so the UI still reflects "work happening".
+      if (hasRealProgress) return;
       const interval = setInterval(() => {
         setUploadProgress(prev => {
           const increment = Math.random() * 15;
@@ -213,7 +227,7 @@ const ScriptUpload: React.FC = () => {
     if (uploadMutation.failureCount > retryCount && uploadMutation.failureCount <= MAX_RETRIES) {
       setRetryCount(uploadMutation.failureCount);
     }
-  }, [uploadMutation.isPending, uploadMutation.isSuccess, uploadMutation.failureCount, retryCount, MAX_RETRIES]);
+  }, [uploadMutation.isPending, uploadMutation.isSuccess, uploadMutation.failureCount, retryCount, MAX_RETRIES, hasRealProgress]);
   
   const validateForm = (): string | null => {
     if (!title || title.trim() === '') {

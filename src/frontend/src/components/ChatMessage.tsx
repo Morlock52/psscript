@@ -1,6 +1,8 @@
 import React, { useState } from 'react';
 import { Message } from '../hooks/useChat';
 import ReactMarkdown from 'react-markdown';
+import { useCommandExplain } from '../contexts/CommandExplainContext';
+import { extractFirstCommandLine, isCmdletToken } from '../utils/powershellCommandUtils';
 
 interface ChatMessageProps {
   message: Message;
@@ -9,6 +11,7 @@ interface ChatMessageProps {
 
 const ChatMessage: React.FC<ChatMessageProps> = ({ message, onSaveScript }) => {
   const [showCopySuccess, setShowCopySuccess] = useState(false);
+  const { openCommand } = useCommandExplain();
 
   // Function to check if the message contains code blocks
   const hasCodeBlock = (content: string): boolean => {
@@ -44,6 +47,7 @@ const ChatMessage: React.FC<ChatMessageProps> = ({ message, onSaveScript }) => {
     const match = /language-(\w+)/.exec(className || '');
     const language = match ? match[1] : '';
     const isPs = !language || language === 'powershell';
+    const codeText = String(children || '');
 
     return (
       <div className="relative rounded-md overflow-hidden bg-[var(--color-bg-tertiary)]">
@@ -56,11 +60,20 @@ const ChatMessage: React.FC<ChatMessageProps> = ({ message, onSaveScript }) => {
               </span>
             )}
             <button
-              onClick={() => copyCodeToClipboard(children)}
+              onClick={() => copyCodeToClipboard(codeText)}
               className="px-2 py-1 rounded text-xs bg-[var(--color-bg-tertiary)] hover:bg-[var(--color-bg-tertiary)]/80 text-[var(--color-text-secondary)] transition-colors"
             >
               Copy
             </button>
+            {isPs && (
+              <button
+                type="button"
+                onClick={() => openCommand(extractFirstCommandLine(codeText) || codeText, 'chat')}
+                className="px-2 py-1 rounded text-xs bg-emerald-600 hover:bg-emerald-500 text-white transition-colors"
+              >
+                Explain
+              </button>
+            )}
             {onSaveScript && isPs && (
               <button
                 onClick={onSaveScript}
@@ -72,7 +85,7 @@ const ChatMessage: React.FC<ChatMessageProps> = ({ message, onSaveScript }) => {
           </div>
         </div>
         <pre className={`p-4 overflow-x-auto text-[var(--color-text-primary)] ${className}`} {...rest}>
-          {children}
+          {codeText}
         </pre>
       </div>
     );
@@ -82,6 +95,19 @@ const ChatMessage: React.FC<ChatMessageProps> = ({ message, onSaveScript }) => {
   const components = {
     code({ inline, className, children, ...props }: any) {
       if (inline) {
+        const text = String(children || '').trim();
+        if (isCmdletToken(text)) {
+          return (
+            <button
+              type="button"
+              onClick={() => openCommand(text, 'chat')}
+              className="bg-[var(--color-bg-tertiary)] text-[var(--color-text-primary)] px-1 py-0.5 rounded text-sm font-mono cursor-pointer hover:bg-[var(--color-bg-tertiary)]/80 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500"
+              title="Explain command"
+            >
+              {text}
+            </button>
+          );
+        }
         return (
           <code
             className="bg-[var(--color-bg-tertiary)] text-[var(--color-text-primary)] px-1 py-0.5 rounded text-sm font-mono"

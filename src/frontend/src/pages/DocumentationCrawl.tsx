@@ -1,6 +1,7 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { Link } from 'react-router-dom';
 import documentationApi, { AICrawlJobStartError } from '../services/documentationApi';
+import commandInsightsApi, { CommandEnrichmentJob } from '../services/commandInsightsApi';
 
 interface CrawlConfig {
   url: string;
@@ -35,6 +36,11 @@ const DocumentationCrawl: React.FC = () => {
   const [aiJobId, setAiJobId] = useState<string | null>(null);
   const pollTimerRef = useRef<number | null>(null);
 
+  const [commandJobId, setCommandJobId] = useState<string | null>(null);
+  const commandPollTimerRef = useRef<number | null>(null);
+  const [commandJob, setCommandJob] = useState<CommandEnrichmentJob | null>(null);
+  const [commandJobError, setCommandJobError] = useState<string | null>(null);
+
   const [crawlStatus, setCrawlStatus] = useState<CrawlStatus>({
     status: 'idle',
     message: 'Configure your import settings and click "Start Import" to begin.'
@@ -45,6 +51,10 @@ const DocumentationCrawl: React.FC = () => {
       if (pollTimerRef.current) {
         window.clearInterval(pollTimerRef.current);
         pollTimerRef.current = null;
+      }
+      if (commandPollTimerRef.current) {
+        window.clearInterval(commandPollTimerRef.current);
+        commandPollTimerRef.current = null;
       }
     };
   }, []);
@@ -337,6 +347,58 @@ const DocumentationCrawl: React.FC = () => {
     );
   };
 
+  const startCommandEnrichment = async () => {
+    setCommandJobError(null);
+    try {
+      if (commandPollTimerRef.current) {
+        window.clearInterval(commandPollTimerRef.current);
+        commandPollTimerRef.current = null;
+      }
+
+      const { jobId } = await commandInsightsApi.startEnrichment();
+      setCommandJobId(jobId);
+
+      const poll = async () => {
+        try {
+          const status = await commandInsightsApi.getJobStatus(jobId);
+          setCommandJob(status);
+          if (['completed', 'error', 'cancelled'].includes(status.status)) {
+            if (commandPollTimerRef.current) {
+              window.clearInterval(commandPollTimerRef.current);
+              commandPollTimerRef.current = null;
+            }
+          }
+        } catch (err: any) {
+          if (commandPollTimerRef.current) {
+            window.clearInterval(commandPollTimerRef.current);
+            commandPollTimerRef.current = null;
+          }
+          setCommandJobError(err?.message || 'Failed to poll enrichment job status');
+        }
+      };
+
+      await poll();
+      commandPollTimerRef.current = window.setInterval(poll, 2000);
+    } catch (err: any) {
+      setCommandJobError(err?.message || 'Failed to start command enrichment');
+    }
+  };
+
+  const cancelCommandEnrichment = async () => {
+    if (!commandJobId) return;
+    try {
+      await commandInsightsApi.cancelJob(commandJobId);
+    } catch (err: any) {
+      setCommandJobError(err?.message || 'Failed to cancel enrichment job');
+    }
+  };
+
+  const commandProgressPct = (() => {
+    if (!commandJob) return 0;
+    if (!commandJob.total) return 0;
+    return Math.max(0, Math.min(100, Math.round((commandJob.processed / commandJob.total) * 100)));
+  })();
+
   return (
     <div className="container mx-auto px-4 py-8">
       <div className="bg-gradient-to-r from-blue-900 via-indigo-800 to-purple-900 rounded-lg p-6 mb-8 shadow-lg">
@@ -354,6 +416,85 @@ const DocumentationCrawl: React.FC = () => {
             </svg>
             Documentation Library
           </Link>
+        </div>
+      </div>
+
+      {/* Command Enrichment (Progress + Cancel) */}
+      <div className="bg-gray-800/70 border border-gray-700/60 rounded-2xl p-6 mb-8 shadow-xl">
+        <div className="flex items-start justify-between gap-4">
+          <div>
+            <h2 className="text-lg font-semibold text-white">Command Enrichment</h2>
+            <p className="text-sm text-gray-300 mt-1">
+              Generate richer per-cmdlet cards (flags, use cases, examples, sample output) for every cmdlet found in your saved documentation.
+            </p>
+          </div>
+          <div className="flex gap-2">
+            <button
+              type="button"
+              onClick={startCommandEnrichment}
+              className="px-4 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white text-sm font-medium"
+            >
+              Start
+            </button>
+            <button
+              type="button"
+              onClick={cancelCommandEnrichment}
+              disabled={!commandJobId || !commandJob || !['queued', 'running'].includes(commandJob.status)}
+              className="px-4 py-2 rounded-xl bg-gray-700 hover:bg-gray-600 disabled:opacity-50 disabled:cursor-not-allowed text-gray-100 text-sm font-medium border border-gray-600/60"
+            >
+              Cancel
+            </button>
+          </div>
+        </div>
+
+        {commandJobError && (
+          <div className="mt-4 rounded-xl border border-red-700/40 bg-red-900/20 p-3 text-sm text-red-200">
+            {commandJobError}
+          </div>
+        )}
+
+        <div className="mt-5">
+          <div className="flex items-center justify-between text-xs text-gray-400">
+            <div>
+              Status:{' '}
+              <span className="text-gray-200 font-semibold">
+                {commandJob?.status || 'idle'}
+              </span>
+            </div>
+            {commandJob ? (
+              <div>
+                {commandJob.processed}/{commandJob.total} ({commandProgressPct}%)
+              </div>
+            ) : (
+              <div>0%</div>
+            )}
+          </div>
+          <div className="mt-2 h-2 rounded-full bg-gray-700 overflow-hidden">
+            <div
+              className="h-2 bg-emerald-500 transition-all"
+              style={{ width: `${commandProgressPct}%` }}
+            />
+          </div>
+
+          {commandJob?.currentCmdlet && (
+            <div className="mt-3 text-sm text-gray-200">
+              Current cmdlet: <span className="font-mono text-emerald-200">{commandJob.currentCmdlet}</span>
+            </div>
+          )}
+
+          {commandJob && (
+            <div className="mt-3 text-xs text-gray-400 flex flex-wrap gap-3">
+              <span>Succeeded: <span className="text-gray-200">{commandJob.succeeded}</span></span>
+              <span>Failed: <span className="text-gray-200">{commandJob.failed}</span></span>
+              {commandJob.error ? (
+                <span className="truncate max-w-full">Last error: <span className="text-gray-300">{commandJob.error}</span></span>
+              ) : null}
+            </div>
+          )}
+
+          <div className="mt-4 text-xs text-gray-400">
+            Tip: open any documentation card and click a cmdlet pill to see enriched details in the Explain drawer.
+          </div>
         </div>
       </div>
 

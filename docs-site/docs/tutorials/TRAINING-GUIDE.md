@@ -67,14 +67,14 @@ Recommended mock mode so every lab works offline:
 
 Ports:
 
-- Frontend: http://localhost:3002
-- Backend API: http://localhost:4000/api
+- Frontend: http://localhost:3090
+- Backend API: http://localhost:4000
 - AI service: http://localhost:8000
 
 Verify:
 
 - `curl http://localhost:4000/health` → 200 OK
-- Open http://localhost:3002 and click **Use Default Login**
+- Open http://localhost:3090 and click **Use Default Login**
 - Confirm dashboard counters populate with mock data
 
 ## Guided walkthrough
@@ -88,6 +88,7 @@ Ship a vetted script in ~15 minutes:
 5. **Analyze** → open Analysis, read findings, and log remediation notes.
 6. **Search** → find a similar script via keyword + vector search.
 7. **Consult docs** → open Documentation, search for a related cmdlet, and save an excerpt.
+   - Click a cmdlet pill to open the Explain drawer (breakdown + flags + cmdlet card).
 8. **Chat** → ask the assistant “safest way to schedule this script weekly?” and record the answer.
 9. **Analytics** → confirm the run shows up in usage metrics and training exports.
 10. **Settings** → open Documentation & Training and verify the PDF/DOCX links load.
@@ -136,10 +137,15 @@ Ship a vetted script in ~15 minutes:
 
 1. Open Documentation; search for a cmdlet (e.g., `Get-Process`).
 2. Save an excerpt to your notes.
-3. Open Chat and ask for safe usage patterns.
+3. Click a cmdlet pill to open the Explain drawer and review flags + sample use cases.
+4. Open Chat and ask for safe usage patterns.
 
 ![Documentation Explorer](/images/screenshots/variants/documentation-v7.png)
 ![AI Chat](/images/screenshots/variants/chat-v4.png)
+
+Optional: run Command Enrichment (progress + cancel) to backfill cmdlet cards:
+
+![Command enrichment progress](/images/screenshots/variants/command-enrichment-v1.png)
 
 ### Lab 04: Analytics and governance
 

@@ -653,6 +653,42 @@ code {
   border-radius: var(--radius-md);
 }
 
+/* Global top loading bar (API activity) */
+.global-loading-bar {
+  position: fixed;
+  top: 0;
+  left: 0;
+  height: 3px;
+  width: 100%;
+  z-index: 9999;
+  background: rgba(0, 0, 0, 0.08);
+  overflow: hidden;
+}
+
+.global-loading-bar__inner {
+  position: absolute;
+  top: 0;
+  left: -40%;
+  height: 100%;
+  width: 40%;
+  background: var(--color-primary);
+  animation: global-loading-bar-move 1.1s ease-in-out infinite;
+}
+
+@keyframes global-loading-bar-move {
+  0% {
+    left: -40%;
+  }
+  50% {
+    left: 30%;
+    width: 50%;
+  }
+  100% {
+    left: 100%;
+    width: 40%;
+  }
+}
+
 /* ============================================
    Print Styles
    ============================================ */

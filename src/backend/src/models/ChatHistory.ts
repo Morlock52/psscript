@@ -25,8 +25,9 @@ const ChatHistory = function(sequelize: Sequelize) {
       userId: {
         type: DataTypes.INTEGER,
         allowNull: false,
+        field: 'user_id',
         references: {
-          model: 'Users',
+          model: 'users',
           key: 'id',
         },
         onDelete: 'CASCADE',
@@ -40,23 +41,27 @@ const ChatHistory = function(sequelize: Sequelize) {
         allowNull: false,
       },
       embedding: {
-        type: DataTypes.ARRAY(DataTypes.FLOAT),
+        // Provided by pgvector/sequelize registration (see database/connection.ts)
+        type: (DataTypes as any).VECTOR(1536),
         allowNull: true,
       },
       createdAt: {
         type: DataTypes.DATE,
         allowNull: false,
         defaultValue: DataTypes.NOW,
+        field: 'created_at',
       },
       updatedAt: {
         type: DataTypes.DATE,
         allowNull: false,
         defaultValue: DataTypes.NOW,
+        field: 'updated_at',
       },
     },
     {
       tableName: 'chat_history',
       timestamps: true,
+      underscored: true,
       indexes: [
         {
           name: 'chat_history_user_id_idx',

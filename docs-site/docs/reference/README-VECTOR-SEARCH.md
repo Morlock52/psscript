@@ -33,8 +33,9 @@ We've added two key features to enhance the platform's capabilities:
 
 ### Implementation Files
 
-- `src/psscript-vector-db/index.js`: Vector search API service (HTTP endpoints).
-- `src/psscript-vector-db/services/search/searchService.js`: Search queries (keyword + vector similarity).
+- Backend script search controller:
+  - `src/backend/src/controllers/script/search.ts`
+  - `src/backend/src/utils/vectorUtils.ts`
 
 ## Database Changes
 
@@ -75,17 +76,11 @@ const isValid = verifyFileIntegrity(content, expectedHash);
 ### Vector Search
 
 ```bash
-# Keyword + vector search
-curl "http://localhost:3000/api/search?q=backup%20logs&limit=10&threshold=0.7"
+# Keyword search (server-side; supports filters)
+curl "http://localhost:4000/api/scripts/search?q=backup%20logs&limit=10&page=1"
 
-# Category search
-curl "http://localhost:3000/api/search/category?category=security&limit=10"
-
-# Tag search
-curl "http://localhost:3000/api/search/tag?tag=azure&limit=10"
-
-# Similar scripts by scriptId
-curl "http://localhost:3000/api/search/similar?scriptId=42&limit=5&threshold=0.7"
+# Similar scripts by scriptId (pgvector-based when available)
+curl "http://localhost:4000/api/scripts/42/similar?limit=5&threshold=0.7"
 ```
 
 ## Testing

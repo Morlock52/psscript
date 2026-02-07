@@ -15,6 +15,16 @@ test.describe('Agent Orchestration UI', () => {
   test.setTimeout(180_000);
 
   test('Create agent, send message, and receive response (UI)', async ({ page }) => {
+    // Avoid any stale settings from previous runs affecting behavior.
+    await page.addInitScript(() => {
+      try {
+        localStorage.removeItem('openai_api_key');
+        localStorage.removeItem('psscript_mock_mode');
+      } catch {
+        // ignore
+      }
+    });
+
     const badUrls: string[] = [];
     page.on('requestfailed', (req) => {
       const url = req.url();
@@ -40,7 +50,8 @@ test.describe('Agent Orchestration UI', () => {
     await expect(page.getByText('Thinking...')).toBeVisible({ timeout: 60_000 });
     await expect(page.getByText('Thinking...')).toHaveCount(0, { timeout: 120_000 });
 
-    await expect(page.getByText('UI_TEST_OK')).toBeVisible({ timeout: 30_000 });
+    // Use exact match to avoid strict-mode collisions with the prompt text.
+    await expect(page.getByText('UI_TEST_OK', { exact: true })).toBeVisible({ timeout: 30_000 });
 
     expect(badUrls, `Unexpected double /api prefix in browser requests:\n${badUrls.join('\n')}`).toHaveLength(0);
 
@@ -49,4 +60,3 @@ test.describe('Agent Orchestration UI', () => {
     await page.screenshot({ path: path.join(outDir, 'agent_orchestration_chat.png'), fullPage: true });
   });
 });
-

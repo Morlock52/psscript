@@ -9,7 +9,8 @@ AI-powered PowerShell script management: intake, analysis, discovery, agentic ch
 - Script library (categories, owners, versions): ![Scripts](/images/screenshots/variants/scripts-v1.png)
 - Upload with live preview + dedup hints: ![Upload](/images/screenshots/upload.png)
 - AI analysis and remediation: ![Analysis](/images/screenshots/analysis.png)
-- Documentation explorer and crawler: ![Documentation](/images/screenshots/variants/documentation-v1.png)
+- Documentation explorer and crawler: ![Documentation](/images/screenshots/variants/documentation-v9.png)
+- Explain drawer + cmdlet cards: ![Explain](/images/screenshots/variants/command-explain-v1.png)
 - Chat + agentic workflows: ![Chat](/images/screenshots/chat.png)
 - Analytics and governance KPIs: ![Analytics](/images/screenshots/variants/analytics-v3.png)
 - Settings with training/exports links: ![Settings](/images/screenshots/settings.png)
@@ -47,8 +48,8 @@ Architecture and flows:
 
 ```bash
 ./start-all-mock.sh
-# Frontend: http://localhost:3002
-# Backend API: http://localhost:4000/api
+# Frontend: http://localhost:3090
+# Backend API: http://localhost:4000
 # AI service: http://localhost:8000
 ```
 
@@ -56,7 +57,7 @@ Architecture and flows:
 
 ```bash
 ./docker-deploy.sh
-# Frontend: http://localhost:3002
+# Frontend: http://localhost:3090
 # Backend API: http://localhost:4000
 ```
 
@@ -99,8 +100,8 @@ npm run dev
 
 - `.env` samples: `src/frontend/.env`, `src/backend/.env`
 - Mock mode toggles: `VITE_USE_MOCKS=true`, `USE_MOCK_SERVICES=true`
-- Ports: UI 3002, API 4000, AI 8000 (mock defaults)
-- CSRF/CORS dev origins: localhost:3000/3002 + 4000 (see `src/backend/src/middleware/security.ts`)
+- Ports: UI 3090, API 4000, AI 8000
+- CSRF/CORS dev origins: localhost:3090 + 4000 (see `src/backend/src/middleware/security.ts`)
 
 ## Contributing and licenses
 

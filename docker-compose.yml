@@ -36,6 +36,7 @@ services:
       - ./src/backend:/app
       - /app/node_modules
       - ./docs:/docs
+      - ./:/repo:ro
       # Mount TLS certificates for mTLS origin protection
       - ./certs:/certs:ro
     depends_on:
@@ -56,11 +57,29 @@ services:
       - AI_SERVICE_URL=http://ai-service:8000
       - JWT_SECRET=development_jwt_secret_key_change_in_production
       - DISABLE_AUTH=true
+      - README_PATH=/repo/README.md
+      - GITHUB_REPO=${GITHUB_REPO:-Morlock52/psscript}
+      - GITHUB_BRANCH=${GITHUB_BRANCH:-main}
       - OPENAI_API_KEY=${OPENAI_API_KEY}
       # Model defaults (favor performance): GPT-5.2-Codex for best agentic coding, GPT-5 mini for fast interactive UX.
       - OPENAI_MODEL=gpt-5-mini
       - OPENAI_SMART_MODEL=gpt-5.2-codex
       - OPENAI_FAST_MODEL=gpt-5-mini
+      - PWSH_TOOLS_HTTP_URL=http://pwsh-tools:7002
+      - PWSH_TOOLS_WS_URL=ws://pwsh-tools:7001
+
+  # PowerShell tooling service (PSES LSP + deterministic lint/format)
+  pwsh-tools:
+    build:
+      context: ./docker/pwsh-tools
+      dockerfile: Dockerfile
+    ports:
+      - "7001:7001"
+      - "7002:7002"
+    environment:
+      - PORT_LSP=7001
+      - PORT_HTTP=7002
+    restart: unless-stopped
 
   # AI analysis service
   ai-service:

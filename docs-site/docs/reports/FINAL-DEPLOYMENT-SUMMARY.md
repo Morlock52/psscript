@@ -461,7 +461,7 @@ docker-compose -f docker-compose.prod.yml up -d
 curl http://localhost:3001/health
 
 # Check AI service health
-curl http://localhost:8001/health
+curl http://localhost:8000/health
 
 # Check frontend
 curl http://localhost:3000

@@ -15,6 +15,10 @@ import fs from 'fs';
 import path from 'path';
 import { EventEmitter } from 'events';
 import { IS_PRODUCTION, IS_DEVELOPMENT } from '../utils/envValidation';
+import { registerTypes as registerPgvectorTypes } from 'pgvector/sequelize';
+
+// Register pgvector types with Sequelize so models can use DataTypes.VECTOR(...)
+registerPgvectorTypes(Sequelize);
 
 // Configure logger
 const logger = winston.createLogger({

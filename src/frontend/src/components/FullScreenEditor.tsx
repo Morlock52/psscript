@@ -1,5 +1,5 @@
-import React, { useState, useRef, useEffect } from 'react';
-import MonacoEditor from 'react-monaco-editor';
+import React, { useEffect, useRef, useState } from 'react';
+import ScriptEditorShell from './editor/ScriptEditorShell';
 
 interface FullScreenEditorProps {
   isOpen: boolean;
@@ -21,7 +21,6 @@ const FullScreenEditor: React.FC<FullScreenEditorProps> = ({
   const [content, setContent] = useState(initialContent);
   const [isSaving, setIsSaving] = useState(false);
   const [showEditInfo, setShowEditInfo] = useState(false);
-  const editorRef = useRef<any>(null);
   const modalRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -92,57 +91,6 @@ const FullScreenEditor: React.FC<FullScreenEditorProps> = ({
     }
   };
 
-  // Define Monaco type (used for type reference)
-  interface _Monaco {
-    KeyMod: any;
-    KeyCode: any;
-  }
-  
-  const handleEditorMount = (editor: any) => {
-    editorRef.current = editor;
-    editor.focus();
-    
-    // Add editor formatting commands if Monaco is available
-    try {
-      // Use window object to check if monaco is defined
-      const monacoInstance = (window as any).monaco;
-      if (monacoInstance) {
-        editor.addAction({
-          id: 'format-document',
-          label: 'Format Document',
-          keybindings: [
-            monacoInstance.KeyMod.Alt | monacoInstance.KeyMod.Shift | monacoInstance.KeyCode.KeyF
-          ],
-          run: function(editor: any) {
-            editor.getAction('editor.action.formatDocument').run();
-          }
-        });
-      }
-    } catch (error) {
-      console.warn('Monaco editor formatting not available:', error);
-    }
-  };
-
-  // Define editor options with proper typing
-  const editorOptions: any = {
-    selectOnLineNumbers: true,
-    roundedSelection: false,
-    readOnly: false,
-    cursorStyle: 'line',
-    automaticLayout: true,
-    minimap: { enabled: true },
-    scrollBeyondLastLine: false,
-    contextmenu: true,
-    fontFamily: 'Consolas, "Courier New", monospace',
-    fontSize: 14,
-    lineNumbers: 'on', // This should be 'on' | 'off' | 'relative' but using string for compatibility
-    wordWrap: 'on',
-    quickSuggestions: true,
-    snippetSuggestions: 'inline',
-    formatOnPaste: true,
-    formatOnType: true,
-  };
-
   if (!isOpen) return null;
 
   return (
@@ -192,16 +140,30 @@ const FullScreenEditor: React.FC<FullScreenEditorProps> = ({
           </div>
         </div>
         
-        <div className="flex-grow overflow-hidden">
-          <MonacoEditor
-            language="powershell"
-            theme="vs-dark"
-            value={content}
-            options={editorOptions}
-            onChange={setContent}
-            editorDidMount={handleEditorMount}
-            height="100%"
-            width="100%"
+        <div className="flex-grow overflow-hidden p-3">
+          <ScriptEditorShell
+            content={content}
+            onContentChange={(v) => setContent(v)}
+            title={title}
+            scriptId={undefined}
+            autosaveDefaultOn={false}
+            initialSaveState="dirty"
+            onSave={async (_reason) => {
+              setIsSaving(true);
+              try {
+                onSave(content);
+                // Simulate a brief saving animation
+                setTimeout(() => {
+                  setIsSaving(false);
+                  setShowEditInfo(true);
+                  setTimeout(() => setShowEditInfo(false), 2000);
+                }, 500);
+              } catch (error) {
+                console.error('Error saving script:', error);
+                setIsSaving(false);
+                throw error;
+              }
+            }}
           />
         </div>
         

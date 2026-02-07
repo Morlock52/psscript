@@ -30,7 +30,7 @@ All authentication has been fixed and tested. Here are the working credentials:
 
 ## 🌐 How to Access
 
-1. Navigate to: **http://localhost:3000**
+1. Navigate to: **http://localhost:3090**
 2. You will be redirected to the login page
 3. Choose one of these options:
    - **Manual Login:** Enter email and password from the accounts above
@@ -48,7 +48,7 @@ All authentication has been fixed and tested. Here are the working credentials:
 
 ### Frontend Fixes:
 
-- Vite dev server running correctly on port 3000
+- Vite dev server running correctly on port 3090
 - React app serving with proper routing
 - Authentication state management working
 - JWT token storage and refresh tokens implemented
@@ -134,7 +134,7 @@ ID | Username      | Email                  | Role
 
 ## 🔗 API Configuration
 
-- **Frontend URL:** http://localhost:3000
+- **Frontend URL:** http://localhost:3090
 - **Backend API:** http://localhost:4000/api
 - **Auth Endpoints:** http://localhost:4000/api/auth/*
 - **PostgreSQL:** localhost:5432

@@ -204,6 +204,23 @@ export async function createScript(
 
     logger.info(`Created new script with ID ${script.id}`);
 
+    // Create the initial ScriptVersion row so version history/diff/revert works.
+    // This also enables the modern editor's Versions panel.
+    try {
+      await ScriptVersion.create(
+        {
+          scriptId: script.id,
+          version: script.version,
+          content,
+          changelog: 'Initial version',
+          userId
+        },
+        { transaction }
+      );
+    } catch (versionErr) {
+      logger.warn(`Failed to create initial ScriptVersion for script ${script.id}: ${(versionErr as Error).message}`);
+    }
+
     // Add tags if provided (limit to 10)
     if (tags && Array.isArray(tags) && tags.length > 0) {
       const tagsToProcess = tags.slice(0, 10);
@@ -398,13 +415,14 @@ export async function updateScript(
     transaction = await sequelize.transaction();
 
     const scriptId = req.params.id;
-    const { title, description, content, categoryId, isPublic, tags } = req.body as {
+    const { title, description, content, categoryId, isPublic, tags, changelog } = req.body as {
       title?: string;
       description?: string;
       content?: string;
       categoryId?: number | null;
       isPublic?: boolean;
       tags?: string[];
+      changelog?: string;
     };
 
     const script = await Script.findByPk(scriptId);
@@ -422,9 +440,10 @@ export async function updateScript(
 
     // Create a new version if content changed
     if (content && content !== script.content) {
+      const newVersion = script.version + 1;
       await script.update(
         {
-          version: script.version + 1,
+          version: newVersion,
           title: title ?? script.title,
           description: description ?? script.description,
           content,
@@ -433,6 +452,22 @@ export async function updateScript(
         },
         { transaction }
       );
+
+      // Persist version content for history/diff/revert.
+      try {
+        await ScriptVersion.create(
+          {
+            scriptId: parseInt(scriptId, 10),
+            version: newVersion,
+            content,
+            changelog: typeof changelog === 'string' && changelog.trim().length ? changelog.trim() : 'Updated script',
+            userId: (req.user as any)?.id
+          },
+          { transaction }
+        );
+      } catch (versionErr) {
+        logger.warn(`Failed to create ScriptVersion for script ${scriptId}: ${(versionErr as Error).message}`);
+      }
 
       // Re-analyze if content changed
       try {
