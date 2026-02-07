@@ -2,7 +2,7 @@ import { defineConfig, devices } from '@playwright/test';
 
 /**
  * Playwright Configuration for PSScript Platform
- * Tests: React Frontend (3000), Express Backend (4000), FastAPI AI Service (8000)
+ * Tests: React Frontend (3090), Express Backend (4000), FastAPI AI Service (8000)
  * @see https://playwright.dev/docs/test-configuration
  */
 export default defineConfig({
@@ -30,7 +30,10 @@ export default defineConfig({
   // Shared settings for all the projects below
   use: {
     // Base URL for page.goto('/')
-    baseURL: 'http://localhost:3002',
+    baseURL: 'https://localhost:3090',
+
+    // The local dev setup uses TLS for mTLS tunnel-to-origin protection.
+    ignoreHTTPSErrors: true,
 
     // Collect trace when retrying the failed test
     trace: 'on-first-retry',
@@ -82,7 +85,7 @@ export default defineConfig({
   // webServer: [
   //   {
   //     command: 'cd src/frontend && npm run dev',
-  //     url: 'http://localhost:3002',
+  //     url: 'http://localhost:3090',
   //     reuseExistingServer: !process.env.CI,
   //     timeout: 120000,
   //     stdout: 'pipe',

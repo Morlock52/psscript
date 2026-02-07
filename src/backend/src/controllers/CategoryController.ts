@@ -191,6 +191,7 @@ class CategoryController {
     
     try {
       const categoryId = req.params.id;
+      const mode = String(req.query.mode || '');
       
       const category = await Category.findByPk(categoryId);
       
@@ -206,12 +207,23 @@ class CategoryController {
         }
       });
       
-      if (scriptCount > 0) {
+      if (scriptCount > 0 && mode !== 'uncategorize') {
         await transaction.rollback();
         return res.status(400).json({ 
           message: 'Cannot delete category with associated scripts',
           scriptCount
         });
+      }
+
+      let uncategorizedScripts = 0;
+      if (scriptCount > 0 && mode === 'uncategorize') {
+        // Uncategorize scripts first (set category_id = NULL), then delete the category.
+        const [updated] = await Script.update(
+          { categoryId: null },
+          { where: { categoryId }, transaction }
+        );
+        // Sequelize returns number of affected rows for Postgres update.
+        uncategorizedScripts = typeof updated === 'number' ? updated : scriptCount;
       }
       
       await category.destroy({ transaction });
@@ -221,8 +233,9 @@ class CategoryController {
       // Clear relevant caches
       cache.del('categories:all');
       cache.del(`category:${categoryId}`);
+      cache.clearPattern(`category:${categoryId}:scripts:`);
       
-      res.json({ message: 'Category deleted successfully' });
+      res.json({ message: 'Category deleted successfully', uncategorizedScripts });
     } catch (error) {
       await transaction.rollback();
       next(error);

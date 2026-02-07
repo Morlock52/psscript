@@ -1,0 +1,24 @@
+{
+  "id": "explanation/VOICE-API-ARCHITECTURE",
+  "title": "Voice API Architecture",
+  "description": "This document provides a detailed overview of the architecture for the Voice API integration in the PSScript Manager platform.",
+  "source": "@site/docs/explanation/VOICE-API-ARCHITECTURE.md",
+  "sourceDirName": "explanation",
+  "slug": "/explanation/VOICE-API-ARCHITECTURE",
+  "permalink": "/psscript/explanation/VOICE-API-ARCHITECTURE",
+  "draft": false,
+  "unlisted": false,
+  "editUrl": "https://github.com/Morlock52/psscript/tree/main/docs-site/docs/explanation/VOICE-API-ARCHITECTURE.md",
+  "tags": [],
+  "version": "current",
+  "frontMatter": {},
+  "sidebar": "docs",
+  "previous": {
+    "title": "LangGraph 1.0 Migration Plan",
+    "permalink": "/psscript/explanation/LANGGRAPH-MIGRATION-PLAN"
+  },
+  "next": {
+    "title": "Agentic Framework Implementation",
+    "permalink": "/psscript/explanation/agentic-framework"
+  }
+}

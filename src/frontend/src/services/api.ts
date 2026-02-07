@@ -493,6 +493,22 @@ export const categoryService = {
       console.error("Error fetching categories:", error);
       return { categories: [] };
     }
+  },
+
+  createCategory: async (data: { name: string; description?: string | null }) => {
+    const response = await apiClient.post('/categories', data);
+    return response.data;
+  },
+
+  updateCategory: async (id: number | string, data: { name?: string; description?: string | null }) => {
+    const response = await apiClient.put(`/categories/${id}`, data);
+    return response.data;
+  },
+
+  deleteCategory: async (id: number | string, opts?: { mode?: 'uncategorize' }) => {
+    const mode = opts?.mode ? `?mode=${encodeURIComponent(opts.mode)}` : '';
+    const response = await apiClient.delete(`/categories/${id}${mode}`);
+    return response.data;
   }
 };
 

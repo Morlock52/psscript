@@ -245,7 +245,7 @@ export default class User extends Model {
       lockedUntil: {
         type: DataTypes.DATE,
         allowNull: true,
-        field: 'lockout_until'
+        field: 'locked_until'
       }
     }, { 
       sequelize,

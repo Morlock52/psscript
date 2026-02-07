@@ -5,7 +5,7 @@ services:
       context: ./src/frontend
       dockerfile: Dockerfile
     ports:
-      - "3000:3000"
+      - "3090:3090"
     volumes:
       - ./src/frontend:/app
       - /app/node_modules
@@ -15,13 +15,18 @@ services:
       - backend
     environment:
       - NODE_ENV=development
-      - VITE_API_URL=http://localhost:4000/api
+      # Let frontend runtime-detect API URL (https on localhost) via src/frontend/src/utils/apiUrl.ts
+      - VITE_API_URL=
+      # Enable demo login button for local dev/e2e
+      - VITE_DEMO_EMAIL=admin@example.com
+      - VITE_DEMO_PASSWORD=admin123
       - VITE_USE_MOCKS=true
+      - VITE_PORT=3090
       # TLS certificate paths for mTLS
       - TLS_CERT=/certs/frontend.crt
       - TLS_KEY=/certs/frontend.key
     healthcheck:
-      test: ["CMD", "wget", "--spider", "-q", "--no-check-certificate", "https://127.0.0.1:3000"]
+      test: ["CMD", "wget", "--spider", "-q", "--no-check-certificate", "https://127.0.0.1:3090"]
       interval: 30s
       timeout: 10s
       retries: 5
@@ -49,6 +54,7 @@ services:
       - NODE_ENV=development
       - DOCKER_ENV=true
       - PORT=4000
+      - DISABLE_AUTH=true
       - DB_HOST=postgres
       - DB_PORT=5432
       - DB_NAME=psscript

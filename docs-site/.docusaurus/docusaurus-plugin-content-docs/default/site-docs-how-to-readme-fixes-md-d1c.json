@@ -1,0 +1,24 @@
+{
+  "id": "how-to/README-FIXES",
+  "title": "PSScript Application Fixes",
+  "description": "This document provides a comprehensive guide to the fixes implemented for the PSScript application to address critical issues with script deletion and file uploads.",
+  "source": "@site/docs/how-to/README-FIXES.md",
+  "sourceDirName": "how-to",
+  "slug": "/how-to/README-FIXES",
+  "permalink": "/psscript/how-to/README-FIXES",
+  "draft": false,
+  "unlisted": false,
+  "editUrl": "https://github.com/Morlock52/psscript/tree/main/docs-site/docs/how-to/README-FIXES.md",
+  "tags": [],
+  "version": "current",
+  "frontMatter": {},
+  "sidebar": "docs",
+  "previous": {
+    "title": "File Hash Deduplication Testing",
+    "permalink": "/psscript/how-to/README-FILE-HASH-TESTING"
+  },
+  "next": {
+    "title": "PSScript Manager",
+    "permalink": "/psscript/how-to/README-GITHUB"
+  }
+}

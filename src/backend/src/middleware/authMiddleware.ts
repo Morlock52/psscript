@@ -42,6 +42,18 @@ const getClientIp = (req: Request): string => {
  * Adds the user information to the request object if authenticated
  */
 export const authenticateJWT = async (req: Request, res: Response, next: NextFunction) => {
+  // Local/dev convenience: allow running with auth disabled.
+  // This is intentionally gated behind an env var and should not be enabled in production.
+  if (process.env.DISABLE_AUTH === 'true') {
+    req.user = {
+      id: 1,
+      username: 'dev',
+      email: 'dev@local',
+      role: 'admin'
+    };
+    return next();
+  }
+
   const startTime = Date.now();
   const requestId = generateRequestId();
   const ipAddress = getClientIp(req);

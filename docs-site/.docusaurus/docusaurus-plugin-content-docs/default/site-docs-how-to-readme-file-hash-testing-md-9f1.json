@@ -1,0 +1,24 @@
+{
+  "id": "how-to/README-FILE-HASH-TESTING",
+  "title": "File Hash Deduplication Testing",
+  "description": "This document outlines the testing performed to verify the file hash deduplication functionality in the PSScript platform.",
+  "source": "@site/docs/how-to/README-FILE-HASH-TESTING.md",
+  "sourceDirName": "how-to",
+  "slug": "/how-to/README-FILE-HASH-TESTING",
+  "permalink": "/psscript/how-to/README-FILE-HASH-TESTING",
+  "draft": false,
+  "unlisted": false,
+  "editUrl": "https://github.com/Morlock52/psscript/tree/main/docs-site/docs/how-to/README-FILE-HASH-TESTING.md",
+  "tags": [],
+  "version": "current",
+  "frontMatter": {},
+  "sidebar": "docs",
+  "previous": {
+    "title": "PSScript Manager Management Playbook",
+    "permalink": "/psscript/how-to/MANAGEMENT-PLAYBOOK"
+  },
+  "next": {
+    "title": "PSScript Application Fixes",
+    "permalink": "/psscript/how-to/README-FIXES"
+  }
+}

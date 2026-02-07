@@ -1,0 +1,24 @@
+{
+  "id": "reports/AI-ANALYZER-FIXES",
+  "title": "AI Script Analyzer Fixes",
+  "description": "This document outlines the fixes implemented to address issues with the AI script analyzer in the PSScript application.",
+  "source": "@site/docs/reports/AI-ANALYZER-FIXES.md",
+  "sourceDirName": "reports",
+  "slug": "/reports/AI-ANALYZER-FIXES",
+  "permalink": "/psscript/reports/AI-ANALYZER-FIXES",
+  "draft": false,
+  "unlisted": false,
+  "editUrl": "https://github.com/Morlock52/psscript/tree/main/docs-site/docs/reports/AI-ANALYZER-FIXES.md",
+  "tags": [],
+  "version": "current",
+  "frontMatter": {},
+  "sidebar": "docs",
+  "previous": {
+    "title": "Reports & Archive",
+    "permalink": "/psscript/reports/"
+  },
+  "next": {
+    "title": "AI Functionality Comprehensive Test Plan & Audit",
+    "permalink": "/psscript/reports/AI_COMPREHENSIVE_TEST_PLAN"
+  }
+}

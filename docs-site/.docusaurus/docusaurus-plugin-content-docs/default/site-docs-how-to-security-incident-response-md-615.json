@@ -1,0 +1,24 @@
+{
+  "id": "how-to/SECURITY_INCIDENT_RESPONSE",
+  "title": "Security Incident Response Procedure",
+  "description": "Document ID: SEC-IRP-001",
+  "source": "@site/docs/how-to/SECURITY_INCIDENT_RESPONSE.md",
+  "sourceDirName": "how-to",
+  "slug": "/how-to/SECURITY_INCIDENT_RESPONSE",
+  "permalink": "/psscript/how-to/SECURITY_INCIDENT_RESPONSE",
+  "draft": false,
+  "unlisted": false,
+  "editUrl": "https://github.com/Morlock52/psscript/tree/main/docs-site/docs/how-to/SECURITY_INCIDENT_RESPONSE.md",
+  "tags": [],
+  "version": "current",
+  "frontMatter": {},
+  "sidebar": "docs",
+  "previous": {
+    "title": "PowerShell Script Analysis Improvements",
+    "permalink": "/psscript/how-to/SCRIPT-ANALYSIS-IMPROVEMENTS"
+  },
+  "next": {
+    "title": "PSScript Support and Operations",
+    "permalink": "/psscript/how-to/SUPPORT"
+  }
+}

@@ -1,0 +1,24 @@
+{
+  "id": "how-to/SCRIPT-ANALYSIS-IMPROVEMENTS",
+  "title": "PowerShell Script Analysis Improvements",
+  "description": "Overview",
+  "source": "@site/docs/how-to/SCRIPT-ANALYSIS-IMPROVEMENTS.md",
+  "sourceDirName": "how-to",
+  "slug": "/how-to/SCRIPT-ANALYSIS-IMPROVEMENTS",
+  "permalink": "/psscript/how-to/SCRIPT-ANALYSIS-IMPROVEMENTS",
+  "draft": false,
+  "unlisted": false,
+  "editUrl": "https://github.com/Morlock52/psscript/tree/main/docs-site/docs/how-to/SCRIPT-ANALYSIS-IMPROVEMENTS.md",
+  "tags": [],
+  "version": "current",
+  "frontMatter": {},
+  "sidebar": "docs",
+  "previous": {
+    "title": "PSScript Manager",
+    "permalink": "/psscript/how-to/README-GITHUB"
+  },
+  "next": {
+    "title": "Security Incident Response Procedure",
+    "permalink": "/psscript/how-to/SECURITY_INCIDENT_RESPONSE"
+  }
+}

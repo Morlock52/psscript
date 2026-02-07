@@ -1,0 +1,24 @@
+{
+  "id": "how-to/MANAGEMENT-PLAYBOOK",
+  "title": "PSScript Manager Management Playbook",
+  "description": "This playbook is a management-focused guide for deploying, governing, and scaling PSScript Manager. It is written for non-technical stakeholders while keeping enough detail for engineering and operations leads.",
+  "source": "@site/docs/how-to/MANAGEMENT-PLAYBOOK.md",
+  "sourceDirName": "how-to",
+  "slug": "/how-to/MANAGEMENT-PLAYBOOK",
+  "permalink": "/psscript/how-to/MANAGEMENT-PLAYBOOK",
+  "draft": false,
+  "unlisted": false,
+  "editUrl": "https://github.com/Morlock52/psscript/tree/main/docs-site/docs/how-to/MANAGEMENT-PLAYBOOK.md",
+  "tags": [],
+  "version": "current",
+  "frontMatter": {},
+  "sidebar": "docs",
+  "previous": {
+    "title": "LangGraph 1.0 Setup - Summary",
+    "permalink": "/psscript/how-to/LANGGRAPH-SETUP-SUMMARY"
+  },
+  "next": {
+    "title": "File Hash Deduplication Testing",
+    "permalink": "/psscript/how-to/README-FILE-HASH-TESTING"
+  }
+}

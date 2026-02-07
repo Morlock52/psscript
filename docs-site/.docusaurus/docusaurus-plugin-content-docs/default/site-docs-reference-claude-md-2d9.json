@@ -1,0 +1,24 @@
+{
+  "id": "reference/CLAUDE",
+  "title": "Claude Code Reference",
+  "description": "Note CLAUDE.md",
+  "source": "@site/docs/reference/CLAUDE.md",
+  "sourceDirName": "reference",
+  "slug": "/reference/CLAUDE",
+  "permalink": "/psscript/reference/CLAUDE",
+  "draft": false,
+  "unlisted": false,
+  "editUrl": "https://github.com/Morlock52/psscript/tree/main/docs-site/docs/reference/CLAUDE.md",
+  "tags": [],
+  "version": "current",
+  "frontMatter": {},
+  "sidebar": "docs",
+  "previous": {
+    "title": "Reference",
+    "permalink": "/psscript/reference/"
+  },
+  "next": {
+    "title": "Database Documentation",
+    "permalink": "/psscript/reference/DATABASE_DOCUMENTATION"
+  }
+}

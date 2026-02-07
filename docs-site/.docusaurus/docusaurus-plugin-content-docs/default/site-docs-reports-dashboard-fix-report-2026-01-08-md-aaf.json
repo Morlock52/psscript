@@ -1,0 +1,24 @@
+{
+  "id": "reports/DASHBOARD-FIX-REPORT-2026-01-08",
+  "title": "Dashboard Fix Report - January 8, 2026",
+  "description": "🎯 Executive Summary",
+  "source": "@site/docs/reports/DASHBOARD-FIX-REPORT-2026-01-08.md",
+  "sourceDirName": "reports",
+  "slug": "/reports/DASHBOARD-FIX-REPORT-2026-01-08",
+  "permalink": "/psscript/reports/DASHBOARD-FIX-REPORT-2026-01-08",
+  "draft": false,
+  "unlisted": false,
+  "editUrl": "https://github.com/Morlock52/psscript/tree/main/docs-site/docs/reports/DASHBOARD-FIX-REPORT-2026-01-08.md",
+  "tags": [],
+  "version": "current",
+  "frontMatter": {},
+  "sidebar": "docs",
+  "previous": {
+    "title": "PSScript Comprehensive Testing Plan - 2026",
+    "permalink": "/psscript/reports/COMPREHENSIVE-TESTING-PLAN-2026"
+  },
+  "next": {
+    "title": "Database Improvements",
+    "permalink": "/psscript/reports/DATABASE-IMPROVEMENTS"
+  }
+}

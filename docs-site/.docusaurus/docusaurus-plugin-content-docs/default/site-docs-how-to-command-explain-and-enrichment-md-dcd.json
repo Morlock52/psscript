@@ -1,0 +1,27 @@
+{
+  "id": "how-to/COMMAND-EXPLAIN-AND-ENRICHMENT",
+  "title": "Explain Drawer and Command Enrichment",
+  "description": "Clickable cmdlets with a themed pop-out plus AI-enriched cmdlet cards (progress + cancel)",
+  "source": "@site/docs/how-to/COMMAND-EXPLAIN-AND-ENRICHMENT.md",
+  "sourceDirName": "how-to",
+  "slug": "/how-to/COMMAND-EXPLAIN-AND-ENRICHMENT",
+  "permalink": "/psscript/how-to/COMMAND-EXPLAIN-AND-ENRICHMENT",
+  "draft": false,
+  "unlisted": false,
+  "editUrl": "https://github.com/Morlock52/psscript/tree/main/docs-site/docs/how-to/COMMAND-EXPLAIN-AND-ENRICHMENT.md",
+  "tags": [],
+  "version": "current",
+  "frontMatter": {
+    "title": "Explain Drawer and Command Enrichment",
+    "description": "Clickable cmdlets with a themed pop-out plus AI-enriched cmdlet cards (progress + cancel)"
+  },
+  "sidebar": "docs",
+  "previous": {
+    "title": "Authentication System Improvements",
+    "permalink": "/psscript/how-to/AUTHENTICATION-IMPROVEMENTS"
+  },
+  "next": {
+    "title": "Database Issues and Recommended Fixes",
+    "permalink": "/psscript/how-to/DATABASE_ISSUES_AND_FIXES"
+  }
+}

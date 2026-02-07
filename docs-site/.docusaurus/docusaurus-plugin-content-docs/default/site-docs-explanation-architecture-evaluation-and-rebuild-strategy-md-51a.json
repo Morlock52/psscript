@@ -1,0 +1,24 @@
+{
+  "id": "explanation/ARCHITECTURE-EVALUATION-AND-REBUILD-STRATEGY",
+  "title": "Architecture Evaluation and Rebuild Strategy",
+  "description": "Executive Summary",
+  "source": "@site/docs/explanation/ARCHITECTURE-EVALUATION-AND-REBUILD-STRATEGY.md",
+  "sourceDirName": "explanation",
+  "slug": "/explanation/ARCHITECTURE-EVALUATION-AND-REBUILD-STRATEGY",
+  "permalink": "/psscript/explanation/ARCHITECTURE-EVALUATION-AND-REBUILD-STRATEGY",
+  "draft": false,
+  "unlisted": false,
+  "editUrl": "https://github.com/Morlock52/psscript/tree/main/docs-site/docs/explanation/ARCHITECTURE-EVALUATION-AND-REBUILD-STRATEGY.md",
+  "tags": [],
+  "version": "current",
+  "frontMatter": {},
+  "sidebar": "docs",
+  "previous": {
+    "title": "Explanation",
+    "permalink": "/psscript/explanation/"
+  },
+  "next": {
+    "title": "Docker Infrastructure Enhancement Summary",
+    "permalink": "/psscript/explanation/DOCKER-INFRASTRUCTURE-SUMMARY"
+  }
+}

@@ -1,0 +1,24 @@
+{
+  "id": "reports/IMPLEMENTATION-SUMMARY-2026-01-26",
+  "title": "PSScript Platform Implementation Summary",
+  "description": "Date: January 26, 2026",
+  "source": "@site/docs/reports/IMPLEMENTATION-SUMMARY-2026-01-26.md",
+  "sourceDirName": "reports",
+  "slug": "/reports/IMPLEMENTATION-SUMMARY-2026-01-26",
+  "permalink": "/psscript/reports/IMPLEMENTATION-SUMMARY-2026-01-26",
+  "draft": false,
+  "unlisted": false,
+  "editUrl": "https://github.com/Morlock52/psscript/tree/main/docs-site/docs/reports/IMPLEMENTATION-SUMMARY-2026-01-26.md",
+  "tags": [],
+  "version": "current",
+  "frontMatter": {},
+  "sidebar": "docs",
+  "previous": {
+    "title": "PSScript Application Fixes",
+    "permalink": "/psscript/reports/FIXES"
+  },
+  "next": {
+    "title": "Model Configuration Update - January 8, 2026",
+    "permalink": "/psscript/reports/MODEL-UPDATE-2026-01-08"
+  }
+}

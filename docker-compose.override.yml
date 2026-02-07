@@ -23,10 +23,15 @@ services:
       - /app/node_modules
     environment:
       NODE_ENV: production
-      VITE_API_URL: https://psscript.morloksmaze.com/api
+      # Let frontend runtime-detect API URL (works for local + tunnel)
+      VITE_API_URL:
+      VITE_PORT: "3090"
+      # Enable demo login button for local dev/e2e
+      VITE_DEMO_EMAIL: admin@example.com
+      VITE_DEMO_PASSWORD: admin123
     ports:
-      - "3000:3000"
-    command: sh -c "npx vite build && npx vite preview --host 0.0.0.0 --port 3000"
+      - "3090:3090"
+    command: sh -c "npx vite build && npx vite preview --host 0.0.0.0 --port 3090"
 
   # Development configuration for AI service
   ai-service:

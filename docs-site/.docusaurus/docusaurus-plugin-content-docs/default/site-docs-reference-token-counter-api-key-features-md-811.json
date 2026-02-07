@@ -1,0 +1,24 @@
+{
+  "id": "reference/TOKEN-COUNTER-API-KEY-FEATURES",
+  "title": "Token Counter and API Key Management Features",
+  "description": "Overview",
+  "source": "@site/docs/reference/TOKEN-COUNTER-API-KEY-FEATURES.md",
+  "sourceDirName": "reference",
+  "slug": "/reference/TOKEN-COUNTER-API-KEY-FEATURES",
+  "permalink": "/psscript/reference/TOKEN-COUNTER-API-KEY-FEATURES",
+  "draft": false,
+  "unlisted": false,
+  "editUrl": "https://github.com/Morlock52/psscript/tree/main/docs-site/docs/reference/TOKEN-COUNTER-API-KEY-FEATURES.md",
+  "tags": [],
+  "version": "current",
+  "frontMatter": {},
+  "sidebar": "docs",
+  "previous": {
+    "title": "Documentation Reference Sources",
+    "permalink": "/psscript/reference/REFERENCE-SOURCES"
+  },
+  "next": {
+    "title": "Voice API Implementation Examples",
+    "permalink": "/psscript/reference/VOICE-API-IMPLEMENTATION-EXAMPLES"
+  }
+}

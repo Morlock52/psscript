@@ -1,0 +1,24 @@
+{
+  "id": "reference/README-VOICE-API",
+  "title": "Voice API Integration",
+  "description": "This document provides an overview of the Voice API integration for the PSScript Manager platform. The Voice API enables voice input and output capabilities, enhancing the user experience and accessibility of the platform.",
+  "source": "@site/docs/reference/README-VOICE-API.md",
+  "sourceDirName": "reference",
+  "slug": "/reference/README-VOICE-API",
+  "permalink": "/psscript/reference/README-VOICE-API",
+  "draft": false,
+  "unlisted": false,
+  "editUrl": "https://github.com/Morlock52/psscript/tree/main/docs-site/docs/reference/README-VOICE-API.md",
+  "tags": [],
+  "version": "current",
+  "frontMatter": {},
+  "sidebar": "docs",
+  "previous": {
+    "title": "Vector Search and File Integrity",
+    "permalink": "/psscript/reference/README-VECTOR-SEARCH"
+  },
+  "next": {
+    "title": "Documentation Reference Sources",
+    "permalink": "/psscript/reference/REFERENCE-SOURCES"
+  }
+}

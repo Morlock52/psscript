@@ -1,0 +1,24 @@
+{
+  "id": "explanation/DOCKER-INFRASTRUCTURE-SUMMARY",
+  "title": "Docker Infrastructure Enhancement Summary",
+  "description": "Overview",
+  "source": "@site/docs/explanation/DOCKER-INFRASTRUCTURE-SUMMARY.md",
+  "sourceDirName": "explanation",
+  "slug": "/explanation/DOCKER-INFRASTRUCTURE-SUMMARY",
+  "permalink": "/psscript/explanation/DOCKER-INFRASTRUCTURE-SUMMARY",
+  "draft": false,
+  "unlisted": false,
+  "editUrl": "https://github.com/Morlock52/psscript/tree/main/docs-site/docs/explanation/DOCKER-INFRASTRUCTURE-SUMMARY.md",
+  "tags": [],
+  "version": "current",
+  "frontMatter": {},
+  "sidebar": "docs",
+  "previous": {
+    "title": "Architecture Evaluation and Rebuild Strategy",
+    "permalink": "/psscript/explanation/ARCHITECTURE-EVALUATION-AND-REBUILD-STRATEGY"
+  },
+  "next": {
+    "title": "Docker Infrastructure Documentation",
+    "permalink": "/psscript/explanation/DOCKER-INFRASTRUCTURE"
+  }
+}

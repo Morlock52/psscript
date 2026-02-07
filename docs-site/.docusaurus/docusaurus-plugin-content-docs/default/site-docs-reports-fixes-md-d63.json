@@ -1,0 +1,24 @@
+{
+  "id": "reports/FIXES",
+  "title": "PSScript Application Fixes",
+  "description": "This document outlines the fixes implemented to address two critical issues in the PSScript application:",
+  "source": "@site/docs/reports/FIXES.md",
+  "sourceDirName": "reports",
+  "slug": "/reports/FIXES",
+  "permalink": "/psscript/reports/FIXES",
+  "draft": false,
+  "unlisted": false,
+  "editUrl": "https://github.com/Morlock52/psscript/tree/main/docs-site/docs/reports/FIXES.md",
+  "tags": [],
+  "version": "current",
+  "frontMatter": {},
+  "sidebar": "docs",
+  "previous": {
+    "title": "Final Test Report - PSScript Testing & Fixes",
+    "permalink": "/psscript/reports/FINAL-TEST-REPORT-2026-01-08"
+  },
+  "next": {
+    "title": "PSScript Platform Implementation Summary",
+    "permalink": "/psscript/reports/IMPLEMENTATION-SUMMARY-2026-01-26"
+  }
+}

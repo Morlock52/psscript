@@ -1,0 +1,24 @@
+{
+  "id": "reference/VOICE-API-IMPLEMENTATION-EXAMPLES",
+  "title": "Voice API Implementation Examples",
+  "description": "This document provides concrete implementation examples for the Voice API integration. These examples demonstrate how to use the Voice API in different contexts and scenarios.",
+  "source": "@site/docs/reference/VOICE-API-IMPLEMENTATION-EXAMPLES.md",
+  "sourceDirName": "reference",
+  "slug": "/reference/VOICE-API-IMPLEMENTATION-EXAMPLES",
+  "permalink": "/psscript/reference/VOICE-API-IMPLEMENTATION-EXAMPLES",
+  "draft": false,
+  "unlisted": false,
+  "editUrl": "https://github.com/Morlock52/psscript/tree/main/docs-site/docs/reference/VOICE-API-IMPLEMENTATION-EXAMPLES.md",
+  "tags": [],
+  "version": "current",
+  "frontMatter": {},
+  "sidebar": "docs",
+  "previous": {
+    "title": "Token Counter and API Key Management Features",
+    "permalink": "/psscript/reference/TOKEN-COUNTER-API-KEY-FEATURES"
+  },
+  "next": {
+    "title": "Reference",
+    "permalink": "/psscript/reference/"
+  }
+}

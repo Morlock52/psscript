@@ -1,0 +1,24 @@
+{
+  "id": "how-to/DOCKER-SETUP",
+  "title": "Docker Setup for PSScript",
+  "description": "This document explains how to run the PSScript application using Docker, both for development and production environments.",
+  "source": "@site/docs/how-to/DOCKER-SETUP.md",
+  "sourceDirName": "how-to",
+  "slug": "/how-to/DOCKER-SETUP",
+  "permalink": "/psscript/how-to/DOCKER-SETUP",
+  "draft": false,
+  "unlisted": false,
+  "editUrl": "https://github.com/Morlock52/psscript/tree/main/docs-site/docs/how-to/DOCKER-SETUP.md",
+  "tags": [],
+  "version": "current",
+  "frontMatter": {},
+  "sidebar": "docs",
+  "previous": {
+    "title": "Database Issues and Recommended Fixes",
+    "permalink": "/psscript/how-to/DATABASE_ISSUES_AND_FIXES"
+  },
+  "next": {
+    "title": "Documentation Build Checklist",
+    "permalink": "/psscript/how-to/DOCS-BUILD-CHECKLIST"
+  }
+}

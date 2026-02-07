@@ -1,0 +1,24 @@
+{
+  "id": "how-to/VOICE-API-IMPLEMENTATION-STEPS",
+  "title": "Voice API Implementation Steps",
+  "description": "This document provides a detailed, step-by-step plan for implementing the Voice API integration into the PSScript Manager platform. The plan is organized into phases, with each phase containing specific tasks and milestones.",
+  "source": "@site/docs/how-to/VOICE-API-IMPLEMENTATION-STEPS.md",
+  "sourceDirName": "how-to",
+  "slug": "/how-to/VOICE-API-IMPLEMENTATION-STEPS",
+  "permalink": "/psscript/how-to/VOICE-API-IMPLEMENTATION-STEPS",
+  "draft": false,
+  "unlisted": false,
+  "editUrl": "https://github.com/Morlock52/psscript/tree/main/docs-site/docs/how-to/VOICE-API-IMPLEMENTATION-STEPS.md",
+  "tags": [],
+  "version": "current",
+  "frontMatter": {},
+  "sidebar": "docs",
+  "previous": {
+    "title": "PSScript Support and Operations",
+    "permalink": "/psscript/how-to/SUPPORT"
+  },
+  "next": {
+    "title": "Voice API Integration Summary",
+    "permalink": "/psscript/how-to/VOICE-API-INTEGRATION-SUMMARY"
+  }
+}

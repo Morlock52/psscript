@@ -1,0 +1,24 @@
+{
+  "id": "explanation/LANGGRAPH-IMPLEMENTATION",
+  "title": "LangGraph 1.0 Production Implementation",
+  "description": "Overview",
+  "source": "@site/docs/explanation/LANGGRAPH-IMPLEMENTATION.md",
+  "sourceDirName": "explanation",
+  "slug": "/explanation/LANGGRAPH-IMPLEMENTATION",
+  "permalink": "/psscript/explanation/LANGGRAPH-IMPLEMENTATION",
+  "draft": false,
+  "unlisted": false,
+  "editUrl": "https://github.com/Morlock52/psscript/tree/main/docs-site/docs/explanation/LANGGRAPH-IMPLEMENTATION.md",
+  "tags": [],
+  "version": "current",
+  "frontMatter": {},
+  "sidebar": "docs",
+  "previous": {
+    "title": "Infrastructure Features Overview",
+    "permalink": "/psscript/explanation/INFRASTRUCTURE-FEATURES"
+  },
+  "next": {
+    "title": "LangGraph 1.0 Migration Plan",
+    "permalink": "/psscript/explanation/LANGGRAPH-MIGRATION-PLAN"
+  }
+}

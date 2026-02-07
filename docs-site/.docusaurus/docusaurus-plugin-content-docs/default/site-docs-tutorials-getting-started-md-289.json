@@ -1,0 +1,24 @@
+{
+  "id": "tutorials/GETTING-STARTED",
+  "title": "PSScript - Getting Started Guide",
+  "description": "This document provides a comprehensive guide to setting up and using the PSScript application.",
+  "source": "@site/docs/tutorials/GETTING-STARTED.md",
+  "sourceDirName": "tutorials",
+  "slug": "/tutorials/GETTING-STARTED",
+  "permalink": "/psscript/tutorials/GETTING-STARTED",
+  "draft": false,
+  "unlisted": false,
+  "editUrl": "https://github.com/Morlock52/psscript/tree/main/docs-site/docs/tutorials/GETTING-STARTED.md",
+  "tags": [],
+  "version": "current",
+  "frontMatter": {},
+  "sidebar": "docs",
+  "previous": {
+    "title": "Tutorials",
+    "permalink": "/psscript/tutorials/"
+  },
+  "next": {
+    "title": "LangGraph 1.0 - Quick Start Guide",
+    "permalink": "/psscript/tutorials/LANGGRAPH-QUICK-START"
+  }
+}

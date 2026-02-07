@@ -1,0 +1,24 @@
+{
+  "id": "reference/DATABASE_DOCUMENTATION",
+  "title": "Database Documentation",
+  "description": "PSScript PowerShell Analysis Platform",
+  "source": "@site/docs/reference/DATABASE_DOCUMENTATION.md",
+  "sourceDirName": "reference",
+  "slug": "/reference/DATABASE_DOCUMENTATION",
+  "permalink": "/psscript/reference/DATABASE_DOCUMENTATION",
+  "draft": false,
+  "unlisted": false,
+  "editUrl": "https://github.com/Morlock52/psscript/tree/main/docs-site/docs/reference/DATABASE_DOCUMENTATION.md",
+  "tags": [],
+  "version": "current",
+  "frontMatter": {},
+  "sidebar": "docs",
+  "previous": {
+    "title": "Claude Code Reference",
+    "permalink": "/psscript/reference/CLAUDE"
+  },
+  "next": {
+    "title": "Comprehensive Database Test Plan",
+    "permalink": "/psscript/reference/DATABASE_TEST_PLAN"
+  }
+}

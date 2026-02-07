@@ -1,0 +1,23 @@
+{
+  "id": "index",
+  "title": "PSScript Documentation",
+  "description": "Documentation hub for the PSScript analysis platform",
+  "source": "@site/docs/index.md",
+  "sourceDirName": ".",
+  "slug": "/",
+  "permalink": "/psscript/",
+  "draft": false,
+  "unlisted": false,
+  "editUrl": "https://github.com/Morlock52/psscript/tree/main/docs-site/docs/index.md",
+  "tags": [],
+  "version": "current",
+  "frontMatter": {
+    "title": "PSScript Documentation",
+    "description": "Documentation hub for the PSScript analysis platform"
+  },
+  "sidebar": "docs",
+  "next": {
+    "title": "Tutorials",
+    "permalink": "/psscript/tutorials/"
+  }
+}

@@ -1,0 +1,24 @@
+{
+  "id": "reports/FINAL-DEPLOYMENT-SUMMARY",
+  "title": "PSScript Platform - Tech Review 2026 Deployment Summary",
+  "description": "Date: January 7, 2026",
+  "source": "@site/docs/reports/FINAL-DEPLOYMENT-SUMMARY.md",
+  "sourceDirName": "reports",
+  "slug": "/reports/FINAL-DEPLOYMENT-SUMMARY",
+  "permalink": "/psscript/reports/FINAL-DEPLOYMENT-SUMMARY",
+  "draft": false,
+  "unlisted": false,
+  "editUrl": "https://github.com/Morlock52/psscript/tree/main/docs-site/docs/reports/FINAL-DEPLOYMENT-SUMMARY.md",
+  "tags": [],
+  "version": "current",
+  "frontMatter": {},
+  "sidebar": "docs",
+  "previous": {
+    "title": "File Hash Deduplication Implementation Report",
+    "permalink": "/psscript/reports/FILE-HASH-IMPLEMENTATION-REPORT"
+  },
+  "next": {
+    "title": "Final Test Report - PSScript Testing & Fixes",
+    "permalink": "/psscript/reports/FINAL-TEST-REPORT-2026-01-08"
+  }
+}

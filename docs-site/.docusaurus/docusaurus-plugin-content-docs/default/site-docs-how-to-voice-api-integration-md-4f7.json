@@ -1,0 +1,24 @@
+{
+  "id": "how-to/VOICE-API-INTEGRATION",
+  "title": "Voice API Integration Plan",
+  "description": "Overview",
+  "source": "@site/docs/how-to/VOICE-API-INTEGRATION.md",
+  "sourceDirName": "how-to",
+  "slug": "/how-to/VOICE-API-INTEGRATION",
+  "permalink": "/psscript/how-to/VOICE-API-INTEGRATION",
+  "draft": false,
+  "unlisted": false,
+  "editUrl": "https://github.com/Morlock52/psscript/tree/main/docs-site/docs/how-to/VOICE-API-INTEGRATION.md",
+  "tags": [],
+  "version": "current",
+  "frontMatter": {},
+  "sidebar": "docs",
+  "previous": {
+    "title": "Voice API Integration Summary",
+    "permalink": "/psscript/how-to/VOICE-API-INTEGRATION-SUMMARY"
+  },
+  "next": {
+    "title": "Voice API Next Steps",
+    "permalink": "/psscript/how-to/VOICE-API-NEXT-STEPS"
+  }
+}

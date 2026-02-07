@@ -41,6 +41,7 @@ import SecuritySettings from './pages/Settings/SecuritySettings';
 import NotificationSettings from './pages/Settings/NotificationSettings';
 import ApiSettings from './pages/Settings/ApiSettings';
 import UserManagement from './pages/Settings/UserManagement';
+import CategoriesSettings from './pages/Settings/CategoriesSettings';
 
 // Create a client for React Query
 const queryClient = new QueryClient({
@@ -135,9 +136,10 @@ const App: React.FC = () => {
             <Route path="/settings/profile" element={<ProtectedRoute><ProfileSettings /></ProtectedRoute>} />
             <Route path="/settings/appearance" element={<ProtectedRoute><AppearanceSettings /></ProtectedRoute>} />
             <Route path="/settings/security" element={<ProtectedRoute><SecuritySettings /></ProtectedRoute>} />
-            <Route path="/settings/notifications" element={<ProtectedRoute><NotificationSettings /></ProtectedRoute>} />
-            <Route path="/settings/api" element={<ProtectedRoute><ApiSettings /></ProtectedRoute>} />
-            <Route path="/settings/users" element={<ProtectedRoute><UserManagement /></ProtectedRoute>} />
+              <Route path="/settings/notifications" element={<ProtectedRoute><NotificationSettings /></ProtectedRoute>} />
+              <Route path="/settings/api" element={<ProtectedRoute><ApiSettings /></ProtectedRoute>} />
+              <Route path="/settings/users" element={<ProtectedRoute><UserManagement /></ProtectedRoute>} />
+              <Route path="/settings/categories" element={<ProtectedRoute><CategoriesSettings /></ProtectedRoute>} />
 
             {/* Fallbacks */}
             <Route path="/404" element={<NotFound />} />

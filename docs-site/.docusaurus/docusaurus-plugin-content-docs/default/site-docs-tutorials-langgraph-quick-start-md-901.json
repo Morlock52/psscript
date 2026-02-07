@@ -1,0 +1,24 @@
+{
+  "id": "tutorials/LANGGRAPH-QUICK-START",
+  "title": "LangGraph 1.0 - Quick Start Guide",
+  "description": "Installation (5 minutes)",
+  "source": "@site/docs/tutorials/LANGGRAPH-QUICK-START.md",
+  "sourceDirName": "tutorials",
+  "slug": "/tutorials/LANGGRAPH-QUICK-START",
+  "permalink": "/psscript/tutorials/LANGGRAPH-QUICK-START",
+  "draft": false,
+  "unlisted": false,
+  "editUrl": "https://github.com/Morlock52/psscript/tree/main/docs-site/docs/tutorials/LANGGRAPH-QUICK-START.md",
+  "tags": [],
+  "version": "current",
+  "frontMatter": {},
+  "sidebar": "docs",
+  "previous": {
+    "title": "PSScript - Getting Started Guide",
+    "permalink": "/psscript/tutorials/GETTING-STARTED"
+  },
+  "next": {
+    "title": "Training Suite Overview",
+    "permalink": "/psscript/tutorials/training-suite"
+  }
+}

@@ -1,0 +1,24 @@
+{
+  "id": "how-to/SUPPORT",
+  "title": "PSScript Support and Operations",
+  "description": "This guide defines how to get help, how issues are triaged, and what operational checks should be performed before escalation.",
+  "source": "@site/docs/how-to/SUPPORT.md",
+  "sourceDirName": "how-to",
+  "slug": "/how-to/SUPPORT",
+  "permalink": "/psscript/how-to/SUPPORT",
+  "draft": false,
+  "unlisted": false,
+  "editUrl": "https://github.com/Morlock52/psscript/tree/main/docs-site/docs/how-to/SUPPORT.md",
+  "tags": [],
+  "version": "current",
+  "frontMatter": {},
+  "sidebar": "docs",
+  "previous": {
+    "title": "Security Incident Response Procedure",
+    "permalink": "/psscript/how-to/SECURITY_INCIDENT_RESPONSE"
+  },
+  "next": {
+    "title": "Voice API Implementation Steps",
+    "permalink": "/psscript/how-to/VOICE-API-IMPLEMENTATION-STEPS"
+  }
+}

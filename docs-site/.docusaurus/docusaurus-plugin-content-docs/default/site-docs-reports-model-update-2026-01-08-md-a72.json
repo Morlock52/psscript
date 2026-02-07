@@ -1,0 +1,24 @@
+{
+  "id": "reports/MODEL-UPDATE-2026-01-08",
+  "title": "Model Configuration Update - January 8, 2026",
+  "description": "Summary",
+  "source": "@site/docs/reports/MODEL-UPDATE-2026-01-08.md",
+  "sourceDirName": "reports",
+  "slug": "/reports/MODEL-UPDATE-2026-01-08",
+  "permalink": "/psscript/reports/MODEL-UPDATE-2026-01-08",
+  "draft": false,
+  "unlisted": false,
+  "editUrl": "https://github.com/Morlock52/psscript/tree/main/docs-site/docs/reports/MODEL-UPDATE-2026-01-08.md",
+  "tags": [],
+  "version": "current",
+  "frontMatter": {},
+  "sidebar": "docs",
+  "previous": {
+    "title": "PSScript Platform Implementation Summary",
+    "permalink": "/psscript/reports/IMPLEMENTATION-SUMMARY-2026-01-26"
+  },
+  "next": {
+    "title": "🎉 Phase 1 Complete - LangGraph Integration Ready to Test!",
+    "permalink": "/psscript/reports/PHASE-1-COMPLETE-READY-TO-TEST-2026-01-09"
+  }
+}

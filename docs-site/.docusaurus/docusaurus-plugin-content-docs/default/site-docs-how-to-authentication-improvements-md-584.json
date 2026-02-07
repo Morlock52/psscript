@@ -1,0 +1,24 @@
+{
+  "id": "how-to/AUTHENTICATION-IMPROVEMENTS",
+  "title": "Authentication System Improvements",
+  "description": "Overview",
+  "source": "@site/docs/how-to/AUTHENTICATION-IMPROVEMENTS.md",
+  "sourceDirName": "how-to",
+  "slug": "/how-to/AUTHENTICATION-IMPROVEMENTS",
+  "permalink": "/psscript/how-to/AUTHENTICATION-IMPROVEMENTS",
+  "draft": false,
+  "unlisted": false,
+  "editUrl": "https://github.com/Morlock52/psscript/tree/main/docs-site/docs/how-to/AUTHENTICATION-IMPROVEMENTS.md",
+  "tags": [],
+  "version": "current",
+  "frontMatter": {},
+  "sidebar": "docs",
+  "previous": {
+    "title": "How-to Guides",
+    "permalink": "/psscript/how-to/"
+  },
+  "next": {
+    "title": "Explain Drawer and Command Enrichment",
+    "permalink": "/psscript/how-to/COMMAND-EXPLAIN-AND-ENRICHMENT"
+  }
+}

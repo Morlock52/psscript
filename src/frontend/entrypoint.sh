@@ -17,8 +17,8 @@ if [ "$RUN_MODE" = "production" ] || [ "$RUN_MODE" = "preview" ]; then
     npm run build:prod 2>/dev/null || npx vite build
 
     echo "Serving production build..."
-    npx vite preview --host 0.0.0.0 --port 3000
+    npx vite preview --host 0.0.0.0 --port "${VITE_PORT:-3090}"
 else
     echo "Starting development server..."
-    npm run dev -- --host 0.0.0.0 --port 3000
+    npm run dev -- --host 0.0.0.0 --port "${VITE_PORT:-3090}"
 fi

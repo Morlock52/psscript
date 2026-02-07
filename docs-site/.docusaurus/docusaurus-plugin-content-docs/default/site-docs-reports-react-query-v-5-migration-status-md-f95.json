@@ -1,0 +1,24 @@
+{
+  "id": "reports/REACT-QUERY-V5-MIGRATION-STATUS",
+  "title": "React Query v5 Migration Status",
+  "description": "📋 Executive Summary",
+  "source": "@site/docs/reports/REACT-QUERY-V5-MIGRATION-STATUS.md",
+  "sourceDirName": "reports",
+  "slug": "/reports/REACT-QUERY-V5-MIGRATION-STATUS",
+  "permalink": "/psscript/reports/REACT-QUERY-V5-MIGRATION-STATUS",
+  "draft": false,
+  "unlisted": false,
+  "editUrl": "https://github.com/Morlock52/psscript/tree/main/docs-site/docs/reports/REACT-QUERY-V5-MIGRATION-STATUS.md",
+  "tags": [],
+  "version": "current",
+  "frontMatter": {},
+  "sidebar": "docs",
+  "previous": {
+    "title": "Project Review (February 4, 2026)",
+    "permalink": "/psscript/reports/PROJECT-REVIEW-2026-02-04"
+  },
+  "next": {
+    "title": "Script Analysis Comprehensive Fix & Enhancement Plan",
+    "permalink": "/psscript/reports/SCRIPT-ANALYSIS-COMPREHENSIVE-FIX-PLAN-2026-01-09"
+  }
+}

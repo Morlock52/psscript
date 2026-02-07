@@ -1,0 +1,27 @@
+{
+  "id": "how-to/index",
+  "title": "How-to Guides",
+  "description": "Task-oriented guides for operating PSScript",
+  "source": "@site/docs/how-to/index.md",
+  "sourceDirName": "how-to",
+  "slug": "/how-to/",
+  "permalink": "/psscript/how-to/",
+  "draft": false,
+  "unlisted": false,
+  "editUrl": "https://github.com/Morlock52/psscript/tree/main/docs-site/docs/how-to/index.md",
+  "tags": [],
+  "version": "current",
+  "frontMatter": {
+    "title": "How-to Guides",
+    "description": "Task-oriented guides for operating PSScript"
+  },
+  "sidebar": "docs",
+  "previous": {
+    "title": "Tutorials",
+    "permalink": "/psscript/tutorials/"
+  },
+  "next": {
+    "title": "Authentication System Improvements",
+    "permalink": "/psscript/how-to/AUTHENTICATION-IMPROVEMENTS"
+  }
+}

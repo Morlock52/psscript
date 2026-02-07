@@ -1,0 +1,27 @@
+{
+  "id": "tutorials/index",
+  "title": "Tutorials",
+  "description": "Guided learning paths for PSScript",
+  "source": "@site/docs/tutorials/index.md",
+  "sourceDirName": "tutorials",
+  "slug": "/tutorials/",
+  "permalink": "/psscript/tutorials/",
+  "draft": false,
+  "unlisted": false,
+  "editUrl": "https://github.com/Morlock52/psscript/tree/main/docs-site/docs/tutorials/index.md",
+  "tags": [],
+  "version": "current",
+  "frontMatter": {
+    "title": "Tutorials",
+    "description": "Guided learning paths for PSScript"
+  },
+  "sidebar": "docs",
+  "previous": {
+    "title": "PSScript Documentation",
+    "permalink": "/psscript/"
+  },
+  "next": {
+    "title": "PSScript - Getting Started Guide",
+    "permalink": "/psscript/tutorials/GETTING-STARTED"
+  }
+}

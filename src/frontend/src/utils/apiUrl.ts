@@ -48,9 +48,13 @@ export function getApiUrl(): string {
   const hostname = window.location.hostname;
   const isLocalhost = hostname === 'localhost' || hostname === '127.0.0.1';
 
-  // When accessed via tunnel/proxy (non-localhost), don't include port
+ // When accessed via tunnel/proxy (non-localhost), don't include port
   // The tunnel/proxy routes /api to the backend
   // When local, include port 4000 for direct backend access
+  //
+  // IMPORTANT: In local dev, frontend often runs on https://localhost:3090 with mTLS,
+  // and backend runs on https://localhost:4000 (TLS enabled). We must keep protocol
+  // aligned to avoid mixed-content/CORS/auth failures.
   _cachedApiUrl = isLocalhost
     ? `${protocol}://${hostname}:4000/api`
     : `${protocol}://${hostname}/api`;

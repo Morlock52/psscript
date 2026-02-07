@@ -1,0 +1,24 @@
+{
+  "id": "reports/AUTHENTICATION-FIX-REPORT-2026-01-08",
+  "title": "Authentication Fix Report - January 8, 2026",
+  "description": "🎯 Executive Summary",
+  "source": "@site/docs/reports/AUTHENTICATION-FIX-REPORT-2026-01-08.md",
+  "sourceDirName": "reports",
+  "slug": "/reports/AUTHENTICATION-FIX-REPORT-2026-01-08",
+  "permalink": "/psscript/reports/AUTHENTICATION-FIX-REPORT-2026-01-08",
+  "draft": false,
+  "unlisted": false,
+  "editUrl": "https://github.com/Morlock52/psscript/tree/main/docs-site/docs/reports/AUTHENTICATION-FIX-REPORT-2026-01-08.md",
+  "tags": [],
+  "version": "current",
+  "frontMatter": {},
+  "sidebar": "docs",
+  "previous": {
+    "title": "Application Functionality - Complete Fix Report",
+    "permalink": "/psscript/reports/APP-FUNCTIONALITY-COMPLETE-FIX-REPORT-2026-01-09"
+  },
+  "next": {
+    "title": "Comprehensive Feature Test Report: LangGraph Multi-Agent Analysis",
+    "permalink": "/psscript/reports/COMPREHENSIVE-FEATURE-TEST-REPORT-2026-01-09"
+  }
+}

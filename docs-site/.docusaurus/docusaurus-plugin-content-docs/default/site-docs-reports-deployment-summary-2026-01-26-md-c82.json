@@ -1,0 +1,24 @@
+{
+  "id": "reports/DEPLOYMENT-SUMMARY-2026-01-26",
+  "title": "PSScript Platform Deployment Summary",
+  "description": "Date: January 26, 2026",
+  "source": "@site/docs/reports/DEPLOYMENT-SUMMARY-2026-01-26.md",
+  "sourceDirName": "reports",
+  "slug": "/reports/DEPLOYMENT-SUMMARY-2026-01-26",
+  "permalink": "/psscript/reports/DEPLOYMENT-SUMMARY-2026-01-26",
+  "draft": false,
+  "unlisted": false,
+  "editUrl": "https://github.com/Morlock52/psscript/tree/main/docs-site/docs/reports/DEPLOYMENT-SUMMARY-2026-01-26.md",
+  "tags": [],
+  "version": "current",
+  "frontMatter": {},
+  "sidebar": "docs",
+  "previous": {
+    "title": "PSScript Platform - Deployment Status Report",
+    "permalink": "/psscript/reports/DEPLOYMENT-STATUS"
+  },
+  "next": {
+    "title": "E2E Test Comprehensive Fix - Final Results",
+    "permalink": "/psscript/reports/E2E-COMPREHENSIVE-FIX-FINAL-RESULTS-2026-01-08"
+  }
+}

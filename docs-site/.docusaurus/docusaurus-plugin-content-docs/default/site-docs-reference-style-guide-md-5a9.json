@@ -1,0 +1,27 @@
+{
+  "id": "reference/style-guide",
+  "title": "Documentation style guide",
+  "description": "Writing, list, and image standards for PSScript docs",
+  "source": "@site/docs/reference/style-guide.md",
+  "sourceDirName": "reference",
+  "slug": "/reference/style-guide",
+  "permalink": "/psscript/reference/style-guide",
+  "draft": false,
+  "unlisted": false,
+  "editUrl": "https://github.com/Morlock52/psscript/tree/main/docs-site/docs/reference/style-guide.md",
+  "tags": [],
+  "version": "current",
+  "frontMatter": {
+    "title": "Documentation style guide",
+    "description": "Writing, list, and image standards for PSScript docs"
+  },
+  "sidebar": "docs",
+  "previous": {
+    "title": "Reference",
+    "permalink": "/psscript/reference/"
+  },
+  "next": {
+    "title": "Explanation",
+    "permalink": "/psscript/explanation/"
+  }
+}

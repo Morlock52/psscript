@@ -1,0 +1,24 @@
+{
+  "id": "reports/TEST-RESULTS-2026-01-08",
+  "title": "PSScript Test Results - January 8, 2026",
+  "description": "🧪 Test Execution Report",
+  "source": "@site/docs/reports/TEST-RESULTS-2026-01-08.md",
+  "sourceDirName": "reports",
+  "slug": "/reports/TEST-RESULTS-2026-01-08",
+  "permalink": "/psscript/reports/TEST-RESULTS-2026-01-08",
+  "draft": false,
+  "unlisted": false,
+  "editUrl": "https://github.com/Morlock52/psscript/tree/main/docs-site/docs/reports/TEST-RESULTS-2026-01-08.md",
+  "tags": [],
+  "version": "current",
+  "frontMatter": {},
+  "sidebar": "docs",
+  "previous": {
+    "title": "PSScript Platform Technical Review & Improvement Plan (2026)",
+    "permalink": "/psscript/reports/TECH-REVIEW-2026"
+  },
+  "next": {
+    "title": "Application Updates and Enhancements",
+    "permalink": "/psscript/reports/UPDATES"
+  }
+}

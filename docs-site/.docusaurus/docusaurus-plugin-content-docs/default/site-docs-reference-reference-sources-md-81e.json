@@ -1,0 +1,24 @@
+{
+  "id": "reference/REFERENCE-SOURCES",
+  "title": "Documentation Reference Sources",
+  "description": "These sources were reviewed for structure and layout patterns used in the README and training materials.",
+  "source": "@site/docs/reference/REFERENCE-SOURCES.md",
+  "sourceDirName": "reference",
+  "slug": "/reference/REFERENCE-SOURCES",
+  "permalink": "/psscript/reference/REFERENCE-SOURCES",
+  "draft": false,
+  "unlisted": false,
+  "editUrl": "https://github.com/Morlock52/psscript/tree/main/docs-site/docs/reference/REFERENCE-SOURCES.md",
+  "tags": [],
+  "version": "current",
+  "frontMatter": {},
+  "sidebar": "docs",
+  "previous": {
+    "title": "Voice API Integration",
+    "permalink": "/psscript/reference/README-VOICE-API"
+  },
+  "next": {
+    "title": "Token Counter and API Key Management Features",
+    "permalink": "/psscript/reference/TOKEN-COUNTER-API-KEY-FEATURES"
+  }
+}

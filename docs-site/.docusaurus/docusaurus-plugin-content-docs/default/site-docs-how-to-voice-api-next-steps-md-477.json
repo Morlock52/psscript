@@ -1,0 +1,24 @@
+{
+  "id": "how-to/VOICE-API-NEXT-STEPS",
+  "title": "Voice API Next Steps",
+  "description": "This document outlines the next steps for implementing and deploying the Voice API integration for the PSScript Manager platform. It provides a detailed roadmap with specific tasks, timelines, and resource requirements.",
+  "source": "@site/docs/how-to/VOICE-API-NEXT-STEPS.md",
+  "sourceDirName": "how-to",
+  "slug": "/how-to/VOICE-API-NEXT-STEPS",
+  "permalink": "/psscript/how-to/VOICE-API-NEXT-STEPS",
+  "draft": false,
+  "unlisted": false,
+  "editUrl": "https://github.com/Morlock52/psscript/tree/main/docs-site/docs/how-to/VOICE-API-NEXT-STEPS.md",
+  "tags": [],
+  "version": "current",
+  "frontMatter": {},
+  "sidebar": "docs",
+  "previous": {
+    "title": "Voice API Integration Plan",
+    "permalink": "/psscript/how-to/VOICE-API-INTEGRATION"
+  },
+  "next": {
+    "title": "How-to Guides",
+    "permalink": "/psscript/how-to/"
+  }
+}

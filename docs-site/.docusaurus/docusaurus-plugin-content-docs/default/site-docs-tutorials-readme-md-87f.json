@@ -1,0 +1,27 @@
+{
+  "id": "tutorials/README",
+  "title": "Training Suite Overview",
+  "description": "AI-powered PowerShell operations training, packaged for onboarding, compliance, and day-2 operations. Built in the style of polished GitHub READMEs (à la Supabase/PostHog) but tailored to this platform.",
+  "source": "@site/docs/tutorials/README.md",
+  "sourceDirName": "tutorials",
+  "slug": "/tutorials/training-suite",
+  "permalink": "/psscript/tutorials/training-suite",
+  "draft": false,
+  "unlisted": false,
+  "editUrl": "https://github.com/Morlock52/psscript/tree/main/docs-site/docs/tutorials/README.md",
+  "tags": [],
+  "version": "current",
+  "frontMatter": {
+    "title": "Training Suite Overview",
+    "slug": "/tutorials/training-suite"
+  },
+  "sidebar": "docs",
+  "previous": {
+    "title": "LangGraph 1.0 - Quick Start Guide",
+    "permalink": "/psscript/tutorials/LANGGRAPH-QUICK-START"
+  },
+  "next": {
+    "title": "PSScript Training Guide",
+    "permalink": "/psscript/tutorials/TRAINING-GUIDE"
+  }
+}

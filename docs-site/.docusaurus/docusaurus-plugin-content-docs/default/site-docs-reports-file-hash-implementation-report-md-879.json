@@ -1,0 +1,24 @@
+{
+  "id": "reports/FILE-HASH-IMPLEMENTATION-REPORT",
+  "title": "File Hash Deduplication Implementation Report",
+  "description": "Overview",
+  "source": "@site/docs/reports/FILE-HASH-IMPLEMENTATION-REPORT.md",
+  "sourceDirName": "reports",
+  "slug": "/reports/FILE-HASH-IMPLEMENTATION-REPORT",
+  "permalink": "/psscript/reports/FILE-HASH-IMPLEMENTATION-REPORT",
+  "draft": false,
+  "unlisted": false,
+  "editUrl": "https://github.com/Morlock52/psscript/tree/main/docs-site/docs/reports/FILE-HASH-IMPLEMENTATION-REPORT.md",
+  "tags": [],
+  "version": "current",
+  "frontMatter": {},
+  "sidebar": "docs",
+  "previous": {
+    "title": "E2E Test Issues Report",
+    "permalink": "/psscript/reports/E2E-TEST-ISSUES-2026-01-08"
+  },
+  "next": {
+    "title": "PSScript Platform - Tech Review 2026 Deployment Summary",
+    "permalink": "/psscript/reports/FINAL-DEPLOYMENT-SUMMARY"
+  }
+}

@@ -1,0 +1,24 @@
+{
+  "id": "reports/UPDATES",
+  "title": "Application Updates and Enhancements",
+  "description": "This document outlines the significant updates and enhancements made to the PowerShell Script Analysis application, with a focus on incorporating agentic capabilities using LangGraph and Py-g frameworks.",
+  "source": "@site/docs/reports/UPDATES.md",
+  "sourceDirName": "reports",
+  "slug": "/reports/UPDATES",
+  "permalink": "/psscript/reports/UPDATES",
+  "draft": false,
+  "unlisted": false,
+  "editUrl": "https://github.com/Morlock52/psscript/tree/main/docs-site/docs/reports/UPDATES.md",
+  "tags": [],
+  "version": "current",
+  "frontMatter": {},
+  "sidebar": "docs",
+  "previous": {
+    "title": "PSScript Test Results - January 8, 2026",
+    "permalink": "/psscript/reports/TEST-RESULTS-2026-01-08"
+  },
+  "next": {
+    "title": "User Management Security Audit Report",
+    "permalink": "/psscript/reports/USER_MANAGEMENT_SECURITY_AUDIT"
+  }
+}

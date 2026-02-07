@@ -1,0 +1,24 @@
+{
+  "id": "how-to/README-GITHUB",
+  "title": "PSScript Manager",
+  "description": "AI-powered PowerShell script management: intake, analysis, discovery, agentic chat, and governance—presented in the same polished style used by top open-source GitHub READMEs (think Supabase/PostHog).",
+  "source": "@site/docs/how-to/README-GITHUB.md",
+  "sourceDirName": "how-to",
+  "slug": "/how-to/README-GITHUB",
+  "permalink": "/psscript/how-to/README-GITHUB",
+  "draft": false,
+  "unlisted": false,
+  "editUrl": "https://github.com/Morlock52/psscript/tree/main/docs-site/docs/how-to/README-GITHUB.md",
+  "tags": [],
+  "version": "current",
+  "frontMatter": {},
+  "sidebar": "docs",
+  "previous": {
+    "title": "PSScript Application Fixes",
+    "permalink": "/psscript/how-to/README-FIXES"
+  },
+  "next": {
+    "title": "PowerShell Script Analysis Improvements",
+    "permalink": "/psscript/how-to/SCRIPT-ANALYSIS-IMPROVEMENTS"
+  }
+}

@@ -1,0 +1,24 @@
+{
+  "id": "reports/AI_COMPREHENSIVE_TEST_PLAN",
+  "title": "AI Functionality Comprehensive Test Plan & Audit",
+  "description": "Date: January 15, 2026",
+  "source": "@site/docs/reports/AI_COMPREHENSIVE_TEST_PLAN.md",
+  "sourceDirName": "reports",
+  "slug": "/reports/AI_COMPREHENSIVE_TEST_PLAN",
+  "permalink": "/psscript/reports/AI_COMPREHENSIVE_TEST_PLAN",
+  "draft": false,
+  "unlisted": false,
+  "editUrl": "https://github.com/Morlock52/psscript/tree/main/docs-site/docs/reports/AI_COMPREHENSIVE_TEST_PLAN.md",
+  "tags": [],
+  "version": "current",
+  "frontMatter": {},
+  "sidebar": "docs",
+  "previous": {
+    "title": "AI Script Analyzer Fixes",
+    "permalink": "/psscript/reports/AI-ANALYZER-FIXES"
+  },
+  "next": {
+    "title": "Application Functionality - Complete Fix Report",
+    "permalink": "/psscript/reports/APP-FUNCTIONALITY-COMPLETE-FIX-REPORT-2026-01-09"
+  }
+}

@@ -1,0 +1,24 @@
+{
+  "id": "reports/DATABASE-IMPROVEMENTS",
+  "title": "Database Improvements",
+  "description": "This document summarizes the improvements made to the database connectivity and infrastructure of the PSScript application.",
+  "source": "@site/docs/reports/DATABASE-IMPROVEMENTS.md",
+  "sourceDirName": "reports",
+  "slug": "/reports/DATABASE-IMPROVEMENTS",
+  "permalink": "/psscript/reports/DATABASE-IMPROVEMENTS",
+  "draft": false,
+  "unlisted": false,
+  "editUrl": "https://github.com/Morlock52/psscript/tree/main/docs-site/docs/reports/DATABASE-IMPROVEMENTS.md",
+  "tags": [],
+  "version": "current",
+  "frontMatter": {},
+  "sidebar": "docs",
+  "previous": {
+    "title": "Dashboard Fix Report - January 8, 2026",
+    "permalink": "/psscript/reports/DASHBOARD-FIX-REPORT-2026-01-08"
+  },
+  "next": {
+    "title": "PSScript Database Review - January 15, 2026",
+    "permalink": "/psscript/reports/DATABASE_REVIEW_2026"
+  }
+}

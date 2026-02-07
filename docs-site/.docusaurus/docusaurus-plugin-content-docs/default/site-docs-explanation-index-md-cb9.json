@@ -1,0 +1,27 @@
+{
+  "id": "explanation/index",
+  "title": "Explanation",
+  "description": "Architecture, design decisions, and system context",
+  "source": "@site/docs/explanation/index.md",
+  "sourceDirName": "explanation",
+  "slug": "/explanation/",
+  "permalink": "/psscript/explanation/",
+  "draft": false,
+  "unlisted": false,
+  "editUrl": "https://github.com/Morlock52/psscript/tree/main/docs-site/docs/explanation/index.md",
+  "tags": [],
+  "version": "current",
+  "frontMatter": {
+    "title": "Explanation",
+    "description": "Architecture, design decisions, and system context"
+  },
+  "sidebar": "docs",
+  "previous": {
+    "title": "Documentation style guide",
+    "permalink": "/psscript/reference/style-guide"
+  },
+  "next": {
+    "title": "Architecture Evaluation and Rebuild Strategy",
+    "permalink": "/psscript/explanation/ARCHITECTURE-EVALUATION-AND-REBUILD-STRATEGY"
+  }
+}

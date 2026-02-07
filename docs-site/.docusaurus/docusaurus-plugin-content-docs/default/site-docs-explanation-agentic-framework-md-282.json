@@ -1,0 +1,24 @@
+{
+  "id": "explanation/agentic-framework",
+  "title": "Agentic Framework Implementation",
+  "description": "This document outlines the implementation of the agentic framework in the PSScript platform, which uses the OpenAI Assistants API to provide a more powerful and persistent AI experience.",
+  "source": "@site/docs/explanation/agentic-framework.md",
+  "sourceDirName": "explanation",
+  "slug": "/explanation/agentic-framework",
+  "permalink": "/psscript/explanation/agentic-framework",
+  "draft": false,
+  "unlisted": false,
+  "editUrl": "https://github.com/Morlock52/psscript/tree/main/docs-site/docs/explanation/agentic-framework.md",
+  "tags": [],
+  "version": "current",
+  "frontMatter": {},
+  "sidebar": "docs",
+  "previous": {
+    "title": "Voice API Architecture",
+    "permalink": "/psscript/explanation/VOICE-API-ARCHITECTURE"
+  },
+  "next": {
+    "title": "Explanation",
+    "permalink": "/psscript/explanation/"
+  }
+}

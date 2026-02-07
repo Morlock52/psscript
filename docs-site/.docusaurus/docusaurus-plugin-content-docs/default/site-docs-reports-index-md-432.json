@@ -1,0 +1,27 @@
+{
+  "id": "reports/index",
+  "title": "Reports & Archive",
+  "description": "Historical reports, test results, and summaries",
+  "source": "@site/docs/reports/index.md",
+  "sourceDirName": "reports",
+  "slug": "/reports/",
+  "permalink": "/psscript/reports/",
+  "draft": false,
+  "unlisted": false,
+  "editUrl": "https://github.com/Morlock52/psscript/tree/main/docs-site/docs/reports/index.md",
+  "tags": [],
+  "version": "current",
+  "frontMatter": {
+    "title": "Reports & Archive",
+    "description": "Historical reports, test results, and summaries"
+  },
+  "sidebar": "docs",
+  "previous": {
+    "title": "Explanation",
+    "permalink": "/psscript/explanation/"
+  },
+  "next": {
+    "title": "AI Script Analyzer Fixes",
+    "permalink": "/psscript/reports/AI-ANALYZER-FIXES"
+  }
+}

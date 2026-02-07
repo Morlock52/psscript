@@ -1,0 +1,24 @@
+{
+  "id": "reports/PROJECT-REVIEW-2026-02-04",
+  "title": "Project Review (February 4, 2026)",
+  "description": "Summary",
+  "source": "@site/docs/reports/PROJECT-REVIEW-2026-02-04.md",
+  "sourceDirName": "reports",
+  "slug": "/reports/PROJECT-REVIEW-2026-02-04",
+  "permalink": "/psscript/reports/PROJECT-REVIEW-2026-02-04",
+  "draft": false,
+  "unlisted": false,
+  "editUrl": "https://github.com/Morlock52/psscript/tree/main/docs-site/docs/reports/PROJECT-REVIEW-2026-02-04.md",
+  "tags": [],
+  "version": "current",
+  "frontMatter": {},
+  "sidebar": "docs",
+  "previous": {
+    "title": "Phase 1 Implementation Complete: Core LangGraph Integration",
+    "permalink": "/psscript/reports/PHASE-1-IMPLEMENTATION-COMPLETE-2026-01-09"
+  },
+  "next": {
+    "title": "React Query v5 Migration Status",
+    "permalink": "/psscript/reports/REACT-QUERY-V5-MIGRATION-STATUS"
+  }
+}

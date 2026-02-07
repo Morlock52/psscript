@@ -1,0 +1,24 @@
+{
+  "id": "reference/README-VECTOR-SEARCH",
+  "title": "Vector Search and File Integrity",
+  "description": "This document describes the implementation of vector search and file integrity verification features in the PSScript platform.",
+  "source": "@site/docs/reference/README-VECTOR-SEARCH.md",
+  "sourceDirName": "reference",
+  "slug": "/reference/README-VECTOR-SEARCH",
+  "permalink": "/psscript/reference/README-VECTOR-SEARCH",
+  "draft": false,
+  "unlisted": false,
+  "editUrl": "https://github.com/Morlock52/psscript/tree/main/docs-site/docs/reference/README-VECTOR-SEARCH.md",
+  "tags": [],
+  "version": "current",
+  "frontMatter": {},
+  "sidebar": "docs",
+  "previous": {
+    "title": "File Hash Deduplication for PowerShell Scripts",
+    "permalink": "/psscript/reference/README-FILE-HASH"
+  },
+  "next": {
+    "title": "Voice API Integration",
+    "permalink": "/psscript/reference/README-VOICE-API"
+  }
+}

@@ -1,0 +1,24 @@
+{
+  "id": "reports/DATABASE_UPDATE_2026-01-16",
+  "title": "PSScript Database Infrastructure Update - January 16, 2026",
+  "description": "Change Record",
+  "source": "@site/docs/reports/DATABASE_UPDATE_2026-01-16.md",
+  "sourceDirName": "reports",
+  "slug": "/reports/DATABASE_UPDATE_2026-01-16",
+  "permalink": "/psscript/reports/DATABASE_UPDATE_2026-01-16",
+  "draft": false,
+  "unlisted": false,
+  "editUrl": "https://github.com/Morlock52/psscript/tree/main/docs-site/docs/reports/DATABASE_UPDATE_2026-01-16.md",
+  "tags": [],
+  "version": "current",
+  "frontMatter": {},
+  "sidebar": "docs",
+  "previous": {
+    "title": "PSScript Database Review - January 15, 2026",
+    "permalink": "/psscript/reports/DATABASE_REVIEW_2026"
+  },
+  "next": {
+    "title": "PSScript Platform - Deployment Status Report",
+    "permalink": "/psscript/reports/DEPLOYMENT-STATUS"
+  }
+}

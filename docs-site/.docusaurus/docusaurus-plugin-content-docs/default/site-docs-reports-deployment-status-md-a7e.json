@@ -1,0 +1,24 @@
+{
+  "id": "reports/DEPLOYMENT-STATUS",
+  "title": "PSScript Platform - Deployment Status Report",
+  "description": "Date: January 7, 2026",
+  "source": "@site/docs/reports/DEPLOYMENT-STATUS.md",
+  "sourceDirName": "reports",
+  "slug": "/reports/DEPLOYMENT-STATUS",
+  "permalink": "/psscript/reports/DEPLOYMENT-STATUS",
+  "draft": false,
+  "unlisted": false,
+  "editUrl": "https://github.com/Morlock52/psscript/tree/main/docs-site/docs/reports/DEPLOYMENT-STATUS.md",
+  "tags": [],
+  "version": "current",
+  "frontMatter": {},
+  "sidebar": "docs",
+  "previous": {
+    "title": "PSScript Database Infrastructure Update - January 16, 2026",
+    "permalink": "/psscript/reports/DATABASE_UPDATE_2026-01-16"
+  },
+  "next": {
+    "title": "PSScript Platform Deployment Summary",
+    "permalink": "/psscript/reports/DEPLOYMENT-SUMMARY-2026-01-26"
+  }
+}

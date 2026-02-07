@@ -21,7 +21,7 @@ if (tlsEnabled) {
 export default defineConfig({
   plugins: [react()], // SWC is 20-70x faster than Babel
   server: {
-    port: 3002, // Changed from 3001 to 3002 to match project configuration
+    port: 3090,
     host: '0.0.0.0',
     https: httpsConfig,
     allowedHosts: [
@@ -38,7 +38,7 @@ export default defineConfig({
     }
   },
   preview: {
-    port: 3000,
+    port: 3090,
     host: '0.0.0.0',
     https: httpsConfig,
     headers: {

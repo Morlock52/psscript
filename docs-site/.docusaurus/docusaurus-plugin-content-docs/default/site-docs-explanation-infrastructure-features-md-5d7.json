@@ -1,0 +1,24 @@
+{
+  "id": "explanation/INFRASTRUCTURE-FEATURES",
+  "title": "Infrastructure Features Overview",
+  "description": "Enterprise-Grade Capabilities",
+  "source": "@site/docs/explanation/INFRASTRUCTURE-FEATURES.md",
+  "sourceDirName": "explanation",
+  "slug": "/explanation/INFRASTRUCTURE-FEATURES",
+  "permalink": "/psscript/explanation/INFRASTRUCTURE-FEATURES",
+  "draft": false,
+  "unlisted": false,
+  "editUrl": "https://github.com/Morlock52/psscript/tree/main/docs-site/docs/explanation/INFRASTRUCTURE-FEATURES.md",
+  "tags": [],
+  "version": "current",
+  "frontMatter": {},
+  "sidebar": "docs",
+  "previous": {
+    "title": "Docker Infrastructure Documentation",
+    "permalink": "/psscript/explanation/DOCKER-INFRASTRUCTURE"
+  },
+  "next": {
+    "title": "LangGraph 1.0 Production Implementation",
+    "permalink": "/psscript/explanation/LANGGRAPH-IMPLEMENTATION"
+  }
+}

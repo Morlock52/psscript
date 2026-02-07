@@ -1,0 +1,24 @@
+{
+  "id": "explanation/DOCKER-INFRASTRUCTURE",
+  "title": "Docker Infrastructure Documentation",
+  "description": "Overview",
+  "source": "@site/docs/explanation/DOCKER-INFRASTRUCTURE.md",
+  "sourceDirName": "explanation",
+  "slug": "/explanation/DOCKER-INFRASTRUCTURE",
+  "permalink": "/psscript/explanation/DOCKER-INFRASTRUCTURE",
+  "draft": false,
+  "unlisted": false,
+  "editUrl": "https://github.com/Morlock52/psscript/tree/main/docs-site/docs/explanation/DOCKER-INFRASTRUCTURE.md",
+  "tags": [],
+  "version": "current",
+  "frontMatter": {},
+  "sidebar": "docs",
+  "previous": {
+    "title": "Docker Infrastructure Enhancement Summary",
+    "permalink": "/psscript/explanation/DOCKER-INFRASTRUCTURE-SUMMARY"
+  },
+  "next": {
+    "title": "Infrastructure Features Overview",
+    "permalink": "/psscript/explanation/INFRASTRUCTURE-FEATURES"
+  }
+}

@@ -1,0 +1,24 @@
+{
+  "id": "explanation/LANGGRAPH-MIGRATION-PLAN",
+  "title": "LangGraph 1.0 Migration Plan",
+  "description": "Executive Summary",
+  "source": "@site/docs/explanation/LANGGRAPH-MIGRATION-PLAN.md",
+  "sourceDirName": "explanation",
+  "slug": "/explanation/LANGGRAPH-MIGRATION-PLAN",
+  "permalink": "/psscript/explanation/LANGGRAPH-MIGRATION-PLAN",
+  "draft": false,
+  "unlisted": false,
+  "editUrl": "https://github.com/Morlock52/psscript/tree/main/docs-site/docs/explanation/LANGGRAPH-MIGRATION-PLAN.md",
+  "tags": [],
+  "version": "current",
+  "frontMatter": {},
+  "sidebar": "docs",
+  "previous": {
+    "title": "LangGraph 1.0 Production Implementation",
+    "permalink": "/psscript/explanation/LANGGRAPH-IMPLEMENTATION"
+  },
+  "next": {
+    "title": "Voice API Architecture",
+    "permalink": "/psscript/explanation/VOICE-API-ARCHITECTURE"
+  }
+}

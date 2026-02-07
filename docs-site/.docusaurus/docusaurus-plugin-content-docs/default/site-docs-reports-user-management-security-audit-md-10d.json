@@ -1,0 +1,24 @@
+{
+  "id": "reports/USER_MANAGEMENT_SECURITY_AUDIT",
+  "title": "User Management Security Audit Report",
+  "description": "Date: January 15, 2026",
+  "source": "@site/docs/reports/USER_MANAGEMENT_SECURITY_AUDIT.md",
+  "sourceDirName": "reports",
+  "slug": "/reports/USER_MANAGEMENT_SECURITY_AUDIT",
+  "permalink": "/psscript/reports/USER_MANAGEMENT_SECURITY_AUDIT",
+  "draft": false,
+  "unlisted": false,
+  "editUrl": "https://github.com/Morlock52/psscript/tree/main/docs-site/docs/reports/USER_MANAGEMENT_SECURITY_AUDIT.md",
+  "tags": [],
+  "version": "current",
+  "frontMatter": {},
+  "sidebar": "docs",
+  "previous": {
+    "title": "Application Updates and Enhancements",
+    "permalink": "/psscript/reports/UPDATES"
+  },
+  "next": {
+    "title": "Reports & Archive",
+    "permalink": "/psscript/reports/"
+  }
+}

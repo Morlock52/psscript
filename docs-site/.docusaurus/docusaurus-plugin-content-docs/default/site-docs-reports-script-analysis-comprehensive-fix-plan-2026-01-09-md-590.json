@@ -1,0 +1,24 @@
+{
+  "id": "reports/SCRIPT-ANALYSIS-COMPREHENSIVE-FIX-PLAN-2026-01-09",
+  "title": "Script Analysis Comprehensive Fix & Enhancement Plan",
+  "description": "Date: January 9, 2026",
+  "source": "@site/docs/reports/SCRIPT-ANALYSIS-COMPREHENSIVE-FIX-PLAN-2026-01-09.md",
+  "sourceDirName": "reports",
+  "slug": "/reports/SCRIPT-ANALYSIS-COMPREHENSIVE-FIX-PLAN-2026-01-09",
+  "permalink": "/psscript/reports/SCRIPT-ANALYSIS-COMPREHENSIVE-FIX-PLAN-2026-01-09",
+  "draft": false,
+  "unlisted": false,
+  "editUrl": "https://github.com/Morlock52/psscript/tree/main/docs-site/docs/reports/SCRIPT-ANALYSIS-COMPREHENSIVE-FIX-PLAN-2026-01-09.md",
+  "tags": [],
+  "version": "current",
+  "frontMatter": {},
+  "sidebar": "docs",
+  "previous": {
+    "title": "React Query v5 Migration Status",
+    "permalink": "/psscript/reports/REACT-QUERY-V5-MIGRATION-STATUS"
+  },
+  "next": {
+    "title": "PSScript Platform Technical Review & Improvement Plan (2026)",
+    "permalink": "/psscript/reports/TECH-REVIEW-2026"
+  }
+}

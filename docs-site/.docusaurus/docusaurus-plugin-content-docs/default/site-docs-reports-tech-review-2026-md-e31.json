@@ -1,0 +1,24 @@
+{
+  "id": "reports/TECH-REVIEW-2026",
+  "title": "PSScript Platform Technical Review & Improvement Plan (2026)",
+  "description": "Date: January 7, 2026",
+  "source": "@site/docs/reports/TECH-REVIEW-2026.md",
+  "sourceDirName": "reports",
+  "slug": "/reports/TECH-REVIEW-2026",
+  "permalink": "/psscript/reports/TECH-REVIEW-2026",
+  "draft": false,
+  "unlisted": false,
+  "editUrl": "https://github.com/Morlock52/psscript/tree/main/docs-site/docs/reports/TECH-REVIEW-2026.md",
+  "tags": [],
+  "version": "current",
+  "frontMatter": {},
+  "sidebar": "docs",
+  "previous": {
+    "title": "Script Analysis Comprehensive Fix & Enhancement Plan",
+    "permalink": "/psscript/reports/SCRIPT-ANALYSIS-COMPREHENSIVE-FIX-PLAN-2026-01-09"
+  },
+  "next": {
+    "title": "PSScript Test Results - January 8, 2026",
+    "permalink": "/psscript/reports/TEST-RESULTS-2026-01-08"
+  }
+}

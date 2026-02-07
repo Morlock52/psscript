@@ -1,0 +1,24 @@
+{
+  "id": "tutorials/TRAINING-GUIDE",
+  "title": "PSScript Training Guide",
+  "description": "End-to-end walkthrough of the PowerShell Script Manager. Includes flows, screenshots, labs, tables, sample actions, and operational checklists. Built for hands-on enablement and printable exports.",
+  "source": "@site/docs/tutorials/TRAINING-GUIDE.md",
+  "sourceDirName": "tutorials",
+  "slug": "/tutorials/TRAINING-GUIDE",
+  "permalink": "/psscript/tutorials/TRAINING-GUIDE",
+  "draft": false,
+  "unlisted": false,
+  "editUrl": "https://github.com/Morlock52/psscript/tree/main/docs-site/docs/tutorials/TRAINING-GUIDE.md",
+  "tags": [],
+  "version": "current",
+  "frontMatter": {},
+  "sidebar": "docs",
+  "previous": {
+    "title": "Training Suite Overview",
+    "permalink": "/psscript/tutorials/training-suite"
+  },
+  "next": {
+    "title": "Tutorials",
+    "permalink": "/psscript/tutorials/"
+  }
+}

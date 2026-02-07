@@ -1,0 +1,438 @@
+{
+  "docusaurus-plugin-content-docs": {
+    "default": {
+      "path": "/psscript/",
+      "versions": [
+        {
+          "name": "current",
+          "label": "Next",
+          "isLast": true,
+          "path": "/psscript/",
+          "mainDocId": "index",
+          "docs": [
+            {
+              "id": "explanation/agentic-framework",
+              "path": "/psscript/explanation/agentic-framework",
+              "sidebar": "docs"
+            },
+            {
+              "id": "explanation/ARCHITECTURE-EVALUATION-AND-REBUILD-STRATEGY",
+              "path": "/psscript/explanation/ARCHITECTURE-EVALUATION-AND-REBUILD-STRATEGY",
+              "sidebar": "docs"
+            },
+            {
+              "id": "explanation/DOCKER-INFRASTRUCTURE",
+              "path": "/psscript/explanation/DOCKER-INFRASTRUCTURE",
+              "sidebar": "docs"
+            },
+            {
+              "id": "explanation/DOCKER-INFRASTRUCTURE-SUMMARY",
+              "path": "/psscript/explanation/DOCKER-INFRASTRUCTURE-SUMMARY",
+              "sidebar": "docs"
+            },
+            {
+              "id": "explanation/index",
+              "path": "/psscript/explanation/",
+              "sidebar": "docs"
+            },
+            {
+              "id": "explanation/INFRASTRUCTURE-FEATURES",
+              "path": "/psscript/explanation/INFRASTRUCTURE-FEATURES",
+              "sidebar": "docs"
+            },
+            {
+              "id": "explanation/LANGGRAPH-IMPLEMENTATION",
+              "path": "/psscript/explanation/LANGGRAPH-IMPLEMENTATION",
+              "sidebar": "docs"
+            },
+            {
+              "id": "explanation/LANGGRAPH-MIGRATION-PLAN",
+              "path": "/psscript/explanation/LANGGRAPH-MIGRATION-PLAN",
+              "sidebar": "docs"
+            },
+            {
+              "id": "explanation/VOICE-API-ARCHITECTURE",
+              "path": "/psscript/explanation/VOICE-API-ARCHITECTURE",
+              "sidebar": "docs"
+            },
+            {
+              "id": "how-to/AUTHENTICATION-IMPROVEMENTS",
+              "path": "/psscript/how-to/AUTHENTICATION-IMPROVEMENTS",
+              "sidebar": "docs"
+            },
+            {
+              "id": "how-to/COMMAND-EXPLAIN-AND-ENRICHMENT",
+              "path": "/psscript/how-to/COMMAND-EXPLAIN-AND-ENRICHMENT",
+              "sidebar": "docs"
+            },
+            {
+              "id": "how-to/DATABASE_ISSUES_AND_FIXES",
+              "path": "/psscript/how-to/DATABASE_ISSUES_AND_FIXES",
+              "sidebar": "docs"
+            },
+            {
+              "id": "how-to/DOCKER-SETUP",
+              "path": "/psscript/how-to/DOCKER-SETUP",
+              "sidebar": "docs"
+            },
+            {
+              "id": "how-to/DOCS-BUILD-CHECKLIST",
+              "path": "/psscript/how-to/DOCS-BUILD-CHECKLIST",
+              "sidebar": "docs"
+            },
+            {
+              "id": "how-to/index",
+              "path": "/psscript/how-to/",
+              "sidebar": "docs"
+            },
+            {
+              "id": "how-to/LANGGRAPH-SETUP-SUMMARY",
+              "path": "/psscript/how-to/LANGGRAPH-SETUP-SUMMARY",
+              "sidebar": "docs"
+            },
+            {
+              "id": "how-to/MANAGEMENT-PLAYBOOK",
+              "path": "/psscript/how-to/MANAGEMENT-PLAYBOOK",
+              "sidebar": "docs"
+            },
+            {
+              "id": "how-to/README-FILE-HASH-TESTING",
+              "path": "/psscript/how-to/README-FILE-HASH-TESTING",
+              "sidebar": "docs"
+            },
+            {
+              "id": "how-to/README-FIXES",
+              "path": "/psscript/how-to/README-FIXES",
+              "sidebar": "docs"
+            },
+            {
+              "id": "how-to/README-GITHUB",
+              "path": "/psscript/how-to/README-GITHUB",
+              "sidebar": "docs"
+            },
+            {
+              "id": "how-to/SCRIPT-ANALYSIS-IMPROVEMENTS",
+              "path": "/psscript/how-to/SCRIPT-ANALYSIS-IMPROVEMENTS",
+              "sidebar": "docs"
+            },
+            {
+              "id": "how-to/SECURITY_INCIDENT_RESPONSE",
+              "path": "/psscript/how-to/SECURITY_INCIDENT_RESPONSE",
+              "sidebar": "docs"
+            },
+            {
+              "id": "how-to/SUPPORT",
+              "path": "/psscript/how-to/SUPPORT",
+              "sidebar": "docs"
+            },
+            {
+              "id": "how-to/VOICE-API-IMPLEMENTATION-STEPS",
+              "path": "/psscript/how-to/VOICE-API-IMPLEMENTATION-STEPS",
+              "sidebar": "docs"
+            },
+            {
+              "id": "how-to/VOICE-API-INTEGRATION",
+              "path": "/psscript/how-to/VOICE-API-INTEGRATION",
+              "sidebar": "docs"
+            },
+            {
+              "id": "how-to/VOICE-API-INTEGRATION-SUMMARY",
+              "path": "/psscript/how-to/VOICE-API-INTEGRATION-SUMMARY",
+              "sidebar": "docs"
+            },
+            {
+              "id": "how-to/VOICE-API-NEXT-STEPS",
+              "path": "/psscript/how-to/VOICE-API-NEXT-STEPS",
+              "sidebar": "docs"
+            },
+            {
+              "id": "index",
+              "path": "/psscript/",
+              "sidebar": "docs"
+            },
+            {
+              "id": "reference/CLAUDE",
+              "path": "/psscript/reference/CLAUDE",
+              "sidebar": "docs"
+            },
+            {
+              "id": "reference/DATABASE_DOCUMENTATION",
+              "path": "/psscript/reference/DATABASE_DOCUMENTATION",
+              "sidebar": "docs"
+            },
+            {
+              "id": "reference/DATABASE_TEST_PLAN",
+              "path": "/psscript/reference/DATABASE_TEST_PLAN",
+              "sidebar": "docs"
+            },
+            {
+              "id": "reference/index",
+              "path": "/psscript/reference/",
+              "sidebar": "docs"
+            },
+            {
+              "id": "reference/LOGIN-CREDENTIALS",
+              "path": "/psscript/reference/LOGIN-CREDENTIALS",
+              "sidebar": "docs"
+            },
+            {
+              "id": "reference/README-FILE-HASH",
+              "path": "/psscript/reference/README-FILE-HASH",
+              "sidebar": "docs"
+            },
+            {
+              "id": "reference/README-VECTOR-SEARCH",
+              "path": "/psscript/reference/README-VECTOR-SEARCH",
+              "sidebar": "docs"
+            },
+            {
+              "id": "reference/README-VOICE-API",
+              "path": "/psscript/reference/README-VOICE-API",
+              "sidebar": "docs"
+            },
+            {
+              "id": "reference/REFERENCE-SOURCES",
+              "path": "/psscript/reference/REFERENCE-SOURCES",
+              "sidebar": "docs"
+            },
+            {
+              "id": "reference/style-guide",
+              "path": "/psscript/reference/style-guide",
+              "sidebar": "docs"
+            },
+            {
+              "id": "reference/TOKEN-COUNTER-API-KEY-FEATURES",
+              "path": "/psscript/reference/TOKEN-COUNTER-API-KEY-FEATURES",
+              "sidebar": "docs"
+            },
+            {
+              "id": "reference/VOICE-API-IMPLEMENTATION-EXAMPLES",
+              "path": "/psscript/reference/VOICE-API-IMPLEMENTATION-EXAMPLES",
+              "sidebar": "docs"
+            },
+            {
+              "id": "reports/AI_COMPREHENSIVE_TEST_PLAN",
+              "path": "/psscript/reports/AI_COMPREHENSIVE_TEST_PLAN",
+              "sidebar": "docs"
+            },
+            {
+              "id": "reports/AI-ANALYZER-FIXES",
+              "path": "/psscript/reports/AI-ANALYZER-FIXES",
+              "sidebar": "docs"
+            },
+            {
+              "id": "reports/APP-FUNCTIONALITY-COMPLETE-FIX-REPORT-2026-01-09",
+              "path": "/psscript/reports/APP-FUNCTIONALITY-COMPLETE-FIX-REPORT-2026-01-09",
+              "sidebar": "docs"
+            },
+            {
+              "id": "reports/AUTHENTICATION-FIX-REPORT-2026-01-08",
+              "path": "/psscript/reports/AUTHENTICATION-FIX-REPORT-2026-01-08",
+              "sidebar": "docs"
+            },
+            {
+              "id": "reports/COMPREHENSIVE-FEATURE-TEST-REPORT-2026-01-09",
+              "path": "/psscript/reports/COMPREHENSIVE-FEATURE-TEST-REPORT-2026-01-09",
+              "sidebar": "docs"
+            },
+            {
+              "id": "reports/COMPREHENSIVE-STATUS-REPORT-2026-01-07",
+              "path": "/psscript/reports/COMPREHENSIVE-STATUS-REPORT-2026-01-07",
+              "sidebar": "docs"
+            },
+            {
+              "id": "reports/COMPREHENSIVE-TEST-RESULTS-2026-01-08",
+              "path": "/psscript/reports/COMPREHENSIVE-TEST-RESULTS-2026-01-08",
+              "sidebar": "docs"
+            },
+            {
+              "id": "reports/COMPREHENSIVE-TESTING-PLAN-2026",
+              "path": "/psscript/reports/COMPREHENSIVE-TESTING-PLAN-2026",
+              "sidebar": "docs"
+            },
+            {
+              "id": "reports/DASHBOARD-FIX-REPORT-2026-01-08",
+              "path": "/psscript/reports/DASHBOARD-FIX-REPORT-2026-01-08",
+              "sidebar": "docs"
+            },
+            {
+              "id": "reports/DATABASE_REVIEW_2026",
+              "path": "/psscript/reports/DATABASE_REVIEW_2026",
+              "sidebar": "docs"
+            },
+            {
+              "id": "reports/DATABASE_UPDATE_2026-01-16",
+              "path": "/psscript/reports/DATABASE_UPDATE_2026-01-16",
+              "sidebar": "docs"
+            },
+            {
+              "id": "reports/DATABASE-IMPROVEMENTS",
+              "path": "/psscript/reports/DATABASE-IMPROVEMENTS",
+              "sidebar": "docs"
+            },
+            {
+              "id": "reports/DEPLOYMENT-STATUS",
+              "path": "/psscript/reports/DEPLOYMENT-STATUS",
+              "sidebar": "docs"
+            },
+            {
+              "id": "reports/DEPLOYMENT-SUMMARY-2026-01-26",
+              "path": "/psscript/reports/DEPLOYMENT-SUMMARY-2026-01-26",
+              "sidebar": "docs"
+            },
+            {
+              "id": "reports/E2E-COMPREHENSIVE-FIX-FINAL-RESULTS-2026-01-08",
+              "path": "/psscript/reports/E2E-COMPREHENSIVE-FIX-FINAL-RESULTS-2026-01-08",
+              "sidebar": "docs"
+            },
+            {
+              "id": "reports/E2E-COMPREHENSIVE-FIX-FINAL-SUMMARY-2026-01-08",
+              "path": "/psscript/reports/E2E-COMPREHENSIVE-FIX-FINAL-SUMMARY-2026-01-08",
+              "sidebar": "docs"
+            },
+            {
+              "id": "reports/E2E-COMPREHENSIVE-FIX-IMPLEMENTATION-2026-01-08",
+              "path": "/psscript/reports/E2E-COMPREHENSIVE-FIX-IMPLEMENTATION-2026-01-08",
+              "sidebar": "docs"
+            },
+            {
+              "id": "reports/E2E-COMPREHENSIVE-FIX-PLAN-2026-01-08",
+              "path": "/psscript/reports/E2E-COMPREHENSIVE-FIX-PLAN-2026-01-08",
+              "sidebar": "docs"
+            },
+            {
+              "id": "reports/E2E-TEST-FIXES-2026-01-08",
+              "path": "/psscript/reports/E2E-TEST-FIXES-2026-01-08",
+              "sidebar": "docs"
+            },
+            {
+              "id": "reports/E2E-TEST-FIXES-PHASE-4-RESULTS-2026-01-08",
+              "path": "/psscript/reports/E2E-TEST-FIXES-PHASE-4-RESULTS-2026-01-08",
+              "sidebar": "docs"
+            },
+            {
+              "id": "reports/E2E-TEST-ISSUES-2026-01-08",
+              "path": "/psscript/reports/E2E-TEST-ISSUES-2026-01-08",
+              "sidebar": "docs"
+            },
+            {
+              "id": "reports/FILE-HASH-IMPLEMENTATION-REPORT",
+              "path": "/psscript/reports/FILE-HASH-IMPLEMENTATION-REPORT",
+              "sidebar": "docs"
+            },
+            {
+              "id": "reports/FINAL-DEPLOYMENT-SUMMARY",
+              "path": "/psscript/reports/FINAL-DEPLOYMENT-SUMMARY",
+              "sidebar": "docs"
+            },
+            {
+              "id": "reports/FINAL-TEST-REPORT-2026-01-08",
+              "path": "/psscript/reports/FINAL-TEST-REPORT-2026-01-08",
+              "sidebar": "docs"
+            },
+            {
+              "id": "reports/FIXES",
+              "path": "/psscript/reports/FIXES",
+              "sidebar": "docs"
+            },
+            {
+              "id": "reports/IMPLEMENTATION-SUMMARY-2026-01-26",
+              "path": "/psscript/reports/IMPLEMENTATION-SUMMARY-2026-01-26",
+              "sidebar": "docs"
+            },
+            {
+              "id": "reports/index",
+              "path": "/psscript/reports/",
+              "sidebar": "docs"
+            },
+            {
+              "id": "reports/MODEL-UPDATE-2026-01-08",
+              "path": "/psscript/reports/MODEL-UPDATE-2026-01-08",
+              "sidebar": "docs"
+            },
+            {
+              "id": "reports/PHASE-1-COMPLETE-READY-TO-TEST-2026-01-09",
+              "path": "/psscript/reports/PHASE-1-COMPLETE-READY-TO-TEST-2026-01-09",
+              "sidebar": "docs"
+            },
+            {
+              "id": "reports/PHASE-1-IMPLEMENTATION-COMPLETE-2026-01-09",
+              "path": "/psscript/reports/PHASE-1-IMPLEMENTATION-COMPLETE-2026-01-09",
+              "sidebar": "docs"
+            },
+            {
+              "id": "reports/PROJECT-REVIEW-2026-02-04",
+              "path": "/psscript/reports/PROJECT-REVIEW-2026-02-04",
+              "sidebar": "docs"
+            },
+            {
+              "id": "reports/REACT-QUERY-V5-MIGRATION-STATUS",
+              "path": "/psscript/reports/REACT-QUERY-V5-MIGRATION-STATUS",
+              "sidebar": "docs"
+            },
+            {
+              "id": "reports/SCRIPT-ANALYSIS-COMPREHENSIVE-FIX-PLAN-2026-01-09",
+              "path": "/psscript/reports/SCRIPT-ANALYSIS-COMPREHENSIVE-FIX-PLAN-2026-01-09",
+              "sidebar": "docs"
+            },
+            {
+              "id": "reports/TECH-REVIEW-2026",
+              "path": "/psscript/reports/TECH-REVIEW-2026",
+              "sidebar": "docs"
+            },
+            {
+              "id": "reports/TEST-RESULTS-2026-01-08",
+              "path": "/psscript/reports/TEST-RESULTS-2026-01-08",
+              "sidebar": "docs"
+            },
+            {
+              "id": "reports/UPDATES",
+              "path": "/psscript/reports/UPDATES",
+              "sidebar": "docs"
+            },
+            {
+              "id": "reports/USER_MANAGEMENT_SECURITY_AUDIT",
+              "path": "/psscript/reports/USER_MANAGEMENT_SECURITY_AUDIT",
+              "sidebar": "docs"
+            },
+            {
+              "id": "tutorials/GETTING-STARTED",
+              "path": "/psscript/tutorials/GETTING-STARTED",
+              "sidebar": "docs"
+            },
+            {
+              "id": "tutorials/index",
+              "path": "/psscript/tutorials/",
+              "sidebar": "docs"
+            },
+            {
+              "id": "tutorials/LANGGRAPH-QUICK-START",
+              "path": "/psscript/tutorials/LANGGRAPH-QUICK-START",
+              "sidebar": "docs"
+            },
+            {
+              "id": "tutorials/README",
+              "path": "/psscript/tutorials/training-suite",
+              "sidebar": "docs"
+            },
+            {
+              "id": "tutorials/TRAINING-GUIDE",
+              "path": "/psscript/tutorials/TRAINING-GUIDE",
+              "sidebar": "docs"
+            }
+          ],
+          "draftIds": [],
+          "sidebars": {
+            "docs": {
+              "link": {
+                "path": "/psscript/",
+                "label": "index"
+              }
+            }
+          }
+        }
+      ],
+      "breadcrumbs": true
+    }
+  }
+}

@@ -1,0 +1,24 @@
+{
+  "id": "reference/README-FILE-HASH",
+  "title": "File Hash Deduplication for PowerShell Scripts",
+  "description": "This document explains the implementation of file hash deduplication for PowerShell scripts in the PSScript application.",
+  "source": "@site/docs/reference/README-FILE-HASH.md",
+  "sourceDirName": "reference",
+  "slug": "/reference/README-FILE-HASH",
+  "permalink": "/psscript/reference/README-FILE-HASH",
+  "draft": false,
+  "unlisted": false,
+  "editUrl": "https://github.com/Morlock52/psscript/tree/main/docs-site/docs/reference/README-FILE-HASH.md",
+  "tags": [],
+  "version": "current",
+  "frontMatter": {},
+  "sidebar": "docs",
+  "previous": {
+    "title": "PSScript Login Credentials",
+    "permalink": "/psscript/reference/LOGIN-CREDENTIALS"
+  },
+  "next": {
+    "title": "Vector Search and File Integrity",
+    "permalink": "/psscript/reference/README-VECTOR-SEARCH"
+  }
+}

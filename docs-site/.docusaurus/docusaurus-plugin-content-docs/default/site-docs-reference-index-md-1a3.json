@@ -1,0 +1,27 @@
+{
+  "id": "reference/index",
+  "title": "Reference",
+  "description": "Specifications, configuration references, and API notes",
+  "source": "@site/docs/reference/index.md",
+  "sourceDirName": "reference",
+  "slug": "/reference/",
+  "permalink": "/psscript/reference/",
+  "draft": false,
+  "unlisted": false,
+  "editUrl": "https://github.com/Morlock52/psscript/tree/main/docs-site/docs/reference/index.md",
+  "tags": [],
+  "version": "current",
+  "frontMatter": {
+    "title": "Reference",
+    "description": "Specifications, configuration references, and API notes"
+  },
+  "sidebar": "docs",
+  "previous": {
+    "title": "How-to Guides",
+    "permalink": "/psscript/how-to/"
+  },
+  "next": {
+    "title": "Claude Code Reference",
+    "permalink": "/psscript/reference/CLAUDE"
+  }
+}

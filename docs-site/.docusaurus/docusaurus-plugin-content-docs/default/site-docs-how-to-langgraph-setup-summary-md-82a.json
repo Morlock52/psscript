@@ -1,0 +1,24 @@
+{
+  "id": "how-to/LANGGRAPH-SETUP-SUMMARY",
+  "title": "LangGraph 1.0 Setup - Summary",
+  "description": "What Was Implemented",
+  "source": "@site/docs/how-to/LANGGRAPH-SETUP-SUMMARY.md",
+  "sourceDirName": "how-to",
+  "slug": "/how-to/LANGGRAPH-SETUP-SUMMARY",
+  "permalink": "/psscript/how-to/LANGGRAPH-SETUP-SUMMARY",
+  "draft": false,
+  "unlisted": false,
+  "editUrl": "https://github.com/Morlock52/psscript/tree/main/docs-site/docs/how-to/LANGGRAPH-SETUP-SUMMARY.md",
+  "tags": [],
+  "version": "current",
+  "frontMatter": {},
+  "sidebar": "docs",
+  "previous": {
+    "title": "Documentation Build Checklist",
+    "permalink": "/psscript/how-to/DOCS-BUILD-CHECKLIST"
+  },
+  "next": {
+    "title": "PSScript Manager Management Playbook",
+    "permalink": "/psscript/how-to/MANAGEMENT-PLAYBOOK"
+  }
+}

@@ -1,0 +1,24 @@
+{
+  "id": "how-to/DOCS-BUILD-CHECKLIST",
+  "title": "Documentation Build Checklist",
+  "description": "This tracker captures the documentation upgrade scope and verification steps for the README, training suite, and exports.",
+  "source": "@site/docs/how-to/DOCS-BUILD-CHECKLIST.md",
+  "sourceDirName": "how-to",
+  "slug": "/how-to/DOCS-BUILD-CHECKLIST",
+  "permalink": "/psscript/how-to/DOCS-BUILD-CHECKLIST",
+  "draft": false,
+  "unlisted": false,
+  "editUrl": "https://github.com/Morlock52/psscript/tree/main/docs-site/docs/how-to/DOCS-BUILD-CHECKLIST.md",
+  "tags": [],
+  "version": "current",
+  "frontMatter": {},
+  "sidebar": "docs",
+  "previous": {
+    "title": "Docker Setup for PSScript",
+    "permalink": "/psscript/how-to/DOCKER-SETUP"
+  },
+  "next": {
+    "title": "LangGraph 1.0 Setup - Summary",
+    "permalink": "/psscript/how-to/LANGGRAPH-SETUP-SUMMARY"
+  }
+}
