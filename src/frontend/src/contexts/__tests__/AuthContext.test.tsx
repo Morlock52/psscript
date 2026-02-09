@@ -74,10 +74,19 @@ describe('AuthContext', () => {
   beforeEach(() => {
     vi.clearAllMocks();
     localStorageMock.clear();
+
+    // These unit tests exercise the "auth enabled" behavior by default.
+    // In local dev, the repo often runs with VITE_DISABLE_AUTH=true, which would
+    // short-circuit the AuthProvider and break these expectations.
+    vi.stubGlobal('import.meta.env', {
+      ...(import.meta as any).env,
+      VITE_DISABLE_AUTH: 'false',
+    });
   });
 
   afterEach(() => {
     vi.resetAllMocks();
+    vi.unstubAllGlobals();
   });
 
   describe('Initial State', () => {

@@ -5,12 +5,34 @@ import { Request, Response, NextFunction } from 'express';
 import { Category, Script, sequelize } from '../models';
 import { Op } from 'sequelize';
 import logger from '../utils/logger';
-import { cache } from '../index';
+
+/**
+ * Lazily resolve the app cache.
+ *
+ * CategoryController is loaded during route initialization which happens while `index.ts`
+ * is still bootstrapping. Importing `cache` at module load time can capture an undefined
+ * or partial export in CommonJS, leading to cache invalidation silently not happening.
+ *
+ * Using a runtime `require()` keeps it consistent with the script controllers' approach.
+ */
+const getAppCache = () => {
+  // eslint-disable-next-line @typescript-eslint/no-var-requires
+  const mod = require('../index') as { cache?: any } | undefined;
+  const c = mod?.cache;
+  if (c) return c;
+  return {
+    get: () => null,
+    set: () => {},
+    del: () => false,
+    clearPattern: () => 0,
+  };
+};
 
 class CategoryController {
   // Get all categories
   async getCategories(req: Request, res: Response, next: NextFunction) {
     try {
+      const cache = getAppCache();
       const cacheKey = 'categories:all';
       const cachedData = cache.get(cacheKey);
       
@@ -56,6 +78,7 @@ class CategoryController {
   // Get a single category by ID
   async getCategory(req: Request, res: Response, next: NextFunction) {
     try {
+      const cache = getAppCache();
       const categoryId = req.params.id;
       const cacheKey = `category:${categoryId}`;
       const cachedData = cache.get(cacheKey);
@@ -93,6 +116,7 @@ class CategoryController {
     const transaction = await sequelize.transaction();
     
     try {
+      const cache = getAppCache();
       const { name, description } = req.body;
       
       if (!name) {
@@ -137,6 +161,7 @@ class CategoryController {
     const transaction = await sequelize.transaction();
     
     try {
+      const cache = getAppCache();
       const categoryId = req.params.id;
       const { name, description } = req.body;
       
@@ -190,6 +215,7 @@ class CategoryController {
     const transaction = await sequelize.transaction();
     
     try {
+      const cache = getAppCache();
       const categoryId = req.params.id;
       const mode = String(req.query.mode || '');
       
@@ -234,6 +260,11 @@ class CategoryController {
       cache.del('categories:all');
       cache.del(`category:${categoryId}`);
       cache.clearPattern(`category:${categoryId}:scripts:`);
+      // Deleting/uncategorizing impacts script detail + list responses.
+      // If we don't invalidate these, the UI (and E2E tests) can read stale categoryId values.
+      cache.clearPattern('script:');
+      cache.clearPattern('scripts:');
+      cache.clearPattern('search:');
       
       res.json({ message: 'Category deleted successfully', uncategorizedScripts });
     } catch (error) {
@@ -245,6 +276,7 @@ class CategoryController {
   // Get scripts by category
   async getCategoryScripts(req: Request, res: Response, next: NextFunction) {
     try {
+      const cache = getAppCache();
       const categoryId = req.params.id;
       const page = parseInt(req.query.page as string) || 1;
       const limit = parseInt(req.query.limit as string) || 10;
@@ -296,6 +328,7 @@ class CategoryController {
   // Initialize default categories
   async initializeDefaultCategories() {
     try {
+      const cache = getAppCache();
       const defaultCategories = [
         {
           name: 'System Administration',

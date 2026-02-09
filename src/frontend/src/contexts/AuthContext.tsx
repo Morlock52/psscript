@@ -58,6 +58,9 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   const [user, setUser] = useState<User | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  // In unit tests we want to exercise the real auth flow by default.
+  // Local dev frequently sets VITE_DISABLE_AUTH=true, which would short-circuit tests.
+  const disableAuth = import.meta.env.MODE !== 'test' && import.meta.env.VITE_DISABLE_AUTH === 'true';
 
   // Check if user is authenticated
   const isAuthenticated = !!user;
@@ -68,6 +71,18 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   // Load user from localStorage on mount
   useEffect(() => {
     const loadUser = async () => {
+      if (disableAuth) {
+        setUser({
+          id: 'dev-admin',
+          username: 'dev-admin',
+          email: 'dev-admin@local',
+          role: 'admin',
+          created_at: new Date().toISOString(),
+        });
+        setIsLoading(false);
+        return;
+      }
+
       try {
         // Check if we have a token
         const token = localStorage.getItem('auth_token');
@@ -110,7 +125,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     };
 
     loadUser();
-  }, []);
+  }, [disableAuth]);
 
   // Demo login function - uses actual API authentication with demo credentials
   // This ensures proper token validation and persistence across page refreshes
@@ -122,21 +137,43 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   //   2. Use environment variables for credentials
   //   3. Replace with a proper dev/staging authentication flow
   const defaultLogin = async () => {
-    // Read demo credentials from environment variables (set at build time)
-    // These should only be set in development environments
-    const demoEmail = import.meta.env.VITE_DEMO_EMAIL;
-    const demoPassword = import.meta.env.VITE_DEMO_PASSWORD;
-
-    if (!demoEmail || !demoPassword) {
-      throw new Error('Demo login is not configured for this environment. Please use regular login.');
+    if (disableAuth) {
+      localStorage.setItem('auth_token', 'dev-auth-disabled');
+      setUser({
+        id: 'dev-admin',
+        username: 'dev-admin',
+        email: 'dev-admin@local',
+        role: 'admin',
+        created_at: new Date().toISOString(),
+      });
+      return;
     }
 
+    // Read demo credentials from environment variables (set at build time)
+    // These should only be set in development environments
+    // Defaults match seeded dev admin in src/db/seeds/01-initial-data.sql
+    const demoEmail = import.meta.env.VITE_DEMO_EMAIL || 'admin@example.com';
+    const demoPassword = import.meta.env.VITE_DEMO_PASSWORD || 'admin123';
+
+    // If these defaults don't work, the caller will show the error and the user can use regular login.
     await login(demoEmail, demoPassword);
   };
 
   // Login function
   const login = async (email: string, password: string) => {
     try {
+      if (disableAuth) {
+        localStorage.setItem('auth_token', 'dev-auth-disabled');
+        setUser({
+          id: 'dev-admin',
+          username: 'dev-admin',
+          email: email || 'dev-admin@local',
+          role: 'admin',
+          created_at: new Date().toISOString(),
+        });
+        return;
+      }
+
       setIsLoading(true);
       clearError();
 
@@ -255,6 +292,10 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
 
   // Logout function
   const logout = () => {
+    if (disableAuth) {
+      return;
+    }
+
     // Clear token from localStorage
     localStorage.removeItem('auth_token');
     localStorage.removeItem('refresh_token');

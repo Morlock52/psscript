@@ -24,6 +24,24 @@ export default defineConfig({
     port: 3090,
     host: '0.0.0.0',
     https: httpsConfig,
+    // Proxy API + docs downloads through the frontend origin.
+    //
+    // Why: the backend uses a locally-generated TLS cert (mTLS origin protection) that
+    // is not trusted by the browser by default, which causes ERR_CERT_AUTHORITY_INVALID
+    // and surfaces as Axios "Network Error". Proxying keeps the browser on
+    // https://localhost:3090 and Vite can talk to https://backend:4000 with `secure:false`.
+    proxy: {
+      '/api': {
+        target: 'https://backend:4000',
+        changeOrigin: true,
+        secure: false,
+      },
+      '/docs': {
+        target: 'https://backend:4000',
+        changeOrigin: true,
+        secure: false,
+      },
+    },
     allowedHosts: [
       'localhost',
       '127.0.0.1',

@@ -29,10 +29,11 @@ const Settings: React.FC = () => {
     showApiKey: false
   });
 
-  const docsBaseUrl = import.meta.env.VITE_DOCS_URL || `http://${window.location.hostname}:4000`;
-  const docsRepoPdfBaseUrl = 'https://github.com/Morlock52/psscript-manager/blob/main/docs/exports/pdf';
-  const docsRepoBaseUrl = 'https://github.com/Morlock52/psscript-manager/blob/main/docs';
-  const docsRepoDocxBaseUrl = 'https://github.com/Morlock52/psscript-manager/blob/main/docs/exports/docx';
+  // Legacy Settings page (not routed by default). Keep URLs correct to avoid drift.
+  const docsBaseUrl = import.meta.env.VITE_DOCS_URL || `https://${window.location.hostname}:4000`;
+  const docsRepoPdfBaseUrl = 'https://github.com/Morlock52/psscript/blob/main/docs/exports/pdf';
+  const docsRepoBaseUrl = 'https://github.com/Morlock52/psscript/blob/main/docs';
+  const docsRepoDocxBaseUrl = 'https://github.com/Morlock52/psscript/blob/main/docs/exports/docx';
 
   // Display settings
   const [displaySettings, setDisplaySettings] = useState({
@@ -329,7 +330,7 @@ const Settings: React.FC = () => {
         </p>
         <div className="flex flex-col sm:flex-row gap-3">
           <a
-            href="https://github.com/Morlock52/psscript-manager/blob/main/README.md"
+            href="https://github.com/Morlock52/psscript/blob/main/README.md"
             target="_blank"
             rel="noreferrer"
             className={linkButtonStyles}
@@ -337,7 +338,7 @@ const Settings: React.FC = () => {
             Project README
           </a>
           <a
-            href="https://github.com/Morlock52/psscript-manager/tree/main/docs/training-suite"
+            href="https://github.com/Morlock52/psscript/tree/main/docs/training-suite"
             target="_blank"
             rel="noreferrer"
             className="bg-[var(--color-primary)] text-white px-4 py-2 rounded-md hover:bg-[var(--color-primary-dark)] transition text-center"
@@ -377,7 +378,7 @@ const Settings: React.FC = () => {
             Training Guide PDF (Local)
           </a>
           <a
-            href="https://github.com/Morlock52/psscript-manager/blob/main/docs/exports/pdf/Training-Guide.pdf"
+            href="https://github.com/Morlock52/psscript/blob/main/docs/exports/pdf/Training-Guide.pdf"
             target="_blank"
             rel="noreferrer"
             className="bg-green-700 text-white px-4 py-2 rounded-md hover:bg-green-800 transition text-center"

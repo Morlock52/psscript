@@ -2,15 +2,18 @@ import { test, expect } from '@playwright/test';
 import waitForFrontend from './utils/waitForFrontend';
 
 async function loginIfNeeded(page: any, testInfo?: any) {
-  // Go directly to login to avoid flakiness from the splash screen + initial redirect.
-  await page.goto('/login', { waitUntil: 'networkidle' });
+  // Prefer navigating to the target route first:
+  // - If auth is disabled (local dev), ProtectedRoute bypasses and /login may auto-redirect away.
+  // - If auth is enabled, we’ll be redirected to /login.
+  await page.goto('/settings/categories', { waitUntil: 'domcontentloaded' });
+  if (!page.url().includes('/login')) return;
 
   // Use the built-in Demo Admin shortcut (fast + resilient to API URL changes).
   const demoBtn = page.getByRole('button', { name: /Sign in as Demo Admin/i });
-  await expect(demoBtn).toBeVisible();
+  await expect(demoBtn).toBeVisible({ timeout: 15000 });
   await demoBtn.click();
 
-  // Wait for token to be stored (AuthContext persists auth_token on success).
+  // In auth-enabled mode, AuthContext persists auth_token on success.
   await expect
     .poll(async () => page.evaluate(() => Boolean(localStorage.getItem('auth_token'))), { timeout: 20_000 })
     .toBe(true);
@@ -42,11 +45,31 @@ test.describe('Settings Categories', () => {
     // Wait until the row exists inside the list container (avoid matching nav/sidebar).
     const list = page.getByTestId('categories-list');
     await expect(list.getByText(catName)).toBeVisible({ timeout: 15000 });
+    await expect(page.getByTestId('categories-refreshing')).not.toContainText('Refreshing', { timeout: 15000 });
 
     // Edit description
-    const row = list.locator('[data-category-name]').filter({ hasText: catName }).first();
+    const rowByText = list.locator('[data-category-name]').filter({ hasText: catName }).first();
+    // Wait until the optimistic row has been swapped to a real server id (avoid editId race).
+    let categoryId: string | null = null;
+    await expect
+      .poll(async () => {
+        const id = await rowByText.getAttribute('data-category-id');
+        categoryId = typeof id === 'string' ? id : null;
+        return categoryId && !categoryId.startsWith('-') ? categoryId : null;
+      }, { timeout: 20000 })
+      .not.toBeNull();
+    categoryId = categoryId as string;
+
+    // Re-select by stable id so the locator doesn't break when row switches to inputs (no text).
+    const row = list.locator(`[data-category-id="${categoryId}"]`).first();
+    await expect(row).toBeVisible({ timeout: 15000 });
+    await expect(page.getByTestId('categories-refreshing')).not.toContainText('Refreshing', { timeout: 15000 });
+
     await row.getByRole('button', { name: /^Edit$/ }).click();
-    await row.getByLabel(/Description/i).fill('Updated by Playwright');
+    // Inline edit inputs have stable test IDs (only one row can be in edit mode at a time).
+    const descInput = row.getByTestId('category-edit-description');
+    await expect(descInput).toBeVisible({ timeout: 15000 });
+    await descInput.fill('Updated by Playwright');
     await row.getByRole('button', { name: /^Save$/ }).click();
     await expect(row.getByText('Updated by Playwright')).toBeVisible({ timeout: 15000 });
 
@@ -74,19 +97,26 @@ test.describe('Settings Categories', () => {
     await page.getByRole('button', { name: /Refresh/i }).click();
     await page.waitForTimeout(600);
 
-    const row2 = list.locator('[data-category-name]').filter({ hasText: catName }).first();
+    const row2 = list.locator(`[data-category-id="${categoryId}"]`).first();
     await row2.getByRole('button', { name: 'Delete' }).click();
 
-    await expect(page.getByRole('dialog', { name: /Delete category and uncategorize scripts/i })).toBeVisible();
+    // Dialog title is rendered as content, not aria-label. Match by visible text instead.
+    await expect(page.getByText(/Delete category and uncategorize scripts/i)).toBeVisible();
     await page.getByRole('button', { name: /Uncategorize and delete/i }).click();
 
     await expect(page.getByText(catName)).toHaveCount(0);
 
-    const scriptAfter = await request.get(`${apiBase}/scripts/${scriptId}`);
-    expect(scriptAfter.ok()).toBeTruthy();
-    const scriptAfterJson = await scriptAfter.json();
-    const scriptObj = scriptAfterJson?.script || scriptAfterJson;
-    expect(scriptObj?.categoryId ?? null).toBeNull();
+    // UI removal is optimistic; the backend delete+FK nulling can land a moment later.
+    // Poll the API until the script is uncategorized to avoid race-driven flakes under load.
+    await expect
+      .poll(async () => {
+        const scriptAfter = await request.get(`${apiBase}/scripts/${scriptId}`);
+        if (!scriptAfter.ok()) return undefined;
+        const scriptAfterJson = await scriptAfter.json();
+        const scriptObj = scriptAfterJson?.script || scriptAfterJson;
+        return scriptObj?.categoryId ?? null;
+      }, { timeout: 15000 })
+      .toBeNull();
 
     // Cleanup: delete script
     await request.delete(`${apiBase}/scripts/${scriptId}`);

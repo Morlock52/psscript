@@ -9,7 +9,6 @@ import * as path from 'path';
 import fs from 'fs';
 import axios from 'axios';
 import logger from '../../utils/logger';
-import { cache } from '../../index';
 import { calculateBufferMD5, checkFileExists } from '../../utils/fileIntegrity';
 import { findSimilarScripts as findSimilarScriptsByVector } from '../../utils/vectorUtils';
 import crypto from 'crypto';
@@ -61,17 +60,38 @@ export const CACHE_TTL = {
   LONG: 86400      // 24 hours
 } as const;
 
+/**
+ * Lazily resolve the app cache.
+ *
+ * Important: importing `cache` from `src/index.ts` at module load time creates a circular dependency:
+ * `index.ts` imports routes -> controllers -> this file, *before* `index.ts` finishes initializing `cache`.
+ * In CommonJS this can leave `cache` undefined and crash on first use.
+ *
+ * By resolving it at runtime (inside handlers/util functions), we avoid the circular-init hazard.
+ */
+export const getCache = (): CacheService => {
+  // eslint-disable-next-line @typescript-eslint/no-var-requires
+  const mod = require('../../index') as { cache?: CacheService } | undefined;
+  const c = mod?.cache;
+  if (c) return c;
+
+  // Safe no-op fallback (keeps endpoints working even if cache isn't available for some reason).
+  return {
+    get: () => null,
+    set: () => {},
+    del: () => {},
+    clearPattern: () => {},
+  };
+};
+
 // Re-export for use in controllers
 export {
   Request, Response, NextFunction,
   Script, ScriptAnalysis, Category, User, Tag, ScriptTag, ScriptVersion, ExecutionLog, sequelize,
   Op, Transaction,
-  path, fs, axios, logger, cache,
+  path, fs, axios, logger,
   calculateBufferMD5, checkFileExists, findSimilarScriptsByVector, crypto
 };
-
-// Type the cache properly for internal use
-const typedCache = cache as CacheService;
 
 /**
  * Send a successful response with data
@@ -185,6 +205,7 @@ export const getCachedOrFetch = async <T>(
   fetchFn: () => Promise<T>,
   ttl = 300
 ): Promise<T> => {
+  const typedCache = getCache();
   const cached = typedCache.get<T>(cacheKey);
   if (cached !== null) {
     return cached;
@@ -199,9 +220,12 @@ export const getCachedOrFetch = async <T>(
  * Clear script-related caches
  */
 export const clearScriptCaches = (scriptId?: string | number): void => {
+  const typedCache = getCache();
   if (scriptId) {
     typedCache.del(`script:${scriptId}`);
   }
+  // Script mutations can change category script counts, so invalidate category list cache too.
+  typedCache.del('categories:all');
   typedCache.clearPattern('scripts:');
   typedCache.clearPattern('search:');
 };

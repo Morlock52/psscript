@@ -11,6 +11,11 @@ const ProtectedRoute: React.FC<ProtectedRouteProps> = ({
   children,
   requiredRole,
 }) => {
+  // Local dev convenience: allow running with auth disabled.
+  if (import.meta.env.MODE !== 'test' && import.meta.env.VITE_DISABLE_AUTH === 'true') {
+    return <>{children}</>;
+  }
+
   const { user, isLoading } = useAuth();
 
   // If authentication is still loading, show a loading indicator

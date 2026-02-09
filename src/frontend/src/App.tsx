@@ -56,7 +56,18 @@ const queryClient = new QueryClient({
 
 // Home route that shows Login for unauthenticated users, Dashboard for authenticated
 const Home: React.FC = () => {
-  const { user } = useAuth();
+  const { user, isLoading } = useAuth();
+  const disableAuth = import.meta.env.MODE !== 'test' && import.meta.env.VITE_DISABLE_AUTH === 'true';
+
+  // When auth is disabled in local dev, avoid a "bounce" to /login (and confusing demo-login UX).
+  if (disableAuth) {
+    return <Navigate to="/dashboard" replace />;
+  }
+
+  if (isLoading) {
+    return <LoadingScreen />;
+  }
+
   return user ? <Dashboard /> : <Navigate to="/login" replace />;
 };
 
@@ -132,7 +143,8 @@ const App: React.FC = () => {
             <Route path="/ui-components" element={<UIComponentsDemo />} />
 
             {/* Settings */}
-            <Route path="/settings" element={<ProtectedRoute><Settings /></ProtectedRoute>} />
+            {/* Redirect legacy /settings landing to the unified SettingsLayout pages */}
+            <Route path="/settings" element={<Navigate to="/settings/profile" replace />} />
             <Route path="/settings/profile" element={<ProtectedRoute><ProfileSettings /></ProtectedRoute>} />
             <Route path="/settings/appearance" element={<ProtectedRoute><AppearanceSettings /></ProtectedRoute>} />
             <Route path="/settings/security" element={<ProtectedRoute><SecuritySettings /></ProtectedRoute>} />

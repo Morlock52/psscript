@@ -18,8 +18,11 @@ services:
       # Let frontend runtime-detect API URL (https on localhost) via src/frontend/src/utils/apiUrl.ts
       - VITE_API_URL=
       # Enable demo login button for local dev/e2e
+      # Matches seeded dev admin in src/db/seeds/01-initial-data.sql
       - VITE_DEMO_EMAIL=admin@example.com
       - VITE_DEMO_PASSWORD=admin123
+      # Disable auth gating in local dev (matches backend DISABLE_AUTH=true)
+      - VITE_DISABLE_AUTH=true
       - VITE_USE_MOCKS=true
       - VITE_PORT=3090
       # TLS certificate paths for mTLS
@@ -55,6 +58,9 @@ services:
       - DOCKER_ENV=true
       - PORT=4000
       - DISABLE_AUTH=true
+      # Allow stress/E2E without constant 429s in dev.
+      - RELAX_RATE_LIMITS=true
+      - RATE_LIMIT_MULTIPLIER=20
       - DB_HOST=postgres
       - DB_PORT=5432
       - DB_NAME=psscript
@@ -66,6 +72,7 @@ services:
       # TLS certificate paths for mTLS
       - TLS_CERT=/certs/backend.crt
       - TLS_KEY=/certs/backend.key
+    restart: unless-stopped
 
   # AI analysis service
   ai-service:
@@ -87,6 +94,7 @@ services:
       - DB_NAME=psscript
       - DB_USER=postgres
       - DB_PASSWORD=postgres
+    restart: unless-stopped
 
   # PostgreSQL with pgvector extension
   postgres:
@@ -104,6 +112,7 @@ services:
       - POSTGRES_PASSWORD=${DB_PASSWORD:-postgres}
     command: >
       bash -c "ldconfig && docker-entrypoint.sh postgres"
+    restart: unless-stopped
 
   # Redis for caching
   redis:
@@ -112,6 +121,7 @@ services:
       - "6379:6379"
     volumes:
       - redis_data:/data
+    restart: unless-stopped
 
   # Cloudflare Tunnel for external access (with mTLS origin verification)
   cloudflared:

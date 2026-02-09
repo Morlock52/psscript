@@ -24,6 +24,18 @@ declare global {
  * Supports tokens in Authorization header or query parameter (for SSE)
  */
 export const authenticateJWT = (req: Request, res: Response, next: NextFunction) => {
+  // Local/dev convenience: allow running with auth disabled.
+  // Keep this behavior consistent across both auth middleware modules.
+  if (process.env.DISABLE_AUTH === 'true') {
+    req.user = {
+      userId: 1,
+      username: 'dev',
+      email: 'dev@local',
+      role: 'admin'
+    };
+    return next();
+  }
+
   let token: string | undefined;
 
   // Try to get token from Authorization header first
@@ -62,6 +74,10 @@ export const authenticateJWT = (req: Request, res: Response, next: NextFunction)
  * Middleware to check if user has admin role
  */
 export const requireAdmin = (req: Request, res: Response, next: NextFunction) => {
+  if (process.env.DISABLE_AUTH === 'true') {
+    return next();
+  }
+
   if (!req.user) {
     return res.status(401).json({ message: 'Authentication required' });
   }

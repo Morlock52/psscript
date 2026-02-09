@@ -51,9 +51,10 @@ export default function CategoriesSettings() {
     );
   }, [rows, search]);
 
-  const invalidateEverywhere = async () => {
+  const invalidateDownstream = async () => {
     // Categories are used in dashboard filters, upload forms, etc.
-    await qc.invalidateQueries({ queryKey: ['categories'] });
+    // Avoid invalidating ['categories'] on every mutation: it causes UI churn (row detaches) and
+    // makes the inline editor feel unstable. Keep the list updated via cache updates instead.
     await qc.invalidateQueries({ queryKey: ['scripts'] });
     await qc.invalidateQueries({ queryKey: ['analytics'] });
   };
@@ -65,10 +66,11 @@ export default function CategoriesSettings() {
       await qc.cancelQueries({ queryKey: ['categories'] });
       const prev = qc.getQueryData<any>(['categories']);
 
+      const optimisticId = -Date.now();
       qc.setQueryData(['categories'], (old: any) => {
         const current = (old?.categories || []) as CategoryRow[];
         const optimistic: CategoryRow = {
-          id: -Date.now(),
+          id: optimisticId,
           name: payload.name,
           description: payload.description || null,
           scriptCount: 0,
@@ -76,7 +78,7 @@ export default function CategoriesSettings() {
         return { ...(old || {}), categories: [optimistic, ...current].sort((a, b) => a.name.localeCompare(b.name)) };
       });
 
-      return { prev };
+      return { prev, optimisticId };
     },
     onError: (err: any, _vars, ctx: any) => {
       if (ctx?.prev) qc.setQueryData(['categories'], ctx.prev);
@@ -84,14 +86,28 @@ export default function CategoriesSettings() {
       setRowError(msg);
       toast.error(msg);
     },
-    onSuccess: async () => {
+    onSuccess: async (data: any, _vars, ctx: any) => {
+      // Replace the optimistic row with the real server id to keep test selectors + UX stable.
+      const created = data?.category || data;
+      if (created?.id && ctx?.optimisticId) {
+        qc.setQueryData(['categories'], (old: any) => {
+          const current = (old?.categories || []) as CategoryRow[];
+          return {
+            ...(old || {}),
+            categories: current
+              .map((c) =>
+                c.id === ctx.optimisticId
+                  ? { ...c, id: Number(created.id), name: created.name ?? c.name, description: created.description ?? c.description }
+                  : c
+              )
+              .sort((a, b) => a.name.localeCompare(b.name)),
+          };
+        });
+      }
       setNewName('');
       setNewDesc('');
       toast.success('Category created');
-      await invalidateEverywhere();
-    },
-    onSettled: async () => {
-      await qc.invalidateQueries({ queryKey: ['categories'] });
+      await invalidateDownstream();
     },
   });
 
@@ -119,13 +135,26 @@ export default function CategoriesSettings() {
       setRowError(msg);
       toast.error(msg);
     },
-    onSuccess: async () => {
+    onSuccess: async (data: any, vars: any) => {
+      const updated = data?.category || data;
+      if (updated?.id) {
+        qc.setQueryData(['categories'], (old: any) => {
+          const current = (old?.categories || []) as CategoryRow[];
+          return {
+            ...(old || {}),
+            categories: current
+              .map((c) =>
+                c.id === vars.id
+                  ? { ...c, name: updated.name ?? vars.name, description: updated.description ?? vars.description ?? null }
+                  : c
+              )
+              .sort((a, b) => a.name.localeCompare(b.name)),
+          };
+        });
+      }
       toast.success('Category updated');
       setEditingId(null);
-      await invalidateEverywhere();
-    },
-    onSettled: async () => {
-      await qc.invalidateQueries({ queryKey: ['categories'] });
+      await invalidateDownstream();
     },
   });
 
@@ -149,10 +178,7 @@ export default function CategoriesSettings() {
     },
     onSuccess: async (_data: any) => {
       toast.success('Category deleted');
-      await invalidateEverywhere();
-    },
-    onSettled: async () => {
-      await qc.invalidateQueries({ queryKey: ['categories'] });
+      await invalidateDownstream();
     },
   });
 
@@ -189,7 +215,10 @@ export default function CategoriesSettings() {
         <div className="rounded-lg border border-[var(--color-border-default)] bg-[var(--color-bg-tertiary)] p-4">
           <div className="flex items-center justify-between gap-3 mb-3">
             <h2 className="text-lg font-semibold text-[var(--color-text-primary)]">New category</h2>
-            <div className="text-xs text-[var(--color-text-tertiary)]">
+            <div
+              className="text-xs text-[var(--color-text-tertiary)]"
+              data-testid="categories-refreshing"
+            >
               {categoriesQuery.isFetching ? 'Refreshing…' : ''}
             </div>
           </div>
@@ -273,12 +302,19 @@ export default function CategoriesSettings() {
               {filtered.map((c) => {
                 const isEditing = editingId === c.id;
                 return (
-                  <div key={c.id} className="p-4 bg-[var(--color-bg-elevated)]" data-testid={`category-row-${c.id}`} data-category-name={c.name}>
+                  <div
+                    key={c.id}
+                    className="p-4 bg-[var(--color-bg-elevated)]"
+                    data-testid={`category-row-${c.id}`}
+                    data-category-id={c.id}
+                    data-category-name={c.name}
+                  >
                     <div className="grid grid-cols-1 md:grid-cols-12 gap-3 items-start">
                       <div className="md:col-span-4">
                         <div className="text-xs text-[var(--color-text-tertiary)] mb-1">Name</div>
                         {isEditing ? (
                           <input
+                            data-testid="category-edit-name"
                             className={inputStyles}
                             value={editName}
                             onChange={(e) => setEditName(e.target.value)}
@@ -293,6 +329,7 @@ export default function CategoriesSettings() {
                         {isEditing ? (
                           <input
                             aria-label="Description"
+                            data-testid="category-edit-description"
                             className={inputStyles}
                             value={editDesc}
                             onChange={(e) => setEditDesc(e.target.value)}
@@ -361,6 +398,7 @@ export default function CategoriesSettings() {
           <div
             role="dialog"
             aria-modal="true"
+            aria-labelledby="delete-category-dialog-title"
             className="fixed inset-0 z-[80] flex items-center justify-center bg-black/60 p-4"
             onClick={() => setConfirm(null)}
           >
@@ -369,7 +407,10 @@ export default function CategoriesSettings() {
               onClick={(e) => e.stopPropagation()}
             >
               <div className="px-5 py-4 bg-[var(--color-bg-tertiary)] border-b border-[var(--color-border-default)] flex items-center justify-between">
-                <div className="text-sm font-semibold text-[var(--color-text-primary)]">
+                <div
+                  id="delete-category-dialog-title"
+                  className="text-sm font-semibold text-[var(--color-text-primary)]"
+                >
                   Delete category and uncategorize scripts
                 </div>
                 <button type="button" className={buttonSecondary} onClick={() => setConfirm(null)}>

@@ -9,11 +9,9 @@ export const getReadmeContent = async (): Promise<string> => {
     // return await response.text();
     
     // For demo purposes, return an enhanced README with detailed information
-    return `# PowerShell Script Management Application
+    return `# PSScript (PowerShell Script Management)
 
 A comprehensive platform for managing, analyzing, and executing PowerShell scripts with AI-enhanced capabilities for enterprise environments.
-
-![PS Script Manager](https://example.com/screenshots/dashboard.png)
 
 ## 🚀 Features
 
@@ -53,8 +51,8 @@ A comprehensive platform for managing, analyzing, and executing PowerShell scrip
 
 1. **Clone the repository**:
    \`\`\`bash
-   git clone https://github.com/enterprise/psscript-manager.git
-   cd psscript-manager
+   git clone https://github.com/Morlock52/psscript.git
+   cd psscript
    \`\`\`
 
 2. **Configure environment**:
@@ -69,33 +67,35 @@ A comprehensive platform for managing, analyzing, and executing PowerShell scrip
 
 3. **Start the application stack**:
    \`\`\`bash
-   docker-compose up -d
+   docker compose --env-file .env up -d --build
    
    # Verify all services are running
-   docker-compose ps
+   docker compose ps
    \`\`\`
 
 4. **Access the application**:
-   - Frontend UI: [http://localhost:3000](http://localhost:3000)
-   - API Documentation: [http://localhost:4001/api-docs](http://localhost:4001/api-docs)
-   - Monitoring Dashboard: [http://localhost:8080](http://localhost:8080)
+   - Frontend UI: [https://localhost:3090](https://localhost:3090)
+   - Backend API: [https://localhost:4000](https://localhost:4000)
+   - API Documentation: [https://localhost:4000/api-docs](https://localhost:4000/api-docs)
+   - AI Service: [http://localhost:8000](http://localhost:8000)
+   - pgAdmin: [http://localhost:5050](http://localhost:5050)
+   - Redis Commander: [http://localhost:8082](http://localhost:8082)
 
-   Default administrator login:
-   - Username: \`admin@example.com\`
-   - Password: \`P@ssw0rd-ch4nge-me!\` (change immediately after first login)
+   Demo administrator login (if auth is enabled):
+   - Email: \`admin@example.com\`
+   - Password: \`admin123\`
 
 ### Option 2: Development Setup
 
 1. **Clone and initialize**:
    \`\`\`bash
-   git clone https://github.com/enterprise/psscript-manager.git
-   cd psscript-manager
-   ./setup.sh --dev
+   git clone https://github.com/Morlock52/psscript.git
+   cd psscript
    \`\`\`
 
 2. **Start the PostgreSQL and Redis services**:
    \`\`\`bash
-   docker-compose up -d postgres redis
+   docker compose up -d postgres redis
    \`\`\`
 
 3. **Start the frontend development server**:
@@ -103,7 +103,7 @@ A comprehensive platform for managing, analyzing, and executing PowerShell scrip
    cd src/frontend
    npm run dev
    
-   # The UI will be available at http://localhost:3000 with hot reloading
+   # The UI will be available at https://localhost:3090 with hot reloading
    \`\`\`
 
 4. **Start the backend API server**:
@@ -111,7 +111,7 @@ A comprehensive platform for managing, analyzing, and executing PowerShell scrip
    cd src/backend
    npm run dev
    
-   # The API will be available at http://localhost:4001
+   # The API will be available at https://localhost:4000
    \`\`\`
 
 5. **Start the AI analysis service**:
@@ -126,7 +126,7 @@ A comprehensive platform for managing, analyzing, and executing PowerShell scrip
 ## 📚 Project Structure
 
 \`\`\`
-psscript-manager/
+psscript/
 ├── docker-compose.yml           # Container orchestration config
 ├── .env.example                 # Environment variable template
 ├── setup.sh                     # Automated setup script
@@ -369,7 +369,7 @@ The application is configured using environment variables:
 | \`AI_MODEL\` | Default AI model | gpt-4o | No |
 | \`AI_SERVICE_URL\` | URL for the AI service | http://ai-service:8000 | No |
 | \`LOG_LEVEL\` | Logging level | info | No |
-| \`CORS_ORIGIN\` | CORS allowed origins | http://localhost:3000 | No |
+| \`CORS_ORIGIN\` | CORS allowed origins | https://localhost:3090 | No |
 
 *At least one of the AI provider API keys is required.
 

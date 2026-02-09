@@ -156,7 +156,7 @@ export function CommandPalette({ recentScripts = [] }: CommandPaletteProps) {
           </Command.Item>
 
           <Command.Item
-            onSelect={() => handleSelect(() => navigate('/settings'))}
+            onSelect={() => handleSelect(() => navigate('/settings/profile'))}
             className="command-item"
           >
             <FiSettings className="item-icon" />

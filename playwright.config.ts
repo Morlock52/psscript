@@ -30,7 +30,8 @@ export default defineConfig({
   // Shared settings for all the projects below
   use: {
     // Base URL for page.goto('/')
-    baseURL: 'https://localhost:3090',
+    // Use 127.0.0.1 to avoid intermittent localhost TLS/SNI issues with the dev cert.
+    baseURL: 'https://127.0.0.1:3090',
 
     // The local dev setup uses TLS for mTLS tunnel-to-origin protection.
     ignoreHTTPSErrors: true,

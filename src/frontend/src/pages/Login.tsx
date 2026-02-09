@@ -23,6 +23,7 @@ const Login: React.FC = () => {
   const { login, defaultLogin, error, isLoading } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
+  const disableAuth = import.meta.env.MODE !== 'test' && import.meta.env.VITE_DISABLE_AUTH === 'true';
 
   // Clear form error when inputs change
   useEffect(() => {
@@ -32,6 +33,18 @@ const Login: React.FC = () => {
 
   // Get the redirect path from location state or default to dashboard
   const from = (location.state as any)?.from?.pathname || '/';
+
+  // If auth is disabled (local dev), never show the login screen.
+  useEffect(() => {
+    if (disableAuth) {
+      navigate(from, { replace: true });
+    }
+  }, [disableAuth, from, navigate]);
+
+  if (disableAuth) {
+    // Avoid flashing the login UI for a frame before the redirect effect runs.
+    return null;
+  }
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -238,7 +251,7 @@ const Login: React.FC = () => {
               className="w-full bg-green-600 hover:bg-green-700 text-white font-medium py-2 px-4 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2 focus:ring-offset-[var(--color-bg-elevated)] disabled:opacity-50 disabled:cursor-not-allowed"
               disabled={isLoading}
             >
-              {isLoading ? 'Signing in...' : 'Sign in as Demo Admin'}
+              {isLoading ? 'Signing in...' : 'Use Default Login'}
             </button>
           </div>
         </div>

@@ -16,11 +16,9 @@ import {
   sequelize,
   logger,
   findSimilarScriptsByVector,
-  CACHE_TTL
+  CACHE_TTL,
+  getCache
 } from './shared';
-
-// Import cache directly for typing
-import { cache } from '../../index';
 
 /**
  * Search scripts by keyword and filters
@@ -31,6 +29,7 @@ export async function searchScripts(
   next: NextFunction
 ): Promise<void | Response> {
   try {
+    const cache = getCache();
     const query = req.query.q as string;
     const categoryId = req.query.categoryId as string | undefined;
     const qualityThreshold = req.query.qualityThreshold

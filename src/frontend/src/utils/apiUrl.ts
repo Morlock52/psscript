@@ -30,9 +30,45 @@ export function getApiUrl(): string {
     return _cachedApiUrl;
   }
 
+  const hasWindow = typeof window !== 'undefined';
+  const pageProtocol = hasWindow && window.location.protocol === 'https:' ? 'https' : 'http';
+
   // Check for environment variable first
   if (import.meta.env.VITE_API_URL) {
-    _cachedApiUrl = import.meta.env.VITE_API_URL;
+    const configuredRaw = String(import.meta.env.VITE_API_URL).trim();
+
+    // If the URL is configured, normalize it for common local-dev setups so the browser can reach it.
+    //
+    // 1) Mixed-content guard: https UI + http API => blocked by browser, often surfaces as Axios "Network Error".
+    // 2) Docker-service hostname guard: VITE_API_URL=http://backend:4000/api works *inside containers*,
+    //    but the browser cannot resolve "backend" and will fail with "Network Error".
+    //
+    // We only apply these rewrites when running in a browser context.
+    let normalized = configuredRaw;
+    if (hasWindow) {
+      try {
+        const url = new URL(configuredRaw);
+        const pageHost = window.location.hostname;
+        const pageIsLocalhost = pageHost === 'localhost' || pageHost === '127.0.0.1';
+
+        // Rewrite container-only hostname to browser-reachable localhost/127.0.0.1.
+        if (pageIsLocalhost && url.hostname === 'backend' && url.port === '4000') {
+          url.hostname = pageHost;
+          url.protocol = window.location.protocol;
+          normalized = url.toString();
+        }
+
+        // Upgrade localhost API to https when the page is https to avoid mixed-content blocks.
+        if (pageProtocol === 'https' && url.protocol === 'http:' && (url.hostname === 'localhost' || url.hostname === '127.0.0.1') && url.port === '4000') {
+          url.protocol = 'https:';
+          normalized = url.toString();
+        }
+      } catch {
+        // If it's not a valid absolute URL, leave it unchanged.
+      }
+    }
+
+    _cachedApiUrl = normalized.replace(/\/+$/, '');
     console.log('[apiUrl] Using VITE_API_URL:', _cachedApiUrl);
     return _cachedApiUrl;
   }
@@ -44,19 +80,20 @@ export function getApiUrl(): string {
   }
 
   // Runtime detection in browser
-  const protocol = window.location.protocol === 'https:' ? 'https' : 'http';
+  const protocol = pageProtocol;
   const hostname = window.location.hostname;
   const isLocalhost = hostname === 'localhost' || hostname === '127.0.0.1';
 
- // When accessed via tunnel/proxy (non-localhost), don't include port
+  // When accessed via tunnel/proxy (non-localhost), don't include port
   // The tunnel/proxy routes /api to the backend
-  // When local, include port 4000 for direct backend access
+  // When local, prefer same-origin `/api` so Vite can proxy to the backend even if the
+  // backend's TLS cert isn't trusted by the browser (ERR_CERT_AUTHORITY_INVALID).
   //
   // IMPORTANT: In local dev, frontend often runs on https://localhost:3090 with mTLS,
   // and backend runs on https://localhost:4000 (TLS enabled). We must keep protocol
   // aligned to avoid mixed-content/CORS/auth failures.
   _cachedApiUrl = isLocalhost
-    ? `${protocol}://${hostname}:4000/api`
+    ? `${window.location.origin}/api`
     : `${protocol}://${hostname}/api`;
 
   console.log('[apiUrl] Runtime API URL:', _cachedApiUrl, '(hostname:', hostname, ', isLocalhost:', isLocalhost, ')');

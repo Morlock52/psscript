@@ -28,10 +28,12 @@ import userRoutes from './routes/users';
 import categoryRoutes from './routes/categories';
 import tagRoutes from './routes/tags';
 import analyticsRoutes from './routes/analytics';
+import analyticsAiRoutes from './routes/analytics-ai';
 import healthRoutes from './routes/health';
 import chatRoutes from './routes/chat';
 // Voice routes are imported differently or disabled
 // import voiceRoutes from './routes/voiceRoutes';
+import agentsRoutes from './routes/agents';
 import aiAgentRoutes from './routes/ai-agent';
 import assistantsRoutes from './routes/assistants';
 import documentationRoutes from './routes/documentation';
@@ -40,6 +42,7 @@ import { authenticateJWT, requireAdmin } from './middleware/auth';
 import { setupSwagger } from './utils/swagger';
 import path from 'path';
 import { existsSync } from 'fs';
+import { initAIMetricsModel, AIMetric } from './middleware/aiAnalytics';
 
 // Load environment variables
 dotenv.config();
@@ -532,7 +535,15 @@ const cacheMiddleware = (req: express.Request, res: express.Response, next: expr
   const skipRoutes = [
     '/api/auth',
     '/api/health',
-    '/api/users'  // All user management endpoints - role-based access control
+    '/api/users',      // All user management endpoints - role-based access control
+    '/api/categories', // Categories are mutated frequently; caching here causes stale UI after CRUD.
+    // Scripts are interactive content and are mutated frequently (autosave, category changes, deletes).
+    // Caching has caused stale reads and test flakiness (e.g., category uncategorize-delete not reflected).
+    '/api/scripts',
+    '/api/agents',     // Agent runs/threads are dynamic; /runs/:id must never be cached.
+    '/api/analytics',  // Analytics is user/time dependent; caching can serve misleading data.
+    // Documentation crawl jobs are async + progress-driven; caching breaks progress polling.
+    '/api/documentation/crawl',
   ];
   
   if (skipRoutes.some(route => req.path.startsWith(route))) {
@@ -540,7 +551,8 @@ const cacheMiddleware = (req: express.Request, res: express.Response, next: expr
   }
 
   // Create a unique cache key based on the request path
-  const cacheKey = `api:cache:${req.path}`;
+  // Include query string to avoid collisions like /api/scripts?limit=5 vs ?limit=50.
+  const cacheKey = `api:cache:${req.originalUrl}`;
   
   // Define cache TTL based on route
   let cacheTTL = 300; // Default: 5 minutes
@@ -604,6 +616,7 @@ app.use('/api/users', userRoutes);
 app.use('/api/categories', categoryRoutes);
 app.use('/api/tags', tagRoutes);
 app.use('/api/analytics', analyticsRoutes);
+app.use('/api/analytics/ai', analyticsAiRoutes);
 app.use('/api/health', healthRoutes);
 app.use('/health', healthRoutes); // Standard health check endpoint
 app.use('/api/chat', chatRoutes);
@@ -611,6 +624,7 @@ app.use('/api/chat', chatRoutes);
 // app.use('/api/voice', voiceRoutes);
 app.use('/api/ai-agent', aiAgentRoutes);
 app.use('/api/assistants', assistantsRoutes);
+app.use('/api/agents', agentsRoutes);
 app.use('/api/documentation', documentationRoutes);
 
 // Create proxy routes for the frontend to use
@@ -681,6 +695,16 @@ const startServer = async () => {
         await db.connect();
         connected = true;
         logger.info('Database connection established successfully');
+
+        // Ensure AI analytics model is registered against the live Sequelize instance.
+        // Without this, /api/analytics/ai/* can throw "Sequelize not initialized".
+        try {
+          if (!AIMetric.sequelize) {
+            initAIMetricsModel(db.sequelize);
+          }
+        } catch (err) {
+          logger.error('Failed to initialize AIMetrics model:', err);
+        }
       } catch (error) {
         logger.error(`Database connection attempt ${attempts} failed:`, error);
         
@@ -905,8 +929,13 @@ const startServer = async () => {
       });
     }
     
-    // Set server timeouts
-    server.timeout = 60000; // 60 seconds
+    // Set server timeouts.
+    //
+    // NOTE: Some endpoints (documentation crawl/import, AI analysis) can legitimately take
+    // multiple minutes. A 60s socket timeout causes clients to see generic "Network Error"
+    // / empty replies. Keep a tighter timeout in production, but allow longer in dev.
+    const isProd = process.env.NODE_ENV === 'production';
+    server.timeout = isProd ? 2 * 60 * 1000 : 10 * 60 * 1000; // prod: 2m, dev: 10m
     
     // Handle server errors
     server.on('error', (error: any) => {

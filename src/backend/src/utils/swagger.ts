@@ -33,8 +33,14 @@ export const setupSwagger = (app: express.Application): void => {
         },
         servers: [
           {
-            url: 'http://localhost:4001',
-            description: 'Development server',
+            // Local dev runs the backend on https://localhost:4000 (mTLS origin protection).
+            // Keep http as a secondary option for environments without TLS.
+            url: 'https://localhost:4000',
+            description: 'Development server (TLS)',
+          },
+          {
+            url: 'http://localhost:4000',
+            description: 'Development server (HTTP)',
           },
           {
             url: 'https://api.psscript.example.com',

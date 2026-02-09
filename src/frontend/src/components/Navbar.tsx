@@ -48,7 +48,7 @@ const Navbar: React.FC<NavbarProps> = ({ onMenuClick }) => {
     if (path === '/chat') return 'AI Assistant';
     if (path === '/chat/history') return 'Chat History';
     if (path === '/documentation') return 'Documentation';
-    if (path === '/settings') return 'Settings';
+    if (path === '/settings' || path.startsWith('/settings/')) return 'Settings';
     if (path === '/login') return 'Login';
     if (path === '/register') return 'Register';
 
@@ -209,7 +209,7 @@ const Navbar: React.FC<NavbarProps> = ({ onMenuClick }) => {
 
                 <div className="py-2">
                   <Link
-                    to="/settings"
+                    to="/settings/profile"
                     className="flex items-center gap-3 px-4 py-2.5 text-sm text-[var(--color-text-secondary)] hover:text-[var(--color-text-primary)] hover:bg-[var(--color-bg-tertiary)] transition-colors"
                     onClick={() => setShowUserMenu(false)}
                   >

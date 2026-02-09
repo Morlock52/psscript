@@ -6,6 +6,17 @@ import { Request, Response, NextFunction } from 'express';
 import helmet from 'helmet';
 import rateLimit from 'express-rate-limit';
 
+const IS_PRODUCTION = process.env.NODE_ENV === 'production';
+// In local dev + e2e + stress testing, strict rate limits create false "Network Error" failures.
+// Keep production limits strict, but allow relaxing in development when explicitly enabled.
+const RELAX_RATE_LIMITS =
+  !IS_PRODUCTION && process.env.RELAX_RATE_LIMITS === 'true';
+const RATE_LIMIT_MULTIPLIER = RELAX_RATE_LIMITS
+  ? Math.max(1, Number(process.env.RATE_LIMIT_MULTIPLIER || '10'))
+  : 1;
+
+const scaledMax = (base: number): number => Math.round(base * RATE_LIMIT_MULTIPLIER);
+
 /**
  * Enhanced Helmet configuration with Content Security Policy
  * More permissive for file uploads and Monaco editor while still providing protection
@@ -107,7 +118,9 @@ export const securityHeaders = helmet({
  */
 export const generalApiLimiter = rateLimit({
   windowMs: 15 * 60 * 1000, // 15 minutes
-  max: 100, // 100 requests per window
+  // In relaxed dev mode we intentionally set this very high so stress tests
+  // exercise real bottlenecks (DB/CPU/memory) instead of the rate limiter.
+  max: RELAX_RATE_LIMITS ? scaledMax(100000) : scaledMax(100), // 100k (scaled) vs 100
   message: {
     error: 'Too many requests',
     message: 'Please try again later.',
@@ -130,7 +143,7 @@ export const generalApiLimiter = rateLimit({
  */
 export const authLimiter = rateLimit({
   windowMs: 15 * 60 * 1000, // 15 minutes
-  max: 10, // 10 attempts per window
+  max: scaledMax(10), // 10 attempts per window
   message: {
     error: 'Too many authentication attempts',
     message: 'Please try again in 15 minutes.',
@@ -154,7 +167,7 @@ export const authLimiter = rateLimit({
  */
 export const aiLimiter = rateLimit({
   windowMs: 60 * 1000, // 1 minute
-  max: 20, // 20 AI requests per minute
+  max: RELAX_RATE_LIMITS ? scaledMax(1000) : scaledMax(20), // 1000 (scaled) vs 20
   message: {
     error: 'AI rate limit exceeded',
     message: 'Please wait before making more AI requests.',
@@ -174,7 +187,7 @@ export const aiLimiter = rateLimit({
  */
 export const uploadLimiter = rateLimit({
   windowMs: 5 * 60 * 1000, // 5 minutes
-  max: 10, // 10 uploads per window
+  max: RELAX_RATE_LIMITS ? scaledMax(1000) : scaledMax(10), // 1000 (scaled) vs 10
   message: {
     error: 'Upload rate limit exceeded',
     message: 'Please wait before uploading more files.',
@@ -194,7 +207,7 @@ export const uploadLimiter = rateLimit({
  */
 export const scriptLimiter = rateLimit({
   windowMs: 5 * 60 * 1000, // 5 minutes
-  max: 30, // 30 requests per window
+  max: RELAX_RATE_LIMITS ? scaledMax(10000) : scaledMax(30), // 10k (scaled) vs 30
   message: {
     error: 'Script operation rate limit exceeded',
     message: 'Please wait before performing more script operations.',

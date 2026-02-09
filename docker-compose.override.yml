@@ -7,13 +7,32 @@ services:
     volumes:
       - ./src/backend:/app
       - /app/node_modules
+      - ./docs:/docs
+      - ./certs:/certs:ro
     environment:
       NODE_ENV: development
       OPENAI_API_KEY: ${OPENAI_API_KEY:-demo-key-for-development}
+      DOCKER_ENV: "true"
+      PORT: "4000"
+      DISABLE_AUTH: "true"
+      # Allow stress/E2E without constant 429s in dev.
+      RELAX_RATE_LIMITS: "true"
+      RATE_LIMIT_MULTIPLIER: "20"
+      DB_HOST: postgres
+      DB_PORT: "5432"
+      DB_NAME: psscript
+      DB_USER: postgres
+      DB_PASSWORD: postgres
+      REDIS_URL: redis://redis:6379
+      AI_SERVICE_URL: http://ai-service:8000
+      JWT_SECRET: development_jwt_secret_key_change_in_production
+      TLS_CERT: /certs/backend.crt
+      TLS_KEY: /certs/backend.key
     command: npm run dev
+    restart: unless-stopped
 
   # Frontend configuration for Cloudflare tunnel access
-  # Uses production build served via vite preview
+  # Use Vite dev server to avoid expensive build-on-start (can OOM and kill backend/db).
   frontend:
     build:
       context: ./src/frontend
@@ -21,17 +40,23 @@ services:
     volumes:
       - ./src/frontend:/app
       - /app/node_modules
+      - ./certs:/certs:ro
     environment:
-      NODE_ENV: production
+      NODE_ENV: development
       # Let frontend runtime-detect API URL (works for local + tunnel)
       VITE_API_URL:
       VITE_PORT: "3090"
       # Enable demo login button for local dev/e2e
+      # Matches seeded dev admin in src/db/seeds/01-initial-data.sql
       VITE_DEMO_EMAIL: admin@example.com
       VITE_DEMO_PASSWORD: admin123
+      VITE_DISABLE_AUTH: "true"
+      TLS_CERT: /certs/frontend.crt
+      TLS_KEY: /certs/frontend.key
     ports:
       - "3090:3090"
-    command: sh -c "npx vite build && npx vite preview --host 0.0.0.0 --port 3090"
+    command: npm run dev -- --host 0.0.0.0 --port 3090
+    restart: unless-stopped
 
   # Development configuration for AI service
   ai-service:
@@ -43,12 +68,15 @@ services:
     environment:
       FLASK_ENV: development
       FLASK_DEBUG: 1
-      MOCK_MODE: ${MOCK_MODE:-false}  # Set to true for mock mode, false for real AI
+      # Default to mock mode in dev to keep the app responsive and deterministic.
+      # Set MOCK_MODE=false in your shell/.env when you want real provider calls.
+      MOCK_MODE: ${MOCK_MODE:-true}
       OPENAI_API_KEY: ${OPENAI_API_KEY:-demo-key-for-development}
       ANTHROPIC_API_KEY: ${ANTHROPIC_API_KEY:-}
     command: uvicorn main:app --host=0.0.0.0 --port=8000 --reload
     ports:
       - "8000:8000"
+    restart: unless-stopped
 
   # Development tools
   pgadmin:

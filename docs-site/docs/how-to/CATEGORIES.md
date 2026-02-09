@@ -16,12 +16,12 @@ Admins can manage script categories directly in the app:
 
 Open:
 
-- `http://localhost:3090/settings/categories`
+- `https://localhost:3090/settings/categories`
 
 Local ports (Feb 2026):
 
-- Frontend: `http://localhost:3090`
-- Backend API: `http://localhost:4000`
+- Frontend: `https://localhost:3090`
+- Backend API: `https://localhost:4000`
 - AI service: `http://localhost:8000`
 
 ## Notes
@@ -30,4 +30,3 @@ Local ports (Feb 2026):
 - Changes propagate immediately after save/delete.
 
 ![Categories settings](/images/screenshots/variants/settings-categories-v1.png)
-

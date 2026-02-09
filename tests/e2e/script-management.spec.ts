@@ -1,50 +1,19 @@
 import { test, expect } from '@playwright/test';
 import * as path from 'path';
 import * as fs from 'fs';
+import { loginIfNeeded } from './utils/auth';
 
 /**
  * Script Management Tests
  * Tests script upload, analysis, and management features
  */
 
-// Helper function to perform login
-async function loginAsTestUser(page: any, testInfo?: any) {
-  await page.goto('/login');
-  await page.waitForLoadState('networkidle');
-
-  // Use the "Use Default Login" button for quick authentication
-  const defaultLoginButton = page.getByRole('button', { name: 'Use Default Login' });
-  const isMobile = Boolean(
-    testInfo?.project?.use?.isMobile || /mobile/i.test(testInfo?.project?.name || '')
-  );
-  const loginResponsePromise = page.waitForResponse(
-    response => response.url().includes('/auth/login') && response.request().method() === 'POST',
-    { timeout: 15000 }
-  );
-
-  if (isMobile) {
-    try {
-      await defaultLoginButton.tap();
-    } catch (err) {
-      await defaultLoginButton.click();
-    }
-  } else {
-    await defaultLoginButton.click();
-  }
-
-  const loginResponse = await loginResponsePromise;
-  expect(loginResponse.ok()).toBeTruthy();
-
-  // Wait for successful login (redirect to dashboard or scripts)
-  // Mobile browsers need more time for navigation
-  const timeout = isMobile ? 20000 : 10000;
-  await page.waitForURL(/dashboard|scripts|\/$/i, { timeout, waitUntil: 'domcontentloaded' });
-}
+// Login helper lives in tests/e2e/utils/auth.ts and supports auth-disabled mode.
 
 test.describe('Script Upload', () => {
   test.beforeEach(async ({ page }, testInfo) => {
     // Login first before accessing protected routes
-    await loginAsTestUser(page, testInfo);
+    await loginIfNeeded(page, testInfo);
 
     // Navigate to scripts page
     await page.goto('/scripts');
@@ -159,7 +128,7 @@ Get-Date
 test.describe('Script Analysis', () => {
   test('Should trigger AI analysis on uploaded script', async ({ page, request }, testInfo) => {
     // Login first before accessing protected routes
-    await loginAsTestUser(page, testInfo);
+    await loginIfNeeded(page, testInfo);
 
     // Upload a script first
     const testScriptContent = `
@@ -219,7 +188,7 @@ Invoke-WebRequest -Uri "http://example.com"
 test.describe('Script List View', () => {
   test('Should display list of uploaded scripts', async ({ page }, testInfo) => {
     // Login first before accessing protected routes
-    await loginAsTestUser(page, testInfo);
+    await loginIfNeeded(page, testInfo);
 
     // Navigate to scripts page
     await page.goto('/scripts');
@@ -269,7 +238,7 @@ test.describe('Script List View', () => {
 
   test('Should allow searching scripts', async ({ page }, testInfo) => {
     // Login first before accessing protected routes
-    await loginAsTestUser(page, testInfo);
+    await loginIfNeeded(page, testInfo);
 
     // Navigate and wait for API response (2026 best practice)
     await Promise.all([

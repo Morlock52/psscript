@@ -19,11 +19,11 @@ import {
   TIMEOUTS,
   CACHE_TTL,
   fetchScriptAnalysis,
+  getCache,
   crypto
 } from './shared';
 
 import type { AuthenticatedRequest } from './types';
-import { cache } from '../../index';
 
 /**
  * Get script analysis by script ID
@@ -108,6 +108,7 @@ export async function analyzeScript(
   _next: NextFunction
 ): Promise<void | Response> {
   try {
+    const cache = getCache();
     // eslint-disable-next-line camelcase -- API request body uses snake_case
     const { content, script_id } = req.body as { content?: string; script_id?: string };
 
@@ -437,7 +438,7 @@ export async function analyzeScriptWithAssistant(
       if (process.env.ENABLE_ANALYSIS_CACHE === 'true') {
         try {
           const contentHash = crypto.createHash('sha256').update(content).digest('hex');
-          cache.set(`analysis_${contentHash}`, result, CACHE_TTL.STANDARD);
+          getCache().set(`analysis_${contentHash}`, result, CACHE_TTL.STANDARD);
           logger.debug(`[${requestId}] Cached analysis results for future use`);
         } catch (cacheError) {
           logger.warn(`[${requestId}] Failed to cache analysis results: ${(cacheError as Error).message}`);

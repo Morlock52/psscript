@@ -246,10 +246,17 @@ else:
     # Development default: allow common local development ports
     # WARNING: In production, always set CORS_ORIGINS explicitly
     allowed_origins = [
-        "http://localhost:3000",
+        # Feb 2026 local dev defaults
+        "https://localhost:3090",
+        "https://localhost:4000",
+        "https://127.0.0.1:3090",
+        "https://127.0.0.1:4000",
+
+        # Keep HTTP variants for environments that don't use TLS locally.
+        "http://localhost:3090",
         "http://localhost:4000",
-        "http://127.0.0.1:3000",
-        "http://127.0.0.1:4000"
+        "http://127.0.0.1:3090",
+        "http://127.0.0.1:4000",
     ]
     logging.warning("CORS_ORIGINS not set, using development defaults. Set CORS_ORIGINS in production!")
 
@@ -281,7 +288,6 @@ if api_key:
     config.api_keys.openai = api_key
     # Security: Don't log API key, even partially
     print("OpenAI API key configured successfully")
-    MOCK_MODE = False
 else:
     print("No OpenAI API key configured - running in mock mode")
     MOCK_MODE = True
@@ -672,16 +678,30 @@ async def analyze_script(
                 fetch_ms_docs=fetch_ms_docs
             )
         
-        # If script_id is provided, store the analysis result in the database
+        # If a valid script_id is provided, store the analysis result in the database.
+        # script_id must reference an existing scripts.id row; otherwise the FK constraint will fail.
         if script_data.script_id:
             try:
+                conn = None
+                # Ensure script_id is an integer ID
+                try:
+                    script_id_int = int(script_data.script_id)
+                except Exception:
+                    # Non-integer IDs (e.g., "temp") should never be persisted to script_analysis.
+                    return analysis
+
                 conn = get_db_connection()
                 cur = conn.cursor()
+
+                # Ensure the script exists before inserting/updating analysis (avoids FK violations).
+                cur.execute("SELECT 1 FROM scripts WHERE id = %s", (script_id_int,))
+                if cur.fetchone() is None:
+                    return analysis
                 
                 # Check if analysis exists for this script
                 cur.execute(
                     "SELECT id FROM script_analysis WHERE script_id = %s",
-                    (script_data.script_id,)
+                    (script_id_int,)
                 )
                 existing = cur.fetchone()
                 
@@ -703,7 +723,7 @@ async def analyze_script(
                             analysis["risk_score"],
                             json.dumps(analysis["parameters"]),
                             json.dumps(analysis["optimization"]),
-                            script_data.script_id
+                            script_id_int
                         )
                     )
                 else:
@@ -717,7 +737,7 @@ async def analyze_script(
                         RETURNING id
                         """,
                         (
-                            script_data.script_id,
+                            script_id_int,
                             analysis["purpose"],
                             analysis["security_score"],
                             analysis["code_quality_score"],

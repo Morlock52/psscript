@@ -1,5 +1,5 @@
 import axios from 'axios';
-import { getAiServiceUrl } from '../utils/apiUrl';
+import { getApiUrl } from '../utils/apiUrl';
 
 // Simulate network delay
 const delay = (ms: number) => new Promise(resolve => setTimeout(resolve, ms));
@@ -74,27 +74,20 @@ export const chatService = {
   // Send a chat message to the AI
   sendMessage: async (messages: Message[], agent_type?: string, session_id?: string) => {
     try {
-      // First try the real API - AI service has the API key configured
+      // Use backend proxy (TLS origin) to avoid mixed-content issues (https UI + http AI service).
       try {
-        console.log("Attempting to use real AI service");
-        // AI service URL - backend has API key configured
-        const AI_SERVICE_URL = getAiServiceUrl();
-
-        console.log('api-simple.ts AI Service URL:', AI_SERVICE_URL);
-
-        const response = await axios.post(`${AI_SERVICE_URL}/chat`, {
-          messages: messages,
-          agent_type: agent_type || "assistant",
-          session_id: session_id
+        const apiUrl = getApiUrl();
+        const response = await axios.post(`${apiUrl}/chat`, {
+          messages,
+          agent_type: agent_type || 'assistant',
+          session_id,
         }, {
-          headers: {
-            'Content-Type': 'application/json'
-          },
-          timeout: 30000 // 30 second timeout for AI responses
+          headers: { 'Content-Type': 'application/json' },
+          timeout: 60000,
         });
         return response.data;
       } catch (error) {
-        console.warn("Real AI service failed, using mock:", error);
+        console.warn('Backend chat proxy failed, using mock:', error);
       }
       
       // If real API fails or no API key, use mock
@@ -134,12 +127,12 @@ export const chatService = {
     agent_type?: string,
     session_id?: string
   ): Promise<void> => {
-    const AI_SERVICE_URL = getAiServiceUrl();
+    const apiUrl = getApiUrl();
 
     try {
-      console.log("Starting SSE streaming from:", `${AI_SERVICE_URL}/chat/stream`);
+      console.log("Starting SSE streaming from:", `${apiUrl}/chat/stream`);
 
-      const response = await fetch(`${AI_SERVICE_URL}/chat/stream`, {
+      const response = await fetch(`${apiUrl}/chat/stream`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

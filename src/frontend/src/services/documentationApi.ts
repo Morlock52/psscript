@@ -39,6 +39,34 @@ export interface CrawlResult {
   data?: DocItem[];
 }
 
+export type CrawlJobStatus = 'queued' | 'running' | 'completed' | 'error' | 'canceled';
+
+export interface CrawlJobState {
+  id: string;
+  status: CrawlJobStatus;
+  createdAt: string;
+  startedAt?: string;
+  finishedAt?: string;
+  message: string;
+  error?: string;
+  config: {
+    url: string;
+    maxPages: number;
+    depth: number;
+  };
+  progress: {
+    pagesProcessed: number;
+    totalPages: number;
+    scriptsFound: number;
+    scriptsSaved: number;
+  };
+  result?: {
+    totalDocsSaved: number;
+    scriptsFound: number;
+    scriptsSaved: number;
+  };
+}
+
 export interface SearchParams {
   query?: string;
   sources?: string[];
@@ -249,7 +277,8 @@ const documentationApi = {
         maxPages: config.maxPages,
         depth: config.depth
       }, {
-        timeout: 120000 // 2 minute timeout for AI processing
+        // Crawls can take several minutes depending on maxPages/depth and upstream site speed.
+        timeout: 10 * 60 * 1000
       });
 
       if (response.data.success) {
@@ -274,6 +303,26 @@ const documentationApi = {
       };
     }
   }
+  ,
+
+  // Async AI crawl jobs (progress + cancel)
+  startCrawlWithAIJob: async (config: { url: string; maxPages: number; depth: number }): Promise<string> => {
+    const response = await axios.post(`${getApiUrl()}/documentation/crawl/ai/jobs`, config);
+    if (!response.data.success) throw new Error(response.data.error || 'Failed to start crawl job');
+    return response.data.data.jobId as string;
+  },
+
+  getCrawlWithAIJobStatus: async (jobId: string): Promise<CrawlJobState> => {
+    const response = await axios.get(`${getApiUrl()}/documentation/crawl/ai/jobs/${encodeURIComponent(jobId)}`);
+    if (!response.data.success) throw new Error(response.data.error || 'Failed to fetch crawl status');
+    return response.data.data as CrawlJobState;
+  },
+
+  cancelCrawlWithAIJob: async (jobId: string): Promise<CrawlJobState> => {
+    const response = await axios.post(`${getApiUrl()}/documentation/crawl/ai/jobs/${encodeURIComponent(jobId)}/cancel`);
+    if (!response.data.success) throw new Error(response.data.error || 'Failed to cancel crawl');
+    return response.data.data as CrawlJobState;
+  },
 };
 
 export default documentationApi;

@@ -67,7 +67,15 @@ router.get('/', async (req, res) => {
           "SELECT table_name FROM information_schema.tables WHERE table_schema = 'public' ORDER BY table_name",
           { type: QueryTypes.SELECT }
         );
-        tables = results.map((r: any) => r.table_name as string);
+        // Depending on Sequelize config/version, QueryTypes.SELECT can return rows as:
+        // - objects: { table_name: '...' }
+        // - arrays:  ['...']
+        // Normalize to string table names.
+        tables = (results as any[]).map((r: any) => {
+          if (Array.isArray(r)) return String(r[0] ?? '');
+          if (r && typeof r === 'object') return String((r.table_name ?? r.tableName ?? r[0]) ?? '');
+          return '';
+        }).filter((t) => Boolean(t));
         logger.info("Health check - fetched tables: " + tables.join(", "));
       } catch (error: any) {
         logger.error("Error fetching tables in health endpoint: " + error.message);

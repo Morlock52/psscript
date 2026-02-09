@@ -171,6 +171,86 @@ export class ChatController {
       }
     }
   }
+
+  /**
+   * Stream a message from the AI service as Server-Sent Events (SSE).
+   *
+   * This exists so the frontend can stream over the same TLS origin (backend),
+   * avoiding mixed-content issues when the UI is served over https locally.
+   */
+  public async streamMessage(req: Request, res: Response): Promise<void> {
+    const requestId = Math.random().toString(36).substring(2, 10);
+
+    // eslint-disable-next-line camelcase -- API request body uses snake_case
+    const { messages, system_prompt, api_key, agent_type, session_id } = req.body || {};
+
+    if (!messages || !Array.isArray(messages) || messages.length === 0) {
+      res.status(400).json({ error: 'Messages array is required and must not be empty' });
+      return;
+    }
+
+    const effectiveApiKey = api_key || process.env.OPENAI_API_KEY; // eslint-disable-line camelcase
+    if (!effectiveApiKey) {
+      res.status(400).json({
+        error: 'OpenAI API key is required. Please set your API key in Settings or ask the administrator to configure a server API key.',
+      });
+      return;
+    }
+
+    // Set SSE headers before contacting upstream.
+    res.status(200);
+    res.setHeader('Content-Type', 'text/event-stream; charset=utf-8');
+    res.setHeader('Cache-Control', 'no-cache, no-transform');
+    res.setHeader('Connection', 'keep-alive');
+    res.setHeader('X-Accel-Buffering', 'no');
+    (res as any).flushHeaders?.();
+
+    const abort = new AbortController();
+    req.on('close', () => abort.abort());
+
+    try {
+      logger.debug(`[${requestId}] Proxying SSE stream to ${this.aiServiceUrl}/chat/stream`);
+
+      // eslint-disable-next-line camelcase -- API endpoint expects snake_case
+      const upstream = await axios.post(
+        `${this.aiServiceUrl}/chat/stream`,
+        {
+          messages,
+          system_prompt, // eslint-disable-line camelcase
+          api_key: effectiveApiKey,
+          agent_type, // eslint-disable-line camelcase
+          session_id, // eslint-disable-line camelcase
+        },
+        {
+          headers: {
+            'Content-Type': 'application/json',
+            Accept: 'text/event-stream',
+            'X-Request-ID': requestId,
+          },
+          responseType: 'stream',
+          timeout: 0, // don't time out streaming
+          signal: abort.signal as any,
+        }
+      );
+
+      // Pipe upstream SSE directly to client.
+      upstream.data.on('error', (err: any) => {
+        logger.warn(`[${requestId}] Upstream SSE stream error:`, err);
+        try {
+          res.write(`data: ${JSON.stringify({ type: 'error', content: 'Streaming error from AI service' })}\n\n`);
+        } catch {}
+        res.end();
+      });
+
+      upstream.data.pipe(res);
+    } catch (error) {
+      logger.error(`[${requestId}] Error proxying SSE stream:`, error);
+      try {
+        res.write(`data: ${JSON.stringify({ type: 'error', content: 'AI streaming unavailable' })}\n\n`);
+      } catch {}
+      res.end();
+    }
+  }
   
   /**
    * Get chat history for the current user

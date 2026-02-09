@@ -64,6 +64,29 @@ router.post('/', chatController.sendMessage.bind(chatController));
 
 /**
  * @swagger
+ * /chat/stream:
+ *   post:
+ *     summary: Stream a message from the AI assistant (SSE)
+ *     tags: [Chat]
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - messages
+ *             properties:
+ *               messages:
+ *                 type: array
+ *     responses:
+ *       200:
+ *         description: SSE stream
+ */
+router.post('/stream', chatController.streamMessage.bind(chatController));
+
+/**
+ * @swagger
  * /chat/history:
  *   get:
  *     summary: Get chat history for the current user

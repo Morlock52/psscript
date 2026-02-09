@@ -286,6 +286,14 @@ router.post('/bulk', documentationController.bulkImport);
 router.post('/crawl/ai', documentationController.crawlWithAI);
 
 /**
+ * Async AI crawl jobs (progress + cancel)
+ */
+// Bind controller methods that rely on `this` (Express does not bind automatically).
+router.post('/crawl/ai/jobs', documentationController.startCrawlWithAIJob.bind(documentationController));
+router.get('/crawl/ai/jobs/:jobId', documentationController.getCrawlWithAIJobStatus.bind(documentationController));
+router.post('/crawl/ai/jobs/:jobId/cancel', documentationController.cancelCrawlWithAIJob.bind(documentationController));
+
+/**
  * @swagger
  * /api/documentation/{id}:
  *   delete:

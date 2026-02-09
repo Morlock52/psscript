@@ -21,8 +21,10 @@ ingress:
       http2Origin: true
   # Route all other requests to frontend (HTTPS with mTLS)
   - hostname: psscript.morloksmaze.com
-    service: https://frontend:3000
+    # Frontend Vite dev server runs on 3090 in this repo.
+    service: https://frontend:3090
     originRequest:
       originServerName: frontend
-      http2Origin: true
+      # Vite dev server speaks HTTP/1.1; forcing HTTP/2 can cause intermittent tunnel errors.
+      http2Origin: false
   - service: http_status:404

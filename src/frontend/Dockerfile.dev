@@ -21,7 +21,11 @@ EXPOSE 3090
 
 # Set environment variables
 ENV NODE_ENV=development
-ENV VITE_API_URL=http://backend:4000/api
+# IMPORTANT:
+# Do not set VITE_API_URL to a Docker service hostname (e.g. http://backend:4000/api).
+# The browser cannot resolve that hostname, which causes "Network Error" in the UI.
+# Leave it unset so the frontend can use runtime detection (src/frontend/src/utils/apiUrl.ts),
+# or set it to a browser-reachable URL like https://localhost:4000/api via compose/.env.
 
 # Use entrypoint to install dependencies on startup
 ENTRYPOINT ["docker-entrypoint.sh"]

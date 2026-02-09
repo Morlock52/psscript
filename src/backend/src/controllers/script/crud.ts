@@ -29,7 +29,8 @@ import {
   fetchScriptAnalysesBatch,
   isAuthorizedForScript,
   getScriptIncludes,
-  parsePaginationParams
+  parsePaginationParams,
+  getCache
 } from './shared';
 
 import type {
@@ -38,9 +39,6 @@ import type {
   ScriptCreateInput,
   AIAnalysisResponse
 } from './types';
-
-// Import cache directly for typing
-import { cache } from '../../index';
 
 /**
  * Get all scripts with pagination and filtering
@@ -51,6 +49,7 @@ export async function getScripts(
   next: NextFunction
 ): Promise<void | Response> {
   try {
+    const cache = getCache();
     const { page, limit, offset } = parsePaginationParams(req.query as Record<string, unknown>);
     const categoryId = req.query.categoryId as string | undefined;
     const userId = req.query.userId as string | undefined;
@@ -120,6 +119,7 @@ export async function getScript(
   next: NextFunction
 ): Promise<void | Response> {
   try {
+    const cache = getCache();
     const scriptId = req.params.id;
     const cacheKey = `script:${scriptId}`;
     const cachedData = cache.get(cacheKey);
