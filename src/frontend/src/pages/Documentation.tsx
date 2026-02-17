@@ -1,9 +1,15 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import { Link } from 'react-router-dom';
+import { motion, useReducedMotion } from 'framer-motion';
 import documentationApi, { DocItem, DocStats } from '../services/documentationApi';
 import SummaryCard from '../components/SummaryCard';
+import docsScreenshot from '../../../../docs/screenshots/documentation.png';
+import dashboardScreenshot from '../../../../docs/screenshots/dashboard.png';
+import uploadScreenshot from '../../../../docs/screenshots/upload.png';
+import settingsScreenshot from '../../../../docs/screenshots/settings.png';
 
 const Documentation: React.FC = () => {
+  const prefersReducedMotion = useReducedMotion();
   const [query, setQuery] = useState<string>('');
   const [isSearching, setIsSearching] = useState<boolean>(false);
   const [isLoading, setIsLoading] = useState<boolean>(true);
@@ -263,61 +269,249 @@ const Documentation: React.FC = () => {
     return results;
   };
 
+  const sourceBreakdown = useMemo(() => {
+    if (!stats?.sources) return [];
+    return Object.entries(stats.sources)
+      .map(([source, count]) => ({ source, count }))
+      .sort((a, b) => b.count - a.count)
+      .slice(0, 5);
+  }, [stats]);
+
+  const categoryBreakdown = useMemo(() => {
+    const counts: Record<string, number> = {};
+    docItems.forEach((item) => {
+      const category = item.category || 'General';
+      counts[category] = (counts[category] || 0) + 1;
+    });
+    return Object.entries(counts)
+      .map(([category, count]) => ({ category, count }))
+      .sort((a, b) => b.count - a.count)
+      .slice(0, 5);
+  }, [docItems]);
+
+  const crawlTrend = useMemo(() => {
+    const now = new Date();
+    const buckets: { key: string; label: string; count: number }[] = [];
+    for (let i = 5; i >= 0; i--) {
+      const date = new Date(now);
+      date.setDate(now.getDate() - i * 7);
+      const weekStart = new Date(date);
+      weekStart.setDate(date.getDate() - date.getDay());
+      const key = weekStart.toISOString().slice(0, 10);
+      buckets.push({
+        key,
+        label: weekStart.toLocaleDateString(undefined, { month: 'short', day: 'numeric' }),
+        count: 0,
+      });
+    }
+
+    const byWeek = new Map<string, number>();
+    docItems.forEach((item) => {
+      const date = new Date(item.crawledAt);
+      date.setDate(date.getDate() - date.getDay());
+      const key = date.toISOString().slice(0, 10);
+      byWeek.set(key, (byWeek.get(key) || 0) + 1);
+    });
+
+    return buckets.map((bucket) => ({
+      ...bucket,
+      count: byWeek.get(bucket.key) || 0,
+    }));
+  }, [docItems]);
+
+  const maxSourceCount = Math.max(1, ...sourceBreakdown.map((entry) => entry.count));
+  const maxCategoryCount = Math.max(1, ...categoryBreakdown.map((entry) => entry.count));
+  const maxTrendCount = Math.max(1, ...crawlTrend.map((entry) => entry.count));
+
+  const screenshotCards = [
+    {
+      src: docsScreenshot,
+      title: 'Documentation Index',
+      detail: 'Clean knowledge navigation with summaries and metadata',
+    },
+    {
+      src: dashboardScreenshot,
+      title: 'Operations Dashboard',
+      detail: 'Cross-view context between docs, analytics, and scripts',
+    },
+    {
+      src: uploadScreenshot,
+      title: 'Content Intake',
+      detail: 'Structured upload workflows for new script content',
+    },
+    {
+      src: settingsScreenshot,
+      title: 'Configuration Control',
+      detail: 'Provider and security settings with clear sectioning',
+    },
+  ];
+
+  const panelMotion = {
+    hidden: { opacity: 0, y: 14 },
+    show: {
+      opacity: 1,
+      y: 0,
+      transition: {
+        duration: prefersReducedMotion ? 0 : 0.28,
+      },
+    },
+  };
+
+  const sourceBarColors = ['bg-blue-500', 'bg-cyan-500', 'bg-emerald-500', 'bg-violet-500', 'bg-amber-500'];
+  const categoryBarColors = ['bg-indigo-500', 'bg-sky-500', 'bg-teal-500', 'bg-orange-500', 'bg-fuchsia-500'];
+
   return (
-    <div className="container mx-auto pb-8">
-      <div className="flex justify-between items-center mb-6">
-        <div>
-          <h1 className="text-2xl font-bold">PowerShell Documentation Explorer</h1>
-          {stats && stats.total > 0 && (
-            <p className="text-sm text-gray-400 mt-1">
-              {stats.total} documents indexed • {stats.tagsCount} tags
-              {stats.lastCrawled && ` • Last crawled: ${formatDate(stats.lastCrawled)}`}
+    <div className="container mx-auto pb-10 space-y-8 text-[var(--color-text-primary)]">
+      <motion.section
+        variants={panelMotion}
+        initial={prefersReducedMotion ? false : 'hidden'}
+        animate="show"
+        className="relative overflow-hidden rounded-3xl border border-[var(--color-border-default)] bg-[var(--color-bg-elevated)] p-6 md:p-8"
+      >
+        <div className="pointer-events-none absolute -left-24 -top-20 h-56 w-56 rounded-full bg-[var(--color-primary)]/15 blur-3xl" />
+        <div className="pointer-events-none absolute -bottom-20 -right-20 h-64 w-64 rounded-full bg-[var(--color-accent)]/15 blur-3xl" />
+
+        <div className="relative z-10 flex flex-col gap-6 lg:flex-row lg:items-center lg:justify-between">
+          <div className="max-w-3xl">
+            <div className="inline-flex rounded-full border border-[var(--color-border-default)] px-3 py-1 text-xs font-semibold uppercase tracking-[0.14em] text-[var(--color-text-tertiary)]">
+              Documentation Workspace
+            </div>
+            <h1 className="mt-4 text-3xl font-bold leading-tight md:text-4xl">
+              Documentation Explorer
+            </h1>
+            <p className="mt-3 text-base text-[var(--color-text-secondary)] md:text-lg">
+              Structured docs with visual context, analytics, and script-ready references. Designed for fast scanning with generous spacing and clear hierarchy.
             </p>
-          )}
-        </div>
-        <div className="flex space-x-4">
-          <Link
-            to="/dashboard"
-            className="inline-flex items-center px-3 py-1 bg-indigo-600 text-white text-sm font-medium rounded hover:bg-indigo-700 transition duration-150"
-          >
-            <svg
-              className="w-4 h-4 mr-1"
-              fill="none"
-              stroke="currentColor"
-              viewBox="0 0 24 24"
-              xmlns="http://www.w3.org/2000/svg"
+
+            <div className="mt-5 flex flex-wrap gap-2">
+              <span className="rounded-full bg-[var(--color-bg-tertiary)] px-3 py-1 text-xs font-medium text-[var(--color-text-secondary)]">
+                {(stats?.total || 0).toLocaleString()} indexed docs
+              </span>
+              <span className="rounded-full bg-[var(--color-bg-tertiary)] px-3 py-1 text-xs font-medium text-[var(--color-text-secondary)]">
+                {(stats?.tagsCount || tags.length).toLocaleString()} tags
+              </span>
+              <span className="rounded-full bg-[var(--color-bg-tertiary)] px-3 py-1 text-xs font-medium text-[var(--color-text-secondary)]">
+                {stats?.lastCrawled ? `Last crawl ${formatDate(stats.lastCrawled)}` : 'Crawl pending'}
+              </span>
+            </div>
+          </div>
+
+          <div className="flex flex-wrap gap-3">
+            <Link
+              to="/dashboard"
+              className="inline-flex items-center rounded-xl border border-[var(--color-border-default)] bg-[var(--color-bg-secondary)] px-4 py-2.5 text-sm font-medium text-[var(--color-text-primary)] hover:bg-[var(--color-bg-tertiary)]"
             >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth={2}
-                d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"
-              ></path>
-            </svg>
-            Dashboard
-          </Link>
-          <Link
-            to="/documentation/crawl"
-            className="inline-flex items-center px-3 py-1 bg-green-600 text-white text-sm font-medium rounded hover:bg-green-700 transition duration-150"
-          >
-            <svg
-              className="w-4 h-4 mr-1"
-              fill="none"
-              stroke="currentColor"
-              viewBox="0 0 24 24"
-              xmlns="http://www.w3.org/2000/svg"
+              Dashboard
+            </Link>
+            <Link
+              to="/documentation/crawl"
+              className="inline-flex items-center rounded-xl bg-gradient-to-r from-[var(--color-primary)] to-[var(--color-accent)] px-4 py-2.5 text-sm font-semibold text-white shadow-sm hover:shadow-md"
             >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth={2}
-                d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"
-              ></path>
-            </svg>
-            Crawl New Content
-          </Link>
+              Crawl New Content
+            </Link>
+          </div>
         </div>
-      </div>
+      </motion.section>
+
+      <motion.section
+        variants={panelMotion}
+        initial={prefersReducedMotion ? false : 'hidden'}
+        animate="show"
+        transition={prefersReducedMotion ? { duration: 0 } : { delay: 0.06 }}
+        className="grid grid-cols-1 gap-4 lg:grid-cols-3"
+      >
+        <div className="rounded-2xl border border-[var(--color-border-default)] bg-[var(--color-bg-elevated)] p-5">
+          <h2 className="text-sm font-semibold uppercase tracking-[0.12em] text-[var(--color-text-tertiary)]">
+            Source Coverage
+          </h2>
+          <div className="mt-4 space-y-3">
+            {sourceBreakdown.length > 0 ? sourceBreakdown.map((entry, index) => (
+              <div key={entry.source}>
+                <div className="mb-1 flex items-center justify-between text-xs text-[var(--color-text-secondary)]">
+                  <span>{entry.source}</span>
+                  <span>{entry.count}</span>
+                </div>
+                <div className="h-2 rounded-full bg-[var(--color-bg-tertiary)]">
+                  <div
+                    className={`h-2 rounded-full ${sourceBarColors[index % sourceBarColors.length]}`}
+                    style={{ width: `${Math.max(8, Math.round((entry.count / maxSourceCount) * 100))}%` }}
+                  />
+                </div>
+              </div>
+            )) : (
+              <p className="text-sm text-[var(--color-text-tertiary)]">No source stats yet.</p>
+            )}
+          </div>
+        </div>
+
+        <div className="rounded-2xl border border-[var(--color-border-default)] bg-[var(--color-bg-elevated)] p-5">
+          <h2 className="text-sm font-semibold uppercase tracking-[0.12em] text-[var(--color-text-tertiary)]">
+            Category Mix
+          </h2>
+          <div className="mt-4 space-y-3">
+            {categoryBreakdown.length > 0 ? categoryBreakdown.map((entry, index) => (
+              <div key={entry.category}>
+                <div className="mb-1 flex items-center justify-between text-xs text-[var(--color-text-secondary)]">
+                  <span>{entry.category}</span>
+                  <span>{entry.count}</span>
+                </div>
+                <div className="h-2 rounded-full bg-[var(--color-bg-tertiary)]">
+                  <div
+                    className={`h-2 rounded-full ${categoryBarColors[index % categoryBarColors.length]}`}
+                    style={{ width: `${Math.max(8, Math.round((entry.count / maxCategoryCount) * 100))}%` }}
+                  />
+                </div>
+              </div>
+            )) : (
+              <p className="text-sm text-[var(--color-text-tertiary)]">No category data yet.</p>
+            )}
+          </div>
+        </div>
+
+        <div className="rounded-2xl border border-[var(--color-border-default)] bg-[var(--color-bg-elevated)] p-5">
+          <h2 className="text-sm font-semibold uppercase tracking-[0.12em] text-[var(--color-text-tertiary)]">
+            Crawl Trend
+          </h2>
+          <div className="mt-5 flex h-32 items-end justify-between gap-2">
+            {crawlTrend.map((entry) => (
+              <div key={entry.key} className="flex flex-1 flex-col items-center gap-2">
+                <div className="flex h-24 w-full items-end">
+                  <div
+                    className="w-full rounded-t-md bg-gradient-to-t from-[var(--color-primary)] to-[var(--color-accent)]"
+                    style={{ height: `${Math.max(6, Math.round((entry.count / maxTrendCount) * 100))}%` }}
+                    title={`${entry.label}: ${entry.count}`}
+                  />
+                </div>
+                <span className="text-[10px] text-[var(--color-text-tertiary)]">{entry.label}</span>
+              </div>
+            ))}
+          </div>
+        </div>
+      </motion.section>
+
+      <motion.section
+        variants={panelMotion}
+        initial={prefersReducedMotion ? false : 'hidden'}
+        animate="show"
+        transition={prefersReducedMotion ? { duration: 0 } : { delay: 0.12 }}
+        className="space-y-4"
+      >
+        <div className="flex items-center justify-between">
+          <h2 className="text-lg font-semibold">Visual Documentation Gallery</h2>
+          <p className="text-sm text-[var(--color-text-tertiary)]">Screenshots from live product areas</p>
+        </div>
+        <div className="grid grid-cols-1 gap-5 md:grid-cols-2">
+          {screenshotCards.map((card) => (
+            <article key={card.title} className="overflow-hidden rounded-2xl border border-[var(--color-border-default)] bg-[var(--color-bg-elevated)]">
+              <img src={card.src} alt={card.title} className="h-48 w-full object-cover md:h-56" loading="lazy" />
+              <div className="p-4">
+                <h3 className="text-base font-semibold">{card.title}</h3>
+                <p className="mt-1 text-sm text-[var(--color-text-secondary)]">{card.detail}</p>
+              </div>
+            </article>
+          ))}
+        </div>
+      </motion.section>
 
       {/* Error Message */}
       {error && (
@@ -332,7 +526,7 @@ const Documentation: React.FC = () => {
       )}
 
       {/* Search and Filters */}
-      <div className="bg-gray-700 rounded-lg p-6 shadow mb-6">
+      <div className="rounded-2xl border border-[var(--color-border-default)] bg-[var(--color-bg-elevated)] p-6 shadow-[var(--shadow-sm)] mb-6">
         <form onSubmit={handleSearch}>
           <div className="flex mb-4">
             <input
@@ -340,12 +534,12 @@ const Documentation: React.FC = () => {
               value={query}
               onChange={(e) => setQuery(e.target.value)}
               placeholder="Search PowerShell documentation..."
-              className="flex-1 bg-gray-800 text-white rounded-l-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="flex-1 rounded-l-xl border border-[var(--color-border-default)] bg-[var(--color-bg-secondary)] px-4 py-2.5 text-[var(--color-text-primary)] focus:outline-none focus:ring-2 focus:ring-[var(--color-primary)]"
             />
             <button
               type="submit"
               disabled={isSearching || isLoading}
-              className="bg-blue-600 text-white px-4 py-2 rounded-r-lg hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed"
+              className="rounded-r-xl bg-gradient-to-r from-[var(--color-primary)] to-[var(--color-accent)] px-4 py-2.5 text-white hover:opacity-95 disabled:cursor-not-allowed disabled:opacity-50"
             >
               {isSearching ? (
                 <span className="flex items-center">
@@ -364,7 +558,7 @@ const Documentation: React.FC = () => {
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             {/* Sources Filter */}
             <div>
-              <h3 className="text-sm font-medium text-gray-300 mb-2">Sources</h3>
+              <h3 className="text-sm font-medium text-[var(--color-text-secondary)] mb-2">Sources</h3>
               <div className="space-y-2">
                 {sources.map(source => (
                   <label key={source} className="flex items-center">
@@ -372,9 +566,9 @@ const Documentation: React.FC = () => {
                       type="checkbox"
                       checked={selectedSources.includes(source)}
                       onChange={() => toggleSource(source)}
-                      className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-600 rounded"
+                      className="h-4 w-4 rounded border-[var(--color-border-strong)] text-[var(--color-primary)] focus:ring-[var(--color-primary)]"
                     />
-                    <span className="ml-2 text-sm text-gray-300">{source}</span>
+                    <span className="ml-2 text-sm text-[var(--color-text-secondary)]">{source}</span>
                   </label>
                 ))}
               </div>
@@ -382,7 +576,7 @@ const Documentation: React.FC = () => {
 
             {/* Tags Filter */}
             <div>
-              <h3 className="text-sm font-medium text-gray-300 mb-2">Tags</h3>
+              <h3 className="text-sm font-medium text-[var(--color-text-secondary)] mb-2">Tags</h3>
               <div className="flex flex-wrap gap-2 max-h-32 overflow-y-auto">
                 {tags.slice(0, 20).map(tag => (
                   <button
@@ -391,8 +585,8 @@ const Documentation: React.FC = () => {
                     onClick={() => toggleTag(tag)}
                     className={`text-xs px-2 py-1 rounded-full ${
                       selectedTags.includes(tag)
-                        ? 'bg-blue-600 text-white'
-                        : 'bg-gray-800 text-gray-300 hover:bg-gray-700'
+                        ? 'bg-[var(--color-primary)] text-white'
+                        : 'bg-[var(--color-bg-secondary)] text-[var(--color-text-secondary)] hover:bg-[var(--color-bg-tertiary)]'
                     }`}
                   >
                     {tag}
@@ -404,13 +598,13 @@ const Documentation: React.FC = () => {
             {/* Sort and View Options */}
             <div>
               <div className="flex justify-between mb-2">
-                <h3 className="text-sm font-medium text-gray-300">Sort By</h3>
+                <h3 className="text-sm font-medium text-[var(--color-text-secondary)]">Sort By</h3>
                 <div className="flex space-x-2">
                   <button
                     type="button"
                     onClick={() => setViewMode('card')}
                     className={`p-1 rounded-md ${
-                      viewMode === 'card' ? 'bg-gray-600 text-white' : 'text-gray-400 hover:bg-gray-800'
+                      viewMode === 'card' ? 'bg-[var(--color-primary)] text-white' : 'text-[var(--color-text-tertiary)] hover:bg-[var(--color-bg-secondary)]'
                     }`}
                     title="Grid view"
                     aria-label="Switch to grid view"
@@ -428,7 +622,7 @@ const Documentation: React.FC = () => {
                     type="button"
                     onClick={() => setViewMode('list')}
                     className={`p-1 rounded-md ${
-                      viewMode === 'list' ? 'bg-gray-600 text-white' : 'text-gray-400 hover:bg-gray-800'
+                      viewMode === 'list' ? 'bg-[var(--color-primary)] text-white' : 'text-[var(--color-text-tertiary)] hover:bg-[var(--color-bg-secondary)]'
                     }`}
                     title="List view"
                     aria-label="Switch to list view"
@@ -453,7 +647,7 @@ const Documentation: React.FC = () => {
                 id="sort-select"
                 value={sortBy}
                 onChange={(e) => setSortBy(e.target.value)}
-                className="block w-full bg-gray-800 text-white rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                className="block w-full rounded-md border border-[var(--color-border-default)] bg-[var(--color-bg-secondary)] px-3 py-2 text-[var(--color-text-primary)] focus:outline-none focus:ring-2 focus:ring-[var(--color-primary)]"
                 aria-label="Sort documents by"
               >
                 <option value="date">Most Recent</option>
@@ -473,8 +667,8 @@ const Documentation: React.FC = () => {
               onClick={() => setSelectedCategory('All')}
               className={`px-4 py-2 rounded-lg font-medium transition-colors ${
                 selectedCategory === 'All'
-                  ? 'bg-blue-600 text-white'
-                  : 'bg-gray-700 text-gray-300 hover:bg-gray-600'
+                  ? 'bg-[var(--color-primary)] text-white'
+                  : 'bg-[var(--color-bg-elevated)] border border-[var(--color-border-default)] text-[var(--color-text-secondary)] hover:bg-[var(--color-bg-tertiary)]'
               }`}
             >
               All ({docItems.length})
@@ -487,8 +681,8 @@ const Documentation: React.FC = () => {
                   onClick={() => setSelectedCategory(category)}
                   className={`px-4 py-2 rounded-lg font-medium transition-colors ${
                     selectedCategory === category
-                      ? 'bg-blue-600 text-white'
-                      : 'bg-gray-700 text-gray-300 hover:bg-gray-600'
+                      ? 'bg-[var(--color-primary)] text-white'
+                      : 'bg-[var(--color-bg-elevated)] border border-[var(--color-border-default)] text-[var(--color-text-secondary)] hover:bg-[var(--color-bg-tertiary)]'
                   }`}
                 >
                   {category} ({count})
@@ -501,14 +695,14 @@ const Documentation: React.FC = () => {
 
       {/* Results Count */}
       <div className="flex justify-between items-center mb-4">
-        <div className="text-sm text-gray-400">
+        <div className="text-sm text-[var(--color-text-tertiary)]">
           {isLoading
             ? 'Loading...'
             : filteredItems.length === 0
               ? 'No results found'
               : `Showing ${filteredItems.length} result${filteredItems.length === 1 ? '' : 's'}${selectedCategory !== 'All' ? ` in ${selectedCategory}` : ''}`}
         </div>
-        <div className="text-sm text-gray-400">
+        <div className="text-sm text-[var(--color-text-tertiary)]">
           Powered by database search
         </div>
       </div>
@@ -522,9 +716,9 @@ const Documentation: React.FC = () => {
 
       {/* No Results */}
       {!isSearching && !isLoading && filteredItems.length === 0 && (
-        <div className="bg-gray-700 rounded-lg p-8 text-center">
+        <div className="rounded-2xl border border-[var(--color-border-default)] bg-[var(--color-bg-elevated)] p-8 text-center">
           <svg
-            className="mx-auto h-12 w-12 text-gray-400"
+            className="mx-auto h-12 w-12 text-[var(--color-text-tertiary)]"
             fill="none"
             viewBox="0 0 24 24"
             stroke="currentColor"
@@ -536,15 +730,15 @@ const Documentation: React.FC = () => {
               d="M9.172 16.172a4 4 0 015.656 0M9 10h.01M15 10h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
             />
           </svg>
-          <h3 className="mt-4 text-xl font-medium text-white">No documentation found</h3>
-          <p className="mt-2 text-gray-400">
+          <h3 className="mt-4 text-xl font-medium text-[var(--color-text-primary)]">No documentation found</h3>
+          <p className="mt-2 text-[var(--color-text-secondary)]">
             {docItems.length === 0
               ? 'The documentation database is empty. Start by crawling some content.'
               : 'Try changing your search criteria or crawl new content.'}
           </p>
           <Link
             to="/documentation/crawl"
-            className="mt-4 inline-flex items-center px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700"
+            className="mt-4 inline-flex items-center rounded-xl bg-gradient-to-r from-[var(--color-primary)] to-[var(--color-accent)] px-4 py-2.5 text-white"
           >
             <svg
               className="w-4 h-4 mr-2"
@@ -584,48 +778,48 @@ const Documentation: React.FC = () => {
 
       {/* List View */}
       {!isSearching && !isLoading && filteredItems.length > 0 && viewMode === 'list' && (
-        <div className="bg-gray-700 rounded-lg shadow overflow-hidden">
+        <div className="overflow-hidden rounded-2xl border border-[var(--color-border-default)] bg-[var(--color-bg-elevated)] shadow-[var(--shadow-sm)]">
           <div className="overflow-x-auto">
-            <table className="min-w-full divide-y divide-gray-600">
-              <thead className="bg-gray-800">
+            <table className="min-w-full divide-y divide-[var(--color-border-default)]">
+              <thead className="bg-[var(--color-bg-secondary)]">
                 <tr>
-                  <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-400 uppercase tracking-wider">
+                  <th scope="col" className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-[var(--color-text-tertiary)]">
                     Title
                   </th>
-                  <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-400 uppercase tracking-wider">
+                  <th scope="col" className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-[var(--color-text-tertiary)]">
                     Source
                   </th>
-                  <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-400 uppercase tracking-wider">
+                  <th scope="col" className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-[var(--color-text-tertiary)]">
                     Tags
                   </th>
-                  <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-400 uppercase tracking-wider">
+                  <th scope="col" className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-[var(--color-text-tertiary)]">
                     Crawled
                   </th>
                   {sortBy === 'relevance' && (
-                    <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-400 uppercase tracking-wider">
+                    <th scope="col" className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-[var(--color-text-tertiary)]">
                       Similarity
                     </th>
                   )}
                 </tr>
               </thead>
-              <tbody className="divide-y divide-gray-600">
+              <tbody className="divide-y divide-[var(--color-border-default)]">
                 {filteredItems.map((item) => (
                   <tr
                     key={item.id}
                     onClick={() => setSelectedDoc(item)}
-                    className="hover:bg-gray-600 cursor-pointer"
+                    className="cursor-pointer hover:bg-[var(--color-bg-secondary)]"
                   >
                     <td className="px-6 py-4">
                       <div>
-                        <span className="text-white hover:text-blue-400 font-medium">
+                        <span className="font-medium text-[var(--color-text-primary)] hover:text-[var(--color-primary)]">
                           {item.title}
                         </span>
-                        <p className="mt-1 text-sm text-gray-400 line-clamp-1">
+                        <p className="mt-1 line-clamp-1 text-sm text-[var(--color-text-tertiary)]">
                           {item.summary || item.content || 'No description available'}
                         </p>
                       </div>
                     </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-300">
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-[var(--color-text-secondary)]">
                       {item.source}
                     </td>
                     <td className="px-6 py-4">
@@ -633,18 +827,18 @@ const Documentation: React.FC = () => {
                         {item.tags && item.tags.map(tag => (
                           <span
                             key={tag}
-                            className="inline-flex items-center px-2 py-0.5 text-xs font-medium rounded-full bg-gray-800 text-gray-300"
+                            className="inline-flex items-center rounded-full bg-[var(--color-bg-secondary)] px-2 py-0.5 text-xs font-medium text-[var(--color-text-secondary)]"
                           >
                             {tag}
                           </span>
                         ))}
                       </div>
                     </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-300">
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-[var(--color-text-secondary)]">
                       {formatDate(item.crawledAt)}
                     </td>
                     {sortBy === 'relevance' && (
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-300">
+                      <td className="px-6 py-4 whitespace-nowrap text-sm text-[var(--color-text-secondary)]">
                         {item.similarity ? item.similarity.toFixed(2) : 'N/A'}
                       </td>
                     )}

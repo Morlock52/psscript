@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
+import { AnimatePresence, motion, useReducedMotion } from 'framer-motion';
 import { useTheme } from '../contexts/ThemeContext';
 import { useAuth } from '../hooks/useAuth';
 
@@ -16,6 +17,7 @@ const Navbar: React.FC<NavbarProps> = ({ onMenuClick }) => {
 
   const [showUserMenu, setShowUserMenu] = useState(false);
   const [showNotifications, setShowNotifications] = useState(false);
+  const reducedMotion = useReducedMotion();
 
   // Toggle user menu
   const toggleUserMenu = () => {
@@ -65,6 +67,14 @@ const Navbar: React.FC<NavbarProps> = ({ onMenuClick }) => {
     active:scale-95
   `;
 
+  const iconButtonMotion = reducedMotion
+    ? {}
+    : ({
+      whileHover: { scale: 1.03, y: -1 },
+      whileTap: { scale: 0.97 },
+      transition: { type: 'spring', stiffness: 320, damping: 24 },
+    } as const);
+
   // Dropdown styles
   const dropdownStyles = `
     absolute right-0 mt-2 rounded-xl shadow-lg
@@ -74,22 +84,35 @@ const Navbar: React.FC<NavbarProps> = ({ onMenuClick }) => {
     animate-fade-in
   `;
 
+  const dropdownMotion = reducedMotion
+    ? {
+        initial: undefined,
+        animate: undefined,
+        exit: undefined,
+      }
+    : {
+        initial: { opacity: 0, y: 8, scale: 0.98 },
+        animate: { opacity: 1, y: 0, scale: 1 },
+        exit: { opacity: 0, y: 6, scale: 0.98 },
+      };
+
   return (
-    <header className="px-4 py-3 bg-[var(--color-bg-primary)] border-b border-[var(--color-border-default)] transition-colors duration-300">
+    <header className="px-4 py-3 bg-[var(--color-bg-primary)]/90 border-b border-[var(--color-border-default)] backdrop-blur-md transition-colors duration-300">
       <div className="flex items-center justify-between">
         {/* Left side - Menu button and title */}
         <div className="flex items-center gap-3">
-          <button
+          <motion.button
             onClick={onMenuClick}
             className={iconButtonStyles}
             aria-label="Open menu"
+            {...iconButtonMotion}
           >
             <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
             </svg>
-          </button>
+          </motion.button>
 
-          <h1 className="text-xl font-semibold bg-gradient-to-r from-[var(--color-primary)] to-[var(--color-accent)] bg-clip-text text-transparent">
+          <h1 className="heading-display text-xl font-semibold bg-gradient-to-r from-[var(--color-primary)] to-[var(--color-accent)] bg-clip-text text-transparent">
             {getPageTitle()}
           </h1>
         </div>
@@ -97,21 +120,23 @@ const Navbar: React.FC<NavbarProps> = ({ onMenuClick }) => {
         {/* Right side - Actions */}
         <div className="flex items-center gap-1">
           {/* Search button */}
-          <button
+          <motion.button
             className={iconButtonStyles}
             aria-label="Search"
             onClick={() => navigate('/scripts?search=true')}
+            {...iconButtonMotion}
           >
             <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
             </svg>
-          </button>
+          </motion.button>
 
           {/* Theme toggle with animated icon */}
-          <button
+          <motion.button
             className={`${iconButtonStyles} relative overflow-hidden`}
             onClick={toggleTheme}
             aria-label={`Switch to ${isDark ? 'light' : 'dark'} mode`}
+            {...iconButtonMotion}
           >
             <div className={`transform transition-transform duration-500 ${isDark ? 'rotate-0' : 'rotate-180'}`}>
               {isDark ? (
@@ -124,23 +149,32 @@ const Navbar: React.FC<NavbarProps> = ({ onMenuClick }) => {
                 </svg>
               )}
             </div>
-          </button>
+          </motion.button>
 
           {/* Notifications */}
           <div className="relative">
-            <button
+            <motion.button
               className={iconButtonStyles}
               onClick={toggleNotifications}
               aria-label="Notifications"
+              {...iconButtonMotion}
             >
               <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" />
               </svg>
-            </button>
+            </motion.button>
 
             {/* Notifications dropdown */}
-            {showNotifications && (
-              <div className={`${dropdownStyles} w-80`}>
+            <AnimatePresence>
+              {showNotifications && (
+              <motion.div
+                className={`${dropdownStyles} w-80`}
+                key="notifications-menu"
+                initial={dropdownMotion.initial}
+                animate={dropdownMotion.animate}
+                exit={dropdownMotion.exit}
+                transition={reducedMotion ? { duration: 0 } : { duration: 0.16 }}
+              >
                 <div className="p-4 border-b border-[var(--color-border-default)]">
                   <h3 className="text-sm font-semibold text-[var(--color-text-primary)]">Notifications</h3>
                 </div>
@@ -155,21 +189,30 @@ const Navbar: React.FC<NavbarProps> = ({ onMenuClick }) => {
                   </div>
                 </div>
                 <div className="p-2 border-t border-[var(--color-border-default)]">
-                  <button className="w-full p-2 text-xs text-center rounded-lg text-[var(--color-primary)] hover:bg-[var(--color-bg-tertiary)] transition-colors">
+                  <motion.button
+                    className="w-full p-2 text-xs text-center rounded-lg text-[var(--color-primary)] hover:bg-[var(--color-bg-tertiary)] transition-colors"
+                    onClick={() => {
+                      setShowNotifications(false);
+                      navigate('/settings/notifications');
+                    }}
+                    {...iconButtonMotion}
+                  >
                     View all notifications
-                  </button>
+                  </motion.button>
                 </div>
-              </div>
+              </motion.div>
             )}
+            </AnimatePresence>
           </div>
 
           {/* User menu */}
           <div className="relative ml-2">
             {isAuthenticated ? (
-              <button
+              <motion.button
                 className="flex items-center p-1 rounded-full hover:ring-2 hover:ring-[var(--color-primary)]/30 transition-all duration-200"
                 onClick={toggleUserMenu}
                 aria-label="User menu"
+                {...iconButtonMotion}
               >
                 {user && user.avatar_url ? (
                   <img
@@ -182,7 +225,7 @@ const Navbar: React.FC<NavbarProps> = ({ onMenuClick }) => {
                     {user?.username?.charAt(0).toUpperCase() || 'U'}
                   </div>
                 )}
-              </button>
+              </motion.button>
             ) : (
               <Link
                 to="/login"
@@ -193,8 +236,16 @@ const Navbar: React.FC<NavbarProps> = ({ onMenuClick }) => {
             )}
 
             {/* User dropdown */}
+            <AnimatePresence>
             {showUserMenu && isAuthenticated && (
-              <div className={`${dropdownStyles} w-56`}>
+              <motion.div
+                className={`${dropdownStyles} w-56`}
+                key="user-menu"
+                initial={dropdownMotion.initial}
+                animate={dropdownMotion.animate}
+                exit={dropdownMotion.exit}
+                transition={reducedMotion ? { duration: 0 } : { duration: 0.16 }}
+              >
                 <div className="p-4 border-b border-[var(--color-border-default)]">
                   <div className="flex items-center gap-3">
                     <div className="w-10 h-10 rounded-full bg-gradient-to-br from-[var(--color-primary)] to-[var(--color-accent)] text-white flex items-center justify-center font-medium">
@@ -243,8 +294,9 @@ const Navbar: React.FC<NavbarProps> = ({ onMenuClick }) => {
                     Sign Out
                   </button>
                 </div>
-              </div>
+              </motion.div>
             )}
+            </AnimatePresence>
           </div>
         </div>
       </div>

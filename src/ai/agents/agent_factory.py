@@ -74,13 +74,19 @@ class AgentFactory:
             available_agents.append("anthropic")
         logger.info(f"Available agent types: {', '.join(available_agents)}")
     
-    def get_agent(self, agent_type: str, api_key: Optional[str] = None) -> Any:
+    def get_agent(
+        self,
+        agent_type: str,
+        api_key: Optional[str] = None,
+        model: Optional[str] = None
+    ) -> Any:
         """
         Get or create an agent of the specified type.
         
         Args:
             agent_type: The type of agent to get ('langchain', 'autogpt', 'hybrid', 'langgraph', 'pyg', or 'assistant')
             api_key: OpenAI API key to use for the agent
+            model: Optional model name to use for the agent
             
         Returns:
             An instance of the requested agent
@@ -89,7 +95,9 @@ class AgentFactory:
         agent_type = agent_type.lower()
         
         # Create a unique key for this agent instance
-        agent_key = f"{agent_type}_{api_key}"
+        resolved_model = model or "gpt-4o"
+        normalized_model = resolved_model if resolved_model else "default"
+        agent_key = f"{agent_type}_{api_key}_{normalized_model}"
         
         # Return existing agent if available
         if agent_key in self.agents:
@@ -100,40 +108,40 @@ class AgentFactory:
         try:
             if agent_type == "langchain":
                 logger.info("Creating new LangChain agent")
-                agent = LangChainAgent(api_key=api_key)
+                agent = LangChainAgent(api_key=api_key, model=resolved_model)
             elif agent_type == "autogpt":
                 logger.info("Creating new AutoGPT agent")
-                agent = AutoGPTAgent(api_key=api_key)
+                agent = AutoGPTAgent(api_key=api_key, model=resolved_model)
             elif agent_type == "hybrid":
                 logger.info("Creating new Hybrid agent")
-                agent = HybridAgent(api_key=api_key)
+                agent = HybridAgent(api_key=api_key, model=resolved_model)
             elif agent_type == "langgraph":
                 if not LANGGRAPH_AVAILABLE:
                     logger.warning("LangGraph agent requested but not available, falling back to hybrid")
-                    return self.get_agent("hybrid", api_key)
+                    return self.get_agent("hybrid", api_key, resolved_model)
                 logger.info("Creating new LangGraph agent")
-                agent = LangGraphAgent(api_key=api_key)
+                agent = LangGraphAgent(api_key=api_key, model=resolved_model)
             elif agent_type == "pyg":
                 if not PYG_AVAILABLE:
                     logger.warning("Py-g agent requested but not available, falling back to hybrid")
-                    return self.get_agent("hybrid", api_key)
+                    return self.get_agent("hybrid", api_key, resolved_model)
                 logger.info("Creating new Py-g agent")
                 agent = PyGAgent(api_key=api_key)
             elif agent_type == "assistant":
                 if not ASSISTANT_AVAILABLE:
                     logger.warning("OpenAI Assistant agent requested but not available, falling back to hybrid")
-                    return self.get_agent("hybrid", api_key)
+                    return self.get_agent("hybrid", api_key, resolved_model)
                 logger.info("Creating new OpenAI Assistant agent")
-                agent = OpenAIAssistantAgent(api_key=api_key)
+                agent = OpenAIAssistantAgent(api_key=api_key, model=resolved_model)
             elif agent_type == "anthropic":
                 if not ANTHROPIC_AVAILABLE:
                     logger.warning("Anthropic agent requested but not available, falling back to hybrid")
-                    return self.get_agent("hybrid", api_key)
+                    return self.get_agent("hybrid", api_key, resolved_model)
                 logger.info("Creating new Anthropic Claude agent")
-                agent = AnthropicAgent(api_key=api_key)
+                agent = AnthropicAgent(api_key=api_key, model=resolved_model)
             else:
                 logger.warning(f"Unknown agent type: {agent_type}, using default")
-                return self.get_agent(self.default_agent_type, api_key)
+                return self.get_agent(self.default_agent_type, api_key, resolved_model)
             
             # Store the agent for reuse
             self.agents[agent_key] = agent
@@ -144,7 +152,7 @@ class AgentFactory:
             # Fall back to default agent type if different
             if agent_type != self.default_agent_type:
                 logger.info(f"Falling back to {self.default_agent_type} agent")
-                return self.get_agent(self.default_agent_type, api_key)
+                return self.get_agent(self.default_agent_type, api_key, resolved_model)
             raise
     
     def determine_agent_type(self, message: str) -> str:
@@ -287,7 +295,8 @@ class AgentFactory:
         messages: List[Dict[str, str]], 
         api_key: Optional[str] = None,
         agent_type: Optional[str] = None,
-        session_id: Optional[str] = None
+        session_id: Optional[str] = None,
+        model: Optional[str] = None
     ) -> str:
         """
         Process a message using the appropriate agent based on content.
@@ -316,7 +325,7 @@ class AgentFactory:
             agent_type = self.determine_agent_type(latest_user_message)
         
         # Get the appropriate agent
-        agent = self.get_agent(agent_type, api_key)
+        agent = self.get_agent(agent_type, api_key, model)
         
         # Process the message
         try:
@@ -333,7 +342,7 @@ class AgentFactory:
             # Fall back to default agent on error
             if agent_type != self.default_agent_type:
                 logger.info(f"Falling back to {self.default_agent_type} agent")
-                agent = self.get_agent(self.default_agent_type, api_key)
+                agent = self.get_agent(self.default_agent_type, api_key, model)
                 return await agent.process_message(messages)
             raise
 
@@ -342,7 +351,13 @@ class AgentFactory:
 agent_factory = AgentFactory()
 
 # Async process_message function for backward compatibility
-async def process_message(messages, api_key=None):
+async def process_message(
+    messages,
+    api_key=None,
+    agent_type=None,
+    session_id=None,
+    model=None
+):
     """
     Process a message using the agent factory.
     
@@ -353,4 +368,10 @@ async def process_message(messages, api_key=None):
     Returns:
         Agent response
     """
-    return await agent_factory.process_message(messages, api_key)
+    return await agent_factory.process_message(
+        messages=messages,
+        api_key=api_key,
+        agent_type=agent_type,
+        session_id=session_id,
+        model=model,
+    )

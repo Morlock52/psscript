@@ -72,7 +72,7 @@ export function CommandPalette({ recentScripts = [] }: CommandPaletteProps) {
         {/* Actions Group */}
         <Command.Group heading="Actions" className="command-group">
           <Command.Item
-            onSelect={() => handleSelect(() => navigate('/scripts/new'))}
+            onSelect={() => handleSelect(() => navigate('/scripts/upload'))}
             className="command-item"
           >
             <FiFile className="item-icon" />

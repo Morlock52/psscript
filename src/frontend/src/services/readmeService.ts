@@ -1,9 +1,21 @@
+import { getApiUrl, getAiServiceUrl } from '../utils/apiUrl';
+
 // This service handles fetching the README content
 // In a real application, this would fetch from an API endpoint
 // For this demo, we'll use a static, enhanced README
 
 export const getReadmeContent = async (): Promise<string> => {
   try {
+    const frontendUrl = typeof window === 'undefined'
+      ? 'https://localhost:3090'
+      : window.location.origin;
+    const backendUrl = typeof window === 'undefined'
+      ? 'https://localhost:4001'
+      : getApiUrl().replace(/\/api\/?$/, '');
+    const aiServiceUrl = typeof window === 'undefined'
+      ? 'http://localhost:8000'
+      : getAiServiceUrl();
+
     // In a real app, fetch from backend
     // const response = await fetch('/api/readme');
     // return await response.text();
@@ -74,10 +86,10 @@ A comprehensive platform for managing, analyzing, and executing PowerShell scrip
    \`\`\`
 
 4. **Access the application**:
-   - Frontend UI: [https://localhost:3090](https://localhost:3090)
-   - Backend API: [https://localhost:4000](https://localhost:4000)
-   - API Documentation: [https://localhost:4000/api-docs](https://localhost:4000/api-docs)
-   - AI Service: [http://localhost:8000](http://localhost:8000)
+   - Frontend UI: [${frontendUrl}](${frontendUrl})
+   - Backend API: [${backendUrl}](${backendUrl})
+   - API Documentation: [${backendUrl}/api-docs](${backendUrl}/api-docs)
+   - AI Service: [${aiServiceUrl}](${aiServiceUrl})
    - pgAdmin: [http://localhost:5050](http://localhost:5050)
    - Redis Commander: [http://localhost:8082](http://localhost:8082)
 
@@ -103,7 +115,7 @@ A comprehensive platform for managing, analyzing, and executing PowerShell scrip
    cd src/frontend
    npm run dev
    
-   # The UI will be available at https://localhost:3090 with hot reloading
+   # The UI will be available at ${frontendUrl} with hot reloading
    \`\`\`
 
 4. **Start the backend API server**:
@@ -111,7 +123,7 @@ A comprehensive platform for managing, analyzing, and executing PowerShell scrip
    cd src/backend
    npm run dev
    
-   # The API will be available at https://localhost:4000
+   # The API will be available at ${backendUrl}
    \`\`\`
 
 5. **Start the AI analysis service**:
@@ -120,7 +132,7 @@ A comprehensive platform for managing, analyzing, and executing PowerShell scrip
    source venv/bin/activate  # On Windows: .\\venv\\Scripts\\activate
    python -m uvicorn main:app --reload
    
-   # The AI service will be available at http://localhost:8000
+   # The AI service will be available at ${aiServiceUrl}
    \`\`\`
 
 ## 📚 Project Structure

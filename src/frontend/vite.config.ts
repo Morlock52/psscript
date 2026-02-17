@@ -17,6 +17,10 @@ if (tlsEnabled) {
   console.log('🔒 TLS enabled for frontend server (mTLS origin protection active)');
 }
 
+// Use local backend by default when running Vite directly on a workstation.
+// Docker users can override with BACKEND_PROXY_TARGET=https://backend:4000
+const backendProxyTarget = process.env.BACKEND_PROXY_TARGET || 'http://localhost:4001';
+
 // https://vitejs.dev/config/
 export default defineConfig({
   plugins: [react()], // SWC is 20-70x faster than Babel
@@ -32,14 +36,20 @@ export default defineConfig({
     // https://localhost:3090 and Vite can talk to https://backend:4000 with `secure:false`.
     proxy: {
       '/api': {
-        target: 'https://backend:4000',
+        target: backendProxyTarget,
         changeOrigin: true,
         secure: false,
       },
       '/docs': {
-        target: 'https://backend:4000',
+        target: backendProxyTarget,
         changeOrigin: true,
         secure: false,
+      },
+      '/ollama': {
+        target: process.env.OLLAMA_PROXY_TARGET || 'http://localhost:11434',
+        changeOrigin: true,
+        secure: false,
+        rewrite: (path) => path.replace(/^\/ollama/, ''),
       },
     },
     allowedHosts: [

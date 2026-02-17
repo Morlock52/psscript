@@ -1,5 +1,5 @@
 import axios from 'axios';
-import { getApiUrl } from '../utils/apiUrl';
+import { getApiUrl, getAiServiceUrl } from '../utils/apiUrl';
 
 // Simulate network delay
 const delay = (ms: number) => new Promise(resolve => setTimeout(resolve, ms));
@@ -69,6 +69,22 @@ const findBestResponse = (input: string): string => {
   return POWERSHELL_RESPONSES.default;
 };
 
+const getPreferredModelRouting = () => {
+  const provider = (localStorage.getItem('model_provider') || 'ollama').toLowerCase();
+  const ollamaModel = localStorage.getItem('ollama_model')
+    || import.meta.env.VITE_OLLAMA_MODEL
+    || 'llama3.1';
+  const ollamaBaseUrl = localStorage.getItem('ollama_base_url')
+    || import.meta.env.VITE_OLLAMA_BASE_URL
+    || 'http://localhost:11434';
+
+  return {
+    provider,
+    ollamaModel,
+    ollamaBaseUrl,
+  };
+};
+
 // Chat service
 export const chatService = {
   // Send a chat message to the AI
@@ -77,10 +93,15 @@ export const chatService = {
       // Use backend proxy (TLS origin) to avoid mixed-content issues (https UI + http AI service).
       try {
         const apiUrl = getApiUrl();
+        const { provider, ollamaModel, ollamaBaseUrl } = getPreferredModelRouting();
+        const resolvedAgentType = agent_type || (provider === 'ollama' ? 'ollama' : 'assistant');
+
         const response = await axios.post(`${apiUrl}/chat`, {
           messages,
-          agent_type: agent_type || 'assistant',
+          agent_type: resolvedAgentType,
           session_id,
+          model: resolvedAgentType === 'ollama' ? ollamaModel : undefined,
+          ollama_base_url: resolvedAgentType === 'ollama' ? ollamaBaseUrl : undefined,
         }, {
           headers: { 'Content-Type': 'application/json' },
           timeout: 60000,
@@ -128,6 +149,8 @@ export const chatService = {
     session_id?: string
   ): Promise<void> => {
     const apiUrl = getApiUrl();
+    const { provider, ollamaModel, ollamaBaseUrl } = getPreferredModelRouting();
+    const resolvedAgentType = agent_type || (provider === 'ollama' ? 'ollama' : 'assistant');
 
     try {
       console.log("Starting SSE streaming from:", `${apiUrl}/chat/stream`);
@@ -140,8 +163,10 @@ export const chatService = {
         },
         body: JSON.stringify({
           messages: messages,
-          agent_type: agent_type || "assistant",
-          session_id: session_id
+          agent_type: resolvedAgentType,
+          session_id: session_id,
+          model: resolvedAgentType === 'ollama' ? ollamaModel : undefined,
+          ollama_base_url: resolvedAgentType === 'ollama' ? ollamaBaseUrl : undefined,
         })
       });
 

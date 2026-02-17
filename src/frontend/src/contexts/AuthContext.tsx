@@ -155,8 +155,28 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     const demoEmail = import.meta.env.VITE_DEMO_EMAIL || 'admin@example.com';
     const demoPassword = import.meta.env.VITE_DEMO_PASSWORD || 'admin123';
 
-    // If these defaults don't work, the caller will show the error and the user can use regular login.
-    await login(demoEmail, demoPassword);
+    // Try API-backed demo login first.
+    try {
+      await login(demoEmail, demoPassword);
+    } catch (err) {
+      // Dev-only fallback: allow demo access when backend/db is unavailable.
+      // This keeps the "Use Default Login" button functional during local UI testing.
+      if (import.meta.env.PROD) {
+        throw err;
+      }
+
+      console.warn('[Auth] Demo API login failed, using local dev fallback:', err);
+      localStorage.setItem('auth_token', 'dev-demo-fallback');
+      localStorage.removeItem('refresh_token');
+      setUser({
+        id: 'dev-demo-admin',
+        username: 'Demo Admin',
+        email: demoEmail,
+        role: 'admin',
+        created_at: new Date().toISOString(),
+      });
+      clearError();
+    }
   };
 
   // Login function

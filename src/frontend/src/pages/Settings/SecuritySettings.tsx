@@ -1,6 +1,13 @@
 import React, { useState } from 'react';
 import SettingsLayout from './SettingsLayout';
 
+interface SessionInfo {
+  id: string;
+  name: string;
+  details: string;
+  isCurrent?: boolean;
+}
+
 const SecuritySettings: React.FC = () => {
   // Security state
   const [passwordData, setPasswordData] = useState({
@@ -13,6 +20,24 @@ const SecuritySettings: React.FC = () => {
   const [showMfaSetup, setShowMfaSetup] = useState(false);
   const [sessionTimeout, setSessionTimeout] = useState(30);
   const [loginNotifications, setLoginNotifications] = useState(true);
+  const [sessions, setSessions] = useState<SessionInfo[]>([
+    {
+      id: 'current-session',
+      name: 'Current Session',
+      details: 'Chrome on macOS • IP 192.168.1.1 • Last active just now',
+      isCurrent: true
+    },
+    {
+      id: 'session-mobile',
+      name: 'Mobile App',
+      details: 'iPhone • IP 192.168.1.2 • Last active 2 hours ago'
+    },
+    {
+      id: 'session-firefox',
+      name: 'Firefox Browser',
+      details: 'Firefox on Windows • IP 192.168.1.3 • Last active yesterday'
+    }
+  ]);
   const [isLoading, setIsLoading] = useState(false);
   const [successMessage, setSuccessMessage] = useState('');
   const [errorMessage, setErrorMessage] = useState('');
@@ -98,6 +123,14 @@ const SecuritySettings: React.FC = () => {
   const handleSessionTimeoutChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
     setSessionTimeout(parseInt(e.target.value));
     setSuccessMessage('Session timeout updated');
+    setTimeout(() => {
+      setSuccessMessage('');
+    }, 3000);
+  };
+
+  const handleRevokeSession = (sessionId: string) => {
+    setSessions(prev => prev.filter(session => session.id !== sessionId));
+    setSuccessMessage('Session revoked');
     setTimeout(() => {
       setSuccessMessage('');
     }, 3000);
@@ -321,41 +354,28 @@ const SecuritySettings: React.FC = () => {
         
         <div className="border border-gray-200 dark:border-gray-700 rounded-lg overflow-hidden">
           <div className="divide-y divide-gray-200 dark:divide-gray-700">
-            <div className="p-4 flex justify-between items-center">
-              <div>
-                <div className="font-medium">Current Session</div>
-                <div className="text-sm text-gray-500 dark:text-gray-400 mt-1">
-                  Chrome on macOS • IP 192.168.1.1 • Last active just now
+            {sessions.map(session => (
+              <div key={session.id} className="p-4 flex justify-between items-center">
+                <div>
+                  <div className="font-medium">{session.name}</div>
+                  <div className="text-sm text-gray-500 dark:text-gray-400 mt-1">
+                    {session.details}
+                  </div>
                 </div>
+                {session.isCurrent ? (
+                  <span className="px-2 py-1 bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200 text-xs rounded-full">
+                    Current
+                  </span>
+                ) : (
+                  <button
+                    onClick={() => handleRevokeSession(session.id)}
+                    className="text-red-600 hover:text-red-800 dark:text-red-400 dark:hover:text-red-300 text-sm font-medium"
+                  >
+                    Revoke
+                  </button>
+                )}
               </div>
-              <span className="px-2 py-1 bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200 text-xs rounded-full">
-                Current
-              </span>
-            </div>
-            
-            <div className="p-4 flex justify-between items-center">
-              <div>
-                <div className="font-medium">Mobile App</div>
-                <div className="text-sm text-gray-500 dark:text-gray-400 mt-1">
-                  iPhone • IP 192.168.1.2 • Last active 2 hours ago
-                </div>
-              </div>
-              <button className="text-red-600 hover:text-red-800 dark:text-red-400 dark:hover:text-red-300 text-sm font-medium">
-                Revoke
-              </button>
-            </div>
-            
-            <div className="p-4 flex justify-between items-center">
-              <div>
-                <div className="font-medium">Firefox Browser</div>
-                <div className="text-sm text-gray-500 dark:text-gray-400 mt-1">
-                  Firefox on Windows • IP 192.168.1.3 • Last active yesterday
-                </div>
-              </div>
-              <button className="text-red-600 hover:text-red-800 dark:text-red-400 dark:hover:text-red-300 text-sm font-medium">
-                Revoke
-              </button>
-            </div>
+            ))}
           </div>
         </div>
       </div>

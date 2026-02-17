@@ -1,4 +1,5 @@
 import express from 'express';
+import axios from 'axios';
 import logger from '../utils/logger';
 import { sequelize } from '../database/connection';
 import { QueryTypes } from 'sequelize';
@@ -43,6 +44,119 @@ const MAX_MEMORY_USAGE = process.env.MAX_CACHE_MEMORY ? parseInt(process.env.MAX
 const CLEANUP_INTERVAL = 5 * 60 * 1000; // 5 minutes
 
 const router = express.Router();
+
+const isAllowedOllamaHost = (hostname: string): boolean => {
+  const h = hostname.toLowerCase();
+  if (h === 'localhost' || h === '127.0.0.1' || h === '::1') {
+    return true;
+  }
+
+  // Restrict to private network ranges to reduce SSRF risk.
+  if (h.startsWith('10.') || h.startsWith('192.168.')) {
+    return true;
+  }
+
+  const match172 = h.match(/^172\.(\d{1,3})\./);
+  if (match172) {
+    const secondOctet = parseInt(match172[1], 10);
+    if (secondOctet >= 16 && secondOctet <= 31) {
+      return true;
+    }
+  }
+
+  return false;
+};
+
+type ProviderModelSource = {
+  id: string;
+  owned_by?: string;
+  created?: number;
+  displayName?: string;
+  rawName?: string;
+  description?: string;
+  inputTokenLimit?: number;
+  outputTokenLimit?: number;
+  supportedGenerationMethods?: string[];
+};
+
+const sanitizeApiKey = (value: unknown): string => {
+  if (typeof value !== 'string') return '';
+  const trimmed = value.trim();
+  return trimmed;
+};
+
+const normalizeOpenAiModels = (value: unknown): ProviderModelSource[] => {
+  if (!Array.isArray((value as any)?.data)) return [];
+
+  return (value as any).data
+    .filter((model: any) => typeof model?.id === 'string' && model.id.trim())
+    .map((model: any) => ({
+      id: model.id,
+      owned_by: typeof model?.owned_by === 'string' ? model.owned_by : undefined,
+      created: typeof model?.created === 'number' ? model.created : undefined,
+    }));
+};
+
+const normalizeGoogleModels = (value: unknown): ProviderModelSource[] => {
+  const models = Array.isArray((value as any)?.models) ? (value as any).models : [];
+  return models
+    .filter((model: any) => {
+      if (typeof model?.name !== 'string' || !model.name.trim()) return false;
+      const methods = Array.isArray(model?.supportedGenerationMethods) ? model.supportedGenerationMethods : [];
+      return methods.includes('generateContent');
+    })
+    .map((model: any) => {
+      const rawName = String(model.name || '');
+      const id = rawName.replace(/^models\//, '');
+      const methods = Array.isArray(model?.supportedGenerationMethods) ? model.supportedGenerationMethods : [];
+      return {
+        id,
+        rawName,
+        displayName: typeof model?.displayName === 'string' && model.displayName.trim() ? model.displayName.trim() : id,
+        description: typeof model?.description === 'string' ? model.description : undefined,
+        inputTokenLimit: typeof model?.inputTokenLimit === 'number' ? model.inputTokenLimit : undefined,
+        outputTokenLimit: typeof model?.outputTokenLimit === 'number' ? model.outputTokenLimit : undefined,
+        supportedGenerationMethods: methods,
+      };
+    });
+};
+
+const fetchGoogleModels = async (apiKey: string): Promise<ProviderModelSource[]> => {
+  let nextPageToken: string | undefined;
+  const collected: ProviderModelSource[] = [];
+
+  do {
+    const baseUrl = new URL('https://generativelanguage.googleapis.com/v1beta/models');
+    baseUrl.searchParams.set('key', apiKey);
+    baseUrl.searchParams.set('pageSize', '100');
+    if (nextPageToken) {
+      baseUrl.searchParams.set('pageToken', nextPageToken);
+    }
+
+    const response = await axios.get(baseUrl.toString(), {
+      validateStatus: () => true,
+      timeout: 10000,
+    });
+
+    if (response.status < 200 || response.status >= 300) {
+      const details = (response.data as any)?.error || response.statusText;
+      throw new Error(typeof details === 'string' ? details : `HTTP ${response.status}`);
+    }
+
+    const normalized = normalizeGoogleModels(response.data);
+    collected.push(...normalized);
+    nextPageToken = typeof response.data?.nextPageToken === 'string' ? response.data.nextPageToken : undefined;
+  } while (nextPageToken);
+
+  const seen = new Set<string>();
+  return collected
+    .filter((model) => {
+      if (seen.has(model.id)) return false;
+      seen.add(model.id);
+      return true;
+    })
+    .sort((a, b) => a.id.localeCompare(b.id));
+};
 
 // Enhanced basic health check
 router.get('/', async (req, res) => {
@@ -132,6 +246,117 @@ router.get('/', async (req, res) => {
       status: 'error',
       message: error.message,
       time: new Date().toISOString()
+    });
+  }
+});
+
+router.get('/provider-models/openai', async (req, res) => {
+  try {
+    const apiKey = sanitizeApiKey(req.headers['x-openai-api-key']) || sanitizeApiKey(req.query.apiKey);
+    if (!apiKey) {
+      return res.status(400).json({
+        status: 'error',
+        message: 'Missing OpenAI API key. Set x-openai-api-key header or apiKey query parameter.',
+      });
+    }
+
+    const response = await axios.get('https://api.openai.com/v1/models', {
+      validateStatus: () => true,
+      timeout: 10000,
+      headers: {
+        Authorization: `Bearer ${apiKey}`,
+      },
+    });
+
+    if (response.status < 200 || response.status >= 300) {
+      const details = (response.data as any)?.error?.message || response.statusText;
+      return res.status(response.status).json({
+        status: 'error',
+        message: typeof details === 'string' ? details : `HTTP ${response.status}`,
+      });
+    }
+
+    const models = normalizeOpenAiModels(response.data);
+    return res.status(200).json({
+      status: 'ok',
+      provider: 'openai',
+      models,
+    });
+  } catch (error: any) {
+    return res.status(502).json({
+      status: 'error',
+      message: `Unable to fetch OpenAI models: ${error?.message || 'Unknown error'}`,
+    });
+  }
+});
+
+router.get('/provider-models/google', async (req, res) => {
+  try {
+    const apiKey = sanitizeApiKey(req.headers['x-goog-api-key']) || sanitizeApiKey(req.headers['x-api-key']) || sanitizeApiKey(req.query.apiKey);
+    if (!apiKey) {
+      return res.status(400).json({
+        status: 'error',
+        message: 'Missing Google API key. Set x-goog-api-key/x-api-key header or apiKey query parameter.',
+      });
+    }
+
+    const models = await fetchGoogleModels(apiKey);
+    return res.status(200).json({
+      status: 'ok',
+      provider: 'google',
+      models,
+    });
+  } catch (error: any) {
+    return res.status(502).json({
+      status: 'error',
+      message: `Unable to fetch Google models: ${error?.message || 'Unknown error'}`,
+    });
+  }
+});
+
+// Server-side Ollama connectivity test (avoids browser CORS/localhost issues).
+router.get('/ollama', async (req, res) => {
+  try {
+    const requested = String(req.query.baseUrl || process.env.OLLAMA_BASE_URL || 'http://localhost:11434').trim();
+    const normalizedBase = requested.replace(/\/+$/, '');
+    const parsed = new URL(normalizedBase);
+
+    if (!['http:', 'https:'].includes(parsed.protocol)) {
+      return res.status(400).json({
+        status: 'error',
+        message: 'Invalid Ollama URL protocol. Use http or https.',
+      });
+    }
+
+    if (!isAllowedOllamaHost(parsed.hostname)) {
+      return res.status(400).json({
+        status: 'error',
+        message: 'Ollama host is not allowed. Use localhost or a private network address.',
+      });
+    }
+
+    const response = await axios.get(`${normalizedBase}/api/tags`, {
+      timeout: 6000,
+      validateStatus: () => true,
+    });
+
+    if (response.status < 200 || response.status >= 300) {
+      return res.status(502).json({
+        status: 'error',
+        message: `Ollama responded with HTTP ${response.status}`,
+      });
+    }
+
+    const models = Array.isArray(response.data?.models) ? response.data.models : [];
+    return res.status(200).json({
+      status: 'ok',
+      message: 'Ollama connection successful',
+      modelCount: models.length,
+    });
+  } catch (error: any) {
+    return res.status(502).json({
+      status: 'error',
+      message: `Unable to reach Ollama: ${error?.message || 'Unknown error'}`,
     });
   }
 });

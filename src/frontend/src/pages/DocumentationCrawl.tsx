@@ -34,6 +34,109 @@ interface CrawlStatus {
   error?: string;
 }
 
+interface CrawlCapabilityGroup {
+  title: string;
+  items: string[];
+  category: 'markdown' | 'extraction' | 'browser' | 'scraping' | 'deployment' | 'platform';
+}
+
+interface CrawlLimitation {
+  issue: string;
+  mitigation: string;
+}
+
+const crawl4AIFeatures: CrawlCapabilityGroup[] = [
+  {
+    title: 'Markdown Generation',
+    category: 'markdown',
+    items: [
+      'Clean Markdown output with accurate structure and headings.',
+      'Fit Markdown filtering to remove noise for AI-friendly text.',
+      'Built-in citation/reference conversion in generated Markdown.',
+      'Pluggable markdown strategies for custom output formats.',
+      'BM25 filtering for topical relevance and noise reduction.',
+    ],
+  },
+  {
+    title: 'Structured Extraction',
+    category: 'extraction',
+    items: [
+      'LLM-driven extraction with OpenAI/proxy/open-source models.',
+      'Chunking strategies: topic, regex, sentence-level.',
+      'Cosine similarity for semantic query-based chunk selection.',
+      'Fast CSS/XPath schema extraction for repetitive patterns.',
+      'Schema definition support for structured JSON output.',
+    ],
+  },
+  {
+    title: 'Browser Integration',
+    category: 'browser',
+    items: [
+      'Managed browser profiles for authenticated and repeatable sessions.',
+      'Remote DevTools Protocol control and custom script execution.',
+      'Multi-browser runtime support with adaptive viewport sizing.',
+      'Proxy and full header/cookie/user-agent customization.',
+      'Session persistence with profile-aware crawling workflows.',
+    ],
+  },
+  {
+    title: 'Scraping & Crawl Controls',
+    category: 'scraping',
+    items: [
+      'Media extraction (images/audio/video + srcset/picture support).',
+      'Dynamic content support with JS execution and wait steps.',
+      'Full-page scanning for infinite-scroll rendering.',
+      'Screenshot capture and raw-source/HTML page crawling options.',
+      'Caching, metadata extraction, hook callbacks, and iFrame handling.',
+    ],
+  },
+  {
+    title: 'Deployment & APIs',
+    category: 'deployment',
+    items: [
+      'FastAPI/Docker deployment with JWT-authenticated API access.',
+      'Queue-style long-running job support with task-based polling patterns.',
+      'Streaming and batch-oriented API use cases.',
+      'Scalable architecture with browser pool and monitoring hooks.',
+      'Cloud-ready container workflows for production rollout.',
+    ],
+  },
+  {
+    title: 'Operational Add-ons',
+    category: 'platform',
+    items: [
+      'Adaptive crawling and URL-discovery recovery workflows.',
+      'Prefetch mode for improved URL discovery speed.',
+      'Stealth-capable sessions for anti-bot heavy sites.',
+      'MCP endpoints for model-context tooling integrations.',
+      'WebSocket + dashboard visibility in modern deployments.',
+    ],
+  },
+];
+
+const crawl4AILimitations: CrawlLimitation[] = [
+  {
+    issue: 'Heavy pages and long deep crawls',
+    mitigation: 'Prefer async jobs, keep `maxPages` conservative, and monitor memory/CPU.',
+  },
+  {
+    issue: 'Bot defenses or gated content',
+    mitigation: 'Use browser mode, profile/login cookies, and proxy rotation where allowed.',
+  },
+  {
+    issue: 'Overbroad extraction rules',
+    mitigation: 'Narrow with CSS/regex/LLM strategies and run smaller page batches.',
+  },
+  {
+    issue: 'Security restrictions in managed deployments',
+    mitigation: 'Hooks default to safer defaults in recent Docker API releases (no untrusted code execution).',
+  },
+  {
+    issue: 'Local file crawling',
+    mitigation: 'Recent Docker security controls block insecure file:// handling by default.',
+  },
+];
+
 const DocumentationCrawl: React.FC = () => {
   const [config, setConfig] = useState<CrawlConfig>({
     url: 'https://learn.microsoft.com/en-us/powershell/',
@@ -450,6 +553,7 @@ const DocumentationCrawl: React.FC = () => {
                   <li>• <strong>Script Detection:</strong> Finds PowerShell scripts in code blocks</li>
                   <li>• <strong>Script Analysis:</strong> AI names and describes what each script does</li>
                   <li>• <strong>Auto Categorization:</strong> AI assigns categories like &quot;File System&quot;, &quot;Network&quot;, etc.</li>
+                  <li>• <strong>Markdown-first output:</strong> Keeps extraction AI-ready and noise-filtered.</li>
                 </ul>
               </div>
             )}
@@ -531,6 +635,63 @@ const DocumentationCrawl: React.FC = () => {
               </Link>
             </div>
           )}
+        </div>
+      </div>
+
+      <div className="mt-8 space-y-6">
+        <div>
+          <h2 className="text-xl font-bold text-white mb-2">crawl4ai Feature Matrix (as of 2026-02-17)</h2>
+          <p className="text-sm text-gray-400">
+            Reference cards for capabilities documented by the crawl4ai project and this project&apos;s API usage patterns.
+          </p>
+        </div>
+
+        <div className="grid grid-cols-1 xl:grid-cols-2 gap-4">
+          {crawl4AIFeatures.map((group) => (
+              <article
+                key={group.title}
+                className={`rounded-xl border border-gray-700 bg-gradient-to-br p-5 ${
+                  group.category === 'markdown'
+                    ? 'from-blue-900/20 to-blue-700/10'
+                  : group.category === 'extraction'
+                    ? 'from-purple-900/20 to-purple-700/10'
+                    : group.category === 'browser'
+                      ? 'from-emerald-900/20 to-emerald-700/10'
+                      : group.category === 'scraping'
+                        ? 'from-orange-900/20 to-orange-700/10'
+                    : group.category === 'deployment'
+                          ? 'from-cyan-900/20 to-cyan-700/10'
+                          : 'from-pink-900/20 to-pink-700/10'
+                }`}
+            >
+              <div className="flex items-center justify-between mb-3">
+                <h3 className="text-lg font-semibold text-white">{group.title}</h3>
+                <span className="text-xs font-medium text-gray-300 border border-gray-600 rounded-full px-2 py-1 uppercase tracking-wide">
+                  Crawl4AI
+                </span>
+              </div>
+              <ul className="text-sm text-gray-200 space-y-2">
+                {group.items.map((item) => (
+                  <li key={item} className="flex gap-2">
+                    <span className="text-green-300 mt-1.5 text-xs">▸</span>
+                    <span>{item}</span>
+                  </li>
+                ))}
+              </ul>
+            </article>
+          ))}
+        </div>
+
+        <div className="rounded-xl border border-amber-700/40 bg-amber-900/20 p-5">
+          <h3 className="text-lg font-semibold text-amber-200 mb-3">Operational Limits & Notes</h3>
+          <ul className="text-sm text-amber-100 space-y-2">
+            {crawl4AILimitations.map((note) => (
+              <li key={note.issue} className="space-y-0.5">
+                <p className="font-medium text-amber-200">{note.issue}</p>
+                <p className="text-amber-100/90">• {note.mitigation}</p>
+              </li>
+            ))}
+          </ul>
         </div>
       </div>
 

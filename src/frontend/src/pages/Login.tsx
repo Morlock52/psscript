@@ -175,9 +175,9 @@ const Login: React.FC = () => {
                 <label htmlFor="password" className="block text-sm font-medium text-[var(--color-text-secondary)]">
                   Password
                 </label>
-                <a href="#" className={`text-sm ${linkStyles}`}>
+                <Link to="/register" className={`text-sm ${linkStyles}`}>
                   Forgot password?
-                </a>
+                </Link>
               </div>
               <input
                 id="password"

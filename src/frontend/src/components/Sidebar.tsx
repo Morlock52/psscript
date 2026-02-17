@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { NavLink } from 'react-router-dom';
+import { motion, useReducedMotion } from 'framer-motion';
 import { useAuth } from '../hooks/useAuth';
 
 // Define submenu item interface
@@ -27,6 +28,14 @@ interface SidebarProps {
 const Sidebar: React.FC<SidebarProps> = ({ isOpen, onClose }) => {
   const { isAuthenticated } = useAuth();
   const [aiMenuOpen, setAiMenuOpen] = useState(false);
+  const reducedMotion = useReducedMotion();
+
+  const hoverMotion = reducedMotion
+    ? {}
+    : ({
+      whileHover: { x: 2 },
+      transition: { type: 'spring', stiffness: 340, damping: 26 },
+    } as const);
 
   // Define navigation items
   const navItems: NavItem[] = [
@@ -188,11 +197,14 @@ const Sidebar: React.FC<SidebarProps> = ({ isOpen, onClose }) => {
         <div className="flex items-center justify-between p-4 border-b border-[var(--color-border-default)]">
           <div className="flex items-center gap-3">
             {/* Logo icon */}
-            <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-[var(--color-primary)] to-[var(--color-accent)] flex items-center justify-center shadow-lg">
+            <motion.div
+              className="w-10 h-10 rounded-xl bg-gradient-to-br from-[var(--color-primary)] to-[var(--color-accent)] flex items-center justify-center shadow-lg animate-float"
+              {...(reducedMotion ? {} : { whileHover: { rotate: 8, scale: 1.02 } })}
+            >
               <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
               </svg>
-            </div>
+            </motion.div>
             <div>
               <div className="text-lg font-bold bg-gradient-to-r from-[var(--color-primary)] to-[var(--color-accent)] bg-clip-text text-transparent">
                 PSScript
@@ -202,15 +214,16 @@ const Sidebar: React.FC<SidebarProps> = ({ isOpen, onClose }) => {
               </div>
             </div>
           </div>
-          <button
+          <motion.button
             onClick={onClose}
             className="p-2 rounded-lg lg:hidden text-[var(--color-text-secondary)] hover:text-[var(--color-text-primary)] hover:bg-[var(--color-bg-tertiary)] transition-colors"
             aria-label="Close menu"
+            {...hoverMotion}
           >
             <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
             </svg>
-          </button>
+          </motion.button>
         </div>
 
         {/* Navigation */}
@@ -220,9 +233,10 @@ const Sidebar: React.FC<SidebarProps> = ({ isOpen, onClose }) => {
               item.hasSubmenu ? (
                 <div key={`submenu-${index}`}>
                   {/* Parent menu item with submenu */}
-                  <button
+                  <motion.button
                     onClick={toggleAiMenu}
                     className={`w-full ${navLinkBase} ${navLinkInactive} justify-between`}
+                    {...hoverMotion}
                   >
                     <div className="flex items-center gap-3">
                       <span className="text-[var(--color-text-tertiary)]">{item.icon}</span>
@@ -237,28 +251,41 @@ const Sidebar: React.FC<SidebarProps> = ({ isOpen, onClose }) => {
                     >
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
                     </svg>
-                  </button>
+                  </motion.button>
 
                   {/* Submenu items with animation */}
                   <div className={`overflow-hidden transition-all duration-200 ${aiMenuOpen ? 'max-h-40 opacity-100' : 'max-h-0 opacity-0'}`}>
                     <div className="pl-6 mt-1 space-y-1 border-l-2 border-[var(--color-border-default)] ml-6">
                       {item.submenuItems?.map((subItem, subIndex) => (
-                        <NavLink
+                    <motion.div
                           key={`subitem-${subIndex}`}
-                          to={subItem.path}
-                          className={({ isActive }) =>
-                            `${navLinkBase} ${isActive ? navLinkActive : navLinkInactive} gap-3`
-                          }
-                          onClick={onClose}
+                          initial={reducedMotion ? undefined : { opacity: 0, x: -4 }}
+                          animate={reducedMotion ? undefined : { opacity: 1, x: 0 }}
+                          transition={reducedMotion ? undefined : { duration: 0.2, delay: subIndex * 0.03 }}
                         >
-                          <span className="text-[var(--color-text-tertiary)]">{subItem.icon}</span>
-                          {subItem.name}
-                        </NavLink>
+                          <NavLink
+                            key={`subitem-${subIndex}`}
+                            to={subItem.path}
+                            className={({ isActive }) =>
+                              `${navLinkBase} ${isActive ? navLinkActive : navLinkInactive} gap-3`
+                            }
+                            onClick={onClose}
+                          >
+                            <span className="text-[var(--color-text-tertiary)]">{subItem.icon}</span>
+                            {subItem.name}
+                          </NavLink>
+                        </motion.div>
                       ))}
                     </div>
                   </div>
                 </div>
               ) : (
+                <motion.div
+                  key={item.path}
+                  initial={reducedMotion ? undefined : { opacity: 0, x: -4 }}
+                  animate={reducedMotion ? undefined : { opacity: 1, x: 0 }}
+                  transition={reducedMotion ? undefined : { duration: 0.2, delay: index * 0.03 }}
+                >
                 <NavLink
                   key={item.path}
                   to={item.path!}
@@ -270,6 +297,7 @@ const Sidebar: React.FC<SidebarProps> = ({ isOpen, onClose }) => {
                   <span className="text-[var(--color-text-tertiary)]">{item.icon}</span>
                   {item.name}
                 </NavLink>
+                </motion.div>
               )
             ))}
           </div>

@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { useTheme } from '../hooks/useTheme';
+import { getApiUrl } from '../utils/apiUrl';
 
 // Reusable style constants for theme-aware styling
 const cardStyles = "rounded-lg shadow-[var(--shadow-md)] p-6 bg-[var(--color-bg-elevated)] border border-[var(--color-border-default)]";
@@ -30,7 +31,10 @@ const Settings: React.FC = () => {
   });
 
   // Legacy Settings page (not routed by default). Keep URLs correct to avoid drift.
-  const docsBaseUrl = import.meta.env.VITE_DOCS_URL || `https://${window.location.hostname}:4000`;
+  const defaultDocsBaseUrl = getApiUrl().replace(/\/api\/?$/, '');
+  const docsBaseUrl = import.meta.env.VITE_DOCS_URL
+    ? String(import.meta.env.VITE_DOCS_URL).replace(/\/+$/, '')
+    : defaultDocsBaseUrl;
   const docsRepoPdfBaseUrl = 'https://github.com/Morlock52/psscript/blob/main/docs/exports/pdf';
   const docsRepoBaseUrl = 'https://github.com/Morlock52/psscript/blob/main/docs';
   const docsRepoDocxBaseUrl = 'https://github.com/Morlock52/psscript/blob/main/docs/exports/docx';

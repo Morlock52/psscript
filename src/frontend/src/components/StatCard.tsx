@@ -128,7 +128,7 @@ const StatCard: React.FC<StatCardProps> = ({
   };
 
   return (
-    <div className="p-6 rounded-xl shadow-[var(--shadow-md)] bg-[var(--color-bg-elevated)] border border-[var(--color-border-default)] transition-colors duration-300">
+    <div className="p-6 card-panel hover-lift transition-colors duration-300">
       <div className="flex items-center justify-between mb-4">
         <div className="flex items-center">
           <div className={`p-3 rounded-full ${getIconBgColor()}`}>

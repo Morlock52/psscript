@@ -21,8 +21,8 @@ let _cachedAiServiceUrl: string | null = null;
  *
  * Logic:
  * - If VITE_API_URL env var is set, use it
- * - If running on localhost, use localhost:4000
- * - If running on remote (tunnel/proxy), use same hostname without port (tunnel routes /api)
+ * - Otherwise, use same-origin `/api` so the frontend origin (including :3090 in dev)
+ *   can proxy requests to the backend.
  */
 export function getApiUrl(): string {
   // Return cached value if available
@@ -79,24 +79,13 @@ export function getApiUrl(): string {
     return 'http://localhost:4000/api';
   }
 
-  // Runtime detection in browser
-  const protocol = pageProtocol;
-  const hostname = window.location.hostname;
-  const isLocalhost = hostname === 'localhost' || hostname === '127.0.0.1';
+  // Runtime detection in browser:
+  // Always use same-origin `/api` so LAN/dev hosts (e.g. 192.168.x.x:3090) keep the
+  // frontend port and route through the frontend proxy instead of falling back to :80.
+  const origin = window.location.origin || `${window.location.protocol}//${window.location.host || window.location.hostname}`;
+  _cachedApiUrl = `${origin}/api`;
 
-  // When accessed via tunnel/proxy (non-localhost), don't include port
-  // The tunnel/proxy routes /api to the backend
-  // When local, prefer same-origin `/api` so Vite can proxy to the backend even if the
-  // backend's TLS cert isn't trusted by the browser (ERR_CERT_AUTHORITY_INVALID).
-  //
-  // IMPORTANT: In local dev, frontend often runs on https://localhost:3090 with mTLS,
-  // and backend runs on https://localhost:4000 (TLS enabled). We must keep protocol
-  // aligned to avoid mixed-content/CORS/auth failures.
-  _cachedApiUrl = isLocalhost
-    ? `${window.location.origin}/api`
-    : `${protocol}://${hostname}/api`;
-
-  console.log('[apiUrl] Runtime API URL:', _cachedApiUrl, '(hostname:', hostname, ', isLocalhost:', isLocalhost, ')');
+  console.log('[apiUrl] Runtime API URL:', _cachedApiUrl, '(origin:', origin, ')');
   return _cachedApiUrl;
 }
 

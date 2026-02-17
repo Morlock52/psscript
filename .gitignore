@@ -51,6 +51,12 @@ lerna-debug.log*
 # Testing
 coverage/
 .nyc_output/
+playwright-report/
+playwright-results.json
+test-results/
+
+# Finder/desktop duplicate files
+* (1).*
 
 # Docker
 docker-volumes/

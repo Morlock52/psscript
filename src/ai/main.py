@@ -477,6 +477,7 @@ class ChatRequest(BaseModel):
         description="System prompt to use (max 10KB)"
     )
     api_key: Optional[str] = Field(None, description="Optional API key to use")
+    model: Optional[str] = Field(None, description="Optional model name to use")
     agent_type: Optional[str] = Field(None,
                                      description="Type of agent to use")
     session_id: Optional[str] = Field(None,
@@ -2243,9 +2244,15 @@ I CAN HELP WITH:
 
         # Session ID for persistent conversations
         session_id = request.session_id or None
+        requested_model = (request.model or config.agent.default_model).strip()
 
         # Process the chat request
-        if agent_coordinator and not MOCK_MODE and not request.agent_type:
+        if (
+            agent_coordinator
+            and not MOCK_MODE
+            and not request.agent_type
+            and requested_model == config.agent.default_model
+        ):
             # Use the agent coordinator
             response = await agent_coordinator.process_chat(messages)
             processing_time = time.time() - start_time
@@ -2257,7 +2264,7 @@ I CAN HELP WITH:
                 from agents.openai_assistant_agent import OpenAIAssistantAgent
 
                 # Create an assistant agent
-                assistant_agent = OpenAIAssistantAgent(api_key=api_key)
+                assistant_agent = OpenAIAssistantAgent(api_key=api_key, model=requested_model)
 
                 # Process the message with the assistant agent
                 response = await assistant_agent.process_message(messages, session_id)
@@ -2273,7 +2280,13 @@ I CAN HELP WITH:
                 logger.warning(f"OpenAI Assistant agent not available: {e}")
                 logger.info("Falling back to legacy agent system")
                 # Fall back to legacy agent
-                response = await agent_factory.process_message(messages, api_key)
+                response = await agent_factory.process_message(
+                    messages,
+                    api_key,
+                    request.agent_type,
+                    session_id,
+                    requested_model
+                )
                 return {"response": response, "session_id": session_id}
         else:
             # Use the agent factory with specified or auto-detected agent type
@@ -2281,7 +2294,8 @@ I CAN HELP WITH:
                 messages,
                 api_key,
                 request.agent_type,
-                session_id
+                session_id,
+                requested_model
             )
             processing_time = time.time() - start_time
             logger.info(f"Chat request processed in {processing_time:.2f}s (agent factory)")
@@ -2322,6 +2336,7 @@ async def stream_chat_with_powershell_expert(
             from openai import AsyncOpenAI
 
             api_key = resolved_api_key
+            requested_model = (request.model or config.agent.default_model).strip()
             if not api_key:
                 yield f"data: {json.dumps({'type': 'error', 'content': 'No API key configured'})}\n\n"
                 return
@@ -2404,7 +2419,7 @@ TARGET: {script_requirements.get('target_system', 'windows') if script_requireme
             full_response = ""
 
             stream = await client.chat.completions.create(
-                model=config.agent.default_model,
+                model=requested_model,
                 messages=messages,
                 stream=True,
                 temperature=0.7,

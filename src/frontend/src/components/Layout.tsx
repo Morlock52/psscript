@@ -1,5 +1,7 @@
 import React, { useState, useEffect, ReactNode } from 'react';
 import { Outlet } from 'react-router-dom';
+import { useLocation } from 'react-router-dom';
+import { AnimatePresence, motion, useReducedMotion } from 'framer-motion';
 import Navbar from './Navbar';
 import Sidebar from './Sidebar';
 interface LayoutProps {
@@ -13,6 +15,23 @@ const Layout: React.FC<LayoutProps> = ({ children, hideSidebar = false }) => {
     const saved = localStorage.getItem('sidebar-open');
     return saved === 'false' ? false : true;
   });
+  const location = useLocation();
+  const prefersReducedMotion = useReducedMotion();
+
+  const pageVariants = {
+    initial: {
+      opacity: 0,
+      y: 10,
+    },
+    animate: {
+      opacity: 1,
+      y: 0,
+    },
+    exit: {
+      opacity: 0,
+      y: -8,
+    },
+  };
 
   // Save sidebar state to localStorage
   useEffect(() => {
@@ -24,7 +43,7 @@ const Layout: React.FC<LayoutProps> = ({ children, hideSidebar = false }) => {
   };
 
   return (
-    <div className="flex h-screen overflow-hidden bg-[var(--color-bg-primary)] text-[var(--color-text-primary)] transition-colors duration-300">
+    <div className="flex h-screen overflow-hidden app-shell bg-[var(--color-bg-primary)] text-[var(--color-text-primary)] transition-colors duration-300">
       {/* Sidebar with animation */}
       {!hideSidebar && (
         <Sidebar isOpen={sidebarOpen} onClose={() => setSidebarOpen(false)} />
@@ -34,9 +53,19 @@ const Layout: React.FC<LayoutProps> = ({ children, hideSidebar = false }) => {
       <div className="flex flex-col flex-1 overflow-hidden">
         <Navbar onMenuClick={toggleSidebar} />
 
-        <main className="flex-1 overflow-y-auto p-4 md:p-6 bg-[var(--color-bg-secondary)] transition-colors duration-300">
-          {children || <Outlet />}
-        </main>
+        <AnimatePresence mode="wait" initial={false}>
+          <motion.main
+            key={location.pathname}
+            initial={prefersReducedMotion ? false : 'initial'}
+            animate="animate"
+            exit="exit"
+            variants={pageVariants}
+            transition={prefersReducedMotion ? { duration: 0 } : { duration: 0.22, ease: 'easeOut' }}
+            className="relative flex-1 overflow-y-auto p-4 md:p-6 bg-[var(--color-bg-secondary)] transition-colors duration-300"
+          >
+            {children || <Outlet />}
+          </motion.main>
+        </AnimatePresence>
       </div>
     </div>
   );

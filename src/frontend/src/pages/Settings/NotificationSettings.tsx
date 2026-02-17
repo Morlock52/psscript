@@ -58,6 +58,8 @@ const NotificationSettings: React.FC = () => {
   // Email preferences
   const [emailFrequency, setEmailFrequency] = useState('real-time');
   const [digestDay, setDigestDay] = useState('monday');
+  const [unsubscribeMarketing, setUnsubscribeMarketing] = useState(false);
+  const [browserNotificationsEnabled, setBrowserNotificationsEnabled] = useState(false);
   
   // Success message
   const [successMessage, setSuccessMessage] = useState('');
@@ -121,6 +123,46 @@ const NotificationSettings: React.FC = () => {
         setSuccessMessage('');
       }, 3000);
     }, 800);
+  };
+
+  const handleToggleUnsubscribe = (checked: boolean) => {
+    setUnsubscribeMarketing(checked);
+    setSuccessMessage(
+      checked
+        ? 'Marketing emails unsubscribed'
+        : 'Marketing email subscription restored'
+    );
+    setTimeout(() => {
+      setSuccessMessage('');
+    }, 3000);
+  };
+
+  const handleEnableBrowserNotifications = async () => {
+    if (!('Notification' in window)) {
+      setSuccessMessage('Browser notifications are not supported in this browser');
+      setTimeout(() => {
+        setSuccessMessage('');
+      }, 3000);
+      return;
+    }
+
+    try {
+      const permission = await Notification.requestPermission();
+      if (permission === 'granted') {
+        setBrowserNotificationsEnabled(true);
+        setSuccessMessage('Browser notifications enabled');
+      } else if (permission === 'denied') {
+        setSuccessMessage('Browser notifications were blocked');
+      } else {
+        setSuccessMessage('Browser notification permission dismissed');
+      }
+    } catch {
+      setSuccessMessage('Unable to enable browser notifications');
+    }
+
+    setTimeout(() => {
+      setSuccessMessage('');
+    }, 3000);
   };
 
   return (
@@ -261,6 +303,8 @@ const NotificationSettings: React.FC = () => {
               <input
                 id="unsubscribe-all"
                 type="checkbox"
+                checked={unsubscribeMarketing}
+                onChange={(e) => handleToggleUnsubscribe(e.target.checked)}
                 className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
               />
             </div>
@@ -292,8 +336,11 @@ const NotificationSettings: React.FC = () => {
               </p>
             </div>
             
-            <button className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-md text-sm font-medium">
-              Enable in Browser
+            <button
+              className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-md text-sm font-medium"
+              onClick={() => void handleEnableBrowserNotifications()}
+            >
+              {browserNotificationsEnabled ? 'Enabled' : 'Enable in Browser'}
             </button>
           </div>
           

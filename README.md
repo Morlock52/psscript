@@ -1,210 +1,155 @@
 # PSScript
 
-A multi-service PowerShell script analysis platform with agentic AI capabilities.
+PowerShell Script Management with AI-assisted analysis, generation, and collaboration.
 
-## Overview
+**Status:** Active Development  
+**Last Updated:** 2026-02-17
 
-PSScript provides intelligent analysis, generation, and management of PowerShell scripts with features including:
+## Project state snapshot
 
-- **AI-Powered Analysis** - Security scanning, code quality assessment, and best practice validation
-- **Script Generation** - Agentic AI workflow for generating PowerShell scripts from natural language
-- **Semantic Search** - Vector embeddings for finding similar scripts and documentation
-- **Version Control** - Track script versions with changelogs
-- **Collaboration** - Comments, favorites, and user management
+- Frontend: React + Vite SPA with dynamic AI model discovery and streaming chat
+- Backend: Express/TypeScript API with multi-service routing, caching, and security middleware
+- AI service: FastAPI/Python LangGraph agent layer
+- Data: PostgreSQL + pgvector and Redis
+- Current focus: stable local model selection experience (OpenAI/Anthropic/Google/Ollama) and resilient API-linking via runtime URL detection
 
 ## Architecture
 
-```
-┌─────────────────────────────────────────────────────────────┐
-│                      PSScript Platform                       │
-├─────────────┬─────────────┬─────────────┬──────────────────┤
-│  Frontend   │   Backend   │ AI Service  │   Data Layer     │
-│  React/Vite │  Express/TS │ FastAPI/Py  │  PostgreSQL      │
-│  Port 3000  │  Port 4000  │  Port 8000  │  + Redis Cache   │
-└─────────────┴─────────────┴─────────────┴──────────────────┘
-```
+| Service | Technology | Local/Dev Port | Compose Ports |
+| --- | --- | --- | --- |
+| Frontend | React 18 + Vite | 3090 | 3090 (dev) / 3002 (prod) |
+| Backend | Express + TypeScript | 4001 (`PORT` default) / 4000 in compose | 4000 |
+| AI Service | FastAPI + Python | 8000 | 8000 |
+| PostgreSQL | PostgreSQL 15 + pgvector | 5432 | 5432 |
+| Redis | Redis 7+ | 6379 | 6379 |
 
-| Service | Technology | Port | Description |
-|---------|------------|------|-------------|
-| Frontend | React + Vite | 3000 | Web application UI |
-| Backend | Express + TypeScript | 4000 | API server with agentic tools |
-| AI Service | FastAPI + Python | 8000 | AI/ML operations |
-| PostgreSQL | PostgreSQL 15+ | 5432 | Primary database with pgvector |
-| Redis | Redis 7+ | 6379 | Caching layer |
+## What is implemented now
 
-## Quick Start
+- Script management with upload, history, versioning, comments, and favorites
+- AI features:
+  - Script analysis and security review
+  - AI Assistant chat
+  - LangGraph-assisted workflows and streaming responses
+- AI model provider stack (settings + assistant path):
+  - OpenAI and Anthropic API keys
+  - Google Gemini key with generateContent-capable filtering
+  - Ollama local base URL/model with scan + availability checks
+  - In the AI Assistant selector, chat-capable models are grouped first; analysis-only models are shown with usage caveats
+- Documentation page and app UI have recent frontend polish updates (animations, spacing, charts, image sections)
+- Runtime link reliability hardening:
+  - API URLs are runtime-resolved in-browser
+  - Same-origin `/api` fallback is used to keep LAN hosts working (`192.168.x.x`, `localhost`, etc.)
+  - Ollama and provider model scan flows have multi-path fallback logic
+
+## Quick start
 
 ### Prerequisites
 
 - Node.js 18+
 - Python 3.10+
-- Docker & Docker Compose
-- PostgreSQL 15+ with pgvector extension
+- Docker + Docker Compose
+- PostgreSQL 15+
 - Redis 7+
 
-### Development Setup
+### Install and run everything (recommended)
 
 ```bash
-# Clone the repository
 git clone <repository-url>
 cd psscript
+npm run install:all
+npm run dev
+```
 
-# Start all services with Docker
-docker-compose up
+Open: `http://localhost:3090`
 
-# Or start services individually:
+### Run services individually
 
+```bash
 # Backend
-cd src/backend && npm install && npm run dev
+cd src/backend
+npm install
+npm run dev
 
 # Frontend
-cd src/frontend && npm install && npm run dev
+cd src/frontend
+npm install
+npm run dev
 
-# AI Service
-cd src/ai && python main.py
+# AI service
+cd src/ai
+python -m pip install -r requirements.txt
+python -m uvicorn main:app --reload
 ```
 
-### Production Deployment
+### Run with containers
 
 ```bash
-# Build and start production containers
+# Development stack (frontend/backend/api/ollama/local tools)
+docker-compose up -d
+
+# Production stack
 docker-compose -f docker-compose.prod.yml up -d
-
-# For Cloudflare Tunnel access
-./scripts/start-frontend-prod.sh
 ```
 
-## Project Structure
+## API map (active backend routes)
 
-```
+- `GET /health` and `GET /api/health`
+  - Also exposes:
+  - `GET /api/health/provider-models/openai`
+  - `GET /api/health/provider-models/google`
+  - `GET /api/health/ollama`
+- `POST /api/chat` – chat stream/assist APIs
+- `POST /api/ai-agent/*` – assistant and analysis endpoints
+- `GET /api/assistants/*` – OpenAI Assistants-style tool endpoints
+- `GET /api/scripts`, `POST /api/scripts`, `POST /api/scripts/:id/analyze`, etc.
+- `GET /api/auth/*`, `GET /api/analytics/*`, `GET /api/documentation/*`, and standard CRUD routes for users/categories/tags
+
+## Project layout
+
+```text
 psscript/
 ├── src/
-│   ├── backend/           # Express/TypeScript API
-│   │   ├── src/
-│   │   │   ├── controllers/    # API route handlers
-│   │   │   ├── models/         # Sequelize ORM models
-│   │   │   ├── services/       # Business logic
-│   │   │   │   └── agentic/    # AI workflow engine
-│   │   │   └── database/       # DB connection
-│   │   └── tests/
-│   ├── frontend/          # React/Vite application
-│   │   └── src/
-│   │       ├── components/     # React components
-│   │       ├── pages/          # Route pages
-│   │       └── services/       # API clients
-│   └── ai/                # Python AI service
-│       ├── main.py            # FastAPI server
-│       └── voice_endpoints.py # Voice API
-├── docs/                  # Documentation
-├── scripts/               # Utility scripts
-└── docker/                # Docker configurations
+│   ├── frontend/        # React UI
+│   ├── backend/         # Express API
+│   └── ai/              # FastAPI/LangGraph service
+├── src/db/             # DB setup + seeds
+├── docker/             # Docker helper configs
+├── docs/               # Reference and architecture docs
+└── scripts/            # Utility scripts
 ```
 
-## Key Features
-
-### Agentic AI System
-
-The backend includes a sophisticated agentic workflow system:
-
-- **RunEngine** (`src/backend/src/services/agentic/RunEngine.ts`) - Orchestrates multi-step AI workflows
-- **ScriptGenerator** - Generates PowerShell scripts from requirements
-- **SecurityAnalyzer** - Performs security analysis and vulnerability detection
-- **Modular Tools** - Extensible tool system for AI operations
-
-### Database Features
-
-- **File Hash Deduplication** - Prevents duplicate script storage
-- **Vector Embeddings** - 1536-dimension vectors for semantic search (pgvector)
-- **Version History** - Complete script version tracking
-- **Real-time Updates** - WebSocket connections for live updates
-
-### Security
-
-- **JWT Authentication** - Secure token-based auth
-- **Cloudflare Access** - Optional SSO integration
-- **Security Analysis** - Built-in script security scanning
-- **Input Validation** - Comprehensive request validation
-
-## Documentation
-
-| Document | Description |
-|----------|-------------|
-| [CLAUDE.md](./CLAUDE.md) | Development guide for Claude Code |
-| [docs/DATABASE_REVIEW_2026.md](./docs/DATABASE_REVIEW_2026.md) | Database architecture and optimization |
-| [docs/DOCKER-SETUP.md](./docs/DOCKER-SETUP.md) | Docker deployment guide |
-
-## Commands Reference
-
-### Development
+## Common checks
 
 ```bash
-# Start all services
-docker-compose up
+# Full frontend build
+npm run -C src/frontend build
 
-# Run tests
-cd src/backend && npm test
+# Backend build + tests
+cd src/backend && npm run build && npm test
 
-# Lint code
-npm run lint          # All
-npm run lint:backend  # Backend only
-npm run lint:frontend # Frontend only
+# Frontend tests
+cd src/frontend && npm run test
 
-# Type checking
-cd src/backend && npm run typecheck
+# AI syntax check
+python -m compileall src/ai/main.py src/ai/agents/agent_factory.py
 ```
 
-### Port Management
+## Helpful notes
 
-```bash
-# Check port usage
-./scripts/ensure-ports.sh status
+- `VITE_API_URL` is optional. If not set, frontend uses runtime origin + `/api` and proxies to backend.
+- `VITE_DOCS_URL` and provider model keys can also be set through env for deployment-specific routing.
+- Demo login and local LAN troubleshooting are currently handled in frontend auth/API URL runtime logic.
+- For troubleshooting around model selection, remember:
+  - Google models are limited to generation-capable entries (`generateContent`) by default
+  - Ollama models can be scanned from `/api/ps` and `/api/tags` and shown with capability notes
 
-# Free ports if needed
-./scripts/ensure-ports.sh kill-frontend
-./scripts/ensure-ports.sh kill-backend
-```
+## Documentation references
 
-### Database
-
-```bash
-# Test database connectivity
-cd src/backend && node test-db.js
-
-# Test Redis connectivity
-cd src/backend && node test-redis.js
-```
-
-## API Endpoints
-
-### Scripts
-- `GET /api/scripts` - List scripts
-- `POST /api/scripts` - Create script
-- `GET /api/scripts/:id` - Get script details
-- `POST /api/scripts/:id/analyze` - Analyze script
-
-### AI Operations
-- `POST /api/ai/generate` - Generate script from prompt
-- `POST /api/ai/chat` - Chat with AI assistant
-- `GET /api/ai/search` - Semantic search
-
-### Authentication
-- `POST /api/auth/login` - User login
-- `POST /api/auth/register` - User registration
-- `GET /api/auth/me` - Current user info
-
-## Contributing
-
-1. Fork the repository
-2. Create a feature branch (`git checkout -b feature/amazing-feature`)
-3. Commit your changes (`git commit -m 'Add amazing feature'`)
-4. Push to the branch (`git push origin feature/amazing-feature`)
-5. Open a Pull Request
+- [`CLAUDE.md`](./CLAUDE.md)
+- [`docs/README-GITHUB.md`](./docs/README-GITHUB.md)
+- [`docs/README-VECTOR-SEARCH.md`](./docs/README-VECTOR-SEARCH.md)
+- [`docs/DOCKER-SETUP.md`](./docs/DOCKER-SETUP.md)
 
 ## License
 
-This project is proprietary software. All rights reserved.
-
----
-
-**Status:** Active Development
-**Last Updated:** January 2026
+Project metadata currently advertises MIT in package files; verify `LICENSE`/`package.json` at release time for final legal posture.

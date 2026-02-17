@@ -21,6 +21,133 @@ export class ChatController {
       : (process.env.AI_SERVICE_URL || 'http://localhost:8000');
     logger.info(`ChatController initialized with AI service URL: ${this.aiServiceUrl}`);
   }
+
+  private buildOllamaBaseCandidates(overrideBase?: string): string[] {
+    const candidates = [
+      overrideBase,
+      process.env.OLLAMA_BASE_URL,
+      process.env.DOCKER_ENV === 'true' ? 'http://host.docker.internal:11434' : undefined,
+      'http://localhost:11434',
+    ]
+      .filter(Boolean)
+      .map((value) => String(value).trim().replace(/\/+$/, ''))
+      .map((value) => (value.startsWith('http://') || value.startsWith('https://') ? value : `http://${value}`));
+
+    return [...new Set(candidates)];
+  }
+
+  private async sendToOllama(
+    messages: Array<{ role: string; content: string }>,
+    model?: string,
+    overrideBase?: string,
+    requestId?: string,
+  ): Promise<string> {
+    const requestedModel = (typeof model === 'string' && model.trim())
+      ? model.trim()
+      : (process.env.OLLAMA_MODEL || 'llama3.1');
+    const selectedModel = await this.resolveInstalledOllamaModel(requestedModel, overrideBase, requestId);
+
+    let lastError = 'Unknown error';
+    for (const base of this.buildOllamaBaseCandidates(overrideBase)) {
+      try {
+        const response = await axios.post(
+          `${base}/api/chat`,
+          {
+            model: selectedModel,
+            messages,
+            stream: false,
+          },
+          {
+            headers: { 'Content-Type': 'application/json' },
+            timeout: 120000,
+          }
+        );
+
+        const content = response.data?.message?.content;
+        if (typeof content === 'string' && content.trim()) {
+          return content;
+        }
+
+        throw new Error('Ollama returned an unexpected response format');
+      } catch (error: any) {
+        const details = error?.response?.data?.error || error?.message || 'Unknown error';
+        lastError = `${base}: ${details}`;
+        logger.warn(`[${requestId || 'ollama'}] Ollama attempt failed at ${base}: ${details}`);
+      }
+    }
+
+    throw new Error(lastError);
+  }
+
+  private async resolveInstalledOllamaModel(
+    requestedModel: string,
+    overrideBase?: string,
+    requestId?: string,
+  ): Promise<string> {
+    const normalizedRequested = requestedModel.trim();
+    if (!normalizedRequested) return requestedModel;
+
+    for (const base of this.buildOllamaBaseCandidates(overrideBase)) {
+      try {
+        const response = await axios.get(`${base}/api/tags`, {
+          headers: { 'Content-Type': 'application/json' },
+          timeout: 12000,
+        });
+        const models = Array.isArray(response.data?.models) ? response.data.models : [];
+        const installedModels = models
+          .map((entry: any) => ({
+            name: typeof entry?.name === 'string' ? entry.name.trim() : '',
+            size: typeof entry?.size === 'number' ? entry.size : 0,
+          }))
+          .filter((entry: { name: string; size: number }) => Boolean(entry.name));
+        const installed = installedModels.map((entry: { name: string }) => entry.name);
+
+        if (installed.length === 0) {
+          continue;
+        }
+
+        if (installed.includes(normalizedRequested)) {
+          return normalizedRequested;
+        }
+
+        const baseRequested = normalizedRequested.split(':')[0];
+        const prefixCandidates = installed.filter((name: string) =>
+          name.startsWith(`${normalizedRequested}:`) || name.startsWith(`${baseRequested}:`)
+        );
+        if (prefixCandidates.length > 0) {
+          const resolved = prefixCandidates.sort((a: string, b: string) => a.localeCompare(b))[0];
+          logger.info(`[${requestId || 'ollama'}] Resolved Ollama model "${normalizedRequested}" -> "${resolved}"`);
+          return resolved;
+        }
+
+        // Avoid cloud placeholders and pick the lightest local model to reduce timeout risk.
+        const fallbackCandidates = installedModels.filter((entry: { name: string; size: number }) => {
+          if (entry.name.toLowerCase().includes('cloud')) return false;
+          // Ignore suspiciously tiny placeholder manifests.
+          return entry.size === 0 || entry.size > 100 * 1024 * 1024;
+        });
+        const ranked = (fallbackCandidates.length > 0 ? fallbackCandidates : installedModels)
+          .slice()
+          .sort((a: { name: string; size: number }, b: { name: string; size: number }) => {
+            if (a.size === 0 && b.size === 0) return a.name.localeCompare(b.name);
+            if (a.size === 0) return 1;
+            if (b.size === 0) return -1;
+            return a.size - b.size;
+          });
+
+        const fallback = ranked[0]?.name || installed[0];
+        logger.warn(
+          `[${requestId || 'ollama'}] Requested Ollama model "${normalizedRequested}" not installed. Falling back to "${fallback}".`
+        );
+        return fallback;
+      } catch (error: any) {
+        const details = error?.response?.data?.error || error?.message || 'Unknown error';
+        logger.warn(`[${requestId || 'ollama'}] Failed to resolve installed model from ${base}: ${details}`);
+      }
+    }
+
+    return normalizedRequested;
+  }
   
   /**
    * Send a message to the AI service
@@ -33,21 +160,12 @@ export class ChatController {
     
     try {
       // eslint-disable-next-line camelcase -- API request body uses snake_case
-      const { messages, system_prompt, api_key, agent_type, session_id } = req.body;
+      const { messages, system_prompt, api_key, agent_type, session_id, model, ollama_base_url } = req.body;
       
       // Validate request parameters
       if (!messages || !Array.isArray(messages) || messages.length === 0) {
         logger.warn(`[${requestId}] Invalid request: Missing or empty messages array`);
         res.status(400).json({ error: 'Messages array is required and must not be empty' });
-        return;
-      }
-      
-      // Use server API key if one is not provided by the client
-      const effectiveApiKey = api_key || process.env.OPENAI_API_KEY; // eslint-disable-line camelcase
-      
-      if (!effectiveApiKey) {
-        logger.warn(`[${requestId}] Invalid request: No API key provided and no server API key configured`);
-        res.status(400).json({ error: 'OpenAI API key is required. Please set your API key in Settings or ask the administrator to configure a server API key.' });
         return;
       }
       
@@ -61,6 +179,38 @@ export class ChatController {
         });
         return;
       }
+
+      const wantsOllama = String(agent_type || '').toLowerCase() === 'ollama'; // eslint-disable-line camelcase
+
+      if (wantsOllama) {
+        const normalizedMessages = messages.map((m: any) => ({ role: m.role, content: m.content }));
+        const responseText = await this.sendToOllama(
+          normalizedMessages,
+          typeof model === 'string' ? model : undefined,
+          typeof ollama_base_url === 'string' ? ollama_base_url : undefined, // eslint-disable-line camelcase
+          requestId
+        );
+
+        if (req.user && req.user.id) {
+          try {
+            await this.storeChatHistory(req.user.id, messages, responseText);
+          } catch (historyError) {
+            logger.error(`[${requestId}] Failed to store Ollama chat history:`, historyError);
+          }
+        }
+
+        res.status(200).json({ response: responseText, session_id }); // eslint-disable-line camelcase
+        return;
+      }
+
+      // Use server API key if one is not provided by the client
+      const effectiveApiKey = api_key || process.env.OPENAI_API_KEY; // eslint-disable-line camelcase
+
+      if (!effectiveApiKey) {
+        logger.warn(`[${requestId}] Invalid request: No API key provided and no server API key configured`);
+        res.status(400).json({ error: 'OpenAI API key is required. Please set your API key in Settings or ask the administrator to configure a server API key.' });
+        return;
+      }
       
       // Log the request for debugging (with sensitive info redacted)
       logger.debug(`[${requestId}] Sending chat request to ${this.aiServiceUrl}/chat with ${messages.length} messages`);
@@ -72,6 +222,7 @@ export class ChatController {
         messages,
         system_prompt, // eslint-disable-line camelcase
         api_key: effectiveApiKey,
+        model,
         agent_type, // eslint-disable-line camelcase
         session_id // eslint-disable-line camelcase
       }, {
@@ -182,15 +333,16 @@ export class ChatController {
     const requestId = Math.random().toString(36).substring(2, 10);
 
     // eslint-disable-next-line camelcase -- API request body uses snake_case
-    const { messages, system_prompt, api_key, agent_type, session_id } = req.body || {};
+    const { messages, system_prompt, api_key, agent_type, session_id, model, ollama_base_url } = req.body || {};
 
     if (!messages || !Array.isArray(messages) || messages.length === 0) {
       res.status(400).json({ error: 'Messages array is required and must not be empty' });
       return;
     }
 
+    const wantsOllama = String(agent_type || '').toLowerCase() === 'ollama'; // eslint-disable-line camelcase
     const effectiveApiKey = api_key || process.env.OPENAI_API_KEY; // eslint-disable-line camelcase
-    if (!effectiveApiKey) {
+    if (!wantsOllama && !effectiveApiKey) {
       res.status(400).json({
         error: 'OpenAI API key is required. Please set your API key in Settings or ask the administrator to configure a server API key.',
       });
@@ -208,6 +360,26 @@ export class ChatController {
     const abort = new AbortController();
     req.on('close', () => abort.abort());
 
+    if (wantsOllama) {
+      try {
+        const normalizedMessages = messages.map((m: any) => ({ role: m.role, content: m.content }));
+        const responseText = await this.sendToOllama(
+          normalizedMessages,
+          typeof model === 'string' ? model : undefined,
+          typeof ollama_base_url === 'string' ? ollama_base_url : undefined, // eslint-disable-line camelcase
+          requestId
+        );
+        res.write(`data: ${JSON.stringify({ type: 'token', content: responseText })}\n\n`);
+        res.write(`data: ${JSON.stringify({ type: 'done', session_id, tokens: responseText.length })}\n\n`); // eslint-disable-line camelcase
+      } catch (error: any) {
+        const details = error?.message || 'Ollama streaming failed';
+        res.write(`data: ${JSON.stringify({ type: 'error', content: details })}\n\n`);
+      } finally {
+        res.end();
+      }
+      return;
+    }
+
     try {
       logger.debug(`[${requestId}] Proxying SSE stream to ${this.aiServiceUrl}/chat/stream`);
 
@@ -218,6 +390,7 @@ export class ChatController {
           messages,
           system_prompt, // eslint-disable-line camelcase
           api_key: effectiveApiKey,
+          model,
           agent_type, // eslint-disable-line camelcase
           session_id, // eslint-disable-line camelcase
         },
