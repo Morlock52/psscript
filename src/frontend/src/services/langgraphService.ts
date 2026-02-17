@@ -12,6 +12,7 @@
  */
 
 import { apiClient } from './api';
+import { getApiUrl } from '../utils/apiUrl';
 
 // ============================================================================
 // Types
@@ -163,48 +164,109 @@ export function streamAnalysis(
     params.append('model', options.model);
   }
 
-  // Get auth token for headers
   const token = localStorage.getItem('auth_token');
+  const apiUrl = getApiUrl();
+  const url = `${apiUrl}/scripts/${scriptId}/analysis-stream?${params.toString()}`;
+  const abortController = new AbortController();
+  let closed = false;
 
-  // Add token to query params since EventSource doesn't support custom headers
-  if (token) {
-    params.append('token', token);
-  }
+  const parseSseFrame = (frame: string): AnalysisEvent | null => {
+    const lines = frame.split('\n');
+    const dataLines = lines
+      .map((line) => line.trimEnd())
+      .filter((line) => line.startsWith('data:'))
+      .map((line) => line.replace(/^data:\s?/, ''))
+      .filter(Boolean);
 
-  const url = `${apiClient.defaults.baseURL}/scripts/${scriptId}/analysis-stream?${params.toString()}`;
+    if (dataLines.length === 0) return null;
 
-  // Create EventSource for SSE with credentials
-  // Note: withCredentials is required for CORS with credentials
-  const eventSource = new EventSource(url, { withCredentials: true });
-
-  // Handle incoming events
-  eventSource.onmessage = (event) => {
     try {
-      const data = JSON.parse(event.data) as AnalysisEvent;
-      onEvent(data);
-
-      // Auto-close on completion or error
-      if (data.type === 'completed' || data.type === 'error') {
-        eventSource.close();
-      }
+      return JSON.parse(dataLines.join('\n')) as AnalysisEvent;
     } catch (error) {
-      console.error('[LangGraph] Failed to parse SSE event:', error);
+      console.error('[LangGraph] Failed to parse SSE payload:', error, dataLines.join('\n'));
+      return null;
     }
   };
 
-  // Handle connection errors
-  eventSource.onerror = (error) => {
-    console.error('[LangGraph] SSE connection error:', error);
-    onEvent({
-      type: 'error',
-      message: 'Connection to analysis stream lost',
+  const streamOnce = async (): Promise<void> => {
+    const response = await fetch(url, {
+      method: 'GET',
+      headers: {
+        Accept: 'text/event-stream',
+        ...(token ? { Authorization: `Bearer ${token}` } : {}),
+      },
+      credentials: 'include',
+      cache: 'no-store',
+      signal: abortController.signal,
     });
-    eventSource.close();
+
+    if (!response.ok) {
+      let message = `Analysis stream request failed (${response.status})`;
+      try {
+        const errorBody = await response.json();
+        if (errorBody?.message) {
+          message = String(errorBody.message);
+        }
+      } catch {
+        // Ignore non-JSON error payloads
+      }
+
+      if (response.status === 401 || response.status === 403) {
+        message = 'Please sign in to run AI agent analysis.';
+      } else if (response.status === 404) {
+        message = 'Script not found.';
+      } else if (response.status === 503) {
+        message = 'AI service is temporarily unavailable. Please try again shortly.';
+      }
+
+      throw new Error(message);
+    }
+
+    const reader = response.body?.getReader();
+    if (!reader) {
+      throw new Error('No stream reader available for analysis.');
+    }
+
+    const decoder = new TextDecoder();
+    let buffer = '';
+
+    while (!closed) {
+      const { done, value } = await reader.read();
+      if (done) break;
+
+      buffer += decoder.decode(value, { stream: true });
+      const frames = buffer.split('\n\n');
+      buffer = frames.pop() || '';
+
+      for (const frame of frames) {
+        const parsed = parseSseFrame(frame);
+        if (!parsed) continue;
+
+        onEvent(parsed);
+
+        if (parsed.type === 'completed' || parsed.type === 'error') {
+          closed = true;
+          abortController.abort();
+          return;
+        }
+      }
+    }
   };
 
-  // Return cleanup function
+  // Modern streaming implementation using Fetch + ReadableStream so we can
+  // send auth headers and surface real HTTP errors instead of generic SSE failures.
+  void streamOnce().catch((error: any) => {
+    if (closed || abortController.signal.aborted) return;
+    console.error('[LangGraph] Streaming failed:', error);
+    onEvent({
+      type: 'error',
+      message: error?.message || 'Connection to analysis stream lost',
+    });
+  });
+
   return () => {
-    eventSource.close();
+    closed = true;
+    abortController.abort();
   };
 }
 

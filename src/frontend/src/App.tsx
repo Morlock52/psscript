@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate, useLocation } from 'react-router-dom';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { ToastContainer } from 'react-toastify';
+import { AnimatePresence, motion, useReducedMotion } from 'framer-motion';
 import 'react-toastify/dist/ReactToastify.css';
 import { useAuth } from './hooks/useAuth';
 
@@ -75,6 +76,23 @@ const Home: React.FC = () => {
 const AppLayout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const location = useLocation();
+  const prefersReducedMotion = useReducedMotion();
+  const isImmersiveRoute = location.pathname === '/chat' || location.pathname === '/ai/assistant';
+
+  const pageVariants = {
+    initial: {
+      opacity: 0,
+      y: 10,
+    },
+    animate: {
+      opacity: 1,
+      y: 0,
+    },
+    exit: {
+      opacity: 0,
+      y: -8,
+    },
+  };
 
   // Don't show sidebar/navbar on auth pages
   const isAuthPage = location.pathname === '/login' || location.pathname === '/register';
@@ -83,14 +101,28 @@ const AppLayout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
     return <>{children}</>;
   }
 
+  const reducedMotionInitial = prefersReducedMotion ? false : 'initial';
+
   return (
-    <div className="flex h-screen bg-gray-100 dark:bg-gray-900">
+    <div className="flex h-screen app-shell bg-[var(--color-bg-secondary)] text-[var(--color-text-primary)]">
       <Sidebar isOpen={sidebarOpen} onClose={() => setSidebarOpen(false)} />
       <div className="flex flex-col flex-1 overflow-hidden">
         <Navbar onMenuClick={() => setSidebarOpen(true)} />
-        <main className="flex-1 overflow-y-auto p-4">
-          {children}
-        </main>
+        <AnimatePresence mode="wait" initial={false}>
+          <motion.main
+            key={location.pathname}
+            initial={reducedMotionInitial}
+            animate="animate"
+            exit="exit"
+            variants={pageVariants}
+            transition={prefersReducedMotion ? { duration: 0 } : { duration: 0.22, ease: 'easeOut' }}
+            className={`relative flex-1 ${
+              isImmersiveRoute ? 'overflow-hidden p-0' : 'overflow-y-auto p-4 md:p-6'
+            }`}
+          >
+            {children}
+          </motion.main>
+        </AnimatePresence>
       </div>
     </div>
   );
@@ -145,6 +177,7 @@ const App: React.FC = () => {
             {/* Settings */}
             {/* Redirect legacy /settings landing to the unified SettingsLayout pages */}
             <Route path="/settings" element={<Navigate to="/settings/profile" replace />} />
+            <Route path="/settings/advanced" element={<Navigate to="/settings/security" replace />} />
             <Route path="/settings/profile" element={<ProtectedRoute><ProfileSettings /></ProtectedRoute>} />
             <Route path="/settings/appearance" element={<ProtectedRoute><AppearanceSettings /></ProtectedRoute>} />
             <Route path="/settings/security" element={<ProtectedRoute><SecuritySettings /></ProtectedRoute>} />

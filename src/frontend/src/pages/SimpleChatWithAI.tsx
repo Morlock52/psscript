@@ -147,10 +147,10 @@ const SimpleChatWithAI = () => {
   const buttonSecondaryStyles = "px-3 py-1 rounded text-sm bg-[var(--color-bg-tertiary)] hover:bg-[var(--color-bg-tertiary)]/80 text-[var(--color-text-primary)] transition-colors";
 
   return (
-    <div className="flex flex-col h-full bg-[var(--color-bg-primary)] text-[var(--color-text-primary)]">
+    <div className="flex flex-col h-full min-h-0 overflow-hidden bg-[var(--color-bg-primary)] text-[var(--color-text-primary)]">
       {/* Header */}
-      <div className="p-4 flex justify-between items-center bg-[var(--color-primary)] text-white">
-        <div className="flex items-center space-x-2">
+      <div className="p-3 md:p-4 flex flex-col gap-3 md:flex-row md:justify-between md:items-center bg-[var(--color-primary)] text-white">
+        <div className="flex items-center gap-2 min-w-0">
           <button
             onClick={() => navigate('/dashboard')}
             className="px-3 py-1 rounded bg-white/20 hover:bg-white/30 flex items-center transition-colors"
@@ -161,9 +161,9 @@ const SimpleChatWithAI = () => {
             </svg>
             <span className="text-sm font-medium">Dashboard</span>
           </button>
-          <h1 className="text-xl font-bold">PSScript AI Assistant</h1>
+          <h1 className="text-lg md:text-xl font-bold truncate">PSScript AI Assistant</h1>
         </div>
-        <div className="flex gap-2 items-center">
+        <div className="flex flex-wrap gap-2 items-center md:justify-end">
           {isSaving && (
             <span className="text-xs opacity-70">Saving...</span>
           )}
@@ -206,8 +206,8 @@ const SimpleChatWithAI = () => {
 
       {/* Search panel */}
       {showSearch && (
-        <div className="p-4 bg-[var(--color-bg-elevated)] border-b border-[var(--color-border-default)]">
-          <form onSubmit={handleSearch} className="flex gap-2 mb-4">
+        <div className="p-3 md:p-4 bg-[var(--color-bg-elevated)] border-b border-[var(--color-border-default)]">
+          <form onSubmit={handleSearch} className="flex flex-col sm:flex-row gap-2 mb-4">
             <input
               type="text"
               value={searchQuery}
@@ -272,7 +272,7 @@ const SimpleChatWithAI = () => {
       )}
 
       {/* Messages */}
-      <div className="flex-1 p-4 overflow-y-auto bg-[var(--color-bg-secondary)]">
+      <div className="flex-1 min-h-0 p-3 md:p-4 overflow-y-auto bg-[var(--color-bg-secondary)]">
         {messages.length === 0 ? (
           <div className="flex items-center justify-center h-full text-[var(--color-text-tertiary)]">
             <div className="text-center">
@@ -306,8 +306,8 @@ const SimpleChatWithAI = () => {
       </div>
 
       {/* Input form */}
-      <div className="p-4 bg-[var(--color-bg-elevated)] border-t border-[var(--color-border-default)]">
-        <div className="flex gap-2 mb-2">
+      <div className="p-3 md:p-4 bg-[var(--color-bg-elevated)] border-t border-[var(--color-border-default)]">
+        <div className="flex flex-wrap items-center gap-2 mb-2">
           <label htmlFor="file-upload" className="sr-only">
             Upload PowerShell Script
           </label>
@@ -330,12 +330,12 @@ const SimpleChatWithAI = () => {
             Upload Script
           </button>
           {selectedFile && (
-            <div className="flex-1 flex items-center">
-              <span className="text-sm truncate text-[var(--color-text-primary)]">{selectedFile.name}</span>
+            <div className="flex-1 min-w-0 flex flex-wrap items-center gap-2">
+              <span className="text-sm truncate text-[var(--color-text-primary)] max-w-full">{selectedFile.name}</span>
               <button
                 type="button"
                 onClick={handleFileUpload}
-                className="ml-2 px-3 py-1 rounded text-sm bg-emerald-600 hover:bg-emerald-500 text-white transition-colors"
+                className="px-3 py-1 rounded text-sm bg-emerald-600 hover:bg-emerald-500 text-white transition-colors"
                 disabled={isLoading || isUploading}
               >
                 {isUploading ? 'Uploading...' : 'Analyze'}
@@ -343,7 +343,7 @@ const SimpleChatWithAI = () => {
               <button
                 type="button"
                 onClick={() => setSelectedFile(null)}
-                className={`ml-2 ${buttonSecondaryStyles}`}
+                className={buttonSecondaryStyles}
                 disabled={isLoading || isUploading}
               >
                 Cancel
@@ -352,7 +352,7 @@ const SimpleChatWithAI = () => {
           )}
         </div>
 
-        <form onSubmit={handleSubmit} className="flex gap-2">
+        <form onSubmit={handleSubmit} className="flex flex-col sm:flex-row gap-2">
           <input
             ref={inputRef}
             type="text"
@@ -365,7 +365,7 @@ const SimpleChatWithAI = () => {
           <button
             type="submit"
             disabled={isLoading || isUploading || !input.trim()}
-            className={buttonPrimaryStyles}
+            className={`${buttonPrimaryStyles} w-full sm:w-auto`}
           >
             {isLoading ? 'Sending...' : 'Send'}
           </button>

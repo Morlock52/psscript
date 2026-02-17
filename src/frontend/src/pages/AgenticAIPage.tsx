@@ -453,7 +453,16 @@ const AgenticAIPage: React.FC = () => {
       <Typography variant="h4" gutterBottom>
         PowerShell AI Assistant
       </Typography>
-      <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
+      <Box
+        sx={{
+          display: 'flex',
+          flexDirection: { xs: 'column', md: 'row' },
+          justifyContent: 'space-between',
+          alignItems: { xs: 'flex-start', md: 'center' },
+          gap: 2,
+          mb: 2,
+        }}
+      >
         <Typography variant="body1" color="text.secondary">
           Use our agentic AI workflows to analyze, generate, and understand PowerShell scripts.
         </Typography>
@@ -600,7 +609,7 @@ const AgenticAIPage: React.FC = () => {
                 />
               </Box>
               
-              <Box>
+              <Box className="agentic-ai-action-buttons">
                 <Button
                   variant="contained"
                   onClick={handleAnalyzeScript}

@@ -8,12 +8,210 @@ import { FaExclamationTriangle, FaCheckCircle, FaInfoCircle, FaLightbulb, FaChar
 // LangGraph Integration
 import { streamAnalysis, AnalysisEvent } from '../services/langgraphService';
 import { AnalysisProgressPanel } from '../components/Analysis/AnalysisProgressPanel';
+import { getApiUrl } from '../utils/apiUrl';
 
 // Define message type for AI chat
 interface Message {
   role: 'user' | 'assistant' | 'system';
   content: string;
 }
+
+interface AssistantModelOption {
+  value: string;
+  label: string;
+  provider: 'openai' | 'anthropic' | 'google' | 'ollama';
+  source: 'static' | 'configured';
+  details?: string;
+  supportsAnalysis: boolean;
+  supportsChat: boolean;
+}
+
+interface ProviderModelRow {
+  id: string;
+  owned_by?: string;
+  created?: number;
+}
+
+interface GoogleModelRow {
+  id: string;
+  displayName: string;
+  description?: string;
+  inputTokenLimit?: number;
+  outputTokenLimit?: number;
+  supportedGenerationMethods?: string[];
+}
+
+interface OllamaModelRow {
+  name: string;
+  size?: number;
+  context_length?: number;
+  size_vram?: number;
+  details?: {
+    parameter_size?: string;
+    quantization_level?: string;
+  };
+}
+
+type ModelProvider = 'openai' | 'anthropic' | 'google' | 'ollama';
+
+const MODEL_PROVIDER_LABELS: Record<ModelProvider, string> = {
+  openai: 'OpenAI',
+  anthropic: 'Anthropic',
+  google: 'Google',
+  ollama: 'Ollama'
+};
+
+const ANALYSIS_DEFAULT_MODELS: AssistantModelOption[] = [
+  {
+    value: 'gpt-4o',
+    label: 'GPT-4o (OpenAI)',
+    provider: 'openai',
+    source: 'static',
+    details: 'Balanced quality + speed for coding tasks.',
+    supportsAnalysis: true,
+    supportsChat: true,
+  },
+  {
+    value: 'gpt-4.1',
+    label: 'GPT-4.1 (OpenAI)',
+    provider: 'openai',
+    source: 'static',
+    details: 'Higher reasoning for long analysis chains.',
+    supportsAnalysis: true,
+    supportsChat: true,
+  },
+  {
+    value: 'gpt-4o-mini',
+    label: 'GPT-4o Mini (Fast)',
+    provider: 'openai',
+    source: 'static',
+    details: 'Lower-cost, faster responses for routine questions.',
+    supportsAnalysis: true,
+    supportsChat: true,
+  },
+  {
+    value: 'claude-sonnet-4-20250514',
+    label: 'Claude Sonnet 4 (Anthropic)',
+    provider: 'anthropic',
+    source: 'static',
+    details: 'Anthropic support is available when key is configured.',
+    supportsAnalysis: true,
+    supportsChat: true,
+  },
+];
+
+const MODEL_ORDER: ModelProvider[] = ['ollama', 'openai', 'anthropic', 'google'];
+
+const buildModelProviderUrls = (baseUrl: string, path: '/api/tags' | '/api/ps'): string[] => {
+  const urls: string[] = [`${window.location.origin}/ollama${path}`];
+  const trimmed = baseUrl.replace(/\/+$/, '');
+
+  if (trimmed.startsWith('http://') || trimmed.startsWith('https://')) {
+    urls.push(`${trimmed}${path}`);
+  } else if (trimmed) {
+    urls.push(`http://${trimmed}${path}`);
+  }
+
+  if (/^(https?:\/\/)?(localhost|127\.0\.0\.1)(:\d+)?$/i.test(trimmed) && window.location.hostname !== 'localhost' && window.location.hostname !== '127.0.0.1') {
+    const isHttps = window.location.protocol === 'https:';
+    const host = isHttps ? `https://${window.location.hostname}:11434` : `http://${window.location.hostname}:11434`;
+    urls.push(`${host}${path}`);
+  }
+
+  return [...new Set(urls)];
+};
+
+const fetchJsonFromAny = async (urls: string[]) => {
+  let lastError = 'Unknown error';
+  for (const url of urls) {
+    try {
+      const response = await axios.get(url, { timeout: 12000 });
+      if (response.status >= 200 && response.status < 300) {
+        return response.data;
+      }
+      lastError = `${url} -> HTTP ${response.status} ${response.statusText}`;
+    } catch (error) {
+      const details = (error as Error).message || 'Unknown error';
+      lastError = `${url} -> ${details}`;
+    }
+  }
+  throw new Error(lastError);
+};
+
+const toSortedModelList = (values: AssistantModelOption[]) => {
+  const modelGroups = new Map<string, AssistantModelOption[]>();
+  values.forEach((model) => {
+    const current = modelGroups.get(model.provider) || [];
+    current.push(model);
+    modelGroups.set(model.provider, current);
+  });
+
+  const merged: AssistantModelOption[] = [];
+  MODEL_ORDER.forEach((provider) => {
+    const group = modelGroups.get(provider) || [];
+    merged.push(...group.sort((a, b) => a.value.localeCompare(b.value)));
+  });
+  return merged;
+};
+
+const formatTokenLimit = (value?: number): string => {
+  if (!value) return '';
+  return value >= 1_000_000
+    ? `${(value / 1_000_000).toFixed(1)}M`
+    : value.toLocaleString();
+}
+
+const formatBytes = (value?: number): string => {
+  if (!value) return '';
+  const sizeGb = value / (1024 ** 3);
+  return `${sizeGb.toFixed(1)} GB`;
+}
+
+const buildModelLabel = (
+  modelId: string,
+  provider: ModelProvider,
+  detail?: string
+) => {
+  const providerSuffix = provider === 'openai'
+    ? 'OpenAI'
+    : provider === 'anthropic'
+      ? 'Anthropic'
+      : provider === 'google'
+        ? 'Google'
+        : 'Ollama';
+  if (!detail) {
+    return `${modelId} (${providerSuffix})`;
+  }
+  return `${modelId} (${providerSuffix} · ${detail})`;
+}
+
+const getModelLimitationNotes = (model?: AssistantModelOption): string[] => {
+  if (!model) {
+    return ['No model selected', 'Pick one from the AI Assistant model selector.'];
+  }
+
+  const notes: string[] = [
+    `Provider: ${MODEL_PROVIDER_LABELS[model.provider]}`,
+    `Usage: ${model.supportsChat ? 'Chat + analysis' : 'Analysis only'}`
+  ];
+
+  if (model.provider === 'ollama') {
+    notes.push('Local inference: requires a running Ollama service and enough RAM/VRAM.');
+    notes.push('Latency can vary based on model size and hardware.');
+  } else if (model.provider === 'google') {
+    notes.push('Google Gemini discovery is included; chat is not yet wired in this assistant flow.');
+  } else if (model.provider === 'anthropic') {
+    notes.push('Requires Anthropic API key in provider settings.');
+  } else {
+    notes.push('Requires OpenAI-compatible API key in provider settings.');
+  }
+
+  if (model.details) {
+    notes.push(model.details);
+  }
+
+  return notes;
+};
 
 const ScriptAnalysis: React.FC = () => {
   const { id } = useParams<{ id: string }>();
@@ -35,16 +233,230 @@ const ScriptAnalysis: React.FC = () => {
   const cleanupRef = useRef<(() => void) | null>(null);
 
   // AI Model selection state - Multi-model support
-  const [selectedModel, setSelectedModel] = useState('gpt-4');
-  const availableModels = [
-    { value: 'gpt-4', label: 'GPT-4 (OpenAI)', provider: 'openai' },
-    { value: 'gpt-4o', label: 'GPT-4o (OpenAI)', provider: 'openai' },
-    { value: 'gpt-4o-mini', label: 'GPT-4o Mini (Fast)', provider: 'openai' },
-    { value: 'gpt-4.1', label: 'GPT-4.1 (Code)', provider: 'openai' },
-    { value: 'claude-sonnet-4-20250514', label: 'Claude Sonnet 4 (Anthropic)', provider: 'anthropic' },
-    { value: 'claude-opus-4-20250514', label: 'Claude Opus 4 (Best)', provider: 'anthropic' },
-    { value: 'claude-3-5-haiku-20241022', label: 'Claude Haiku (Fast)', provider: 'anthropic' },
-  ];
+  const [isModelCatalogLoading, setIsModelCatalogLoading] = useState(false);
+  const [catalogError, setCatalogError] = useState<string | null>(null);
+  const [modelCatalog, setModelCatalog] = useState<AssistantModelOption[]>(ANALYSIS_DEFAULT_MODELS);
+  const savedAssistantModel = localStorage.getItem('scriptanalysis_model');
+  const [selectedModel, setSelectedModel] = useState(
+    savedAssistantModel || localStorage.getItem('ollama_model') || localStorage.getItem('openai_model') || 'gpt-4o'
+  );
+
+  const getProviderApiKey = (provider: ModelProvider): string => {
+    if (provider === 'openai') {
+      return localStorage.getItem('openai_api_key') || '';
+    }
+    if (provider === 'anthropic') {
+      return localStorage.getItem('anthropic_api_key') || '';
+    }
+    if (provider === 'google') {
+      return localStorage.getItem('google_api_key') || '';
+    }
+    return '';
+  };
+
+  const getOllamaBaseUrl = () => {
+    return (
+      localStorage.getItem('ollama_base_url')
+      || import.meta.env.VITE_OLLAMA_BASE_URL
+      || 'http://localhost:11434'
+    ).trim();
+  };
+
+  const selectedModelMeta = modelCatalog.find((model) => model.value === selectedModel);
+  const chatCapableModelCatalog = modelCatalog.filter((model) => model.supportsChat);
+  const analysisOnlyModelCatalog = modelCatalog.filter((model) => !model.supportsChat);
+
+  const normalizeModelList = (entries: AssistantModelOption[]) => {
+    const unique: Record<string, AssistantModelOption> = {};
+    const all = [...ANALYSIS_DEFAULT_MODELS, ...entries];
+    all.forEach((entry) => {
+      const key = `${entry.provider}:${entry.value}`;
+      if (!unique[key]) {
+        unique[key] = entry;
+      }
+    });
+
+    return toSortedModelList(Object.values(unique));
+  };
+
+  const resolveModelByProviderPref = (models: AssistantModelOption[]) => {
+    const preferredOrder = [
+      localStorage.getItem('scriptanalysis_model'),
+      localStorage.getItem('ollama_model'),
+      localStorage.getItem('openai_model'),
+      localStorage.getItem('google_model'),
+    ].filter(Boolean) as string[];
+
+    for (const preferredModel of preferredOrder) {
+      const found = models.find((model) => model.value === preferredModel && model.supportsChat);
+      if (found) {
+        return found.value;
+      }
+    }
+
+    for (const preferredModel of preferredOrder) {
+      const found = models.find((model) => model.value === preferredModel);
+      if (found) {
+        return found.value;
+      }
+    }
+
+    return models.find((model) => model.supportsChat)?.value
+      || models[0]?.value
+      || 'gpt-4o';
+  };
+
+  const refreshModelCatalog = async () => {
+    const apiUrl = getApiUrl();
+    setIsModelCatalogLoading(true);
+    setCatalogError(null);
+
+    try {
+      const nextModels: AssistantModelOption[] = [];
+
+      const openAiKey = getProviderApiKey('openai').trim();
+      if (openAiKey) {
+        try {
+          const openAiResponse = await axios.get(`${apiUrl}/health/provider-models/openai`, {
+            headers: {
+              'x-openai-api-key': openAiKey,
+            },
+          });
+          const openAiModels = Array.isArray(openAiResponse.data?.models)
+            ? openAiResponse.data.models as ProviderModelRow[]
+            : [];
+          const mergedOpenAi = openAiModels
+            .filter((row) => row?.id && typeof row.id === 'string' && row.id.trim())
+            .map((row) => ({
+              value: row.id,
+              label: buildModelLabel(row.id, 'openai', row.owned_by),
+              provider: 'openai' as const,
+              source: 'configured' as const,
+              details: row.owned_by ? `Owned by ${row.owned_by}` : undefined,
+              supportsAnalysis: true,
+              supportsChat: true,
+            }));
+          nextModels.push(...mergedOpenAi);
+        } catch (error) {
+          console.warn('OpenAI model scan failed for analysis dropdown', error);
+        }
+      }
+
+      const googleKey = getProviderApiKey('google').trim();
+      if (googleKey) {
+        try {
+          const googleResponse = await axios.get(`${apiUrl}/health/provider-models/google`, {
+            headers: {
+              'x-goog-api-key': googleKey,
+            },
+          });
+          const googleModels = Array.isArray(googleResponse.data?.models)
+            ? googleResponse.data.models as GoogleModelRow[]
+            : [];
+          const mergedGoogle = googleModels
+            .filter((row) => row?.id && typeof row.id === 'string' && row.id.trim())
+            .map((row) => ({
+              value: row.id,
+              label: buildModelLabel(row.id, 'google', row.displayName),
+              provider: 'google' as const,
+              source: 'configured' as const,
+              details: row.displayName || row.id,
+              supportsAnalysis: true,
+              supportsChat: false,
+            }));
+          nextModels.push(...mergedGoogle);
+        } catch (error) {
+          console.warn('Google model scan failed for analysis dropdown', error);
+        }
+      }
+
+      const ollamaBaseUrl = getOllamaBaseUrl().replace(/\/+$/, '');
+      try {
+        const tagsResponseData = await fetchJsonFromAny(buildModelProviderUrls(ollamaBaseUrl, '/api/tags'));
+        const psResponseData = await fetchJsonFromAny(buildModelProviderUrls(ollamaBaseUrl, '/api/ps')).catch(() => ({ models: [] }));
+        const tagsModels = Array.isArray(tagsResponseData?.models) ? tagsResponseData.models as OllamaModelRow[] : [];
+        const runningMap = new Map<string, OllamaModelRow>();
+        Array.isArray(psResponseData?.models) && psResponseData.models.forEach((model: OllamaModelRow) => {
+          runningMap.set(model.name, model);
+        });
+
+        const ollamaModels = tagsModels
+          .filter((model) => model?.name && typeof model.name === 'string' && model.name.trim())
+          .map((model) => {
+            const running = runningMap.get(model.name);
+            const contextLength = running?.context_length ?? model.context_length;
+            const memoryHint = formatBytes(
+              running?.size || running?.size_vram || model.size
+            );
+            const detailParts: string[] = [];
+            if (contextLength) {
+              detailParts.push(`Context ${formatTokenLimit(contextLength)}`);
+            }
+            if (memoryHint) {
+              detailParts.push(`Memory ${memoryHint}`);
+            }
+            const sizeHint = model.size ? formatBytes(model.size) : '';
+            if (sizeHint && !memoryHint) {
+              detailParts.push(`Size ${sizeHint}`);
+            }
+
+            return {
+              value: model.name,
+              label: buildModelLabel(
+                model.name,
+                'ollama',
+                detailParts.join(' · ')
+              ),
+              provider: 'ollama' as const,
+              source: 'configured' as const,
+              details: model.details?.parameter_size || running?.details?.parameter_size || undefined,
+              supportsAnalysis: true,
+              supportsChat: true,
+            };
+          });
+        nextModels.push(...ollamaModels);
+      } catch (error) {
+        const fallbackModel = localStorage.getItem('ollama_model');
+        if (fallbackModel) {
+          nextModels.push({
+            value: fallbackModel,
+            label: buildModelLabel(fallbackModel, 'ollama', 'configured default'),
+            provider: 'ollama',
+            source: 'configured',
+            details: 'Using selected local Ollama model from settings',
+            supportsAnalysis: true,
+            supportsChat: true,
+          });
+        }
+      }
+
+      const sorted = normalizeModelList(nextModels);
+
+      setModelCatalog(sorted);
+      setSelectedModel((current) => {
+        const exists = sorted.some((model) => model.value === current);
+        if (exists) {
+          return current;
+        }
+        const next = resolveModelByProviderPref(sorted);
+        return next;
+      });
+    } catch (error) {
+      console.error('Failed to build model catalog', error);
+      setCatalogError((error as Error).message || 'Unable to load model catalog');
+      setModelCatalog(ANALYSIS_DEFAULT_MODELS);
+    } finally {
+      setIsModelCatalogLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    void refreshModelCatalog();
+  }, []);
+
+  useEffect(() => {
+    localStorage.setItem('scriptanalysis_model', selectedModel);
+  }, [selectedModel]);
   
   const { data: script, isLoading: scriptLoading } = useQuery({
     queryKey: ['script', id],
@@ -96,6 +508,57 @@ What would you like to know about your script?`
   const handleSendMessage = async () => {
     if (!input.trim()) return;
 
+    if (!selectedModelMeta) {
+      setMessages(prev => [
+        ...prev,
+        {
+          role: 'assistant',
+          content: 'Model selection is not valid. Refresh the model list and choose an available model.',
+        }
+      ]);
+      return;
+    }
+
+    const chatCapableModelMeta = selectedModelMeta.supportsChat
+      ? selectedModelMeta
+      : modelCatalog.find((model) => model.supportsChat);
+
+    if (!chatCapableModelMeta) {
+      setMessages(prev => [
+        ...prev,
+        {
+          role: 'assistant',
+          content: 'No chat-capable model is configured. Scan Ollama models in Settings > API Settings, then retry.',
+        }
+      ]);
+      return;
+    }
+
+    if (chatCapableModelMeta.value !== selectedModelMeta.value) {
+      setSelectedModel(chatCapableModelMeta.value);
+      setMessages(prev => [
+        ...prev,
+        {
+          role: 'assistant',
+          content: `Using ${chatCapableModelMeta.label} for chat because ${selectedModelMeta.value} is analysis-only in this flow.`,
+        },
+      ]);
+    }
+
+    const modelApiKey = getProviderApiKey(chatCapableModelMeta.provider);
+
+    // Optional: provide clear failure messaging when Anthropic key is missing.
+    if (chatCapableModelMeta.provider === 'anthropic' && !modelApiKey) {
+      setMessages(prev => [
+        ...prev,
+        {
+          role: 'assistant',
+          content: 'Anthropic key not found. Add your Anthropic API key in Settings > API Settings, then retry.',
+        }
+      ]);
+      return;
+    }
+
     // Create a copy of the user message
     const userMessage = { role: 'user' as const, content: input };
 
@@ -138,14 +601,26 @@ When generating or modifying scripts:
 - Follow Verb-Noun naming conventions`;
 
       // Get the API URL from environment or use dynamic hostname
-      const apiUrl = import.meta.env.VITE_API_URL ||
-        `http://${window.location.hostname}:4000/api`;
+      const apiUrl = getApiUrl();
+      const requestPayload: Record<string, any> = {
+        messages: [...messages, userMessage],
+        system_prompt: systemPrompt,
+        model: chatCapableModelMeta.value
+      };
+
+      if (chatCapableModelMeta.provider === 'anthropic') {
+        requestPayload.agent_type = 'anthropic';
+      }
+      if (chatCapableModelMeta.provider === 'ollama') {
+        requestPayload.agent_type = 'ollama';
+        requestPayload.ollama_base_url = getOllamaBaseUrl();
+      }
+      if (modelApiKey) {
+        requestPayload.api_key = modelApiKey;
+      }
 
       // Call AI service with guardrails enabled on backend
-      const response = await axios.post(`${apiUrl}/chat`, {
-        messages: [...messages, userMessage],
-        system_prompt: systemPrompt
-      }, {
+      const response = await axios.post(`${apiUrl}/chat`, requestPayload, {
         headers: {
           'Content-Type': 'application/json'
         },
@@ -496,8 +971,8 @@ When generating or modifying scripts:
           {/* Overview Tab */}
           {activeTab === 'overview' && (
             <>
-              {/* LangGraph Analysis Button */}
-              <div className="bg-gradient-to-r from-indigo-900 to-purple-900 rounded-lg shadow mb-6 p-6 border border-indigo-700">
+                  {/* LangGraph Analysis Button */}
+                  <div className="bg-gradient-to-r from-indigo-900 to-purple-900 rounded-lg shadow mb-6 p-6 border border-indigo-700">
                 <div className="flex items-center justify-between">
                   <div className="flex-1">
                     <h3 className="text-xl font-bold text-white mb-2 flex items-center">
@@ -508,58 +983,29 @@ When generating or modifying scripts:
                       Run deep multi-agent analysis with LangGraph orchestrator for comprehensive security scanning, quality assessment, and optimization recommendations.
                     </p>
                   </div>
-                  <div className="flex items-center ml-6 space-x-4">
-                    {/* Model Selector Dropdown */}
-                    <div className="flex flex-col">
-                      <label htmlFor="model-select" className="text-xs text-gray-400 mb-1">AI Model</label>
-                      <select
-                        id="model-select"
-                        value={selectedModel}
-                        onChange={(e) => setSelectedModel(e.target.value)}
-                        disabled={isAnalyzing}
-                        className={`px-3 py-2 rounded-lg border text-sm font-medium transition-all ${
-                          isAnalyzing
-                            ? 'bg-gray-700 text-gray-400 border-gray-600 cursor-not-allowed'
-                            : 'bg-gray-800 text-white border-gray-600 hover:border-indigo-500 focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500'
-                        }`}
-                        aria-label="Select AI model for analysis"
-                      >
-                        <optgroup label="OpenAI">
-                          {availableModels.filter(m => m.provider === 'openai').map(model => (
-                            <option key={model.value} value={model.value}>{model.label}</option>
-                          ))}
-                        </optgroup>
-                        <optgroup label="Anthropic">
-                          {availableModels.filter(m => m.provider === 'anthropic').map(model => (
-                            <option key={model.value} value={model.value}>{model.label}</option>
-                          ))}
-                        </optgroup>
-                      </select>
-                    </div>
-                    <button
-                      onClick={handleLangGraphAnalysis}
-                      disabled={isAnalyzing}
-                      className={`px-6 py-3 rounded-lg font-medium transition-all ${
-                        isAnalyzing
-                          ? 'bg-gray-600 text-gray-400 cursor-not-allowed'
-                          : 'bg-indigo-600 text-white hover:bg-indigo-700 hover:shadow-lg'
-                      }`}
-                    >
-                      {isAnalyzing ? (
-                        <span className="flex items-center">
-                          <svg className="animate-spin -ml-1 mr-3 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                            <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                            <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                          </svg>
-                          Analyzing...
-                        </span>
-                      ) : (
-                        'Analyze with AI Agents'
-                      )}
-                    </button>
+                  <button
+                    onClick={handleLangGraphAnalysis}
+                    disabled={isAnalyzing}
+                    className={`px-6 py-3 rounded-lg font-medium transition-all ${
+                      isAnalyzing
+                        ? 'bg-gray-600 text-gray-400 cursor-not-allowed'
+                        : 'bg-indigo-600 text-white hover:bg-indigo-700 hover:shadow-lg'
+                    }`}
+                  >
+                    {isAnalyzing ? (
+                      <span className="flex items-center">
+                        <svg className="animate-spin -ml-1 mr-3 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                          <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                          <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                        </svg>
+                        Analyzing...
+                      </span>
+                    ) : (
+                      'Analyze with AI Agents'
+                    )}
+                  </button>
                   </div>
                 </div>
-              </div>
 
               {/* Analysis Progress Panel */}
               {isAnalyzing && (
@@ -1160,12 +1606,85 @@ This script follows the PowerShell cmdlet naming convention "Verb-Noun" and uses
 
           {/* AI Assistant Tab */}
           {activeTab === 'assistant' && (
-            <div className="bg-gray-700 rounded-lg shadow mb-6 flex flex-col h-[600px]">
+            <div className="bg-gray-700 rounded-lg shadow mb-6 flex flex-col min-h-[480px] h-[68vh] md:h-[64vh]">
               <div className="p-4 bg-gray-800 border-b border-gray-600">
                 <h2 className="text-lg font-medium flex items-center">
                   <FaRobot className="mr-2 text-blue-400" />
                   Psscript AI Assistant
                 </h2>
+                <div className="mt-3">
+                  <div className="flex items-center justify-between mb-1">
+                    <label htmlFor="model-select-assistant" className="text-xs text-gray-400">
+                      AI Model
+                    </label>
+                    <button
+                      type="button"
+                      onClick={() => void refreshModelCatalog()}
+                      disabled={isModelCatalogLoading}
+                      className={`text-xs px-2 py-1 rounded transition-all ${
+                        isModelCatalogLoading
+                          ? 'bg-gray-700 text-gray-400 cursor-not-allowed'
+                          : 'text-blue-300 hover:text-white hover:bg-blue-800/40'
+                      }`}
+                    >
+                      {isModelCatalogLoading ? 'Refreshing...' : 'Refresh'}
+                    </button>
+                  </div>
+                  <select
+                    id="model-select-assistant"
+                    value={selectedModel}
+                    onChange={(e) => setSelectedModel(e.target.value)}
+                    disabled={isAnalyzing || isModelCatalogLoading || modelCatalog.length === 0}
+                    className={`w-full px-3 py-2 rounded-lg border text-sm font-medium transition-all ${
+                      isAnalyzing || isModelCatalogLoading || modelCatalog.length === 0
+                        ? 'bg-gray-700 text-gray-400 border-gray-600 cursor-not-allowed'
+                        : 'bg-gray-800 text-white border-gray-600 hover:border-blue-500 focus:border-blue-500 focus:ring-1 focus:ring-blue-500'
+                    }`}
+                    aria-label="Select AI model for assistant chat"
+                  >
+                    {chatCapableModelCatalog.length > 0 && (
+                      <optgroup label="Chat-capable models">
+                        {chatCapableModelCatalog.map((model) => (
+                          <option key={`${model.provider}-${model.value}`} value={model.value}>
+                            {model.label}
+                          </option>
+                        ))}
+                      </optgroup>
+                    )}
+                    {analysisOnlyModelCatalog.length > 0 && (
+                      <optgroup label="Analysis-only models (not available in chat)">
+                        {analysisOnlyModelCatalog.map((model) => (
+                          <option
+                            key={`${model.provider}-${model.value}`}
+                            value={model.value}
+                            disabled
+                            title="Not yet supported in assistant chat flow"
+                          >
+                            {model.label} (analysis only)
+                          </option>
+                        ))}
+                      </optgroup>
+                    )}
+                  </select>
+                  {catalogError && (
+                    <p className="text-amber-300 text-xs mt-1">
+                      {catalogError}
+                    </p>
+                  )}
+                  <ul className="mt-2 space-y-1 text-xs text-gray-300">
+                    {getModelLimitationNotes(selectedModelMeta).map((item) => (
+                      <li key={item} className="flex items-start">
+                        <span className="text-blue-300 mr-2">•</span>
+                        <span>{item}</span>
+                      </li>
+                    ))}
+                  </ul>
+                  {analysisOnlyModelCatalog.length > 0 && (
+                    <p className="text-xs text-gray-300 mt-2">
+                      Analysis-only models are shown for exploration. Chat uses the selected chat-capable model (including Ollama).
+                    </p>
+                  )}
+                </div>
               </div>
               
               {/* Chat Messages */}
@@ -1177,7 +1696,7 @@ This script follows the PowerShell cmdlet naming convention "Verb-Noun" and uses
                       className={`flex ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}
                     >
                       <div 
-                        className={`max-w-3/4 rounded-lg p-3 ${
+                        className={`max-w-[75%] rounded-lg p-3 ${
                           msg.role === 'user' 
                             ? 'bg-blue-600 text-white' 
                             : 'bg-gray-800 text-gray-200'
@@ -1239,7 +1758,7 @@ This script follows the PowerShell cmdlet naming convention "Verb-Noun" and uses
                     e.preventDefault();
                     handleSendMessage();
                   }}
-                  className="flex space-x-2"
+                  className="flex flex-col sm:flex-row gap-2"
                 >
                   <input
                     type="text"
@@ -1324,10 +1843,7 @@ This script follows the PowerShell cmdlet naming convention "Verb-Noun" and uses
                 </button>
                 <button
                   onClick={() => {
-                    const apiUrl = import.meta.env.VITE_API_URL ||
-                      (typeof window !== 'undefined' && window.location.hostname === 'localhost'
-                        ? 'http://localhost:4005/api'
-                        : '/api');
+                    const apiUrl = getApiUrl();
                     window.open(`${apiUrl}/scripts/${id}/export-analysis`, '_blank');
                   }}
                   className="w-full px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 flex items-center justify-center"
@@ -1371,7 +1887,15 @@ This script follows the PowerShell cmdlet naming convention "Verb-Noun" and uses
                   </div>
                   <div>
                     <h3 className="text-sm text-gray-400">Analysis Model</h3>
-                    <p className="text-white font-medium">{availableModels.find(m => m.value === selectedModel)?.label || selectedModel}</p>
+                    <p className="text-white font-medium">{selectedModelMeta?.label || selectedModel}</p>
+                    <p className="text-xs text-gray-300">
+                      {selectedModelMeta
+                        ? `${MODEL_PROVIDER_LABELS[selectedModelMeta.provider]} · ${selectedModelMeta.supportsChat ? 'Chat + Analysis' : 'Analysis only'}`
+                        : 'Unknown model provider'}
+                    </p>
+                    {selectedModelMeta?.details && (
+                      <p className="text-xs text-gray-400 mt-1">{selectedModelMeta.details}</p>
+                    )}
                   </div>
                 </div>
                 

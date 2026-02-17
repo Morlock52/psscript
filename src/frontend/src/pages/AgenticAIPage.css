@@ -1,43 +1,60 @@
 .agentic-ai-container {
-  margin-top: 24px;
-  margin-bottom: 64px;
+  height: 100%;
+  overflow-y: auto;
+  margin: 0;
+  padding: 16px 0 24px;
 }
 
 .agentic-ai-paper {
   padding: 16px;
-  margin-bottom: 24px;
+  margin-bottom: 16px;
   position: relative;
-  overflow: hidden;
+  overflow: visible;
 }
 
 .agentic-ai-tab-panel {
   height: 100%;
-  padding: 24px;
+  padding: 16px 0;
 }
 
 .agentic-ai-tab-content {
-  height: calc(100vh - 320px);
-  min-height: 600px;
+  min-height: 0;
 }
 
 .agentic-ai-editor-container {
-  height: calc(100% - 80px);
+  min-height: 320px;
+  height: clamp(320px, 52vh, 680px);
 }
 
 .agentic-ai-header {
   display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
   justify-content: space-between;
-  align-items: center;
+  align-items: flex-end;
   margin-bottom: 16px;
 }
 
 .agentic-ai-action-buttons {
   display: flex;
+  flex-wrap: wrap;
   gap: 8px;
+  align-items: center;
 }
 
 .agentic-ai-generator-container {
   display: flex;
   flex-direction: column;
   gap: 16px;
+}
+
+@media (max-width: 900px) {
+  .agentic-ai-tab-panel {
+    padding: 12px 0;
+  }
+
+  .agentic-ai-editor-container {
+    min-height: 260px;
+    height: 46vh;
+  }
 }

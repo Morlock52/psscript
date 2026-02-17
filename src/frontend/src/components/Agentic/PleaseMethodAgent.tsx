@@ -44,8 +44,11 @@ interface Message {
 const MessageCard = styled(Paper)(({ theme }) => ({
   padding: theme.spacing(2),
   marginBottom: theme.spacing(2),
-  maxWidth: '85%',
+  maxWidth: '92%',
   borderRadius: '12px',
+  [theme.breakpoints.up('sm')]: {
+    maxWidth: '85%',
+  },
 }));
 
 const UserMessage = styled(MessageCard)(({ theme }) => ({
@@ -413,7 +416,9 @@ const PleaseMethodAgent: React.FC<PleaseMethodAgentProps> = ({
         {/* Conversation container */}
         <Box
           sx={{
-            height: '400px',
+            height: { xs: '48vh', md: '52vh' },
+            minHeight: 280,
+            maxHeight: 620,
             overflowY: 'auto',
             mb: 3,
             p: 1,
@@ -456,7 +461,11 @@ const PleaseMethodAgent: React.FC<PleaseMethodAgentProps> = ({
         
         {/* Input form */}
         <form onSubmit={handleSubmit}>
-          <Box display="flex" gap={1}>
+          <Box
+            display="flex"
+            gap={1}
+            sx={{ flexDirection: { xs: 'column', sm: 'row' } }}
+          >
             <TextField
               inputRef={inputRef}
               fullWidth
