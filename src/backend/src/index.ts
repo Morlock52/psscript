@@ -81,10 +81,9 @@ try {
 // Set up environment-specific configuration
 const isDevelopment = process.env.NODE_ENV !== 'production';
 
-// Enable mock mode for faster development
+// Keep development startup explicit without enabling any runtime mock service paths.
 if (isDevelopment) {
-  process.env.USE_MOCK_SERVICES = 'false';
-  logger.info('Development mode - mock services enabled');
+  logger.info('Development mode startup complete');
 }
 
 // Set up in-memory caching for development

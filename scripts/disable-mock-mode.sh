@@ -1,17 +1,7 @@
 #!/bin/bash
 
-# Script to disable mock mode and restart the backend server
+echo "disable-mock-mode.sh is deprecated. Backend runtime mock-service mode has already been removed."
+echo "Starting the normal backend development server instead..."
 
-# Stop any running backend server
-echo "Stopping any running backend server..."
-pkill -f "node.*src/index.ts" || true
-
-# Create a temporary file with the modified content
-echo "Modifying index.ts to disable mock mode..."
-sed 's/process.env.USE_MOCK_SERVICES = '\''true'\''/process.env.USE_MOCK_SERVICES = '\''false'\''/' src/backend/src/index.ts > src/backend/src/index.ts.tmp
-
-# Replace the original file with the modified content
-mv src/backend/src/index.ts.tmp src/backend/src/index.ts
-
-echo "Mock mode disabled. Restarting backend server..."
-./start-backend.sh
+DIR="$(cd "$(dirname "$0")" && pwd)"
+exec "$DIR/start/start-backend.sh"

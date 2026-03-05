@@ -1,24 +1,18 @@
 #!/bin/bash
 
-# Set environment variables
-export USE_MOCK_SERVICES=true
-export MOCK_MODE=true
-export MOCK_AI_RESPONSES=true
+export NODE_ENV=development
 export DB_HOST=localhost
+export AI_SERVICE_URL=${AI_SERVICE_URL:-http://localhost:8000}
 
-# Create uploads directory if it doesn't exist
 mkdir -p ./src/backend/uploads
 mkdir -p ./src/backend/src/public/uploads
 
-# Change to backend directory and start server
 cd ./src/backend
 
-# Check if node_modules exists, if not run npm install
 if [ ! -d "node_modules" ]; then
   echo "Installing dependencies..."
   npm install
 fi
 
-# Start the backend server
-echo "Starting backend server with mock services..."
+echo "Starting backend server without mock services..."
 npm start

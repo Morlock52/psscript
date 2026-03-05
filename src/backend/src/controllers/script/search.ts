@@ -192,44 +192,11 @@ export async function findSimilarScripts(
       return res.json(response);
     } catch (searchError) {
       logger.error(`Error finding similar scripts for ${scriptId}:`, searchError);
-
-      // Fall back to basic similarity if vector search fails
-      const whereConditions: Record<string, unknown>[] = [
-        { id: { [Op.ne]: scriptId } }
-      ];
-      if (!isAdmin) {
-        whereConditions.push(viewerId
-          ? { [Op.or]: [{ isPublic: true }, { userId: viewerId }] }
-          : { isPublic: true });
-      }
-
-      const whereClause = whereConditions.length === 1
-        ? whereConditions[0]
-        : { [Op.and]: whereConditions };
-
-      const similarScripts = await Script.findAll({
-        where: whereClause,
-        limit: 5,
-        include: [
-          { model: Category, as: 'category', attributes: ['id', 'name', 'description', 'created_at'] }
-        ],
-        order: [[sequelize.col('Script.updated_at'), 'DESC']]
+      return res.status(503).json({
+        message: 'Vector similarity search is unavailable',
+        error: 'vector_search_unavailable',
+        success: false
       });
-
-      // Calculate a mock similarity score
-      const response = {
-        similar_scripts: similarScripts.map((s) => ({
-          script_id: s.id,
-          title: s.title,
-          category: s.category?.name ?? null,
-          similarity: parseFloat((Math.random() * 0.3 + 0.6).toFixed(4)) // Random score between 0.6 and 0.9
-        })),
-        success: true,
-        fallback: true,
-        message: 'Vector search failed, using fallback similarity'
-      };
-
-      return res.json(response);
     }
   } catch (error) {
     next(error);

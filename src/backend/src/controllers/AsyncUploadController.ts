@@ -70,13 +70,9 @@ export class AsyncUploadController {
   private processingQueue: QueueItem[] = [];
   private isProcessing: boolean = false;
   private readonly AI_SERVICE_URL: string;
-  private readonly USE_MOCK_SERVICES: boolean;
   
   constructor() {
     this.AI_SERVICE_URL = process.env.AI_SERVICE_URL || 'http://localhost:8000';
-    // SECURITY: Mock services should only be enabled via explicit environment variables
-    // Never force mock services in production - they bypass real service validation
-    this.USE_MOCK_SERVICES = process.env.USE_MOCK_SERVICES === 'true' || process.env.MOCK_MODE === 'true';
     
     // Bind methods to ensure 'this' context
     this.uploadFiles = this.uploadFiles.bind(this);
@@ -270,63 +266,36 @@ export class AsyncUploadController {
           // Extract filename without extension and path
           const originalFilename = path.basename(filePath, path.extname(filePath));
           
-          // Analyze script with AI service or use mock data
-          let analysisResult;
-          if (this.USE_MOCK_SERVICES) {
-            // Generate mock analysis data
-            logger.info('Using mock AI analysis data');
-            
-            // Generate a deterministic but reasonable mock response
-            const words = fileContent.split(/\s+/).filter(w => w.length > 3);
-            const purpose = words.length > 10 
-              ? `This script appears to ${['manage', 'configure', 'automate', 'monitor'][words.length % 4]} ${['system resources', 'user accounts', 'network settings', 'file operations'][words.length % 4]}.`
-              : 'Purpose could not be determined from the limited content.';
-              
-            analysisResult = {
-              title: originalFilename,
-              description: 'PowerShell script',
-              purpose,
-              parameters: fileContent.includes('param(') ? ['Random parameters detected'] : [],
-              security_score: 6 + (fileContent.includes('Invoke-Expression') ? -2 : 0) + (fileContent.includes('encryption') ? 2 : 0),
-              code_quality_score: 5 + (fileContent.includes('function') ? 2 : 0) + (fileContent.includes('error') ? -1 : 0),
-              risk_score: 4 + (fileContent.includes('Remove') ? 3 : 0) + (fileContent.includes('test') ? -2 : 0),
-              security_issues: fileContent.includes('Invoke-Expression') ? ['Uses potentially unsafe Invoke-Expression'] : [],
-              optimization_suggestions: ['Consider adding error handling', 'Add more comments for better maintainability'],
-              category: 1, // Default to first category
-              tags: ['powershell', 'script']
-            };
-          } else {
-            try {
-              // Use real AI service
-              logger.info(`Sending request to AI service at ${this.AI_SERVICE_URL}`);
-              const response = await axios.post(`${this.AI_SERVICE_URL}/analyze-script`, {
-                content: fileContent
-              });
-              analysisResult = response.data;
-            } catch (error) {
-              logger.error('Error analyzing script with AI service:', error);
-              // Continue with default values if AI service fails
-              analysisResult = {
-                title: originalFilename,
-                description: 'PowerShell script',
-                purpose: 'Unknown',
-                parameters: [],
-                securityScore: 50,
-                codeQualityScore: 50,
-                riskScore: 50,
-                category: null,
-                tags: []
-              };
+          let description = 'PowerShell script';
+          let categoryId: number | null = null;
+
+          try {
+            logger.info(`Sending request to AI service at ${this.AI_SERVICE_URL}`);
+            const response = await axios.post(`${this.AI_SERVICE_URL}/analyze`, {
+              content: fileContent,
+              script_name: originalFilename
+            }, {
+              timeout: 60000
+            });
+
+            const analysisResult = response.data || {};
+            if (typeof analysisResult.purpose === 'string' && analysisResult.purpose.trim()) {
+              description = analysisResult.purpose.trim();
             }
+            if (typeof analysisResult.category_id === 'number') {
+              categoryId = analysisResult.category_id;
+            }
+          } catch (error) {
+            logger.error('Error analyzing script with AI service:', error);
           }
           
           // Create script record with authenticated user's ID
           const script = await Script.create({
-            title: analysisResult.title || originalFilename,
-            description: analysisResult.description || 'PowerShell script',
+            title: originalFilename,
+            description,
             uploadId,
             userId, // Use the authenticated user's ID from queue context
-            categoryId: analysisResult.category || null,
+            categoryId,
             isPublic: false,
             executionCount: 0
           }, { transaction });
@@ -339,11 +308,6 @@ export class AsyncUploadController {
             changes: 'Initial version',
             userId // Use the authenticated user's ID from queue context
           }, { transaction });
-          
-          // Add tags if available
-          if (analysisResult.tags && analysisResult.tags.length > 0) {
-            // Implementation for adding tags would go here
-          }
           
           // Delete temporary file after successful processing
           await unlinkAsync(filePath);

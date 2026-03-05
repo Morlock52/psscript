@@ -143,10 +143,7 @@ export async function analyzeScript(
     logger.error('Error in analyzeScript:', error);
     return res.status(500).json({
       message: 'Analysis failed',
-      fallback: true,
-      security_score: 5.0,
-      code_quality_score: 5.0,
-      risk_score: 5.0
+      error: 'analysis_failed'
     });
   }
 }

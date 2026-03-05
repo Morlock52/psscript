@@ -306,22 +306,11 @@ export const optionalAuth = async (req: Request, res: Response, next: NextFuncti
   }
   
   // Update auth info with token type
-  req.authInfo.tokenType = token.startsWith('demo-token-') ? 'demo' : 'jwt';
+  req.authInfo.tokenType = 'jwt';
   
   try {
-    // Verify token
-    // SECURITY: Use same secret logic as main auth
-    const jwtSecret = process.env.JWT_SECRET;
-    if (!jwtSecret && IS_PRODUCTION) {
-      // SECURITY FIX: Fail in production if JWT_SECRET is missing
-      // Previously this continued without auth, which is a security vulnerability
-      logger.error('CRITICAL: JWT_SECRET not set in production', { requestId });
-      return res.status(500).json({
-        error: 'server_configuration_error',
-        message: 'Authentication service is misconfigured'
-      });
-    }
-    const secret = jwtSecret || 'development_secret_INSECURE';
+    // Verify token using the same secret resolution as the primary auth middleware.
+    const secret = getAuthConfig().jwtSecret;
     const decoded: any = jwt.verify(token, secret);
 
     // Get user from database

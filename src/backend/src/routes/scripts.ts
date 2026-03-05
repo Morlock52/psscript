@@ -19,6 +19,8 @@ import { cache } from '../index';
 import { handleNetworkErrors } from '../middleware/networkErrorMiddleware';
 import AsyncUploadController from '../controllers/AsyncUploadController';
 import { generatePowerShellScript } from '../services/agentic/tools/ScriptGenerator';
+import axios from 'axios';
+import logger from '../utils/logger';
 
 function normalizeScriptIds(ids: unknown): number[] {
   if (!Array.isArray(ids)) {
@@ -49,6 +51,44 @@ const router = express.Router();
 
 // Apply CORS middleware to all routes
 router.use(corsMiddleware);
+
+const isDocker = process.env.DOCKER_ENV === 'true';
+const AI_SERVICE_URL = isDocker
+  ? (process.env.AI_SERVICE_URL || 'http://ai-service:8000')
+  : (process.env.AI_SERVICE_URL || 'http://localhost:8000');
+const AI_REQUEST_TIMEOUT_MS = Number(process.env.AI_REQUEST_TIMEOUT_MS || 15000);
+
+function buildAiFailure(error: unknown, unavailableMessage: string) {
+  if (axios.isAxiosError(error) && error.response) {
+    return {
+      status: 502,
+      body: {
+        message: 'AI service returned an error',
+        error: 'ai_service_error',
+        upstreamStatus: error.response.status
+      }
+    };
+  }
+
+  const errorMessage = error instanceof Error ? error.message.toLowerCase() : '';
+  if ((axios.isAxiosError(error) && error.code === 'ECONNABORTED') || errorMessage.includes('timeout')) {
+    return {
+      status: 504,
+      body: {
+        message: 'AI service request timed out',
+        error: 'ai_service_timeout'
+      }
+    };
+  }
+
+  return {
+    status: 503,
+    body: {
+      message: unavailableMessage,
+      error: 'ai_service_unavailable'
+    }
+  };
+}
 
 /**
  * @swagger
@@ -1300,118 +1340,41 @@ router.post('/analyze/assistant', authenticateJWT, ScriptAnalysisController.anal
  */
 router.post('/please', async (req, res) => {
   try {
-    const { question, context, useAgent: _useAgent = false } = req.body;
-    
+    const { question, context } = req.body;
+
     if (!question) {
-      return res.status(400).json({ 
-        message: 'Question is required', 
-        status: 'error' 
+      return res.status(400).json({
+        message: 'Question is required',
+        status: 'error'
       });
     }
-    
-    // Generate a response based on the question type
-    let response = '';
-    
-    if (question.toLowerCase().includes('explain')) {
-      response = `This PowerShell script appears to ${context ? 'perform the following operations:\n\n' : 'be a question about explanation. Could you provide the script you\'d like me to explain?'}`;
-      if (context) {
-        response += `1. It ${context.includes('Get-') ? 'retrieves' : 'performs'} operations on your system\n`;
-        response += `2. It uses PowerShell cmdlets for automation\n`;
-        response += `3. It ${context.includes('function') ? 'defines custom functions' : 'uses built-in commands'} for its tasks`;
-      }
-    } else if (question.toLowerCase().includes('create') || question.toLowerCase().includes('generate')) {
-      response = `Here's a PowerShell script that addresses your request:\n\n\`\`\`powershell\n# Script to address: ${question}\n\n# Define parameters\nparam (\n    [Parameter(Mandatory=$false)]\n    [string]$Path = "C:\\Temp"\n)\n\n# Main function\nfunction Main {\n    Write-Host "Processing your request..."\n    # Implementation would go here\n}\n\n# Execute the script\nMain\n\`\`\`\n\nThis script creates a foundation that you can customize for your specific needs.`;
-    } else {
-      response = `To answer your question about PowerShell: ${question}\n\nPowerShell is a task automation and configuration management framework from Microsoft, consisting of a command-line shell and associated scripting language. It's particularly powerful for system administrators and helps automate repetitive tasks.`;
+
+    try {
+      const aiResponse = await axios.post(`${AI_SERVICE_URL}/chat`, {
+        messages: [
+          ...(context ? [{ role: 'system', content: `Context: ${context}` }] : []),
+          { role: 'user', content: question }
+        ]
+      }, {
+        timeout: AI_REQUEST_TIMEOUT_MS,
+        headers: { 'Content-Type': 'application/json' }
+      });
+
+      const response = aiResponse.data.response || aiResponse.data.message || aiResponse.data;
+      return res.json({
+        response: typeof response === 'string' ? response : JSON.stringify(response),
+        source: 'ai_service'
+      });
+    } catch (aiError) {
+      logger.warn(`AI service unavailable for legacy /scripts/please: ${aiError instanceof Error ? aiError.message : String(aiError)}`);
+      const failure = buildAiFailure(aiError, 'AI service is unavailable');
+      return res.status(failure.status).json(failure.body);
     }
-    
-    return res.json({ response });
   } catch (error) {
     console.error('Error in AI agent question endpoint:', error);
-    return res.status(500).json({ 
-      message: 'Failed to process your question', 
-      status: 'error' 
-    });
-  }
-});
-
-/**
- * Analyze a script using the AI assistant
- */
-router.post('/analyze/assistant', async (req, res) => {
-  try {
-    const { content, filename: _filename, requestType: _requestType = 'standard', analysisOptions: _analysisOptions } = req.body;
-    
-    if (!content) {
-      return res.status(400).json({ 
-        message: 'Script content is required', 
-        status: 'error' 
-      });
-    }
-    
-    // Generate mock analysis
-    const analysisResult = {
-      analysis: {
-        purpose: "This appears to be a PowerShell script for system administration tasks.",
-        securityScore: Math.floor(Math.random() * 30) + 70, // 70-100
-        codeQualityScore: Math.floor(Math.random() * 30) + 70, // 70-100
-        riskScore: Math.floor(Math.random() * 20) + 10, // 10-30 (lower is better)
-        suggestions: [
-          "Consider adding error handling with try/catch blocks",
-          "Add more detailed comments to explain complex operations",
-          "Use PowerShell best practices for parameter validation"
-        ],
-        commandDetails: {
-          "Get-Process": {
-            description: "Retrieves information about processes running on the local computer",
-            parameters: [
-              { name: "-Name", description: "Specifies process names" },
-              { name: "-Id", description: "Specifies process IDs" }
-            ]
-          },
-          "Set-Location": {
-            description: "Sets the current working location to a specified location",
-            parameters: [
-              { name: "-Path", description: "Specifies the path to the new location" }
-            ]
-          }
-        },
-        msDocsReferences: [
-          { title: "PowerShell Documentation", url: "https://learn.microsoft.com/en-us/powershell/" },
-          { title: "PowerShell Scripting", url: "https://learn.microsoft.com/en-us/powershell/scripting/" }
-        ],
-        examples: [],
-        rawAnalysis: "Script analyzed successfully"
-      },
-      metadata: {
-        processingTime: 0.85,
-        model: "gpt-4o",
-        threadId: `thread_${Date.now().toString(36)}`,
-        assistantId: `asst_${Date.now().toString(36)}`,
-        requestId: `req_${Date.now().toString(36)}`
-      }
-    };
-    
-    // Add some content-aware mock analysis
-    if (content.includes('function')) {
-      analysisResult.analysis.purpose = "This script defines custom functions for automating tasks.";
-      analysisResult.analysis.suggestions.push("Consider documenting function parameters with comment-based help");
-    }
-    
-    if (content.includes('Get-')) {
-      analysisResult.analysis.purpose = "This script retrieves and processes system information.";
-    }
-    
-    if (content.includes('New-')) {
-      analysisResult.analysis.purpose = "This script creates new resources or configurations.";
-    }
-    
-    return res.json(analysisResult);
-  } catch (error) {
-    console.error('Error in AI assistant analysis endpoint:', error);
-    return res.status(500).json({ 
-      message: 'Failed to analyze the script', 
-      status: 'error' 
+    return res.status(500).json({
+      message: 'Failed to process your question',
+      status: 'error'
     });
   }
 });
@@ -1422,107 +1385,49 @@ router.post('/analyze/assistant', async (req, res) => {
 router.post('/explain', async (req, res) => {
   try {
     const { content, type = 'simple' } = req.body;
-    
+
     if (!content) {
-      return res.status(400).json({ 
-        message: 'Script content is required', 
-        status: 'error' 
+      return res.status(400).json({
+        message: 'Script content is required',
+        status: 'error'
       });
     }
-    
-    // Generate explanation based on content
-    let explanation = "This PowerShell script ";
-    
-    if (content.includes('Get-')) {
-      explanation += "retrieves information from your system. ";
-    }
-    
-    if (content.includes('Set-')) {
-      explanation += "modifies system settings or properties. ";
-    }
-    
-    if (content.includes('New-')) {
-      explanation += "creates new resources or objects. ";
-    }
-    
-    if (content.includes('Remove-')) {
-      explanation += "removes resources or objects from your system. ";
-    }
-    
-    if (content.includes('function')) {
-      explanation += "defines custom functions for reusable code blocks. ";
-    }
-    
-    if (content.includes('foreach') || content.includes('for ') || content.includes('while')) {
-      explanation += "uses loops to iterate through collections or repeat operations. ";
-    }
-    
-    if (content.includes('if ') || content.includes('else')) {
-      explanation += "contains conditional logic to handle different scenarios. ";
-    }
-    
-    if (content.includes('try') || content.includes('catch')) {
-      explanation += "implements error handling to gracefully manage exceptions. ";
-    }
-    
-    // Add more detailed explanation based on the type
-    if (type === 'detailed') {
-      explanation += "\n\nThe script can be broken down into these main components:\n\n";
-      
-      if (content.includes('param')) {
-        explanation += "1. Parameter declaration: Defines input parameters that can be passed to the script.\n";
+
+    try {
+      let systemPrompt = 'You are a PowerShell expert. Explain the following script in a clear, educational manner.';
+      if (type === 'detailed') {
+        systemPrompt = 'You are a PowerShell expert. Provide a detailed line-by-line explanation of this script, including its purpose, structure, and how each component works.';
+      } else if (type === 'security') {
+        systemPrompt = 'You are a security-focused PowerShell expert. Analyze this script for security implications, potential vulnerabilities, and best practices. Include warnings for dangerous patterns.';
       }
-      
-      if (content.includes('function')) {
-        explanation += "2. Function definitions: Creates reusable code blocks that can be called multiple times.\n";
-      }
-      
-      explanation += `3. Main execution: The primary logic of the script that carries out its intended purpose.\n`;
-      
-      // Add example usage
-      explanation += "\n\nExample usage:\n```powershell\n";
-      explanation += "# Assuming this script is saved as Script.ps1\n";
-      explanation += ".\\Script.ps1";
-      
-      if (content.includes('param')) {
-        explanation += " -Path 'C:\\Example'";
-      }
-      
-      explanation += "\n```";
+
+      const aiResponse = await axios.post(`${AI_SERVICE_URL}/chat`, {
+        messages: [
+          { role: 'system', content: systemPrompt },
+          { role: 'user', content: `Explain this PowerShell script:
+
+${content}` }
+        ]
+      }, {
+        timeout: AI_REQUEST_TIMEOUT_MS,
+        headers: { 'Content-Type': 'application/json' }
+      });
+
+      const explanation = aiResponse.data.response || aiResponse.data.message || aiResponse.data;
+      return res.json({
+        explanation: typeof explanation === 'string' ? explanation : JSON.stringify(explanation),
+        source: 'ai_service'
+      });
+    } catch (aiError) {
+      logger.warn(`AI service unavailable for legacy /scripts/explain: ${aiError instanceof Error ? aiError.message : String(aiError)}`);
+      const failure = buildAiFailure(aiError, 'AI service is unavailable');
+      return res.status(failure.status).json(failure.body);
     }
-    
-    // Add security considerations for security type
-    if (type === 'security') {
-      explanation += "\n\nSecurity considerations:\n\n";
-      
-      if (content.includes('Remove-') || content.includes('Delete')) {
-        explanation += "⚠️ WARNING: This script contains commands that delete resources. Ensure you have proper backups before execution.\n";
-      }
-      
-      if (content.includes('New-') || content.includes('Set-')) {
-        explanation += "⚠️ CAUTION: This script modifies system state. Review changes carefully before execution.\n";
-      }
-      
-      if (content.includes('Invoke-WebRequest') || content.includes('Invoke-RestMethod')) {
-        explanation += "⚠️ NETWORK ACCESS: This script makes external network requests. Ensure you trust the endpoints it's connecting to.\n";
-      }
-      
-      if (content.includes('Invoke-Expression') || content.includes('Invoke-Command') || content.includes('ScriptBlock')) {
-        explanation += "⚠️ DYNAMIC EXECUTION: This script dynamically executes code, which could pose security risks if the input is not properly validated.\n";
-      }
-      
-      explanation += "\nBest practices:\n";
-      explanation += "1. Always run scripts with least privilege necessary.\n";
-      explanation += "2. Use Set-ExecutionPolicy to control PowerShell script execution policy.\n";
-      explanation += "3. Consider signing scripts for production environments.\n";
-    }
-    
-    return res.json({ explanation });
   } catch (error) {
     console.error('Error in script explanation endpoint:', error);
-    return res.status(500).json({ 
-      message: 'Failed to explain the script', 
-      status: 'error' 
+    return res.status(500).json({
+      message: 'Failed to explain the script',
+      status: 'error'
     });
   }
 });
@@ -1533,81 +1438,61 @@ router.post('/explain', async (req, res) => {
 router.get('/examples', async (req, res) => {
   try {
     const { description, limit = 10 } = req.query;
-    
+
     if (!description) {
-      return res.status(400).json({ 
-        message: 'Description is required', 
-        status: 'error' 
+      return res.status(400).json({
+        message: 'Description is required',
+        status: 'error'
       });
     }
-    
-    // Generate mock examples
-    const examples = [];
-    const titles = [
-      "File System Backup Script",
-      "Process Monitor and Logger",
-      "Network Configuration Manager",
-      "System Health Reporter",
-      "User Account Management",
-      "Security Compliance Checker",
-      "Event Log Parser",
-      "Active Directory Query Tool",
-      "Scheduled Task Automation",
-      "Exchange Server Management"
-    ];
-    
-    const descString = description.toString().toLowerCase();
-    
-    // Prioritize examples that match the description
-    const priorityTypes = [];
-    if (descString.includes('file') || descString.includes('backup')) priorityTypes.push('File');
-    if (descString.includes('process') || descString.includes('monitor')) priorityTypes.push('Process');
-    if (descString.includes('network') || descString.includes('config')) priorityTypes.push('Network');
-    if (descString.includes('user') || descString.includes('account')) priorityTypes.push('User');
-    if (descString.includes('security') || descString.includes('compliance')) priorityTypes.push('Security');
-    
-    const limitNum = typeof limit === 'string' ? parseInt(limit, 10) : (typeof limit === 'number' ? limit : 10);
-    
-    for (let i = 0; i < Math.min(limitNum, titles.length); i++) {
-      const titleIndex = priorityTypes.length > 0 && i < priorityTypes.length
-        ? titles.findIndex(t => t.includes(priorityTypes[i]))
-        : i;
-      
-      const finalIndex = titleIndex >= 0 ? titleIndex : i;
-      
-      examples.push({
-        id: `ex_${Date.now().toString(36)}_${i}`,
-        title: titles[finalIndex],
-        snippet: `# ${titles[finalIndex]}
-# This PowerShell script demonstrates ${titles[finalIndex].toLowerCase()}
 
-param (
-    [Parameter(Mandatory=$false)]
-    [string]$Path = "C:\\Temp",
-    [switch]$Force
-)
-
-# Main function
-function Main {
-    Write-Host "Starting ${titles[finalIndex]}..."
-    # Script implementation would go here
-}
-
-# Execute the script
-Main
-`,
-        downloadUrl: `#example-${i+1}`,
-        rating: Math.floor(Math.random() * 5) + 1,
-        complexity: ['Low', 'Medium', 'High'][Math.floor(Math.random() * 3)]
+    try {
+      const aiResponse = await axios.post(`${AI_SERVICE_URL}/chat`, {
+        messages: [
+          {
+            role: 'system',
+            content: `You are a PowerShell expert. Provide ${limit} relevant PowerShell script examples as a JSON array. Each example should have: title, snippet (complete working script), and complexity (Low/Medium/High).`
+          },
+          {
+            role: 'user',
+            content: `Give me ${limit} PowerShell script examples related to: ${description}`
+          }
+        ]
+      }, {
+        timeout: AI_REQUEST_TIMEOUT_MS,
+        headers: { 'Content-Type': 'application/json' }
       });
+
+      const response = aiResponse.data.response || aiResponse.data.message || aiResponse.data;
+      let examples;
+
+      try {
+        const jsonMatch = typeof response === 'string' ? response.match(/\[[\s\S]*\]/) : null;
+        if (jsonMatch) {
+          examples = JSON.parse(jsonMatch[0]);
+        } else {
+          throw new Error('No JSON array found in response');
+        }
+      } catch {
+        examples = [{
+          id: `ex_${Date.now().toString(36)}_0`,
+          title: `Example for: ${description}`,
+          snippet: typeof response === 'string' ? response : JSON.stringify(response),
+          complexity: 'Medium'
+        }];
+      }
+
+      return res.json({ examples, source: 'ai_service' });
+    } catch (aiError) {
+      logger.warn(`AI service unavailable for legacy /scripts/examples: ${aiError instanceof Error ? aiError.message : String(aiError)}`);
+      const failure = buildAiFailure(aiError, 'AI service is unavailable');
+      return res.status(failure.status).json(failure.body);
     }
-    
-    return res.json({ examples });
   } catch (error) {
     console.error('Error in script examples endpoint:', error);
-    return res.status(500).json({ 
-      message: 'Failed to retrieve script examples', 
-      status: 'error' 
+    return res.status(500).json({
+      message: 'Failed to retrieve script examples',
+      status: 'error'
     });
   }
 });

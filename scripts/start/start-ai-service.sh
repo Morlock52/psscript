@@ -20,8 +20,7 @@ fi
 export OPENAI_API_KEY=$(grep OPENAI_API_KEY .env | cut -d '=' -f2)
 if [ -z "$OPENAI_API_KEY" ]; then
   echo "Warning: OPENAI_API_KEY not found in .env file."
-  echo "The AI service will run in mock mode."
-  export MOCK_MODE=true
+  echo "Starting without forcing MOCK_MODE. Set a real API key or explicit env vars before relying on provider-backed analysis."
 else
   echo "Using OpenAI API key from .env file."
   export MOCK_MODE=false

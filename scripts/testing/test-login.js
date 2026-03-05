@@ -1,33 +1,31 @@
 /**
  * Test Login Functionality
- * 
- * This script tests the login functionality with the admin user.
  */
 
 const axios = require('axios');
+const https = require('https');
 const dotenv = require('dotenv');
 
-// Load environment variables
 dotenv.config();
 
-// API URL
-const API_URL = process.env.BACKEND_URL || 'http://localhost:4001';
-
-// Admin credentials
+const API_URL = process.env.BACKEND_URL || 'https://127.0.0.1:4000';
 const credentials = {
-  email: 'admin@psscript.com',
-  password: 'ChangeMe1!'
+  email: process.env.TEST_LOGIN_EMAIL || 'admin@example.com',
+  password: process.env.TEST_LOGIN_PASSWORD || 'admin123'
 };
 
-// Test login
+const axiosOptions = API_URL.startsWith('https://')
+  ? { httpsAgent: new https.Agent({ rejectUnauthorized: false }) }
+  : {};
+
 async function testLogin() {
   try {
-    console.log('Testing login with admin credentials...');
+    console.log('Testing login with configured credentials...');
     console.log(`API URL: ${API_URL}`);
     console.log(`Email: ${credentials.email}`);
-    
-    const response = await axios.post(`${API_URL}/api/auth/login`, credentials);
-    
+
+    const response = await axios.post(`${API_URL}/api/auth/login`, credentials, axiosOptions);
+
     if (response.data) {
       console.log('\nLogin successful!');
       console.log('User details:');
@@ -37,10 +35,8 @@ async function testLogin() {
         console.log(`- Email: ${response.data.user.email}`);
         console.log(`- Role: ${response.data.user.role}`);
         console.log(`- Last login: ${response.data.user.last_login_at || 'First login'}`);
-      } else {
-        console.log('No user data in response');
       }
-      
+
       console.log('\nAuthentication tokens:');
       if (response.data.token) {
         console.log(`- Access token: ${response.data.token.substring(0, 20)}...`);
@@ -48,131 +44,73 @@ async function testLogin() {
       if (response.data.refreshToken) {
         console.log(`- Refresh token: ${response.data.refreshToken.substring(0, 20)}...`);
       }
-      
+
       return true;
-    } else {
-      console.error('Login failed with unexpected response format:', response.data);
-      return false;
     }
+
+    console.error('Login failed with unexpected response format:', response.data);
+    return false;
   } catch (error) {
     console.error('Login failed:', error.message);
-    
     if (error.response) {
       console.error('Error details:', error.response.data);
     }
-    
     return false;
   }
 }
 
-// Test user info (with authentication)
 async function testGetUserInfo(token) {
   try {
     console.log('\nTesting authenticated user info endpoint...');
-    
+
     const response = await axios.get(`${API_URL}/api/auth/me`, {
+      ...axiosOptions,
       headers: {
-        'Authorization': `Bearer ${token}`
+        Authorization: `Bearer ${token}`
       }
     });
-    
+
     if (response.data) {
       console.log('User info retrieved successfully!');
-      console.log('User details:');
-      if (response.data.user) {
-        console.log(`- ID: ${response.data.user.id}`);
-        console.log(`- Username: ${response.data.user.username}`);
-        console.log(`- Email: ${response.data.user.email}`);
-        console.log(`- Role: ${response.data.user.role}`);
-      } else {
-        console.log('Response data:', JSON.stringify(response.data, null, 2));
-      }
-      
+      console.log(`- Username: ${response.data.user?.username || 'Unknown'}`);
+      console.log(`- Email: ${response.data.user?.email || 'Unknown'}`);
+      console.log(`- Role: ${response.data.user?.role || 'Unknown'}`);
       return true;
-    } else {
-      console.error('Get user info failed with unexpected response format:', response.data);
-      return false;
     }
+
+    console.error('Get user info failed with unexpected response format:', response.data);
+    return false;
   } catch (error) {
     console.error('Get user info failed:', error.message);
-    
     if (error.response) {
       console.error('Error details:', error.response.data);
     }
-    
     return false;
   }
 }
 
-// Run the tests
 async function runTests() {
-  console.log('=== Testing Authentication System ===');
-  console.log(`Started at: ${new Date().toISOString()}`);
-  
-  // Test login
-  try {
-    const loginResponse = await axios.post(`${API_URL}/api/auth/login`, credentials);
-    
-    if (loginResponse.data) {
-      console.log('\nLogin successful!');
-      console.log('User details:');
-      if (loginResponse.data.user) {
-        console.log(`- ID: ${loginResponse.data.user.id}`);
-        console.log(`- Username: ${loginResponse.data.user.username}`);
-        console.log(`- Email: ${loginResponse.data.user.email}`);
-        console.log(`- Role: ${loginResponse.data.user.role}`);
-        console.log(`- Last login: ${loginResponse.data.user.last_login_at || 'First login'}`);
-      } else {
-        console.log('No user data in response');
-      }
-      
-      console.log('\nAuthentication tokens:');
-      if (loginResponse.data.token) {
-        console.log(`- Access token: ${loginResponse.data.token.substring(0, 20)}...`);
-        
-        // Test the user info endpoint with the token
-        console.log('\nTesting authenticated user info endpoint...');
-        try {
-          const userResponse = await axios.get(`${API_URL}/api/auth/me`, {
-            headers: {
-              'Authorization': `Bearer ${loginResponse.data.token}`
-            }
-          });
-          
-          if (userResponse.data) {
-            console.log('User info retrieved successfully!');
-            console.log('User info:', JSON.stringify(userResponse.data, null, 2));
-          }
-        } catch (userError) {
-          console.error('Error getting user info:', userError.message);
-          if (userError.response) {
-            console.error('Error details:', userError.response.data);
-          }
-        }
-      }
-      if (loginResponse.data.refreshToken) {
-        console.log(`- Refresh token: ${loginResponse.data.refreshToken.substring(0, 20)}...`);
-      }
-      
-      console.log('\nAll tests passed successfully!');
-      console.log(`You can now log in to the application at ${process.env.FRONTEND_URL || 'http://localhost:3000'} with:`);
-      console.log(`- Email: admin@psscript.com`);
-      console.log(`- Password: ChangeMe1!`);
-    } else {
-      console.error('Login failed with unexpected response format:', loginResponse.data);
-    }
-  } catch (error) {
-    console.error('\nLogin test failed:', error.message);
-    
-    if (error.response) {
-      console.error('Error details:', error.response.data);
-    }
-    
-    console.error('\nTests failed. Please check the error messages above.');
+  console.log('=== Login Functionality Tests ===\n');
+
+  const loginSuccess = await testLogin();
+  if (!loginSuccess) {
+    console.log('\nTests failed.');
+    console.log('If local frontend auth bypass is enabled, disable it before using this script to validate real login.');
+    process.exit(1);
   }
+
+  const loginResponse = await axios.post(`${API_URL}/api/auth/login`, credentials, axiosOptions);
+  const token = loginResponse.data.token;
+  const userInfoSuccess = await testGetUserInfo(token);
+
+  console.log('\n=== Test Summary ===');
+  console.log(`- Login Test: ${loginSuccess ? 'PASSED' : 'FAILED'}`);
+  console.log(`- Get User Info Test: ${userInfoSuccess ? 'PASSED' : 'FAILED'}`);
+  console.log(`- API URL: ${API_URL}`);
+  console.log(`- Email: ${credentials.email}`);
 }
 
-// Execute the tests
-runTests().catch(error => {
-  console.error('Unexpected error during tests:', error);
+runTests().catch((error) => {
+  console.error('Test execution failed:', error);
+  process.exit(1);
 });

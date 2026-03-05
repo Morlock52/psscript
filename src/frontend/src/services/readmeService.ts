@@ -81,9 +81,9 @@ A comprehensive platform for managing, analyzing, and executing PowerShell scrip
    - pgAdmin: [http://localhost:5050](http://localhost:5050)
    - Redis Commander: [http://localhost:8082](http://localhost:8082)
 
-   Demo administrator login (if auth is enabled):
-   - Email: \`admin@example.com\`
-   - Password: \`admin123\`
+   Local auth note:
+   - The checked-in local frontend commonly runs with \`VITE_DISABLE_AUTH=true\` and auto-signs in as \`dev-admin\`.
+   - If auth is enabled, use your actual seeded or environment-specific credentials.
 
 ### Option 2: Development Setup
 

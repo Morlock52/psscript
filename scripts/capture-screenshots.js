@@ -1,89 +1,67 @@
 /**
- * Screenshot capture script for training documentation
- * Captures actual app screenshots to replace loading screen placeholders
+ * Screenshot capture script for documentation.
+ * Assumes local frontend auth bypass may be enabled.
  */
 const { chromium } = require('playwright');
 const path = require('path');
 
 const SCREENSHOTS_DIR = path.join(__dirname, '../docs/screenshots');
-const BASE_URL = 'http://localhost:3000';
-
-const screenshots = [
-  { name: 'login.png', path: '/login', waitFor: 'form', needsLogout: true },
-  { name: 'settings.png', path: '/settings', waitFor: '.container', needsLogin: true },
-  { name: 'chat.png', path: '/chat', waitFor: '.container', needsLogin: true },
-  { name: 'scripts.png', path: '/scripts', waitFor: '.container', needsLogin: true },
-  { name: 'documentation.png', path: '/documentation', waitFor: '.container', needsLogin: true },
-  { name: 'analytics.png', path: '/', waitFor: '.container', needsLogin: true }, // Dashboard has analytics
-];
+const BASE_URL = process.env.SCREENSHOT_BASE_URL || 'https://127.0.0.1:3090';
+const LOGIN_EMAIL = process.env.SCREENSHOT_EMAIL || 'admin@example.com';
+const LOGIN_PASSWORD = process.env.SCREENSHOT_PASSWORD || 'admin123';
 
 async function captureScreenshots() {
   const browser = await chromium.launch({ headless: true });
   const context = await browser.newContext({
-    viewport: { width: 1440, height: 900 }
+    viewport: { width: 1440, height: 900 },
+    ignoreHTTPSErrors: true,
   });
   const page = await context.newPage();
 
   console.log('Starting screenshot capture...\n');
 
-  // First, login to capture authenticated pages
-  console.log('Logging in...');
-  await page.goto(`${BASE_URL}/login`);
-  await page.waitForSelector('form', { timeout: 10000 });
+  await page.goto(`${BASE_URL}/login`, { waitUntil: 'domcontentloaded' });
+  await page.waitForTimeout(1500);
 
-  // Capture login page first (before logging in)
-  console.log('Capturing: login.png');
-  await page.screenshot({
-    path: path.join(SCREENSHOTS_DIR, 'login.png'),
-    fullPage: false
-  });
-  console.log('  ✓ login.png saved\n');
+  if (page.url().includes('/login')) {
+    console.log('Capturing login page...');
+    await page.screenshot({
+      path: path.join(SCREENSHOTS_DIR, 'login.png'),
+      fullPage: false,
+    });
 
-  // Now login
-  await page.fill('input[type="email"], input[name="email"]', 'admin@example.com');
-  await page.fill('input[type="password"], input[name="password"]', 'admin123');
-  await page.click('button[type="submit"]');
+    const emailInput = page.locator('input[type="email"], input[name="email"]');
+    if (await emailInput.count()) {
+      await emailInput.first().fill(LOGIN_EMAIL);
+      await page.fill('input[type="password"], input[name="password"]', LOGIN_PASSWORD);
+      await page.click('button[type="submit"]');
+      await page.waitForTimeout(2000);
+    }
+  } else {
+    console.log('Auth bypass is enabled; login page redirected into the app shell.');
+  }
 
-  // Wait for redirect to dashboard
-  await page.waitForURL('**/');
-  await page.waitForTimeout(2000); // Wait for content to load
-  console.log('Logged in successfully\n');
-
-  // Capture remaining screenshots
   const pagesToCapture = [
-    { name: 'settings.png', path: '/settings' },
-    { name: 'chat.png', path: '/chat' },
-    { name: 'scripts.png', path: '/scripts' },
-    { name: 'documentation.png', path: '/documentation' },
-    { name: 'analysis.png', path: '/scripts' }, // Script analysis view
-    { name: 'analytics.png', path: '/' }, // Dashboard
+    { name: 'dashboard.png', path: '/dashboard' },
+    { name: 'settings-profile.png', path: '/settings/profile' },
+    { name: 'data-maintenance.png', path: '/settings/data' },
   ];
 
   for (const pageInfo of pagesToCapture) {
-    try {
-      console.log(`Capturing: ${pageInfo.name}`);
-      await page.goto(`${BASE_URL}${pageInfo.path}`);
-      await page.waitForTimeout(2000); // Wait for content to load
-
-      // Wait for loading to complete (no loading spinners)
-      await page.waitForFunction(() => {
-        const loadingElements = document.querySelectorAll('[class*="loading"], [class*="spinner"]');
-        return loadingElements.length === 0 ||
-               Array.from(loadingElements).every(el => el.offsetParent === null);
-      }, { timeout: 10000 }).catch(() => {});
-
-      await page.screenshot({
-        path: path.join(SCREENSHOTS_DIR, pageInfo.name),
-        fullPage: false
-      });
-      console.log(`  ✓ ${pageInfo.name} saved\n`);
-    } catch (error) {
-      console.log(`  ✗ Failed to capture ${pageInfo.name}: ${error.message}\n`);
-    }
+    console.log(`Capturing: ${pageInfo.name}`);
+    await page.goto(`${BASE_URL}${pageInfo.path}`, { waitUntil: 'domcontentloaded' });
+    await page.waitForTimeout(2000);
+    await page.screenshot({
+      path: path.join(SCREENSHOTS_DIR, pageInfo.name),
+      fullPage: false,
+    });
   }
 
   await browser.close();
-  console.log('\nScreenshot capture complete!');
+  console.log('\nScreenshot capture completed.');
 }
 
-captureScreenshots().catch(console.error);
+captureScreenshots().catch((error) => {
+  console.error('Screenshot capture failed:', error);
+  process.exit(1);
+});
