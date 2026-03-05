@@ -1,97 +1,50 @@
-# Frontend - PowerShell Script Management Application
+# Frontend
 
-The frontend is built with React, TypeScript, and Tailwind CSS, providing a modern and responsive user interface for managing PowerShell scripts.
+React + TypeScript + Vite UI for browsing scripts, running analyses, working with documentation, and managing settings.
 
-## Key Components
+![Settings screenshot](../../docs/screenshots/settings-profile.png)
 
-- **Dashboard** - Activity feed, quick access, and statistics
-- **Upload Interface** - Script submission with AI analysis preview
-- **Script Detail View** - Syntax highlighting, execution, version history
-- **Search & Browse** - Advanced filtering and semantic search
-- **Analytics** - Usage and performance metrics visualization
-- **Full-screen Editor** - Monaco-based editor for script editing
+## Local defaults
 
-## Technology Stack
+- URL: `https://127.0.0.1:3090`
+- Backend API: `https://127.0.0.1:4000/api`
+- AI service: `http://127.0.0.1:8000`
 
-- React 18+ for component-based UI
-- TypeScript for type safety
-- Tailwind CSS for styling (with dark mode)
-- Monaco Editor for code display and editing
-- D3.js for data visualizations
-- React Query for data fetching and caching
-- Vite for fast bundling and development experience
+## Current frontend behavior
 
-## Setup Instructions
+- Route-level lazy loading is enabled for heavier pages.
+- The local default environment sets `VITE_DISABLE_AUTH=true`, so the app auto-signs in as `dev-admin` during local development.
+- API requests use runtime URL detection to avoid bad `backend:4000` browser-side URLs.
 
-### Prerequisites
+## Main areas
 
-- Node.js 18+ installed
-- npm or yarn package manager
+- Dashboard
+- Script management
+- Chat and agentic assistant views
+- Documentation and crawl tooling
+- Settings pages for profile, appearance, security, notifications, categories, users, and API keys
 
-### Local Development Setup
+## Local development
 
-1. Install dependencies:
-   ```bash
-   npm install
-   # or
-   yarn install
-   ```
+```bash
+npm install
+npm run dev
+```
 
-2. Start the development server:
-   ```bash
-   npm run dev
-   # or
-   yarn dev
-   ```
+Open:
 
-3. Open your browser and navigate to:
-   ```
-   http://localhost:5173/
-   ```
+```text
+https://127.0.0.1:3090
+```
 
-### Docker Setup
+## Build and test
 
-1. Build and start the container:
-   ```bash
-   # From the project root directory
-   docker-compose up -d frontend
-   ```
+```bash
+npm run build
+npm run test:run
+```
 
-2. Access the application:
-   ```
-   http://localhost:3000/
-   ```
+## Notes
 
-### Environment Variables
-
-Create a `.env` file in the frontend root directory with these variables:
-
-| Variable | Description | Default |
-|----------|-------------|---------|
-| `VITE_API_URL` | Backend API URL | `http://localhost:4000/api` |
-| `VITE_USE_MOCKS` | Use mock data (true/false) | `true` |
-
-### Available Scripts
-
-- `npm run dev` - Start development server
-- `npm run build` - Build for production
-- `npm run preview` - Preview production build
-- `npm run lint` - Run ESLint
-- `npm run typecheck` - Check TypeScript types
-
-## Docker Image
-
-The frontend is containerized using Docker. The Dockerfile:
-- Uses Node.js 18 Alpine as base image
-- Installs dependencies
-- Exposes port 3000
-- Configures volume mounts for fast development
-
-## Features
-
-- **Responsive Design**: Works on mobile, tablet, and desktop
-- **Dark Mode**: Default dark theme for better code visibility
-- **Full-screen Editor**: Monaco editor for script editing
-- **Mock Data Support**: Toggle between mock and real API data
-- **Real-time Updates**: Live preview of script analysis
-- **Interactive UI**: Advanced filtering and visualization
+- If you want to validate the real login screen, set `VITE_DISABLE_AUTH=false` before starting the frontend.
+- During the 2026-03-05 doc refresh, the running local frontend redirected `/login` to `/dashboard` as expected under auth-disabled mode.

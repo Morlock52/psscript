@@ -1,75 +1,79 @@
-# Backend - PowerShell Script Management Application
+# Backend
 
-The backend API server handles script storage, retrieval, user authentication, and communication with the AI analysis system.
+Express/TypeScript API for authentication, script management, analytics, and admin maintenance workflows.
 
-## Key Components
+## Current responsibilities
 
-- **API Routes** - RESTful endpoints for all application features
-- **Authentication** - JWT-based user authentication
-- **Script Processing** - Upload, versioning, and execution
-- **Integration Layer** - Communication with AI and PowerShell services
+- Authentication and user/session APIs
+- Script CRUD, versioning, and analysis orchestration
+- Analytics and reporting APIs
+- Documentation crawl and storage APIs
+- Admin backup, restore, and cleanup endpoints
 
-## Technology Stack
+## Current backend behavior
 
-- Node.js with Express for API development
-- JWT for secure authentication
-- SQL ORM for database interactions
-- Redis for caching frequently accessed scripts
+### Auth
 
-## API Documentation
+- Protected routes use the shared `authMiddleware` path.
+- Admin DB maintenance endpoints no longer rely on a separate legacy JWT middleware.
+- Registration and profile updates translate uniqueness races into clean `409` responses:
+  - `email_already_exists`
+  - `username_already_exists`
 
-### Admin Data Maintenance
+### Script analysis
 
-- `GET /api/admin/db/backups` - List available backups
-- `POST /api/admin/db/backup` - Create backup from current DB
-- `POST /api/admin/db/restore` - Restore database from backup
-- `POST /api/admin/db/clear-test-data` - Clear configured test-data tables (requires admin and confirmation text)
+The analysis controllers now return explicit API states instead of fabricated success payloads:
 
-You can find usage instructions and rollback workflow in `docs/DATA-MAINTENANCE.md` (project root docs).
+- `404 analysis_not_found`
+- `502 analysis_service_error`
+- `503 analysis_unavailable`
+- `504 analysis_timeout`
 
-## Testing
+### Database maintenance
 
-### Unit tests (default)
+Admin endpoints:
+
+- `GET /api/admin/db/backups`
+- `POST /api/admin/db/backup`
+- `POST /api/admin/db/restore`
+- `POST /api/admin/db/clear-test-data`
+
+Restore truncates target tables, reloads backup rows, and reseeds serial/identity sequences afterward.
+
+### Analytics
+
+Analytics queries run through the shared Sequelize connection stack instead of a separate raw `pg` pool.
+
+## Local runbook
 
 From this directory:
 
 ```bash
-npm test
+npm install
+npm run dev
 ```
 
-### Stress test (admin maintenance endpoints)
+Default local API endpoint:
 
-From repo root:
+```text
+https://127.0.0.1:4000
+```
+
+The backend is commonly used together with:
+
+- frontend: `https://127.0.0.1:3090`
+- ai service: `http://127.0.0.1:8000`
+
+## Validation
 
 ```bash
-node scripts/db-maintenance-stress-test.mjs \
-  --base-url "http://localhost:3001" \
-  --cycles 5
+npm run build
+npm test -- --runInBand
 ```
 
-You can run endpoint smoke validation only:
+## Related docs
 
-```bash
-node scripts/db-maintenance-stress-test.mjs \
-  --base-url "http://localhost:3001" \
-  --smoke-only
-```
-
-Use `--no-smoke` to skip smoke validation and jump directly to cycles.
-Use `--restore-after-clear` to validate restore rollback after each clear cycle.
-Use `--insecure-tls` when targeting local self-signed HTTPS endpoints.
-Use `npm run stress:data-maintenance:smoke:restore -- --base-url "http://localhost:3001"` from repo root for smoke+restore validation.
-Use `npm run verify:data-maintenance:e2e -- --base-url "http://localhost:3001"` from repo root for a full automated backend build/start/verify/shutdown flow.
-
-Provide `--token` or `ADMIN_TOKEN` for protected environments.
-
-### DB integration tests (opt-in)
-
-These require the Docker Postgres+pgvector service to be running.
-
-From repo root (`/Users/morlock/fun/02_PowerShell_Projects/psscript`):
-
-```bash
-docker compose up -d postgres redis
-cd src/backend && npm run test:integration
-```
+- `../../docs/DATA-MAINTENANCE.md`
+- `../../docs/AUTHENTICATION-IMPROVEMENTS.md`
+- `../../docs/API-ISSUE-REVIEW-2026-02-26.md`
+- `../../docs/UPDATES.md`

@@ -1,125 +1,69 @@
-# Authentication System Improvements
+# Authentication Improvements
 
-## Overview
+_Last updated: March 5, 2026_
 
-This document outlines the security and usability improvements made to the authentication system in the PSScript application. These enhancements focus on improving error handling, logging, security, and user experience.
+![Settings screenshot](./screenshots/settings-profile.png)
 
-## Key Improvements
+## Current auth model
 
-### 1. Enhanced User Model
+- JWT-based backend authentication for protected APIs
+- Shared backend auth middleware across normal protected routes and admin DB maintenance routes
+- Local frontend development commonly runs with `VITE_DISABLE_AUTH=true`, which creates a `dev-admin` session automatically
 
-- Added tracking for login attempts to detect and prevent brute force attacks
-- Implemented secure password validation with proper error handling
-- Added last login timestamp tracking for security auditing
-- Improved error handling in password validation
+## Improvements now reflected in code
 
-### 2. Robust Authentication Routes
+### Unified protected-route behavior
 
-- Implemented structured error responses with consistent format
-- Added detailed error codes for better client-side error handling
-- Enhanced validation for registration and login requests
-- Improved token generation with proper expiration handling
-- Added request tracking with unique request IDs for better debugging
-- Implemented progressive delays for failed login attempts to prevent brute force attacks
+The backend no longer maintains a second legacy JWT middleware for admin maintenance routes.
+This removes request-shape drift and secret-source drift between login-issued tokens and admin-only APIs.
 
-### 3. Comprehensive Logging
+### Clear auth error semantics
 
-- Added detailed logging for all authentication operations
-- Included request IDs in logs for request tracing
-- Logged IP addresses and user agents for security monitoring
-- Added performance metrics (processing time) for monitoring
-- Implemented different log levels (debug, info, warn, error) for better filtering
+Authentication-related APIs return structured error payloads with stable error codes.
+Common examples include:
 
-### 4. Improved Frontend Error Handling
+- `validation_error`
+- `invalid_credentials`
+- `missing_token`
+- `invalid_token_format`
+- `token_expired`
+- `email_already_exists`
+- `username_already_exists`
 
-- Enhanced Login component with better error display
-- Added support for structured error responses from the backend
-- Implemented user-friendly error messages based on error codes
-- Added field-level validation with visual feedback
-- Improved form validation with real-time feedback
+### DB uniqueness conflicts return `409`
 
-### 5. Security Enhancements
+Registration and profile updates now translate uniqueness races into explicit `409 Conflict` responses instead of generic `500` failures.
 
-- Properly typed JWT token handling
-- Added proper environment variable handling with secure defaults
-- Implemented token expiration handling
-- Added IP address and user agent tracking
-- Enhanced refresh token security
+### Local development behavior
 
-## Technical Details
-
-### Error Response Format
-
-All authentication endpoints now return consistent error responses:
-
-```json
-{
-  "success": false,
-  "message": "Human-readable error message",
-  "error": "error_code",
-  "requestId": "unique-request-id",
-  "details": {
-    // Optional additional error details
-  }
-}
-```
-
-### Error Codes
-
-The system now uses standardized error codes:
-
-- `validation_error`: Input validation failed
-- `email_already_exists`: Email is already registered
-- `username_already_exists`: Username is already taken
-- `user_not_found`: User not found
-- `invalid_credentials`: Password is incorrect
-- `server_error`: Internal server error
-- `missing_token`: No authentication token provided
-- `invalid_token_format`: Token format is invalid
-- `token_expired`: JWT token has expired
-- `refresh_token_expired`: Refresh token has expired
-- `invalid_refresh_token`: Refresh token is invalid
-- `missing_refresh_token`: No refresh token provided
-
-### Request Tracking
-
-Each authentication request now includes:
-
-- Unique request ID
-- Timestamp
-- IP address
-- User agent
-- Processing time
-
-This information is included in logs and error responses for better debugging and security monitoring.
-
-## Testing Authentication
-
-### Using the Admin Account
-
-The system includes a default administrator account with the following credentials:
-
-- Email: `admin@psscript.com`
-- Password: `ChangeMe1!`
-
-To verify the authentication system is working correctly, run:
+The current checked-in local environment uses:
 
 ```bash
-node test-login.js
+VITE_DISABLE_AUTH=true
 ```
 
-This script tests:
-1. Login with admin credentials
-2. Retrieving user details using the authentication token
-3. Verifies token generation and validation
+That means:
 
-## Future Improvements
+- `/login` redirects into the authenticated app shell
+- frontend screenshots taken in the default local environment show the `dev-admin` session
+- real login testing requires turning auth back on before starting the frontend
 
-Potential future enhancements to consider:
+## Credential guidance
 
-1. Implement rate limiting for authentication endpoints
-2. Add multi-factor authentication support
-3. Implement account lockout after multiple failed attempts
-4. Add password strength requirements
-5. Implement session management with device tracking
-6. Add support for OAuth providers (Google, GitHub, etc.)
+Do not treat historical documentation references to `admin@psscript.com / ChangeMe1!` as current source-of-truth credentials.
+In the current repo:
+
+- local auth-disabled mode is the default frontend workflow
+- demo-login fallbacks in frontend code point to `admin@example.com / admin123` only when auth is enabled and matching seed data exists
+- deployed environments should use their actual seeded or managed credentials
+
+## Validation
+
+Use backend tests for auth-path validation:
+
+```bash
+cd src/backend && npm run build
+cd src/backend && npm test -- --runInBand
+```
+
+If you need to test the real login UI instead of the local dev bypass, set `VITE_DISABLE_AUTH=false` and restart the frontend.
