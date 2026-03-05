@@ -19,6 +19,8 @@ const isDocker = process.env.DOCKER_ENV === 'true';
 const AI_SERVICE_URL = isDocker
   ? (process.env.AI_SERVICE_URL || 'http://ai-service:8000')
   : (process.env.AI_SERVICE_URL || 'http://localhost:8000');
+const AI_REQUEST_TIMEOUT_MS = Number(process.env.AI_REQUEST_TIMEOUT_MS || 15000);
+const AI_ANALYSIS_TIMEOUT_MS = Number(process.env.AI_ANALYSIS_TIMEOUT_MS || 90000);
 
 logger.info(`AI Agent routes initialized with AI_SERVICE_URL: ${AI_SERVICE_URL}`);
 
@@ -41,14 +43,13 @@ router.post('/please', async (req, res) => {
 
     try {
       // Call the real AI service /chat endpoint
-      // Using 45s timeout (server timeout is 60s, need buffer for fallback)
       const aiResponse = await axios.post(`${AI_SERVICE_URL}/chat`, {
         messages: [
           ...(context ? [{ role: 'system', content: `Context: ${context}` }] : []),
           { role: 'user', content: question }
         ]
       }, {
-        timeout: 45000, // 45 second timeout (server timeout is 60s)
+        timeout: AI_REQUEST_TIMEOUT_MS,
         headers: {
           'Content-Type': 'application/json'
         }
@@ -123,7 +124,7 @@ router.post('/generate', async (req, res) => {
           }
         ]
       }, {
-        timeout: 45000, // Keep under server timeout (60s)
+        timeout: AI_REQUEST_TIMEOUT_MS,
         headers: {
           'Content-Type': 'application/json'
         }
@@ -228,7 +229,7 @@ router.post('/explain', async (req, res) => {
           { role: 'user', content: `Explain this PowerShell script:\n\n${content}` }
         ]
       }, {
-        timeout: 45000, // Keep under server timeout (60s)
+        timeout: AI_REQUEST_TIMEOUT_MS,
         headers: {
           'Content-Type': 'application/json'
         }
@@ -341,7 +342,7 @@ router.get('/examples', async (req, res) => {
           }
         ]
       }, {
-        timeout: 45000, // Keep under server timeout (60s)
+        timeout: AI_REQUEST_TIMEOUT_MS,
         headers: {
           'Content-Type': 'application/json'
         }
@@ -470,7 +471,7 @@ router.post('/analyze/assistant', async (req, res) => {
         analysis_type: requestType,
         options: analysisOptions
       }, {
-        timeout: 120000, // 2 minute timeout for analysis
+        timeout: AI_ANALYSIS_TIMEOUT_MS,
         headers: {
           'Content-Type': 'application/json'
         }
@@ -598,7 +599,7 @@ router.post('/analyze/langgraph', async (req, res) => {
         script_name: filename,
         require_human_review: requireHumanReview
       }, {
-        timeout: 120000,
+        timeout: AI_ANALYSIS_TIMEOUT_MS,
         headers: {
           'Content-Type': 'application/json'
         }

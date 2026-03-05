@@ -33,6 +33,10 @@ let _Documentation: any;
 const TEST_TIMEOUT = 30000;
 const PERFORMANCE_THRESHOLD_MS = 100;
 
+// These tests require a live Postgres+pgvector instance with the expected schema.
+// Keep them opt-in so `npm test` stays deterministic for contributors/CI that don't run Docker.
+const RUN_DB_TESTS = process.env.RUN_DB_TESTS === 'true';
+
 // Test data
 const testUser = {
   username: 'test_user_' + Date.now(),
@@ -54,7 +58,7 @@ const testCategory = {
   description: 'A test category'
 };
 
-describe('Database Integration Tests', () => {
+ (RUN_DB_TESTS ? describe : describe.skip)('Database Integration Tests', () => {
   // Setup before all tests
   beforeAll(async () => {
     try {
@@ -370,10 +374,10 @@ describe('Database Integration Tests', () => {
   // ==========================================
   // SECTION 5: TAG AND SCRIPT-TAG TESTS
   // ==========================================
-  describe('5. Tag Model and Associations', () => {
-    let testTag: any;
-    let testScriptForTag: any;
-    let testUserForTag: any;
+    describe('5. Tag Model and Associations', () => {
+      let testTag: any;
+      let testScriptForTag: any;
+      let testUserForTag: any;
 
     beforeAll(async () => {
       const passwordHash = await bcrypt.hash('test123', 12);
@@ -424,16 +428,18 @@ describe('Database Integration Tests', () => {
       })).rejects.toThrow();
     });
 
-    // Cleanup
-    afterAll(async () => {
-      await ScriptTag.destroy({
-        where: { scriptId: testScriptForTag.id }
+      // Cleanup
+      afterAll(async () => {
+        if (testScriptForTag?.id) {
+          await ScriptTag.destroy({
+            where: { scriptId: testScriptForTag.id }
+          });
+        }
+        if (testTag) await testTag.destroy();
+        if (testScriptForTag) await testScriptForTag.destroy();
+        if (testUserForTag) await testUserForTag.destroy();
       });
-      if (testTag) await testTag.destroy();
-      if (testScriptForTag) await testScriptForTag.destroy();
-      if (testUserForTag) await testUserForTag.destroy();
     });
-  });
 
   // ==========================================
   // SECTION 6: SCRIPT VERSION TESTS

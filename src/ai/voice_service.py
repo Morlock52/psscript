@@ -16,11 +16,27 @@ from typing import Dict, Any, Optional, List
 import io
 import uuid
 import hashlib
-from google.cloud import texttospeech
-from google.cloud import speech
-import boto3
-import azure.cognitiveservices.speech as speechsdk
 from fastapi import HTTPException
+
+try:
+    import boto3
+except ImportError:
+    boto3 = None
+
+try:
+    import azure.cognitiveservices.speech as speechsdk
+except ImportError:
+    speechsdk = None
+
+try:
+    from google.cloud import texttospeech
+except ImportError:
+    texttospeech = None
+
+try:
+    from google.cloud import speech
+except ImportError:
+    speech = None
 
 # Configure logging
 logging.basicConfig(
@@ -45,12 +61,12 @@ class VoiceService:
             api_key: API key for third-party voice services
         """
         self.api_key = api_key or os.environ.get("VOICE_API_KEY")
-        self.tts_service = os.environ.get("TTS_SERVICE", "google")  # google, amazon, microsoft
+        self.tts_service = os.environ.get("TTS_SERVICE", "openai")  # openai, google, amazon, microsoft
         self.tts_cache_dir = os.environ.get("TTS_CACHE_DIR", "voice_cache")
         self.tts_cache_ttl = int(os.environ.get("TTS_CACHE_TTL", "86400"))  # 24 hours in seconds
         self.tts_cache = {}  # In-memory cache
         self.ensure_cache_dir()
-        self.stt_service = os.environ.get("STT_SERVICE", "google")  # google, amazon, microsoft
+        self.stt_service = os.environ.get("STT_SERVICE", "openai")  # openai, google, amazon, microsoft
         
         logger.info(f"Voice Service initialized with TTS service: {self.tts_service}, STT service: {self.stt_service}")
     
@@ -85,7 +101,9 @@ class VoiceService:
         # Not in cache, proceed with synthesis
         try:
             # Select the appropriate TTS service
-            if self.tts_service == "google":
+            if self.tts_service == "openai":
+                audio_data, duration = await self._synthesize_openai(text, voice_id, output_format)
+            elif self.tts_service == "google":
                 audio_data, duration = await self._synthesize_google(text, voice_id, output_format)
             elif self.tts_service == "amazon":
                 audio_data, duration = await self._synthesize_amazon(text, voice_id, output_format)
@@ -110,6 +128,8 @@ class VoiceService:
                 "duration": duration,
                 "text": text
             }
+        except HTTPException:
+            raise
         except Exception as e:
             logger.error(f"Error in speech synthesis: {e}")
             raise HTTPException(status_code=500, detail=f"Speech synthesis failed: {str(e)}")
@@ -122,12 +142,17 @@ class VoiceService:
     
     def _generate_cache_key(self, text: str, voice_id: Optional[str], output_format: str) -> str:
         """Generate a cache key for the given parameters."""
+        api_key_scope = "server"
+        if self.api_key:
+            api_key_scope = f"request:{hashlib.sha256(self.api_key.encode()).hexdigest()[:10]}"
+
         # Create a string representation of the parameters
         params = {
             "text": text,
             "voice_id": voice_id or "",
             "output_format": output_format,
-            "service": self.tts_service
+            "service": self.tts_service,
+            "api_key_scope": api_key_scope
         }
         
         # Convert to JSON and hash
@@ -179,7 +204,8 @@ class VoiceService:
     async def recognize_speech(
         self,
         audio_data: str,
-        language: str = "en-US"
+        language: str = "en-US",
+        audio_format: Optional[str] = None
     ) -> Dict[str, Any]:
         """
         Recognize speech from audio data.
@@ -195,7 +221,9 @@ class VoiceService:
         
         try:
             # Select the appropriate STT service
-            if self.stt_service == "google":
+            if self.stt_service == "openai":
+                text, confidence, alternatives = await self._recognize_openai(audio_data, language, audio_format)
+            elif self.stt_service == "google":
                 text, confidence, alternatives = await self._recognize_google(audio_data, language)
             elif self.stt_service == "amazon":
                 text, confidence, alternatives = await self._recognize_amazon(audio_data, language)
@@ -210,10 +238,136 @@ class VoiceService:
                 "confidence": confidence,
                 "alternatives": alternatives
             }
+        except HTTPException:
+            raise
         except Exception as e:
             logger.error(f"Error in speech recognition: {e}")
             raise HTTPException(status_code=500, detail=f"Speech recognition failed: {str(e)}")
-    
+
+    def _get_openai_client(self):
+        """Create an OpenAI client for voice APIs."""
+        try:
+            from openai import OpenAI
+        except ImportError as e:
+            raise RuntimeError("openai package is not installed") from e
+
+        api_key = self.api_key or os.environ.get("OPENAI_API_KEY")
+        if not api_key:
+            raise RuntimeError("OPENAI_API_KEY is not configured")
+        return OpenAI(api_key=api_key)
+
+    async def _synthesize_openai(
+        self,
+        text: str,
+        voice_id: Optional[str] = None,
+        output_format: str = "mp3"
+    ) -> tuple[str, float]:
+        """Synthesize text using OpenAI TTS."""
+        logger.info("Using OpenAI TTS")
+        client = self._get_openai_client()
+        model = os.environ.get("VOICE_TTS_MODEL", "gpt-4o-mini-tts")
+        voice = voice_id or os.environ.get("VOICE_TTS_VOICE", "alloy")
+        fmt = output_format.lower() if output_format else "mp3"
+
+        def _create_audio() -> bytes:
+            try:
+                response = client.audio.speech.create(
+                    model=model,
+                    voice=voice,
+                    input=text,
+                    format=fmt
+                )
+            except TypeError:
+                response = client.audio.speech.create(
+                    model=model,
+                    voice=voice,
+                    input=text,
+                    response_format=fmt
+                )
+            if hasattr(response, "read"):
+                return response.read()
+            content = getattr(response, "content", b"")
+            if isinstance(content, str):
+                return content.encode("utf-8")
+            return content or b""
+
+        try:
+            audio_bytes = await asyncio.to_thread(_create_audio)
+        except Exception as openai_error:
+            status_code = int(getattr(openai_error, 'status_code', 500) or 500)
+            raise HTTPException(status_code=status_code, detail=f"OpenAI TTS error: {openai_error}")
+        if not audio_bytes:
+            raise RuntimeError("OpenAI TTS returned empty audio")
+
+        audio_data = base64.b64encode(audio_bytes).decode()
+        duration = max(0.5, len(text) * 0.06)
+        return audio_data, duration
+
+    async def _recognize_openai(
+        self,
+        audio_data: str,
+        language: str = "en-US",
+        audio_format: Optional[str] = None
+    ) -> tuple[str, float, List[Dict[str, Any]]]:
+        """Recognize speech using OpenAI transcription."""
+        logger.info("Using OpenAI STT")
+        client = self._get_openai_client()
+        model = os.environ.get("VOICE_STT_MODEL", "gpt-4o-mini-transcribe")
+
+        try:
+            audio_bytes = base64.b64decode(audio_data)
+        except Exception as decode_error:
+            raise HTTPException(status_code=400, detail=f"Invalid base64 audio data: {decode_error}")
+        if not audio_bytes:
+            return "", 0.0, []
+
+        lang_code = language.split("-")[0] if language else None
+        ext = (audio_format or "").strip().lower() or self._detect_audio_extension(audio_bytes)
+        if ext in {"pcm", "opus"}:
+            raise HTTPException(
+                status_code=400,
+                detail="Unsupported transcription format. Use wav, mp3, m4a, flac, ogg, or webm."
+            )
+
+        def _transcribe():
+            audio_file = io.BytesIO(audio_bytes)
+            audio_file.name = f"audio.{ext}"
+            return client.audio.transcriptions.create(
+                model=model,
+                file=audio_file,
+                language=lang_code
+            )
+
+        try:
+            transcript = await asyncio.to_thread(_transcribe)
+        except Exception as transcribe_error:
+            status_code = int(getattr(transcribe_error, 'status_code', 400) or 400)
+            if status_code < 400 or status_code > 599:
+                status_code = 400
+            detail = f"OpenAI transcription error: {transcribe_error}" if status_code >= 500 else f"Invalid or unsupported audio content: {transcribe_error}"
+            raise HTTPException(status_code=status_code, detail=detail)
+        text = getattr(transcript, "text", None)
+        if text is None and isinstance(transcript, dict):
+            text = transcript.get("text", "")
+        text = text or ""
+        confidence = 0.9 if text else 0.0
+        alternatives = [{"text": text, "confidence": confidence}] if text else []
+        return text, confidence, alternatives
+
+    def _detect_audio_extension(self, audio_bytes: bytes) -> str:
+        """Best-effort audio container detection for transcription uploads."""
+        if audio_bytes.startswith(b"RIFF") and b"WAVE" in audio_bytes[:16]:
+            return "wav"
+        if audio_bytes.startswith(b"ID3") or (len(audio_bytes) > 2 and audio_bytes[0] == 0xFF and (audio_bytes[1] & 0xE0) == 0xE0):
+            return "mp3"
+        if audio_bytes.startswith(b"OggS"):
+            return "ogg"
+        if audio_bytes.startswith(b"fLaC"):
+            return "flac"
+        if len(audio_bytes) > 8 and audio_bytes[4:8] == b"ftyp":
+            return "m4a"
+        return os.environ.get("VOICE_STT_AUDIO_EXT", "wav")
+
     # Google Cloud TTS implementation
     async def _synthesize_google(
         self,
@@ -234,6 +388,8 @@ class VoiceService:
         """
         try:
             logger.info("Using Google Cloud TTS")
+            if texttospeech is None:
+                raise RuntimeError("google-cloud-texttospeech is not installed")
             
             # Initialize the client
             client = texttospeech.TextToSpeechClient()
@@ -298,6 +454,8 @@ class VoiceService:
         """
         try:
             logger.info("Using Amazon Polly")
+            if boto3 is None:
+                raise RuntimeError("boto3 is not installed")
             
             # Initialize the Polly client
             polly_client = boto3.client('polly', region_name='us-east-1')
@@ -353,6 +511,8 @@ class VoiceService:
         """
         try:
             logger.info("Using Microsoft Azure TTS")
+            if speechsdk is None:
+                raise RuntimeError("azure-cognitiveservices-speech is not installed")
             
             # Get subscription key and region from environment variables
             subscription_key = os.environ.get("AZURE_SPEECH_KEY")
@@ -447,6 +607,8 @@ class VoiceService:
         """
         try:
             logger.info("Using Google Cloud STT")
+            if speech is None:
+                raise RuntimeError("google-cloud-speech is not installed")
             
             # Initialize the client
             client = speech.SpeechClient()
@@ -509,6 +671,8 @@ class VoiceService:
         """
         try:
             logger.info("Using Amazon Transcribe")
+            if boto3 is None:
+                raise RuntimeError("boto3 is not installed")
             
             # Initialize the S3 and Transcribe clients
             s3_client = boto3.client('s3', region_name='us-east-1')
@@ -591,6 +755,8 @@ class VoiceService:
         """
         try:
             logger.info("Using Microsoft Azure STT")
+            if speechsdk is None:
+                raise RuntimeError("azure-cognitiveservices-speech is not installed")
             
             # Get subscription key and region from environment variables
             subscription_key = os.environ.get("AZURE_SPEECH_KEY")

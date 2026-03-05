@@ -5,6 +5,34 @@ import path from 'path';
 // Simplified logger for development purposes
 const { createLogger, format, transports } = winston;
 
+const safeJsonStringify = (value: unknown): string => {
+  const seen = new WeakSet<object>();
+  return JSON.stringify(value, (_key, val) => {
+    if (typeof val === 'bigint') {
+      return val.toString();
+    }
+
+    if (val instanceof Error) {
+      return {
+        name: val.name,
+        message: val.message,
+        stack: val.stack,
+        code: (val as any).code,
+        status: (val as any).status
+      };
+    }
+
+    if (val && typeof val === 'object') {
+      if (seen.has(val)) {
+        return '[Circular]';
+      }
+      seen.add(val);
+    }
+
+    return val;
+  }, 2);
+};
+
 // Make sure logs directory exists
 const logDir = path.join(process.cwd(), 'logs');
 const testResultsLogDir = path.join(process.cwd(), '../../test-results/logs');
@@ -44,7 +72,7 @@ const consoleFormat = format.combine(
     (info) => {
       const { timestamp, level, message, ...meta } = info;
       const metaString = Object.keys(meta).length ? 
-        `\n${JSON.stringify(meta, null, 2)}` : '';
+        `\n${safeJsonStringify(meta)}` : '';
       
       return `${timestamp} ${level}: ${message}${
         info.stack ? `\n${info.stack}` : ''

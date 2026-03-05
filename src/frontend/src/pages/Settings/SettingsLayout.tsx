@@ -1,5 +1,6 @@
 import React, { ReactNode } from 'react';
 import { NavLink, Link, useLocation } from 'react-router-dom';
+import { useAuth } from '../../hooks/useAuth';
 
 interface SettingsLayoutProps {
   children: ReactNode;
@@ -13,6 +14,8 @@ const SettingsLayout: React.FC<SettingsLayoutProps> = ({
   description 
 }) => {
   const location = useLocation();
+  const { user } = useAuth();
+  const isAdmin = user?.role === 'admin';
   
   // Define settings navigation items
   const settingsNav = [
@@ -78,7 +81,21 @@ const SettingsLayout: React.FC<SettingsLayoutProps> = ({
           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4" />
         </svg>
       )
-    }
+    },
+    ...(isAdmin
+      ? [
+          {
+            name: 'Data Maintenance',
+            path: '/settings/data',
+            icon: (
+              <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M4 7h16M4 12h16M4 17h16" />
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M7 7V5m5 2V5m5 2V5" />
+              </svg>
+            )
+          }
+        ]
+      : [])
   ];
 
   return (

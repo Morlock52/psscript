@@ -19,7 +19,7 @@ const VoiceChatInterface = ({ className = '' }) => {
   const [isVoiceMode, setIsVoiceMode] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [voiceSettings, setVoiceSettings] = useState({
-    voiceId: 'en-US-Standard-A',
+    voiceId: 'alloy',
     autoPlay: true
   });
   
@@ -153,7 +153,7 @@ const VoiceChatInterface = ({ className = '' }) => {
       const response = await axios.post(
         '/api/chat/message',
         {
-          message: text,
+          messages: [{ role: 'user', content: text }],
           synthesizeVoice: true,
           voiceId: voiceSettings.voiceId
         },
@@ -164,13 +164,15 @@ const VoiceChatInterface = ({ className = '' }) => {
           }
         }
       );
-      
+
       if (response.data) {
+        const assistantText = response.data.response || response.data.text || '';
+
         // Add assistant message to chat
         const assistantMessage = {
           id: Date.now().toString(),
           role: 'assistant',
-          content: response.data.text,
+          content: assistantText,
           audioData: response.data.audioData,
           timestamp: new Date().toISOString()
         };

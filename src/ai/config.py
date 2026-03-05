@@ -27,8 +27,6 @@ class APIKeys(BaseModel):
     anthropic: Optional[str] = Field(None, description="Anthropic API key for Claude models")
     google_search: Optional[str] = Field(None, description="Google Search API key")
     google_cse_id: Optional[str] = Field(None, description="Google Custom Search Engine ID")
-    weather: Optional[str] = Field(None, description="OpenWeather API key")
-    alpha_vantage: Optional[str] = Field(None, description="Alpha Vantage API key")
     serpapi: Optional[str] = Field(None, description="SerpAPI key")
 
 class RateLimits(BaseModel):
@@ -38,8 +36,6 @@ class RateLimits(BaseModel):
     anthropic_rpm: int = Field(60, description="Anthropic requests per minute")
     anthropic_tpm: int = Field(100000, description="Anthropic tokens per minute")
     google_search_rpm: int = Field(30, description="Google Search requests per minute")
-    weather_rpm: int = Field(60, description="Weather API requests per minute")
-    alpha_vantage_rpm: int = Field(5, description="Alpha Vantage requests per minute")
 
 class AgentConfig(BaseModel):
     """Agent configuration - Updated January 2026.
@@ -153,12 +149,6 @@ def load_config() -> Config:
     
     if os.getenv("GOOGLE_CSE_ID"):
         config.api_keys.google_cse_id = os.getenv("GOOGLE_CSE_ID")
-    
-    if os.getenv("OPENWEATHER_API_KEY"):
-        config.api_keys.weather = os.getenv("OPENWEATHER_API_KEY")
-    
-    if os.getenv("ALPHA_VANTAGE_API_KEY"):
-        config.api_keys.alpha_vantage = os.getenv("ALPHA_VANTAGE_API_KEY")
     
     if os.getenv("SERPAPI_API_KEY"):
         config.api_keys.serpapi = os.getenv("SERPAPI_API_KEY")

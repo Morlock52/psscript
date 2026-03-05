@@ -4,22 +4,46 @@ import App from './App'
 import { AuthProvider } from './contexts/AuthContext'
 import { ThemeProvider } from './contexts/ThemeContext'
 import ErrorBoundary from './components/ErrorBoundary'
+import 'monaco-editor/min/vs/editor/editor.main.css'
 import './index.css'
 
-// Hide the initial loading indicator when React starts mounting
-const loadingElement = document.getElementById('app-loading');
-if (loadingElement) {
-  loadingElement.style.display = 'none';
-}
+const showStartupError = (error: unknown) => {
+  const loading = document.getElementById('app-loading');
+  const errorDiv = document.getElementById('app-error');
+  const errorDetails = document.getElementById('error-details');
 
-ReactDOM.createRoot(document.getElementById('root')!).render(
-  <React.StrictMode>
-    <ErrorBoundary>
-      <AuthProvider>
-        <ThemeProvider>
-          <App />
-        </ThemeProvider>
-      </AuthProvider>
-    </ErrorBoundary>
-  </React.StrictMode>
-)
+  if (loading) loading.style.display = 'none';
+  if (errorDiv) errorDiv.classList.add('visible');
+  if (errorDetails) {
+    const message = error instanceof Error ? error.stack || error.message : String(error);
+    errorDetails.textContent = `Startup error:\n${message}`;
+  }
+};
+
+try {
+  const rootEl = document.getElementById('root');
+  if (!rootEl) {
+    throw new Error('Missing #root element');
+  }
+
+  ReactDOM.createRoot(rootEl).render(
+    <React.StrictMode>
+      <ErrorBoundary>
+        <AuthProvider>
+          <ThemeProvider>
+            <App />
+          </ThemeProvider>
+        </AuthProvider>
+      </ErrorBoundary>
+    </React.StrictMode>
+  );
+
+  const loadingElement = document.getElementById('app-loading');
+  if (loadingElement) {
+    requestAnimationFrame(() => {
+      loadingElement.style.display = 'none';
+    });
+  }
+} catch (error) {
+  showStartupError(error);
+}

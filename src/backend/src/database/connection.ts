@@ -9,7 +9,7 @@
  * - Health checks and connection validation
  */
 
-import { Sequelize, Options } from 'sequelize';
+import { Sequelize, Options, QueryTypes } from 'sequelize';
 import winston from 'winston';
 import fs from 'fs';
 import path from 'path';
@@ -64,6 +64,34 @@ enum ConnectionErrorType {
   UNKNOWN = 'unknown'
 }
 
+interface DbErrorStats {
+  [errorType: string]: number;
+}
+
+interface DbDiagnosticState {
+  connected: boolean;
+  retryCount: number;
+  lastSuccessfulConnection: number | null;
+  consecutiveFailures: number;
+  lastError: Error | null;
+  errorStats: DbErrorStats;
+  tables: string[];
+  tablesLastRefreshed: number | null;
+}
+
+const TABLE_REFRESH_INTERVAL_MS = 60_000;
+
+const dbDiagnosticState: DbDiagnosticState = {
+  connected: false,
+  retryCount: 0,
+  lastSuccessfulConnection: null,
+  consecutiveFailures: 0,
+  lastError: null,
+  errorStats: {},
+  tables: [],
+  tablesLastRefreshed: null
+};
+
 /**
  * Determine the type of database connection error
  */
@@ -112,6 +140,121 @@ function getErrorType(error: any): ConnectionErrorType {
   }
   
   return ConnectionErrorType.UNKNOWN;
+}
+
+function getConnectionConfigInfo() {
+  if (process.env.DATABASE_URL) {
+    try {
+      const dbUrl = new URL(process.env.DATABASE_URL);
+      return {
+        host: dbUrl.hostname || 'localhost',
+        port: parseInt(dbUrl.port || '5432', 10),
+        database: dbUrl.pathname ? dbUrl.pathname.replace(/^\//, '') : 'psscript',
+        username: dbUrl.username || 'postgres',
+        pool: {
+          max: process.env.DB_POOL_MAX ? parseInt(process.env.DB_POOL_MAX, 10) : POOL_MAX,
+          min: POOL_MIN,
+          acquire: POOL_ACQUIRE_TIMEOUT_MS,
+          idle: POOL_IDLE_TIMEOUT_MS
+        },
+        connectionTimeout: CONNECTION_TIMEOUT_MS,
+        maxRetries: MAX_CONNECTION_RETRIES,
+        dialect: 'postgres' as const
+      };
+    } catch (_error) {
+      // Fall back to env-based parsing below
+    }
+  }
+
+  return {
+    host: process.env.DB_HOST || 'localhost',
+    port: parseInt(process.env.DB_PORT || '5432', 10),
+    database: process.env.DB_NAME || 'psscript',
+    username: process.env.DB_USER || 'postgres',
+    pool: {
+      max: process.env.DB_POOL_MAX ? parseInt(process.env.DB_POOL_MAX, 10) : POOL_MAX,
+      min: POOL_MIN,
+      acquire: POOL_ACQUIRE_TIMEOUT_MS,
+      idle: POOL_IDLE_TIMEOUT_MS
+    },
+    connectionTimeout: CONNECTION_TIMEOUT_MS,
+    maxRetries: MAX_CONNECTION_RETRIES,
+    dialect: 'postgres' as const
+  };
+}
+
+export const connectionEvents = new EventEmitter();
+
+function updateConnectionStateFromSuccess() {
+  const now = Date.now();
+  dbDiagnosticState.connected = true;
+  dbDiagnosticState.retryCount = 0;
+  dbDiagnosticState.consecutiveFailures = 0;
+  dbDiagnosticState.lastSuccessfulConnection = now;
+  dbDiagnosticState.lastError = null;
+  connectionEvents.emit('connected', { timestamp: now });
+}
+
+function updateConnectionStateFromRetry(error: any, attempt: number) {
+  dbDiagnosticState.retryCount = attempt;
+  dbDiagnosticState.connected = false;
+  connectionEvents.emit('retry', {
+    attempt,
+    message: error instanceof Error ? error.message : String(error)
+  });
+}
+
+function updateConnectionStateFromError(error: any) {
+  const now = Date.now();
+  const errorType = getErrorType(error);
+  dbDiagnosticState.connected = false;
+  dbDiagnosticState.consecutiveFailures += 1;
+  dbDiagnosticState.lastError = error instanceof Error ? error : new Error(String(error));
+  dbDiagnosticState.errorStats[errorType] = (dbDiagnosticState.errorStats[errorType] || 0) + 1;
+  connectionEvents.emit('error', {
+    timestamp: now,
+    type: errorType,
+    message: dbDiagnosticState.lastError.message
+  });
+}
+
+function getPoolStatus(sequelize: Sequelize): Record<string, any> {
+  const pool = (sequelize as any).connectionManager?.pool;
+  if (!pool) {
+    return {
+      size: null,
+      available: null,
+      used: null,
+      pending: null
+    };
+  }
+
+  return {
+    size: pool.size,
+    available: pool.available,
+    used: pool.used,
+    pending: pool.pending
+  };
+}
+
+async function refreshTableCache(sequelize: Sequelize, force = false): Promise<void> {
+  const now = Date.now();
+  if (!force && dbDiagnosticState.tablesLastRefreshed && (now - dbDiagnosticState.tablesLastRefreshed) < TABLE_REFRESH_INTERVAL_MS) {
+    return;
+  }
+
+  try {
+    const tableRows = await sequelize.query(
+      "SELECT table_name FROM information_schema.tables WHERE table_schema = 'public' ORDER BY table_name",
+      { type: QueryTypes.SELECT }
+    );
+    dbDiagnosticState.tables = (tableRows as Array<Record<string, any>>)
+      .map((row) => row.table_name)
+      .filter(Boolean);
+    dbDiagnosticState.tablesLastRefreshed = now;
+  } catch (error) {
+    logger.warn(`Unable to refresh table cache for diagnostics: ${error}`);
+  }
 }
 
 /**
@@ -266,16 +409,17 @@ class Database {
     try {
       logger.info('Connecting to database...');
       await this.sequelize.authenticate();
-      
-      // Update connected status
       this.connected = true;
       this.retries = 0;
+      updateConnectionStateFromSuccess();
       logger.info('Database connection established successfully');
       
       // Create migrations table if it doesn't exist
       await this.createMigrationsTable();
+      await refreshTableCache(this.sequelize, true);
     } catch (error: any) {
       this.connected = false;
+      updateConnectionStateFromError(error);
       const errorType = getErrorType(error);
       logger.error(`Database connection failed (${errorType}): ${error.message}`);
       
@@ -283,6 +427,7 @@ class Database {
         // Calculate exponential backoff delay
         const delay = RETRY_DELAY_MS * Math.pow(2, this.retries);
         this.retries++;
+        updateConnectionStateFromRetry(error, this.retries);
         
         logger.info(`Retrying connection (attempt ${this.retries}/${MAX_CONNECTION_RETRIES}) in ${delay}ms...`);
         await new Promise(resolve => setTimeout(resolve, delay));
@@ -324,9 +469,13 @@ class Database {
   public async healthCheck(): Promise<boolean> {
     try {
       await this.sequelize.query('SELECT 1');
+      updateConnectionStateFromSuccess();
+      this.connected = true;
+      await refreshTableCache(this.sequelize);
       return true;
     } catch (error) {
       logger.error(`Health check failed: ${error}`);
+      updateConnectionStateFromError(error);
       this.connected = false;
       return false;
     }
@@ -338,6 +487,9 @@ class Database {
   public async close(): Promise<void> {
     try {
       await this.sequelize.close();
+      this.connected = false;
+      dbDiagnosticState.connected = false;
+      connectionEvents.emit('disconnected', { timestamp: Date.now() });
       logger.info('Database connection closed');
     } catch (error) {
       logger.error(`Error closing database connection: ${error}`);
@@ -353,20 +505,18 @@ export default db;
 // Export sequelize instance for model initialization
 export const sequelize = db.sequelize;
 
-// Connection events emitter for diagnostics and monitoring
-// Emits: 'connected', 'disconnected', 'error', 'retry'
-export const connectionEvents = new EventEmitter();
-
 // Connection info for diagnostics (safe to expose - no passwords)
 export const dbConnectionInfo = {
-  host: process.env.DB_HOST || 'localhost',
-  port: parseInt(process.env.DB_PORT || '5432'),
-  database: process.env.DB_NAME || 'psscript',
-  poolMax: parseInt(process.env.DB_POOL_MAX || String(POOL_MAX)),
-  poolMin: POOL_MIN,
-  connectionTimeout: CONNECTION_TIMEOUT_MS,
-  maxRetries: MAX_CONNECTION_RETRIES,
-  dialect: 'postgres' as const
+  isConnected: () => dbDiagnosticState.connected,
+  lastSuccessfulConnection: () => dbDiagnosticState.lastSuccessfulConnection,
+  retryCount: () => dbDiagnosticState.retryCount,
+  consecutiveFailures: () => dbDiagnosticState.consecutiveFailures,
+  tables: () => [...dbDiagnosticState.tables],
+  lastError: () => dbDiagnosticState.lastError,
+  errorStats: () => ({ ...dbDiagnosticState.errorStats }),
+  pgPoolStatus: () => getPoolStatus(sequelize),
+  config: () => getConnectionConfigInfo(),
+  validateConnection: async () => db.healthCheck()
 };
 
 // Debug: Log to verify sequelize is defined

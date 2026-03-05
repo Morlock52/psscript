@@ -70,7 +70,7 @@ export const CACHE_TTL = {
  * By resolving it at runtime (inside handlers/util functions), we avoid the circular-init hazard.
  */
 export const getCache = (): CacheService => {
-  // eslint-disable-next-line @typescript-eslint/no-var-requires
+  // eslint-disable-next-line @typescript-eslint/no-require-imports
   const mod = require('../../index') as { cache?: CacheService } | undefined;
   const c = mod?.cache;
   if (c) return c;

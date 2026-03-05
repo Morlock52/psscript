@@ -19,7 +19,7 @@
       "./node_modules/@types",
       "./src/types"
     ],
-    "types": ["node", "express"],
+    "types": ["node", "express", "jest"],
     "strictNullChecks": false,
     "noImplicitAny": false,
     "noEmitOnError": false,

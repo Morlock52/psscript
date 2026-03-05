@@ -10,7 +10,7 @@ import {
   ScriptVersionController,
   ScriptExportController
 } from '../controllers/script';
-import { authenticateJWT } from '../middleware/authMiddleware';
+import { authenticateJWT, requireAdmin } from '../middleware/authMiddleware';
 import upload, { handleMulterError, diskUpload, handleUploadProgress } from '../middleware/uploadMiddleware';
 import { corsMiddleware, uploadCorsMiddleware } from '../middleware/corsMiddleware';
 import { sequelize } from '../database/connection';
@@ -19,6 +19,31 @@ import { cache } from '../index';
 import { handleNetworkErrors } from '../middleware/networkErrorMiddleware';
 import AsyncUploadController from '../controllers/AsyncUploadController';
 import { generatePowerShellScript } from '../services/agentic/tools/ScriptGenerator';
+
+function normalizeScriptIds(ids: unknown): number[] {
+  if (!Array.isArray(ids)) {
+    return [];
+  }
+
+  const parsed = ids
+    .map(id => Number.parseInt(String(id), 10))
+    .filter((id) => Number.isFinite(id) && Number.isInteger(id) && id > 0);
+
+  return [...new Set(parsed)];
+}
+
+function buildSuggestionContentBlock(suggestions: string[]): string {
+  const lines = suggestions
+    .map((item) => item.trim())
+    .filter(Boolean)
+    .map((item) => `# - ${item}`);
+
+  if (lines.length === 0) {
+    return '';
+  }
+
+  return [``, `# AI Suggestions`, `# ------------`, ...lines, ``].join('\n');
+}
 
 const router = express.Router();
 
@@ -119,7 +144,7 @@ router.get('/upload/status/:uploadId', AsyncUploadController.getUploadStatus);
  *       200:
  *         description: A list of scripts
  */
-router.get('/', ScriptCrudController.getScripts);
+router.get('/', authenticateJWT, ScriptCrudController.getScripts);
 
 /**
  * @swagger
@@ -157,7 +182,7 @@ router.get('/', ScriptCrudController.getScripts);
  *       200:
  *         description: Search results
  */
-router.get('/search', ScriptSearchController.searchScripts);
+router.get('/search', authenticateJWT, ScriptSearchController.searchScripts);
 
 /**
  * @swagger
@@ -178,7 +203,7 @@ router.get('/search', ScriptSearchController.searchScripts);
  *       404:
  *         description: Script not found
  */
-router.get('/:id', ScriptCrudController.getScript);
+router.get('/:id', authenticateJWT, ScriptCrudController.getScript);
 
 /**
  * @swagger
@@ -273,7 +298,7 @@ router.post('/upload', uploadCorsMiddleware, handleNetworkErrors, handleUploadPr
  *       200:
  *         description: Cache cleared successfully
  */
-router.get('/clear-cache', async (req, res) => {
+router.get('/clear-cache', authenticateJWT, requireAdmin, async (req, res) => {
   try {
     const { cache } = await import('../index');
     const count = cache.clearPattern('scripts:');
@@ -680,7 +705,7 @@ router.get('/:id/execution-history', authenticateJWT, ScriptExecutionController.
  *       200:
  *         description: Similar scripts
  */
-router.get('/:id/similar', ScriptSearchController.findSimilarScripts);
+router.get('/:id/similar', authenticateJWT, ScriptSearchController.findSimilarScripts);
 
 // ===== VERSION CONTROL ROUTES =====
 
@@ -950,6 +975,247 @@ router.post('/delete', authenticateJWT, async (req, res) => {
     return res.status(500).json({ 
       message: 'An error occurred while deleting scripts', 
       error: error.message 
+    });
+  }
+});
+
+/**
+ * @swagger
+ * /api/scripts/bulk-update:
+ *   post:
+ *     summary: Bulk update scripts
+ *     description: Update common fields across multiple scripts in one request
+ *     security:
+ *       - bearerAuth: []
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - ids
+ *               - isPublic
+ *             properties:
+ *               ids:
+ *                 type: array
+ *                 items:
+ *                   type: integer
+ *               isPublic:
+ *                 type: boolean
+ *     responses:
+ *       200:
+ *         description: Bulk update confirmation
+ *       400:
+ *         description: Invalid request
+ *       401:
+ *         description: Unauthorized
+ *       403:
+ *         description: Forbidden
+ */
+router.post('/bulk-update', authenticateJWT, async (req, res) => {
+  let transaction;
+
+  try {
+    const { isPublic } = req.body || {};
+    const ids = normalizeScriptIds(req.body?.ids);
+    const userId = req.user?.id;
+    const isAdmin = req.user?.role === 'admin';
+
+    if (!ids.length) {
+      return res.status(400).json({
+        message: 'Invalid request: ids array is required',
+        success: false
+      });
+    }
+
+    if (typeof isPublic !== 'boolean') {
+      return res.status(400).json({
+        message: 'Invalid request: isPublic must be a boolean',
+        success: false
+      });
+    }
+
+    transaction = await sequelize.transaction();
+
+    const scripts = await Script.findAll({
+      where: { id: ids },
+      transaction
+    });
+
+    if (scripts.length !== ids.length) {
+      const foundIds = scripts.map(script => script.id);
+      const missingIds = ids.filter(id => !foundIds.includes(id));
+
+      await transaction.rollback();
+      return res.status(404).json({
+        message: 'One or more scripts not found',
+        missingIds,
+        success: false
+      });
+    }
+
+    if (!isAdmin) {
+      const unauthorizedScripts = scripts.filter(script => script.userId !== userId);
+      if (unauthorizedScripts.length > 0) {
+        await transaction.rollback();
+        return res.status(403).json({
+          message: 'Not authorized to update one or more scripts',
+          unauthorizedIds: unauthorizedScripts.map(script => script.id),
+          success: false
+        });
+      }
+    }
+
+    await Script.update(
+      { isPublic },
+      {
+        where: { id: ids },
+        transaction
+      }
+    );
+
+    await transaction.commit();
+
+    scripts.forEach(script => {
+      cache.del(`script:${script.id}`);
+    });
+    cache.clearPattern('scripts:');
+
+    return res.status(200).json({
+      message: 'Scripts updated successfully',
+      ids,
+      isPublic,
+      success: true
+    });
+  } catch (error) {
+    if (transaction) {
+      await transaction.rollback();
+    }
+
+    console.error('Error in bulk update scripts:', error);
+    return res.status(500).json({
+      message: 'An error occurred while updating scripts',
+      error: error.message,
+      success: false
+    });
+  }
+});
+
+/**
+ * @swagger
+ * /api/scripts/{id}/apply-suggestions:
+ *   post:
+ *     summary: Apply AI suggestions to a script
+ *     description: Appends AI suggestions as comments and marks the script as updated
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: integer
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - suggestions
+ *             properties:
+ *               suggestions:
+ *                 type: array
+ *                 items:
+ *                   type: string
+ *     responses:
+ *       200:
+ *         description: Suggestions applied
+ *       400:
+ *         description: Invalid request
+ */
+router.post('/:id/apply-suggestions', authenticateJWT, async (req, res) => {
+  let transaction;
+
+  try {
+    const scriptId = Number.parseInt(req.params.id, 10);
+    if (!Number.isInteger(scriptId) || scriptId <= 0) {
+      return res.status(400).json({ message: 'Invalid script id', success: false });
+    }
+
+    const suggestions = Array.isArray(req.body?.suggestions)
+      ? req.body.suggestions.map((item: unknown) => String(item || '').trim()).filter(Boolean)
+      : [];
+
+    if (suggestions.length === 0) {
+      return res.status(400).json({ message: 'No suggestions provided', success: false });
+    }
+
+    transaction = await sequelize.transaction();
+
+    const script = await Script.findByPk(scriptId, { transaction });
+    if (!script) {
+      await transaction.rollback();
+      return res.status(404).json({ message: 'Script not found', success: false });
+    }
+
+    if (!req.user || !req.user.id) {
+      await transaction.rollback();
+      return res.status(401).json({ message: 'Unauthorized', success: false });
+    }
+
+    if (script.userId !== req.user.id && req.user.role !== 'admin') {
+      await transaction.rollback();
+      return res.status(403).json({ message: 'Not authorized to update this script', success: false });
+    }
+
+    const uniqueSuggestions = [...new Set(suggestions)];
+    const suggestionBlock = buildSuggestionContentBlock(uniqueSuggestions);
+    const currentContent = typeof script.content === 'string' ? script.content : '';
+    const updatedContent = `${currentContent.trimEnd()}${suggestionBlock}`;
+
+    await script.update({
+      content: updatedContent,
+      version: script.version + 1
+    }, { transaction });
+
+    const analysis = await ScriptAnalysis.findOne({
+      where: { scriptId },
+      transaction
+    });
+
+    if (analysis) {
+      const existingSuggestions = Array.isArray((analysis as any).optimizationSuggestions)
+        ? (analysis as any).optimizationSuggestions as string[]
+        : [];
+      const nextSuggestions = [...new Set([...(existingSuggestions || []), ...uniqueSuggestions])];
+
+      await analysis.update({
+        optimizationSuggestions: nextSuggestions
+      }, { transaction });
+    }
+
+    await transaction.commit();
+
+    cache.del(`script:${script.id}`);
+    cache.clearPattern('scripts:');
+
+    return res.status(200).json({
+      message: 'Suggestions applied successfully',
+      scriptId,
+      suggestions: uniqueSuggestions,
+      success: true
+    });
+  } catch (error) {
+    if (transaction) {
+      await transaction.rollback();
+    }
+
+    console.error('Error applying suggestions:', error);
+    return res.status(500).json({
+      message: 'Failed to apply suggestions',
+      success: false
     });
   }
 });

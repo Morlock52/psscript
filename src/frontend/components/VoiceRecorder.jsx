@@ -213,7 +213,12 @@ const VoiceRecorder = ({ onAudioCaptured, className = '' }) => {
       };
     } catch (error) {
       console.error('Error sending audio:', error);
-      showToast('Error processing audio', 'error');
+      const isNotFound = axios.isAxiosError(error) && error.response?.status === 404;
+      if (isNotFound) {
+        showToast('Voice recognition API is unavailable', 'warning');
+      } else {
+        showToast('Error processing audio', 'error');
+      }
     }
   };
   

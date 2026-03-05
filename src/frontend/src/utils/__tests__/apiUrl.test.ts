@@ -29,10 +29,14 @@ describe('apiUrl utilities', () => {
   });
 
   const mockLocation = (hostname: string, protocol: string = 'http:') => {
+    const port = '3000';
+    const origin = `${protocol}//${hostname}${port ? `:${port}` : ''}`;
     Object.defineProperty(window, 'location', {
       value: {
         hostname,
         protocol,
+        port,
+        origin,
       },
       writable: true,
     });
@@ -42,13 +46,13 @@ describe('apiUrl utilities', () => {
     it('returns localhost URL when on localhost', () => {
       mockLocation('localhost');
       const url = getApiUrl();
-      expect(url).toBe('http://localhost:4000/api');
+      expect(url).toBe('http://localhost:3000/api');
     });
 
     it('returns localhost URL when on 127.0.0.1', () => {
       mockLocation('127.0.0.1');
       const url = getApiUrl();
-      expect(url).toBe('http://127.0.0.1:4000/api');
+      expect(url).toBe('http://127.0.0.1:3000/api');
     });
 
     it('returns tunnel URL (no port) when on remote hostname', () => {
@@ -60,7 +64,7 @@ describe('apiUrl utilities', () => {
     it('uses https when protocol is https', () => {
       mockLocation('localhost', 'https:');
       const url = getApiUrl();
-      expect(url).toBe('https://localhost:4000/api');
+      expect(url).toBe('https://localhost:3000/api');
     });
 
     it('caches the URL after first call', () => {
@@ -72,7 +76,7 @@ describe('apiUrl utilities', () => {
       const url2 = getApiUrl();
 
       expect(url1).toBe(url2);
-      expect(url2).toBe('http://localhost:4000/api');
+      expect(url2).toBe('http://localhost:3000/api');
     });
 
     it('returns new URL after cache is cleared', () => {
@@ -83,7 +87,7 @@ describe('apiUrl utilities', () => {
       mockLocation('remote.host.com', 'https:');
       const url2 = getApiUrl();
 
-      expect(url1).toBe('http://localhost:4000/api');
+      expect(url1).toBe('http://localhost:3000/api');
       expect(url2).toBe('https://remote.host.com/api');
     });
   });

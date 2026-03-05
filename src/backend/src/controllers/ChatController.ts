@@ -6,6 +6,30 @@ import { sequelize } from '../database/connection';
 import { Op } from 'sequelize';
 import { cache } from '../index';
 
+const AI_CHAT_TIMEOUT_MS = Number(process.env.AI_CHAT_TIMEOUT_MS || 20000);
+
+const summarizeError = (error: unknown): Record<string, unknown> => {
+  if (axios.isAxiosError(error)) {
+    return {
+      name: error.name,
+      message: error.message,
+      code: error.code,
+      status: error.response?.status,
+      data: error.response?.data
+    };
+  }
+
+  if (error instanceof Error) {
+    return {
+      name: error.name,
+      message: error.message,
+      stack: error.stack
+    };
+  }
+
+  return { value: String(error) };
+};
+
 /**
  * Chat Controller
  * Handles chat interactions with the AI service and manages chat history
@@ -33,7 +57,19 @@ export class ChatController {
     
     try {
       // eslint-disable-next-line camelcase -- API request body uses snake_case
-      const { messages, system_prompt, api_key, agent_type, session_id } = req.body;
+      const { messages: rawMessages, message, system_prompt, api_key, agent_type, session_id } = req.body as {
+        messages?: Array<{ role: string; content: string }>;
+        message?: string;
+        system_prompt?: string;
+        api_key?: string;
+        agent_type?: string;
+        session_id?: string;
+      };
+
+      // Backward-compatible payload handling for legacy clients that send `message`.
+      const messages = Array.isArray(rawMessages)
+        ? rawMessages
+        : (typeof message === 'string' && message.trim() ? [{ role: 'user', content: message.trim() }] : []);
       
       // Validate request parameters
       if (!messages || !Array.isArray(messages) || messages.length === 0) {
@@ -79,7 +115,7 @@ export class ChatController {
           'Content-Type': 'application/json',
           'X-Request-ID': requestId
         },
-        timeout: 60000 // 60 second timeout for LLM responses
+        timeout: AI_CHAT_TIMEOUT_MS
       });
       
       const duration = Date.now() - startTime;
@@ -102,20 +138,32 @@ export class ChatController {
           logger.debug(`[${requestId}] Chat history stored for user ${req.user.id}`);
         } catch (historyError) {
           // Log but don't fail the request if history storage fails
-          logger.error(`[${requestId}] Failed to store chat history:`, historyError);
+          logger.error(`[${requestId}] Failed to store chat history`, { error: summarizeError(historyError) });
         }
       }
       
-      res.status(200).json(response.data);
+      const normalizedResponse =
+        response.data && typeof response.data === 'object'
+          ? {
+              ...response.data,
+              response: response.data.response,
+              text: response.data.response || response.data.text,
+            }
+          : {
+              response: response.data,
+              text: response.data,
+            };
+
+      res.status(200).json(normalizedResponse);
     } catch (error) {
       // Generate a user-friendly error message while logging the technical details
-      logger.error(`[${requestId}] Error in sendMessage:`, error);
+      logger.error(`[${requestId}] Error in sendMessage`, { error: summarizeError(error) });
       
       // Handle different types of errors with appropriate responses
       if (axios.isAxiosError(error)) {
         if (error.code === 'ECONNABORTED') {
           // Timeout error
-          logger.warn(`[${requestId}] Request to AI service timed out after ${error.config?.timeout || 60000}ms`);
+          logger.warn(`[${requestId}] Request to AI service timed out after ${error.config?.timeout || AI_CHAT_TIMEOUT_MS}ms`);
           res.status(504).json({ 
             error: 'Request timeout',
             details: 'The AI service took too long to respond. Please try again with a simpler query.'
@@ -152,7 +200,7 @@ export class ChatController {
         }
       } else {
         // Generic error
-        logger.error(`[${requestId}] Unexpected error in sendMessage:`, error);
+        logger.error(`[${requestId}] Unexpected error in sendMessage`, { error: summarizeError(error) });
         res.status(500).json({ 
           error: 'Failed to communicate with AI service',
           details: 'An unexpected error occurred. Please try again later.',
@@ -167,7 +215,7 @@ export class ChatController {
         cache.set(errorKey, errorCount + 1, 60 * 60 * 24 * 7); // 7 days
       } catch (metricError) {
         // Don't let metrics tracking failure affect the response
-        logger.warn(`[${requestId}] Failed to record error metrics:`, metricError);
+        logger.warn(`[${requestId}] Failed to record error metrics`, { error: summarizeError(metricError) });
       }
     }
   }
@@ -235,19 +283,23 @@ export class ChatController {
 
       // Pipe upstream SSE directly to client.
       upstream.data.on('error', (err: any) => {
-        logger.warn(`[${requestId}] Upstream SSE stream error:`, err);
+        logger.warn(`[${requestId}] Upstream SSE stream error`, { error: summarizeError(err) });
         try {
           res.write(`data: ${JSON.stringify({ type: 'error', content: 'Streaming error from AI service' })}\n\n`);
-        } catch {}
+        } catch (_err) {
+          // Ignore write errors after client disconnects.
+        }
         res.end();
       });
 
       upstream.data.pipe(res);
     } catch (error) {
-      logger.error(`[${requestId}] Error proxying SSE stream:`, error);
+      logger.error(`[${requestId}] Error proxying SSE stream`, { error: summarizeError(error) });
       try {
         res.write(`data: ${JSON.stringify({ type: 'error', content: 'AI streaming unavailable' })}\n\n`);
-      } catch {}
+      } catch (_err) {
+        // Ignore write errors after client disconnects.
+      }
       res.end();
     }
   }

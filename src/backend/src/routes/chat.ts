@@ -1,11 +1,26 @@
 // @ts-nocheck - Required for flexible API integration and dynamic request handling
 import express from 'express';
 import { ChatController } from '../controllers/ChatController';
+import { ChatHistory, sequelize } from '../models';
 // Fix import error - use the named export
 import { authenticateJWT } from '../middleware/authMiddleware';
+import logger from '../utils/logger';
 
 const router = express.Router();
 const chatController = new ChatController();
+const chatCategoryByUser = new Map<string, string>();
+
+const getCategoryKey = (userId: number | string, chatId: number | string) => `${userId}::${chatId}`;
+
+const getUserCategoryEntries = (userId: number): string[] => {
+  const values = new Set<string>();
+  for (const [key, value] of chatCategoryByUser.entries()) {
+    if (key.startsWith(`${userId}::`)) {
+      values.add(value);
+    }
+  }
+  return Array.from(values);
+};
 
 /**
  * @swagger
@@ -61,6 +76,11 @@ const chatController = new ChatController();
  *         description: Server error
  */
 router.post('/', chatController.sendMessage.bind(chatController));
+
+/**
+ * Backward-compatible endpoint for older frontends that call /chat/message.
+ */
+router.post('/message', chatController.sendMessage.bind(chatController));
 
 /**
  * @swagger
@@ -189,5 +209,67 @@ router.delete('/history', authenticateJWT, chatController.clearChatHistory.bind(
  *         description: Server error
  */
 router.get('/history/search', authenticateJWT, chatController.searchChatHistory.bind(chatController));
+
+/**
+ * Backward-compatible endpoint for older frontends that call /chat/search.
+ */
+router.get('/search', authenticateJWT, chatController.searchChatHistory.bind(chatController));
+
+/**
+ * Get chat categories (compat endpoint). In-memory mapping is used for compatibility.
+ */
+router.get('/categories', authenticateJWT, async (req, res) => {
+  try {
+    const categories = getUserCategoryEntries(req.user.id as number);
+    res.status(200).json({ categories });
+  } catch (error) {
+    logger.error('Error fetching chat categories:', error);
+    res.status(500).json({ error: 'Failed to fetch chat categories', categories: [] });
+  }
+});
+
+/**
+ * Set category for a chat session (compat endpoint).
+ */
+router.post('/:chatId/category', authenticateJWT, (req, res) => {
+  try {
+    const chatId = req.params.chatId;
+    const { category } = req.body || {};
+
+    if (!category || typeof category !== 'string' || category.trim().length === 0) {
+      return res.status(400).json({ error: 'Category is required' });
+    }
+
+    const key = getCategoryKey(req.user.id as number, chatId);
+    chatCategoryByUser.set(key, category.trim());
+
+    res.status(200).json({ success: true, chatId, category: category.trim() });
+  } catch (error) {
+    logger.error('Error setting chat category:', error);
+    res.status(500).json({ error: 'Failed to set chat category' });
+  }
+});
+
+/**
+ * Delete a single chat session (compat endpoint) by ID.
+ */
+router.delete('/history/:chatId', authenticateJWT, async (req, res) => {
+  try {
+    const userId = req.user.id;
+    const chatId = Number(req.params.chatId);
+    if (!Number.isFinite(chatId) || chatId <= 0) {
+      return res.status(400).json({ error: 'Invalid chat id' });
+    }
+
+    const ChatHistoryModel = ChatHistory(sequelize);
+    const deletedRows = await ChatHistoryModel.destroy({ where: { id: chatId, userId } });
+    chatCategoryByUser.delete(getCategoryKey(userId, chatId));
+
+    res.status(200).json({ success: true, deleted: deletedRows > 0 });
+  } catch (error) {
+    logger.error('Error deleting chat session:', error);
+    res.status(500).json({ error: 'Failed to delete chat session', success: false });
+  }
+});
 
 export default router;

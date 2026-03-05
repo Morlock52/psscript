@@ -141,6 +141,149 @@ jobs:
           retention-days: 7
 
   # ============================================
+  # Maintenance Smoke (Backup/Restore/Clear)
+  # ============================================
+  maintenance-smoke:
+    name: Maintenance Smoke
+    runs-on: ubuntu-latest
+    needs: backend-quality
+
+    services:
+      postgres:
+        image: pgvector/pgvector:pg15
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: psscript_test
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+
+      redis:
+        image: redis:7.0-alpine
+        ports:
+          - 6379:6379
+        options: >-
+          --health-cmd "redis-cli ping"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+
+    env:
+      DATABASE_URL: postgres://postgres:postgres@localhost:5432/psscript_test
+      REDIS_URL: redis://localhost:6379
+      NODE_ENV: test
+      DISABLE_AUTH: 'true'
+      PORT: '3001'
+      DB_BACKUP_DIR: /tmp/psscript-db-backups
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+          cache-dependency-path: |
+            package-lock.json
+            src/backend/package-lock.json
+
+      - name: Install root dependencies
+        run: npm ci
+
+      - name: Install backend dependencies
+        run: npm ci
+        working-directory: src/backend
+
+      - name: Run data maintenance end-to-end verifier
+        run: npm run verify:data-maintenance:e2e -- --base-url "http://localhost:${PORT}" --backup-dir "$DB_BACKUP_DIR" --log-file /tmp/backend-maintenance.log
+
+      - name: Upload maintenance logs
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: maintenance-smoke-logs
+          path: |
+            /tmp/backend-maintenance.log
+            /tmp/psscript-db-backups
+          retention-days: 7
+
+  # ============================================
+  # Voice Integration (OpenAI-backed)
+  # ============================================
+  voice-integration:
+    name: Voice Integration
+    runs-on: ubuntu-latest
+    needs: backend-quality
+    if: ${{ secrets.OPENAI_API_KEY != '' }}
+
+    env:
+      OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+      DISABLE_AUTH: 'true'
+      VOICE_TEST_SKIP_LOGIN: 'true'
+      VOICE_TEST_TOKEN: 'ci-voice-token'
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+          cache-dependency-path: |
+            package-lock.json
+            src/backend/package-lock.json
+
+      - name: Install root dependencies
+        run: npm ci
+
+      - name: Start backend + AI stack
+        run: docker compose up -d postgres redis ai-service backend
+
+      - name: Wait for backend health
+        run: |
+          for i in {1..40}; do
+            if curl -kfsS https://127.0.0.1:4000/api/health > /dev/null; then
+              echo "Backend is healthy"
+              exit 0
+            fi
+            sleep 3
+          done
+          echo "Backend did not become healthy in time"
+          docker compose ps
+          exit 1
+
+      - name: Run voice tests 1-8 report
+        run: npm run test:voice:1-8:report
+
+      - name: Capture voice integration logs
+        if: always()
+        run: docker compose logs --no-color --tail=500 backend ai-service > /tmp/voice-integration.log || true
+
+      - name: Upload voice artifacts
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: voice-integration-artifacts
+          path: |
+            /tmp/voice-tests-1-8-latest.json
+            docs/VOICE-TESTS-1-8-LATEST.md
+            /tmp/voice-integration.log
+          retention-days: 7
+
+      - name: Stop stack
+        if: always()
+        run: docker compose down -v
+
+  # ============================================
   # Security Scanning
   # ============================================
   security-scan:
@@ -201,7 +344,7 @@ jobs:
   quality-gate:
     name: Quality Gate
     runs-on: ubuntu-latest
-    needs: [backend-quality, frontend-quality, backend-tests, security-scan]
+    needs: [backend-quality, frontend-quality, backend-tests, maintenance-smoke, voice-integration, security-scan]
     if: always()
 
     steps:
@@ -214,8 +357,10 @@ jobs:
           echo "| Backend Quality | ${{ needs.backend-quality.result }} |" >> $GITHUB_STEP_SUMMARY
           echo "| Frontend Quality | ${{ needs.frontend-quality.result }} |" >> $GITHUB_STEP_SUMMARY
           echo "| Backend Tests | ${{ needs.backend-tests.result }} |" >> $GITHUB_STEP_SUMMARY
+          echo "| Maintenance Smoke | ${{ needs.maintenance-smoke.result }} |" >> $GITHUB_STEP_SUMMARY
+          echo "| Voice Integration | ${{ needs.voice-integration.result }} |" >> $GITHUB_STEP_SUMMARY
           echo "| Security Scan | ${{ needs.security-scan.result }} |" >> $GITHUB_STEP_SUMMARY
 
       - name: Fail if critical checks failed
-        if: needs.backend-quality.result == 'failure' || needs.frontend-quality.result == 'failure' || needs.backend-tests.result == 'failure'
+        if: needs.backend-quality.result == 'failure' || needs.frontend-quality.result == 'failure' || needs.backend-tests.result == 'failure' || needs.maintenance-smoke.result == 'failure' || needs.voice-integration.result == 'failure'
         run: exit 1

@@ -1,6 +1,7 @@
 import express, { Request, Response } from 'express';
 import jwt, { Secret } from 'jsonwebtoken';
 import { body, validationResult } from 'express-validator';
+import { UniqueConstraintError } from 'sequelize';
 import User from '../models/User';
 import { authenticateJWT, logAuthAttempt } from '../middleware/authMiddleware';
 import logger from '../utils/logger';
@@ -62,6 +63,56 @@ const sendErrorResponse = (
   };
   
   return res.status(status).json(errorResponse);
+};
+
+const sendUniqueConstraintResponse = (
+  res: Response,
+  error: unknown,
+  requestId?: string
+): Response | null => {
+  if (!(error instanceof UniqueConstraintError)) {
+    return null;
+  }
+
+  const fieldNames = new Set<string>();
+
+  for (const validationError of error.errors || []) {
+    if (validationError.path) {
+      fieldNames.add(validationError.path);
+    }
+  }
+
+  for (const fieldName of Object.keys(error.fields || {})) {
+    fieldNames.add(fieldName);
+  }
+
+  if (fieldNames.has('email')) {
+    return sendErrorResponse(
+      res,
+      409,
+      'User with this email already exists',
+      'email_already_exists',
+      requestId
+    );
+  }
+
+  if (fieldNames.has('username')) {
+    return sendErrorResponse(
+      res,
+      409,
+      'Username is already taken',
+      'username_already_exists',
+      requestId
+    );
+  }
+
+  return sendErrorResponse(
+    res,
+    409,
+    'User already exists',
+    'unique_constraint_violation',
+    requestId
+  );
 };
 
 /**
@@ -224,6 +275,11 @@ router.post(
       });
     } catch (error) {
       const processingTime = Date.now() - startTime;
+
+      const uniqueConstraintResponse = sendUniqueConstraintResponse(res, error, requestId);
+      if (uniqueConstraintResponse) {
+        return uniqueConstraintResponse;
+      }
       
       logger.error('Registration error:', {
         requestId,
@@ -845,6 +901,11 @@ router.put('/user', authenticateJWT, async (req: Request, res: Response) => {
     });
   } catch (error) {
     const processingTime = Date.now() - startTime;
+
+    const uniqueConstraintResponse = sendUniqueConstraintResponse(res, error, requestId);
+    if (uniqueConstraintResponse) {
+      return uniqueConstraintResponse;
+    }
     
     logger.error('Update user error:', {
       requestId,

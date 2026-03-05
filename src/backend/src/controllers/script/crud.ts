@@ -5,7 +5,6 @@
  * Migrated from the original ScriptController for better modularity.
  */
 import {
-  Request,
   Response,
   NextFunction,
   Script,
@@ -30,6 +29,7 @@ import {
   isAuthorizedForScript,
   getScriptIncludes,
   parsePaginationParams,
+  Op,
   getCache
 } from './shared';
 
@@ -44,7 +44,7 @@ import type {
  * Get all scripts with pagination and filtering
  */
 export async function getScripts(
-  req: Request,
+  req: AuthenticatedRequest,
   res: Response,
   next: NextFunction
 ): Promise<void | Response> {
@@ -53,10 +53,21 @@ export async function getScripts(
     const { page, limit, offset } = parsePaginationParams(req.query as Record<string, unknown>);
     const categoryId = req.query.categoryId as string | undefined;
     const userId = req.query.userId as string | undefined;
+    const requestedUserId = userId ? parseInt(userId, 10) : undefined;
+    const isAdmin = req.user?.role === 'admin';
+    const viewerId = req.user?.id;
     const sortField = getDbSortField(req.query.sort as string || 'updatedAt');
     const order = (req.query.order as string) || 'DESC';
 
-    const cacheKey = `scripts:${page}:${limit}:${categoryId || ''}:${userId || ''}:${sortField}:${order}`;
+    if (userId && (Number.isNaN(requestedUserId) || !Number.isInteger(requestedUserId))) {
+      return res.status(400).json({ message: 'Invalid userId filter' });
+    }
+
+    if (userId && !isAdmin && requestedUserId !== viewerId) {
+      return res.status(403).json({ message: 'Forbidden: cannot query scripts for another user' });
+    }
+
+    const cacheKey = `scripts:${page}:${limit}:${categoryId || ''}:${userId || ''}:${sortField}:${order}:${isAdmin ? 'admin' : `user-${viewerId || 'anon'}`}`;
     const cachedData = cache.get(cacheKey);
 
     if (cachedData) {
@@ -64,13 +75,26 @@ export async function getScripts(
     }
 
     // Build where clause
-    const whereClause: Record<string, unknown> = {};
+    const whereClauses: Record<string, unknown>[] = [];
     if (categoryId) {
-      whereClause.categoryId = categoryId;
+      whereClauses.push({ categoryId });
     }
     if (userId) {
-      whereClause.userId = userId;
+      whereClauses.push({ userId: requestedUserId });
     }
+
+    if (!isAdmin) {
+      const visibilityFilter = viewerId
+        ? { [Op.or]: [{ isPublic: true }, { userId: viewerId }] }
+        : { isPublic: true };
+      whereClauses.push(visibilityFilter);
+    }
+
+    const whereClause = whereClauses.length === 1
+      ? whereClauses[0]
+      : whereClauses.length > 1
+        ? { [Op.and]: whereClauses }
+        : {};
 
     const { count, rows } = await Script.findAndCountAll({
       where: whereClause,
@@ -114,14 +138,16 @@ export async function getScripts(
  * Get a single script by ID
  */
 export async function getScript(
-  req: Request,
+  req: AuthenticatedRequest,
   res: Response,
   next: NextFunction
 ): Promise<void | Response> {
   try {
     const cache = getCache();
+    const isAdmin = req.user?.role === 'admin';
+    const viewerId = req.user?.id;
     const scriptId = req.params.id;
-    const cacheKey = `script:${scriptId}`;
+    const cacheKey = `script:${scriptId}:${isAdmin ? 'admin' : `user-${viewerId || 'anon'}`}`;
     const cachedData = cache.get(cacheKey);
 
     if (cachedData) {
@@ -134,6 +160,10 @@ export async function getScript(
 
     if (!script) {
       return res.status(404).json({ message: 'Script not found' });
+    }
+
+    if (!isAdmin && !script.isPublic && script.userId !== viewerId) {
+      return res.status(403).json({ message: 'Forbidden: insufficient permissions to view this script' });
     }
 
     // Fetch analysis separately

@@ -1,5 +1,5 @@
 import axios from 'axios';
-import { getApiUrl } from '../utils/apiUrl';
+import { getApiUrl, getAiServiceUrl } from '../utils/apiUrl';
 
 // Simulate network delay
 const delay = (ms: number) => new Promise(resolve => setTimeout(resolve, ms));

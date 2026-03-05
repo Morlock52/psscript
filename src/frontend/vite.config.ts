@@ -32,12 +32,16 @@ export default defineConfig({
     // https://localhost:3090 and Vite can talk to https://backend:4000 with `secure:false`.
     proxy: {
       '/api': {
-        target: 'https://backend:4000',
+        target: (process.env.DOCKER_ENV === 'true' || process.env.VITE_DOCKER === 'true')
+          ? 'https://backend:4000'
+          : 'https://localhost:4000',
         changeOrigin: true,
         secure: false,
       },
       '/docs': {
-        target: 'https://backend:4000',
+        target: (process.env.DOCKER_ENV === 'true' || process.env.VITE_DOCKER === 'true')
+          ? 'https://backend:4000'
+          : 'https://localhost:4000',
         changeOrigin: true,
         secure: false,
       },
@@ -80,31 +84,100 @@ export default defineConfig({
     target: ['es2020', 'edge88', 'firefox78', 'chrome87', 'safari14'],
     // Generate sourcemaps for production debugging
     sourcemap: true,
+    cssMinify: 'lightningcss',
     // Rollup options for manual chunk splitting
     rollupOptions: {
       output: {
-        manualChunks: {
-          // React core - loaded on every page
-          'react-vendor': ['react', 'react-dom'],
-          // Router - loaded on every page
-          'router-vendor': ['react-router-dom'],
-          // UI framework - Material UI is large
-          'mui-vendor': ['@mui/material', '@mui/icons-material', '@emotion/react', '@emotion/styled'],
-          // Data fetching
-          'query-vendor': ['@tanstack/react-query', 'axios'],
-          // Monaco editor - only loaded on script edit pages
-          'editor-vendor': ['monaco-editor'],
-          // Charting libraries
-          'chart-vendor': ['chart.js', 'd3'],
-          // Markdown and syntax highlighting
-          'markdown-vendor': ['react-markdown', 'react-syntax-highlighter', 'marked'],
+        manualChunks(id) {
+          if (!id.includes('node_modules')) {
+            return null
+          }
+
+          // Core React runtime
+          if (id.includes('/react/') || id.includes('/react-dom/')) {
+            return 'react-vendor'
+          }
+
+          // Router
+          if (id.includes('/react-router-dom/')) {
+            return 'router-vendor'
+          }
+
+          // UI framework + emotion
+          if (id.includes('/@mui/') || id.includes('/@emotion/')) {
+            return 'mui-vendor'
+          }
+
+          // Data fetch + HTTP
+          if (id.includes('/@tanstack/react-query/') || id.includes('/axios/')) {
+            return 'query-vendor'
+          }
+
+          // Monaco editor stack (large)
+          if (id.includes('/react-monaco-editor')) {
+            return 'editor-react-monaco'
+          }
+          if (id.includes('/monaco-editor/')) {
+            const monacoParts = id.split('/monaco-editor/')[1]?.split(/[\\/]/).filter(Boolean) || []
+            let monacoBucket = monacoParts[0] || 'core'
+
+            if (monacoParts[0] === 'min' && monacoParts[1] === 'vs' && monacoParts[2]) {
+              const monacoSubpath = monacoParts[3] ? `${monacoParts[2]}-${monacoParts[3]}` : monacoParts[2]
+              monacoBucket = monacoSubpath
+            } else if (monacoParts[0] === 'esm' && monacoParts[1] === 'vs' && monacoParts[2]) {
+              const monacoSubpath = monacoParts[3] ? `${monacoParts[2]}-${monacoParts[3]}` : monacoParts[2]
+              monacoBucket = monacoSubpath
+            } else if (monacoParts[1]) {
+              monacoBucket = `${monacoParts[0]}-${monacoParts[1]}`
+            }
+
+            return `editor-monaco-${monacoBucket}`
+          }
+
+          // Markdown + syntax highlighting stack (split by package)
+          if (id.includes('/react-markdown/')) {
+            return 'markdown-react'
+          }
+          if (id.includes('/marked/')) {
+            return 'markdown-marked'
+          }
+          if (id.includes('/react-syntax-highlighter/')) {
+            return 'markdown-syntax'
+          }
+
+          // Charts
+          if (id.includes('/chart.js/') || id.includes('/d3/')) {
+            return 'chart-vendor'
+          }
+
           // Utilities
-          'utils-vendor': ['date-fns', 'dompurify', 'jszip'],
+          if (id.includes('/date-fns/') || id.includes('/dompurify/') || id.includes('/jszip/')) {
+            return 'utils-vendor'
+          }
+          if (id.includes('/highlight.js/')) {
+            const highlightParts = id.split('/highlight.js/')[1]?.split(/[\\/]/).filter(Boolean) || []
+            const highlightBucket = (highlightParts[0] && highlightParts[1])
+              ? `${highlightParts[0]}-${highlightParts[1]}`
+              : highlightParts[0] || 'core'
+            return `vendor-highlight-${highlightBucket}`
+          }
+          if (id.includes('/refractor/')) {
+            return 'vendor-refractor'
+          }
+
+          // Split remaining third-party packages into package-level chunks.
+          const packageMatch = id.match(/node_modules[\\/](@[^/\\]+[\\/][^/\\]+|[^/\\]+)/)
+          if (packageMatch?.[1]) {
+            const packageName = packageMatch[1].replace('/', '-')
+            return `vendor-${packageName}`
+          }
+
+          return 'vendor'
         },
       },
     },
-    // Increase chunk size warning limit (we're optimizing with manual chunks)
-    chunkSizeWarningLimit: 600,
+    // Allow larger Monaco/highlight chunks with intentional bundling.
+    chunkSizeWarningLimit: 1000,
   },
   test: {
     globals: true,

@@ -39,24 +39,6 @@ const ApiSettings: React.FC = () => {
       url: 'https://console.cloud.google.com/apis/credentials',
       envKey: 'VITE_GOOGLE_API_KEY',
       hasEnvValue: !!import.meta.env.VITE_GOOGLE_API_KEY
-    },
-    {
-      name: 'weather_api_key',
-      key: '',
-      description: 'OpenWeather API Key for weather data',
-      placeholder: '1a2b3c...',
-      url: 'https://home.openweathermap.org/api_keys',
-      envKey: 'VITE_WEATHER_API_KEY',
-      hasEnvValue: !!import.meta.env.VITE_WEATHER_API_KEY
-    },
-    {
-      name: 'alpha_vantage_api_key',
-      key: '',
-      description: 'Alpha Vantage API Key for financial data',
-      placeholder: 'ABC123...',
-      url: 'https://www.alphavantage.co/support/#api-key',
-      envKey: 'VITE_ALPHA_VANTAGE_API_KEY',
-      hasEnvValue: !!import.meta.env.VITE_ALPHA_VANTAGE_API_KEY
     }
   ]);
 

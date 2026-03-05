@@ -57,7 +57,12 @@ const VoiceSettings = ({ className = '' }) => {
       }
     } catch (error) {
       console.error('Error loading voices and settings:', error);
-      showToast('Error loading voice settings', 'error');
+      const isNotFound = axios.isAxiosError(error) && error.response?.status === 404;
+      if (isNotFound) {
+        console.warn('Voice settings API is not available in this environment. Using defaults.');
+      } else {
+        showToast('Error loading voice settings', 'error');
+      }
     } finally {
       setIsLoading(false);
     }
@@ -110,7 +115,12 @@ const VoiceSettings = ({ className = '' }) => {
       }
     } catch (error) {
       console.error('Error saving settings:', error);
-      showToast('Error saving voice settings', 'error');
+      const isNotFound = axios.isAxiosError(error) && error.response?.status === 404;
+      if (isNotFound) {
+        showToast('Voice settings API is unavailable', 'warning');
+      } else {
+        showToast('Error saving voice settings', 'error');
+      }
     } finally {
       setIsSaving(false);
     }
@@ -145,7 +155,12 @@ const VoiceSettings = ({ className = '' }) => {
       }
     } catch (error) {
       console.error('Error testing voice:', error);
-      showToast('Error testing voice', 'error');
+      const isNotFound = axios.isAxiosError(error) && error.response?.status === 404;
+      if (isNotFound) {
+        showToast('Voice testing API is unavailable', 'warning');
+      } else {
+        showToast('Error testing voice', 'error');
+      }
     }
   };
   

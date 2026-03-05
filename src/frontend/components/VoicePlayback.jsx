@@ -166,7 +166,12 @@ const VoicePlayback = ({
       }
     } catch (error) {
       console.error('Error synthesizing speech:', error);
-      showToast('Error synthesizing speech', 'error');
+      const isNotFound = axios.isAxiosError(error) && error.response?.status === 404;
+      if (isNotFound) {
+        showToast('Voice synthesis API is unavailable', 'warning');
+      } else {
+        showToast('Error synthesizing speech', 'error');
+      }
     } finally {
       setIsLoading(false);
     }

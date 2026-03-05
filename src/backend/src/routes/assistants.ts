@@ -1,7 +1,9 @@
 import express from 'express';
 import { assistantsController } from '../controllers/Agentic/AssistantsController';
+import { authenticateJWT } from '../middleware/authMiddleware';
 
 const router = express.Router();
+router.use(authenticateJWT);
 
 /**
  * @swagger

@@ -28,6 +28,7 @@ class VoiceSynthesisResponse(BaseModel):
 class VoiceRecognitionRequest(BaseModel):
     audio_data: str = Field(..., description="Base64-encoded audio data")
     language: str = Field("en-US", description="Language code")
+    audio_format: Optional[str] = Field(None, description="Optional audio format hint (mp3, wav, m4a, flac, ogg)")
 
 class VoiceRecognitionResponse(BaseModel):
     text: str = Field(..., description="Recognized text")
@@ -59,6 +60,8 @@ async def synthesize_speech(
             output_format=request.output_format
         )
         return result
+    except HTTPException:
+        raise
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Speech synthesis failed: {str(e)}")
 
@@ -77,8 +80,11 @@ async def recognize_speech(
     try:
         result = await voice_service.recognize_speech(
             audio_data=request.audio_data,
-            language=request.language
+            language=request.language,
+            audio_format=request.audio_format
         )
         return result
+    except HTTPException:
+        raise
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Speech recognition failed: {str(e)}")

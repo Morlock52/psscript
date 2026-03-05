@@ -38,7 +38,7 @@ PSScript provides intelligent analysis, generation, and management of PowerShell
 
 - Node.js 18+
 - Python 3.10+
-- Docker & Docker Compose
+- Docker Engine + Docker Compose v2 (`docker compose`)
 - PostgreSQL 15+ with pgvector extension
 - Redis 7+
 
@@ -50,7 +50,7 @@ git clone <repository-url>
 cd psscript
 
 # Start all services with Docker
-docker-compose up
+docker compose -f docker-compose.yml -f docker-compose.override.yml up -d --build
 
 # Or start services individually:
 
@@ -68,7 +68,7 @@ cd src/ai && python main.py
 
 ```bash
 # Build and start production containers
-docker-compose -f docker-compose.prod.yml up -d
+docker compose -f docker-compose.prod.yml up -d --build
 
 # For Cloudflare Tunnel access
 ./scripts/start-frontend-prod.sh
@@ -117,6 +117,7 @@ The backend includes a sophisticated agentic workflow system:
 - **Vector Embeddings** - 1536-dimension vectors for semantic search (pgvector)
 - **Version History** - Complete script version tracking
 - **Real-time Updates** - WebSocket connections for live updates
+- **Admin Data Maintenance** - Backup/restore + test-data cleanup workflows
 
 ### Security
 
@@ -131,7 +132,8 @@ The backend includes a sophisticated agentic workflow system:
 |----------|-------------|
 | [CLAUDE.md](./CLAUDE.md) | Development guide for Claude Code |
 | [docs/DATABASE_REVIEW_2026.md](./docs/DATABASE_REVIEW_2026.md) | Database architecture and optimization |
-| [docs/DOCKER-SETUP.md](./docs/DOCKER-SETUP.md) | Docker deployment guide |
+| [docs/DOCKER-SETUP.md](./docs/DOCKER-SETUP.md) | Docker install + setup guide |
+| [docs/DATA-MAINTENANCE.md](./docs/DATA-MAINTENANCE.md) | Admin backup, restore, and cleanup procedures |
 
 ## Commands Reference
 
@@ -139,7 +141,7 @@ The backend includes a sophisticated agentic workflow system:
 
 ```bash
 # Start all services
-docker-compose up
+docker compose -f docker-compose.yml -f docker-compose.override.yml up -d --build
 
 # Run tests
 cd src/backend && npm test
@@ -183,9 +185,46 @@ cd src/backend && node test-redis.js
 - `POST /api/scripts/:id/analyze` - Analyze script
 
 ### AI Operations
-- `POST /api/ai/generate` - Generate script from prompt
-- `POST /api/ai/chat` - Chat with AI assistant
-- `GET /api/ai/search` - Semantic search
+- `POST /api/chat` - Chat with AI assistant
+- `GET /api/chat/search` - Search chat history
+- `POST /api/chat/message` - Legacy-compatible message endpoint
+- `POST /scripts/please` - Script generation and Q&A compatibility endpoint
+
+### Data Maintenance
+- `GET /api/admin/db/backups` - List available backup files
+- `POST /api/admin/db/backup` - Create JSON backup
+- `POST /api/admin/db/restore` - Restore from backup
+- `POST /api/admin/db/clear-test-data` - Clear test-data tables (admin only, confirmation required)
+
+### Maintenance Operations
+
+- `node scripts/db-maintenance-stress-test.mjs --cycles 10` - Run repeated backup/restore/clear validation (requires running backend)
+  - use `--smoke-only` to validate endpoints before repeating cycles
+  - use `--no-smoke` to skip preflight checks
+  - use `--restore-after-clear` to restore from the cycle backup after each clear
+  - use `--insecure-tls` for local self-signed HTTPS endpoints
+  - `npm run stress:data-maintenance:smoke` for a smoke-only run
+  - `npm run stress:data-maintenance:smoke:restore` for smoke + restore validation
+  - `npm run verify:data-maintenance:e2e` for full build/start/verify/cleanup automation
+- `npm run test:voice:1-8:local` - Run automated voice tests 1-8 against local HTTPS backend (`https://127.0.0.1:4000`) with self-signed TLS accepted
+- `npm run test:voice:1-8` - Run automated voice tests 1-8 against `VOICE_TEST_BASE_URL` or default base URL
+- `npm run test:voice:1-8:report` - Run tests and generate artifacts:
+  - JSON: `/tmp/voice-tests-1-8-latest.json`
+  - Markdown: `docs/VOICE-TESTS-1-8-LATEST.md`
+- `scripts/testing/test-voice-api.sh` - Legacy compatibility wrapper that delegates to the canonical `scripts/voice-tests-1-8.mjs`
+
+## Documentation (Canonical)
+
+Use these as source-of-truth docs:
+
+- `docs/README-VOICE-API.md` - Voice setup, API behavior, and validation
+- `docs/VOICE-API-ARCHITECTURE.md` - Current voice system architecture
+- `docs/VOICE-API-INTEGRATION-SUMMARY.md` - Current integration status
+- `docs/VOICE-API-NEXT-STEPS.md` - Active roadmap
+- `docs/VOICE-TESTS-1-8-LATEST.md` - Latest automated voice validation report
+- `docs/SUPPORT.md` - Operational support and escalation runbooks
+
+Note: files with ` (1)` suffix and `docs/exports/html/*` are historical/export artifacts and may lag behind canonical markdown docs.
 
 ### Authentication
 - `POST /api/auth/login` - User login
@@ -207,4 +246,4 @@ This project is proprietary software. All rights reserved.
 ---
 
 **Status:** Active Development
-**Last Updated:** January 2026
+**Last Updated:** February 14, 2026

@@ -41,7 +41,10 @@ export default function CategoriesSettings() {
     staleTime: 30_000,
   });
 
-  const rows: CategoryRow[] = (categoriesQuery.data?.categories || []) as CategoryRow[];
+  const rows: CategoryRow[] = useMemo(
+    () => (categoriesQuery.data?.categories || []) as CategoryRow[],
+    [categoriesQuery.data]
+  );
 
   const filtered = useMemo(() => {
     const q = search.trim().toLowerCase();

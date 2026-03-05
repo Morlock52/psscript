@@ -84,6 +84,10 @@ export function getApiUrl(): string {
   const hostname = window.location.hostname;
   const isLocalhost = hostname === 'localhost' || hostname === '127.0.0.1';
 
+  const origin =
+    (window.location as any).origin ||
+    `${window.location.protocol}//${hostname}${window.location.port ? `:${window.location.port}` : ''}`;
+
   // When accessed via tunnel/proxy (non-localhost), don't include port
   // The tunnel/proxy routes /api to the backend
   // When local, prefer same-origin `/api` so Vite can proxy to the backend even if the
@@ -93,7 +97,7 @@ export function getApiUrl(): string {
   // and backend runs on https://localhost:4000 (TLS enabled). We must keep protocol
   // aligned to avoid mixed-content/CORS/auth failures.
   _cachedApiUrl = isLocalhost
-    ? `${window.location.origin}/api`
+    ? `${origin}/api`
     : `${protocol}://${hostname}/api`;
 
   console.log('[apiUrl] Runtime API URL:', _cachedApiUrl, '(hostname:', hostname, ', isLocalhost:', isLocalhost, ')');

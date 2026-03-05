@@ -5,7 +5,6 @@
  * Migrated from the original ScriptController for better modularity.
  */
 import {
-  Request,
   Response,
   NextFunction,
   Script,
@@ -20,11 +19,13 @@ import {
   getCache
 } from './shared';
 
+import type { AuthenticatedRequest } from './types';
+
 /**
  * Search scripts by keyword and filters
  */
 export async function searchScripts(
-  req: Request,
+  req: AuthenticatedRequest,
   res: Response,
   next: NextFunction
 ): Promise<void | Response> {
@@ -32,6 +33,8 @@ export async function searchScripts(
     const cache = getCache();
     const query = req.query.q as string;
     const categoryId = req.query.categoryId as string | undefined;
+    const isAdmin = req.user?.role === 'admin';
+    const viewerId = req.user?.id;
     const qualityThreshold = req.query.qualityThreshold
       ? parseFloat(req.query.qualityThreshold as string)
       : undefined;
@@ -39,35 +42,40 @@ export async function searchScripts(
     const limit = parseInt(req.query.limit as string) || 10;
     const offset = (page - 1) * limit;
 
-    const cacheKey = `search:${query || ''}:${categoryId || ''}:${qualityThreshold || ''}:${page}:${limit}`;
+    const cacheKey = `search:${query || ''}:${categoryId || ''}:${qualityThreshold || ''}:${page}:${limit}:${isAdmin ? 'admin' : `user-${viewerId || 'anon'}`}`;
     const cachedData = cache.get(cacheKey);
 
     if (cachedData) {
       return res.json(cachedData);
     }
 
-    // Build where clause with proper typing
-    type WhereClause = {
-      categoryId?: string;
-      [Op.or]?: Array<{
-        title?: { [Op.iLike]: string };
-        description?: { [Op.iLike]: string };
-        content?: { [Op.iLike]: string };
-      }>;
-    };
-    const whereClause: WhereClause = {};
+    const whereConditions: Record<string, unknown>[] = [];
 
     if (query) {
-      whereClause[Op.or] = [
+      whereConditions.push({
+        [Op.or]: [
         { title: { [Op.iLike]: `%${query}%` } },
         { description: { [Op.iLike]: `%${query}%` } },
         { content: { [Op.iLike]: `%${query}%` } }
-      ];
+        ]
+      });
     }
 
     if (categoryId) {
-      whereClause.categoryId = categoryId;
+      whereConditions.push({ categoryId });
     }
+
+    if (!isAdmin) {
+      whereConditions.push(viewerId
+        ? { [Op.or]: [{ isPublic: true }, { userId: viewerId }] }
+        : { isPublic: true });
+    }
+
+    const whereClause = whereConditions.length === 1
+      ? whereConditions[0]
+      : whereConditions.length > 1
+        ? { [Op.and]: whereConditions }
+        : {};
 
     // Build include options
     type IncludeOption = {
@@ -127,7 +135,7 @@ export async function searchScripts(
  * Find similar scripts using vector similarity search
  */
 export async function findSimilarScripts(
-  req: Request,
+  req: AuthenticatedRequest,
   res: Response,
   next: NextFunction
 ): Promise<void | Response> {
@@ -135,6 +143,8 @@ export async function findSimilarScripts(
     const scriptId = parseInt(req.params.id);
     const limit = parseInt(req.query.limit as string) || 5;
     const threshold = parseFloat(req.query.threshold as string) || 0.7;
+    const isAdmin = req.user?.role === 'admin';
+    const viewerId = req.user?.id;
 
     // Check if we have a valid script ID
     if (isNaN(scriptId)) {
@@ -145,10 +155,18 @@ export async function findSimilarScripts(
     }
 
     // Get the script to verify it exists
-    const script = await Script.findByPk(scriptId);
+    const script = await Script.findByPk(scriptId, {
+      attributes: ['id', 'isPublic', 'userId']
+    });
     if (!script) {
       return res.status(404).json({
         message: 'Script not found',
+        success: false
+      });
+    }
+    if (!isAdmin && !script.isPublic && script.userId !== viewerId) {
+      return res.status(403).json({
+        message: 'Forbidden: insufficient permissions to view similar scripts',
         success: false
       });
     }
@@ -156,10 +174,13 @@ export async function findSimilarScripts(
     // Use the vector search utility to find similar scripts
     try {
       const similarScripts = await findSimilarScriptsByVector(scriptId, limit, threshold);
+      const visibleScripts = similarScripts.filter((s: { isPublic?: boolean; userId?: number | null }) => (
+        isAdmin || !!s.isPublic || (typeof viewerId === 'number' && s.userId === viewerId)
+      ));
 
       // Format the response
       const response = {
-        similar_scripts: similarScripts.map((s: { id: number; title: string; categoryId: number | null; similarity: number }) => ({
+        similar_scripts: visibleScripts.map((s: { id: number; title: string; categoryId: number | null; similarity: number }) => ({
           script_id: s.id,
           title: s.title,
           category: s.categoryId,
@@ -173,10 +194,21 @@ export async function findSimilarScripts(
       logger.error(`Error finding similar scripts for ${scriptId}:`, searchError);
 
       // Fall back to basic similarity if vector search fails
+      const whereConditions: Record<string, unknown>[] = [
+        { id: { [Op.ne]: scriptId } }
+      ];
+      if (!isAdmin) {
+        whereConditions.push(viewerId
+          ? { [Op.or]: [{ isPublic: true }, { userId: viewerId }] }
+          : { isPublic: true });
+      }
+
+      const whereClause = whereConditions.length === 1
+        ? whereConditions[0]
+        : { [Op.and]: whereConditions };
+
       const similarScripts = await Script.findAll({
-        where: {
-          id: { [Op.ne]: scriptId }
-        },
+        where: whereClause,
         limit: 5,
         include: [
           { model: Category, as: 'category', attributes: ['id', 'name', 'description', 'created_at'] }

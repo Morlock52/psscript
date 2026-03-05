@@ -1,5 +1,32 @@
 # Application Updates and Enhancements
 
+## 2026-02-14 Documentation and Voice Platform Sync
+
+### Documentation normalization
+- Replaced outdated multi-provider voice docs with current OpenAI-based architecture and behavior.
+- Marked old planning-style voice docs as historical and redirected to canonical docs.
+- Added a canonical documentation index to `README.md`.
+
+### Voice testing standardization
+- Canonical runner established: `scripts/voice-tests-1-8.mjs`.
+- Legacy script `scripts/testing/test-voice-api.sh` now delegates to canonical runner to avoid drift.
+- Added npm commands:
+  - `test:voice:1-8`
+  - `test:voice:1-8:local`
+  - `test:voice:1-8:report`
+
+### CI integration
+- Added `voice-integration` CI job (gated by `OPENAI_API_KEY` secret) to run tests 1-8 and upload artifacts/logs.
+- Included voice-integration in quality gate summary/failure conditions.
+
+### Canonical docs
+- `docs/README-VOICE-API.md`
+- `docs/VOICE-API-ARCHITECTURE.md`
+- `docs/VOICE-API-INTEGRATION-SUMMARY.md`
+- `docs/VOICE-API-NEXT-STEPS.md`
+- `docs/VOICE-TESTS-1-8-LATEST.md`
+- `docs/SUPPORT.md`
+
 This document outlines the significant updates and enhancements made to the PowerShell Script Analysis application, with a focus on incorporating agentic capabilities using LangGraph and Py-g frameworks.
 
 ## Agentic Capabilities Integration

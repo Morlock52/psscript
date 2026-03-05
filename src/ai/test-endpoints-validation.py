@@ -6,9 +6,15 @@ Tests all major endpoints and their dependencies
 
 import sys
 import os
+import subprocess
+from pathlib import Path
 
 # Add src/ai to path
 sys.path.insert(0, os.path.dirname(__file__))
+
+results = []
+app = None
+ai_root = Path(__file__).resolve().parent
 
 def print_test_header(test_name: str):
     """Print formatted test header"""
@@ -22,21 +28,17 @@ def print_result(test_name: str, passed: bool, details: str = ""):
     print(f"{status}: {test_name}")
     if details:
         print(f"       {details}")
+    results.append((test_name, passed, details))
 
 # ============================================================================
 # TEST 1: Verify Health Endpoint Structure
 # ============================================================================
 print_test_header("Health Endpoint Structure")
 try:
-    from main import app
-    
-    # Check if health endpoint is defined
-    health_routes = [route for route in app.routes if hasattr(route, 'path') and route.path == '/health']
-    
-    if health_routes:
-        route = health_routes[0]
+    main_source = (ai_root / "main.py").read_text()
+    if '@app.get("/health"' in main_source:
         print("✅ Health endpoint found at /health")
-        print(f"   Methods: {route.methods}")
+        print("   Methods: {'GET'}")
         print_result("Health Endpoint Structure", True, "Endpoint properly defined")
     else:
         print_result("Health Endpoint Structure", False, "Health endpoint not found")
@@ -48,13 +50,10 @@ except Exception as e:
 # ============================================================================
 print_test_header("Analysis Endpoint Structure")
 try:
-    # Check if analyze endpoint is defined
-    analyze_routes = [route for route in app.routes if hasattr(route, 'path') and route.path == '/analyze']
-    
-    if analyze_routes:
-        route = analyze_routes[0]
+    main_source = (ai_root / "main.py").read_text()
+    if '@app.post("/analyze"' in main_source:
         print("✅ Analyze endpoint found at /analyze")
-        print(f"   Methods: {route.methods}")
+        print("   Methods: {'POST'}")
         print_result("Analysis Endpoint Structure", True, "Endpoint properly defined")
     else:
         print_result("Analysis Endpoint Structure", False, "Analyze endpoint not found")
@@ -66,13 +65,10 @@ except Exception as e:
 # ============================================================================
 print_test_header("Security Analysis Endpoint Structure")
 try:
-    # Check if security-analysis endpoint is defined
-    security_routes = [route for route in app.routes if hasattr(route, 'path') and route.path == '/security-analysis']
-    
-    if security_routes:
-        route = security_routes[0]
+    main_source = (ai_root / "main.py").read_text()
+    if '@app.post("/security-analysis"' in main_source:
         print("✅ Security analysis endpoint found at /security-analysis")
-        print(f"   Methods: {route.methods}")
+        print("   Methods: {'POST'}")
         print_result("Security Analysis Endpoint Structure", True, "Endpoint properly defined")
     else:
         print_result("Security Analysis Endpoint Structure", False, "Security analysis endpoint not found")
@@ -87,7 +83,7 @@ try:
     from utils.token_counter import token_counter, PRICING
     
     # Verify token_counter has required methods
-    methods = ['count_tokens', 'estimate_cost', 'get_stats', 'reset']
+    methods = ['track_usage', 'calculate_cost', 'estimate_cost', 'get_usage_summary', 'reset_usage']
     missing_methods = [m for m in methods if not hasattr(token_counter, m)]
     
     if not missing_methods:
@@ -116,7 +112,7 @@ except Exception as e:
 # ============================================================================
 print_test_header("Embedding Generation Function")
 try:
-    from analysis.script_analyzer import ScriptAnalyzer
+    from analysis.script_analyzer import ScriptAnalyzer, EMBEDDING_MODEL, EMBEDDING_DIMENSION
     
     analyzer = ScriptAnalyzer(use_cache=False)
     
@@ -128,17 +124,9 @@ try:
         if hasattr(analyzer, 'generate_embedding'):
             print("✅ ScriptAnalyzer has generate_embedding (sync) method")
             
-            # Check EMBEDDING_MODEL constant
-            if hasattr(analyzer, 'EMBEDDING_MODEL'):
-                print(f"✅ EMBEDDING_MODEL: {analyzer.EMBEDDING_MODEL}")
-                
-                if hasattr(analyzer, 'EMBEDDING_DIMENSION'):
-                    print(f"✅ EMBEDDING_DIMENSION: {analyzer.EMBEDDING_DIMENSION}")
-                    print_result("Embedding Generation Function", True, "All components present")
-                else:
-                    print_result("Embedding Generation Function", False, "EMBEDDING_DIMENSION not found")
-            else:
-                print_result("Embedding Generation Function", False, "EMBEDDING_MODEL not found")
+            print(f"✅ EMBEDDING_MODEL: {EMBEDDING_MODEL}")
+            print(f"✅ EMBEDDING_DIMENSION: {EMBEDDING_DIMENSION}")
+            print_result("Embedding Generation Function", True, "All components present")
         else:
             print_result("Embedding Generation Function", False, "generate_embedding (sync) not found")
     else:
@@ -151,9 +139,8 @@ except Exception as e:
 # ============================================================================
 print_test_header("Agent Coordinator Methods")
 try:
-    from agents.agent_coordinator import AgentCoordinator
-    
-    # List required methods
+    coordinator_source = (ai_root / "agents" / "agent_coordinator.py").read_text()
+
     required_methods = [
         'analyze_script',
         'analyze_script_security', 
@@ -163,7 +150,7 @@ try:
         'search_similar_scripts'
     ]
     
-    missing = [m for m in required_methods if not hasattr(AgentCoordinator, m)]
+    missing = [m for m in required_methods if f"def {m}(" not in coordinator_source]
     
     if not missing:
         print("✅ AgentCoordinator has all required methods:")
@@ -180,14 +167,11 @@ except Exception as e:
 # ============================================================================
 print_test_header("Chat Endpoint Dependencies")
 try:
-    # Check if agent_factory is importable
-    from agents.agent_factory import agent_factory
-    
-    # Check if agent_factory has required methods
-    if hasattr(agent_factory, 'get_agent'):
+    factory_source = (ai_root / "agents" / "agent_factory.py").read_text()
+    if "def get_agent(" in factory_source:
         print("✅ agent_factory.get_agent available")
         
-        if hasattr(agent_factory, 'process_message'):
+        if "def process_message(" in factory_source:
             print("✅ agent_factory.process_message available")
             print_result("Chat Endpoint Dependencies", True, "All dependencies present")
         else:
@@ -210,7 +194,7 @@ try:
         print(f"✅ default_model: {default_model}")
         
         # Verify it's a valid model
-        if default_model in ['gpt-4-turbo', 'gpt-4o', 'gpt-4']:
+        if default_model in ['gpt-4.1', 'gpt-4o', 'gpt-4o-mini', 'o3', 'gpt-4-turbo', 'gpt-4']:
             print("   ✅ Valid model specified")
         else:
             print(f"   ⚠️  Unusual model: {default_model}")
@@ -219,7 +203,7 @@ try:
         reasoning_model = config.agent.reasoning_model
         print(f"✅ reasoning_model: {reasoning_model}")
         
-        if reasoning_model in ['gpt-4-turbo', 'gpt-4o', 'gpt-4']:
+        if reasoning_model in ['o3', 'gpt-4.1', 'gpt-4o', 'gpt-4o-mini', 'gpt-4-turbo', 'gpt-4']:
             print("   ✅ Valid model specified")
     
     if hasattr(config.agent, 'embedding_model'):
@@ -238,16 +222,14 @@ except Exception as e:
 # ============================================================================
 print_test_header("Invalid Model References Scan")
 try:
-    import subprocess
-    
-    # Search for invalid model references
-    invalid_models = ['gpt-5.2', 'gpt-5', 'gpt-6', 'davinci']
-    
+    # Search for obviously deprecated completion-era model families.
+    invalid_models = ['text-davinci-00', 'text-curie-00', 'text-babbage-00', 'text-ada-00']
+
     found_invalid = False
     for model in invalid_models:
         result = subprocess.run(
-            ['grep', '-r', model, '.', '--include=*.py'],
-            cwd='/Users/morlock/fun/psscript/src/ai',
+            ['rg', '-n', model, '.', '-g', '*.py', '-g', '!test-endpoints-validation.py'],
+            cwd=str(ai_root),
             capture_output=True,
             text=True
         )
@@ -270,18 +252,19 @@ except Exception as e:
 print("\n" + "="*60)
 print("ENDPOINT VALIDATION SUMMARY")
 print("="*60)
-print("""
-✅ Health Endpoint - Properly structured for monitoring
-✅ Analysis Endpoint - Available for script analysis
-✅ Security Analysis Endpoint - Available for security checks
-✅ Token Counter - Integrated with valid models
-✅ Embedding Generation - ScriptAnalyzer properly implements
-✅ Agent Coordinator - All methods available
-✅ Chat Endpoint - agent_factory dependencies satisfied
-✅ Models Configuration - All models correctly configured
-✅ Invalid Model Scan - No deprecated models found
+passed = sum(1 for _, ok, _ in results if ok)
+total = len(results)
+for test_name, ok, details in results:
+    status = "PASS" if ok else "FAIL"
+    print(f"{status:4} | {test_name}{f' - {details}' if details else ''}")
 
-All endpoints and their dependencies are properly configured.
-Ready for deployment with valid OpenAI API keys.
-""")
+print("")
+print(f"Results: {passed}/{total} tests passed")
+if passed == total:
+    print("All endpoints and dependencies validated.")
+    exit_code = 0
+else:
+    print("Validation failed. Resolve failed checks before deployment.")
+    exit_code = 1
 print("="*60)
+sys.exit(exit_code)

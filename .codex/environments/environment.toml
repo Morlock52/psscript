@@ -8,4 +8,12 @@ script = ""
 [[actions]]
 name = "Run"
 icon = "run"
-command = "docker compose --env-file .env up -d --build"
+command = '''
+```bash
+open -a Docker
+docker info
+cd /Users/morlock/fun/02_PowerShell_Projects/psscript
+docker compose -f docker-compose.yml -f docker-compose.override.yml up -d --build
+curl -s http://127.0.0.1:4000/health
+```
+'''

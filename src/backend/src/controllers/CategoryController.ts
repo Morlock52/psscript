@@ -16,7 +16,7 @@ import logger from '../utils/logger';
  * Using a runtime `require()` keeps it consistent with the script controllers' approach.
  */
 const getAppCache = () => {
-  // eslint-disable-next-line @typescript-eslint/no-var-requires
+  // eslint-disable-next-line @typescript-eslint/no-require-imports
   const mod = require('../index') as { cache?: any } | undefined;
   const c = mod?.cache;
   if (c) return c;

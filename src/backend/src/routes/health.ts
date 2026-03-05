@@ -1,29 +1,8 @@
 import express from 'express';
 import logger from '../utils/logger';
 import { sequelize } from '../database/connection';
+import { dbConnectionInfo } from '../models';
 import { QueryTypes } from 'sequelize';
-
-// TODO: Restore dbConnectionInfo and connectionEvents functionality
-// These were removed in the database connection refactor
-const dbConnectionInfo = {
-  isConnected: () => true,
-  lastSuccessfulConnection: () => Date.now(),
-  retryCount: () => 0,
-  consecutiveFailures: () => 0,
-  tables: () => [],
-  lastError: () => null,
-  errorStats: () => ({}),
-  pgPoolStatus: () => ({}),
-  config: () => ({
-    pool: {},
-    host: process.env.DB_HOST || 'localhost',
-    port: parseInt(process.env.DB_PORT || '5432', 10),
-    database: process.env.DB_NAME || 'psscript',
-    username: process.env.DB_USER || 'postgres'
-  }),
-  validateConnection: async () => true
-};
-const _connectionEvents = {};
 import dns from 'dns';
 import net from 'net';
 import os from 'os';

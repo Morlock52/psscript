@@ -14,7 +14,6 @@ from langchain.agents.agent import AgentType, initialize_agent, load_tools
 from langchain.agents.agent import AgentExecutor
 from langchain.memory import ConversationBufferMemory
 from langchain.chat_models import ChatOpenAI
-from langchain.tools import BaseTool
 from langchain.callbacks.manager import CallbackManager
 from langchain.callbacks.streaming_stdout import StreamingStdOutCallbackHandler
 from langchain.utilities import GoogleSearchAPIWrapper
@@ -85,19 +84,6 @@ class LangChainAgent:
             
             # Add Wikipedia tool
             tools.extend(load_tools(["wikipedia"]))
-            
-            # Add weather tool if API key is available
-            if os.getenv("OPENWEATHER_API_KEY"):
-                # This would be implemented as a custom tool
-                # tools.append(WeatherTool())
-                pass
-            
-            # Add financial data tool if API key is available
-            if os.getenv("ALPHA_VANTAGE_API_KEY"):
-                # This would be implemented as a custom tool
-                # tools.append(FinancialDataTool())
-                pass
-            
             logger.info(f"Initialized {len(tools)} tools for the agent")
             return tools
             
@@ -160,94 +146,6 @@ class LangChainAgent:
         logger.info("Agent memory reset")
 
 
-# Example custom tool for weather data
-class WeatherTool(BaseTool):
-    """Tool for getting weather information."""
-    
-    name: str = "weather"
-    description: str = "Get current weather information for a location"
-    
-    def _run(self, location: str) -> str:
-        """Get weather for a location."""
-        try:
-            import requests
-            
-            api_key = os.getenv("OPENWEATHER_API_KEY")
-            if not api_key:
-                return "OpenWeather API key not configured"
-            
-            url = f"http://api.openweathermap.org/data/2.5/weather?q={location}&appid={api_key}&units=metric"
-            response = requests.get(url)
-            data = response.json()
-            
-            if response.status_code != 200:
-                return f"Error: {data.get('message', 'Unknown error')}"
-            
-            weather = data["weather"][0]["description"]
-            temp = data["main"]["temp"]
-            feels_like = data["main"]["feels_like"]
-            humidity = data["main"]["humidity"]
-            wind_speed = data["wind"]["speed"]
-            
-            return (
-                f"Weather in {location}: {weather}\n"
-                f"Temperature: {temp}°C (feels like {feels_like}°C)\n"
-                f"Humidity: {humidity}%\n"
-                f"Wind Speed: {wind_speed} m/s"
-            )
-            
-        except Exception as e:
-            return f"Error getting weather: {str(e)}"
-    
-    async def _arun(self, location: str) -> str:
-        """Async implementation of the weather tool."""
-        import asyncio
-        return await asyncio.to_thread(self._run, location)
-
-
-# Example custom tool for financial data
-class FinancialDataTool(BaseTool):
-    """Tool for getting financial data."""
-    
-    name: str = "financial_data"
-    description: str = "Get financial data for a stock symbol"
-    
-    def _run(self, symbol: str) -> str:
-        """Get financial data for a stock symbol."""
-        try:
-            import requests
-            
-            api_key = os.getenv("ALPHA_VANTAGE_API_KEY")
-            if not api_key:
-                return "Alpha Vantage API key not configured"
-            
-            url = f"https://www.alphavantage.co/query?function=GLOBAL_QUOTE&symbol={symbol}&apikey={api_key}"
-            response = requests.get(url)
-            data = response.json()
-            
-            if "Global Quote" not in data or not data["Global Quote"]:
-                return f"No data found for symbol {symbol}"
-            
-            quote = data["Global Quote"]
-            price = quote.get("05. price", "N/A")
-            change = quote.get("09. change", "N/A")
-            change_percent = quote.get("10. change percent", "N/A")
-            
-            return (
-                f"Financial data for {symbol}:\n"
-                f"Price: ${price}\n"
-                f"Change: {change} ({change_percent})"
-            )
-            
-        except Exception as e:
-            return f"Error getting financial data: {str(e)}"
-    
-    async def _arun(self, symbol: str) -> str:
-        """Async implementation of the financial data tool."""
-        import asyncio
-        return await asyncio.to_thread(self._run, symbol)
-
-
 # Example usage
 if __name__ == "__main__":
     # Set your API key in the environment
@@ -258,7 +156,7 @@ if __name__ == "__main__":
     
     # Example messages
     messages = [
-        {"role": "user", "content": "What's the weather like in New York?"}
+        {"role": "user", "content": "Summarize the last PowerShell security update."}
     ]
     
     # Process the message
