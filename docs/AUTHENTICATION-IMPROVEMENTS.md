@@ -8,6 +8,7 @@ _Last updated: March 5, 2026_
 
 - JWT-based backend authentication for protected APIs
 - Shared backend auth middleware across normal protected routes and admin DB maintenance routes
+- Optional auth uses the same auth configuration path as primary auth
 - Local frontend development commonly runs with `VITE_DISABLE_AUTH=true`, which creates a `dev-admin` session automatically
 
 ## Improvements now reflected in code
@@ -33,6 +34,11 @@ Common examples include:
 ### DB uniqueness conflicts return `409`
 
 Registration and profile updates now translate uniqueness races into explicit `409 Conflict` responses instead of generic `500` failures.
+
+### Demo-token bypass removed
+
+Backend auth rejects `demo-token-*` shortcuts.
+That keeps local and deployed environments aligned on real JWT validation instead of carrying a separate bypass path.
 
 ### Local development behavior
 

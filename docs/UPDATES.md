@@ -1,5 +1,41 @@
 # Application Updates
 
+## 2026-03-05 Backend mock-response removal, docs refresh, and refreshed screenshots
+
+### Backend/API
+
+- Removed runtime mock AI payloads from live backend compatibility routes.
+- Legacy AI routes now return explicit upstream-service errors instead of invented fallback success payloads:
+  - `502 ai_service_error`
+  - `503 ai_service_unavailable`
+  - `504 ai_service_timeout`
+- Fixed async upload analysis to call the real AI `/analyze` endpoint.
+- Removed invented upload-analysis defaults on AI failure.
+- Similar-script vector-search failures now return `503 vector_search_unavailable` instead of random similarity scores.
+- Optional auth now uses the same JWT secret resolution path as primary auth.
+- Removed the unused mock `AiAgentController`.
+
+### Documentation
+
+- Refreshed the root, backend, and frontend READMEs to reflect the no-mock backend behavior.
+- Updated canonical docs for backend API behavior and authentication.
+- Regenerated current screenshots from the workspace-backed frontend session:
+  - `docs/screenshots/dashboard.png`
+  - `docs/screenshots/settings-profile.png`
+  - `docs/screenshots/data-maintenance.png`
+
+### Validation status
+
+No new validation was run as part of this documentation-only refresh.
+The most recent previously recorded validation remains:
+
+```bash
+cd src/frontend && npm run build
+cd src/frontend && npm run test:run
+cd src/backend && npm run build
+cd src/backend && npm test -- --runInBand
+```
+
 ## 2026-03-05 Backend hardening, docs refresh, and screenshots
 
 ### Backend/API

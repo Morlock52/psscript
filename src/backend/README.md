@@ -1,11 +1,12 @@
 # Backend
 
-Express/TypeScript API for authentication, script management, analytics, and admin maintenance workflows.
+Express/TypeScript API for authentication, script management, analytics, admin maintenance workflows, and AI-backed script operations.
 
 ## Current responsibilities
 
 - Authentication and user/session APIs
-- Script CRUD, versioning, and analysis orchestration
+- Script CRUD, versioning, search, and analysis orchestration
+- AI compatibility routes for question answering, explanation, examples, and generation
 - Analytics and reporting APIs
 - Documentation crawl and storage APIs
 - Admin backup, restore, and cleanup endpoints
@@ -16,18 +17,26 @@ Express/TypeScript API for authentication, script management, analytics, and adm
 
 - Protected routes use the shared `authMiddleware` path.
 - Admin DB maintenance endpoints no longer rely on a separate legacy JWT middleware.
+- Optional auth now resolves JWT secrets through the same auth configuration path as primary auth.
+- Demo-token bypasses are rejected.
 - Registration and profile updates translate uniqueness races into clean `409` responses:
   - `email_already_exists`
   - `username_already_exists`
 
-### Script analysis
+### AI and script analysis
 
-The analysis controllers now return explicit API states instead of fabricated success payloads:
-
-- `404 analysis_not_found`
-- `502 analysis_service_error`
-- `503 analysis_unavailable`
-- `504 analysis_timeout`
+- Live backend routes no longer return fabricated mock AI payloads when the AI service fails.
+- Legacy compatibility routes now return explicit upstream-service errors:
+  - `502 ai_service_error`
+  - `503 ai_service_unavailable`
+  - `504 ai_service_timeout`
+- Script analysis controllers return explicit API states instead of fabricated success payloads:
+  - `404 analysis_not_found`
+  - `502 analysis_service_error`
+  - `503 analysis_unavailable`
+  - `504 analysis_timeout`
+- Async upload analysis now calls the real AI `/analyze` endpoint.
+- Similar-script vector-search failures now return `503 vector_search_unavailable` instead of random similarity scores.
 
 ### Database maintenance
 

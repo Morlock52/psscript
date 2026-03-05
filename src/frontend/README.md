@@ -12,9 +12,10 @@ React + TypeScript + Vite UI for browsing scripts, running analyses, working wit
 
 ## Current frontend behavior
 
-- Route-level lazy loading is enabled for heavier pages.
+- Route-level lazy loading is enabled for heavier pages in the current source tree.
 - The local default environment sets `VITE_DISABLE_AUTH=true`, so the app auto-signs in as `dev-admin` during local development.
 - API requests use runtime URL detection to avoid bad `backend:4000` browser-side URLs.
+- The current screenshot set was regenerated from a workspace-backed Vite session to avoid stale long-running container state.
 
 ## Main areas
 
@@ -22,7 +23,7 @@ React + TypeScript + Vite UI for browsing scripts, running analyses, working wit
 - Script management
 - Chat and agentic assistant views
 - Documentation and crawl tooling
-- Settings pages for profile, appearance, security, notifications, categories, users, and API keys
+- Settings pages for profile, appearance, security, notifications, categories, users, API keys, and data maintenance
 
 ## Local development
 
@@ -47,4 +48,4 @@ npm run test:run
 ## Notes
 
 - If you want to validate the real login screen, set `VITE_DISABLE_AUTH=false` before starting the frontend.
-- During the 2026-03-05 doc refresh, the running local frontend redirected `/login` to `/dashboard` as expected under auth-disabled mode.
+- During local auth-disabled mode, `/login` redirects to `/dashboard`.

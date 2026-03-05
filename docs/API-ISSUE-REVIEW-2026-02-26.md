@@ -4,7 +4,7 @@ _Updated: March 5, 2026_
 
 ## Scope
 
-This review now reflects the backend and frontend state after the March 2026 API hardening pass.
+This review reflects the backend and frontend state after the March 2026 API hardening pass and the follow-up removal of runtime mock backend responses.
 
 ## Resolved issues
 
@@ -14,7 +14,7 @@ Resolved.
 
 - Admin DB maintenance routes no longer use a separate legacy JWT verifier.
 - Protected API routes now rely on the shared backend auth middleware path.
-- This removes the risk of admin endpoints rejecting tokens issued by the normal login flow because of diverging secret sources or request-user shapes.
+- Optional auth now resolves JWT secrets through the same auth configuration path as primary auth.
 
 ### DB restore sequence collisions
 
@@ -34,6 +34,31 @@ The analysis controllers now return explicit failure states:
 - `503 analysis_unavailable`
 - `504 analysis_timeout`
 
+### Legacy AI compatibility routes fabricated success payloads
+
+Resolved.
+
+Live backend compatibility routes no longer invent successful fallback answers, scripts, explanations, examples, or analysis payloads when the AI service is unavailable.
+Current failure behavior is explicit:
+
+- `502 ai_service_error`
+- `503 ai_service_unavailable`
+- `504 ai_service_timeout`
+
+### Async upload analysis used the wrong AI endpoint and hid failure behind defaults
+
+Resolved.
+
+- Async upload analysis now calls the real AI `/analyze` endpoint.
+- Upload processing no longer substitutes invented analysis data when the AI call fails.
+
+### Similar-script search returned random similarity scores
+
+Resolved.
+
+- Vector-search failures now return `503 vector_search_unavailable`.
+- The API no longer reports random fallback similarity values as if they were real search results.
+
 ### Separate raw analytics DB pool
 
 Resolved.
@@ -49,20 +74,20 @@ Resolved.
 
 ## Validation completed
 
-Backend validation passed after the hardening changes:
+The latest previously completed backend validation still stands:
 
 ```bash
 cd src/backend && npm run build
 cd src/backend && npm test -- --runInBand
 ```
 
-Latest local result from the follow-up pass:
+Latest recorded local result from the follow-up pass:
 
 - `3` suites passed
 - `1` suite skipped
 - `29` tests passed
 
-Analysis controller coverage now includes:
+Analysis controller coverage includes:
 
 - missing analysis -> `404`
 - upstream analysis error -> `502`
@@ -70,12 +95,5 @@ Analysis controller coverage now includes:
 
 ## Frontend runtime note discovered during screenshot capture
 
-The missing `/settings/data` route was traced to a stale Docker frontend runtime, not the current source tree.
-
-Observed state on March 5, 2026:
-
-- the long-running container on `https://127.0.0.1:3090` was serving an older `App.tsx`
-- the workspace source contains `/settings/data` and `DataMaintenanceSettings`
-- a temporary Vite session started from the current workspace rendered `/settings/data` correctly and produced the current screenshot asset
-
-That means the backend admin maintenance API is healthy, and the remaining issue is runtime/frontend refresh hygiene for the Docker dev container.
+The long-running Docker frontend can still serve stale source while the workspace-backed Vite session reflects current routes.
+The refreshed screenshot set was generated from the current workspace-backed frontend session so the docs match the source tree.

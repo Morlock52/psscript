@@ -11,6 +11,7 @@ Admin-only database maintenance is exposed through backend routes under `/api/ad
 - Admin DB endpoints now use the same shared auth middleware as the rest of the backend.
 - Restore now reseeds serial and identity sequences after inserting backup rows.
 - Clear-test-data responses include requested, filtered, and ignored table lists.
+- Screenshot assets were refreshed from the current workspace-backed frontend session.
 
 ## Endpoints
 

@@ -18,9 +18,11 @@ AI-assisted PowerShell script management, analysis, and documentation tooling.
 
 - JWT-protected backend APIs with a single shared auth middleware.
 - Admin database maintenance endpoints for backup, restore, and test-data cleanup.
-- Script analysis endpoints that now return explicit failure states instead of fabricated success payloads.
-- Analytics queries running through the shared Sequelize connection stack.
-- React/Vite frontend running on port `3090` with route-level lazy loading.
+- Script analysis endpoints that return explicit failure states instead of fabricated success payloads.
+- Legacy AI compatibility routes no longer synthesize fallback answers, scripts, explanations, or examples when the AI service fails.
+- Async script upload analysis uses the real AI `/analyze` endpoint.
+- Analytics queries run through the shared Sequelize connection stack.
+- React/Vite frontend runs on port `3090` with route-level lazy loading in the source tree.
 
 ## Local development
 
@@ -79,6 +81,14 @@ Current behavior is:
 - `502 analysis_service_error`
 - `503 analysis_unavailable`
 - `504 analysis_timeout`
+
+### Legacy AI compatibility route semantics
+
+Legacy AI routes now fail explicitly instead of inventing successful payloads:
+
+- `502 ai_service_error`
+- `503 ai_service_unavailable`
+- `504 ai_service_timeout`
 
 ### Analytics DB access
 

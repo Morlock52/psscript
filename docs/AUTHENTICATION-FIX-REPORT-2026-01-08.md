@@ -1,5 +1,10 @@
 # Authentication Fix Report - January 8, 2026
 
+> Historical note (March 5, 2026): This document records earlier testing or remediation work and is not the current source of truth.
+> Current local frontend default is `VITE_DISABLE_AUTH=true`, older credentials such as `admin@psscript.com`, `ChangeMe1!`, and `admin123` are historical only, backend auth rejects demo-token shortcuts, and live backend AI routes no longer return mock/fallback success payloads.
+> Use `README.md`, `src/backend/README.md`, `src/frontend/README.md`, `docs/AUTHENTICATION-IMPROVEMENTS.md`, and `docs/API-ISSUE-REVIEW-2026-02-26.md` for current behavior.
+
+
 ## 🎯 Executive Summary
 
 **Status:** ✅ **FULLY WORKING**
