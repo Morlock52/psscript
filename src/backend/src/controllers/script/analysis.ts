@@ -40,56 +40,19 @@ export async function getScriptAnalysis(
     const analysis = await fetchScriptAnalysis(scriptId);
 
     if (!analysis) {
-      // Instead of returning 404, provide mock analysis data
-      logger.info(`No analysis found for script ${scriptId}, returning mock data`);
+      const script = await Script.findByPk(scriptId, {
+        attributes: ['id']
+      });
 
-      // Get the script info to make the mock data more relevant
-      const scriptResult = await sequelize.query(
-        `SELECT * FROM scripts WHERE id = :scriptId LIMIT 1`,
-        {
-          replacements: { scriptId },
-          type: 'SELECT' as const,
-          raw: true,
-          plain: true
-        }
-      );
-
-      const script = scriptResult as unknown as { id: number; description?: string; parameters?: string } | null;
-
-      // If script doesn't exist, then return 404
       if (!script) {
         return res.status(404).json({ message: 'Script not found' });
       }
 
-      // Generate mock analysis based on script name/description
-      const mockAnalysis = {
-        id: 0,
-        scriptId: parseInt(scriptId),
-        purpose: `This script appears to ${script.description || 'perform automation tasks in PowerShell'}`,
-        parameters: script.parameters || 'No documented parameters found',
-        securityScore: Math.floor(Math.random() * 40) + 60, // Random score between 60-100
-        codeQualityScore: Math.floor(Math.random() * 40) + 60,
-        riskScore: Math.floor(Math.random() * 30) + 10, // Lower is better for risk
-        optimizationSuggestions: [
-          'Consider adding parameter validation',
-          'Add error handling for network operations',
-          'Use more descriptive variable names'
-        ],
-        commandDetails: {
-          totalCommands: Math.floor(Math.random() * 10) + 5,
-          riskyCommands: Math.floor(Math.random() * 3),
-          networkCommands: Math.floor(Math.random() * 4),
-          fileSystemCommands: Math.floor(Math.random() * 5) + 2
-        },
-        msDocsReferences: [
-          'https://learn.microsoft.com/en-us/powershell/module/microsoft.powershell.core/about/about_scripts',
-          'https://learn.microsoft.com/en-us/powershell/module/microsoft.powershell.core/about/about_functions_advanced_parameters'
-        ],
-        createdAt: new Date().toISOString(),
-        updatedAt: new Date().toISOString()
-      };
-
-      return res.json(mockAnalysis);
+      return res.status(404).json({
+        message: 'Analysis not found for this script',
+        error: 'analysis_not_found',
+        scriptId: parseInt(scriptId, 10)
+      });
     }
 
     return res.json(analysis);
@@ -108,7 +71,6 @@ export async function analyzeScript(
   _next: NextFunction
 ): Promise<void | Response> {
   try {
-    const cache = getCache();
     // eslint-disable-next-line camelcase -- API request body uses snake_case
     const { content, script_id } = req.body as { content?: string; script_id?: string };
 
@@ -157,42 +119,25 @@ export async function analyzeScript(
     } catch (analysisError) {
       logger.error('AI analysis failed:', analysisError);
 
-      // Instead of propagating the error, return a graceful fallback response
-      const mockAnalysis = {
-        purpose: 'This appears to be a PowerShell script. Analysis could not be completed.',
-        parameters: {},
-        security_score: 5.0,
-        code_quality_score: 5.0,
-        risk_score: 5.0,
-        reliability_score: 5.0,
-        optimization: [
-          'Consider adding error handling',
-          'Add parameter validation',
-          'Include comments for better readability'
-        ],
-        command_details: {
-          totalCommands: 'Unknown',
-          riskyCommands: 'Unknown',
-          networkCommands: 'Unknown',
-          fileSystemCommands: 'Unknown'
-        },
-        ms_docs_references: [
-          {
-            command: 'PowerShell Scripts',
-            url: 'https://learn.microsoft.com/en-us/powershell/scripting/overview',
-            description: 'Overview of PowerShell scripting'
-          },
-          {
-            command: 'About Scripts',
-            url: 'https://learn.microsoft.com/en-us/powershell/module/microsoft.powershell.core/about/about_scripts',
-            description: 'Information about PowerShell scripts and execution'
-          }
-        ],
-        analysis_message: 'Generated fallback analysis due to AI service unavailability'
-      };
+      if (axios.isAxiosError(analysisError) && analysisError.response) {
+        return res.status(502).json({
+          message: 'Analysis service returned an error',
+          error: 'analysis_service_error',
+          status: analysisError.response.status
+        });
+      }
 
-      // Return mock analysis with 200 status instead of error
-      return res.json(mockAnalysis);
+      if (analysisError instanceof Error && analysisError.message === 'Analysis request timed out') {
+        return res.status(504).json({
+          message: 'Analysis request timed out',
+          error: 'analysis_timeout'
+        });
+      }
+
+      return res.status(503).json({
+        message: 'Analysis service is unavailable',
+        error: 'analysis_unavailable'
+      });
     }
   } catch (error) {
     logger.error('Error in analyzeScript:', error);

@@ -31,14 +31,14 @@ import analyticsRoutes from './routes/analytics';
 import analyticsAiRoutes from './routes/analytics-ai';
 import healthRoutes from './routes/health';
 import chatRoutes from './routes/chat';
-// Voice routes are imported differently or disabled
-// import voiceRoutes from './routes/voiceRoutes';
+import voiceRoutes from './routes/voice';
 import agentsRoutes from './routes/agents';
 import aiAgentRoutes from './routes/ai-agent';
 import assistantsRoutes from './routes/assistants';
 import documentationRoutes from './routes/documentation';
+import adminDbRoutes from './routes/admin-db';
 import { errorHandler } from './middleware/errorHandler';
-import { authenticateJWT, requireAdmin } from './middleware/auth';
+import { authenticateJWT, requireAdmin } from './middleware/authMiddleware';
 import { setupSwagger } from './utils/swagger';
 import path from 'path';
 import { existsSync } from 'fs';
@@ -508,6 +508,7 @@ app.use('/api/auth', authLimiter);
 app.use('/api/ai-agent', aiLimiter);
 app.use('/api/assistants', aiLimiter);
 app.use('/api/chat', aiLimiter);
+app.use('/api/voice', aiLimiter);
 
 // Script operations: 30 requests per 5 minutes
 app.use('/api/scripts', scriptLimiter);
@@ -540,6 +541,7 @@ const cacheMiddleware = (req: express.Request, res: express.Response, next: expr
     // Scripts are interactive content and are mutated frequently (autosave, category changes, deletes).
     // Caching has caused stale reads and test flakiness (e.g., category uncategorize-delete not reflected).
     '/api/scripts',
+    '/api/voice',     // Voice routes are user/auth dependent and can contain sensitive data.
     '/api/agents',     // Agent runs/threads are dynamic; /runs/:id must never be cached.
     '/api/analytics',  // Analytics is user/time dependent; caching can serve misleading data.
     // Documentation crawl jobs are async + progress-driven; caching breaks progress polling.
@@ -620,12 +622,12 @@ app.use('/api/analytics/ai', analyticsAiRoutes);
 app.use('/api/health', healthRoutes);
 app.use('/health', healthRoutes); // Standard health check endpoint
 app.use('/api/chat', chatRoutes);
-// Voice API is disabled for now
-// app.use('/api/voice', voiceRoutes);
+app.use('/api/voice', voiceRoutes);
 app.use('/api/ai-agent', aiAgentRoutes);
 app.use('/api/assistants', assistantsRoutes);
 app.use('/api/agents', agentsRoutes);
 app.use('/api/documentation', documentationRoutes);
+app.use('/api/admin/db', adminDbRoutes);
 
 // Create proxy routes for the frontend to use
 // This ensures the frontend can directly call /scripts/please instead of /api/ai-agent/please

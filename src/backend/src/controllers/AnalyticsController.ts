@@ -1,5 +1,20 @@
 import { Request, Response } from 'express';
-import db from '../db';
+import { QueryTypes } from 'sequelize';
+import { sequelize } from '../database/connection';
+
+async function selectRows<T>(query: string): Promise<T[]> {
+  return sequelize.query(query, {
+    type: QueryTypes.SELECT
+  }) as Promise<T[]>;
+}
+
+function toNumber(value: string | number | null | undefined): number {
+  if (typeof value === 'number') {
+    return value;
+  }
+
+  return Number.parseFloat(value || '0');
+}
 
 export default class AnalyticsController {
   /**
@@ -9,7 +24,14 @@ export default class AnalyticsController {
   async getSecurityMetrics(req: Request, res: Response) {
     try {
       // Fetch scripts with security scan results
-      const scripts = await db.query(`
+      const scripts = await selectRows<{
+        id: number;
+        title: string;
+        security_score: string | number | null;
+        risk_score: string | number | null;
+        suggestions: unknown;
+        created_at: string;
+      }>(`
         SELECT
           s.id,
           s.title,
@@ -25,17 +47,17 @@ export default class AnalyticsController {
 
       // Calculate security distribution based on security_score
       const highSecurityCount = scripts.filter((s: any) => {
-        const score = parseFloat(s.security_score || 0);
+        const score = toNumber(s.security_score);
         return score >= 8 && score <= 10;
       }).length;
 
       const mediumSecurityCount = scripts.filter((s: any) => {
-        const score = parseFloat(s.security_score || 0);
+        const score = toNumber(s.security_score);
         return score >= 5 && score < 8;
       }).length;
 
       const lowSecurityCount = scripts.filter((s: any) => {
-        const score = parseFloat(s.security_score || 0);
+        const score = toNumber(s.security_score);
         return score >= 0 && score < 5;
       }).length;
 
@@ -59,13 +81,13 @@ export default class AnalyticsController {
         .slice(0, 5); // Top 5 issues
 
       // Get average security score
-      const avgScore = await db.query(`
+      const avgScore = await selectRows<{ average_score: string | number | null }>(`
         SELECT AVG(security_score) as average_score
         FROM script_analysis
       `);
 
       res.status(200).json({
-        averageScore: parseFloat(avgScore[0]?.average_score || 0),
+        averageScore: toNumber(avgScore[0]?.average_score),
         totalScriptsAnalyzed: scripts.length,
         highSecurityCount,
         mediumSecurityCount,
@@ -84,19 +106,19 @@ export default class AnalyticsController {
   async getUsageAnalytics(req: Request, res: Response) {
     try {
       // Get total scripts
-      const totalScripts = await db.query(`
+      const totalScripts = await selectRows<{ count: string | number }>(`
         SELECT COUNT(*) as count FROM scripts
       `);
 
       // Get scripts created in the last 30 days for change calculation
-      const recentScripts = await db.query(`
+      const recentScripts = await selectRows<{ count: string | number }>(`
         SELECT COUNT(*) as count
         FROM scripts
         WHERE created_at >= NOW() - INTERVAL '30 days'
       `);
 
       // Get scripts created in the previous 30 days for comparison
-      const previousScripts = await db.query(`
+      const previousScripts = await selectRows<{ count: string | number }>(`
         SELECT COUNT(*) as count
         FROM scripts
         WHERE created_at >= NOW() - INTERVAL '60 days'
@@ -104,46 +126,46 @@ export default class AnalyticsController {
       `);
 
       // Calculate percentage change
-      const currentCount = parseInt(recentScripts[0]?.count || 0);
-      const previousCount = parseInt(previousScripts[0]?.count || 0);
+      const currentCount = toNumber(recentScripts[0]?.count);
+      const previousCount = toNumber(previousScripts[0]?.count);
       const scriptsChange = previousCount > 0
         ? Math.round(((currentCount - previousCount) / previousCount) * 100)
         : 0;
 
       // Get total users
-      const totalUsers = await db.query(`
+      const totalUsers = await selectRows<{ count: string | number }>(`
         SELECT COUNT(*) as count FROM users
       `);
 
       // Get total analyses (count of scripts with analysis results)
-      const totalAnalyses = await db.query(`
+      const totalAnalyses = await selectRows<{ count: string | number }>(`
         SELECT COUNT(*) as count
         FROM script_analysis
       `);
 
       // Get recent analyses for change calculation
-      const recentAnalyses = await db.query(`
+      const recentAnalyses = await selectRows<{ count: string | number }>(`
         SELECT COUNT(*) as count
         FROM script_analysis
         WHERE updated_at >= NOW() - INTERVAL '30 days'
       `);
 
       // Get previous analyses for comparison
-      const previousAnalyses = await db.query(`
+      const previousAnalyses = await selectRows<{ count: string | number }>(`
         SELECT COUNT(*) as count
         FROM script_analysis
         WHERE updated_at >= NOW() - INTERVAL '60 days'
           AND updated_at < NOW() - INTERVAL '30 days'
       `);
 
-      const currentAnalysesCount = parseInt(recentAnalyses[0]?.count || 0);
-      const previousAnalysesCount = parseInt(previousAnalyses[0]?.count || 0);
+      const currentAnalysesCount = toNumber(recentAnalyses[0]?.count);
+      const previousAnalysesCount = toNumber(previousAnalyses[0]?.count);
       const analysesChange = previousAnalysesCount > 0
         ? Math.round(((currentAnalysesCount - previousAnalysesCount) / previousAnalysesCount) * 100)
         : 0;
 
       // Get script creation count by date
-      const scriptsByDate = await db.query(`
+      const scriptsByDate = await selectRows<{ date: string; count: string | number }>(`
         SELECT
           DATE(created_at) as date,
           COUNT(*) as count
@@ -154,10 +176,10 @@ export default class AnalyticsController {
       `);
 
       res.status(200).json({
-        totalScripts: parseInt(totalScripts[0]?.count || 0),
+        totalScripts: toNumber(totalScripts[0]?.count),
         scriptsChange: scriptsChange,
-        totalUsers: parseInt(totalUsers[0]?.count || 0),
-        totalAnalyses: parseInt(totalAnalyses[0]?.count || 0),
+        totalUsers: toNumber(totalUsers[0]?.count),
+        totalAnalyses: toNumber(totalAnalyses[0]?.count),
         analysesChange: analysesChange,
         scriptsByDate: scriptsByDate
       });
@@ -173,7 +195,12 @@ export default class AnalyticsController {
   async getCategoryDistribution(req: Request, res: Response) {
     try {
       // Get all categories with script counts
-      const categories = await db.query(`
+      const categories = await selectRows<{
+        id: number;
+        name: string;
+        description: string | null;
+        script_count: string | number;
+      }>(`
         SELECT
           c.id,
           c.name,
@@ -193,7 +220,7 @@ export default class AnalyticsController {
 
       // Format categories with percentages and colors
       const formattedCategories = categories.map((cat: any, index: number) => {
-        const count = parseInt(cat.script_count || 0);
+        const count = toNumber(cat.script_count);
         const percentage = totalScripts > 0
           ? Math.round((count / totalScripts) * 100)
           : 0;
