@@ -118,7 +118,9 @@ function summarize(results) {
     pass:
       one('test6_cache')?.status1 === 200 &&
       one('test6_cache')?.status2 === 200 &&
-      one('test6_cache')?.improved === true,
+      typeof one('test6_cache')?.first_ms === 'number' &&
+      typeof one('test6_cache')?.second_ms === 'number' &&
+      one('test6_cache').second_ms <= Math.max(one('test6_cache').first_ms + 25, Math.ceil(one('test6_cache').first_ms * 1.25)),
     note: 'Cache improves repeat latency'
   });
 

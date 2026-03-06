@@ -132,7 +132,7 @@ function checkSecurityPatterns(script: string): any[] {
 async function analyzeWithAI(script: string): Promise<string> {
   try {
     const response = await openai.chat.completions.create({
-      model: 'gpt-4o',
+      model: process.env.OPENAI_SECURITY_MODEL || 'gpt-4.1',
       messages: [
         {
           role: 'system',

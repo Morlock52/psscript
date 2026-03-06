@@ -60,13 +60,30 @@ class VoiceService:
         Args:
             api_key: API key for third-party voice services
         """
-        self.api_key = api_key or os.environ.get("VOICE_API_KEY")
-        self.tts_service = os.environ.get("TTS_SERVICE", "openai")  # openai, google, amazon, microsoft
+        openai_api_key = api_key or os.environ.get("OPENAI_API_KEY") or os.environ.get("VOICE_API_KEY")
+        self.api_key = openai_api_key
+        requested_tts_service = os.environ.get("TTS_SERVICE", "openai")
+        self.tts_service = requested_tts_service  # openai, google, amazon, microsoft
         self.tts_cache_dir = os.environ.get("TTS_CACHE_DIR", "voice_cache")
         self.tts_cache_ttl = int(os.environ.get("TTS_CACHE_TTL", "86400"))  # 24 hours in seconds
         self.tts_cache = {}  # In-memory cache
         self.ensure_cache_dir()
-        self.stt_service = os.environ.get("STT_SERVICE", "openai")  # openai, google, amazon, microsoft
+        requested_stt_service = os.environ.get("STT_SERVICE", "openai")
+        self.stt_service = requested_stt_service  # openai, google, amazon, microsoft
+
+        if openai_api_key:
+            if self.tts_service != "openai":
+                logger.info(
+                    "OpenAI API key detected; overriding legacy TTS service '%s' with 'openai'",
+                    self.tts_service
+                )
+                self.tts_service = "openai"
+            if self.stt_service != "openai":
+                logger.info(
+                    "OpenAI API key detected; overriding legacy STT service '%s' with 'openai'",
+                    self.stt_service
+                )
+                self.stt_service = "openai"
         
         logger.info(f"Voice Service initialized with TTS service: {self.tts_service}, STT service: {self.stt_service}")
     
@@ -74,7 +91,9 @@ class VoiceService:
         self,
         text: str,
         voice_id: Optional[str] = None,
-        output_format: str = "mp3"
+        output_format: str = "mp3",
+        voice_instructions: Optional[str] = None,
+        speed: Optional[float] = None
     ) -> Dict[str, Any]:
         """
         Synthesize text into speech.
@@ -83,6 +102,8 @@ class VoiceService:
             text: Text to synthesize
             voice_id: Voice ID to use
             output_format: Output audio format
+            voice_instructions: Optional voice style instructions
+            speed: Optional synthesis speed
             
         Returns:
             Dictionary containing the audio data and metadata
@@ -90,7 +111,7 @@ class VoiceService:
         logger.info(f"Synthesizing speech: '{text[:50]}...' with voice: {voice_id}")
         
         # Generate cache key
-        cache_key = self._generate_cache_key(text, voice_id, output_format)
+        cache_key = self._generate_cache_key(text, voice_id, output_format, voice_instructions, speed)
         
         # Check cache
         cached_result = self._get_from_cache(cache_key)
@@ -100,9 +121,16 @@ class VoiceService:
         
         # Not in cache, proceed with synthesis
         try:
+            resolved_format = output_format
             # Select the appropriate TTS service
             if self.tts_service == "openai":
-                audio_data, duration = await self._synthesize_openai(text, voice_id, output_format)
+                audio_data, duration, resolved_format = await self._synthesize_openai(
+                    text,
+                    voice_id,
+                    output_format,
+                    voice_instructions,
+                    speed
+                )
             elif self.tts_service == "google":
                 audio_data, duration = await self._synthesize_google(text, voice_id, output_format)
             elif self.tts_service == "amazon":
@@ -116,18 +144,13 @@ class VoiceService:
             # Store result in cache
             result = {
                 "audio_data": audio_data,
-                "format": output_format,
+                "format": resolved_format,
                 "duration": duration,
                 "text": text
             }
             self._store_in_cache(cache_key, result)
             
-            return {
-                "audio_data": audio_data,
-                "format": output_format,
-                "duration": duration,
-                "text": text
-            }
+            return result
         except HTTPException:
             raise
         except Exception as e:
@@ -140,7 +163,14 @@ class VoiceService:
             os.makedirs(self.tts_cache_dir, exist_ok=True)
             logger.info(f"Created cache directory: {self.tts_cache_dir}")
     
-    def _generate_cache_key(self, text: str, voice_id: Optional[str], output_format: str) -> str:
+    def _generate_cache_key(
+        self,
+        text: str,
+        voice_id: Optional[str],
+        output_format: str,
+        voice_instructions: Optional[str] = None,
+        speed: Optional[float] = None
+    ) -> str:
         """Generate a cache key for the given parameters."""
         api_key_scope = "server"
         if self.api_key:
@@ -151,6 +181,8 @@ class VoiceService:
             "text": text,
             "voice_id": voice_id or "",
             "output_format": output_format,
+            "voice_instructions": voice_instructions or "",
+            "speed": speed,
             "service": self.tts_service,
             "api_key_scope": api_key_scope
         }
@@ -205,7 +237,13 @@ class VoiceService:
         self,
         audio_data: str,
         language: str = "en-US",
-        audio_format: Optional[str] = None
+        audio_format: Optional[str] = None,
+        prompt: Optional[str] = None,
+        transcription_mode: str = "standard",
+        include_logprobs: bool = False,
+        chunking_strategy: Optional[str] = None,
+        known_speaker_names: Optional[List[str]] = None,
+        known_speaker_references: Optional[List[str]] = None
     ) -> Dict[str, Any]:
         """
         Recognize speech from audio data.
@@ -213,6 +251,12 @@ class VoiceService:
         Args:
             audio_data: Base64-encoded audio data
             language: Language code
+            prompt: Optional transcription prompt
+            transcription_mode: standard or diarize
+            include_logprobs: Whether to include token logprobs
+            chunking_strategy: Optional transcription chunking strategy
+            known_speaker_names: Optional speaker names for diarization
+            known_speaker_references: Optional speaker reference audio data URLs
             
         Returns:
             Dictionary containing the recognized text and metadata
@@ -222,7 +266,17 @@ class VoiceService:
         try:
             # Select the appropriate STT service
             if self.stt_service == "openai":
-                text, confidence, alternatives = await self._recognize_openai(audio_data, language, audio_format)
+                return await self._recognize_openai(
+                    audio_data,
+                    language,
+                    audio_format,
+                    prompt,
+                    transcription_mode,
+                    include_logprobs,
+                    chunking_strategy,
+                    known_speaker_names,
+                    known_speaker_references
+                )
             elif self.stt_service == "google":
                 text, confidence, alternatives = await self._recognize_google(audio_data, language)
             elif self.stt_service == "amazon":
@@ -236,7 +290,8 @@ class VoiceService:
             return {
                 "text": text,
                 "confidence": confidence,
-                "alternatives": alternatives
+                "alternatives": alternatives,
+                "mode": transcription_mode,
             }
         except HTTPException:
             raise
@@ -260,8 +315,10 @@ class VoiceService:
         self,
         text: str,
         voice_id: Optional[str] = None,
-        output_format: str = "mp3"
-    ) -> tuple[str, float]:
+        output_format: str = "mp3",
+        voice_instructions: Optional[str] = None,
+        speed: Optional[float] = None
+    ) -> tuple[str, float, str]:
         """Synthesize text using OpenAI TTS."""
         logger.info("Using OpenAI TTS")
         client = self._get_openai_client()
@@ -270,18 +327,23 @@ class VoiceService:
         fmt = output_format.lower() if output_format else "mp3"
 
         def _create_audio() -> bytes:
+            request_kwargs = {
+                "model": model,
+                "voice": voice,
+                "input": text,
+            }
+            if voice_instructions:
+                request_kwargs["instructions"] = voice_instructions
+            if speed is not None:
+                request_kwargs["speed"] = speed
             try:
                 response = client.audio.speech.create(
-                    model=model,
-                    voice=voice,
-                    input=text,
+                    **request_kwargs,
                     format=fmt
                 )
             except TypeError:
                 response = client.audio.speech.create(
-                    model=model,
-                    voice=voice,
-                    input=text,
+                    **request_kwargs,
                     response_format=fmt
                 )
             if hasattr(response, "read"):
@@ -301,25 +363,41 @@ class VoiceService:
 
         audio_data = base64.b64encode(audio_bytes).decode()
         duration = max(0.5, len(text) * 0.06)
-        return audio_data, duration
+        return audio_data, duration, fmt
 
     async def _recognize_openai(
         self,
         audio_data: str,
         language: str = "en-US",
-        audio_format: Optional[str] = None
-    ) -> tuple[str, float, List[Dict[str, Any]]]:
+        audio_format: Optional[str] = None,
+        prompt: Optional[str] = None,
+        transcription_mode: str = "standard",
+        include_logprobs: bool = False,
+        chunking_strategy: Optional[str] = None,
+        known_speaker_names: Optional[List[str]] = None,
+        known_speaker_references: Optional[List[str]] = None
+    ) -> Dict[str, Any]:
         """Recognize speech using OpenAI transcription."""
         logger.info("Using OpenAI STT")
         client = self._get_openai_client()
-        model = os.environ.get("VOICE_STT_MODEL", "gpt-4o-mini-transcribe")
+        mode = (transcription_mode or "standard").lower()
+        model = os.environ.get(
+            "VOICE_STT_DIARIZE_MODEL" if mode == "diarize" else "VOICE_STT_MODEL",
+            "gpt-4o-transcribe-diarize" if mode == "diarize" else "gpt-4o-transcribe"
+        )
 
         try:
             audio_bytes = base64.b64decode(audio_data)
         except Exception as decode_error:
             raise HTTPException(status_code=400, detail=f"Invalid base64 audio data: {decode_error}")
         if not audio_bytes:
-            return "", 0.0, []
+            return {
+                "text": "",
+                "confidence": 0.0,
+                "alternatives": [],
+                "mode": mode,
+                "model": model,
+            }
 
         lang_code = language.split("-")[0] if language else None
         ext = (audio_format or "").strip().lower() or self._detect_audio_extension(audio_bytes)
@@ -329,14 +407,32 @@ class VoiceService:
                 detail="Unsupported transcription format. Use wav, mp3, m4a, flac, ogg, or webm."
             )
 
+        response_format = "diarized_json" if mode == "diarize" else "json"
+
         def _transcribe():
             audio_file = io.BytesIO(audio_bytes)
             audio_file.name = f"audio.{ext}"
-            return client.audio.transcriptions.create(
-                model=model,
-                file=audio_file,
-                language=lang_code
-            )
+            request_kwargs = {
+                "model": model,
+                "file": audio_file,
+                "response_format": response_format,
+            }
+            if lang_code:
+                request_kwargs["language"] = lang_code
+            if prompt:
+                request_kwargs["prompt"] = prompt
+            if include_logprobs and mode != "diarize":
+                request_kwargs["include"] = ["logprobs"]
+            if chunking_strategy:
+                request_kwargs["chunking_strategy"] = chunking_strategy
+            extra_body = {}
+            if known_speaker_names:
+                extra_body["known_speaker_names"] = known_speaker_names
+            if known_speaker_references:
+                extra_body["known_speaker_references"] = known_speaker_references
+            if extra_body:
+                request_kwargs["extra_body"] = extra_body
+            return client.audio.transcriptions.create(**request_kwargs)
 
         try:
             transcript = await asyncio.to_thread(_transcribe)
@@ -346,13 +442,34 @@ class VoiceService:
                 status_code = 400
             detail = f"OpenAI transcription error: {transcribe_error}" if status_code >= 500 else f"Invalid or unsupported audio content: {transcribe_error}"
             raise HTTPException(status_code=status_code, detail=detail)
-        text = getattr(transcript, "text", None)
-        if text is None and isinstance(transcript, dict):
-            text = transcript.get("text", "")
-        text = text or ""
-        confidence = 0.9 if text else 0.0
+
+        if hasattr(transcript, "model_dump"):
+            payload = transcript.model_dump()
+        elif isinstance(transcript, dict):
+            payload = transcript
+        else:
+            payload = {
+                key: getattr(transcript, key, None)
+                for key in ["text", "segments", "words", "logprobs", "language", "usage", "duration", "task"]
+                if getattr(transcript, key, None) is not None
+            }
+
+        text = (payload.get("text") or "") if isinstance(payload, dict) else ""
+        confidence = 0.95 if text else 0.0
         alternatives = [{"text": text, "confidence": confidence}] if text else []
-        return text, confidence, alternatives
+        return {
+            "text": text,
+            "confidence": confidence,
+            "alternatives": alternatives,
+            "segments": payload.get("segments") if isinstance(payload, dict) else None,
+            "words": payload.get("words") if isinstance(payload, dict) else None,
+            "logprobs": payload.get("logprobs") if isinstance(payload, dict) else None,
+            "language": payload.get("language") if isinstance(payload, dict) else None,
+            "duration": payload.get("duration") if isinstance(payload, dict) else None,
+            "usage": payload.get("usage") if isinstance(payload, dict) else None,
+            "model": model,
+            "mode": mode,
+        }
 
     def _detect_audio_extension(self, audio_bytes: bytes) -> str:
         """Best-effort audio container detection for transcription uploads."""

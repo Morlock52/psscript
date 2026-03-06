@@ -119,7 +119,12 @@ def analyze_powershell_script(script_content: str) -> str:
     """
     try:
         analyzer = ScriptAnalyzer(use_cache=True)
-        result = analyzer.analyze_script_content(script_content)
+        if hasattr(analyzer, "analyze_script_content"):
+            result = analyzer.analyze_script_content(script_content)
+        elif hasattr(analyzer, "analyze_script"):
+            result = analyzer.analyze_script(script_content)
+        else:
+            raise AttributeError("ScriptAnalyzer does not expose a script analysis method")
 
         analysis = {
             "purpose": result.get("purpose", "Unknown"),
@@ -647,7 +652,7 @@ class LangGraphProductionOrchestrator:
     def __init__(
         self,
         api_key: Optional[str] = None,
-        model: str = "gpt-4o",
+        model: str = "gpt-4.1",
         use_postgres_checkpointing: bool = False,
         postgres_connection_string: Optional[str] = None
     ):
@@ -876,7 +881,7 @@ class LangGraphProductionOrchestrator:
 async def analyze_powershell_script_simple(
     script_content: str,
     api_key: Optional[str] = None,
-    model: str = "gpt-4o"
+    model: str = "gpt-4.1"
 ) -> Dict[str, Any]:
     """
     Simple convenience function for analyzing PowerShell scripts.

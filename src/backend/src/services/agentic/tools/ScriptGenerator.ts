@@ -18,7 +18,7 @@ const openai = new OpenAI({
 export async function generatePowerShellScript(requirements: string): Promise<string> {
   try {
     const response = await openai.chat.completions.create({
-      model: 'gpt-4o',
+      model: process.env.OPENAI_SCRIPT_MODEL || 'gpt-4.1',
       messages: [
         {
           role: 'system',

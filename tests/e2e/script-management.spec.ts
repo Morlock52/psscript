@@ -193,47 +193,11 @@ test.describe('Script List View', () => {
     // Navigate to scripts page
     await page.goto('/scripts');
 
-    // Wait for page to be fully loaded (2026 best practice: use waitForLoadState)
-    await page.waitForLoadState('networkidle');
+    await page.waitForLoadState('domcontentloaded');
 
-    // Use locator-based assertions with auto-retry (2026 best practice)
-    // The page should show ONE of these states:
-    // 1. Scripts table/list with actual scripts
-    // 2. Empty state message
-    // 3. Script cards or rows
-
-    // Define all possible valid elements using robust selectors
-    const scriptsTable = page.locator('[data-testid="scripts-list"]');
-    const scriptCards = page.locator('[data-testid="script-card"]');
-    const scriptRows = page.locator('table tbody tr, [role="row"]');
-    const emptyState = page.getByText(/no scripts|empty|upload.*script|get started/i);
-    const scriptsHeading = page.getByRole('heading', { name: /scripts/i });
-
-    // Wait for the page heading to confirm we're on the right page
+    const scriptsHeading = page.locator('h1').filter({ hasText: /scripts/i });
     await expect(scriptsHeading).toBeVisible({ timeout: 10000 });
-
-    // Check if any valid content state is visible (use Promise.race for first match)
-    const hasValidContent = await Promise.race([
-      scriptsTable.isVisible().then(v => v ? 'table' : null),
-      scriptCards.first().isVisible().then(v => v ? 'cards' : null),
-      scriptRows.first().isVisible().then(v => v ? 'rows' : null),
-      emptyState.first().isVisible().then(v => v ? 'empty' : null),
-      // Timeout fallback after checking all options
-      new Promise<string>(resolve => setTimeout(() => resolve('timeout'), 3000))
-    ]);
-
-    // If timeout, do a final comprehensive check
-    if (hasValidContent === 'timeout') {
-      const bodyText = await page.locator('body').textContent() || '';
-      const hasScriptContent = bodyText.toLowerCase().includes('script') ||
-                              bodyText.toLowerCase().includes('.ps1') ||
-                              await scriptsTable.count() > 0 ||
-                              await scriptCards.count() > 0;
-      expect(hasScriptContent).toBeTruthy();
-    } else {
-      // We found valid content
-      expect(hasValidContent).toBeTruthy();
-    }
+    await expect(page.locator('body')).toContainText(/manage scripts|no scripts found|script/i);
   });
 
   test('Should allow searching scripts', async ({ page }, testInfo) => {

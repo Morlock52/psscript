@@ -59,6 +59,7 @@ docker-volumes/
 tmp/
 temp/
 .tmp/
+.tmp.driveupload/
 *.tmp
 *.bak
 *.swp

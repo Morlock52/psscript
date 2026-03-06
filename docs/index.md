@@ -1,96 +1,45 @@
 # PSScript Documentation Hub
 
-Welcome to the documentation hub for PSScript - a multi-service PowerShell script analysis platform with agentic AI capabilities.
+_Source-of-truth docs refreshed: March 6, 2026_
 
-## Quick Links
+This index points to the active documentation set for the current validated repo state.
 
-| Document | Description |
-|----------|-------------|
-| [CLAUDE.md](./CLAUDE.md) | Quick reference for development commands |
-| [GETTING-STARTED.md](./GETTING-STARTED.md) | New developer onboarding |
-| [DOCKER-SETUP.md](./DOCKER-SETUP.md) | Docker deployment guide |
-| [MANAGEMENT-PLAYBOOK.md](./MANAGEMENT-PLAYBOOK.md) | Operations playbook |
-| [SUPPORT.md](./SUPPORT.md) | Support information |
+## Start here
 
-## Documentation Categories
+| Document | Purpose |
+| --- | --- |
+| [../README.md](../README.md) | repo overview, current stack, and validation snapshot |
+| [GETTING-STARTED.md](./GETTING-STARTED.md) | local bootstrap and first-run steps |
+| [DATA-MAINTENANCE.md](./DATA-MAINTENANCE.md) | admin backup, restore, and cleanup operations |
+| [README-VOICE-API.md](./README-VOICE-API.md) | current voice/listening implementation and API behavior |
+| [AUTHENTICATION-IMPROVEMENTS.md](./AUTHENTICATION-IMPROVEMENTS.md) | current auth model and local auth-disabled behavior |
+| [UPDATES.md](./UPDATES.md) | latest engineering changes and validation history |
 
-### Architecture & Design
+## Service READMEs
 
-| Document | Description |
-|----------|-------------|
-| [agentic-framework.md](./agentic-framework.md) | AI agent system architecture |
-| [ARCHITECTURE-EVALUATION-AND-REBUILD-STRATEGY.md](./ARCHITECTURE-EVALUATION-AND-REBUILD-STRATEGY.md) | System architecture overview |
-| [INFRASTRUCTURE-FEATURES.md](./INFRASTRUCTURE-FEATURES.md) | Infrastructure capabilities |
+| Document | Purpose |
+| --- | --- |
+| [../src/backend/README.md](../src/backend/README.md) | backend responsibilities, routes, and validation |
+| [../src/frontend/README.md](../src/frontend/README.md) | frontend behavior, browser coverage, and screenshots |
+| [../src/ai/README.md](../src/ai/README.md) | AI service, LangGraph, and OpenAI voice defaults |
 
-### Database
+## Current operational references
 
-| Document | Description |
-|----------|-------------|
-| [DATABASE_REVIEW_2026.md](./DATABASE_REVIEW_2026.md) | Comprehensive database review (current) |
-| [DATABASE_UPDATE_2026-01-16.md](./DATABASE_UPDATE_2026-01-16.md) | Latest infrastructure updates |
-| [DATABASE_DOCUMENTATION.md](./DATABASE_DOCUMENTATION.md) | Schema and model documentation |
-| [DATABASE_TEST_PLAN.md](./DATABASE_TEST_PLAN.md) | Database testing strategy |
+| Document | Purpose |
+| --- | --- |
+| [LOGIN-CREDENTIALS.md](./LOGIN-CREDENTIALS.md) | current local auth-mode guidance |
+| [README-GITHUB.md](./README-GITHUB.md) | archive note for the older GitHub README draft |
+| [API-ISSUE-REVIEW-2026-02-26.md](./API-ISSUE-REVIEW-2026-02-26.md) | backend/API issue record |
+| [MANAGEMENT-PLAYBOOK.md](./MANAGEMENT-PLAYBOOK.md) | operator runbook |
+| [SUPPORT.md](./SUPPORT.md) | support and escalation info |
 
-### Security
+## Validation artifacts
 
-| Document | Description |
-|----------|-------------|
-| [SECURITY_INCIDENT_RESPONSE.md](./SECURITY_INCIDENT_RESPONSE.md) | Security incident procedures |
-| [USER_MANAGEMENT_SECURITY_AUDIT.md](./USER_MANAGEMENT_SECURITY_AUDIT.md) | User security audit |
-| [AUTHENTICATION-IMPROVEMENTS.md](./AUTHENTICATION-IMPROVEMENTS.md) | Auth system improvements |
+| Document | Purpose |
+| --- | --- |
+| [VOICE-TESTS-1-8-LATEST.md](./VOICE-TESTS-1-8-LATEST.md) | latest voice test report |
 
-### AI & Voice Features
+## Historical docs
 
-| Document | Description |
-|----------|-------------|
-| [VOICE-API-ARCHITECTURE.md](./VOICE-API-ARCHITECTURE.md) | Voice API design |
-| [VOICE-API-INTEGRATION.md](./VOICE-API-INTEGRATION.md) | Voice integration guide |
-| [LANGGRAPH-IMPLEMENTATION.md](./LANGGRAPH-IMPLEMENTATION.md) | LangGraph integration |
-| [README-VECTOR-SEARCH.md](./README-VECTOR-SEARCH.md) | Vector search with pgvector |
-
-### Deployment
-
-| Document | Description |
-|----------|-------------|
-| [DOCKER-INFRASTRUCTURE.md](./DOCKER-INFRASTRUCTURE.md) | Docker architecture |
-| [DEPLOYMENT-STATUS.md](./DEPLOYMENT-STATUS.md) | Current deployment status |
-
-### Testing
-
-| Document | Description |
-|----------|-------------|
-| [AI_COMPREHENSIVE_TEST_PLAN.md](./AI_COMPREHENSIVE_TEST_PLAN.md) | AI testing strategy |
-| [COMPREHENSIVE-TESTING-PLAN-2026.md](./COMPREHENSIVE-TESTING-PLAN-2026.md) | Master testing plan |
-
-### Training
-
-| Document | Description |
-|----------|-------------|
-| [training-suite/README.md](./training-suite/README.md) | Training modules overview |
-| [training-suite/TRAINING-GUIDE.md](./training-suite/TRAINING-GUIDE.md) | Training guide |
-
-## Reference
-
-| Document | Description |
-|----------|-------------|
-| [REFERENCE-SOURCES.md](./REFERENCE-SOURCES.md) | External references |
-| [TECH-REVIEW-2026.md](./TECH-REVIEW-2026.md) | Technology review |
-
-## Archived Documentation
-
-Historical test reports and recovery documentation are archived in:
-- `docs/archive/recovery-2026-01-14/` - January 2026 deployment recovery docs
-
-## Document Organization
-
-```
-docs/
-├── index.md                 # This file
-├── CLAUDE.md               # Quick command reference
-├── archive/                # Historical documents
-└── training-suite/         # Training materials
-```
-
----
-
-**Last Updated:** January 16, 2026
+Many files in this folder are historical reports or duplicated workspace artifacts, including filenames with ` (1)`.
+Treat those as archive material unless they are linked from this page or from the root README.

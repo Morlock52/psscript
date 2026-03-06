@@ -31,6 +31,7 @@ try:
     from psycopg.rows import dict_row  # noqa: F401 - Reserved for future use
     PSYCOPG3_AVAILABLE = True
 except ImportError:
+    AsyncConnectionPool = Any  # type: ignore[misc,assignment]
     PSYCOPG3_AVAILABLE = False
     logging.warning("psycopg3 not available, falling back to psycopg2")
 
@@ -192,24 +193,23 @@ async def lifespan(app: FastAPI):
             db_pool = None
 
     # Initialize agent coordinator
-    if not config.mock_mode:
-        try:
-            memory_storage_path = os.path.join(os.path.dirname(__file__), "memory_storage")
-            os.makedirs(memory_storage_path, exist_ok=True)
+    try:
+        memory_storage_path = os.path.join(os.path.dirname(__file__), "memory_storage")
+        os.makedirs(memory_storage_path, exist_ok=True)
 
-            visualization_output_dir = os.path.join(os.path.dirname(__file__), "visualizations")
-            os.makedirs(visualization_output_dir, exist_ok=True)
+        visualization_output_dir = os.path.join(os.path.dirname(__file__), "visualizations")
+        os.makedirs(visualization_output_dir, exist_ok=True)
 
-            agent_coordinator = AgentCoordinator(
-                api_key=config.api_keys.openai,
-                memory_storage_path=memory_storage_path,
-                visualization_output_dir=visualization_output_dir,
-                model=config.agent.default_model
-            )
-            logger.info("Agent coordinator initialized successfully")
-        except Exception as e:
-            logger.error(f"Error initializing agent coordinator: {e}")
-            agent_coordinator = None
+        agent_coordinator = AgentCoordinator(
+            api_key=config.api_keys.openai,
+            memory_storage_path=memory_storage_path,
+            visualization_output_dir=visualization_output_dir,
+            model=config.agent.default_model
+        )
+        logger.info("Agent coordinator initialized successfully")
+    except Exception as e:
+        logger.error(f"Error initializing agent coordinator: {e}")
+        agent_coordinator = None
 
     logger.info("API startup complete")
 
@@ -279,8 +279,8 @@ app.include_router(langgraph_router)
 # Initialize script analyzer
 script_analyzer = ScriptAnalyzer(use_cache=True)
 
-# Define MOCK_MODE based on config
-MOCK_MODE = config.mock_mode
+# Mock mode is retired. Keep this constant for compatibility in status payloads only.
+MOCK_MODE = False
 
 # Ensure API key is available (prompt if not present)
 api_key = ensure_api_key()
@@ -289,8 +289,7 @@ if api_key:
     # Security: Don't log API key, even partially
     print("OpenAI API key configured successfully")
 else:
-    print("No OpenAI API key configured - running in mock mode")
-    MOCK_MODE = True
+    print("No OpenAI API key configured")
 
 # Updated logging for January 2026
 print(f"Mock mode enabled: {MOCK_MODE}")
@@ -497,7 +496,7 @@ async def root():
         "message": "PowerShell Script Analysis API",
         "version": "0.2.0",
         "status": "operational",
-        "mode": "mock" if MOCK_MODE else "production",
+        "mode": "production",
         "agent_coordinator": "enabled" if agent_coordinator else "disabled"
     }
 
@@ -599,7 +598,7 @@ async def analyze_script(
     """
     try:
         # Use the agent coordinator if available
-        if agent_coordinator and not MOCK_MODE:
+        if agent_coordinator:
             # Prepare metadata
             metadata = {
                 "include_command_details": include_command_details,
@@ -774,7 +773,7 @@ async def analyze_script_security(
     """
     try:
         # Use the agent coordinator if available
-        if agent_coordinator and not MOCK_MODE:
+        if agent_coordinator:
             security_results = await agent_coordinator.analyze_script_security(
                 script_content=script_data.content,
                 script_name=script_data.script_name,
@@ -816,7 +815,7 @@ async def categorize_script(
     """
     try:
         # Use the agent coordinator if available
-        if agent_coordinator and not MOCK_MODE:
+        if agent_coordinator:
             categorization_results = await agent_coordinator.categorize_script(
                 script_content=script_data.content,
                 script_name=script_data.script_name,
@@ -857,7 +856,7 @@ async def find_documentation_references(
     """
     try:
         # Use the agent coordinator if available
-        if agent_coordinator and not MOCK_MODE:
+        if agent_coordinator:
             documentation_results = await agent_coordinator.find_documentation_references(
                 script_content=script_data.content,
                 script_name=script_data.script_name,
@@ -1669,7 +1668,7 @@ async def create_embedding(request: ScriptEmbeddingRequest):
     """Generate an embedding vector for a PowerShell script."""
     try:
         # Use the agent coordinator if available
-        if agent_coordinator and not MOCK_MODE:
+        if agent_coordinator:
             embedding = await agent_coordinator.generate_script_embedding(request.content)
         else:
             # Fall back to the script analyzer
@@ -1693,7 +1692,7 @@ async def find_similar_scripts(request: SimilarScriptsRequest):
     
     try:
         # Use the agent coordinator if available and content is provided
-        if agent_coordinator and not MOCK_MODE and request.content:
+        if agent_coordinator and request.content:
             similar_scripts = await agent_coordinator.search_similar_scripts(
                 script_content=request.content,
                 limit=request.limit
@@ -1898,110 +1897,6 @@ async def get_categories():
     ]
     
     return {"categories": categories}
-
-
-# Mock chat response for development without API key
-def get_mock_chat_response(messages):
-    """Generate a mock chat response when no valid API key is provided"""
-    user_message = messages[-1]['content'] if messages and messages[-1]['role'] == 'user' else ''
-    
-    if not user_message:
-        return "I'm here to help with PowerShell scripting. What can I assist you with today?"
-    
-    # Greetings
-    if any(greeting in user_message.lower() for greeting in ['hello', 'hi', 'hey', 'greetings']):
-        return "Hello! I'm PSScriptGPT, your PowerShell assistant. How can I help you with your PowerShell scripts today?"
-    
-    # General PowerShell information
-    if 'what is powershell' in user_message.lower():
-        return """PowerShell is a cross-platform task automation solution made up of a command-line shell, a scripting language, and a configuration management framework. PowerShell runs on Windows, Linux, and macOS.
-
-PowerShell is built on the .NET Common Language Runtime (CLR) and accepts and returns .NET objects. This fundamental change brings entirely new tools and methods for automation.
-
-Key features of PowerShell include:
-
-1. **Cmdlets**: Lightweight commands that perform a single function
-2. **Piping**: The ability to pass objects between commands
-3. **Providers**: Access to data stores like the file system or registry
-4. **Scripting Language**: A full-featured scripting language for creating scripts and functions
-5. **Error Handling**: Robust error handling with try/catch blocks
-6. **Integrated Scripting Environment (ISE)**: An IDE for writing PowerShell scripts
-7. **Remote Management**: Built-in remoting capabilities to manage remote systems
-
-Would you like to see some basic PowerShell examples?"""
-    
-    # Provide a generic response for other queries
-    return """I'm running in mock mode because no valid API key was provided. In production, I would use an AI model to generate helpful responses about PowerShell scripting. 
-
-Here's a simple PowerShell function that demonstrates best practices:
-
-```powershell
-function Get-FileStats {
-    <#
-    .SYNOPSIS
-        Gets statistics about files in a directory.
-    
-    .DESCRIPTION
-        This function analyzes files in a specified directory and returns
-        statistics like count, total size, and average size.
-    
-    .PARAMETER Path
-        The directory path to analyze. Defaults to current directory.
-    
-    .PARAMETER Filter
-        Optional file filter (e.g., "*.txt"). Defaults to all files.
-    
-    .EXAMPLE
-        Get-FileStats -Path "C:\\Documents" -Filter "*.docx"
-        
-        Returns statistics for all .docx files in C:\\Documents.
-    #>
-    [CmdletBinding()]
-    param (
-        [Parameter(Position=0)]
-        [string]$Path = (Get-Location),
-        
-        [Parameter(Position=1)]
-        [string]$Filter = "*"
-    )
-    
-    begin {
-        Write-Verbose "Analyzing files in $Path with filter '$Filter'"
-        $fileSizes = @()
-        $totalSize = 0
-    }
-    
-    process {
-        try {
-            $files = Get-ChildItem -Path $Path -Filter $Filter -File -ErrorAction Stop
-            
-            foreach ($file in $files) {
-                $fileSizes += $file.Length
-                $totalSize += $file.Length
-            }
-            
-            $averageSize = if ($files.Count -gt 0) { $totalSize / $files.Count } else { 0 }
-            
-            [PSCustomObject]@{
-                DirectoryPath = $Path
-                FileFilter = $Filter
-                FileCount = $files.Count
-                TotalSizeBytes = $totalSize
-                TotalSizeMB = [math]::Round($totalSize / 1MB, 2)
-                AverageSizeBytes = [math]::Round($averageSize, 2)
-                AverageSizeMB = [math]::Round($averageSize / 1MB, 4)
-                LargestFileBytes = if ($fileSizes.Count -gt 0) { ($fileSizes | Measure-Object -Maximum).Maximum } else { 0 }
-                SmallestFileBytes = if ($fileSizes.Count -gt 0) { ($fileSizes | Measure-Object -Minimum).Minimum } else { 0 }
-            }
-        }
-        catch {
-            Write-Error "Error analyzing files: $_"
-        }
-    }
-}
-```
-
-Is there a specific PowerShell topic you'd like me to cover?"""
 
 
 @app.post("/chat", response_model=ChatResponse, tags=["Chat"])
@@ -2223,12 +2118,8 @@ I CAN HELP WITH:
 - Setting up CI/CD pipelines for PowerShell projects"""
 
         # Check if we have a valid API key
-        if not api_key and MOCK_MODE:
-            # Use mock response in development mode
-            response = get_mock_chat_response([msg.dict() for msg in request.messages])
-            processing_time = time.time() - start_time
-            logger.info(f"Chat request processed in {processing_time:.2f}s (mock mode)")
-            return {"response": response, "session_id": request.session_id}
+        if not (x_api_key or config.api_keys.openai or config.api_keys.anthropic):
+            raise HTTPException(status_code=503, detail="AI provider is not configured")
 
         # Convert messages to the format expected by the agent system
         messages = []
@@ -2245,7 +2136,7 @@ I CAN HELP WITH:
         session_id = request.session_id or None
 
         # Process the chat request
-        if agent_coordinator and not MOCK_MODE and not request.agent_type:
+        if agent_coordinator and not request.agent_type:
             # Use the agent coordinator
             response = await agent_coordinator.process_chat(messages)
             processing_time = time.time() - start_time
@@ -2505,12 +2396,12 @@ async def get_api_key_status():
         return {
             "configured": True,
             "masked_key": masked_key,
-            "mock_mode": MOCK_MODE
+            "mock_mode": False
         }
     return {
         "configured": False,
         "masked_key": None,
-        "mock_mode": True
+        "mock_mode": False
     }
 
 
@@ -2680,7 +2571,7 @@ async def detailed_health_check():
     # Check AI configuration
     health["components"]["ai"] = {
         "status": "healthy" if config.api_keys.openai else "not_configured",
-        "mock_mode": config.mock_mode,
+        "mock_mode": False,
         "model": config.agent.powershell_model
     }
 

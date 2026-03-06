@@ -19,7 +19,7 @@
     "morgan": "^1.10.0",
     "multer": "^1.4.5-lts.1",
     "node-powershell": "^5.0.1",
-    "openai": "^6.15.0",
+    "openai": "^6.26.0",
     "pdfkit": "^0.17.2",
     "pg": "^8.13.3",
     "pg-hstore": "^2.3.4",

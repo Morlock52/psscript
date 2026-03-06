@@ -181,6 +181,27 @@ export const aiLimiter = rateLimit({
 });
 
 /**
+ * Voice Endpoint Rate Limiter
+ * Voice traffic is burstier than generic AI endpoints because browsers often
+ * retry uploads, fetch voices/settings in parallel, and stream UI interactions.
+ * 120 requests per minute per IP.
+ */
+export const voiceLimiter = rateLimit({
+  windowMs: 60 * 1000, // 1 minute
+  max: RELAX_RATE_LIMITS ? scaledMax(4000) : scaledMax(1000), // 4000 (scaled) vs 1000
+  message: {
+    error: 'Voice rate limit exceeded',
+    message: 'Please wait before making more voice requests.',
+    retryAfter: 60,
+  },
+  standardHeaders: true,
+  legacyHeaders: false,
+  keyGenerator: (req: Request) => {
+    return `voice:${req.ip || req.headers['x-forwarded-for']?.toString() || 'unknown'}`;
+  },
+});
+
+/**
  * Upload Rate Limiter
  * Prevent abuse of file upload endpoints
  * 10 uploads per 5 minutes per IP
@@ -300,10 +321,12 @@ export const csrfProtection = (allowedOrigins?: string[]) => {
     : [
         'http://localhost:3000',
         'http://localhost:3002',
+        'http://localhost:3091',
         'https://localhost:3090',
         'http://localhost:4000',
         'http://127.0.0.1:3000',
         'http://127.0.0.1:3002',
+        'http://127.0.0.1:3091',
         'https://127.0.0.1:3090'
       ];
 

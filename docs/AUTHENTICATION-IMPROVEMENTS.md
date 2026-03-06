@@ -1,6 +1,6 @@
 # Authentication Improvements
 
-_Last updated: March 5, 2026_
+_Last updated: March 6, 2026_
 
 ![Settings screenshot](./screenshots/settings-profile.png)
 
@@ -11,18 +11,16 @@ _Last updated: March 5, 2026_
 - Optional auth uses the same auth configuration path as primary auth
 - Local frontend development commonly runs with `VITE_DISABLE_AUTH=true`, which creates a `dev-admin` session automatically
 
-## Improvements now reflected in code
+## Improvements reflected in code
 
 ### Unified protected-route behavior
 
-The backend no longer maintains a second legacy JWT middleware for admin maintenance routes.
-This removes request-shape drift and secret-source drift between login-issued tokens and admin-only APIs.
+The backend no longer maintains a separate legacy JWT middleware for admin maintenance routes.
+That removes request-shape drift and secret-source drift between login-issued tokens and admin-only APIs.
 
 ### Clear auth error semantics
 
-Authentication-related APIs return structured error payloads with stable error codes.
-Common examples include:
-
+Authentication-related APIs return structured error payloads with stable error codes, including:
 - `validation_error`
 - `invalid_credentials`
 - `missing_token`
@@ -33,43 +31,31 @@ Common examples include:
 
 ### DB uniqueness conflicts return `409`
 
-Registration and profile updates now translate uniqueness races into explicit `409 Conflict` responses instead of generic `500` failures.
+Registration and profile updates translate uniqueness races into explicit `409 Conflict` responses instead of generic `500` failures.
 
 ### Demo-token bypass removed
 
 Backend auth rejects `demo-token-*` shortcuts.
-That keeps local and deployed environments aligned on real JWT validation instead of carrying a separate bypass path.
+That keeps local and deployed environments aligned on real JWT validation.
 
-### Local development behavior
+## Local development behavior
 
-The current checked-in local environment uses:
+The common checked-in frontend mode uses:
 
 ```bash
 VITE_DISABLE_AUTH=true
 ```
 
 That means:
-
 - `/login` redirects into the authenticated app shell
 - frontend screenshots taken in the default local environment show the `dev-admin` session
 - real login testing requires turning auth back on before starting the frontend
 
+Canonical local URLs:
+- frontend: `https://127.0.0.1:3090`
+- backend: `https://127.0.0.1:4000`
+
 ## Credential guidance
 
-Do not treat historical documentation references to `admin@psscript.com / ChangeMe1!` as current source-of-truth credentials.
-In the current repo:
-
-- local auth-disabled mode is the default frontend workflow
-- demo-login fallbacks in frontend code point to `admin@example.com / admin123` only when auth is enabled and matching seed data exists
-- deployed environments should use their actual seeded or managed credentials
-
-## Validation
-
-Use backend tests for auth-path validation:
-
-```bash
-cd src/backend && npm run build
-cd src/backend && npm test -- --runInBand
-```
-
-If you need to test the real login UI instead of the local dev bypass, set `VITE_DISABLE_AUTH=false` and restart the frontend.
+Do not treat historical references to `admin@psscript.com / ChangeMe1!` as current credentials.
+Real login testing requires your actual seeded or managed credentials.

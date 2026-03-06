@@ -2,18 +2,17 @@
 
 ## Current status
 
-This document reflects the current local-development behavior.
+This document reflects the current local-development auth mode.
 
 ## Local development default
 
-The checked-in frontend environment commonly uses:
+The common checked-in frontend mode uses:
 
 ```bash
 VITE_DISABLE_AUTH=true
 ```
 
 When that flag is enabled:
-
 - the app auto-signs in as `dev-admin`
 - the normal login form is bypassed
 - `/login` redirects to `/dashboard`
@@ -28,14 +27,18 @@ If you want to test real authentication instead of the local dev bypass:
 
 ## Important credential note
 
-Do not treat older references to these values as current source-of-truth credentials:
-
+Do not treat older references to these values as current credentials:
 - `admin@psscript.com`
 - `ChangeMe1!`
 - `admin123`
 - demo-token shortcuts
 
-Those appear in historical test/fix reports only and are not the current recommended auth path.
+Those values appear only in historical reports, legacy tests, or environment-specific seed paths.
+
+## Canonical local URLs
+
+- frontend: `https://127.0.0.1:3090`
+- backend: `https://127.0.0.1:4000`
 
 ## Canonical auth docs
 

@@ -2,7 +2,7 @@
 # Requires Python 3.10+ (LangChain 1.0 requirement)
 fastapi>=0.115.0
 uvicorn>=0.34.0
-openai>=1.50.0  # Latest OpenAI SDK with o3/GPT-4o support
+openai>=2.25.0  # Latest OpenAI SDK with GPT-4.1, modern audio, and diarization support
 anthropic>=0.40.0  # Anthropic SDK for Claude models (Sonnet 4, Opus 4, Haiku)
 backoff>=2.2.1
 numpy>=1.26.0

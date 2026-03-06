@@ -178,6 +178,20 @@ async function listBackups() {
   return payload.backups;
 }
 
+async function waitForBackupListed(filename, timeoutMs = 5000) {
+  const started = Date.now();
+
+  while ((Date.now() - started) < timeoutMs) {
+    const backups = await listBackups();
+    if (backups.some((backup) => backup?.name === filename)) {
+      return backups;
+    }
+    await new Promise((resolve) => setTimeout(resolve, 250));
+  }
+
+  return listBackups();
+}
+
 async function runSmokeCheck() {
   const checks = [];
   const start = Date.now();
@@ -189,7 +203,7 @@ async function runSmokeCheck() {
   checks.push({ name: 'list-backups', ok: true, backupCount: backupsBefore.length });
 
   const createdBackup = await createBackup(backupName);
-  const backupsAfterCreate = await listBackups();
+  const backupsAfterCreate = await waitForBackupListed(createdBackup);
   checks.push({
     name: 'create-backup',
     ok: backupsAfterCreate.some((backup) => backup?.name === createdBackup),
@@ -239,7 +253,7 @@ async function runOnce(cycle) {
   const backupFilename = `pre-clear-${cycle}-${timestamp}`;
 
   const backupFromCreate = await createBackup(backupName);
-  const afterCreate = await listBackups();
+  const afterCreate = await waitForBackupListed(backupFromCreate);
 
   if (!afterCreate.some((backup) => backup?.name === backupFromCreate)) {
     throw new Error(`Backup not found after create: ${backupFromCreate}`);

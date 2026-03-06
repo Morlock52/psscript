@@ -1,23 +1,50 @@
-# Database - PowerShell Script Management Application
+# Database
 
-The database component uses PostgreSQL with pgvector extension to store structured data and vector embeddings for scripts.
+PostgreSQL + `pgvector` storage for scripts, analysis artifacts, embeddings, users, categories, tags, analytics, and related metadata.
 
-## Schema Design
+## Current setup
 
-- **Scripts** - Script content, metadata, and version history
-- **Users** - User accounts, roles, and permissions
-- **Categories** - Predefined and custom script categories
-- **Tags** - User-defined tags for flexible organization
-- **Embeddings** - Vector representations for semantic search
-- **Analytics** - Usage statistics and performance metrics
+- engine: PostgreSQL 15+
+- vector extension: `pgvector`
+- default local port: `5432`
+- default database: `psscript`
 
-## Technology Stack
+## Main schema areas
 
-- PostgreSQL as primary database
-- pgvector extension for vector similarity search
-- SQL migrations for version control
-- Seeding system for initial data population
+- `scripts`, `script_versions`, `script_analysis`, `script_embeddings`
+- `users`, `user_favorites`
+- `categories`, `tags`, `script_tags`
+- `documentation`
+- `chat_history`
+- `execution_logs`
+- `ai_metrics`
 
-## Setup Instructions
+## Bootstrap paths
 
-*Coming soon*
+Docker bootstrap mounts:
+- `src/db/00-init-pgvector.sh`
+- `src/db/schema.sql`
+- `src/db/seeds/01-initial-data.sql`
+
+## Local development
+
+The easiest path is the repo-level Docker stack:
+
+```bash
+docker compose -f docker-compose.yml -f docker-compose.override.yml up -d postgres redis
+```
+
+Default connection values:
+
+```text
+host=127.0.0.1
+port=5432
+dbname=psscript
+user=postgres
+password=postgres
+```
+
+## Related docs
+
+- `../../docs/DATA-MAINTENANCE.md`
+- `../../src/backend/README.md`

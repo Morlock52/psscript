@@ -162,7 +162,7 @@ export class AgentOrchestrator {
       name: params.name || 'Unnamed Agent',
       description: params.description || '',
       capabilities: params.capabilities || [],
-      model: params.model || 'gpt-4o',
+      model: params.model || 'gpt-4.1',
       tools: params.tools || [],
       metadata: params.metadata || {},
       createdAt: now,

@@ -1,46 +1,55 @@
 # PSScript
 
-AI-assisted PowerShell script management, analysis, and documentation tooling.
+PowerShell script management with AI analysis, semantic search, documentation crawl tooling, and OpenAI-backed voice workflows.
 
 ![Dashboard screenshot](./docs/screenshots/dashboard.png)
+![Scripts screenshot](./docs/screenshots/scripts.png)
 
-## Current local defaults
+## What this repo does
 
-| Service | URL | Notes |
-| --- | --- | --- |
-| Frontend | `https://127.0.0.1:3090` | Vite dev server over HTTPS |
-| Backend API | `https://127.0.0.1:4000` | Express + TypeScript |
-| AI service | `http://127.0.0.1:8000` | FastAPI |
-| PostgreSQL | `localhost:5432` | Primary DB with pgvector |
-| Redis | `localhost:6379` | Cache and background state |
+- Stores, versions, and searches PowerShell scripts
+- Runs AI-assisted analysis and remediation guidance
+- Crawls and indexes documentation content
+- Provides admin database backup and restore tooling
+- Exposes voice synthesis and speech-recognition flows through the AI service
 
-## What is current in this repo
+## Canonical local stack
 
-- JWT-protected backend APIs with a single shared auth middleware.
-- Admin database maintenance endpoints for backup, restore, and test-data cleanup.
-- Script analysis endpoints that return explicit failure states instead of fabricated success payloads.
-- Legacy AI compatibility routes no longer synthesize fallback answers, scripts, explanations, or examples when the AI service fails.
-- Async script upload analysis uses the real AI `/analyze` endpoint.
-- Analytics queries run through the shared Sequelize connection stack.
-- React/Vite frontend runs on port `3090` with route-level lazy loading in the source tree.
+The checked-in local-development defaults are:
 
-## Local development
+| Service | URL |
+| --- | --- |
+| Frontend | `https://127.0.0.1:3090` |
+| Backend API | `https://127.0.0.1:4000/api` |
+| AI service | `http://127.0.0.1:8000` |
+| PostgreSQL | `127.0.0.1:5432` |
+| Redis | `127.0.0.1:6379` |
+
+These values match the current `docker-compose*.yml`, frontend runtime URL detection, and env templates.
+
+## Fresh-clone quick start
 
 ### Prerequisites
 
 - Node.js 18+
 - Python 3.10+
 - Docker Engine with `docker compose`
-- PostgreSQL 15+ with `pgvector`
-- Redis 7+
 
-### Start the full stack
+### Full stack with Docker
 
 ```bash
+npm run install:all
+python -m pip install -r src/ai/requirements.txt
 docker compose -f docker-compose.yml -f docker-compose.override.yml up -d --build
 ```
 
-### Start services individually
+Open:
+
+```text
+https://127.0.0.1:3090
+```
+
+### Run services individually
 
 ```bash
 # backend
@@ -50,68 +59,78 @@ cd src/backend && npm install && npm run dev
 cd src/frontend && npm install && npm run dev
 
 # ai service
-cd src/ai && python main.py
+cd src/ai && python -m pip install -r requirements.txt && python main.py
 ```
 
-## Authentication behavior in local dev
+## Current auth behavior
 
-The checked-in local `.env` currently sets `VITE_DISABLE_AUTH=true`.
-That means the frontend auto-creates a local `dev-admin` session instead of showing the login form.
-If you want to validate the real login flow, disable that flag and use your seeded credentials or demo env vars.
+The checked-in frontend dev mode commonly uses `VITE_DISABLE_AUTH=true`.
 
-## Important operational notes
+That means:
+- the app auto-creates a local `dev-admin` session
+- `/login` redirects into the app shell
+- the default browser suite skips the login-form-only tests
 
-### Admin data maintenance
+If you need the real login UI, set `VITE_DISABLE_AUTH=false` and restart the frontend.
 
-Admin maintenance routes live under:
+## OpenAI voice defaults
 
-- `GET /api/admin/db/backups`
-- `POST /api/admin/db/backup`
-- `POST /api/admin/db/restore`
-- `POST /api/admin/db/clear-test-data`
+These defaults were rechecked against official OpenAI docs on March 6, 2026.
 
-Restore now reseeds serial and identity sequences after bulk inserts, so post-restore writes do not collide on reused IDs.
+- TTS: `gpt-4o-mini-tts`
+- STT: `gpt-4o-transcribe`
+- Diarization: `gpt-4o-transcribe-diarize`
+- Recommended chained architecture: `gpt-4o-transcribe -> gpt-4.1 -> gpt-4o-mini-tts`
 
-### Script analysis API semantics
-
-The backend no longer returns mock analysis data when no stored analysis exists or the AI service fails.
-Current behavior is:
-
-- `404 analysis_not_found`
-- `502 analysis_service_error`
-- `503 analysis_unavailable`
-- `504 analysis_timeout`
-
-### Legacy AI compatibility route semantics
-
-Legacy AI routes now fail explicitly instead of inventing successful payloads:
-
-- `502 ai_service_error`
-- `503 ai_service_unavailable`
-- `504 ai_service_timeout`
-
-### Analytics DB access
-
-Analytics now uses the same shared Sequelize-managed database connection layer as the rest of the backend.
+Official references:
+- [Voice agents guide](https://developers.openai.com/api/docs/guides/voice-agents/)
+- [Audio and speech guide](https://developers.openai.com/api/docs/guides/audio/)
+- [Create speech reference](https://developers.openai.com/api/reference/resources/audio/subresources/speech/methods/create/)
+- [Create transcription reference](https://developers.openai.com/api/reference/resources/audio/subresources/transcriptions/methods/create/)
 
 ## Validation commands
 
 ```bash
 # backend
-cd src/backend && npm run build
-cd src/backend && npm test -- --runInBand
+cd src/backend && npm run lint && npm run build && npm test -- --runInBand
+cd src/backend && RUN_DB_TESTS=true npm test -- --runInBand
 
 # frontend
-cd src/frontend && npm run build
-cd src/frontend && npm run test:run
+cd src/frontend && npm run lint && npm run build && npm run test:run
+
+# ai
+cd src/ai && python test_langgraph_setup.py
+
+# voice
+cd /Users/morlock/fun/02_PowerShell_Projects/psscript
+node scripts/voice-tests-1-8.mjs --base-url https://127.0.0.1:4000 --insecure-tls
+
+# data maintenance
+node scripts/verify-data-maintenance-e2e.mjs --reuse-backend --base-url https://127.0.0.1:4000 --insecure-tls
+
+# browser
+npx playwright test --project=chromium
 ```
+
+## Current engineering state
+
+- Shared JWT auth middleware is used across normal protected routes and admin DB routes.
+- Script creation persists immediately and runs AI analysis in the background.
+- Restore reseeds sequences and restores tables in foreign-key-safe order.
+- Backend AI routes no longer return fabricated fallback success payloads.
+- Frontend route-level lazy loading is enabled.
+- Local fresh-clone defaults are normalized around `3090 / 4000 / 8000`.
 
 ## Canonical docs
 
-- [src/backend/README.md](./src/backend/README.md)
-- [src/frontend/README.md](./src/frontend/README.md)
-- [docs/DATA-MAINTENANCE.md](./docs/DATA-MAINTENANCE.md)
-- [docs/AUTHENTICATION-IMPROVEMENTS.md](./docs/AUTHENTICATION-IMPROVEMENTS.md)
-- [docs/API-ISSUE-REVIEW-2026-02-26.md](./docs/API-ISSUE-REVIEW-2026-02-26.md)
-- [docs/UPDATES.md](./docs/UPDATES.md)
-- [docs/README-VOICE-API.md](./docs/README-VOICE-API.md)
+- [Backend README](./src/backend/README.md)
+- [Frontend README](./src/frontend/README.md)
+- [AI README](./src/ai/README.md)
+- [Getting Started](./docs/GETTING-STARTED.md)
+- [Data Maintenance](./docs/DATA-MAINTENANCE.md)
+- [Voice API](./docs/README-VOICE-API.md)
+- [Authentication Improvements](./docs/AUTHENTICATION-IMPROVEMENTS.md)
+- [Updates](./docs/UPDATES.md)
+- [Documentation Hub](./docs/index.md)
+
+`docs/README-GITHUB.md` is retained only as an archive note; the root `README.md` is the GitHub landing page source of truth.

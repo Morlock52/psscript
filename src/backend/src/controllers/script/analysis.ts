@@ -442,7 +442,7 @@ export async function analyzeLangGraph(
   try {
     const scriptId = req.params.id;
     // eslint-disable-next-line camelcase -- API request body uses snake_case
-    const { require_human_review = false, thread_id, model = 'gpt-4o' } = req.body as {
+    const { require_human_review = false, thread_id, model = 'gpt-4.1' } = req.body as {
       require_human_review?: boolean;
       thread_id?: string;
       model?: string;
@@ -593,7 +593,7 @@ export async function streamAnalysis(
   try {
     const scriptId = req.params.id;
     // eslint-disable-next-line camelcase -- API query params use snake_case
-    const { require_human_review = 'false', thread_id, model = 'gpt-4o' } = req.query as {
+    const { require_human_review = 'false', thread_id, model = 'gpt-4.1' } = req.query as {
       require_human_review?: string;
       thread_id?: string;
       model?: string;

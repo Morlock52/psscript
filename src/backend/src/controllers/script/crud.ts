@@ -248,76 +248,6 @@ export async function createScript(
       }
     }
 
-    // Analyze the script with AI service
-    let analysis: AIAnalysisResponse | null = null;
-    try {
-      const openaiApiKey = req.headers['x-openai-api-key'] as string;
-      const analysisConfig: { headers: Record<string, string>; timeout: number } = {
-        headers: {},
-        timeout: TIMEOUTS.QUICK
-      };
-
-      if (openaiApiKey) {
-        analysisConfig.headers['x-api-key'] = openaiApiKey;
-      }
-
-      logger.info(`Sending script ${script.id} for AI analysis`);
-
-      const analysisResponse = await Promise.race([
-        axios.post(`${AI_SERVICE_URL}/analyze`, {
-          script_id: script.id,
-          content,
-          include_command_details: true,
-          fetch_ms_docs: true
-        }, analysisConfig),
-        new Promise<never>((_, reject) =>
-          setTimeout(() => reject(new Error('Analysis request timed out')), TIMEOUTS.QUICK)
-        )
-      ]);
-
-      analysis = (analysisResponse as { data: AIAnalysisResponse }).data;
-
-      await ScriptAnalysis.create(
-        {
-          scriptId: script.id,
-          purpose: analysis?.purpose || 'No purpose provided',
-          parameters: analysis?.parameters || {},
-          securityScore: analysis?.security_score || 5.0,
-          codeQualityScore: analysis?.code_quality_score || 5.0,
-          riskScore: analysis?.risk_score || 5.0,
-          optimizationSuggestions: analysis?.optimization || [],
-          commandDetails: analysis?.command_details || [],
-          msDocsReferences: analysis?.ms_docs_references || []
-        },
-        { transaction }
-      );
-
-      logger.info(`Created analysis for script ${script.id}`);
-
-      // Update category if AI suggested one and none was provided
-      if (!categoryId && analysis?.category_id) {
-        await script.update({ categoryId: analysis.category_id }, { transaction });
-      }
-    } catch (analysisError) {
-      logger.error(`AI analysis failed for script ${script.id}:`, analysisError);
-
-      // Create default analysis on failure
-      await ScriptAnalysis.create(
-        {
-          scriptId: script.id,
-          purpose: 'Analysis pending',
-          parameters: {},
-          securityScore: 5.0,
-          codeQualityScore: 5.0,
-          riskScore: 5.0,
-          optimizationSuggestions: [],
-          commandDetails: [],
-          msDocsReferences: []
-        },
-        { transaction }
-      );
-    }
-
     await transaction.commit();
     logger.info(`Transaction committed for script ${script.id}`);
 
@@ -327,6 +257,57 @@ export async function createScript(
     const completeScript = await Script.findByPk(script.id, {
       include: getScriptIncludes(true)
     });
+
+    const openaiApiKey = req.headers['x-openai-api-key'] as string | undefined;
+    void (async () => {
+      try {
+        const analysisConfig: { headers: Record<string, string>; timeout: number } = {
+          headers: {},
+          timeout: TIMEOUTS.QUICK
+        };
+
+        if (openaiApiKey) {
+          analysisConfig.headers['x-api-key'] = openaiApiKey;
+        }
+
+        logger.info(`Sending script ${script.id} for AI analysis`);
+
+        const analysisResponse = await Promise.race([
+          axios.post(`${AI_SERVICE_URL}/analyze`, {
+            script_id: script.id,
+            content,
+            include_command_details: true,
+            fetch_ms_docs: true
+          }, analysisConfig),
+          new Promise<never>((_, reject) =>
+            setTimeout(() => reject(new Error('Analysis request timed out')), TIMEOUTS.QUICK)
+          )
+        ]);
+
+        const analysis = (analysisResponse as { data: AIAnalysisResponse }).data;
+
+        await ScriptAnalysis.upsert({
+          scriptId: script.id,
+          purpose: analysis?.purpose || 'No purpose provided',
+          parameters: analysis?.parameters || {},
+          securityScore: analysis?.security_score || 5.0,
+          codeQualityScore: analysis?.code_quality_score || 5.0,
+          riskScore: analysis?.risk_score || 5.0,
+          optimizationSuggestions: analysis?.optimization || [],
+          commandDetails: analysis?.command_details || [],
+          msDocsReferences: analysis?.ms_docs_references || []
+        });
+
+        if (!categoryId && analysis?.category_id) {
+          await script.update({ categoryId: analysis.category_id });
+        }
+
+        clearScriptCaches();
+        logger.info(`Created analysis for script ${script.id}`);
+      } catch (analysisError) {
+        logger.error(`AI analysis failed for script ${script.id}:`, analysisError);
+      }
+    })();
 
     return res.status(201).json(completeScript);
   } catch (error) {

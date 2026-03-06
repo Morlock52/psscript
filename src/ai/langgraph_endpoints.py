@@ -43,7 +43,7 @@ class LangGraphAnalysisRequest(BaseModel):
     thread_id: Optional[str] = Field(None, description="Thread ID for conversation continuity")
     require_human_review: bool = Field(False, description="Whether to require human review")
     stream: bool = Field(False, description="Whether to stream responses")
-    model: Optional[str] = Field("gpt-4o", description="Model to use for analysis (default: gpt-4o)")
+    model: Optional[str] = Field("gpt-4.1", description="Model to use for analysis (default: gpt-4.1)")
     api_key: Optional[str] = Field(None, description="Optional OpenAI API key")
 
 

@@ -14,6 +14,7 @@ import {
   securityHeaders,
   authLimiter,
   aiLimiter,
+  voiceLimiter,
   uploadLimiter,
   scriptLimiter,
   sanitizeInput,
@@ -507,7 +508,7 @@ app.use('/api/auth', authLimiter);
 app.use('/api/ai-agent', aiLimiter);
 app.use('/api/assistants', aiLimiter);
 app.use('/api/chat', aiLimiter);
-app.use('/api/voice', aiLimiter);
+app.use('/api/voice', voiceLimiter);
 
 // Script operations: 30 requests per 5 minutes
 app.use('/api/scripts', scriptLimiter);
@@ -543,6 +544,7 @@ const cacheMiddleware = (req: express.Request, res: express.Response, next: expr
     '/api/voice',     // Voice routes are user/auth dependent and can contain sensitive data.
     '/api/agents',     // Agent runs/threads are dynamic; /runs/:id must never be cached.
     '/api/analytics',  // Analytics is user/time dependent; caching can serve misleading data.
+    '/api/admin/db',   // DB maintenance is stateful; cached backup listings hide newly created backups.
     // Documentation crawl jobs are async + progress-driven; caching breaks progress polling.
     '/api/documentation/crawl',
   ];

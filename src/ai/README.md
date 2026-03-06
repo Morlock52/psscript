@@ -1,26 +1,58 @@
-# AI Analysis - PowerShell Script Management Application
+# AI Service
 
-The AI component leverages OpenAI's API to analyze PowerShell scripts, generate embeddings, and provide intelligent script management features.
+FastAPI-based AI service for PowerShell analysis, embeddings, LangGraph orchestration, and OpenAI-backed voice/listening workflows.
 
-## Key Components
+## Canonical local target
 
-- **Script Analysis Pipeline** - Examines script purpose, security, quality, and risks
-- **Vector Embeddings** - Generates embeddings for semantic search
-- **Categorization Engine** - Automatically assigns scripts to categories
-- **Recommendation System** - Suggests similar or related scripts
+- Base URL: `http://127.0.0.1:8000`
+- Backend peer: `https://127.0.0.1:4000`
+- Validation date: March 6, 2026
 
-## Technology Stack
+## Current responsibilities
 
-- Python with FastAPI for AI processing
-- OpenAI API for script analysis and embeddings
-- Vector database integration (pgvector)
-- Natural language processing utilities
+- PowerShell script analysis and scoring
+- Embedding generation for semantic search
+- LangGraph orchestration and tool execution
+- Voice synthesis and speech recognition
+- Advanced listening features such as diarization, chunking, and speaker hints
 
-## Analysis Capabilities
+## Current OpenAI defaults
 
-- Purpose detection and summarization
-- Security vulnerability identification
-- Code quality assessment
-- Execution risk analysis
-- Parameter and variable documentation
-- Performance optimization suggestions
+These defaults were rechecked against official OpenAI docs on March 6, 2026.
+
+- General reasoning and analysis: `gpt-4.1`
+- TTS: `gpt-4o-mini-tts`
+- STT: `gpt-4o-transcribe`
+- Diarization: `gpt-4o-transcribe-diarize`
+- Embeddings: `text-embedding-3-large`
+
+Official references:
+- [Voice agents guide](https://developers.openai.com/api/docs/guides/voice-agents/)
+- [Audio transcription reference](https://developers.openai.com/api/reference/resources/audio/subresources/transcriptions/methods/create/)
+- [Audio speech reference](https://developers.openai.com/api/reference/resources/audio/subresources/speech/methods/create/)
+
+## Current service behavior
+
+- Runtime mock-mode fallbacks have been removed.
+- Missing OpenAI configuration now fails explicitly instead of inventing synthetic analysis or chat results.
+- LangGraph tool execution uses the real script-analysis path.
+- Voice routes support OpenAI-based synthesis and recognition with advanced request options already wired through the service.
+
+## Local run
+
+```bash
+pip install -r requirements.txt
+python main.py
+```
+
+## Validation
+
+```bash
+python test_langgraph_setup.py
+```
+
+Voice is validated through the backend proxy using:
+
+```bash
+node ../../scripts/voice-tests-1-8.mjs --base-url https://127.0.0.1:4000 --insecure-tls
+```

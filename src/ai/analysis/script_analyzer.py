@@ -34,15 +34,13 @@ load_dotenv()
 # Constants for API timeouts
 REQUEST_TIMEOUT = 60  # seconds
 
-# Initialize OpenAI clients with graceful fallback
+# Initialize OpenAI clients
 api_key = os.getenv("OPENAI_API_KEY")
-MOCK_MODE = False
+client = None
+async_client = None
 
 if not api_key:
-    logger.warning("OPENAI_API_KEY environment variable is not set - running in mock mode")
-    MOCK_MODE = True
-    client = None
-    async_client = None
+    logger.warning("OPENAI_API_KEY environment variable is not set")
 else:
     try:
         client = OpenAI(api_key=api_key, timeout=REQUEST_TIMEOUT)
@@ -50,9 +48,16 @@ else:
         logger.info("OpenAI clients initialized successfully")
     except Exception as e:
         logger.error(f"Failed to initialize OpenAI clients: {e}")
-        MOCK_MODE = True
         client = None
         async_client = None
+
+
+def require_openai_client(async_mode: bool = False):
+    """Return an initialized OpenAI client or raise an explicit configuration error."""
+    selected_client = async_client if async_mode else client
+    if selected_client is None:
+        raise RuntimeError("OpenAI API key is not configured")
+    return selected_client
 
 # Initialize caching
 disk_cache = Cache('./analysis_cache')
@@ -66,7 +71,7 @@ if os.getenv("REDIS_URL"):
 
 # Constants - Updated for January 2026 best models
 EMBEDDING_MODEL = os.getenv("EMBEDDING_MODEL", "text-embedding-3-large")
-ANALYSIS_MODEL = os.getenv("ANALYSIS_MODEL", "gpt-4o")  # Updated to gpt-4o (best as of Jan 2026)
+ANALYSIS_MODEL = os.getenv("ANALYSIS_MODEL", "gpt-4.1")  # Default high-quality reasoning model
 FAST_MODEL = os.getenv("FAST_MODEL", "gpt-4o-mini")  # Fast model for quick tasks
 EMBEDDING_DIMENSION = 3072  # text-embedding-3-large dimension (can be customized 256-3072)
 CACHE_TTL = int(os.getenv("CACHE_TTL", "86400"))  # Default: 1 day in seconds
@@ -149,9 +154,10 @@ class ScriptAnalyzer:
             logger.debug("Using cached embedding")
             return cached_result
             
-        # Use async OpenAI client
+        async_openai_client = require_openai_client(async_mode=True)
+
         try:
-            response = await async_client.embeddings.create(
+            response = await async_openai_client.embeddings.create(
                 model=EMBEDDING_MODEL,
                 input=text
             )
@@ -172,9 +178,7 @@ class ScriptAnalyzer:
         try:
             from main import VECTOR_ENABLED
             if not VECTOR_ENABLED:
-                # Return a mock embedding if vector operations are disabled
-                logger.warning("Vector operations are disabled. Returning mock embedding.")
-                return [0.0] * EMBEDDING_DIMENSION
+                raise RuntimeError("Vector operations are disabled")
         except ImportError:
             # If we can't import the flag, assume vector operations are enabled
             pass
@@ -275,9 +279,10 @@ class ScriptAnalyzer:
         ```
         """
         
-        # Use async OpenAI client directly
+        async_openai_client = require_openai_client(async_mode=True)
+
         try:
-            response = await async_client.chat.completions.create(
+            response = await async_openai_client.chat.completions.create(
                 model=ANALYSIS_MODEL,
                 messages=[
                     {"role": "system", "content": system_prompt},

@@ -132,11 +132,7 @@ else
   echo "pgvector==0.2.3" >> src/ai/requirements.txt
 fi
 
-# Modify AI service to handle missing API key gracefully
-echo "Updating AI service mock mode detection..."
-if grep -q "MOCK_MODE" src/ai/main.py; then
-  sed -i.bak 's/MOCK_MODE = os.getenv("OPENAI_API_KEY", "") in \["", "your_openai_api_key_here"\]/MOCK_MODE = os.getenv("MOCK_MODE", "false").lower() == "true" or os.getenv("OPENAI_API_KEY", "") in ["", "your_openai_api_key_here", "${OPENAI_API_KEY}"]/' src/ai/main.py
-fi
+echo "AI service now requires real provider credentials; no mock mode patching is applied."
 
 echo "=== Deployment preparation complete ==="
 echo "Next steps:"

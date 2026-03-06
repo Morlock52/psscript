@@ -1,8 +1,8 @@
 # PSScript - Getting Started Guide
 
-This guide reflects the current local development setup.
+This guide reflects the current checked-in local development setup as of March 6, 2026.
 
-## Current local URLs
+## Canonical local URLs
 
 - Frontend: `https://127.0.0.1:3090`
 - Backend API: `https://127.0.0.1:4000`
@@ -10,19 +10,19 @@ This guide reflects the current local development setup.
 
 ## Current local auth behavior
 
-The checked-in local environment commonly uses:
+The common checked-in frontend mode uses:
 
 ```bash
 VITE_DISABLE_AUTH=true
 ```
 
 That means:
-
 - the frontend auto-signs in as `dev-admin`
 - `/login` redirects to `/dashboard`
-- old docs that reference `admin@psscript.com`, `ChangeMe1!`, `admin123`, or demo-token shortcuts are historical only
+- login-form-only browser tests are intentionally skipped in the default local suite
+- older docs that reference hard-coded demo credentials are historical only
 
-If you need to validate real login behavior, disable `VITE_DISABLE_AUTH` and use your actual seeded credentials.
+If you need to validate real login behavior, disable `VITE_DISABLE_AUTH` and restart the frontend.
 
 ## Prerequisites
 
@@ -35,7 +35,8 @@ If you need to validate real login behavior, disable `VITE_DISABLE_AUTH` and use
 ## Quick start
 
 ```bash
-# from repo root
+npm run install:all
+python -m pip install -r src/ai/requirements.txt
 docker compose -f docker-compose.yml -f docker-compose.override.yml up -d --build
 ```
 
@@ -49,15 +50,25 @@ cd src/backend && npm install && npm run dev
 cd src/frontend && npm install && npm run dev
 
 # ai service
-cd src/ai && python main.py
+cd src/ai && python -m pip install -r requirements.txt && python main.py
+```
+
+## Recommended first validation steps
+
+```bash
+cd src/backend && npm run build
+cd src/frontend && npm run build
+node scripts/verify-data-maintenance-e2e.mjs --reuse-backend --base-url https://127.0.0.1:4000 --insecure-tls
+node scripts/voice-tests-1-8.mjs --base-url https://127.0.0.1:4000 --insecure-tls
 ```
 
 ## Canonical current docs
 
-- `README.md`
-- `src/backend/README.md`
-- `src/frontend/README.md`
-- `docs/DATA-MAINTENANCE.md`
-- `docs/AUTHENTICATION-IMPROVEMENTS.md`
-- `docs/API-ISSUE-REVIEW-2026-02-26.md`
-- `docs/UPDATES.md`
+- `../README.md`
+- `../src/backend/README.md`
+- `../src/frontend/README.md`
+- `../src/ai/README.md`
+- `./DATA-MAINTENANCE.md`
+- `./README-VOICE-API.md`
+- `./AUTHENTICATION-IMPROVEMENTS.md`
+- `./UPDATES.md`

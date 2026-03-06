@@ -69,7 +69,7 @@ class AgentConfig(BaseModel):
     claude_fast_model: str = Field("claude-3-5-haiku-20241022", description="Claude Haiku - fast and cost-effective")
 
     # Provider priority - which AI provider to try first
-    provider_priority: str = Field("openai,anthropic,mock", description="Order to try providers: openai,anthropic,mock")
+    provider_priority: str = Field("openai,anthropic", description="Order to try providers: openai,anthropic")
 
     # Embedding configuration
     embedding_model: str = Field("text-embedding-3-large", description="Embedding model (3072 dimensions)")
@@ -93,7 +93,7 @@ class Config(BaseModel):
     api_keys: APIKeys = Field(default_factory=APIKeys)
     rate_limits: RateLimits = Field(default_factory=RateLimits)
     agent: AgentConfig = Field(default_factory=AgentConfig)
-    mock_mode: bool = Field(False, description="Whether to use mock responses")
+    mock_mode: bool = Field(False, description="Deprecated compatibility flag; always false")
     debug: bool = Field(False, description="Whether to enable debug logging")
 
 def load_config() -> Config:
@@ -127,7 +127,7 @@ def load_config() -> Config:
                         setattr(config.agent, key, value)
             
             if "mock_mode" in file_config:
-                config.mock_mode = file_config["mock_mode"]
+                logger.warning("Ignoring deprecated config file setting: mock_mode")
             
             if "debug" in file_config:
                 config.debug = file_config["debug"]
@@ -155,16 +155,15 @@ def load_config() -> Config:
     
     # Other settings
     if os.getenv("MOCK_MODE", "").lower() in ("true", "1", "yes"):
-        config.mock_mode = True
+        logger.warning("Ignoring deprecated environment variable: MOCK_MODE")
     
     if os.getenv("DEBUG", "").lower() in ("true", "1", "yes"):
         config.debug = True
         logging.getLogger().setLevel(logging.DEBUG)
     
-    # If no API keys are provided, enable mock mode
+    # If no API keys are provided, keep the service explicit about being unconfigured.
     if not config.api_keys.openai and not config.api_keys.anthropic:
-        logger.warning("No AI API keys provided (OpenAI or Anthropic), enabling mock mode")
-        config.mock_mode = True
+        logger.warning("No AI API keys provided (OpenAI or Anthropic); AI requests will fail until a provider key is configured")
     else:
         providers = []
         if config.api_keys.openai:
@@ -172,6 +171,8 @@ def load_config() -> Config:
         if config.api_keys.anthropic:
             providers.append("Anthropic")
         logger.info(f"AI providers available: {', '.join(providers)}")
+
+    config.mock_mode = False
     
     # Ensure valid models are set - Updated January 2026
     if not config.agent.default_model:
@@ -211,6 +212,6 @@ config = load_config()
 # Example usage
 if __name__ == "__main__":
     print(f"OpenAI API Key: {config.api_keys.openai[:8]}..." if config.api_keys.openai else "No OpenAI API key")
-    print(f"Mock Mode: {config.mock_mode}")
+    print("Mock Mode: disabled")
     print(f"Default Agent: {config.agent.default_agent}")
     print(f"Default Model: {config.agent.default_model}")

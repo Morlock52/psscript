@@ -115,7 +115,7 @@ export const synthesizeSpeech = async (req: Request, res: Response): Promise<voi
   const model = process.env.VOICE_TTS_MODEL || 'gpt-4o-mini-tts';
 
   try {
-    const { text, voiceId, outputFormat = 'mp3' } = req.body || {};
+    const { text, voiceId, outputFormat = 'mp3', voiceInstructions, speed } = req.body || {};
 
     if (!text || typeof text !== 'string' || !text.trim()) {
       res.status(400).json({ error: 'Text is required' });
@@ -129,6 +129,14 @@ export const synthesizeSpeech = async (req: Request, res: Response): Promise<voi
       res.status(400).json({ error: `Unsupported outputFormat. Allowed: ${Array.from(ALLOWED_OUTPUT_FORMATS).join(', ')}` });
       return;
     }
+    if (voiceInstructions !== undefined && (typeof voiceInstructions !== 'string' || voiceInstructions.length > 500)) {
+      res.status(400).json({ error: 'voiceInstructions must be a string up to 500 characters' });
+      return;
+    }
+    if (speed !== undefined && (typeof speed !== 'number' || !Number.isFinite(speed) || speed < 0.25 || speed > 4)) {
+      res.status(400).json({ error: 'speed must be a number between 0.25 and 4' });
+      return;
+    }
 
     const apiKey = getOpenAIApiKey(req);
     logger.info(`${context} Synthesizing voice text`);
@@ -138,7 +146,9 @@ export const synthesizeSpeech = async (req: Request, res: Response): Promise<voi
       {
         text: text.trim(),
         voice_id: voiceId,
-        output_format: outputFormat
+        output_format: outputFormat,
+        voice_instructions: voiceInstructions,
+        speed
       },
       {
         headers: buildAiHeaders(apiKey),
@@ -178,10 +188,20 @@ export const recognizeSpeech = async (req: Request, res: Response): Promise<void
   const requestId = Math.random().toString(36).substring(2, 10);
   const context = withRequestMetadata(requestId, req);
   const startedAt = Date.now();
-  const model = process.env.VOICE_STT_MODEL || 'gpt-4o-mini-transcribe';
+  let model = process.env.VOICE_STT_MODEL || 'gpt-4o-transcribe';
 
   try {
-    const { audioData, language = 'en-US', audioFormat } = req.body || {};
+    const {
+      audioData,
+      language = 'en-US',
+      audioFormat,
+      prompt,
+      transcriptionMode = 'standard',
+      includeLogprobs = false,
+      chunkingStrategy,
+      knownSpeakerNames,
+      knownSpeakerReferences
+    } = req.body || {};
 
     if (!audioData || typeof audioData !== 'string') {
       res.status(400).json({ error: 'Audio data is required' });
@@ -195,8 +215,35 @@ export const recognizeSpeech = async (req: Request, res: Response): Promise<void
       res.status(400).json({ error: `Unsupported audioFormat. Allowed: ${Array.from(ALLOWED_RECOGNITION_FORMATS).join(', ')}` });
       return;
     }
+    if (prompt !== undefined && (typeof prompt !== 'string' || prompt.length > 500)) {
+      res.status(400).json({ error: 'prompt must be a string up to 500 characters' });
+      return;
+    }
+    if (transcriptionMode !== 'standard' && transcriptionMode !== 'diarize') {
+      res.status(400).json({ error: 'transcriptionMode must be either standard or diarize' });
+      return;
+    }
+    if (typeof includeLogprobs !== 'boolean') {
+      res.status(400).json({ error: 'includeLogprobs must be a boolean' });
+      return;
+    }
+    if (chunkingStrategy !== undefined && (typeof chunkingStrategy !== 'string' || !chunkingStrategy.trim())) {
+      res.status(400).json({ error: 'chunkingStrategy must be a non-empty string when provided' });
+      return;
+    }
+    if (knownSpeakerNames !== undefined && (!Array.isArray(knownSpeakerNames) || knownSpeakerNames.some(name => typeof name !== 'string' || !name.trim()))) {
+      res.status(400).json({ error: 'knownSpeakerNames must be an array of non-empty strings' });
+      return;
+    }
+    if (knownSpeakerReferences !== undefined && (!Array.isArray(knownSpeakerReferences) || knownSpeakerReferences.some(reference => typeof reference !== 'string' || !reference.trim()))) {
+      res.status(400).json({ error: 'knownSpeakerReferences must be an array of non-empty strings' });
+      return;
+    }
 
     const apiKey = getOpenAIApiKey(req);
+    model = transcriptionMode === 'diarize'
+      ? (process.env.VOICE_STT_DIARIZE_MODEL || 'gpt-4o-transcribe-diarize')
+      : (process.env.VOICE_STT_MODEL || 'gpt-4o-transcribe');
     logger.info(`${context} Recognizing speech`);
 
     const response = await axios.post(
@@ -204,7 +251,13 @@ export const recognizeSpeech = async (req: Request, res: Response): Promise<void
       {
         audio_data: audioData,
         language,
-        audio_format: audioFormat
+        audio_format: audioFormat,
+        prompt,
+        transcription_mode: transcriptionMode,
+        include_logprobs: includeLogprobs,
+        chunking_strategy: chunkingStrategy,
+        known_speaker_names: knownSpeakerNames,
+        known_speaker_references: knownSpeakerReferences
       },
       {
         headers: buildAiHeaders(apiKey),

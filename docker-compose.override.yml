@@ -68,10 +68,7 @@ services:
     environment:
       FLASK_ENV: development
       FLASK_DEBUG: 1
-      # Default to mock mode in dev to keep the app responsive and deterministic.
-      # Set MOCK_MODE=false in your shell/.env when you want real provider calls.
-      MOCK_MODE: ${MOCK_MODE:-true}
-      OPENAI_API_KEY: ${OPENAI_API_KEY:-demo-key-for-development}
+      OPENAI_API_KEY: ${OPENAI_API_KEY:-}
       ANTHROPIC_API_KEY: ${ANTHROPIC_API_KEY:-}
     command: uvicorn main:app --host=0.0.0.0 --port=8000 --reload
     ports:

@@ -9,18 +9,14 @@ import {
 } from '../apiUrl';
 
 describe('apiUrl utilities', () => {
-  // Store original window.location
   const originalLocation = window.location;
 
   beforeEach(() => {
-    // Clear cache before each test
     clearUrlCache();
-    // Reset import.meta.env mocks
     vi.stubGlobal('import.meta.env', {});
   });
 
   afterEach(() => {
-    // Restore original location
     Object.defineProperty(window, 'location', {
       value: originalLocation,
       writable: true,
@@ -29,7 +25,7 @@ describe('apiUrl utilities', () => {
   });
 
   const mockLocation = (hostname: string, protocol: string = 'http:') => {
-    const port = '3000';
+    const port = '3090';
     const origin = `${protocol}//${hostname}${port ? `:${port}` : ''}`;
     Object.defineProperty(window, 'location', {
       value: {
@@ -45,38 +41,32 @@ describe('apiUrl utilities', () => {
   describe('getApiUrl', () => {
     it('returns localhost URL when on localhost', () => {
       mockLocation('localhost');
-      const url = getApiUrl();
-      expect(url).toBe('http://localhost:3000/api');
+      expect(getApiUrl()).toBe('http://localhost:4000/api');
     });
 
     it('returns localhost URL when on 127.0.0.1', () => {
       mockLocation('127.0.0.1');
-      const url = getApiUrl();
-      expect(url).toBe('http://127.0.0.1:3000/api');
+      expect(getApiUrl()).toBe('http://127.0.0.1:4000/api');
     });
 
-    it('returns tunnel URL (no port) when on remote hostname', () => {
+    it('returns tunnel URL when on remote hostname', () => {
       mockLocation('psscript.morloksmaze.com', 'https:');
-      const url = getApiUrl();
-      expect(url).toBe('https://psscript.morloksmaze.com/api');
+      expect(getApiUrl()).toBe('https://psscript.morloksmaze.com/api');
     });
 
     it('uses https when protocol is https', () => {
       mockLocation('localhost', 'https:');
-      const url = getApiUrl();
-      expect(url).toBe('https://localhost:3000/api');
+      expect(getApiUrl()).toBe('https://localhost:4000/api');
     });
 
     it('caches the URL after first call', () => {
       mockLocation('localhost');
       const url1 = getApiUrl();
-
-      // Change location - should still return cached value
       mockLocation('different.host.com');
       const url2 = getApiUrl();
 
       expect(url1).toBe(url2);
-      expect(url2).toBe('http://localhost:3000/api');
+      expect(url2).toBe('http://localhost:4000/api');
     });
 
     it('returns new URL after cache is cleared', () => {
@@ -87,7 +77,7 @@ describe('apiUrl utilities', () => {
       mockLocation('remote.host.com', 'https:');
       const url2 = getApiUrl();
 
-      expect(url1).toBe('http://localhost:3000/api');
+      expect(url1).toBe('http://localhost:4000/api');
       expect(url2).toBe('https://remote.host.com/api');
     });
   });
@@ -95,28 +85,24 @@ describe('apiUrl utilities', () => {
   describe('getAiServiceUrl', () => {
     it('returns localhost:8000 when on localhost', () => {
       mockLocation('localhost');
-      const url = getAiServiceUrl();
-      expect(url).toBe('http://localhost:8000');
+      expect(getAiServiceUrl()).toBe('http://localhost:8000');
     });
 
     it('returns /ai path for remote hostnames', () => {
       mockLocation('psscript.morloksmaze.com', 'https:');
-      const url = getAiServiceUrl();
-      expect(url).toBe('https://psscript.morloksmaze.com/ai');
+      expect(getAiServiceUrl()).toBe('https://psscript.morloksmaze.com/ai');
     });
   });
 
   describe('getAssistantsApiUrl', () => {
     it('returns localhost:4001/api when on localhost', () => {
       mockLocation('localhost');
-      const url = getAssistantsApiUrl();
-      expect(url).toBe('http://localhost:4001/api');
+      expect(getAssistantsApiUrl()).toBe('http://localhost:4001/api');
     });
 
     it('returns /assistants-api path for remote hostnames', () => {
       mockLocation('psscript.morloksmaze.com', 'https:');
-      const url = getAssistantsApiUrl();
-      expect(url).toBe('https://psscript.morloksmaze.com/assistants-api');
+      expect(getAssistantsApiUrl()).toBe('https://psscript.morloksmaze.com/assistants-api');
     });
   });
 

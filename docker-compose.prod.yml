@@ -55,7 +55,6 @@ services:
       - postgres
     environment:
       - OPENAI_API_KEY=${OPENAI_API_KEY}
-      - MOCK_MODE=${MOCK_MODE:-false}
       - DB_HOST=postgres
       - DB_PORT=5432
       - DB_NAME=psscript

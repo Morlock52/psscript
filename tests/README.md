@@ -1,244 +1,80 @@
-# PSScript E2E Testing with Playwright
+# Browser and E2E Tests
 
-Comprehensive end-to-end tests for the PSScript platform following 2026 best practices.
+Playwright coverage for the frontend shell, protected routes, settings flows, script management, health checks, AI analytics, and agent orchestration.
 
-## Test Structure
+## Canonical local targets
 
+- Frontend: `https://127.0.0.1:3090`
+- Backend: `https://127.0.0.1:4000`
+- AI service: `http://127.0.0.1:8000`
+
+These values match `playwright.config.ts`, `docker-compose*.yml`, and the frontend runtime URL detection.
+
+## Primary configs
+
+- Source-of-truth Playwright config: `playwright.config.ts`
+- Generated local override used in some ad hoc runs: `output/playwright/local.config.cjs`
+
+Treat `output/playwright/local.config.cjs` as a local artifact, not the canonical checked-in config.
+
+## Main suites
+
+- `tests/e2e/health-checks.spec.ts`
+- `tests/e2e/authentication.spec.ts`
+- `tests/e2e/script-management.spec.ts`
+- `tests/e2e/categories-settings.spec.ts`
+- `tests/e2e/ai-analytics.spec.ts`
+- `tests/e2e/ai-agents.spec.ts`
+
+## Run commands
+
+### Chromium smoke
+
+```bash
+npx playwright test --project=chromium
 ```
-tests/
-├── e2e/                          # End-to-end test suites
-│   ├── health-checks.spec.ts    # Service health and availability
-│   ├── authentication.spec.ts   # User auth flows
-│   ├── script-management.spec.ts # Script upload and analysis
-│   ├── ai-analytics.spec.ts     # AI analytics endpoints
-│   └── ai-agents.spec.ts        # LangGraph agent system
-└── fixtures/                     # Test data and files
-```
 
-## Running Tests
+### Full matrix
 
-### Run All Tests
 ```bash
 npx playwright test
 ```
 
-### Run Specific Test Suite
-```bash
-npx playwright test tests/e2e/health-checks.spec.ts
-npx playwright test tests/e2e/authentication.spec.ts
-npx playwright test tests/e2e/script-management.spec.ts
-npx playwright test tests/e2e/ai-analytics.spec.ts
-npx playwright test tests/e2e/ai-agents.spec.ts
-```
-
-### Run in UI Mode (Interactive)
-```bash
-npx playwright test --ui
-```
-
-### Run in Headed Mode (See Browser)
-```bash
-npx playwright test --headed
-```
-
-### Run Specific Browser
-```bash
-npx playwright test --project=chromium
-npx playwright test --project=firefox
-npx playwright test --project=webkit
-```
-
-### Debug Tests
-```bash
-npx playwright test --debug
-```
-
-## Test Coverage
-
-### 1. Health Checks (`health-checks.spec.ts`)
-- Frontend accessibility
-- Backend health endpoint
-- AI service health endpoint
-- Database connectivity
-- Redis connectivity
-- API endpoint availability
-
-### 2. Authentication (`authentication.spec.ts`)
-- Login page display
-- Invalid login validation
-- Registration flow
-- Session persistence
-- Protected route access
-- Public route access
-
-### 3. Script Management (`script-management.spec.ts`)
-- Script upload button display
-- File selection and upload
-- File type validation
-- AI analysis triggering
-- Security issue detection
-- Script list view
-- Search functionality
-
-### 4. AI Analytics (`ai-analytics.spec.ts`)
-- Summary endpoint
-- Budget alerts endpoint
-- Full analytics endpoint
-- Token usage tracking
-- Analytics dashboard display
-- Cost metrics display
-- Token usage metrics
-- Performance metrics
-- Budget alert system
-- Configurable thresholds
-
-### 5. AI Agents (`ai-agents.spec.ts`)
-- Agent coordinator availability
-- Agent listing
-- Archived agent verification
-- LangGraph workflow execution
-- State management and checkpointing
-- Multi-step workflows
-- Agent performance testing
-- Parallel execution
-- Memory and context persistence
-- Error handling
-
-## Best Practices Implemented
-
-### Semantic Selectors (2026 Standards)
-Tests use semantic selectors for better maintainability:
-- `getByRole()` - Preferred for interactive elements
-- `getByLabel()` - For form inputs
-- `getByPlaceholder()` - For inputs without labels
-- `getByText()` - For content-based selection
-
-Example:
-```typescript
-const loginButton = page.getByRole('button', { name: /login|sign in/i });
-const emailInput = page.getByLabel(/email|username/i);
-```
-
-### Test Isolation
-- Fresh browser context for each test
-- Cookie/session clearing before each test
-- Independent test execution (no shared state)
-
-### Error Handling
-- Graceful handling of auth requirements
-- Flexible status code expectations
-- Timeout configurations
-- Screenshot and video on failure
-
-### Performance Monitoring
-- Response time tracking
-- Latency measurements
-- Parallel execution testing
-
-## Configuration
-
-The `playwright.config.ts` at the project root configures:
-
-- **Test Directory**: `./tests/e2e`
-- **Parallel Execution**: Enabled
-- **Browsers**: Chromium, Firefox, WebKit
-- **Mobile Testing**: Pixel 5, iPhone 12
-- **Services**:
-  - Frontend: http://localhost:3000
-  - Backend: http://localhost:4000
-  - AI Service: http://localhost:8000
-
-## Environment Variables
-
-Set these for authenticated tests:
+### Specific suite
 
 ```bash
-export TEST_USER_EMAIL="test@example.com"
-export TEST_USER_PASSWORD="testpassword123"
+npx playwright test tests/e2e/categories-settings.spec.ts --project=chromium
 ```
 
-## CI/CD Integration
-
-Tests are configured for CI environments:
-- Retry failed tests twice on CI
-- Single worker on CI (sequential execution)
-- JSON and HTML reports generated
-- Screenshots and videos on failure
-
-## Viewing Test Reports
-
-After running tests:
+### Headed or debug
 
 ```bash
-npx playwright show-report test-results/playwright-report
+npx playwright test --headed --project=chromium
+npx playwright test --debug tests/e2e/script-management.spec.ts
 ```
 
-## Debugging Failed Tests
+## Auth note
 
-1. **Run with trace viewer**:
-   ```bash
-   npx playwright test --trace on
-   npx playwright show-trace trace.zip
-   ```
+The checked-in local frontend commonly runs with `VITE_DISABLE_AUTH=true`.
 
-2. **Use debug mode**:
-   ```bash
-   npx playwright test --debug
-   ```
+That means:
+- the app auto-enters the authenticated shell
+- some login-form-only tests are intentionally skipped in local validation
+- helpers should tolerate both direct protected-route access and redirects to `/login`
 
-3. **Check screenshots**:
-   Screenshots saved to `test-results/` on failure
+## Screenshot generation
 
-4. **Check videos**:
-   Videos saved to `test-results/` on failure
+The canonical docs screenshots come from:
 
-## Adding New Tests
-
-Follow the 2026 best practices:
-
-1. Use semantic selectors
-2. Implement proper test isolation
-3. Handle authentication gracefully
-4. Add appropriate timeouts
-5. Document test purpose
-6. Group related tests in `describe` blocks
-
-Example:
-```typescript
-import { test, expect } from '@playwright/test';
-
-test.describe('Feature Name', () => {
-  test.beforeEach(async ({ context }) => {
-    // Setup: clear cookies, etc.
-    await context.clearCookies();
-  });
-
-  test('Should do something', async ({ page }) => {
-    await page.goto('/');
-
-    const element = page.getByRole('button', { name: /action/i });
-    await expect(element).toBeVisible();
-  });
-});
+```bash
+node scripts/capture-screenshots.js
 ```
 
-## Maintenance
+Additional UI-specific screenshot specs live under `tests/e2e/*screenshots*.spec.ts`.
+Those screenshot and `tests/e2e/tmp/*` specs are utility flows and are excluded from the default Playwright matrix.
 
-- Update selectors when UI changes
-- Keep test data in `fixtures/` directory
-- Review failed tests before marking as flaky
-- Update timeouts based on service performance
-- Keep tests fast (< 30s per test ideal)
+## Reports and artifacts
 
-## Known Issues
-
-- Some tests require authentication (use TEST_USER_* env vars)
-- AI analysis tests may take longer due to API calls
-- Service startup may require additional time on first run
-
-## Support
-
-For issues or questions:
-1. Check Playwright documentation: https://playwright.dev
-2. Review test output and screenshots
-3. Enable debug mode for detailed execution
+```bash
+npx playwright show-report
+```

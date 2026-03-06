@@ -60,6 +60,6 @@ echo "Starting frontend service..."
 osascript -e 'tell app "Terminal" to do script "cd '$PWD' && ./start-frontend.sh"'
 
 echo "All services started successfully."
-echo "Frontend: http://localhost:3000"
-echo "Backend: http://localhost:4000"
-echo "AI Service: http://localhost:8001"
+echo "Frontend: https://127.0.0.1:3090"
+echo "Backend: https://127.0.0.1:4000"
+echo "AI Service: http://127.0.0.1:8000"

@@ -127,6 +127,89 @@ async function buildBackupPayload(): Promise<BackupPayload> {
   return payload;
 }
 
+function normalizeBackupRow(row: Record<string, unknown>): Record<string, unknown> {
+  return Object.fromEntries(
+    Object.entries(row).map(([key, value]) => {
+      if (value === null || value === undefined) {
+        return [key, value];
+      }
+
+      if (Array.isArray(value) || (typeof value === 'object' && !(value instanceof Date))) {
+        return [key, JSON.stringify(value)];
+      }
+
+      return [key, value];
+    })
+  );
+}
+
+async function getRestoreInsertOrder(tables: string[], tx: Transaction): Promise<string[]> {
+  if (tables.length <= 1) {
+    return tables;
+  }
+
+  const fkRows = await sequelize.query(
+    `SELECT
+       tc.table_name AS child_table,
+       ccu.table_name AS parent_table
+     FROM information_schema.table_constraints AS tc
+     JOIN information_schema.key_column_usage AS kcu
+       ON tc.constraint_name = kcu.constraint_name
+      AND tc.table_schema = kcu.table_schema
+     JOIN information_schema.constraint_column_usage AS ccu
+       ON ccu.constraint_name = tc.constraint_name
+      AND ccu.table_schema = tc.table_schema
+     WHERE tc.constraint_type = 'FOREIGN KEY'
+       AND tc.table_schema = 'public'
+       AND tc.table_name IN (:tables)
+       AND ccu.table_name IN (:tables)`,
+    {
+      replacements: { tables },
+      type: QueryTypes.SELECT,
+      transaction: tx
+    }
+  ) as Array<{ child_table: string; parent_table: string }>;
+
+  const parentDeps = new Map<string, Set<string>>();
+  const children = new Map<string, Set<string>>();
+
+  for (const table of tables) {
+    parentDeps.set(table, new Set());
+    children.set(table, new Set());
+  }
+
+  for (const { child_table: child, parent_table: parent } of fkRows) {
+    if (child === parent || !parentDeps.has(child) || !children.has(parent)) {
+      continue;
+    }
+    parentDeps.get(child)?.add(parent);
+    children.get(parent)?.add(child);
+  }
+
+  const queue = tables.filter((table) => (parentDeps.get(table)?.size || 0) === 0);
+  const ordered: string[] = [];
+
+  while (queue.length > 0) {
+    const table = queue.shift() as string;
+    ordered.push(table);
+
+    for (const child of children.get(table) || []) {
+      const deps = parentDeps.get(child);
+      deps?.delete(table);
+      if ((deps?.size || 0) === 0) {
+        queue.push(child);
+      }
+    }
+  }
+
+  if (ordered.length === tables.length) {
+    return ordered;
+  }
+
+  const remaining = tables.filter((table) => !ordered.includes(table));
+  return [...ordered, ...remaining];
+}
+
 async function restoreBackup(payload: BackupPayload): Promise<{ inserted: Record<string, number> }> {
   const currentTables = await getPublicTables();
   const restoreTables = currentTables.filter((table) => Object.prototype.hasOwnProperty.call(payload.tables || {}, table));
@@ -134,15 +217,21 @@ async function restoreBackup(payload: BackupPayload): Promise<{ inserted: Record
   const inserted: Record<string, number> = {};
 
   await sequelize.transaction(async (tx: Transaction) => {
+    const orderedRestoreTables = await getRestoreInsertOrder(restoreTables, tx);
+
     if (restoreTables.length > 0) {
       const truncateSql = `TRUNCATE TABLE ${restoreTables.map((t) => `"${t}"`).join(', ')} RESTART IDENTITY CASCADE`;
       await sequelize.query(truncateSql, { transaction: tx });
     }
 
-    for (const table of restoreTables) {
+    for (const table of orderedRestoreTables) {
       const rows = Array.isArray(payload.tables[table]) ? payload.tables[table] : [];
       if (rows.length > 0) {
-        await sequelize.getQueryInterface().bulkInsert(table, rows, { transaction: tx });
+        await sequelize.getQueryInterface().bulkInsert(
+          table,
+          rows.map((row) => normalizeBackupRow(row as Record<string, unknown>)),
+          { transaction: tx }
+        );
       }
       inserted[table] = rows.length;
     }
