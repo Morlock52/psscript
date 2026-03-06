@@ -326,7 +326,7 @@ router.post('/', authenticateJWT, ScriptCrudController.createScript);
  *         description: Unauthorized
  */
 // Use special CORS middleware and network error handling for upload endpoints
-router.post('/upload', uploadCorsMiddleware, handleNetworkErrors, handleUploadProgress, upload.single('script_file'), handleMulterError, ScriptExportController.uploadScript);
+router.post('/upload', uploadCorsMiddleware, authenticateJWT, handleNetworkErrors, handleUploadProgress, upload.single('script_file'), handleMulterError, ScriptExportController.uploadScript);
 
 /**
  * @swagger
@@ -386,7 +386,7 @@ router.get('/clear-cache', authenticateJWT, requireAdmin, async (req, res) => {
  *         description: Unauthorized
  */
 // Use special CORS middleware and network error handling for large upload endpoint as well
-router.post('/upload/large', uploadCorsMiddleware, handleNetworkErrors, handleUploadProgress, diskUpload.single('script_file'), handleMulterError, ScriptExportController.uploadScript);
+router.post('/upload/large', uploadCorsMiddleware, authenticateJWT, handleNetworkErrors, handleUploadProgress, diskUpload.single('script_file'), handleMulterError, ScriptExportController.uploadScript);
 
 /**
  * @swagger

@@ -51,8 +51,14 @@ python main.py
 python test_langgraph_setup.py
 ```
 
+Latest validated result on March 6, 2026:
+- `5/5` checks passed
+
 Voice is validated through the backend proxy using:
 
 ```bash
 node ../../scripts/voice-tests-1-8.mjs --base-url https://127.0.0.1:4000 --insecure-tls
 ```
+
+Latest voice result on March 6, 2026:
+- `8/8` checks passed

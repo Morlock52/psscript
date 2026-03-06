@@ -15,6 +15,7 @@ React + TypeScript + Vite UI for browsing scripts, running analyses, managing ca
 
 - Route-level lazy loading is enabled for heavier pages.
 - Runtime API URL detection now matches the checked-in backend default on `:4000`.
+- Multipart script uploads now let the browser set the form boundary and route large single-file uploads to `/scripts/upload/large`.
 - The canonical screenshot set is captured from the same local runtime documented here.
 - The default local frontend mode commonly uses `VITE_DISABLE_AUTH=true`, so the app auto-signs in as `dev-admin`.
 
@@ -36,6 +37,10 @@ The main Playwright suites cover:
 - backend, AI, DB, and Redis health checks
 - AI analytics and agent orchestration routes
 
+Latest validated browser result on March 6, 2026:
+- `npx playwright test --project=chromium`
+- `28` passed, `3` skipped
+
 ## Local development
 
 ```bash
@@ -56,6 +61,10 @@ npm run lint
 npm run build
 npm run test:run
 ```
+
+Latest validated unit result on March 6, 2026:
+- `4` test files
+- `33` tests passed
 
 ## Notes
 

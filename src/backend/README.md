@@ -30,6 +30,7 @@ Express + TypeScript API for authentication, script management, analytics, admin
 ### Scripts and AI
 
 - Script creation returns immediately after the DB write and runs AI analysis in the background.
+- Script upload endpoints now authenticate through the shared JWT middleware before the upload controller runs.
 - Script analysis endpoints return explicit failure states instead of fabricated success payloads.
 - Legacy AI compatibility routes return explicit upstream-service failures instead of invented fallback data.
 - Async upload analysis calls the real AI `/analyze` endpoint.
@@ -78,6 +79,13 @@ Current checked-in validation surface:
 - unit and integration tests
 - DB-enabled integration tests
 - browser and API flows through Playwright and the maintenance verifier
+- live upload/save flow through `/api/scripts/upload`
+
+Latest validated results on March 6, 2026:
+- `npm run lint`: passed with `2` existing camelcase warnings in `src/routes/__tests__/admin-db.test.ts`
+- `npm run build`: passed
+- `npm test -- --runInBand`: `29` active tests passed, `64` skipped
+- `RUN_DB_TESTS=true npm test -- --runInBand`: `93` tests passed
 
 Known non-blocking warnings:
 - `2` camelcase lint warnings in `src/routes/__tests__/admin-db.test.ts`

@@ -1,13 +1,13 @@
 # Voice API Tests 1-8 (Latest)
 
-Run date: 2026-03-06T00:34:58.764Z
+Run date: 2026-03-06T20:11:47.213Z
 Base URL: `https://127.0.0.1:4000`
 
 ## Summary
 
 - Passed checks: `8/8`
 - Failed checks: `0`
-- This result was reproduced in two consecutive full validation passes on March 6, 2026.
+- This result was reproduced in the latest full validation pass on March 6, 2026.
 
 Checks:
 - PASS `test1`: core route checks
@@ -21,12 +21,12 @@ Checks:
 
 ## Key metrics from the latest run
 
-- synthesize route: `200` in `449ms`
-- recognize route: `200` in `1953ms`
+- synthesize route: `200` in `2750ms`
+- recognize route: `200` in `1674ms`
 - load test `10` concurrency: `10/10` successful
 - load test `25` concurrency: `25/25` successful
 - load test `50` concurrency: `50/50` successful
-- cache check: first `76ms`, second `50ms`
+- cache check: first `1147ms`, second `67ms`
 - telemetry check: both `/api/voice/synthesize` and `/api/voice/recognize` were captured
 
 ## Format matrix

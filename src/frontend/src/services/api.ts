@@ -30,15 +30,10 @@ apiClient.interceptors.request.use(
     // Step 2: Add auth token
     const token = localStorage.getItem("auth_token");
 
-    // For file uploads, we should ensure we're not setting both multipart/form-data
-    // and Authorization headers, as this can cause issues with CORS preflight checks
-    const isFileUpload =
-      config.url?.includes('/upload') &&
-      config.headers['Content-Type'] === 'multipart/form-data';
+    const isFileUpload = config.url?.includes('/upload') === true;
 
-    // Only add the auth token if it exists and we're not uploading a file
-    // or if we specifically want to authenticate the file upload
-    if (token && (!isFileUpload || localStorage.getItem("authenticate_uploads") === "true")) {
+    // Upload endpoints are authenticated too, so do not suppress the auth header.
+    if (token) {
       config.headers["Authorization"] = `Bearer ${token}`;
     }
 
@@ -141,18 +136,16 @@ const scriptService = {
   uploadScript: async (scriptData: any, isLargeFile: boolean = false) => {
     try {
       // Check if we're dealing with FormData or JSON
-       const isFormData = scriptData instanceof FormData;
+      const isFormData = scriptData instanceof FormData;
+      const authToken = localStorage.getItem("auth_token");
       
-      // Set the correct headers based on data type
+      // Let the browser set multipart boundaries for FormData automatically.
       const config: AxiosRequestConfig = {
-        headers: isFormData ? {
-          'Content-Type': 'multipart/form-data'
-        } : {
+        headers: isFormData ? {} : {
           'Content-Type': 'application/json'
         },
         // Increase timeout for large files
         timeout: isLargeFile ? 60000 : 30000, // 60 seconds for large files
-        // Ensure we don't get CORS errors due to auth headers in preflight
         withCredentials: false
       };
       
@@ -165,7 +158,7 @@ const scriptService = {
       // Choose the appropriate endpoint based on file size and type
       const endpoint = isFormData
         ? isLargeFile
-          ? "/scripts/upload/async" // Use async endpoint for large files
+          ? "/scripts/upload/large"
           : "/scripts/upload"
         : "/scripts";
 
@@ -173,24 +166,19 @@ const scriptService = {
        console.log('[UPLOAD DEBUG] Attempting upload to endpoint:', endpoint);
         
        // Set up a more robust upload configuration
-       const uploadConfig = {
-         ...config,
-         // Increase timeout for all uploads
-         timeout: isLargeFile ? 180000 : 120000, // 3 minutes for large files, 2 minutes for regular
-         // Ensure proper CORS handling
-         withCredentials: false,
-         // Set max content length (same as server settings)
-         maxContentLength: isLargeFile ? 20 * 1024 * 1024 : 10 * 1024 * 1024, // 20MB or 10MB
-         maxBodyLength: isLargeFile ? 20 * 1024 * 1024 : 10 * 1024 * 1024, // 20MB or 10MB
-         // Add auth token directly if available (avoid interceptor issues)
-         headers: {
-           ...config.headers,
-           // Only add auth token if it exists and we want to authenticate uploads
-           ...(localStorage.getItem("auth_token") && localStorage.getItem("authenticate_uploads") === "true" 
-             ? { Authorization: `Bearer ${localStorage.getItem("auth_token")}` } 
-             : {})
-         }
-       };
+      const uploadConfig = {
+        ...config,
+        // Increase timeout for all uploads
+        timeout: isLargeFile ? 180000 : 120000, // 3 minutes for large files, 2 minutes for regular
+        withCredentials: false,
+        // Set max content length (same as server settings)
+        maxContentLength: isLargeFile ? 20 * 1024 * 1024 : 10 * 1024 * 1024, // 20MB or 10MB
+        maxBodyLength: isLargeFile ? 20 * 1024 * 1024 : 10 * 1024 * 1024, // 20MB or 10MB
+        headers: {
+          ...config.headers,
+          ...(authToken ? { Authorization: `Bearer ${authToken}` } : {})
+        }
+      };
         
        console.log('[UPLOAD DEBUG] Upload config:', {
          timeout: uploadConfig.timeout,

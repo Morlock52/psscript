@@ -115,11 +115,31 @@ npx playwright test --project=chromium
 ## Current engineering state
 
 - Shared JWT auth middleware is used across normal protected routes and admin DB routes.
+- Upload endpoints now use the same auth middleware path as the rest of the script API, and browser upload/save flows are validated end to end.
 - Script creation persists immediately and runs AI analysis in the background.
 - Restore reseeds sequences and restores tables in foreign-key-safe order.
 - Backend AI routes no longer return fabricated fallback success payloads.
 - Frontend route-level lazy loading is enabled.
 - Local fresh-clone defaults are normalized around `3090 / 4000 / 8000`.
+
+## Latest validation status
+
+Validated on March 6, 2026:
+
+- Backend: `npm run lint`, `npm run build`, `npm test -- --runInBand`, `RUN_DB_TESTS=true npm test -- --runInBand`
+- Frontend: `npm run lint`, `npm run build`, `npm run test:run`
+- AI: `python test_langgraph_setup.py`
+- Voice: `node scripts/voice-tests-1-8.mjs --base-url https://127.0.0.1:4000 --insecure-tls`
+- Data maintenance: `node scripts/verify-data-maintenance-e2e.mjs --reuse-backend --base-url https://127.0.0.1:4000 --insecure-tls`
+- Browser: `npx playwright test --project=chromium`
+
+Results:
+
+- Backend tests: `93` passed
+- Frontend tests: `33` passed
+- AI harness: `5/5` passed
+- Voice validation: `8/8` passed
+- Chromium browser suite: `28` passed, `3` skipped
 
 ## Canonical docs
 

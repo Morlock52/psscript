@@ -88,3 +88,6 @@ node scripts/voice-tests-1-8.mjs --base-url https://127.0.0.1:4000 --insecure-tl
 Report artifacts:
 - `/tmp/voice-tests-1-8-latest.json`
 - `docs/VOICE-TESTS-1-8-LATEST.md`
+
+Latest validated result on March 6, 2026:
+- `8/8` checks passed

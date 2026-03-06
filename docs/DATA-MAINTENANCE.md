@@ -92,6 +92,13 @@ node scripts/db-maintenance-stress-test.mjs --base-url "https://127.0.0.1:4000" 
 node scripts/verify-data-maintenance-e2e.mjs --reuse-backend --base-url "https://127.0.0.1:4000" --insecure-tls
 ```
 
+Latest verified result on March 6, 2026:
+- smoke check passed
+- backup creation and immediate listing passed
+- restore passed
+- clear-test-data passed
+- restore-after-clear passed
+
 ## Operational notes
 
 - Back up before destructive cleanup.

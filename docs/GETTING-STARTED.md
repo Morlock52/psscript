@@ -56,10 +56,17 @@ cd src/ai && python -m pip install -r requirements.txt && python main.py
 ## Recommended first validation steps
 
 ```bash
+cd src/backend && npm run lint
 cd src/backend && npm run build
+cd src/backend && npm test -- --runInBand
+cd src/backend && RUN_DB_TESTS=true npm test -- --runInBand
+cd src/frontend && npm run lint
 cd src/frontend && npm run build
+cd src/frontend && npm run test:run
+cd src/ai && python test_langgraph_setup.py
 node scripts/verify-data-maintenance-e2e.mjs --reuse-backend --base-url https://127.0.0.1:4000 --insecure-tls
 node scripts/voice-tests-1-8.mjs --base-url https://127.0.0.1:4000 --insecure-tls
+npx playwright test --project=chromium
 ```
 
 ## Canonical current docs
