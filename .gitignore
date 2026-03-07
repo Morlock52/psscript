@@ -110,3 +110,4 @@ __pycache__/
 *.pyc
 *.pyo
 *.egg-info/
+src/ai/voice_cache/
