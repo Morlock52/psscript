@@ -16,6 +16,8 @@ from typing import Dict, Any, Optional, List
 import io
 import uuid
 import hashlib
+import wave
+import audioop
 from fastapi import HTTPException
 
 try:
@@ -138,8 +140,7 @@ class VoiceService:
             elif self.tts_service == "microsoft":
                 audio_data, duration = await self._synthesize_microsoft(text, voice_id, output_format)
             else:
-                # Use mock implementation for testing
-                audio_data, duration = await self._synthesize_mock(text, voice_id, output_format)
+                raise RuntimeError(f"Unsupported TTS service configured: {self.tts_service}")
             
             # Store result in cache
             result = {
@@ -284,8 +285,7 @@ class VoiceService:
             elif self.stt_service == "microsoft":
                 text, confidence, alternatives = await self._recognize_microsoft(audio_data, language)
             else:
-                # Use mock implementation for testing
-                text, confidence, alternatives = await self._recognize_mock(audio_data, language)
+                raise RuntimeError(f"Unsupported STT service configured: {self.stt_service}")
             
             return {
                 "text": text,
@@ -407,6 +407,21 @@ class VoiceService:
                 detail="Unsupported transcription format. Use wav, mp3, m4a, flac, ogg, or webm."
             )
 
+        if self._is_likely_silence(audio_bytes, ext):
+            return {
+                "text": "",
+                "confidence": 0.0,
+                "alternatives": [],
+                "segments": [],
+                "words": [],
+                "logprobs": None,
+                "language": lang_code,
+                "duration": None,
+                "usage": None,
+                "model": model,
+                "mode": mode,
+            }
+
         response_format = "diarized_json" if mode == "diarize" else "json"
 
         def _transcribe():
@@ -484,6 +499,29 @@ class VoiceService:
         if len(audio_bytes) > 8 and audio_bytes[4:8] == b"ftyp":
             return "m4a"
         return os.environ.get("VOICE_STT_AUDIO_EXT", "wav")
+
+    def _is_likely_silence(self, audio_bytes: bytes, ext: str) -> bool:
+        """Best-effort silence detection to reduce hallucinated transcripts."""
+        normalized_ext = (ext or "").lower()
+
+        if normalized_ext == "wav":
+            try:
+                with wave.open(io.BytesIO(audio_bytes), "rb") as wav_file:
+                    frame_count = wav_file.getnframes()
+                    if frame_count == 0:
+                        return True
+                    sample_width = wav_file.getsampwidth()
+                    frames = wav_file.readframes(frame_count)
+                    return audioop.rms(frames, sample_width) < 75
+            except Exception:
+                logger.warning("Failed to evaluate WAV silence heuristic", exc_info=True)
+
+        sample = audio_bytes[: min(len(audio_bytes), 8192)]
+        if not sample:
+            return True
+
+        zero_like = sum(1 for byte in sample if byte in (0, 128, 255))
+        return (zero_like / len(sample)) > 0.98
 
     # Google Cloud TTS implementation
     async def _synthesize_google(

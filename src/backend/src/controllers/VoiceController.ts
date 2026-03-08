@@ -49,6 +49,10 @@ const normalizeAiError = (error: any, context: string): [number, object] => {
       ];
     }
 
+    if (error.code === 'ECONNABORTED') {
+      return [504, { error: 'AI service timeout' }];
+    }
+
     if (!error.response) {
       return [503, { error: 'AI service unavailable' }];
     }
