@@ -453,9 +453,11 @@ export async function uploadScript(
     // Set longer timeout for the request to handle network latency
     req.setTimeout(60000); // 60 seconds
 
-    // Start transaction with serializable isolation level for better consistency
+    // Use READ COMMITTED here to avoid needless serialization failures during
+    // concurrent uploads. This endpoint already handles duplicate-file conflicts
+    // explicitly via hash checks and uniqueness validation.
     transaction = await sequelize.transaction({
-      isolationLevel: Transaction.ISOLATION_LEVELS.SERIALIZABLE
+      isolationLevel: Transaction.ISOLATION_LEVELS.READ_COMMITTED
     });
 
     // eslint-disable-next-line camelcase -- API request body uses snake_case
@@ -488,8 +490,22 @@ export async function uploadScript(
       });
     }
 
+    const uploadedFileBuffer = req.file.buffer
+      ? req.file.buffer
+      : req.file.path
+        ? fs.readFileSync(req.file.path)
+        : null;
+
+    if (!uploadedFileBuffer) {
+      if (transaction) await transaction.rollback();
+      return res.status(400).json({
+        error: 'missing_file_content',
+        message: 'Uploaded file content could not be read'
+      });
+    }
+
     // Calculate file hash for integrity verification and deduplication
-    const fileHash = calculateBufferMD5(req.file.buffer);
+    const fileHash = calculateBufferMD5(uploadedFileBuffer);
     logger.info(`Calculated file hash: ${fileHash}`);
 
     // Check if a file with the same hash already exists
@@ -506,7 +522,7 @@ export async function uploadScript(
     // Read file content with validation
     let scriptContent: string;
     try {
-      scriptContent = req.file.buffer.toString('utf8');
+      scriptContent = uploadedFileBuffer.toString('utf8');
 
       // Check for binary content (control characters indicate non-text file)
       // eslint-disable-next-line no-control-regex
@@ -596,7 +612,7 @@ export async function uploadScript(
 
     // Save the file to the uploads directory for persistence
     const uniqueFileName = `${Date.now()}-${path.basename(fileName)}`;
-    const filePath = path.join(process.cwd(), 'uploads', uniqueFileName);
+    const filePath = req.file.path || path.join(process.cwd(), 'uploads', uniqueFileName);
 
     // Create uploads directory if it doesn't exist
     const uploadsDir = path.join(process.cwd(), 'uploads');
@@ -607,8 +623,12 @@ export async function uploadScript(
 
     // Write the file to disk with error handling
     try {
-      fs.writeFileSync(filePath, scriptContent);
-      logger.info(`Saved script file to ${filePath}`);
+      if (!req.file.path) {
+        fs.writeFileSync(filePath, scriptContent);
+        logger.info(`Saved script file to ${filePath}`);
+      } else {
+        logger.info(`Script file already stored on disk at ${filePath}`);
+      }
     } catch (fileWriteError) {
       logger.error('Error writing file to disk:', fileWriteError);
       // Continue even if file write fails - we have the content in the database
@@ -680,7 +700,7 @@ export async function uploadScript(
     }
   } catch (error) {
     // Ensure transaction is rolled back
-    if (transaction) {
+    if (transaction && !(transaction as Transaction & { finished?: string }).finished) {
       try {
         await transaction.rollback();
         logger.info('Transaction rolled back due to error');
