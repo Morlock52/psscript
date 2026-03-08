@@ -1,23 +1,43 @@
 # PSScript
 
-PowerShell script management with AI analysis, semantic search, documentation crawl tooling, and OpenAI-backed voice workflows.
+PowerShell script management with AI analysis, semantic search, documentation crawl tooling, database maintenance workflows, and OpenAI-backed voice features.
 
-![Dashboard screenshot](./docs/screenshots/dashboard.png)
-![Scripts screenshot](./docs/screenshots/scripts.png)
+## Overview
 
-## What this repo does
+PSScript is a full-stack application for teams that need to store, search, analyze, document, and operate on PowerShell scripts from one interface.
 
-- Stores, versions, and searches PowerShell scripts
-- Runs AI-assisted analysis and remediation guidance
-- Crawls and indexes documentation content
-- Provides admin database backup and restore tooling
-- Exposes voice synthesis and speech-recognition flows through the AI service
+Core product areas:
+- script upload, storage, versioning, and detail views
+- AI-assisted analysis, remediation guidance, and semantic search
+- documentation crawling and indexed knowledge capture
+- analytics, admin operations, and data-maintenance tooling
+- OpenAI-backed speech synthesis and speech recognition
 
-## Canonical local stack
+## Screenshots
 
-The checked-in local-development defaults are:
+| Dashboard | Scripts |
+| --- | --- |
+| ![Dashboard screenshot](./docs/screenshots/dashboard.png) | ![Scripts screenshot](./docs/screenshots/scripts.png) |
 
-| Service | URL |
+| Settings | Data maintenance |
+| --- | --- |
+| ![Settings screenshot](./docs/screenshots/settings-profile.png) | ![Data maintenance screenshot](./docs/screenshots/data-maintenance.png) |
+
+## Feature Summary
+
+| Area | What it does |
+| --- | --- |
+| Script management | Uploads, stores, versions, filters, and searches PowerShell scripts |
+| AI analysis | Runs analysis, scoring, and remediation workflows without returning fabricated fallback success payloads |
+| Semantic search | Uses embeddings for similarity-based search and related-script discovery |
+| Voice workflows | Supports OpenAI-backed text-to-speech, transcription, diarization, and listening flows |
+| Documentation crawl | Crawls and indexes documentation content for in-app access |
+| Admin maintenance | Provides backup, restore, and test-data cleanup endpoints with sequence reseeding and FK-safe restore ordering |
+| Analytics | Exposes reporting and usage flows through the backend API and UI |
+
+## Architecture
+
+| Service | Local URL |
 | --- | --- |
 | Frontend | `https://127.0.0.1:3090` |
 | Backend API | `https://127.0.0.1:4000/api` |
@@ -25,9 +45,13 @@ The checked-in local-development defaults are:
 | PostgreSQL | `127.0.0.1:5432` |
 | Redis | `127.0.0.1:6379` |
 
-These values match the current `docker-compose*.yml`, frontend runtime URL detection, and env templates.
+Stack:
+- frontend: React, TypeScript, Vite
+- backend: Express, TypeScript, Sequelize
+- AI service: FastAPI, LangGraph, OpenAI
+- infra: Docker Compose, PostgreSQL, Redis
 
-## Fresh-clone quick start
+## Quick Start
 
 ### Prerequisites
 
@@ -35,7 +59,7 @@ These values match the current `docker-compose*.yml`, frontend runtime URL detec
 - Python 3.10+
 - Docker Engine with `docker compose`
 
-### Full stack with Docker
+### Run the full local stack
 
 ```bash
 npm run install:all
@@ -53,53 +77,65 @@ https://127.0.0.1:3090
 
 ```bash
 # backend
-cd src/backend && npm install && npm run dev
+cd src/backend
+npm install
+npm run dev
 
 # frontend
-cd src/frontend && npm install && npm run dev
+cd src/frontend
+npm install
+npm run dev
 
 # ai service
-cd src/ai && python -m pip install -r requirements.txt && python main.py
+cd src/ai
+python -m pip install -r requirements.txt
+python main.py
 ```
 
-## Current auth behavior
+## Current Local Dev Behavior
 
-The checked-in frontend dev mode commonly uses `VITE_DISABLE_AUTH=true`.
+- the checked-in frontend dev flow commonly uses `VITE_DISABLE_AUTH=true`
+- in that mode, the app auto-creates a local `dev-admin` session
+- `/login` redirects into the app shell instead of showing the login form
+- if you need the real login screen, set `VITE_DISABLE_AUTH=false` and restart the frontend
 
-That means:
-- the app auto-creates a local `dev-admin` session
-- `/login` redirects into the app shell
-- the default browser suite skips the login-form-only tests
+## OpenAI Voice Defaults
 
-If you need the real login UI, set `VITE_DISABLE_AUTH=false` and restart the frontend.
+These values were kept aligned with the current official OpenAI audio and voice-agent documentation.
 
-## OpenAI voice defaults
+- reasoning and analysis: `gpt-4.1`
+- text-to-speech: `gpt-4o-mini-tts`
+- speech-to-text: `gpt-4o-transcribe`
+- diarization: `gpt-4o-transcribe-diarize`
+- embeddings: `text-embedding-3-large`
 
-These defaults were rechecked against official OpenAI docs on March 6, 2026.
+References:
+- [OpenAI voice agents guide](https://developers.openai.com/api/docs/guides/voice-agents/)
+- [OpenAI audio and speech guide](https://developers.openai.com/api/docs/guides/audio/)
+- [OpenAI create speech reference](https://developers.openai.com/api/reference/resources/audio/subresources/speech/methods/create/)
+- [OpenAI create transcription reference](https://developers.openai.com/api/reference/resources/audio/subresources/transcriptions/methods/create/)
 
-- TTS: `gpt-4o-mini-tts`
-- STT: `gpt-4o-transcribe`
-- Diarization: `gpt-4o-transcribe-diarize`
-- Recommended chained architecture: `gpt-4o-transcribe -> gpt-4.1 -> gpt-4o-mini-tts`
+## Validation
 
-Official references:
-- [Voice agents guide](https://developers.openai.com/api/docs/guides/voice-agents/)
-- [Audio and speech guide](https://developers.openai.com/api/docs/guides/audio/)
-- [Create speech reference](https://developers.openai.com/api/reference/resources/audio/subresources/speech/methods/create/)
-- [Create transcription reference](https://developers.openai.com/api/reference/resources/audio/subresources/transcriptions/methods/create/)
-
-## Validation commands
+### Main validation commands
 
 ```bash
 # backend
-cd src/backend && npm run lint && npm run build && npm test -- --runInBand
-cd src/backend && RUN_DB_TESTS=true npm test -- --runInBand
+cd src/backend
+npm run lint
+npm run build
+npm test -- --runInBand
+RUN_DB_TESTS=true npm test -- --runInBand
 
 # frontend
-cd src/frontend && npm run lint && npm run build && npm run test:run
+cd src/frontend
+npm run lint
+npm run build
+npm run test:run
 
 # ai
-cd src/ai && python test_langgraph_setup.py
+cd src/ai
+python test_langgraph_setup.py
 
 # voice
 cd /Users/morlock/fun/02_PowerShell_Projects/psscript
@@ -112,36 +148,27 @@ node scripts/verify-data-maintenance-e2e.mjs --reuse-backend --base-url https://
 npx playwright test --project=chromium
 ```
 
-## Current engineering state
-
-- Shared JWT auth middleware is used across normal protected routes and admin DB routes.
-- Upload endpoints now use the same auth middleware path as the rest of the script API, and browser upload/save flows are validated end to end.
-- Script creation persists immediately and runs AI analysis in the background.
-- Restore reseeds sequences and restores tables in foreign-key-safe order.
-- Backend AI routes no longer return fabricated fallback success payloads.
-- Frontend route-level lazy loading is enabled.
-- Local fresh-clone defaults are normalized around `3090 / 4000 / 8000`.
-
-## Latest validation status
+### Latest recorded results
 
 Validated on March 6, 2026:
 
-- Backend: `npm run lint`, `npm run build`, `npm test -- --runInBand`, `RUN_DB_TESTS=true npm test -- --runInBand`
-- Frontend: `npm run lint`, `npm run build`, `npm run test:run`
-- AI: `python test_langgraph_setup.py`
-- Voice: `node scripts/voice-tests-1-8.mjs --base-url https://127.0.0.1:4000 --insecure-tls`
-- Data maintenance: `node scripts/verify-data-maintenance-e2e.mjs --reuse-backend --base-url https://127.0.0.1:4000 --insecure-tls`
-- Browser: `npx playwright test --project=chromium`
-
-Results:
-
-- Backend tests: `93` passed
-- Frontend tests: `33` passed
+- backend tests: `93` passed
+- frontend tests: `33` passed
 - AI harness: `5/5` passed
-- Voice validation: `8/8` passed
+- voice validation: `8/8` passed
 - Chromium browser suite: `28` passed, `3` skipped
 
-## Canonical docs
+## Current Engineering Notes
+
+- shared JWT auth middleware is used across protected routes and admin DB routes
+- script uploads authenticate through the same middleware path as the rest of the API
+- script creation persists immediately and runs AI analysis in the background
+- backend AI routes return explicit failures instead of invented success payloads
+- backup listing is live after backup creation and restore reseeds sequences correctly
+- frontend route-level lazy loading is enabled
+- local defaults are normalized around `3090 / 4000 / 8000`
+
+## Documentation
 
 - [Backend README](./src/backend/README.md)
 - [Frontend README](./src/frontend/README.md)
@@ -153,4 +180,12 @@ Results:
 - [Updates](./docs/UPDATES.md)
 - [Documentation Hub](./docs/index.md)
 
-`docs/README-GITHUB.md` is retained only as an archive note; the root `README.md` is the GitHub landing page source of truth.
+## README Notes
+
+This root `README.md` is the canonical GitHub landing page.
+
+Formatting choices in this file were updated to match GitHub README best-practice patterns documented in GitHub’s Markdown and README guidance, including:
+- clear heading hierarchy
+- relative-image embeds
+- tables for service layout and feature summaries
+- short, task-oriented setup and validation sections
