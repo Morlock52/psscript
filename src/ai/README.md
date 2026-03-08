@@ -6,7 +6,7 @@ FastAPI-based AI service for PowerShell analysis, embeddings, LangGraph orchestr
 
 - Base URL: `http://127.0.0.1:8000`
 - Backend peer: `https://127.0.0.1:4000`
-- Validation date: March 6, 2026
+- Validation date: March 8, 2026
 
 ## Current responsibilities
 
@@ -37,6 +37,8 @@ Official references:
 - Missing OpenAI configuration now fails explicitly instead of inventing synthetic analysis or chat results.
 - LangGraph tool execution uses the real script-analysis path.
 - Voice routes support OpenAI-based synthesis and recognition with advanced request options already wired through the service.
+- Silent audio is detected before transcription so silence returns empty text instead of fabricated words.
+- Unknown voice service selections now fail explicitly instead of degrading to mock audio behavior.
 
 ## Local run
 
@@ -51,7 +53,7 @@ python main.py
 python test_langgraph_setup.py
 ```
 
-Latest validated result on March 6, 2026:
+Latest validated result on March 8, 2026:
 - `5/5` checks passed
 
 Voice is validated through the backend proxy using:
@@ -60,5 +62,5 @@ Voice is validated through the backend proxy using:
 node ../../scripts/voice-tests-1-8.mjs --base-url https://127.0.0.1:4000 --insecure-tls
 ```
 
-Latest voice result on March 6, 2026:
+Latest voice result on March 8, 2026:
 - `8/8` checks passed

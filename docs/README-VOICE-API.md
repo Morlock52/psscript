@@ -1,6 +1,6 @@
 # Voice API
 
-This is the canonical guide for voice features in PSScript as of March 6, 2026.
+This is the canonical guide for voice features in PSScript as of March 8, 2026.
 
 ## Current status
 
@@ -76,6 +76,9 @@ Intentional behavior:
 - Oversized payloads are rejected with `413`.
 - Malformed base64 is rejected with `400`.
 - Invalid OpenAI key is rejected with `401`.
+- Backend-to-AI voice request timeouts are returned as `504`.
+- Silent audio is short-circuited before transcription and returns empty text instead of hallucinated content.
+- Unknown TTS or STT provider selection does not fall back to mock output.
 
 ## Validation
 
@@ -89,5 +92,5 @@ Report artifacts:
 - `/tmp/voice-tests-1-8-latest.json`
 - `docs/VOICE-TESTS-1-8-LATEST.md`
 
-Latest validated result on March 6, 2026:
+Latest validated result on March 8, 2026:
 - `8/8` checks passed

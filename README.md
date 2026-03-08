@@ -152,13 +152,13 @@ npx playwright test --project=chromium
 
 ### Latest recorded results
 
-Validated on March 6, 2026:
+Validated on March 8, 2026:
 
 - backend tests: `93` passed
 - frontend tests: `33` passed
 - AI harness: `5/5` passed
 - voice validation: `8/8` passed
-- Chromium browser suite: `28` passed, `3` skipped
+- Chromium browser smoke suite: `25` passed
 
 ## Current Engineering Notes
 
@@ -171,6 +171,8 @@ Validated on March 6, 2026:
 - backup listing is live after backup creation and restore reseeds sequences correctly
 - frontend route-level lazy loading is enabled
 - local defaults are normalized around `3090 / 4000 / 8000`
+- voice silence input is gated before transcription so silent audio returns empty text instead of hallucinated speech
+- backend voice timeouts now return `504` instead of being flattened into generic service-unavailable failures
 
 ## Optional Git Auto-Update Helper
 

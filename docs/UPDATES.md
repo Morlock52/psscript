@@ -1,5 +1,26 @@
 # Application Updates
 
+## 2026-03-08 Voice AI hardening and validation rerun
+
+### Engineering changes
+
+- Added silence detection in the AI voice service so silent audio returns empty text instead of hallucinated transcription output.
+- Removed unknown-provider fallback behavior from the voice service so invalid TTS or STT service selection fails explicitly.
+- Updated backend voice error normalization so upstream request timeouts return `504` instead of generic `503`.
+- Revalidated the current deployed stack after redeploy and browser smoke testing.
+
+### Validated results
+
+- Frontend lint: passed
+- Frontend build: passed
+- Frontend tests: `33` passed
+- Backend lint: passed with `2` existing camelcase warnings
+- Backend build: passed
+- Backend containerized tests: `93` total, `29` active passed, `64` skipped
+- AI harness: `5/5` passed
+- Voice validation: `8/8` passed
+- Chromium browser smoke suite: `25/25` passed
+
 ## 2026-03-07 Upload hardening and local Git auto-update helper
 
 ### Engineering changes
