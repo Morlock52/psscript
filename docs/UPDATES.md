@@ -1,5 +1,21 @@
 # Application Updates
 
+## 2026-03-07 Upload hardening and local Git auto-update helper
+
+### Engineering changes
+
+- Fixed the large-file upload path so `/api/scripts/upload/large` works with disk-backed multer uploads instead of failing on missing `req.file.buffer`.
+- Lowered upload transaction isolation from `SERIALIZABLE` to `READ_COMMITTED` to avoid PostgreSQL `40001` serialization failures during concurrent upload bursts.
+- Added a local Git auto-update helper at `scripts/setup/git-auto-update.sh`.
+- The auto-update helper fetches `origin/main`, notifies when the remote head changes, and only runs `git pull --ff-only origin main` when the worktree is clean and the current branch is `main`.
+
+### Validated results
+
+- Small upload: `201`
+- Large upload: fixed from `500` to successful upload, with repeat uploads returning expected `409 duplicate_file`
+- Concurrent upload burst: `4/4` successful after the transaction fix
+- Browser upload suite: `tests/e2e/script-management.spec.ts` passed, `6/6`
+
 ## 2026-03-06 Upload/network fix and full-stack validation
 
 ### Engineering changes

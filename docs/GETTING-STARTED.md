@@ -79,3 +79,15 @@ npx playwright test --project=chromium
 - `./README-VOICE-API.md`
 - `./AUTHENTICATION-IMPROVEMENTS.md`
 - `./UPDATES.md`
+
+## Optional local Git auto-update
+
+If you want this clone to stay current automatically, the repo includes:
+
+- `../scripts/setup/git-auto-update.sh`
+
+Typical local setup on macOS:
+- run the script from a `launchd` agent every 5 minutes
+- let it `git fetch origin main`
+- show a notification when `origin/main` changes
+- allow `git pull --ff-only origin main` only when the current branch is `main` and the worktree is clean

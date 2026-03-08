@@ -12,6 +12,7 @@ Core product areas:
 - documentation crawling and indexed knowledge capture
 - analytics, admin operations, and data-maintenance tooling
 - OpenAI-backed speech synthesis and speech recognition
+- optional local Git auto-fetch and guarded fast-forward update workflow
 
 ## Screenshots
 
@@ -34,6 +35,7 @@ Core product areas:
 | Documentation crawl | Crawls and indexes documentation content for in-app access |
 | Admin maintenance | Provides backup, restore, and test-data cleanup endpoints with sequence reseeding and FK-safe restore ordering |
 | Analytics | Exposes reporting and usage flows through the backend API and UI |
+| Local repo maintenance | Includes an optional helper to auto-fetch `origin/main`, notify on changes, and fast-forward only when the worktree is clean |
 
 ## Architecture
 
@@ -162,11 +164,24 @@ Validated on March 6, 2026:
 
 - shared JWT auth middleware is used across protected routes and admin DB routes
 - script uploads authenticate through the same middleware path as the rest of the API
+- upload handlers now support both memory-backed and disk-backed multer flows, so large-file uploads do not fail on missing `req.file.buffer`
+- concurrent upload transactions use `READ_COMMITTED` to avoid PostgreSQL serialization failures during short upload bursts
 - script creation persists immediately and runs AI analysis in the background
 - backend AI routes return explicit failures instead of invented success payloads
 - backup listing is live after backup creation and restore reseeds sequences correctly
 - frontend route-level lazy loading is enabled
 - local defaults are normalized around `3090 / 4000 / 8000`
+
+## Optional Git Auto-Update Helper
+
+The repo now includes:
+
+- [git-auto-update.sh](./scripts/setup/git-auto-update.sh)
+
+The helper is intended for local macOS use with `launchd` and does three things:
+- fetches `origin/main` every few minutes
+- sends a notification when `origin/main` changes
+- runs `git pull --ff-only origin main` only when the current branch is `main` and the worktree is clean
 
 ## Documentation
 
