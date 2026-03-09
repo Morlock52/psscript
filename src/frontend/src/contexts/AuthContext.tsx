@@ -68,18 +68,83 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   // Clear error
   const clearError = () => setError(null);
 
+  const persistAuthenticatedSession = (responseData: any) => {
+    if (responseData?.token) {
+      localStorage.setItem('auth_token', responseData.token);
+    }
+
+    if (responseData?.refreshToken) {
+      localStorage.setItem('refresh_token', responseData.refreshToken);
+    }
+
+    if (responseData?.user) {
+      setUser(responseData.user);
+      return;
+    }
+
+    setUser({
+      id: 'dev-admin',
+      username: 'dev-admin',
+      email: 'dev-admin@local',
+      role: 'admin',
+      created_at: new Date().toISOString(),
+    });
+  };
+
+  const getDevCredentials = () => ({
+    email: import.meta.env.VITE_DEMO_EMAIL || 'admin@example.com',
+    password: import.meta.env.VITE_DEMO_PASSWORD || 'admin123',
+  });
+
+  const bootstrapDevSession = async () => {
+    const existingToken = localStorage.getItem('auth_token');
+
+    if (existingToken && existingToken !== 'dev-auth-disabled') {
+      try {
+        const response = await axios.get(`${getApiUrl()}/auth/me`, {
+          headers: {
+            Authorization: `Bearer ${existingToken}`,
+          },
+        });
+
+        if (response.data?.user) {
+          setUser(response.data.user);
+          return;
+        }
+      } catch {
+        localStorage.removeItem('auth_token');
+        localStorage.removeItem('refresh_token');
+      }
+    }
+
+    const { email, password } = getDevCredentials();
+    const response = await axios.post(`${getApiUrl()}/auth/login`, {
+      email,
+      password,
+    });
+
+    persistAuthenticatedSession(response.data);
+  };
+
   // Load user from localStorage on mount
   useEffect(() => {
     const loadUser = async () => {
       if (disableAuth) {
-        setUser({
-          id: 'dev-admin',
-          username: 'dev-admin',
-          email: 'dev-admin@local',
-          role: 'admin',
-          created_at: new Date().toISOString(),
-        });
-        setIsLoading(false);
+        try {
+          await bootstrapDevSession();
+        } catch (devAuthError) {
+          console.warn('[Auth] Dev auth bootstrap failed, falling back to local-only session:', devAuthError);
+          localStorage.setItem('auth_token', 'dev-auth-disabled');
+          setUser({
+            id: 'dev-admin',
+            username: 'dev-admin',
+            email: 'dev-admin@local',
+            role: 'admin',
+            created_at: new Date().toISOString(),
+          });
+        } finally {
+          setIsLoading(false);
+        }
         return;
       }
 
@@ -138,22 +203,14 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   //   3. Replace with a proper dev/staging authentication flow
   const defaultLogin = async () => {
     if (disableAuth) {
-      localStorage.setItem('auth_token', 'dev-auth-disabled');
-      setUser({
-        id: 'dev-admin',
-        username: 'dev-admin',
-        email: 'dev-admin@local',
-        role: 'admin',
-        created_at: new Date().toISOString(),
-      });
+      await bootstrapDevSession();
       return;
     }
 
     // Read demo credentials from environment variables (set at build time)
     // These should only be set in development environments
     // Defaults match seeded dev admin in src/db/seeds/01-initial-data.sql
-    const demoEmail = import.meta.env.VITE_DEMO_EMAIL || 'admin@example.com';
-    const demoPassword = import.meta.env.VITE_DEMO_PASSWORD || 'admin123';
+    const { email: demoEmail, password: demoPassword } = getDevCredentials();
 
     // If these defaults don't work, the caller will show the error and the user can use regular login.
     await login(demoEmail, demoPassword);
@@ -163,14 +220,13 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   const login = async (email: string, password: string) => {
     try {
       if (disableAuth) {
-        localStorage.setItem('auth_token', 'dev-auth-disabled');
-        setUser({
-          id: 'dev-admin',
-          username: 'dev-admin',
-          email: email || 'dev-admin@local',
-          role: 'admin',
-          created_at: new Date().toISOString(),
+        const nextEmail = email || getDevCredentials().email;
+        const nextPassword = password || getDevCredentials().password;
+        const response = await axios.post(`${getApiUrl()}/auth/login`, {
+          email: nextEmail,
+          password: nextPassword,
         });
+        persistAuthenticatedSession(response.data);
         return;
       }
 
@@ -190,16 +246,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
 
       // Check if we got a token and user
       if (response.data && response.data.token) {
-        // Save token to localStorage
-        localStorage.setItem('auth_token', response.data.token);
-        
-        // Save refresh token if provided
-        if (response.data.refreshToken) {
-          localStorage.setItem('refresh_token', response.data.refreshToken);
-        }
-        
-        // Set user
-        setUser(response.data.user);
+        persistAuthenticatedSession(response.data);
       } else {
         throw new Error('Invalid response from server');
       }
@@ -251,16 +298,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
 
       // Check if we got a token and user
       if (response.data && response.data.token) {
-        // Save token to localStorage
-        localStorage.setItem('auth_token', response.data.token);
-        
-        // Save refresh token if provided
-        if (response.data.refreshToken) {
-          localStorage.setItem('refresh_token', response.data.refreshToken);
-        }
-        
-        // Set user
-        setUser(response.data.user);
+        persistAuthenticatedSession(response.data);
       } else {
         throw new Error('Invalid response from server');
       }
