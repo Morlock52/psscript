@@ -11,6 +11,7 @@ import Login from './pages/Login';
 import Register from './pages/Register';
 import Navbar from './components/Navbar';
 import Sidebar from './components/Sidebar';
+import VoiceAssistantDock from './components/VoiceAssistantDock';
 import ProtectedRoute from './components/ProtectedRoute';
 import LoadingScreen from './components/LoadingScreen';
 
@@ -88,6 +89,7 @@ const AppLayout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
         <main className="flex-1 overflow-y-auto p-4">
           {children}
         </main>
+        <VoiceAssistantDock />
       </div>
     </div>
   );

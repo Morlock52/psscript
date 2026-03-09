@@ -9,7 +9,7 @@ import { AIMetric } from '../middleware/aiAnalytics';
 const AI_SERVICE_URL = process.env.DOCKER_ENV === 'true'
   ? (process.env.AI_SERVICE_URL || 'http://ai-service:8000')
   : (process.env.AI_SERVICE_URL || 'http://localhost:8000');
-const MAX_VOICE_TEXT_CHARS = Number(process.env.MAX_VOICE_TEXT_CHARS || 6000);
+const MAX_VOICE_TEXT_CHARS = Number(process.env.MAX_VOICE_TEXT_CHARS || 4096);
 const MAX_AUDIO_DATA_B64_CHARS = Number(process.env.MAX_AUDIO_DATA_B64_CHARS || 16_000_000);
 const ALLOWED_OUTPUT_FORMATS = new Set(['mp3', 'wav', 'ogg', 'flac', 'm4a', 'opus', 'pcm']);
 const ALLOWED_RECOGNITION_FORMATS = new Set(['mp3', 'wav', 'ogg', 'flac', 'm4a', 'webm']);
@@ -192,7 +192,7 @@ export const recognizeSpeech = async (req: Request, res: Response): Promise<void
   const requestId = Math.random().toString(36).substring(2, 10);
   const context = withRequestMetadata(requestId, req);
   const startedAt = Date.now();
-  let model = process.env.VOICE_STT_MODEL || 'gpt-4o-transcribe';
+  let model = process.env.VOICE_STT_MODEL || 'gpt-4o-mini-transcribe';
 
   try {
     const {
@@ -247,7 +247,7 @@ export const recognizeSpeech = async (req: Request, res: Response): Promise<void
     const apiKey = getOpenAIApiKey(req);
     model = transcriptionMode === 'diarize'
       ? (process.env.VOICE_STT_DIARIZE_MODEL || 'gpt-4o-transcribe-diarize')
-      : (process.env.VOICE_STT_MODEL || 'gpt-4o-transcribe');
+      : (process.env.VOICE_STT_MODEL || 'gpt-4o-mini-transcribe');
     logger.info(`${context} Recognizing speech`);
 
     const response = await axios.post(
@@ -299,7 +299,7 @@ export const recognizeSpeech = async (req: Request, res: Response): Promise<void
  */
 export const getVoices = async (_req: Request, res: Response): Promise<void> => {
   try {
-    // OpenAI built-in voices (current as of Feb 2026).
+    // OpenAI built-in voices supported by the current audio speech API.
     const voices = [
       { id: 'alloy', name: 'Alloy', provider: 'openai' },
       { id: 'ash', name: 'Ash', provider: 'openai' },
@@ -332,7 +332,7 @@ export const getVoiceSettings = async (req: Request, res: Response): Promise<voi
     logger.info(`Getting voice settings for ${userId}`);
 
     const settings = {
-      voiceId: 'alloy',
+      voiceId: 'marin',
       autoPlay: true,
       volume: 0.8,
       speed: 1.0
@@ -356,7 +356,7 @@ export const updateVoiceSettings = async (req: Request, res: Response): Promise<
     logger.info(`Updating voice settings for ${userId}`);
 
     const settings = {
-      voiceId: voiceId || 'alloy',
+      voiceId: voiceId || 'marin',
       autoPlay: autoPlay !== undefined ? autoPlay : true,
       volume: typeof volume === 'number' ? volume : 0.8,
       speed: typeof speed === 'number' ? speed : 1.0

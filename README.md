@@ -20,6 +20,7 @@ Core product areas:
 2. The Express API validates the request, persists the script and version history in PostgreSQL, and exposes search, maintenance, analytics, and admin routes.
 3. The AI service performs analysis, embeddings, LangGraph orchestration, and voice processing through current OpenAI models.
 4. The UI surfaces script health, AI results, semantic discovery, documentation data, and admin tooling from those backend services.
+5. A global voice dock lets users dictate into focused inputs and read current app content back through the same backend voice pipeline.
 
 ## Screenshots
 
@@ -113,6 +114,11 @@ Then use:
 - `/settings/data` for backup and restore tooling
 - `/analytics/ai` for AI usage and cost views
 
+Voice workflow:
+- use the floating `Voice` dock in the app shell
+- focus any text input, then use `Dictate to input` to transcribe speech into that field
+- select text or leave the current page active, then use `Speak selection` to generate spoken output
+
 ### Run services individually
 
 ```bash
@@ -145,7 +151,7 @@ These values were kept aligned with the current official OpenAI audio and voice-
 
 - reasoning and analysis: `gpt-4.1`
 - text-to-speech: `gpt-4o-mini-tts`
-- speech-to-text: `gpt-4o-transcribe`
+- speech-to-text: `gpt-4o-mini-transcribe`
 - diarization: `gpt-4o-transcribe-diarize`
 - embeddings: `text-embedding-3-large`
 
@@ -154,6 +160,11 @@ References:
 - [OpenAI audio and speech guide](https://developers.openai.com/api/docs/guides/audio/)
 - [OpenAI create speech reference](https://developers.openai.com/api/reference/resources/audio/subresources/speech/methods/create/)
 - [OpenAI create transcription reference](https://developers.openai.com/api/reference/resources/audio/subresources/transcriptions/methods/create/)
+
+Model choice notes:
+- OpenAI recommends the chained voice architecture `gpt-4o-transcribe -> gpt-4.1 -> gpt-4o-mini-tts` for controlled application workflows.
+- The current OpenAI changelog recommends `gpt-4o-mini-transcribe` over `gpt-4o-transcribe` for best results.
+- This project keeps `gpt-4.1` for the reasoning layer and uses the faster audio-specialized models for speech input/output.
 
 ## Validation
 

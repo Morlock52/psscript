@@ -22,7 +22,7 @@ These defaults were rechecked against official OpenAI docs on March 6, 2026.
 
 - General reasoning and analysis: `gpt-4.1`
 - TTS: `gpt-4o-mini-tts`
-- STT: `gpt-4o-transcribe`
+- STT: `gpt-4o-mini-transcribe`
 - Diarization: `gpt-4o-transcribe-diarize`
 - Embeddings: `text-embedding-3-large`
 
@@ -37,6 +37,7 @@ Official references:
 - Missing OpenAI configuration now fails explicitly instead of inventing synthetic analysis or chat results.
 - LangGraph tool execution uses the real script-analysis path.
 - Voice routes support OpenAI-based synthesis and recognition with advanced request options already wired through the service.
+- The recommended chained path is `gpt-4o-mini-transcribe -> gpt-4.1 -> gpt-4o-mini-tts`.
 - Silent audio is detected before transcription so silence returns empty text instead of fabricated words.
 - Unknown voice service selections now fail explicitly instead of degrading to mock audio behavior.
 

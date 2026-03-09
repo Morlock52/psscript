@@ -383,7 +383,7 @@ class VoiceService:
         mode = (transcription_mode or "standard").lower()
         model = os.environ.get(
             "VOICE_STT_DIARIZE_MODEL" if mode == "diarize" else "VOICE_STT_MODEL",
-            "gpt-4o-transcribe-diarize" if mode == "diarize" else "gpt-4o-transcribe"
+            "gpt-4o-transcribe-diarize" if mode == "diarize" else "gpt-4o-mini-transcribe"
         )
 
         try:

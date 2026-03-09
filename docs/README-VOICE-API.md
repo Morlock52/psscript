@@ -7,9 +7,9 @@ This is the canonical guide for voice features in PSScript as of March 8, 2026.
 - Provider: OpenAI for both TTS and STT
 - Backend routes: `/api/voice/*`
 - AI service routes: `POST /voice/synthesize`, `POST /voice/recognize`
-- Default voice: `alloy`
+- Default voice: `marin`
 - Default TTS model: `gpt-4o-mini-tts`
-- Default STT model: `gpt-4o-transcribe`
+- Default STT model: `gpt-4o-mini-transcribe`
 - Advanced listening options: diarization, logprobs, chunking/VAD, and known speaker references
 - Canonical validation runner: `scripts/voice-tests-1-8.mjs`
 
@@ -24,6 +24,7 @@ Verified on March 6, 2026:
 OpenAI currently documents:
 - chained voice architecture: `gpt-4o-transcribe -> gpt-4.1 -> gpt-4o-mini-tts`
 - transcription options including `gpt-4o-transcribe`, `gpt-4o-mini-transcribe`, and `gpt-4o-transcribe-diarize`
+- OpenAI’s January 2026 changelog recommends `gpt-4o-mini-transcribe` over `gpt-4o-transcribe` for best results.
 
 ## Architecture
 
@@ -31,6 +32,7 @@ OpenAI currently documents:
 2. Backend `VoiceController` validates and forwards to the AI service.
 3. AI service `voice_service.py` performs OpenAI TTS/STT.
 4. Response returns to backend and then frontend.
+5. The app shell voice dock can dictate into focused fields and speak selected/current app text without changing individual page workflows.
 
 Primary files:
 - `src/backend/src/controllers/VoiceController.ts`
