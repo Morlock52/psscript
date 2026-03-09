@@ -14,7 +14,16 @@ Core product areas:
 - OpenAI-backed speech synthesis and speech recognition
 - optional local Git auto-fetch and guarded fast-forward update workflow
 
+## How it works
+
+1. A user uploads or creates a PowerShell script in the React frontend.
+2. The Express API validates the request, persists the script and version history in PostgreSQL, and exposes search, maintenance, analytics, and admin routes.
+3. The AI service performs analysis, embeddings, LangGraph orchestration, and voice processing through current OpenAI models.
+4. The UI surfaces script health, AI results, semantic discovery, documentation data, and admin tooling from those backend services.
+
 ## Screenshots
+
+These screenshots reflect the current local product flow and the main surfaces that are linked from the GitHub landing page.
 
 | Dashboard | Scripts |
 | --- | --- |
@@ -23,6 +32,12 @@ Core product areas:
 | Settings | Data maintenance |
 | --- | --- |
 | ![Settings screenshot](./docs/screenshots/settings-profile.png) | ![Data maintenance screenshot](./docs/screenshots/data-maintenance.png) |
+
+What you are seeing:
+- `Dashboard`: high-level health, activity, and AI/usage surfaces
+- `Scripts`: upload, browsing, filtering, and analysis entry points
+- `Settings`: profile and application configuration
+- `Data maintenance`: admin backup, restore, and cleanup workflows
 
 ## Feature Summary
 
@@ -53,6 +68,22 @@ Stack:
 - AI service: FastAPI, LangGraph, OpenAI
 - infra: Docker Compose, PostgreSQL, Redis
 
+## Request flow
+
+```text
+Browser UI
+  -> Express API
+     -> PostgreSQL / Redis
+     -> FastAPI AI service
+        -> OpenAI models
+```
+
+In practice:
+- script CRUD, categories, analytics, and admin maintenance are handled through the backend API
+- AI analysis and voice routes proxy through the backend into the AI service
+- semantic search and related-script features depend on stored embeddings
+- admin DB maintenance flows operate directly against persisted application data
+
 ## Quick Start
 
 ### Prerequisites
@@ -74,6 +105,13 @@ Open:
 ```text
 https://127.0.0.1:3090
 ```
+
+Then use:
+- `/dashboard` for the main operational view
+- `/scripts` to upload, inspect, and analyze PowerShell files
+- `/settings/categories` for category management
+- `/settings/data` for backup and restore tooling
+- `/analytics/ai` for AI usage and cost views
 
 ### Run services individually
 
@@ -159,6 +197,13 @@ Validated on March 8, 2026:
 - AI harness: `5/5` passed
 - voice validation: `8/8` passed
 - Chromium browser smoke suite: `25` passed
+
+This reflects the actively used smoke set:
+- health checks
+- script upload and analysis flow
+- categories/settings CRUD
+- AI analytics
+- AI agent endpoints
 
 ## Current Engineering Notes
 
