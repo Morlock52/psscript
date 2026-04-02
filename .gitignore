@@ -109,8 +109,23 @@ src/backend/logs/
 !.yarn/sdks
 !.yarn/versions
 
+# Credentials and secrets (never commit)
+config/config.json
+.env.production
+
 # Cloudflare Tunnel credentials (keep config, ignore secrets)
 cloudflared/*.json
+
+# Legacy fix/debug scripts (one-off helpers, not part of codebase)
+fix-*.js
+initialize-db*.js
+insert-test-data*.js
+db-diagnostics.js
+db-test-*.js
+test-db*.js
+test-health-api.js
+test-database-connection.js
+mock-server.js
 
 # Python virtual environments
 venv/
