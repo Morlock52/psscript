@@ -193,10 +193,11 @@ export function calculateCost(
     'claude-haiku-4-5-20251001': { prompt: 1.00, completion: 5.00 },
   };
 
-  // Exact match first, then substring match for model variants
+  // Exact match first, then longest substring match for model variants
   let modelPricing = pricing[model];
   if (!modelPricing) {
-    const key = Object.keys(pricing).find(k => model.includes(k));
+    const sorted = Object.keys(pricing).sort((a, b) => b.length - a.length);
+    const key = sorted.find(k => model.includes(k));
     modelPricing = key ? pricing[key] : pricing['gpt-4.1-mini'];
   }
 

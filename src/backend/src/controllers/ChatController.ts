@@ -4,6 +4,7 @@ import logger from '../utils/logger';
 import { ChatHistory } from '../models';
 import { Op } from 'sequelize';
 import { cache } from '../services/cacheService';
+import { inferProvider } from '../services/openaiClient';
 
 const AI_CHAT_TIMEOUT_MS = Number(process.env.AI_CHAT_TIMEOUT_MS || 20000);
 
@@ -80,7 +81,7 @@ export class ChatController {
       }
       
       // Determine effective provider — infer from model ID if not explicitly set
-      const effectiveProvider = provider || (model?.startsWith('claude-') ? 'anthropic' : 'openai');
+      const effectiveProvider = provider || inferProvider(model || 'gpt-4.1');
 
       // Resolve API key: Anthropic requests use ANTHROPIC_API_KEY, OpenAI uses OPENAI_API_KEY
       const effectiveApiKey = effectiveProvider === 'anthropic'
@@ -114,7 +115,6 @@ export class ChatController {
       const response = await axios.post(`${this.aiServiceUrl}/chat`, {
         messages,
         system_prompt, // eslint-disable-line camelcase
-        api_key: effectiveApiKey,
         agent_type, // eslint-disable-line camelcase
         session_id, // eslint-disable-line camelcase
         model,
@@ -240,17 +240,23 @@ export class ChatController {
     const requestId = Math.random().toString(36).substring(2, 10);
 
     // eslint-disable-next-line camelcase -- API request body uses snake_case
-    const { messages, system_prompt, api_key, agent_type, session_id } = req.body || {};
+    const { messages, system_prompt, api_key, agent_type, session_id, model, provider } = req.body || {};
 
     if (!messages || !Array.isArray(messages) || messages.length === 0) {
       res.status(400).json({ error: 'Messages array is required and must not be empty' });
       return;
     }
 
-    const effectiveApiKey = api_key || process.env.OPENAI_API_KEY; // eslint-disable-line camelcase
+    // Provider-aware key resolution (mirrors sendMessage)
+    const effectiveProvider = provider || inferProvider(model || 'gpt-4.1');
+    const effectiveApiKey = effectiveProvider === 'anthropic'
+      ? (api_key || process.env.ANTHROPIC_API_KEY || '') // eslint-disable-line camelcase
+      : (api_key || process.env.OPENAI_API_KEY || ''); // eslint-disable-line camelcase
+
     if (!effectiveApiKey) {
+      const providerLabel = effectiveProvider === 'anthropic' ? 'Anthropic' : 'OpenAI';
       res.status(400).json({
-        error: 'OpenAI API key is required. Please set your API key in Settings or ask the administrator to configure a server API key.',
+        error: `${providerLabel} API key is required. Please configure it in the server environment or provide it in Settings.`,
       });
       return;
     }
@@ -275,15 +281,17 @@ export class ChatController {
         {
           messages,
           system_prompt, // eslint-disable-line camelcase
-          api_key: effectiveApiKey,
           agent_type, // eslint-disable-line camelcase
           session_id, // eslint-disable-line camelcase
+          model,
+          provider,
         },
         {
           headers: {
             'Content-Type': 'application/json',
             Accept: 'text/event-stream',
             'X-Request-ID': requestId,
+            'X-API-Key': effectiveApiKey,
           },
           responseType: 'stream',
           timeout: 0, // don't time out streaming

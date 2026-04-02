@@ -6,10 +6,11 @@ Uses psycopg3 async connection pooling and LangGraph 1.0 agents.
 """
 
 import os
+import re
 import json
 import time
 import logging
-from typing import Dict, List, Optional, Any
+from typing import Dict, List, Literal, Optional, Any
 from contextlib import asynccontextmanager
 from pathlib import Path
 
@@ -22,7 +23,7 @@ logging.info(f"Loaded environment from: {env_path}")
 from fastapi import FastAPI, HTTPException, Header, Query
 from fastapi.responses import JSONResponse, StreamingResponse
 from fastapi.middleware.cors import CORSMiddleware
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, validator
 import numpy as np
 
 # psycopg3 for async connection pooling (2026 best practice)
@@ -480,16 +481,40 @@ class ChatRequest(BaseModel):
                                      description="Type of agent to use")
     session_id: Optional[str] = Field(None,
                                      description="Session ID for persistent conversations")
-    model: Optional[str] = Field(None,
-                                description="AI model to use (e.g. gpt-4.1, claude-sonnet-4-6-20260217)")
-    provider: Optional[str] = Field(None,
-                                   description="AI provider: 'openai' or 'anthropic'")
+    model: Optional[str] = Field(None, description="AI model to use")
+    provider: Optional[Literal["openai", "anthropic"]] = Field(None, description="AI provider")
+
+    @validator("model", pre=True, always=False)
+    @classmethod
+    def validate_model_name(cls, v):
+        if v is None:
+            return v
+        allowed = {
+            "gpt-4.1", "gpt-4.1-mini", "gpt-4.1-nano", "gpt-5.4",
+            "o3", "o3-pro", "o4-mini",
+            "claude-sonnet-4-6-20260217", "claude-opus-4-6-20260205",
+            "claude-haiku-4-5-20251001",
+        }
+        if v not in allowed:
+            raise ValueError(f"Unknown model: {v}. Allowed: {', '.join(sorted(allowed))}")
+        return v
 
 
 class ChatResponse(BaseModel):
     response: str = Field(..., description="The assistant's response")
     session_id: Optional[str] = Field(None, 
                                      description="Session ID for continuing the conversation")
+
+
+# Cached AsyncOpenAI clients keyed by API key (avoids per-request instantiation)
+_openai_client_cache: Dict[str, Any] = {}
+
+def _get_openai_client(api_key: str):
+    """Get or create a cached AsyncOpenAI client for connection pooling."""
+    if api_key not in _openai_client_cache:
+        from openai import AsyncOpenAI
+        _openai_client_cache[api_key] = AsyncOpenAI(api_key=api_key, timeout=60)
+    return _openai_client_cache[api_key]
 
 
 # API Routes
@@ -2183,13 +2208,12 @@ I CAN HELP WITH:
         if requested_model and not requested_model.startswith("claude-") and requested_model != config.agent.default_model:
             # Direct OpenAI completion with the user-selected model
             try:
-                from openai import AsyncOpenAI
-                openai_client = AsyncOpenAI(api_key=api_key, timeout=60)
+                openai_client = _get_openai_client(api_key)
 
                 # o-series models (o3, o4-mini, etc.) use different params:
                 # - No temperature parameter
                 # - Use max_completion_tokens instead of max_tokens
-                is_o_series = requested_model.startswith("o")
+                is_o_series = bool(re.match(r'^o\d', requested_model))
                 completion_params: dict = {
                     "model": requested_model,
                     "messages": messages,
@@ -2252,8 +2276,8 @@ I CAN HELP WITH:
             return {"response": response, "session_id": session_id}
 
     except Exception as e:
-        logger.error(f"Chat processing failed: {str(e)}")
-        raise HTTPException(status_code=500, detail=f"Chat processing failed: {str(e)}")
+        logger.error(f"Chat processing failed: {e}", exc_info=True)
+        raise HTTPException(status_code=500, detail="Chat processing failed. Please try again.")
 
 
 @app.post("/chat/stream", tags=["Chat"])
@@ -2393,14 +2417,17 @@ TARGET: {script_requirements.get('target_system', 'windows') if script_requireme
                 except ImportError:
                     yield f"data: {json.dumps({'type': 'error', 'content': 'Anthropic package not installed'})}\n\n"
                     return
+                except Exception as anthropic_err:
+                    logger.error(f"Anthropic streaming error: {anthropic_err}", exc_info=True)
+                    yield f"data: {json.dumps({'type': 'error', 'content': 'Claude streaming failed. Please try again.'})}\n\n"
+                    return
             else:
-                # Stream from OpenAI
-                from openai import AsyncOpenAI
-                client = AsyncOpenAI(api_key=api_key)
+                # Stream from OpenAI (reuse cached client)
+                client = _get_openai_client(api_key)
                 model_id = requested_model or config.agent.default_model
 
                 # o-series models: no temperature, use max_completion_tokens
-                is_o_series = model_id.startswith("o")
+                is_o_series = bool(re.match(r'^o\d', model_id))
                 stream_params: dict = {
                     "model": model_id,
                     "messages": messages,
@@ -2429,8 +2456,8 @@ TARGET: {script_requirements.get('target_system', 'windows') if script_requireme
             yield f"data: {json.dumps({'type': 'done', 'session_id': request.session_id, 'tokens': total_tokens, 'time': round(processing_time, 2)})}\n\n"
 
         except Exception as e:
-            logger.error(f"Streaming error: {str(e)}")
-            yield f"data: {json.dumps({'type': 'error', 'content': str(e)})}\n\n"
+            logger.error(f"Streaming error: {e}", exc_info=True)
+            yield f"data: {json.dumps({'type': 'error', 'content': 'Streaming failed. Please try again.'})}\n\n"
 
     return StreamingResponse(
         generate_stream(),

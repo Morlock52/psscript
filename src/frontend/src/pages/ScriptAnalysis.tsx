@@ -8,7 +8,7 @@ import { FaExclamationTriangle, FaCheckCircle, FaInfoCircle, FaLightbulb, FaChar
 // LangGraph Integration
 import { streamAnalysis, AnalysisEvent } from '../services/langgraphService';
 import { AnalysisProgressPanel } from '../components/Analysis/AnalysisProgressPanel';
-import { AI_MODELS } from '../services/settings';
+import { AI_MODELS, loadSettings } from '../services/settings';
 
 // Define message type for AI chat
 interface Message {
@@ -36,12 +36,12 @@ const ScriptAnalysis: React.FC = () => {
   const cleanupRef = useRef<(() => void) | null>(null);
 
   // AI Model selection — derived from single source of truth in settings.ts
-  const [selectedModel, setSelectedModel] = useState('gpt-4.1');
-  const availableModels = AI_MODELS.map(m => ({
+  const [selectedModel, setSelectedModel] = useState(() => loadSettings().aiModel);
+  const availableModels = React.useMemo(() => AI_MODELS.map(m => ({
     value: m.id,
     label: m.name,
     provider: m.id.startsWith('claude-') ? 'anthropic' as const : 'openai' as const,
-  }));
+  })), []);
 
   /** Infer AI provider from model ID prefix */
   const getProvider = (modelId: string) => modelId.startsWith('claude-') ? 'anthropic' : 'openai';
