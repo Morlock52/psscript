@@ -248,9 +248,18 @@ const ScriptUpload: React.FC = () => {
     formData.append('is_public', isPublic.toString());
     formData.append('analyze_with_ai', analyzeWithAI.toString());
     
-    // If we have a file in the input, append it directly
+    // Attach the file: prefer the actual file input, but create a blob from content if needed
     if (fileInputRef.current?.files?.[0]) {
       formData.append('script_file', fileInputRef.current.files[0]);
+    } else if (content) {
+      // File was loaded into state but ref lost the file (e.g., programmatic set, re-render)
+      // Create a File blob from the content so the upload endpoint receives a proper file
+      const blob = new File(
+        [content],
+        fileName || 'script.ps1',
+        { type: 'application/octet-stream' }
+      );
+      formData.append('script_file', blob);
     }
     
     return formData;

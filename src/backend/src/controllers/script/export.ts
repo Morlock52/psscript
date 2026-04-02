@@ -478,26 +478,29 @@ export async function uploadScript(
 
     const userId = req.user.id;
 
-    // Get file content from the uploaded file
-    if (!req.file) {
-      if (transaction) await transaction.rollback();
-      return res.status(400).json({
-        error: 'missing_file',
-        message: 'No file was uploaded'
-      });
-    }
+    // Get file content from uploaded file OR from body content field
+    // The frontend may send content as a FormData text field when the file
+    // was already read into state (e.g., drag-drop, paste, or re-upload).
+    let uploadedFileBuffer: Buffer | null = null;
 
-    const uploadedFileBuffer = req.file.buffer
-      ? req.file.buffer
-      : req.file.path
-        ? fs.readFileSync(req.file.path)
-        : null;
+    if (req.file) {
+      // Primary path: multer processed the file
+      uploadedFileBuffer = req.file.buffer
+        ? req.file.buffer
+        : req.file.path
+          ? fs.readFileSync(req.file.path)
+          : null;
+    } else if (req.body?.content && typeof req.body.content === 'string' && req.body.content.trim().length > 0) {
+      // Fallback: content was sent as a text field in FormData (no file attachment)
+      uploadedFileBuffer = Buffer.from(req.body.content, 'utf-8');
+      logger.info('Upload: using content from FormData body field (no file attachment)');
+    }
 
     if (!uploadedFileBuffer) {
       if (transaction) await transaction.rollback();
       return res.status(400).json({
-        error: 'missing_file_content',
-        message: 'Uploaded file content could not be read'
+        error: 'missing_file',
+        message: 'No file or script content was provided. Please attach a .ps1 file or include script content.'
       });
     }
 
@@ -534,7 +537,7 @@ export async function uploadScript(
       // Limit size of very large files
       if (scriptContent.length > 500000) { // 500KB limit
         scriptContent = scriptContent.substring(0, 500000) + '\n\n# Content truncated due to size limit';
-        logger.warn(`Script content truncated due to size (${req.file.size} bytes)`);
+        logger.warn(`Script content truncated due to size (${req.file?.size || uploadedFileBuffer.length} bytes)`);
       }
     } catch (readError) {
       if (transaction) await transaction.rollback();
@@ -545,7 +548,7 @@ export async function uploadScript(
       });
     }
 
-    const fileName = req.file.originalname;
+    const fileName = req.file?.originalname || (title ? `${title}.ps1` : 'script.ps1');
     const fileType = path.extname(fileName).toLowerCase();
 
     // Basic content validation for PowerShell scripts
@@ -609,7 +612,7 @@ export async function uploadScript(
 
     // Save the file to the uploads directory for persistence
     const uniqueFileName = `${Date.now()}-${path.basename(fileName)}`;
-    const filePath = req.file.path || path.join(process.cwd(), 'uploads', uniqueFileName);
+    const filePath = req.file?.path || path.join(process.cwd(), 'uploads', uniqueFileName);
 
     // Create uploads directory if it doesn't exist
     const uploadsDir = path.join(process.cwd(), 'uploads');
@@ -620,7 +623,7 @@ export async function uploadScript(
 
     // Write the file to disk with error handling
     try {
-      if (!req.file.path) {
+      if (!req.file?.path) {
         fs.writeFileSync(filePath, scriptContent);
         logger.info(`Saved script file to ${filePath}`);
       } else {

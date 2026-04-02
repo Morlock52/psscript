@@ -85,103 +85,28 @@ export default defineConfig({
     // Generate sourcemaps for production debugging
     sourcemap: true,
     cssMinify: 'lightningcss',
-    // Rollup options for manual chunk splitting
+    // Rollup options for chunk splitting
+    // IMPORTANT: Only split truly self-contained, large packages.
+    // Per-package splitting causes "Cannot access 'X' before initialization"
+    // errors at runtime due to circular imports across the npm ecosystem.
+    // Rollup's default chunking handles circular deps correctly.
     rollupOptions: {
       output: {
         manualChunks(id) {
           if (!id.includes('node_modules')) {
-            return null
+            return undefined
           }
 
-          // Core React runtime
-          if (id.includes('/react/') || id.includes('/react-dom/')) {
-            return 'react-vendor'
-          }
-
-          // Router
-          if (id.includes('/react-router-dom/')) {
-            return 'router-vendor'
-          }
-
-          // MUI ecosystem — skip manual chunking entirely.
-          // MUI + @emotion + react-transition-group have deep circular imports.
-          // Any manual chunk splitting causes "Cannot access 'X' before initialization".
-          // Return early so the fallback at the bottom doesn't catch them either.
-          if (
-            id.includes('/@mui/') ||
-            id.includes('/@emotion/') ||
-            id.includes('/react-transition-group/') ||
-            id.includes('/@popperjs/') ||
-            id.includes('/@floating-ui/')
-          ) {
-            return  // undefined = let rollup decide
-          }
-
-          // Data fetch + HTTP
-          if (id.includes('/@tanstack/react-query/') || id.includes('/axios/')) {
-            return 'query-vendor'
-          }
-
-          // Monaco editor stack (large)
-          if (id.includes('/react-monaco-editor')) {
-            return 'editor-react-monaco'
-          }
-          if (id.includes('/monaco-editor/')) {
-            const monacoParts = id.split('/monaco-editor/')[1]?.split(/[\\/]/).filter(Boolean) || []
-            let monacoBucket = monacoParts[0] || 'core'
-
-            if (monacoParts[0] === 'min' && monacoParts[1] === 'vs' && monacoParts[2]) {
-              const monacoSubpath = monacoParts[3] ? `${monacoParts[2]}-${monacoParts[3]}` : monacoParts[2]
-              monacoBucket = monacoSubpath
-            } else if (monacoParts[0] === 'esm' && monacoParts[1] === 'vs' && monacoParts[2]) {
-              const monacoSubpath = monacoParts[3] ? `${monacoParts[2]}-${monacoParts[3]}` : monacoParts[2]
-              monacoBucket = monacoSubpath
-            } else if (monacoParts[1]) {
-              monacoBucket = `${monacoParts[0]}-${monacoParts[1]}`
-            }
-
-            return `editor-monaco-${monacoBucket}`
-          }
-
-          // Markdown + syntax highlighting stack (split by package)
-          if (id.includes('/react-markdown/')) {
-            return 'markdown-react'
-          }
-          if (id.includes('/marked/')) {
-            return 'markdown-marked'
-          }
-          if (id.includes('/react-syntax-highlighter/')) {
-            return 'markdown-syntax'
-          }
-
-          // Charts
-          if (id.includes('/chart.js/') || id.includes('/d3/')) {
-            return 'chart-vendor'
-          }
-
-          // Utilities
-          if (id.includes('/date-fns/') || id.includes('/dompurify/') || id.includes('/jszip/')) {
-            return 'utils-vendor'
-          }
-          if (id.includes('/highlight.js/')) {
-            const highlightParts = id.split('/highlight.js/')[1]?.split(/[\\/]/).filter(Boolean) || []
-            const highlightBucket = (highlightParts[0] && highlightParts[1])
-              ? `${highlightParts[0]}-${highlightParts[1]}`
-              : highlightParts[0] || 'core'
-            return `vendor-highlight-${highlightBucket}`
+          // Only split highlight.js languages (large, self-contained, no circular deps)
+          if (id.includes('/highlight.js/lib/languages/')) {
+            return 'vendor-highlight-languages'
           }
           if (id.includes('/refractor/')) {
             return 'vendor-refractor'
           }
 
-          // Split remaining third-party packages into package-level chunks.
-          const packageMatch = id.match(/node_modules[\\/](@[^/\\]+[\\/][^/\\]+|[^/\\]+)/)
-          if (packageMatch?.[1]) {
-            const packageName = packageMatch[1].replace('/', '-')
-            return `vendor-${packageName}`
-          }
-
-          return 'vendor'
+          // Everything else: let rollup decide (safe for circular deps)
+          return undefined
         },
       },
     },
