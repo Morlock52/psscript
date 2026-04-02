@@ -24,6 +24,60 @@ import {
 } from './shared';
 
 import type { AuthenticatedRequest } from './types';
+import { openai, MODELS } from '../../services/openaiClient';
+
+/**
+ * Direct OpenAI analysis fallback.
+ * Used when the Python AI service is unavailable.
+ * Calls GPT-4.1 directly for script analysis.
+ */
+async function analyzeWithOpenAIDirect(content: string): Promise<Record<string, unknown>> {
+  const response = await openai.chat.completions.create({
+    model: MODELS.CODE,
+    messages: [
+      {
+        role: 'system',
+        content: `You are a PowerShell script security and quality analyzer. Analyze the given script and return a JSON object with these fields:
+- purpose (string): Brief description of what the script does
+- security_score (number 0-10): Higher is more secure
+- code_quality_score (number 0-10): Higher is better quality
+- risk_score (number 0-10): Higher means more risky
+- optimization (string[]): List of optimization suggestions
+- command_details (object): Key PowerShell commands found and their purpose
+- ms_docs_references (string[]): Relevant Microsoft documentation URLs
+- security_issues (object[]): Each with {severity, description, remediation}
+- best_practice_violations (object[]): Each with {rule, description, suggestion}
+- parameters (object): Detected script parameters with descriptions
+
+Return ONLY valid JSON, no markdown or explanation.`
+      },
+      {
+        role: 'user',
+        content: `Analyze this PowerShell script:\n\n${content.substring(0, 8000)}`
+      }
+    ],
+    response_format: { type: 'json_object' },
+    temperature: 0.2,
+    max_tokens: 4096,
+  });
+
+  const text = response.choices[0]?.message?.content || '{}';
+  try {
+    return JSON.parse(text);
+  } catch {
+    return {
+      purpose: 'Analysis completed (parse error)',
+      security_score: 5,
+      code_quality_score: 5,
+      risk_score: 5,
+      optimization: [],
+      command_details: {},
+      ms_docs_references: [],
+      model_used: MODELS.CODE,
+      provider: 'openai-direct'
+    };
+  }
+}
 
 /**
  * Get script analysis by script ID
@@ -134,10 +188,18 @@ export async function analyzeScript(
         });
       }
 
-      return res.status(503).json({
-        message: 'Analysis service is unavailable',
-        error: 'analysis_unavailable'
-      });
+      // FALLBACK: Try direct OpenAI analysis
+      logger.warn('AI service unavailable for ad-hoc analysis, falling back to direct OpenAI');
+      try {
+        const directResult = await analyzeWithOpenAIDirect(content || '');
+        return res.json({ ...directResult, provider: 'openai-direct', model: MODELS.CODE });
+      } catch (directError) {
+        logger.error('Direct OpenAI analysis also failed:', directError);
+        return res.status(503).json({
+          message: 'Analysis service is unavailable',
+          error: 'analysis_unavailable'
+        });
+      }
     }
   } catch (error) {
     logger.error('Error in analyzeScript:', error);
@@ -266,11 +328,54 @@ export async function analyzeScriptAndSave(
         });
       }
 
-      logger.error('AI service connection error:', err.message);
-      return res.status(500).json({
-        message: 'Could not connect to analysis service',
-        error: err.message
-      });
+      // FALLBACK: If AI service is unavailable, try direct OpenAI analysis
+      logger.warn('AI service unavailable, falling back to direct OpenAI analysis');
+      try {
+        const directResult = await analyzeWithOpenAIDirect(content);
+
+        // Start a new transaction for the fallback
+        const fallbackTx = await sequelize.transaction();
+
+        const fallbackRecord = {
+          scriptId: parseInt(id),
+          purpose: (directResult.purpose as string) || '',
+          securityScore: (directResult.security_score as number) || 5,
+          codeQualityScore: (directResult.code_quality_score as number) || 5,
+          riskScore: (directResult.risk_score as number) || 5,
+          parameters: (directResult.parameters as Record<string, unknown>) || {},
+          optimizationSuggestions: (directResult.optimization as string[]) || [],
+          commandDetails: (directResult.command_details as Record<string, unknown>) || {},
+          msDocsReferences: (directResult.ms_docs_references as string[]) || [],
+          securityIssues: (directResult.security_issues as unknown[]) || [],
+          bestPracticeViolations: (directResult.best_practice_violations as unknown[]) || [],
+        };
+
+        let fallbackAnalysis = await ScriptAnalysis.findOne({
+          where: { scriptId: id },
+          transaction: fallbackTx
+        });
+
+        if (fallbackAnalysis) {
+          await fallbackAnalysis.update(fallbackRecord, { transaction: fallbackTx });
+        } else {
+          fallbackAnalysis = await ScriptAnalysis.create(fallbackRecord, { transaction: fallbackTx });
+        }
+
+        await fallbackTx.commit();
+        logger.info(`Direct OpenAI analysis complete for script ${id}`);
+
+        return res.json({
+          ...directResult,
+          provider: 'openai-direct',
+          model: MODELS.CODE
+        });
+      } catch (directError) {
+        logger.error('Direct OpenAI analysis also failed:', directError);
+        return res.status(503).json({
+          message: 'Analysis service unavailable and direct analysis failed',
+          error: 'analysis_unavailable'
+        });
+      }
     }
   } catch (error) {
     // Rollback transaction if it exists
