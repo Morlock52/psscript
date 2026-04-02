@@ -37,13 +37,19 @@ const ScriptAnalysis: React.FC = () => {
   // AI Model selection state - Multi-model support
   const [selectedModel, setSelectedModel] = useState('gpt-4.1');
   const availableModels = [
-    { value: 'gpt-4.1', label: 'GPT-4.1 (OpenAI)', provider: 'openai' },
-    { value: 'gpt-4.1-mini', label: 'GPT-4.1 Mini (Fast)', provider: 'openai' },
+    // OpenAI models
     { value: 'gpt-4.1', label: 'GPT-4.1 (Code)', provider: 'openai' },
-    { value: 'claude-sonnet-4-20250514', label: 'Claude Sonnet 4 (Anthropic)', provider: 'anthropic' },
-    { value: 'claude-opus-4-20250514', label: 'Claude Opus 4 (Best)', provider: 'anthropic' },
-    { value: 'claude-3-5-haiku-20241022', label: 'Claude Haiku (Fast)', provider: 'anthropic' },
+    { value: 'gpt-4.1-mini', label: 'GPT-4.1 Mini (Fast)', provider: 'openai' },
+    { value: 'gpt-5.4', label: 'GPT-5.4 (Flagship)', provider: 'openai' },
+    { value: 'o4-mini', label: 'O4 Mini (Reasoning)', provider: 'openai' },
+    // Anthropic Claude 4.6 models (February 2026)
+    { value: 'claude-sonnet-4-6-20260217', label: 'Claude Sonnet 4.6 (Balanced)', provider: 'anthropic' },
+    { value: 'claude-opus-4-6-20260205', label: 'Claude Opus 4.6 (Best)', provider: 'anthropic' },
+    { value: 'claude-haiku-4-5-20251001', label: 'Claude Haiku 4.5 (Fast)', provider: 'anthropic' },
   ];
+
+  /** Infer AI provider from model ID prefix */
+  const getProvider = (modelId: string) => modelId.startsWith('claude-') ? 'anthropic' : 'openai';
   
   const { data: script, isLoading: scriptLoading } = useQuery({
     queryKey: ['script', id],
@@ -143,7 +149,9 @@ When generating or modifying scripts:
       // Call AI service with guardrails enabled on backend
       const response = await axios.post(`${apiUrl}/chat`, {
         messages: [...messages, userMessage],
-        system_prompt: systemPrompt
+        system_prompt: systemPrompt,
+        model: selectedModel,
+        provider: getProvider(selectedModel),
       }, {
         headers: {
           'Content-Type': 'application/json'

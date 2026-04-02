@@ -38,25 +38,28 @@ class RateLimits(BaseModel):
     google_search_rpm: int = Field(30, description="Google Search requests per minute")
 
 class AgentConfig(BaseModel):
-    """Agent configuration - Updated January 2026.
+    """Agent configuration - Updated 2 April 2026.
 
-    Based on latest OpenAI model recommendations and benchmarks:
-    - gpt-4.1: Best for code generation (54.6% SWE-bench, 52.9% code diff accuracy)
-    - o3: Best reasoning model for complex analysis tasks
-    - gpt-4o: Good general-purpose model
-    - gpt-4o-mini: Fast model for quick tasks
+    OpenAI models (gpt-4o/gpt-4o-mini deprecated Feb 2026):
+    - gpt-4.1: Best for code generation (1M context, 54.6% SWE-bench)
+    - gpt-5.4: Flagship model for complex multi-step tasks
+    - o3/o4-mini: Reasoning models for complex analysis
+    - gpt-4.1-mini/nano: Fast/cheap options
 
-    Reference: https://platform.openai.com/docs/models
-    PowerShell-specific: GPT-4.1 recommended for script generation due to:
-    - 1M token context window (handles large scripts)
-    - 60% higher coding benchmarks vs GPT-4o
-    - Better instruction following for scripting tasks
+    Anthropic Claude 4.6 models (February 2026):
+    - claude-sonnet-4-6: Balanced speed/quality, 1M context
+    - claude-opus-4-6: Most capable, complex reasoning, 1M context
+    - claude-haiku-4-5: Fast and cost-effective
+
+    References:
+    - https://platform.openai.com/docs/models
+    - https://docs.anthropic.com/en/docs/about-claude/models
     """
     default_agent: str = Field("langgraph", description="Default agent type (langgraph recommended)")
     max_steps: int = Field(15, description="Maximum steps for agent workflows")
     memory_size: int = Field(20, description="Number of messages to keep in memory")
 
-    # Updated models for April 2026 - Optimized for PowerShell
+    # Updated models for 2 April 2026 - Optimized for PowerShell
     # gpt-4o and gpt-4o-mini deprecated Feb 2026; replaced with gpt-4.1 family
     default_model: str = Field("gpt-4.1", description="Default model - best for code generation (1M context)")
     powershell_model: str = Field("gpt-4.1", description="PowerShell script generation model")
@@ -65,10 +68,10 @@ class AgentConfig(BaseModel):
     fallback_model: str = Field("gpt-4.1", description="Fallback model if primary unavailable")
     flagship_model: str = Field("gpt-5.4", description="Flagship model for complex multi-step tasks")
 
-    # Anthropic Claude models - Added January 2026
-    claude_model: str = Field("claude-sonnet-4-20250514", description="Claude Sonnet 4 - best balance of speed and quality")
-    claude_reasoning_model: str = Field("claude-opus-4-20250514", description="Claude Opus 4 - best for complex reasoning")
-    claude_fast_model: str = Field("claude-3-5-haiku-20241022", description="Claude Haiku - fast and cost-effective")
+    # Anthropic Claude 4.6 models - Updated April 2026
+    claude_model: str = Field("claude-sonnet-4-6-20260217", description="Claude Sonnet 4.6 - best balance of speed and quality")
+    claude_reasoning_model: str = Field("claude-opus-4-6-20260205", description="Claude Opus 4.6 - most capable, complex reasoning")
+    claude_fast_model: str = Field("claude-haiku-4-5-20251001", description="Claude Haiku 4.5 - fast and cost-effective")
 
     # Provider priority - which AI provider to try first
     provider_priority: str = Field("openai,anthropic", description="Order to try providers: openai,anthropic")
@@ -176,7 +179,7 @@ def load_config() -> Config:
 
     config.mock_mode = False
     
-    # Ensure valid models are set - Updated January 2026
+    # Ensure valid models are set - Updated April 2026
     if not config.agent.default_model:
         config.agent.default_model = "gpt-4.1"  # Best for code generation
     if not config.agent.reasoning_model:

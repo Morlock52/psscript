@@ -12,17 +12,22 @@ from pathlib import Path
 
 logger = logging.getLogger("token_counter")
 
-# OpenAI Pricing as of April 2026 (per 1M tokens)
+# AI Model Pricing as of 2 April 2026 (per 1M tokens)
 # gpt-4o, gpt-4o-mini deprecated Feb 2026
 PRICING = {
-    # GPT-5.4 Series (Flagship) - April 2026
+    # === OpenAI Models ===
+    # GPT-5.4 Series (Flagship) - March 2026
     "gpt-5.4": {
-        "input": 5.00,
+        "input": 2.50,
         "output": 15.0,
     },
     "gpt-5.4-mini": {
         "input": 1.00,
         "output": 4.00,
+    },
+    "gpt-5.4-nano": {
+        "input": 0.25,
+        "output": 1.00,
     },
     # GPT-4.1 Series (Code Specialist) - still current
     "gpt-4.1": {
@@ -39,8 +44,12 @@ PRICING = {
     },
     # Reasoning Models
     "o3": {
-        "input": 10.0,
-        "output": 40.0,
+        "input": 2.00,
+        "output": 8.00,
+    },
+    "o3-pro": {
+        "input": 20.00,
+        "output": 80.00,
     },
     "o4-mini": {
         "input": 1.10,
@@ -54,6 +63,22 @@ PRICING = {
     "text-embedding-3-small": {
         "input": 0.02,
         "output": 0.0,
+    },
+
+    # === Anthropic Claude Models ===
+    # Claude 4.6 (February 2026)
+    "claude-opus-4-6-20260205": {
+        "input": 5.00,
+        "output": 25.00,
+    },
+    "claude-sonnet-4-6-20260217": {
+        "input": 3.00,
+        "output": 15.00,
+    },
+    # Claude 4.5 (October 2025)
+    "claude-haiku-4-5-20251001": {
+        "input": 1.00,
+        "output": 5.00,
     },
 }
 
@@ -185,12 +210,16 @@ class TokenCounter:
         Returns:
             Cost in dollars
         """
-        # Normalize model name (handle variations)
+        # Normalize model name — try exact match first, then longest substring match
         model_key = model.lower()
-        for key in PRICING.keys():
-            if key in model_key:
-                model_key = key
-                break
+        if model_key not in PRICING:
+            best_match = None
+            for key in PRICING:
+                if key in model_key:
+                    if best_match is None or len(key) > len(best_match):
+                        best_match = key
+            if best_match:
+                model_key = best_match
 
         if model_key not in PRICING:
             logger.warning(f"Unknown model for pricing: {model}, using gpt-4.1-mini pricing")

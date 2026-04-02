@@ -82,9 +82,11 @@ class ModelRouter:
         print(f"Using {decision.model_name}: {decision.reason}")
     """
 
-    # Model configurations (April 2026 pricing)
+    # Model configurations (2 April 2026 pricing)
     # gpt-4o and gpt-4o-mini deprecated Feb 2026; replaced with gpt-4.1 family
+    # Claude 4.6 models added February 2026
     MODELS = {
+        # --- OpenAI Models ---
         "gpt-4.1-mini": ModelConfig(
             name="GPT-4.1 Mini",
             model_id="gpt-4.1-mini",
@@ -109,11 +111,11 @@ class ModelRouter:
             name="GPT-5.4 (Flagship)",
             model_id="gpt-5.4",
             max_tokens=128000,
-            cost_per_1k_input=0.005,
+            cost_per_1k_input=0.0025,
             cost_per_1k_output=0.015,
             avg_latency_ms=2000,
             strengths=["best overall quality", "complex reasoning", "multi-step tasks"],
-            weaknesses=["most expensive", "slower"]
+            weaknesses=["most expensive OpenAI model", "slower"]
         ),
         "o4-mini": ModelConfig(
             name="O4 Mini (Reasoning)",
@@ -124,6 +126,37 @@ class ModelRouter:
             avg_latency_ms=3000,
             strengths=["complex reasoning", "step-by-step", "math", "cost-effective reasoning"],
             weaknesses=["slower", "verbose"]
+        ),
+        # --- Anthropic Claude Models ---
+        "claude-sonnet-4-6-20260217": ModelConfig(
+            name="Claude Sonnet 4.6 (Balanced)",
+            model_id="claude-sonnet-4-6-20260217",
+            max_tokens=1000000,
+            cost_per_1k_input=0.003,
+            cost_per_1k_output=0.015,
+            avg_latency_ms=1200,
+            strengths=["balanced speed/quality", "1M context", "strong code understanding", "adaptive thinking"],
+            weaknesses=["higher cost than Haiku"]
+        ),
+        "claude-opus-4-6-20260205": ModelConfig(
+            name="Claude Opus 4.6 (Most Capable)",
+            model_id="claude-opus-4-6-20260205",
+            max_tokens=1000000,
+            cost_per_1k_input=0.005,
+            cost_per_1k_output=0.025,
+            avg_latency_ms=2500,
+            strengths=["most capable Claude", "complex reasoning", "1M context", "extended thinking"],
+            weaknesses=["most expensive Claude model", "slower"]
+        ),
+        "claude-haiku-4-5-20251001": ModelConfig(
+            name="Claude Haiku 4.5 (Fast)",
+            model_id="claude-haiku-4-5-20251001",
+            max_tokens=200000,
+            cost_per_1k_input=0.001,
+            cost_per_1k_output=0.005,
+            avg_latency_ms=300,
+            strengths=["fastest Claude", "cheapest Claude", "good for simple tasks"],
+            weaknesses=["200K context limit", "less capable than Sonnet/Opus"]
         ),
     }
 
@@ -165,6 +198,14 @@ class ModelRouter:
         r'\battack|malicious\b',
     ]
 
+    # Mapping from OpenAI model tiers to Claude equivalents
+    CLAUDE_EQUIVALENTS = {
+        "gpt-4.1": "claude-sonnet-4-6-20260217",
+        "gpt-4.1-mini": "claude-haiku-4-5-20251001",
+        "gpt-5.4": "claude-opus-4-6-20260205",
+        "o4-mini": "claude-sonnet-4-6-20260217",
+    }
+
     def __init__(self, default_model: str = "gpt-4.1", cost_sensitive: bool = False):
         """
         Initialize the model router.
@@ -175,6 +216,11 @@ class ModelRouter:
         """
         self.default_model = default_model
         self.cost_sensitive = cost_sensitive
+
+    @staticmethod
+    def infer_provider(model_id: str) -> str:
+        """Infer the AI provider from a model ID."""
+        return "anthropic" if model_id.startswith("claude-") else "openai"
 
     def analyze_task(self, query: str, context: Optional[List[Dict]] = None) -> Tuple[TaskType, TaskComplexity]:
         """
@@ -271,20 +317,43 @@ class ModelRouter:
         else:
             return TaskComplexity.SIMPLE
 
-    def route(self, query: str, context: Optional[List[Dict]] = None) -> RoutingDecision:
+    def route(
+        self,
+        query: str,
+        context: Optional[List[Dict]] = None,
+        preferred_provider: Optional[str] = None,
+        preferred_model: Optional[str] = None,
+    ) -> RoutingDecision:
         """
         Route a query to the most appropriate model.
 
         Args:
             query: The user's query
             context: Optional conversation context
+            preferred_provider: Force a provider ('openai' or 'anthropic')
+            preferred_model: Force a specific model ID (skips routing logic)
 
         Returns:
             RoutingDecision with selected model and reasoning
         """
+        # If a specific model was requested and we know it, use it directly
+        if preferred_model and preferred_model in self.MODELS:
+            model = self.MODELS[preferred_model]
+            task_type, complexity = self.analyze_task(query, context)
+            estimated_cost = (0.5 * model.cost_per_1k_input) + (1.0 * model.cost_per_1k_output)
+            return RoutingDecision(
+                model_id=model.model_id,
+                model_name=model.name,
+                reason=f"User-selected model: {model.name}",
+                task_type=task_type,
+                complexity=complexity,
+                estimated_cost=estimated_cost,
+                estimated_latency_ms=model.avg_latency_ms,
+            )
+
         task_type, complexity = self.analyze_task(query, context)
 
-        # Route based on task type and complexity
+        # Route based on task type and complexity (selects OpenAI model first)
         if task_type == TaskType.CODE_GENERATION:
             if complexity in (TaskComplexity.COMPLEX, TaskComplexity.EXPERT):
                 model = self.MODELS["gpt-4.1"]
@@ -335,15 +404,28 @@ class ModelRouter:
                 model = self.MODELS.get(self.default_model, self.MODELS["gpt-4.1"])
                 reason = f"Using default model for moderate complexity"
 
+        # If Anthropic was requested, swap to the Claude equivalent
+        if preferred_provider == "anthropic":
+            equiv_id = self.CLAUDE_EQUIVALENTS.get(model.model_id)
+            if equiv_id and equiv_id in self.MODELS:
+                openai_name = model.name
+                model = self.MODELS[equiv_id]
+                reason = f"Anthropic provider requested — {model.name} (equivalent to {openai_name})"
+
         # Estimate cost (rough, based on ~500 token query, ~1000 token response)
         estimated_cost = (0.5 * model.cost_per_1k_input) + (1.0 * model.cost_per_1k_output)
 
         # Determine alternative
         alternative = None
-        if model.model_id != "gpt-4.1-mini" and self.cost_sensitive:
-            alternative = "gpt-4.1-mini"
-        elif model.model_id == "gpt-4.1-mini" and complexity >= TaskComplexity.MODERATE:
-            alternative = "gpt-5.4"
+        if self.infer_provider(model.model_id) == "openai":
+            if model.model_id != "gpt-4.1-mini" and self.cost_sensitive:
+                alternative = "gpt-4.1-mini"
+            elif model.model_id == "gpt-4.1-mini" and complexity >= TaskComplexity.MODERATE:
+                alternative = "gpt-5.4"
+        else:
+            # Offer OpenAI alternative when using Claude
+            equiv = {v: k for k, v in self.CLAUDE_EQUIVALENTS.items()}
+            alternative = equiv.get(model.model_id)
 
         return RoutingDecision(
             model_id=model.model_id,
@@ -376,6 +458,11 @@ def get_router(cost_sensitive: bool = False) -> ModelRouter:
     return _router
 
 
-def route_query(query: str, context: Optional[List[Dict]] = None) -> RoutingDecision:
+def route_query(
+    query: str,
+    context: Optional[List[Dict]] = None,
+    preferred_provider: Optional[str] = None,
+    preferred_model: Optional[str] = None,
+) -> RoutingDecision:
     """Convenience function to route a query."""
-    return get_router().route(query, context)
+    return get_router().route(query, context, preferred_provider, preferred_model)

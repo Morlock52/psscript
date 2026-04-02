@@ -1,5 +1,5 @@
 """
-Anthropic Claude Agent Implementation - January 2026
+Anthropic Claude Agent Implementation - Updated April 2026 (Claude 4.6)
 
 This module implements AI capabilities using Anthropic's Claude models,
 providing an alternative to OpenAI for script analysis, generation, and chat.
@@ -85,14 +85,14 @@ Provide only the script code in a markdown code block."""
     def __init__(
         self,
         api_key: Optional[str] = None,
-        model: str = "claude-sonnet-4-20250514"
+        model: str = "claude-sonnet-4-6-20260217"
     ):
         """
         Initialize the Anthropic agent.
 
         Args:
             api_key: Anthropic API key (optional, uses env var if not provided)
-            model: Claude model to use (default: claude-sonnet-4-20250514)
+            model: Claude model to use (default: claude-sonnet-4-6-20260217)
         """
         if not ANTHROPIC_AVAILABLE:
             raise ImportError(
@@ -189,7 +189,8 @@ Provide only the script code in a markdown code block."""
         self,
         message: str,
         context: Optional[str] = None,
-        history: Optional[List[Dict[str, str]]] = None
+        history: Optional[List[Dict[str, str]]] = None,
+        system_prompt: Optional[str] = None
     ) -> str:
         """
         Chat with Claude about PowerShell topics.
@@ -198,6 +199,7 @@ Provide only the script code in a markdown code block."""
             message: The user's message
             context: Optional additional context (e.g., current script)
             history: Optional conversation history
+            system_prompt: Optional system prompt override (uses default if not provided)
 
         Returns:
             Claude's response text
@@ -226,7 +228,7 @@ Provide only the script code in a markdown code block."""
             response = await self.async_client.messages.create(
                 model=self.model,
                 max_tokens=4096,
-                system=self.POWERSHELL_EXPERT_PROMPT,
+                system=system_prompt or self.POWERSHELL_EXPERT_PROMPT,
                 messages=messages
             )
 
@@ -409,7 +411,7 @@ def create_anthropic_agent(
         logger.warning("Cannot create Anthropic agent: no API key")
         return None
 
-    model = model or "claude-sonnet-4-20250514"
+    model = model or "claude-sonnet-4-6-20260217"
 
     try:
         return AnthropicAgent(api_key=api_key, model=model)

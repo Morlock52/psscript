@@ -21,6 +21,8 @@ export interface LangGraphAnalysisOptions {
   require_human_review?: boolean;
   thread_id?: string;
   model?: string;
+  /** AI provider inferred from model ID: 'openai' or 'anthropic' */
+  provider?: string;
 }
 
 export interface ToolExecution {
@@ -162,6 +164,8 @@ export function streamAnalysis(
   if (options.model) {
     params.append('model', options.model);
   }
+  // Note: provider is not passed for SSE streaming — the LangGraph
+  // orchestrator determines the provider from the model ID server-side.
 
   // Get auth token for headers
   const token = localStorage.getItem('auth_token');

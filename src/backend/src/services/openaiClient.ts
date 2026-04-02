@@ -40,7 +40,7 @@ export const anthropic = anthropicClient;
 
 /**
  * Default model constants — centralized so changes propagate everywhere.
- * Updated April 2026: gpt-4o/gpt-4o-mini deprecated Feb 2026.
+ * Updated 2 April 2026: Claude 4.6 models, gpt-4o/gpt-4o-mini deprecated Feb 2026.
  */
 export const MODELS = {
   // OpenAI models
@@ -50,6 +50,8 @@ export const MODELS = {
   FLAGSHIP: 'gpt-5.4',
   /** Fast model for simple tasks */
   FAST: 'gpt-4.1-mini',
+  /** Nano model — cheapest option */
+  NANO: 'gpt-4.1-nano',
   /** Reasoning model for complex analysis */
   REASONING: 'o3',
   /** Lightweight reasoning */
@@ -61,13 +63,32 @@ export const MODELS = {
   /** STT model */
   STT: 'gpt-4o-mini-transcribe',
 
-  // Anthropic models
-  /** Claude Sonnet 4 — best balance of speed and quality */
-  CLAUDE_SONNET: 'claude-sonnet-4-20250514',
-  /** Claude Opus 4 — best for complex reasoning */
-  CLAUDE_OPUS: 'claude-opus-4-20250514',
-  /** Claude Haiku — fast and cost-effective */
+  // Anthropic Claude 4.6 models (February 2026)
+  /** Claude Sonnet 4.6 — best balance of speed and quality */
+  CLAUDE_SONNET: 'claude-sonnet-4-6-20260217',
+  /** Claude Opus 4.6 — most capable, complex reasoning */
+  CLAUDE_OPUS: 'claude-opus-4-6-20260205',
+  /** Claude Haiku 4.5 — fast and cost-effective */
   CLAUDE_HAIKU: 'claude-haiku-4-5-20251001',
 } as const;
+
+export type AIProvider = 'openai' | 'anthropic';
+
+/**
+ * Infer the AI provider from a model ID string.
+ * Claude models start with "claude-"; everything else is OpenAI.
+ */
+export function inferProvider(modelId: string): AIProvider {
+  return modelId.startsWith('claude-') ? 'anthropic' : 'openai';
+}
+
+/**
+ * Check whether the required provider client is available for a given model.
+ */
+export function isProviderAvailable(modelId: string): boolean {
+  const provider = inferProvider(modelId);
+  if (provider === 'anthropic') return anthropicClient !== null;
+  return !!openaiApiKey;
+}
 
 export default openai;

@@ -480,6 +480,10 @@ class ChatRequest(BaseModel):
                                      description="Type of agent to use")
     session_id: Optional[str] = Field(None,
                                      description="Session ID for persistent conversations")
+    model: Optional[str] = Field(None,
+                                description="AI model to use (e.g. gpt-4.1, claude-sonnet-4-6-20260217)")
+    provider: Optional[str] = Field(None,
+                                   description="AI provider: 'openai' or 'anthropic'")
 
 
 class ChatResponse(BaseModel):
@@ -2117,9 +2121,21 @@ I CAN HELP WITH:
 - Migrating from Windows PowerShell to PowerShell 7+
 - Setting up CI/CD pipelines for PowerShell projects"""
 
-        # Check if we have a valid API key
-        if not (x_api_key or config.api_keys.openai or config.api_keys.anthropic):
-            raise HTTPException(status_code=503, detail="AI provider is not configured")
+        # Determine provider from request or infer from model ID
+        requested_provider = request.provider
+        requested_model = request.model
+        if not requested_provider and requested_model and requested_model.startswith("claude-"):
+            requested_provider = "anthropic"
+
+        # Resolve API key: header takes precedence, then server config
+        if requested_provider == "anthropic":
+            anthropic_key = x_api_key or config.api_keys.anthropic
+            if not anthropic_key:
+                raise HTTPException(status_code=503, detail="Anthropic API key is not configured")
+        else:
+            api_key = x_api_key or config.api_keys.openai
+            if not api_key and not config.api_keys.anthropic:
+                raise HTTPException(status_code=503, detail="AI provider is not configured")
 
         # Convert messages to the format expected by the agent system
         messages = []
@@ -2135,9 +2151,66 @@ I CAN HELP WITH:
         # Session ID for persistent conversations
         session_id = request.session_id or None
 
-        # Process the chat request
+        # Route to Anthropic agent if provider is anthropic
+        if requested_provider == "anthropic":
+            try:
+                from agents.anthropic_agent import create_anthropic_agent
+                agent = create_anthropic_agent(
+                    api_key=anthropic_key,
+                    model=requested_model
+                )
+                if agent:
+                    # Build history from user/assistant messages (skip system prompt entry)
+                    chat_history = [{"role": m["role"], "content": m["content"]} for m in messages[1:-1]] if len(messages) > 2 else None
+                    response = await agent.chat(
+                        message=latest_user_message,
+                        context=None,
+                        history=chat_history,
+                        system_prompt=system_prompt,
+                    )
+                    processing_time = time.time() - start_time
+                    logger.info(f"Chat request processed in {processing_time:.2f}s (anthropic agent, model={requested_model})")
+                    return {"response": response, "session_id": session_id}
+                else:
+                    raise HTTPException(status_code=503, detail="Anthropic agent could not be created")
+            except ImportError:
+                logger.warning("Anthropic agent not available, falling back to OpenAI")
+                # Fall through to OpenAI handling below
+
+        # Process the chat request with OpenAI-based agents.
+        # If a specific OpenAI model was requested, use direct completion
+        # instead of the agent coordinator (which manages its own model selection).
+        if requested_model and not requested_model.startswith("claude-") and requested_model != config.agent.default_model:
+            # Direct OpenAI completion with the user-selected model
+            try:
+                from openai import AsyncOpenAI
+                openai_client = AsyncOpenAI(api_key=api_key, timeout=60)
+
+                # o-series models (o3, o4-mini, etc.) use different params:
+                # - No temperature parameter
+                # - Use max_completion_tokens instead of max_tokens
+                is_o_series = requested_model.startswith("o")
+                completion_params: dict = {
+                    "model": requested_model,
+                    "messages": messages,
+                }
+                if is_o_series:
+                    completion_params["max_completion_tokens"] = 4096
+                else:
+                    completion_params["temperature"] = 0.3
+                    completion_params["max_tokens"] = 4096
+
+                completion = await openai_client.chat.completions.create(**completion_params)
+                response = completion.choices[0].message.content or ""
+                processing_time = time.time() - start_time
+                logger.info(f"Chat request processed in {processing_time:.2f}s (direct openai, model={requested_model})")
+                return {"response": response, "session_id": session_id}
+            except Exception as direct_err:
+                logger.warning(f"Direct OpenAI call with {requested_model} failed: {direct_err}, falling back to agent system")
+                # Fall through to agent system below
+
         if agent_coordinator and not request.agent_type:
-            # Use the agent coordinator
+            # Use the agent coordinator (uses its own model selection)
             response = await agent_coordinator.process_chat(messages)
             processing_time = time.time() - start_time
             logger.info(f"Chat request processed in {processing_time:.2f}s (agent coordinator)")

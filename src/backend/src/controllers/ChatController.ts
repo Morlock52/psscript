@@ -56,13 +56,15 @@ export class ChatController {
     
     try {
       // eslint-disable-next-line camelcase -- API request body uses snake_case
-      const { messages: rawMessages, message, system_prompt, api_key, agent_type, session_id } = req.body as {
+      const { messages: rawMessages, message, system_prompt, api_key, agent_type, session_id, model, provider } = req.body as {
         messages?: Array<{ role: string; content: string }>;
         message?: string;
         system_prompt?: string;
         api_key?: string;
         agent_type?: string;
         session_id?: string;
+        model?: string;
+        provider?: string;
       };
 
       // Backward-compatible payload handling for legacy clients that send `message`.
@@ -77,12 +79,18 @@ export class ChatController {
         return;
       }
       
-      // Use server API key if one is not provided by the client
-      const effectiveApiKey = api_key || process.env.OPENAI_API_KEY; // eslint-disable-line camelcase
-      
+      // Determine effective provider — infer from model ID if not explicitly set
+      const effectiveProvider = provider || (model?.startsWith('claude-') ? 'anthropic' : 'openai');
+
+      // Resolve API key: Anthropic requests use ANTHROPIC_API_KEY, OpenAI uses OPENAI_API_KEY
+      const effectiveApiKey = effectiveProvider === 'anthropic'
+        ? (api_key || process.env.ANTHROPIC_API_KEY || '') // eslint-disable-line camelcase
+        : (api_key || process.env.OPENAI_API_KEY || ''); // eslint-disable-line camelcase
+
       if (!effectiveApiKey) {
-        logger.warn(`[${requestId}] Invalid request: No API key provided and no server API key configured`);
-        res.status(400).json({ error: 'OpenAI API key is required. Please set your API key in Settings or ask the administrator to configure a server API key.' });
+        const providerLabel = effectiveProvider === 'anthropic' ? 'Anthropic' : 'OpenAI';
+        logger.warn(`[${requestId}] Invalid request: No ${providerLabel} API key provided`);
+        res.status(400).json({ error: `${providerLabel} API key is required. Please configure it in the server environment or provide it in Settings.` });
         return;
       }
       
@@ -108,7 +116,9 @@ export class ChatController {
         system_prompt, // eslint-disable-line camelcase
         api_key: effectiveApiKey,
         agent_type, // eslint-disable-line camelcase
-        session_id // eslint-disable-line camelcase
+        session_id, // eslint-disable-line camelcase
+        model,
+        provider,
       }, {
         headers: {
           'Content-Type': 'application/json',
