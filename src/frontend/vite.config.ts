@@ -103,9 +103,18 @@ export default defineConfig({
             return 'router-vendor'
           }
 
-          // UI framework + emotion
-          if (id.includes('/@mui/') || id.includes('/@emotion/')) {
-            return 'mui-vendor'
+          // MUI ecosystem — skip manual chunking entirely.
+          // MUI + @emotion + react-transition-group have deep circular imports.
+          // Any manual chunk splitting causes "Cannot access 'X' before initialization".
+          // Return early so the fallback at the bottom doesn't catch them either.
+          if (
+            id.includes('/@mui/') ||
+            id.includes('/@emotion/') ||
+            id.includes('/react-transition-group/') ||
+            id.includes('/@popperjs/') ||
+            id.includes('/@floating-ui/')
+          ) {
+            return  // undefined = let rollup decide
           }
 
           // Data fetch + HTTP
