@@ -1,6 +1,6 @@
 # PSScript - Getting Started Guide
 
-This guide reflects the current checked-in local development setup as of March 6, 2026.
+This guide reflects the current checked-in local development setup as of April 2, 2026.
 
 ## Canonical local URLs
 

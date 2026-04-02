@@ -4,6 +4,8 @@
 
 This file provides quick reference commands for common development tasks.
 
+_Last updated: April 2, 2026_
+
 ## Quick Commands
 
 ### Lint Commands
@@ -33,12 +35,17 @@ cd src/backend && npm run typecheck
 ### Testing
 
 ```bash
-# Backend tests
+# Backend unit tests
 cd src/backend && npm test
 
-# Database connectivity
-cd src/backend && node test-db.js
-cd src/backend && node test-redis.js
+# Cache stress tests
+cd src/backend && npx jest src/__tests__/cacheService.test.ts --forceExit
+
+# Playwright E2E (requires services running)
+npx playwright test --project=chromium
+
+# Project review validation tests
+npx playwright test tests/e2e/project-review-validation.spec.ts --project=chromium
 ```
 
 ### Port Management
@@ -58,6 +65,18 @@ cd src/backend && node test-redis.js
 | AI Service | 8000 |
 | PostgreSQL | 5432 |
 | Redis | 6379 |
+
+## AI Models (April 2026)
+
+| Purpose | Model |
+|---------|-------|
+| Code generation | `gpt-4.1` |
+| Flagship | `gpt-5.4` |
+| Fast | `gpt-4.1-mini` |
+| Reasoning | `o3` / `o4-mini` |
+| Embeddings | `text-embedding-3-large` |
+| TTS | `gpt-4o-mini-tts` |
+| STT | `gpt-4o-mini-transcribe` |
 
 ---
 

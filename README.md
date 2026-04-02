@@ -1,89 +1,211 @@
-# PSScript
+<p align="center">
+  <img src="./docs/screenshots/dashboard.png" alt="PSScript Dashboard" width="800" />
+</p>
 
-PowerShell script management with AI analysis, semantic search, documentation crawl tooling, database maintenance workflows, and OpenAI-backed voice features.
+<h1 align="center">PSScript</h1>
+
+<p align="center">
+  <strong>PowerShell Script Management with Agentic AI Analysis</strong>
+</p>
+
+<p align="center">
+  <a href="#quick-start">Quick Start</a> &bull;
+  <a href="#features">Features</a> &bull;
+  <a href="#architecture">Architecture</a> &bull;
+  <a href="#ai-models">AI Models</a> &bull;
+  <a href="#screenshots">Screenshots</a> &bull;
+  <a href="#documentation">Docs</a>
+</p>
+
+---
 
 ## Overview
 
-PSScript is a full-stack application for teams that need to store, search, analyze, document, and operate on PowerShell scripts from one interface.
+PSScript is a full-stack platform for teams that need to **store, search, analyze, and operate on PowerShell scripts** from one interface. It combines script management with agentic AI workflows, semantic search, voice interactions, and enterprise-grade security analysis.
 
-Core product areas:
-- script upload, storage, versioning, and detail views
-- AI-assisted analysis, remediation guidance, and semantic search
-- documentation crawling and indexed knowledge capture
-- analytics, admin operations, and data-maintenance tooling
-- OpenAI-backed speech synthesis and speech recognition
-- optional local Git auto-fetch and guarded fast-forward update workflow
+### How it works
 
-## How it works
+1. Upload or create a PowerShell script in the React frontend
+2. The Express API validates, persists with version history in PostgreSQL, and deduplicates via SHA-256 hashing
+3. The AI service runs multi-step analysis through GPT-4.1 and LangGraph workflows with security scoring, code quality metrics, and optimization recommendations
+4. Results surface in the UI alongside semantic search, documentation, analytics, and admin tooling
+5. A voice dock enables speech-to-text dictation and text-to-speech playback across the app
 
-1. A user uploads or creates a PowerShell script in the React frontend.
-2. The Express API validates the request, persists the script and version history in PostgreSQL, and exposes search, maintenance, analytics, and admin routes.
-3. The AI service performs analysis, embeddings, LangGraph orchestration, and voice processing through current OpenAI models.
-4. The UI surfaces script health, AI results, semantic discovery, documentation data, and admin tooling from those backend services.
-5. A global voice dock lets users dictate into focused inputs and read current app content back through the same backend voice pipeline.
+---
 
-## Screenshots
-
-These screenshots reflect the current local product flow and the main surfaces that are linked from the GitHub landing page.
-
-| Dashboard | Scripts |
-| --- | --- |
-| ![Dashboard screenshot](./docs/screenshots/dashboard.png) | ![Scripts screenshot](./docs/screenshots/scripts.png) |
-
-| Settings | Data maintenance |
-| --- | --- |
-| ![Settings screenshot](./docs/screenshots/settings-profile.png) | ![Data maintenance screenshot](./docs/screenshots/data-maintenance.png) |
-
-What you are seeing:
-- `Dashboard`: high-level health, activity, and AI/usage surfaces
-- `Scripts`: upload, browsing, filtering, and analysis entry points
-- `Settings`: profile and application configuration
-- `Data maintenance`: admin backup, restore, and cleanup workflows
-
-## Feature Summary
+## Features
 
 | Area | What it does |
-| --- | --- |
-| Script management | Uploads, stores, versions, filters, and searches PowerShell scripts |
-| AI analysis | Runs analysis, scoring, and remediation workflows without returning fabricated fallback success payloads |
-| Semantic search | Uses embeddings for similarity-based search and related-script discovery |
-| Voice workflows | Supports OpenAI-backed text-to-speech, transcription, diarization, and listening flows |
-| Documentation crawl | Crawls and indexes documentation content for in-app access |
-| Admin maintenance | Provides backup, restore, and test-data cleanup endpoints with sequence reseeding and FK-safe restore ordering |
-| Analytics | Exposes reporting and usage flows through the backend API and UI |
-| Local repo maintenance | Includes an optional helper to auto-fetch `origin/main`, notify on changes, and fast-forward only when the worktree is clean |
+|------|-------------|
+| **Script Management** | Upload, store, version, filter, search, and export PowerShell scripts |
+| **AI Analysis** | Security scoring, code quality assessment, risk analysis, and remediation guidance |
+| **Agentic Workflows** | Multi-step LangGraph orchestration with tool calling and human-in-the-loop |
+| **Semantic Search** | Vector embeddings via `text-embedding-3-large` for similarity-based discovery |
+| **Voice** | OpenAI-powered TTS (`gpt-4o-mini-tts`), STT (`gpt-4o-mini-transcribe`), and diarization |
+| **Analytics** | Usage metrics, AI cost tracking, security dashboards, and category distribution |
+| **Admin Tools** | Database backup/restore, test-data cleanup, sequence reseeding, cache management |
+| **Documentation Crawl** | Index and search external documentation within the app |
+
+---
 
 ## Architecture
 
-| Service | Local URL |
-| --- | --- |
-| Frontend | `https://127.0.0.1:3090` |
-| Backend API | `https://127.0.0.1:4000/api` |
-| AI service | `http://127.0.0.1:8000` |
-| PostgreSQL | `127.0.0.1:5432` |
-| Redis | `127.0.0.1:6379` |
+```mermaid
+graph TB
+    subgraph Frontend
+        UI[React / TypeScript / Vite<br/>Port 3090]
+    end
 
-Stack:
-- frontend: React, TypeScript, Vite
-- backend: Express, TypeScript, Sequelize
-- AI service: FastAPI, LangGraph, OpenAI
-- infra: Docker Compose, PostgreSQL, Redis
+    subgraph Backend
+        API[Express / TypeScript<br/>Port 4000]
+        Cache[Redis Cache<br/>Port 6379]
+        DB[(PostgreSQL + pgvector<br/>Port 5432)]
+    end
 
-## Request flow
+    subgraph AI Service
+        FastAPI[FastAPI / Python<br/>Port 8000]
+        LG[LangGraph<br/>Orchestrator]
+        Guard[Guardrails<br/>3-Layer Security]
+    end
 
-```text
-Browser UI
-  -> Express API
-     -> PostgreSQL / Redis
-     -> FastAPI AI service
-        -> OpenAI models
+    subgraph External
+        OpenAI[OpenAI API<br/>GPT-4.1 / GPT-5.4 / o3]
+        Anthropic[Anthropic API<br/>Claude Sonnet 4]
+    end
+
+    UI -->|REST + WebSocket| API
+    API -->|Sequelize ORM| DB
+    API -->|ioredis| Cache
+    API -->|HTTP| FastAPI
+    FastAPI --> LG
+    FastAPI --> Guard
+    LG --> OpenAI
+    LG --> Anthropic
+
+    style UI fill:#3b82f6,color:#fff
+    style API fill:#10b981,color:#fff
+    style FastAPI fill:#8b5cf6,color:#fff
+    style DB fill:#f59e0b,color:#000
+    style Cache fill:#ef4444,color:#fff
+    style OpenAI fill:#000,color:#fff
+    style Anthropic fill:#d97706,color:#fff
 ```
 
-In practice:
-- script CRUD, categories, analytics, and admin maintenance are handled through the backend API
-- AI analysis and voice routes proxy through the backend into the AI service
-- semantic search and related-script features depend on stored embeddings
-- admin DB maintenance flows operate directly against persisted application data
+### Service Map
+
+| Service | Port | Stack | Purpose |
+|---------|------|-------|---------|
+| **Frontend** | 3090 | React, TypeScript, Vite, TailwindCSS | UI, user flows, visualization |
+| **Backend** | 4000 | Express, TypeScript, Sequelize | API, orchestration, auth, caching |
+| **AI Service** | 8000 | FastAPI, LangGraph 1.1, Python | Model inference, agentic workflows |
+| **PostgreSQL** | 5432 | PostgreSQL 15 + pgvector | Persistent data, vector embeddings |
+| **Redis** | 6379 | Redis 7 | Cache layer (with in-memory fallback) |
+
+### Request Flow
+
+```mermaid
+sequenceDiagram
+    participant User
+    participant Frontend
+    participant Backend
+    participant AI Service
+    participant OpenAI
+
+    User->>Frontend: Upload script
+    Frontend->>Backend: POST /api/scripts
+    Backend->>Backend: SHA-256 dedup check
+    Backend->>Backend: Store in PostgreSQL
+    Backend-->>Frontend: 201 Created
+    Backend->>AI Service: Async analysis (retry x2)
+    AI Service->>OpenAI: GPT-4.1 analysis
+    OpenAI-->>AI Service: Security + quality scores
+    AI Service-->>Backend: Store results
+    Backend-->>Frontend: WebSocket update
+```
+
+---
+
+## AI Models
+
+Updated April 2, 2026. All deprecated models (gpt-4o, gpt-4o-mini, gpt-3.5-turbo) have been replaced.
+
+| Purpose | Model | Notes |
+|---------|-------|-------|
+| **Code generation** | `gpt-4.1` | 1M token context, best for PowerShell |
+| **Flagship tasks** | `gpt-5.4` | Complex multi-step analysis |
+| **Fast tasks** | `gpt-4.1-mini` | Quick responses, cost-effective |
+| **Reasoning** | `o3` | Complex debugging and architecture |
+| **Fast reasoning** | `o4-mini` | Lightweight step-by-step |
+| **Embeddings** | `text-embedding-3-large` | 3072 dimensions for semantic search |
+| **Text-to-speech** | `gpt-4o-mini-tts` | Instruction-controllable voice |
+| **Speech-to-text** | `gpt-4o-mini-transcribe` | Best accuracy STT |
+| **Diarization** | `gpt-4o-transcribe-diarize` | Speaker-labeled transcription |
+| **Anthropic fallback** | `claude-sonnet-4` | Alternative analysis provider |
+
+### SDK Versions
+
+| Package | Version | Language |
+|---------|---------|----------|
+| `openai` | ^6.33.0 | Node.js |
+| `openai` | >=2.30.0 | Python |
+| `langgraph` | >=1.1.0 | Python |
+| `langchain` | >=1.0.0 (GA) | Python |
+
+> **Note:** The OpenAI Assistants API sunsets August 26, 2026. All Assistants endpoints return `Deprecation` and `Sunset` headers. Migration to the Responses API is planned.
+
+---
+
+## Screenshots
+
+<details>
+<summary><strong>Dashboard</strong> — Health, activity, and AI usage overview</summary>
+
+![Dashboard](./docs/screenshots/dashboard.png)
+</details>
+
+<details>
+<summary><strong>Scripts</strong> — Upload, browse, filter, and analyze</summary>
+
+![Scripts](./docs/screenshots/scripts.png)
+</details>
+
+<details>
+<summary><strong>Script Analysis</strong> — AI-powered security and quality scoring</summary>
+
+![Analysis](./docs/screenshots/analysis.png)
+</details>
+
+<details>
+<summary><strong>Script Detail</strong> — Version history and code view</summary>
+
+![Script Detail](./docs/screenshots/script-detail.png)
+</details>
+
+<details>
+<summary><strong>Chat with AI</strong> — Conversational PowerShell assistant</summary>
+
+![Chat](./docs/screenshots/chat.png)
+</details>
+
+<details>
+<summary><strong>Analytics</strong> — Usage metrics and reporting</summary>
+
+![Analytics](./docs/screenshots/analytics.png)
+</details>
+
+<details>
+<summary><strong>Settings</strong> — Profile and application configuration</summary>
+
+![Settings](./docs/screenshots/settings-profile.png)
+</details>
+
+<details>
+<summary><strong>Data Maintenance</strong> — Admin backup, restore, cleanup</summary>
+
+![Data Maintenance](./docs/screenshots/data-maintenance.png)
+</details>
+
+---
 
 ## Quick Start
 
@@ -93,173 +215,176 @@ In practice:
 - Python 3.10+
 - Docker Engine with `docker compose`
 
-### Run the full local stack
+### Full stack (Docker)
 
 ```bash
 npm run install:all
 python -m pip install -r src/ai/requirements.txt
-docker compose -f docker-compose.yml -f docker-compose.override.yml up -d --build
+docker compose up -d --build
 ```
 
-Open:
+Open `https://127.0.0.1:3090`
 
-```text
-https://127.0.0.1:3090
-```
-
-Then use:
-- `/dashboard` for the main operational view
-- `/scripts` to upload, inspect, and analyze PowerShell files
-- `/settings/categories` for category management
-- `/settings/data` for backup and restore tooling
-- `/analytics/ai` for AI usage and cost views
-
-Voice workflow:
-- use the floating `Voice` dock in the app shell
-- focus any text input, then use `Dictate to input` to transcribe speech into that field
-- select text or leave the current page active, then use `Speak selection` to generate spoken output
-
-### Run services individually
+### Individual services
 
 ```bash
-# backend
-cd src/backend
-npm install
-npm run dev
+# Backend (port 4000)
+cd src/backend && npm install && npm run dev
 
-# frontend
-cd src/frontend
-npm install
-npm run dev
+# Frontend (port 3090)
+cd src/frontend && npm install && npm run dev
 
-# ai service
-cd src/ai
-python -m pip install -r requirements.txt
-python main.py
+# AI Service (port 8000)
+cd src/ai && pip install -r requirements.txt && python main.py
 ```
 
-## Current Local Dev Behavior
+### Local dev auth
 
-- the checked-in frontend dev flow commonly uses `VITE_DISABLE_AUTH=true`
-- in that mode, the app auto-creates a local `dev-admin` session
-- `/login` redirects into the app shell instead of showing the login form
-- if you need the real login screen, set `VITE_DISABLE_AUTH=false` and restart the frontend
+The default local mode uses `DISABLE_AUTH=true` — the app auto-signs in as `dev-admin`. Set `DISABLE_AUTH=false` for real login behavior.
 
-## OpenAI Voice Defaults
-
-These values were kept aligned with the current official OpenAI audio and voice-agent documentation.
-
-- reasoning and analysis: `gpt-4.1`
-- text-to-speech: `gpt-4o-mini-tts`
-- speech-to-text: `gpt-4o-mini-transcribe`
-- diarization: `gpt-4o-transcribe-diarize`
-- embeddings: `text-embedding-3-large`
-
-References:
-- [OpenAI voice agents guide](https://developers.openai.com/api/docs/guides/voice-agents/)
-- [OpenAI audio and speech guide](https://developers.openai.com/api/docs/guides/audio/)
-- [OpenAI create speech reference](https://developers.openai.com/api/reference/resources/audio/subresources/speech/methods/create/)
-- [OpenAI create transcription reference](https://developers.openai.com/api/reference/resources/audio/subresources/transcriptions/methods/create/)
-
-Model choice notes:
-- OpenAI recommends the chained voice architecture `gpt-4o-transcribe -> gpt-4.1 -> gpt-4o-mini-tts` for controlled application workflows.
-- The current OpenAI changelog recommends `gpt-4o-mini-transcribe` over `gpt-4o-transcribe` for best results.
-- This project keeps `gpt-4.1` for the reasoning layer and uses the faster audio-specialized models for speech input/output.
+---
 
 ## Validation
 
-### Main validation commands
-
 ```bash
-# backend
+# Backend
 cd src/backend
-npm run lint
-npm run build
-npm test -- --runInBand
-RUN_DB_TESTS=true npm test -- --runInBand
+npm run typecheck          # TypeScript: 0 errors
+npm run lint               # ESLint: 0 errors
+npm test -- --runInBand    # Unit tests
 
-# frontend
+# Frontend
 cd src/frontend
-npm run lint
-npm run build
-npm run test:run
+npm run lint && npm run build
 
-# ai
-cd src/ai
-python test_langgraph_setup.py
-
-# voice
-cd /Users/morlock/fun/02_PowerShell_Projects/psscript
-node scripts/voice-tests-1-8.mjs --base-url https://127.0.0.1:4000 --insecure-tls
-
-# data maintenance
-node scripts/verify-data-maintenance-e2e.mjs --reuse-backend --base-url https://127.0.0.1:4000 --insecure-tls
-
-# browser
+# E2E (requires services running)
 npx playwright test --project=chromium
+
+# Cache stress test
+cd src/backend && npx jest src/__tests__/cacheService.test.ts --forceExit
 ```
 
-### Latest recorded results
+### Latest Results (April 2, 2026)
 
-Validated on March 8, 2026:
+| Suite | Result |
+|-------|--------|
+| TypeScript | **0 errors** |
+| ESLint | **0 errors** |
+| Backend unit tests | 24 passed |
+| Cache stress tests | **11/11 passed** (1000 ops in 32ms) |
+| Playwright E2E | **9/9 passed** |
+| Codex review | **Clean** (P3 fix applied) |
 
-- backend tests: `93` passed
-- frontend tests: `33` passed
-- AI harness: `5/5` passed
-- voice validation: `8/8` passed
-- Chromium browser smoke suite: `25` passed
+---
 
-This reflects the actively used smoke set:
-- health checks
-- script upload and analysis flow
-- categories/settings CRUD
-- AI analytics
-- AI agent endpoints
+## Project Structure
 
-## Current Engineering Notes
+```
+psscript/
+├── src/
+│   ├── backend/              # Express API (TypeScript)
+│   │   └── src/
+│   │       ├── controllers/  # Route handlers (modular script CRUD)
+│   │       ├── services/     # Cache, OpenAI client, agentic tools
+│   │       ├── models/       # Sequelize models (14 tables)
+│   │       ├── middleware/    # Auth, security, rate limiting
+│   │       └── routes/       # API route definitions
+│   ├── frontend/             # React UI (Vite + TypeScript)
+│   │   └── src/
+│   │       ├── pages/        # Dashboard, Scripts, Chat, Analytics
+│   │       ├── components/   # Reusable UI components
+│   │       └── services/     # API client, voice, settings
+│   └── ai/                   # Python AI service (FastAPI)
+│       ├── agents/           # LangGraph, Anthropic, multi-agent
+│       ├── guardrails/       # 3-layer input/output validation
+│       ├── utils/            # Model router, token counter
+│       └── analysis/         # Script analyzer, embeddings
+├── tests/e2e/                # Playwright E2E tests
+├── docs/                     # Project documentation
+├── scripts/                  # Operational scripts
+└── docker-compose.yml        # Full stack orchestration
+```
 
-- shared JWT auth middleware is used across protected routes and admin DB routes
-- script uploads authenticate through the same middleware path as the rest of the API
-- upload handlers now support both memory-backed and disk-backed multer flows, so large-file uploads do not fail on missing `req.file.buffer`
-- concurrent upload transactions use `READ_COMMITTED` to avoid PostgreSQL serialization failures during short upload bursts
-- script creation persists immediately and runs AI analysis in the background
-- backend AI routes return explicit failures instead of invented success payloads
-- backup listing is live after backup creation and restore reseeds sequences correctly
-- frontend route-level lazy loading is enabled
-- local defaults are normalized around `3090 / 4000 / 8000`
-- voice silence input is gated before transcription so silent audio returns empty text instead of hallucinated speech
-- backend voice timeouts now return `504` instead of being flattened into generic service-unavailable failures
+---
 
-## Optional Git Auto-Update Helper
+## Engineering Notes
 
-The repo now includes:
+<details>
+<summary><strong>April 2026 Project Review</strong> — 22 issues fixed, AI models updated</summary>
 
-- [git-auto-update.sh](./scripts/setup/git-auto-update.sh)
+### Database & Models (9 fixes)
+- Added missing `ExecutionLog.output` column
+- Fixed `Script.fileHash` from STRING(32) to STRING(64) for SHA-256
+- Refactored ChatHistory to consistent class pattern
+- Added CASCADE on ScriptAnalysis foreign key
+- Fixed ScriptVersion timestamp mismatch
+- Standardized FK naming across models
+- Added missing indexes (file_hash, visibility compound)
+- Updated embedding model default
+- Increased password hash field for argon2id compatibility
 
-The helper is intended for local macOS use with `launchd` and does three things:
-- fetches `origin/main` every few minutes
-- sends a notification when `origin/main` changes
-- runs `git pull --ff-only origin main` only when the current branch is `main` and the worktree is clean
+### API & Backend (13 fixes)
+- Removed `@ts-nocheck` from 7 files with proper type declarations
+- Fixed default port mismatch (4001 -> 4000)
+- Transaction isolation: SERIALIZABLE -> READ COMMITTED
+- Added pagination limit guard (max 100)
+- Implemented analytics summary endpoint (was TODO stub)
+- Made AI analysis non-blocking with retry (exponential backoff)
+- Fixed unhandledRejection handler
+- Added express-validator to script routes
+- Created standardized API response envelope helpers
+- Replaced console.warn with Winston in security middleware
+
+### Architecture (3 fixes)
+- Extracted 350-line inline cache to standalone `cacheService.ts`
+- Added Redis integration with in-memory fallback via ioredis
+- Resolved circular dependency (eliminated runtime `require()`)
+
+### AI Updates
+- Replaced all deprecated models: gpt-4o -> gpt-4.1, gpt-4o-mini -> gpt-4.1-mini
+- Added GPT-5.4 as flagship model, o4-mini for lightweight reasoning
+- Updated SDKs: OpenAI Node 6.33.0, Python 2.30.0, LangGraph 1.1.0, LangChain 1.0
+- Created shared OpenAI client singleton (replaces 3 separate instances)
+- Added Assistants API sunset warning headers
+
+Full details: [PROJECT-REVIEW-2026-04-01.md](./docs/PROJECT-REVIEW-2026-04-01.md) | [AI-FUNCTIONS-REVIEW-2026-04-02.md](./docs/AI-FUNCTIONS-REVIEW-2026-04-02.md)
+</details>
+
+<details>
+<summary><strong>Key technical decisions</strong></summary>
+
+- JWT auth with refresh token rotation, bcrypt (12 rounds), account lockout
+- Script uploads deduplicated via SHA-256 file hashing
+- AI analysis runs as fire-and-forget with 2-retry exponential backoff
+- Cache: Redis primary (via ioredis) with automatic in-memory fallback
+- Structured API responses: `{ success: true, data }` / `{ success: false, error: { code, message } }`
+- Multi-model routing: task complexity determines model selection (nano -> mini -> standard -> flagship)
+- 3-layer AI guardrails: input validation, context construction, output validation
+- Voice pipeline: `gpt-4o-mini-transcribe` -> `gpt-4.1` reasoning -> `gpt-4o-mini-tts`
+</details>
+
+---
 
 ## Documentation
 
-- [Backend README](./src/backend/README.md)
-- [Frontend README](./src/frontend/README.md)
-- [AI README](./src/ai/README.md)
-- [Getting Started](./docs/GETTING-STARTED.md)
-- [Data Maintenance](./docs/DATA-MAINTENANCE.md)
-- [Voice API](./docs/README-VOICE-API.md)
-- [Deployment Platforms](./docs/DEPLOYMENT-PLATFORMS.md)
-- [Authentication Improvements](./docs/AUTHENTICATION-IMPROVEMENTS.md)
-- [Updates](./docs/UPDATES.md)
-- [Documentation Hub](./docs/index.md)
+| Document | Purpose |
+|----------|---------|
+| [Getting Started](./docs/GETTING-STARTED.md) | Local bootstrap and first-run |
+| [Data Maintenance](./docs/DATA-MAINTENANCE.md) | Admin backup, restore, cleanup |
+| [Voice API](./docs/README-VOICE-API.md) | Voice/listening implementation |
+| [Deployment Platforms](./docs/DEPLOYMENT-PLATFORMS.md) | Render, Netlify, Docker configs |
+| [Project Review](./docs/PROJECT-REVIEW-2026-04-01.md) | April 2026 comprehensive review |
+| [AI Functions Review](./docs/AI-FUNCTIONS-REVIEW-2026-04-02.md) | AI audit and model migration |
+| [Documentation Hub](./docs/index.md) | Full docs index |
 
-## README Notes
+### Service READMEs
 
-This root `README.md` is the canonical GitHub landing page.
+- [Backend](./src/backend/README.md) — Routes, validation, middleware
+- [Frontend](./src/frontend/README.md) — Components, pages, state
+- [AI Service](./src/ai/README.md) — Models, agents, guardrails
 
-Formatting choices in this file were updated to match GitHub README best-practice patterns documented in GitHub’s Markdown and README guidance, including:
-- clear heading hierarchy
-- relative-image embeds
-- tables for service layout and feature summaries
-- short, task-oriented setup and validation sections
+---
+
+<p align="center">
+  <sub>Last updated: April 2, 2026</sub>
+</p>
