@@ -1,5 +1,5 @@
 # Core dependencies - Updated April 2026
-# Requires Python 3.10+ (LangChain 1.0 requirement)
+# Requires Python 3.11+ (LangChain/LangGraph requirement)
 fastapi>=0.115.0
 uvicorn>=0.34.0
 openai>=2.30.0  # OpenAI SDK with GPT-5.4, Responses API, modern audio
@@ -45,11 +45,11 @@ soundfile==0.12.1
 librosa==0.10.0
 ffmpeg-python==0.2.0
 
-# Graph and workflow dependencies - Updated April 2026 for LangGraph 1.1 + LangChain 1.0 GA
+# Graph and workflow dependencies - Updated April 2026
 networkx>=3.2.0
-langgraph>=1.1.0  # LangGraph 1.1 with type-safe streaming and invoke v2
-langchain>=1.0.0  # LangChain 1.0 GA - first stable release
-langchain-community>=1.0.0  # Community integrations (1.0 aligned)
-langchain-openai>=1.0.0  # OpenAI integration (1.0 aligned)
+langgraph>=0.2.0  # LangGraph with type-safe streaming
+langchain>=0.3.0  # LangChain stable
+langchain-community>=0.3.0  # Community integrations
+langchain-openai>=0.3.0  # OpenAI integration
 langsmith>=0.1.0  # LangSmith for observability
 matplotlib>=3.8.0
