@@ -24,7 +24,7 @@ import {
 } from './shared';
 
 import type { AuthenticatedRequest } from './types';
-import { openai, MODELS } from '../../services/openaiClient';
+import { openai, anthropic, MODELS } from '../../services/openaiClient';
 
 /**
  * Direct OpenAI analysis fallback.
@@ -75,6 +75,60 @@ Return ONLY valid JSON, no markdown or explanation.`
       ms_docs_references: [],
       model_used: MODELS.CODE,
       provider: 'openai-direct'
+    };
+  }
+}
+
+/**
+ * Anthropic Claude analysis fallback.
+ * Used when both AI service and OpenAI are unavailable.
+ */
+async function analyzeWithClaudeDirect(content: string): Promise<Record<string, unknown>> {
+  if (!anthropic) {
+    throw new Error('Anthropic client not initialized (ANTHROPIC_API_KEY not set)');
+  }
+
+  const response = await anthropic.messages.create({
+    model: MODELS.CLAUDE_SONNET,
+    max_tokens: 4096,
+    messages: [
+      {
+        role: 'user',
+        content: `You are a PowerShell script security and quality analyzer. Analyze this script and return ONLY a JSON object (no markdown, no explanation) with these fields:
+- purpose (string): Brief description of what the script does
+- security_score (number 0-10): Higher is more secure
+- code_quality_score (number 0-10): Higher is better quality
+- risk_score (number 0-10): Higher means more risky
+- optimization (string[]): List of optimization suggestions
+- command_details (object): Key PowerShell commands found and their purpose
+- ms_docs_references (string[]): Relevant Microsoft documentation URLs
+- security_issues (object[]): Each with {severity, description, remediation}
+- best_practice_violations (object[]): Each with {rule, description, suggestion}
+- parameters (object): Detected script parameters with descriptions
+
+Script to analyze:
+
+${content.substring(0, 8000)}`
+      }
+    ],
+  });
+
+  const text = response.content[0]?.type === 'text' ? response.content[0].text : '{}';
+  // Strip markdown code fences if Claude wraps the JSON
+  const cleaned = text.replace(/^```(?:json)?\s*\n?/m, '').replace(/\n?```\s*$/m, '').trim();
+  try {
+    return JSON.parse(cleaned);
+  } catch {
+    return {
+      purpose: 'Analysis completed via Claude (parse error)',
+      security_score: 5,
+      code_quality_score: 5,
+      risk_score: 5,
+      optimization: [],
+      command_details: {},
+      ms_docs_references: [],
+      model_used: MODELS.CLAUDE_SONNET,
+      provider: 'anthropic-direct'
     };
   }
 }
@@ -370,9 +424,44 @@ export async function analyzeScriptAndSave(
           model: MODELS.CODE
         });
       } catch (directError) {
-        logger.error('Direct OpenAI analysis also failed:', directError);
+        logger.error('Direct OpenAI analysis failed:', directError);
+
+        // FALLBACK 2: Try Anthropic Claude
+        if (anthropic) {
+          try {
+            logger.warn('OpenAI direct failed, trying Anthropic Claude fallback');
+            const claudeResult = await analyzeWithClaudeDirect(content);
+
+            const claudeTx = await sequelize.transaction();
+            const claudeRecord = {
+              scriptId: parseInt(id),
+              purpose: (claudeResult.purpose as string) || '',
+              securityScore: (claudeResult.security_score as number) || 5,
+              codeQualityScore: (claudeResult.code_quality_score as number) || 5,
+              riskScore: (claudeResult.risk_score as number) || 5,
+              parameters: (claudeResult.parameters as Record<string, unknown>) || {},
+              optimizationSuggestions: (claudeResult.optimization as string[]) || [],
+              commandDetails: (claudeResult.command_details as Record<string, unknown>) || {},
+              msDocsReferences: (claudeResult.ms_docs_references as string[]) || [],
+            };
+
+            let claudeAnalysis = await ScriptAnalysis.findOne({ where: { scriptId: id }, transaction: claudeTx });
+            if (claudeAnalysis) {
+              await claudeAnalysis.update(claudeRecord, { transaction: claudeTx });
+            } else {
+              claudeAnalysis = await ScriptAnalysis.create(claudeRecord, { transaction: claudeTx });
+            }
+            await claudeTx.commit();
+            logger.info(`Claude analysis complete for script ${id}`);
+
+            return res.json({ ...claudeResult, provider: 'anthropic-direct', model: MODELS.CLAUDE_SONNET });
+          } catch (claudeError) {
+            logger.error('Anthropic Claude analysis also failed:', claudeError);
+          }
+        }
+
         return res.status(503).json({
-          message: 'Analysis service unavailable and direct analysis failed',
+          message: 'All analysis providers unavailable (AI service, OpenAI, Anthropic)',
           error: 'analysis_unavailable'
         });
       }
