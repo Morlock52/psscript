@@ -16,7 +16,7 @@ from typing import Dict, List, Any, Optional
 import uuid
 
 from openai import OpenAI, AsyncOpenAI
-from openai.types.beta.threads import Run, ThreadMessage
+from openai.types.beta.threads import Run, Message
 
 # Configure logging
 logging.basicConfig(
@@ -495,7 +495,7 @@ class OpenAIAssistantAgent:
         
         return tool_outputs
     
-    def _extract_message_content(self, message: ThreadMessage) -> str:
+    def _extract_message_content(self, message: Message) -> str:
         """
         Extract content from a message.
         
