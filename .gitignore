@@ -52,6 +52,12 @@ lerna-debug.log*
 coverage/
 .nyc_output/
 
+# Playwright (generated artifacts — never commit)
+test-results/
+playwright-report/
+playwright-results.json
+blob-report/
+
 # Docker
 docker-volumes/
 
@@ -81,6 +87,10 @@ src/backend/uploads/
 .npm/
 .eslintcache
 .stylelintcache
+cache-backups/
+
+# Backend logs
+src/backend/logs/
 
 # Compiled output
 *.min.js
