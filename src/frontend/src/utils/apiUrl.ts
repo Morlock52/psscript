@@ -66,8 +66,10 @@ export function getApiUrl(): string {
     (window.location as any).origin ||
     `${window.location.protocol}//${hostname}${window.location.port ? `:${window.location.port}` : ''}`;
 
+  // Localhost always hits backend on port 4000, whether dev or production build.
+  // Non-localhost (tunnel/proxy) uses same-origin /api path.
   _cachedApiUrl = isLocalhost
-    ? (import.meta.env.DEV ? `${protocol}://${hostname}:4000/api` : `${origin}/api`)
+    ? `${protocol}://${hostname}:4000/api`
     : `${protocol}://${hostname}/api`;
 
   console.log('[apiUrl] Runtime API URL:', _cachedApiUrl, '(hostname:', hostname, ', isLocalhost:', isLocalhost, ')');

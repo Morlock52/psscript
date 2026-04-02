@@ -59,6 +59,7 @@ export default class ScriptVersion extends Model {
       sequelize,
       tableName: 'script_versions',
       timestamps: true,
+      underscored: true,
       updatedAt: false,
       indexes: [
         {
