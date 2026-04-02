@@ -9,9 +9,9 @@ router.use(authenticateJWT);
 // All Assistants endpoints will be migrated to the Responses API.
 // See: https://developers.openai.com/api/docs/assistants/migration
 router.use((_req, res, next) => {
-  res.setHeader('Deprecation', 'true');
-  res.setHeader('Sunset', 'Tue, 26 Aug 2026 00:00:00 GMT');
-  res.setHeader('Link', '<https://developers.openai.com/api/docs/guides/migrate-to-responses>; rel="successor-version"');
+  res.set('Deprecation', 'true');
+  res.set('Sunset', 'Tue, 26 Aug 2026 00:00:00 GMT');
+  res.set('Link', '<https://developers.openai.com/api/docs/guides/migrate-to-responses>; rel="successor-version"');
   next();
 });
 

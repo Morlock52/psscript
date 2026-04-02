@@ -9,7 +9,7 @@ import { getAuthConfig, IS_PRODUCTION, obfuscateEmail } from '../utils/envValida
 import { passwordStrengthValidator, MIN_PASSWORD_LENGTH } from '../utils/passwordValidation';
 import bcrypt from 'bcrypt';
 
-// Request type extensions are in src/types/express.d.ts
+// Request type extensions are in src/types/express.d.ts (declare module 'express-serve-static-core')
 
 const router = express.Router();
 
