@@ -5,14 +5,8 @@
 import { Request, Response } from 'express';
 import type { Transaction } from 'sequelize';
 
-// Extend Express Request with user info
-export interface AuthenticatedRequest extends Request {
-  user?: {
-    id: number;
-    username: string;
-    role: 'admin' | 'user';
-  };
-}
+// Uses the global Express.Request.user type from src/types/express.d.ts
+export type AuthenticatedRequest = Request;
 
 // Standard API response types
 export interface ApiResponse<T = unknown> {

@@ -4,6 +4,8 @@
  * Handles basic Create, Read, Update, Delete operations for scripts.
  * Migrated from the original ScriptController for better modularity.
  */
+import { validationResult } from 'express-validator';
+import { errors as apiErrors, fail } from '../../utils/responseHelpers';
 import {
   Response,
   NextFunction,
@@ -41,6 +43,81 @@ import type {
 } from './types';
 
 /**
+ * Run AI analysis with retry and exponential backoff.
+ * Fire-and-forget: call with `void runAnalysisWithRetry(...)`.
+ *
+ * Best practice (2026): Background tasks should retry transient failures
+ * with exponential backoff (max 2-3 retries) so a brief AI service
+ * hiccup doesn't permanently lose the analysis.
+ */
+async function runAnalysisWithRetry(
+  scriptId: number,
+  content: string,
+  categoryId: number | null | undefined,
+  openaiApiKey: string | undefined,
+  maxRetries = 2
+): Promise<void> {
+  for (let attempt = 0; attempt <= maxRetries; attempt++) {
+    try {
+      const analysisConfig: { headers: Record<string, string>; timeout: number } = {
+        headers: {},
+        timeout: TIMEOUTS.QUICK
+      };
+      if (openaiApiKey) {
+        analysisConfig.headers['x-api-key'] = openaiApiKey;
+      }
+
+      logger.info(`AI analysis for script ${scriptId} (attempt ${attempt + 1}/${maxRetries + 1})`);
+
+      const analysisResponse = await axios.post(
+        `${AI_SERVICE_URL}/analyze`,
+        {
+          script_id: scriptId,
+          content,
+          include_command_details: true,
+          fetch_ms_docs: true
+        },
+        analysisConfig
+      );
+
+      const analysis = analysisResponse.data as AIAnalysisResponse;
+
+      await ScriptAnalysis.upsert({
+        scriptId,
+        purpose: analysis?.purpose || 'No purpose provided',
+        parameters: analysis?.parameters || {},
+        securityScore: analysis?.security_score || 5.0,
+        codeQualityScore: analysis?.code_quality_score || 5.0,
+        riskScore: analysis?.risk_score || 5.0,
+        optimizationSuggestions: analysis?.optimization || [],
+        commandDetails: analysis?.command_details || [],
+        msDocsReferences: analysis?.ms_docs_references || []
+      });
+
+      if (!categoryId && analysis?.category_id) {
+        await Script.update(
+          { categoryId: analysis.category_id },
+          { where: { id: scriptId } }
+        );
+      }
+
+      clearScriptCaches(String(scriptId));
+      logger.info(`AI analysis complete for script ${scriptId}`);
+      return; // success — exit retry loop
+    } catch (err) {
+      const isLastAttempt = attempt === maxRetries;
+      if (isLastAttempt) {
+        logger.error(`AI analysis failed for script ${scriptId} after ${maxRetries + 1} attempts:`, err);
+      } else {
+        const delayMs = 1000 * Math.pow(2, attempt); // 1s, 2s
+        logger.warn(`AI analysis attempt ${attempt + 1} failed for script ${scriptId}, retrying in ${delayMs}ms`);
+        await new Promise(resolve => setTimeout(resolve, delayMs));
+      }
+    }
+  }
+}
+
+/**
  * Get all scripts with pagination and filtering
  */
 export async function getScripts(
@@ -60,11 +137,11 @@ export async function getScripts(
     const order = (req.query.order as string) || 'DESC';
 
     if (userId && (Number.isNaN(requestedUserId) || !Number.isInteger(requestedUserId))) {
-      return res.status(400).json({ message: 'Invalid userId filter' });
+      return apiErrors.badRequest(res, 'Invalid userId filter');
     }
 
     if (userId && !isAdmin && requestedUserId !== viewerId) {
-      return res.status(403).json({ message: 'Forbidden: cannot query scripts for another user' });
+      return apiErrors.forbidden(res, 'Cannot query scripts for another user');
     }
 
     const cacheKey = `scripts:${page}:${limit}:${categoryId || ''}:${userId || ''}:${sortField}:${order}:${isAdmin ? 'admin' : `user-${viewerId || 'anon'}`}`;
@@ -159,11 +236,11 @@ export async function getScript(
     });
 
     if (!script) {
-      return res.status(404).json({ message: 'Script not found' });
+      return apiErrors.notFound(res, 'Script not found');
     }
 
     if (!isAdmin && !script.isPublic && script.userId !== viewerId) {
-      return res.status(403).json({ message: 'Forbidden: insufficient permissions to view this script' });
+      return apiErrors.forbidden(res, 'Insufficient permissions to view this script');
     }
 
     // Fetch analysis separately
@@ -187,24 +264,23 @@ export async function createScript(
   res: Response,
   next: NextFunction
 ): Promise<void | Response> {
+  // Check express-validator results
+  const errors = validationResult(req);
+  if (!errors.isEmpty()) {
+    return fail(res, 400, 'VALIDATION_ERROR', errors.array()[0].msg, { validationErrors: errors.array() });
+  }
+
   let transaction: Transaction | undefined;
 
   try {
-    transaction = await sequelize.transaction({
-      isolationLevel: Transaction.ISOLATION_LEVELS.SERIALIZABLE
-    });
+    transaction = await sequelize.transaction();
 
     const { title, description, content, categoryId, tags } = req.body as ScriptCreateInput;
     const userId = req.user?.id;
 
     if (!userId) {
       await transaction.rollback();
-      return res.status(401).json({ message: 'Unauthorized' });
-    }
-
-    if (!title || !content) {
-      await transaction.rollback();
-      return res.status(400).json({ message: 'Title and content are required' });
+      return apiErrors.unauthorized(res);
     }
 
     // Create the script
@@ -258,56 +334,9 @@ export async function createScript(
       include: getScriptIncludes(true)
     });
 
+    // Fire-and-forget AI analysis with retry
     const openaiApiKey = req.headers['x-openai-api-key'] as string | undefined;
-    void (async () => {
-      try {
-        const analysisConfig: { headers: Record<string, string>; timeout: number } = {
-          headers: {},
-          timeout: TIMEOUTS.QUICK
-        };
-
-        if (openaiApiKey) {
-          analysisConfig.headers['x-api-key'] = openaiApiKey;
-        }
-
-        logger.info(`Sending script ${script.id} for AI analysis`);
-
-        const analysisResponse = await Promise.race([
-          axios.post(`${AI_SERVICE_URL}/analyze`, {
-            script_id: script.id,
-            content,
-            include_command_details: true,
-            fetch_ms_docs: true
-          }, analysisConfig),
-          new Promise<never>((_, reject) =>
-            setTimeout(() => reject(new Error('Analysis request timed out')), TIMEOUTS.QUICK)
-          )
-        ]);
-
-        const analysis = (analysisResponse as { data: AIAnalysisResponse }).data;
-
-        await ScriptAnalysis.upsert({
-          scriptId: script.id,
-          purpose: analysis?.purpose || 'No purpose provided',
-          parameters: analysis?.parameters || {},
-          securityScore: analysis?.security_score || 5.0,
-          codeQualityScore: analysis?.code_quality_score || 5.0,
-          riskScore: analysis?.risk_score || 5.0,
-          optimizationSuggestions: analysis?.optimization || [],
-          commandDetails: analysis?.command_details || [],
-          msDocsReferences: analysis?.ms_docs_references || []
-        });
-
-        if (!categoryId && analysis?.category_id) {
-          await script.update({ categoryId: analysis.category_id });
-        }
-
-        clearScriptCaches();
-        logger.info(`Created analysis for script ${script.id}`);
-      } catch (analysisError) {
-        logger.error(`AI analysis failed for script ${script.id}:`, analysisError);
-      }
-    })();
+    void runAnalysisWithRetry(script.id, content, categoryId, openaiApiKey);
 
     return res.status(201).json(completeScript);
   } catch (error) {
@@ -323,17 +352,12 @@ export async function createScript(
     // Handle specific error types
     const err = error as { name?: string; errors?: Array<{ message: string }> };
     if (err.name === 'SequelizeUniqueConstraintError') {
-      return res.status(409).json({
-        message: 'A script with this title already exists',
-        error: 'unique_constraint_error'
-      });
+      return apiErrors.conflict(res, 'A script with this title already exists');
     }
 
     if (err.name === 'SequelizeValidationError') {
-      return res.status(400).json({
-        message: 'Validation error',
-        error: 'validation_error',
-        details: err.errors?.map((e) => e.message)
+      return fail(res, 400, 'VALIDATION_ERROR', 'Validation error', {
+        fields: err.errors?.map((e) => e.message)
       });
     }
 
@@ -361,18 +385,12 @@ export async function deleteScript(
 
     if (!script) {
       await transaction.rollback();
-      return res.status(404).json({
-        message: 'Script not found',
-        success: false
-      });
+      return apiErrors.notFound(res, 'Script not found');
     }
 
     if (!isAuthorizedForScript(script, req)) {
       await transaction.rollback();
-      return res.status(403).json({
-        message: 'Not authorized to delete this script',
-        success: false
-      });
+      return apiErrors.forbidden(res, 'Not authorized to delete this script');
     }
 
     // Delete all related records in order
@@ -387,9 +405,8 @@ export async function deleteScript(
     clearScriptCaches(scriptId);
 
     return res.json({
-      message: 'Script deleted successfully',
-      id: scriptId,
-      success: true
+      success: true,
+      data: { id: scriptId, message: 'Script deleted successfully' }
     });
   } catch (error) {
     if (transaction) {
@@ -401,11 +418,7 @@ export async function deleteScript(
     }
 
     logger.error('Error deleting script:', error);
-    return res.status(500).json({
-      message: 'Failed to delete script',
-      error: (error as Error).message,
-      success: false
-    });
+    return apiErrors.internal(res, 'Failed to delete script');
   }
 }
 
@@ -417,6 +430,12 @@ export async function updateScript(
   res: Response,
   next: NextFunction
 ): Promise<void | Response> {
+  // Check express-validator results
+  const valErrors = validationResult(req);
+  if (!valErrors.isEmpty()) {
+    return fail(res, 400, 'VALIDATION_ERROR', valErrors.array()[0].msg, { validationErrors: valErrors.array() });
+  }
+
   let transaction: Transaction | undefined;
 
   try {
@@ -436,13 +455,13 @@ export async function updateScript(
 
     if (!script) {
       await transaction.rollback();
-      return res.status(404).json({ message: 'Script not found' });
+      return apiErrors.notFound(res, 'Script not found');
     }
 
     // Check authorization
     if (!isAuthorizedForScript(script, req)) {
       await transaction.rollback();
-      return res.status(403).json({ message: 'Not authorized to update this script' });
+      return apiErrors.forbidden(res, 'Not authorized to update this script');
     }
 
     // Create a new version if content changed
@@ -459,50 +478,9 @@ export async function updateScript(
         { transaction }
       );
 
-      // Re-analyze if content changed
-      try {
-        const openaiApiKey = req.headers['x-openai-api-key'] as string;
-        const analysisConfig: { headers: Record<string, string>; timeout: number } = {
-          headers: {},
-          timeout: TIMEOUTS.QUICK
-        };
-
-        if (openaiApiKey) {
-          analysisConfig.headers['x-api-key'] = openaiApiKey;
-        }
-
-        const analysisResponse = await axios.post(
-          `${AI_SERVICE_URL}/analyze`,
-          {
-            script_id: script.id,
-            content,
-            include_command_details: true,
-            fetch_ms_docs: true
-          },
-          analysisConfig
-        );
-
-        const analysis = analysisResponse.data as AIAnalysisResponse;
-
-        // Update existing analysis or create new
-        await ScriptAnalysis.upsert(
-          {
-            scriptId: script.id,
-            purpose: analysis.purpose || '',
-            parameters: analysis.parameters || {},
-            securityScore: analysis.security_score || 5.0,
-            codeQualityScore: analysis.code_quality_score || 5.0,
-            riskScore: analysis.risk_score || 5.0,
-            optimizationSuggestions: analysis.optimization || [],
-            commandDetails: analysis.command_details || [],
-            msDocsReferences: analysis.ms_docs_references || []
-          },
-          { transaction }
-        );
-      } catch (analysisError) {
-        logger.error('AI analysis failed on update:', analysisError);
-        // Continue without re-analysis
-      }
+      // Fire-and-forget re-analysis with retry
+      const openaiApiKey = req.headers['x-openai-api-key'] as string;
+      void runAnalysisWithRetry(script.id, content, categoryId, openaiApiKey);
     } else {
       // Update without changing version if only metadata changed
       await script.update(

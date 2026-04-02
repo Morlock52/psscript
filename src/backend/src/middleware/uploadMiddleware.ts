@@ -1,4 +1,4 @@
-// @ts-nocheck - Using multer types with Express requires complex type handling
+// Request type extensions are in src/types/express.d.ts
 import multer from 'multer';
 import path from 'path';
 import fs from 'fs';

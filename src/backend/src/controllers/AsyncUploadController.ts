@@ -203,8 +203,7 @@ export class AsyncUploadController {
           scriptDetails: {
             title: script.title,
             description: script.description,
-            // @ts-ignore - versions may not be loaded in all query contexts
-            versions: script.versions?.length || 1
+            versions: (script as any).versions?.length || 1
           }
         });
         return;

@@ -1,4 +1,4 @@
-// @ts-nocheck - Required for middleware integration and route parameter handling
+// Request type extensions are in src/types/express.d.ts
 import express from 'express';
 import { documentationController } from '../controllers/DocumentationController';
 import { authenticateJWT } from '../middleware/authMiddleware';

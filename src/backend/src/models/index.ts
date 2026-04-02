@@ -1,4 +1,4 @@
-// @ts-nocheck - Required for circular model references and association handling
+// Model initialization and association setup
 import User from './User';
 import Script from './Script';
 import Category from './Category';

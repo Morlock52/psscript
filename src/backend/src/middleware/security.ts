@@ -5,6 +5,7 @@
 import { Request, Response, NextFunction } from 'express';
 import helmet from 'helmet';
 import rateLimit from 'express-rate-limit';
+import logger from '../utils/logger';
 
 const IS_PRODUCTION = process.env.NODE_ENV === 'production';
 // In local dev + e2e + stress testing, strict rate limits create false "Network Error" failures.
@@ -292,7 +293,7 @@ export const securityLogger = (req: Request, res: Response, next: NextFunction) 
 
   for (const pattern of suspiciousPatterns) {
     if (pattern.test(combined)) {
-      console.warn(`[SECURITY] Suspicious request pattern detected:`, {
+      logger.warn('Suspicious request pattern detected', {
         ip: req.ip,
         path: req.path,
         pattern: pattern.toString(),
@@ -346,7 +347,7 @@ export const csrfProtection = (allowedOrigins?: string[]) => {
     if (!origin && !referer) {
       // In production, require origin header for state-changing requests
       if (process.env.NODE_ENV === 'production') {
-        console.warn(`[CSRF] Request without origin header blocked:`, {
+        logger.warn('CSRF: Request without origin header blocked', {
           ip: req.ip,
           path: req.path,
           method: req.method,
@@ -368,7 +369,7 @@ export const csrfProtection = (allowedOrigins?: string[]) => {
       requestOrigin === allowed ||
       requestOrigin.endsWith('.morloksmaze.com') // Allow subdomains in production
     )) {
-      console.warn(`[CSRF] Request from disallowed origin blocked:`, {
+      logger.warn('CSRF: Request from disallowed origin blocked', {
         ip: req.ip,
         path: req.path,
         method: req.method,

@@ -1,11 +1,10 @@
-/** 
- * @ts-nocheck 
+/**
  * This file is kept for backwards compatibility but is no longer used.
  * All Redis functionality has been replaced with in-memory caching in index.ts
  */
 import { Request, Response, NextFunction } from 'express';
 import logger from '../utils/logger';
-import { cache } from '../index';
+import { cache } from '../services/cacheService';
 
 // Provide a compatibility layer for existing code
 export const redisClient = null;

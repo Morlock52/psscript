@@ -1,6 +1,6 @@
-// @ts-nocheck - Required: Express middleware chain loses type info when JWT adds req.user
-// TODO: Fix by extending Express.Request interface or using typed middleware wrappers
+// Request type extensions are in src/types/express.d.ts
 import express from 'express';
+import { body, param } from 'express-validator';
 // New modular controllers (migrated from legacy ScriptController)
 import {
   ScriptCrudController,
@@ -15,7 +15,7 @@ import upload, { handleMulterError, diskUpload, handleUploadProgress } from '../
 import { corsMiddleware, uploadCorsMiddleware } from '../middleware/corsMiddleware';
 import { sequelize } from '../database/connection';
 import { Script, ScriptAnalysis, ScriptTag, ScriptVersion, ExecutionLog } from '../models';
-import { cache } from '../index';
+import { cache } from '../services/cacheService';
 import { handleNetworkErrors } from '../middleware/networkErrorMiddleware';
 import AsyncUploadController from '../controllers/AsyncUploadController';
 import { generatePowerShellScript } from '../services/agentic/tools/ScriptGenerator';
@@ -282,7 +282,14 @@ router.get('/:id', authenticateJWT, ScriptCrudController.getScript);
  *         description: Unauthorized
  */
 // Route for handling JSON uploads
-router.post('/', authenticateJWT, ScriptCrudController.createScript);
+const scriptValidation = [
+  body('title').trim().isLength({ min: 1, max: 100 }).withMessage('Title is required (1-100 characters)'),
+  body('content').notEmpty().withMessage('Script content is required'),
+  body('categoryId').optional({ nullable: true }).isInt({ min: 1 }).withMessage('Invalid category ID'),
+  body('tags').optional().isArray({ max: 10 }).withMessage('Tags must be an array (max 10)'),
+  body('tags.*').optional().isString().trim().isLength({ min: 1, max: 50 }).withMessage('Each tag must be 1-50 characters'),
+];
+router.post('/', authenticateJWT, scriptValidation, ScriptCrudController.createScript);
 
 /**
  * @swagger
@@ -434,7 +441,15 @@ router.post('/upload/large', uploadCorsMiddleware, authenticateJWT, handleNetwor
  *       404:
  *         description: Script not found
  */
-router.put('/:id', authenticateJWT, ScriptCrudController.updateScript);
+const scriptUpdateValidation = [
+  param('id').isInt({ min: 1 }).withMessage('Invalid script ID'),
+  body('title').optional().trim().isLength({ min: 1, max: 100 }).withMessage('Title must be 1-100 characters'),
+  body('content').optional().notEmpty().withMessage('Content cannot be empty'),
+  body('categoryId').optional({ nullable: true }).isInt({ min: 1 }).withMessage('Invalid category ID'),
+  body('tags').optional().isArray({ max: 10 }).withMessage('Tags must be an array (max 10)'),
+  body('isPublic').optional().isBoolean().withMessage('isPublic must be a boolean'),
+];
+router.put('/:id', authenticateJWT, scriptUpdateValidation, ScriptCrudController.updateScript);
 
 /**
  * @swagger
@@ -1184,7 +1199,7 @@ router.post('/:id/apply-suggestions', authenticateJWT, async (req, res) => {
       return res.status(400).json({ message: 'Invalid script id', success: false });
     }
 
-    const suggestions = Array.isArray(req.body?.suggestions)
+    const suggestions: string[] = Array.isArray(req.body?.suggestions)
       ? req.body.suggestions.map((item: unknown) => String(item || '').trim()).filter(Boolean)
       : [];
 

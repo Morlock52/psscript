@@ -44,7 +44,8 @@ export default class ScriptAnalysis extends Model {
           key: 'id'
         },
         unique: true,
-        field: 'script_id'
+        field: 'script_id',
+        onDelete: 'CASCADE'
       },
       purpose: {
         type: DataTypes.TEXT,

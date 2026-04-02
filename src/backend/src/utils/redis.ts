@@ -1,5 +1,5 @@
 import logger from './logger';
-import { cache } from '../index';
+import { cache } from '../services/cacheService';
 
 /**
  * Enhanced cache utility functions that provide stronger TypeScript typing,
@@ -107,9 +107,9 @@ export const invalidateByPattern = async (pattern: string): Promise<CacheOperati
       return { success: false, key: pattern, error: 'Invalid pattern' };
     }
     
-    const count = cache.clearPattern(pattern);
+    const count = cache.clearPattern(pattern) || 0;
     logger.info(`Invalidated ${count} cache keys matching pattern: ${pattern}`);
-    
+
     return { success: true, key: pattern, value: count };
   } catch (error) {
     const errorMessage = error instanceof Error ? error.message : String(error);
@@ -145,7 +145,7 @@ export const persistCache = async (filePath: string): Promise<CacheOperationResu
       return { success: false, key: 'persist', error: 'Invalid file path' };
     }
     
-    const success = await cache.persistence.saveToFile(filePath);
+    const success = await (cache as any).persistence.saveToFile(filePath);
     
     if (success) {
       return { success: true, key: 'persist', value: filePath };
@@ -170,7 +170,7 @@ export const loadCache = async (filePath: string): Promise<CacheOperationResult<
       return { success: false, key: 'load', error: 'Invalid file path' };
     }
     
-    const success = await cache.persistence.loadFromFile(filePath);
+    const success = await (cache as any).persistence.loadFromFile(filePath);
     
     if (success) {
       return { success: true, key: 'load', value: filePath };

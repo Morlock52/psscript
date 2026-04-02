@@ -91,7 +91,7 @@ async def analyze_script(request: LangGraphAnalysisRequest):
     ```json
     {
         "script_content": "Get-Process | Where-Object CPU -gt 100",
-        "model": "gpt-4",
+        "model": "gpt-4.1",
         "require_human_review": false,
         "stream": true
     }
@@ -295,9 +295,11 @@ async def orchestrator_info():
             }
         ],
         "supported_models": [
-            "gpt-4o",        # Default general-purpose model (January 2026)
+            "gpt-4.1",       # Best for code generation (1M context)
+            "gpt-5.4",       # Flagship model for complex tasks
             "o3",            # Reasoning model for complex analysis
-            "gpt-4o-mini"    # Fast model for quick tasks
+            "o4-mini",       # Lightweight reasoning model
+            "gpt-4.1-mini"   # Fast model for quick tasks
         ],
         "features": {
             "checkpointing": {

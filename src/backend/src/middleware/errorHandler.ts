@@ -45,12 +45,7 @@ export const errorHandler = (
   }
   
   // Handle specific error types
-  if (err.name === 'ValidationError') {
-    // Mongoose or other validation error
-    statusCode = 400;
-    message = 'Validation Error';
-    errorDetails = err.message;
-  } else if (err.name === 'JsonWebTokenError') {
+  if (err.name === 'JsonWebTokenError') {
     // JWT validation error
     statusCode = 401;
     message = 'Invalid token';
@@ -112,9 +107,9 @@ export const setupUncaughtExceptionHandling = () => {
       reason,
       promise
     });
-    
-    // Convert to error and let uncaughtException handler deal with it
-    throw reason;
+
+    // Graceful shutdown on unhandled rejection
+    process.exit(1);
   });
 };
 

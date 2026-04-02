@@ -2,9 +2,8 @@ import { Request, Response } from 'express';
 import axios from 'axios';
 import logger from '../utils/logger';
 import { ChatHistory } from '../models';
-import { sequelize } from '../database/connection';
 import { Op } from 'sequelize';
-import { cache } from '../index';
+import { cache } from '../services/cacheService';
 
 const AI_CHAT_TIMEOUT_MS = Number(process.env.AI_CHAT_TIMEOUT_MS || 20000);
 
@@ -332,8 +331,7 @@ export class ChatController {
       }
       
       // Query database for chat history
-      // Get the model instance from the sequelize import
-      const ChatHistoryModel = ChatHistory(sequelize);
+      const ChatHistoryModel = ChatHistory;
       const { count, rows } = await ChatHistoryModel.findAndCountAll({
         where: {
           userId
@@ -398,8 +396,7 @@ export class ChatController {
         : '';
       
       // Store in database
-      // Get the model instance from the sequelize import
-      const ChatHistoryModel = ChatHistory(sequelize);
+      const ChatHistoryModel = ChatHistory;
       await ChatHistoryModel.create({
         userId,
         messages,
@@ -436,8 +433,7 @@ export class ChatController {
       const userId = req.user.id;
       
       // Delete chat history from database
-      // Get the model instance from the sequelize import
-      const ChatHistoryModel = ChatHistory(sequelize);
+      const ChatHistoryModel = ChatHistory;
       await ChatHistoryModel.destroy({
         where: {
           userId
@@ -492,8 +488,7 @@ export class ChatController {
       
       // Search in chat history for the query
       // Note: This is a basic implementation - for production, you might want to use pgvector for semantic search
-      // Get the model instance from the sequelize import
-      const ChatHistoryModel = ChatHistory(sequelize);
+      const ChatHistoryModel = ChatHistory;
       const results = await ChatHistoryModel.findAll({
         where: {
           userId,
@@ -562,7 +557,7 @@ export class ChatController {
       try {
         // Create the chat history record
         // Get the model instance from the sequelize import
-        const ChatHistoryModel = ChatHistory(sequelize);
+        const ChatHistoryModel = ChatHistory;
         const chatHistory = await ChatHistoryModel.create({
           userId,
           messages,

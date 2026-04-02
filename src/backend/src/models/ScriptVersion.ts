@@ -11,7 +11,6 @@ export default class ScriptVersion extends Model {
   public userId!: number;
 
   public readonly createdAt!: Date;
-  public readonly updatedAt!: Date;
 
   // References
   public readonly script?: Script;
@@ -59,7 +58,8 @@ export default class ScriptVersion extends Model {
     }, {
       sequelize,
       tableName: 'script_versions',
-      timestamps: false,
+      timestamps: true,
+      updatedAt: false,
       indexes: [
         {
           unique: true,

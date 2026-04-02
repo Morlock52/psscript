@@ -223,7 +223,7 @@ export default class User extends Model {
         }
       },
       password: {
-        type: DataTypes.STRING(100),
+        type: DataTypes.STRING(255),
         allowNull: false,
         field: 'password_hash'
       },

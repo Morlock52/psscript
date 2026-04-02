@@ -50,11 +50,11 @@ export default class ScriptDependency extends Model {
 
   static associate() {
     ScriptDependency.belongsTo(Script, {
-      foreignKey: 'parent_script_id',
+      foreignKey: 'parentScriptId',
       as: 'parentScript'
     });
     ScriptDependency.belongsTo(Script, {
-      foreignKey: 'child_script_id',
+      foreignKey: 'childScriptId',
       as: 'childScript'
     });
   }

@@ -433,11 +433,8 @@ export async function exportAnalysis(
   }
 }
 
-// Extend Request with user for authenticated uploads
-// Note: `file` property is already typed by multer via Express.Multer.File
-interface UploadRequest extends Request {
-  user?: { id: number; role?: string };
-}
+// Uses the global Express.Request.user type from src/types/express.d.ts
+type UploadRequest = Request;
 
 /**
  * Upload a script file and store it in the database with enhanced error handling

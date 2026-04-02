@@ -2,7 +2,7 @@ import { Request, Response, NextFunction } from 'express';
 import { User } from '../models';
 import { Op } from 'sequelize';
 import logger from '../utils/logger';
-import { cache } from '../index';
+import { cache } from '../services/cacheService';
 
 // Cache key for user list
 const USER_LIST_CACHE_KEY = 'api:cache:/api/users';

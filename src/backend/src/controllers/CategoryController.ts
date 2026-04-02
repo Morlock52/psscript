@@ -5,28 +5,9 @@ import { Request, Response, NextFunction } from 'express';
 import { Category, Script, sequelize } from '../models';
 import { Op } from 'sequelize';
 import logger from '../utils/logger';
+import { cache as appCache } from '../services/cacheService';
 
-/**
- * Lazily resolve the app cache.
- *
- * CategoryController is loaded during route initialization which happens while `index.ts`
- * is still bootstrapping. Importing `cache` at module load time can capture an undefined
- * or partial export in CommonJS, leading to cache invalidation silently not happening.
- *
- * Using a runtime `require()` keeps it consistent with the script controllers' approach.
- */
-const getAppCache = () => {
-  // eslint-disable-next-line @typescript-eslint/no-require-imports
-  const mod = require('../index') as { cache?: any } | undefined;
-  const c = mod?.cache;
-  if (c) return c;
-  return {
-    get: () => null,
-    set: () => {},
-    del: () => false,
-    clearPattern: () => 0,
-  };
-};
+const getAppCache = () => appCache;
 
 class CategoryController {
   // Get all categories

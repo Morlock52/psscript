@@ -1,7 +1,7 @@
-// @ts-nocheck - Required for flexible API integration and dynamic request handling
+// Request type extensions are in src/types/express.d.ts
 import express from 'express';
 import { ChatController } from '../controllers/ChatController';
-import { ChatHistory, sequelize } from '../models';
+import { ChatHistory } from '../models';
 // Fix import error - use the named export
 import { authenticateJWT } from '../middleware/authMiddleware';
 import logger from '../utils/logger';
@@ -261,7 +261,7 @@ router.delete('/history/:chatId', authenticateJWT, async (req, res) => {
       return res.status(400).json({ error: 'Invalid chat id' });
     }
 
-    const ChatHistoryModel = ChatHistory(sequelize);
+    const ChatHistoryModel = ChatHistory;
     const deletedRows = await ChatHistoryModel.destroy({ where: { id: chatId, userId } });
     chatCategoryByUser.delete(getCategoryKey(userId, chatId));
 

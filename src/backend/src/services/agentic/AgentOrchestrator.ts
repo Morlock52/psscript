@@ -10,7 +10,7 @@
 
 import { v4 as uuidv4 } from 'uuid';
 import logger from '../../utils/logger';
-import { cache as _cache } from '../../index';
+import { cache as _cache } from '../cacheService';
 
 // Types for the orchestrator
 export interface Agent {

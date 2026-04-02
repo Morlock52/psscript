@@ -8,9 +8,7 @@ export default class ExecutionLog extends Model {
   public userId!: number | null;
   public parameters!: object;
   public status!: string;
-  // TODO: Add 'output' field once database migration is created
-  // The ScriptController.ts references log.output but the column doesn't exist in DB
-  // See: src/controllers/ScriptController.ts:1240
+  public output!: string | null;
   public errorMessage!: string | null;
   public executionTime!: number;
 
@@ -56,7 +54,11 @@ export default class ExecutionLog extends Model {
           isIn: [['success', 'failure', 'timeout', 'cancelled']]
         }
       },
-      // TODO: Add 'output' field once database migration is created
+      output: {
+        type: DataTypes.TEXT,
+        allowNull: true,
+        comment: 'Command output or execution result'
+      },
       errorMessage: {
         type: DataTypes.TEXT,
         allowNull: true

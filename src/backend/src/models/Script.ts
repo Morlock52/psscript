@@ -75,7 +75,7 @@ export default class Script extends Model {
         field: 'is_public'
       },
       fileHash: {
-        type: DataTypes.STRING(32),
+        type: DataTypes.STRING(64),
         allowNull: true,
         field: 'file_hash'
       }
@@ -83,6 +83,12 @@ export default class Script extends Model {
       sequelize,
       tableName: 'scripts',
       underscored: true,
+      indexes: [
+        { fields: ['file_hash'], name: 'idx_scripts_file_hash' },
+        { fields: ['is_public', 'user_id'], name: 'idx_scripts_visibility' },
+        { fields: ['user_id'], name: 'idx_scripts_user' },
+        { fields: ['category_id'], name: 'idx_scripts_category' }
+      ],
       hooks: {
         beforeCreate: async (_script: Script) => {
           // Any pre-save processing logic

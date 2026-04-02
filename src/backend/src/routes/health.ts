@@ -6,7 +6,7 @@ import { QueryTypes } from 'sequelize';
 import dns from 'dns';
 import net from 'net';
 import os from 'os';
-import { cache } from '../index';
+import { cache } from '../services/cacheService';
 import {
   getCache,
   setCache,

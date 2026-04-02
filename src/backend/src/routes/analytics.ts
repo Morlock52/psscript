@@ -4,6 +4,7 @@ import analyticsController from '../controllers/AnalyticsController';
 import logger from '../utils/logger';
 
 const router = express.Router();
+const controller = new analyticsController();
 
 // Apply authentication middleware to all analytics routes
 router.use(authenticateJWT);
@@ -13,7 +14,6 @@ router.use(authenticateJWT);
  */
 router.get('/security', async (req, res) => {
   try {
-    const controller = new analyticsController();
     await controller.getSecurityMetrics(req, res);
   } catch (error) {
     logger.error('Error fetching security metrics:', error);
@@ -29,7 +29,6 @@ router.get('/security', async (req, res) => {
  */
 router.get('/usage', async (req, res) => {
   try {
-    const controller = new analyticsController();
     await controller.getUsageAnalytics(req, res);
   } catch (error) {
     logger.error('Error fetching usage analytics:', error);
@@ -45,7 +44,6 @@ router.get('/usage', async (req, res) => {
  */
 router.get('/categories', async (req, res) => {
   try {
-    const controller = new analyticsController();
     await controller.getCategoryDistribution(req, res);
   } catch (error) {
     logger.error('Error fetching category distribution:', error);
@@ -56,10 +54,58 @@ router.get('/categories', async (req, res) => {
   }
 });
 
-// General analytics summary
-router.get('/summary', (req, res) => {
-  // TODO: Implement comprehensive analytics summary
-  res.json({ message: 'Analytics summary endpoint (to be implemented)' });
+/**
+ * General analytics summary - aggregates key metrics
+ */
+router.get('/summary', async (req, res) => {
+  try {
+    const { sequelize } = await import('../database/connection');
+    const { QueryTypes } = await import('sequelize');
+
+    const [scriptStats] = await sequelize.query(
+      `SELECT
+        COUNT(*)::int AS total_scripts,
+        COUNT(DISTINCT user_id)::int AS total_authors,
+        SUM(execution_count)::int AS total_executions,
+        ROUND(AVG(execution_count), 1) AS avg_executions
+      FROM scripts`,
+      { type: QueryTypes.SELECT }
+    ) as any[];
+
+    const [analysisStats] = await sequelize.query(
+      `SELECT
+        COUNT(*)::int AS total_analyses,
+        ROUND(AVG(security_score)::numeric, 1) AS avg_security_score,
+        ROUND(AVG(quality_score)::numeric, 1) AS avg_quality_score,
+        ROUND(AVG(risk_score)::numeric, 1) AS avg_risk_score
+      FROM script_analysis`,
+      { type: QueryTypes.SELECT }
+    ) as any[];
+
+    const [userStats] = await sequelize.query(
+      `SELECT
+        COUNT(*)::int AS total_users,
+        COUNT(CASE WHEN last_login_at > NOW() - INTERVAL '30 days' THEN 1 END)::int AS active_users_30d
+      FROM users`,
+      { type: QueryTypes.SELECT }
+    ) as any[];
+
+    res.json({
+      success: true,
+      summary: {
+        scripts: scriptStats || {},
+        analysis: analysisStats || {},
+        users: userStats || {},
+        generatedAt: new Date().toISOString()
+      }
+    });
+  } catch (error) {
+    logger.error('Error fetching analytics summary:', error);
+    return res.status(500).json({
+      message: 'Failed to retrieve analytics summary',
+      status: 'error'
+    });
+  }
 });
 
 export default router;

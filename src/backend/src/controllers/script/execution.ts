@@ -58,13 +58,12 @@ export async function executeScript(
     });
 
     // Record execution in logs with "command_generated" status
-    // TODO: ExecutionLog model doesn't have 'output' field yet - see models/ExecutionLog.ts TODO
     const executionLog = await ExecutionLog.create({
       scriptId: parseInt(scriptId, 10),
       userId,
       parameters: params || {},
       status: 'success',
-      // output field would go here once DB migration is created
+      output: powershellCommand,
       executionTime: 0 // Command generation is instant
     });
 
@@ -109,7 +108,7 @@ export async function getExecutionHistory(
         {
           model: User,
           as: 'user',
-          attributes: ['id', 'username', 'email']
+          attributes: ['id', 'username']
         }
       ],
       order: [['createdAt', 'DESC']],
@@ -122,7 +121,7 @@ export async function getExecutionHistory(
 
     // Define the shape of the execution log with user
     type ExecutionLogWithUser = ExecutionLog & {
-      user?: { id: number; username: string; email: string } | null;
+      user?: { id: number; username: string } | null;
     };
 
     return res.json({
@@ -130,7 +129,7 @@ export async function getExecutionHistory(
         id: log.id,
         parameters: log.parameters,
         status: log.status,
-        // TODO: output field not in model yet - see models/ExecutionLog.ts
+        output: log.output,
         errorMessage: log.errorMessage,
         executionTime: log.executionTime,
         user: log.user ? {

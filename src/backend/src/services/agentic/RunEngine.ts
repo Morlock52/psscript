@@ -2,19 +2,10 @@ import { assistantsStore } from './AssistantsStore';
 import { Run, ToolCall, SubmittedToolCallOutput } from '../../models/Agentic/Run';
 import { AssistantTool } from '../../models/Agentic/Assistant';
 import { getMessageText } from '../../models/Agentic/Message';
-import OpenAI from 'openai';
-import dotenv from 'dotenv';
+import { openai } from '../openaiClient';
 import { searchPowerShellDocs } from './tools/PowerShellDocsSearch';
 import { analyzeScriptSecurity } from './tools/SecurityAnalyzer';
 import { generatePowerShellScript } from './tools/ScriptGenerator';
-
-// Initialize environment variables
-dotenv.config();
-
-// Set up OpenAI API client
-const openai = new OpenAI({
-  apiKey: process.env.OPENAI_API_KEY || '',
-});
 
 /**
  * Map of active runs being processed

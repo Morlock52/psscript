@@ -1,22 +1,21 @@
-// File has been checked for TypeScript errors
-import { DataTypes, Model, Sequelize } from 'sequelize';
+import { Model, DataTypes, Sequelize } from 'sequelize';
+import User from './User';
 
-export interface ChatHistoryAttributes {
-  id?: number;
-  userId: number;
-  messages: object[];
-  response: string;
-  embedding?: number[] | null;
-  createdAt?: Date;
-  updatedAt?: Date;
-}
+export default class ChatHistory extends Model {
+  public id!: number;
+  public userId!: number;
+  public messages!: object[];
+  public response!: string;
+  public embedding?: number[] | null;
 
-export interface ChatHistoryInstance extends Model<ChatHistoryAttributes>, ChatHistoryAttributes {}
+  public readonly createdAt!: Date;
+  public readonly updatedAt!: Date;
 
-const ChatHistory = function(sequelize: Sequelize) {
-  const ChatHistoryModel = sequelize.define<ChatHistoryInstance>(
-    'ChatHistory',
-    {
+  // References
+  public readonly user?: User;
+
+  static initialize(sequelize: Sequelize) {
+    ChatHistory.init({
       id: {
         type: DataTypes.INTEGER,
         autoIncrement: true,
@@ -26,10 +25,11 @@ const ChatHistory = function(sequelize: Sequelize) {
         type: DataTypes.INTEGER,
         allowNull: false,
         references: {
-          model: 'Users',
+          model: 'users',
           key: 'id',
         },
         onDelete: 'CASCADE',
+        field: 'user_id',
       },
       messages: {
         type: DataTypes.JSONB,
@@ -43,50 +43,28 @@ const ChatHistory = function(sequelize: Sequelize) {
         type: DataTypes.ARRAY(DataTypes.FLOAT),
         allowNull: true,
       },
-      createdAt: {
-        type: DataTypes.DATE,
-        allowNull: false,
-        defaultValue: DataTypes.NOW,
-      },
-      updatedAt: {
-        type: DataTypes.DATE,
-        allowNull: false,
-        defaultValue: DataTypes.NOW,
-      },
-    },
-    {
+    }, {
+      sequelize,
       tableName: 'chat_history',
+      underscored: true,
       timestamps: true,
       indexes: [
         {
           name: 'chat_history_user_id_idx',
-          fields: ['userId'],
+          fields: ['user_id'],
         },
         {
           name: 'chat_history_created_at_idx',
-          fields: ['createdAt'],
+          fields: ['created_at'],
         },
       ],
-    }
-  );
+    });
+  }
 
-  // Add associate method
-  // @ts-ignore - Dynamic association assignment pattern
-  ChatHistoryModel.associate = function() {
-    // eslint-disable-next-line @typescript-eslint/no-require-imports
-    const { User } = require('./index');
-    ChatHistoryModel.belongsTo(User, {
+  static associate() {
+    ChatHistory.belongsTo(User, {
       foreignKey: 'userId',
       as: 'user',
     });
-  };
-
-  return ChatHistoryModel;
-};
-
-// Initialize model
-ChatHistory.initialize = function(sequelize: Sequelize) {
-  return ChatHistory(sequelize);
-};
-
-export default ChatHistory;
+  }
+}

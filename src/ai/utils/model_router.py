@@ -5,10 +5,10 @@ Intelligently routes requests to the most appropriate AI model
 based on task complexity, cost optimization, and performance needs.
 
 Routing Strategy:
-- Simple queries → Fast model (gpt-4o-mini)
+- Simple queries → Fast model (gpt-4.1-mini)
 - Code generation → Code-specialized model (gpt-4.1)
-- Complex reasoning → Reasoning model (o3-mini or gpt-4o)
-- Creative tasks → Creative model (gpt-4o)
+- Complex reasoning → Reasoning model (o4-mini or o3)
+- Complex multi-step → Flagship model (gpt-5.4)
 
 Supports:
 - Automatic complexity detection
@@ -82,46 +82,47 @@ class ModelRouter:
         print(f"Using {decision.model_name}: {decision.reason}")
     """
 
-    # Model configurations (January 2026 pricing)
+    # Model configurations (April 2026 pricing)
+    # gpt-4o and gpt-4o-mini deprecated Feb 2026; replaced with gpt-4.1 family
     MODELS = {
-        "gpt-4o-mini": ModelConfig(
-            name="GPT-4o Mini",
-            model_id="gpt-4o-mini",
-            max_tokens=16384,
-            cost_per_1k_input=0.00015,
-            cost_per_1k_output=0.0006,
-            avg_latency_ms=500,
-            strengths=["fast", "cheap", "good for simple tasks"],
-            weaknesses=["less accurate on complex tasks"]
-        ),
-        "gpt-4o": ModelConfig(
-            name="GPT-4o",
-            model_id="gpt-4o",
-            max_tokens=128000,
-            cost_per_1k_input=0.0025,
-            cost_per_1k_output=0.01,
-            avg_latency_ms=1500,
-            strengths=["multimodal", "creative", "balanced"],
-            weaknesses=["higher cost"]
+        "gpt-4.1-mini": ModelConfig(
+            name="GPT-4.1 Mini",
+            model_id="gpt-4.1-mini",
+            max_tokens=1000000,
+            cost_per_1k_input=0.0004,
+            cost_per_1k_output=0.0016,
+            avg_latency_ms=400,
+            strengths=["fast", "cheap", "1M context", "good for simple tasks"],
+            weaknesses=["less accurate on expert-level tasks"]
         ),
         "gpt-4.1": ModelConfig(
-            name="GPT-4.1 (January 2026)",
+            name="GPT-4.1 (Code Specialist)",
             model_id="gpt-4.1",
-            max_tokens=128000,
-            cost_per_1k_input=0.003,
-            cost_per_1k_output=0.012,
-            avg_latency_ms=2000,
-            strengths=["code generation", "technical accuracy", "best practices"],
-            weaknesses=["slower", "higher cost"]
+            max_tokens=1000000,
+            cost_per_1k_input=0.002,
+            cost_per_1k_output=0.008,
+            avg_latency_ms=1500,
+            strengths=["code generation", "1M context", "instruction following", "technical accuracy"],
+            weaknesses=["higher cost than mini"]
         ),
-        "o3-mini": ModelConfig(
-            name="O3 Mini (Reasoning)",
-            model_id="o3-mini",
-            max_tokens=100000,
-            cost_per_1k_input=0.0015,
-            cost_per_1k_output=0.006,
+        "gpt-5.4": ModelConfig(
+            name="GPT-5.4 (Flagship)",
+            model_id="gpt-5.4",
+            max_tokens=128000,
+            cost_per_1k_input=0.005,
+            cost_per_1k_output=0.015,
+            avg_latency_ms=2000,
+            strengths=["best overall quality", "complex reasoning", "multi-step tasks"],
+            weaknesses=["most expensive", "slower"]
+        ),
+        "o4-mini": ModelConfig(
+            name="O4 Mini (Reasoning)",
+            model_id="o4-mini",
+            max_tokens=200000,
+            cost_per_1k_input=0.0011,
+            cost_per_1k_output=0.0044,
             avg_latency_ms=3000,
-            strengths=["complex reasoning", "step-by-step", "math"],
+            strengths=["complex reasoning", "step-by-step", "math", "cost-effective reasoning"],
             weaknesses=["slower", "verbose"]
         ),
     }
@@ -289,7 +290,7 @@ class ModelRouter:
                 model = self.MODELS["gpt-4.1"]
                 reason = "Complex code generation requires GPT-4.1 for best practices"
             elif self.cost_sensitive:
-                model = self.MODELS["gpt-4o-mini"]
+                model = self.MODELS["gpt-4.1-mini"]
                 reason = "Simple code generation, using cost-effective model"
             else:
                 model = self.MODELS["gpt-4.1"]
@@ -301,23 +302,23 @@ class ModelRouter:
 
         elif task_type == TaskType.DEBUGGING:
             if complexity >= TaskComplexity.COMPLEX:
-                model = self.MODELS["o3-mini"]
-                reason = "Complex debugging benefits from O3's reasoning capabilities"
+                model = self.MODELS["o4-mini"]
+                reason = "Complex debugging benefits from O4-mini's reasoning capabilities"
             else:
                 model = self.MODELS["gpt-4.1"]
                 reason = "Standard debugging with GPT-4.1"
 
         elif task_type == TaskType.EXPLANATION:
             if complexity == TaskComplexity.SIMPLE and self.cost_sensitive:
-                model = self.MODELS["gpt-4o-mini"]
+                model = self.MODELS["gpt-4.1-mini"]
                 reason = "Simple explanation, using fast model"
             else:
-                model = self.MODELS["gpt-4o"]
-                reason = "Explanations benefit from GPT-4o's clarity"
+                model = self.MODELS["gpt-5.4"]
+                reason = "Explanations benefit from GPT-5.4's clarity"
 
         elif task_type == TaskType.ARCHITECTURE:
-            model = self.MODELS["o3-mini"]
-            reason = "Architecture decisions benefit from O3's step-by-step reasoning"
+            model = self.MODELS["o4-mini"]
+            reason = "Architecture decisions benefit from O4-mini's step-by-step reasoning"
 
         elif task_type == TaskType.SECURITY_ANALYSIS:
             model = self.MODELS["gpt-4.1"]
@@ -325,11 +326,11 @@ class ModelRouter:
 
         else:  # General chat
             if complexity == TaskComplexity.SIMPLE and self.cost_sensitive:
-                model = self.MODELS["gpt-4o-mini"]
+                model = self.MODELS["gpt-4.1-mini"]
                 reason = "Simple chat query, using fast model"
             elif complexity >= TaskComplexity.COMPLEX:
-                model = self.MODELS["gpt-4o"]
-                reason = "Complex query benefits from GPT-4o"
+                model = self.MODELS["gpt-5.4"]
+                reason = "Complex query benefits from GPT-5.4"
             else:
                 model = self.MODELS.get(self.default_model, self.MODELS["gpt-4.1"])
                 reason = f"Using default model for moderate complexity"
@@ -339,10 +340,10 @@ class ModelRouter:
 
         # Determine alternative
         alternative = None
-        if model.model_id != "gpt-4o-mini" and self.cost_sensitive:
-            alternative = "gpt-4o-mini"
-        elif model.model_id == "gpt-4o-mini" and complexity >= TaskComplexity.MODERATE:
-            alternative = "gpt-4o"
+        if model.model_id != "gpt-4.1-mini" and self.cost_sensitive:
+            alternative = "gpt-4.1-mini"
+        elif model.model_id == "gpt-4.1-mini" and complexity >= TaskComplexity.MODERATE:
+            alternative = "gpt-5.4"
 
         return RoutingDecision(
             model_id=model.model_id,

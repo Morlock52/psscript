@@ -42,7 +42,7 @@ export default class ScriptEmbedding extends Model {
       modelVersion: {
         type: DataTypes.STRING(50),
         allowNull: false,
-        defaultValue: 'text-embedding-ada-002'
+        defaultValue: 'text-embedding-3-small'
       }
     }, {
       sequelize,

@@ -3,7 +3,7 @@ import { Request, Response } from 'express';
 import { sequelize } from '../database/connection';
 import logger from '../utils/logger';
 import os from 'os';
-import { cache } from '../index';
+import { cache } from '../services/cacheService';
 
 /**
  * Health Controller

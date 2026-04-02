@@ -62,11 +62,11 @@ export default class Comment extends Model {
 
   static associate() {
     Comment.belongsTo(Script, {
-      foreignKey: 'script_id',
+      foreignKey: 'scriptId',
       as: 'script'
     });
     Comment.belongsTo(User, {
-      foreignKey: 'user_id',
+      foreignKey: 'userId',
       as: 'user'
     });
   }

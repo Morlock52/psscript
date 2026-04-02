@@ -56,12 +56,14 @@ class AgentConfig(BaseModel):
     max_steps: int = Field(15, description="Maximum steps for agent workflows")
     memory_size: int = Field(20, description="Number of messages to keep in memory")
 
-    # Updated models for January 2026 - Optimized for PowerShell
-    default_model: str = Field("gpt-4.1", description="Default model - best for code generation")
+    # Updated models for April 2026 - Optimized for PowerShell
+    # gpt-4o and gpt-4o-mini deprecated Feb 2026; replaced with gpt-4.1 family
+    default_model: str = Field("gpt-4.1", description="Default model - best for code generation (1M context)")
     powershell_model: str = Field("gpt-4.1", description="PowerShell script generation model")
     reasoning_model: str = Field("o3", description="OpenAI o3 reasoning model for complex analysis")
-    fast_model: str = Field("gpt-4o-mini", description="Fast model for quick tasks")
-    fallback_model: str = Field("gpt-4o", description="Fallback model if primary unavailable")
+    fast_model: str = Field("gpt-4.1-mini", description="Fast model for quick tasks (replaces gpt-4o-mini)")
+    fallback_model: str = Field("gpt-4.1", description="Fallback model if primary unavailable")
+    flagship_model: str = Field("gpt-5.4", description="Flagship model for complex multi-step tasks")
 
     # Anthropic Claude models - Added January 2026
     claude_model: str = Field("claude-sonnet-4-20250514", description="Claude Sonnet 4 - best balance of speed and quality")
@@ -182,9 +184,9 @@ def load_config() -> Config:
     if not hasattr(config.agent, 'powershell_model') or not config.agent.powershell_model:
         config.agent.powershell_model = "gpt-4.1"  # Best for PowerShell
     if not hasattr(config.agent, 'fast_model') or not config.agent.fast_model:
-        config.agent.fast_model = "gpt-4o-mini"  # Fast model for quick tasks
+        config.agent.fast_model = "gpt-4.1-mini"  # Fast model for quick tasks
     if not hasattr(config.agent, 'fallback_model') or not config.agent.fallback_model:
-        config.agent.fallback_model = "gpt-4o"  # Fallback if primary unavailable
+        config.agent.fallback_model = "gpt-4.1"  # Fallback if primary unavailable
     if not hasattr(config.agent, 'embedding_model') or not config.agent.embedding_model:
         config.agent.embedding_model = "text-embedding-3-large"
     if not hasattr(config.agent, 'embedding_dimensions'):

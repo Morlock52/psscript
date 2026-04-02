@@ -1,11 +1,13 @@
-// Express request type extension for cache
+// Express request type extensions
+// Centralizes all Request augmentations so individual files don't need @ts-nocheck
+
 interface CacheInterface {
-  get: (key: string) => any;
+  get: <T = any>(key: string) => T | null;
   set: (key: string, value: any, ttl?: number) => void;
-  del: (key: string) => boolean;
-  clear: () => void;
-  clearPattern: (pattern: string) => number;
-  stats: () => { size: number, keys: string[] };
+  del: (key: string) => boolean | void;
+  clear?: () => void;
+  clearPattern: (pattern: string) => number | void;
+  stats?: () => { size: number; keys: string[] };
 }
 
 declare global {
@@ -19,6 +21,15 @@ declare global {
         role: string;
         [key: string]: any;
       };
+      authInfo?: {
+        tokenType: string;
+        requestId: string;
+        timestamp: number;
+        ipAddress: string;
+        userAgent: string;
+      };
     }
   }
 }
+
+export {};

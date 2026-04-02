@@ -1,7 +1,7 @@
 import express from 'express';
 import CategoryController from '../controllers/CategoryController';
 import { authenticateJWT, requireAdmin } from '../middleware/authMiddleware';
-import { cache } from '../index';
+import { cache } from '../services/cacheService';
 
 const router = express.Router();
 

@@ -61,27 +61,13 @@ export const CACHE_TTL = {
 } as const;
 
 /**
- * Lazily resolve the app cache.
- *
- * Important: importing `cache` from `src/index.ts` at module load time creates a circular dependency:
- * `index.ts` imports routes -> controllers -> this file, *before* `index.ts` finishes initializing `cache`.
- * In CommonJS this can leave `cache` undefined and crash on first use.
- *
- * By resolving it at runtime (inside handlers/util functions), we avoid the circular-init hazard.
+ * Import cache from the standalone service module.
+ * This breaks the circular dependency that previously required runtime require().
  */
-export const getCache = (): CacheService => {
-  // eslint-disable-next-line @typescript-eslint/no-require-imports
-  const mod = require('../../index') as { cache?: CacheService } | undefined;
-  const c = mod?.cache;
-  if (c) return c;
+import cacheService from '../../services/cacheService';
 
-  // Safe no-op fallback (keeps endpoints working even if cache isn't available for some reason).
-  return {
-    get: () => null,
-    set: () => {},
-    del: () => {},
-    clearPattern: () => {},
-  };
+export const getCache = (): CacheService => {
+  return cacheService;
 };
 
 // Re-export for use in controllers
@@ -383,8 +369,8 @@ export const withTransaction = async <T>(
  * Parse pagination parameters from request query
  */
 export const parsePaginationParams = (query: Record<string, unknown>) => {
-  const page = parseInt(query.page as string) || 1;
-  const limit = parseInt(query.limit as string) || 10;
+  const page = Math.max(1, parseInt(query.page as string) || 1);
+  const limit = Math.min(100, Math.max(1, parseInt(query.limit as string) || 10));
   const offset = (page - 1) * limit;
 
   return { page, limit, offset };

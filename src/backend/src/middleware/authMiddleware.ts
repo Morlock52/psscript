@@ -5,19 +5,7 @@ import { User } from '../models';
 import logger from '../utils/logger';
 import { getAuthConfig, IS_PRODUCTION } from '../utils/envValidation';
 
-// Extend the Express Request interface to include user and auth info
-declare module 'express' {
-  interface Request {
-    user?: any;
-    authInfo?: {
-      tokenType: string;
-      requestId: string;
-      timestamp: number;
-      ipAddress: string;
-      userAgent: string;
-    };
-  }
-}
+// Request type extensions are in src/types/express.d.ts
 
 /**
  * Generate a cryptographically secure request ID for tracking auth requests

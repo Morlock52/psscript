@@ -5,6 +5,16 @@ import { authenticateJWT } from '../middleware/authMiddleware';
 const router = express.Router();
 router.use(authenticateJWT);
 
+// DEPRECATION WARNING: OpenAI Assistants API sunsets August 26, 2026.
+// All Assistants endpoints will be migrated to the Responses API.
+// See: https://developers.openai.com/api/docs/assistants/migration
+router.use((_req, res, next) => {
+  res.setHeader('Deprecation', 'true');
+  res.setHeader('Sunset', 'Tue, 26 Aug 2026 00:00:00 GMT');
+  res.setHeader('Link', '<https://developers.openai.com/api/docs/guides/migrate-to-responses>; rel="successor-version"');
+  next();
+});
+
 /**
  * @swagger
  * tags:

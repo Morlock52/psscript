@@ -1,13 +1,4 @@
-import OpenAI from 'openai';
-import dotenv from 'dotenv';
-
-// Initialize environment variables
-dotenv.config();
-
-// Set up OpenAI API client
-const openai = new OpenAI({
-  apiKey: process.env.OPENAI_API_KEY || '',
-});
+import { openai, MODELS } from '../../openaiClient';
 
 /**
  * Generate a PowerShell script based on user requirements
@@ -18,7 +9,7 @@ const openai = new OpenAI({
 export async function generatePowerShellScript(requirements: string): Promise<string> {
   try {
     const response = await openai.chat.completions.create({
-      model: process.env.OPENAI_SCRIPT_MODEL || 'gpt-4.1',
+      model: MODELS.CODE,
       messages: [
         {
           role: 'system',

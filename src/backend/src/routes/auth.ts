@@ -9,19 +9,7 @@ import { getAuthConfig, IS_PRODUCTION, obfuscateEmail } from '../utils/envValida
 import { passwordStrengthValidator, MIN_PASSWORD_LENGTH } from '../utils/passwordValidation';
 import bcrypt from 'bcrypt';
 
-// Extend the Express Request interface to include user and auth info
-declare module 'express' {
-  interface Request {
-    user?: any;
-    authInfo?: {
-      tokenType: string;
-      requestId: string;
-      timestamp: number;
-      ipAddress: string;
-      userAgent: string;
-    };
-  }
-}
+// Request type extensions are in src/types/express.d.ts
 
 const router = express.Router();
 
