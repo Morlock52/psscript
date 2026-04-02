@@ -166,27 +166,39 @@ export function initAIMetricsModel(sequelize: Sequelize): void {
 
 /**
  * Calculate cost based on model and token usage
- * Pricing as of January 2026
+ * Pricing as of 2 April 2026
  */
 export function calculateCost(
   model: string,
   promptTokens: number,
   completionTokens: number
 ): number {
-  // Prices per 1M tokens (April 2026)
+  // Prices per 1M tokens (2 April 2026)
   const pricing: Record<string, { prompt: number; completion: number }> = {
-    'gpt-5.4': { prompt: 5.00, completion: 15.00 },
+    // OpenAI models
+    'gpt-5.4': { prompt: 2.50, completion: 15.00 },
     'gpt-5.4-mini': { prompt: 1.00, completion: 4.00 },
+    'gpt-5.4-nano': { prompt: 0.25, completion: 1.00 },
     'gpt-4.1': { prompt: 2.00, completion: 8.00 },
     'gpt-4.1-mini': { prompt: 0.40, completion: 1.60 },
     'gpt-4.1-nano': { prompt: 0.10, completion: 0.40 },
-    'o3': { prompt: 10.00, completion: 40.00 },
+    'o3': { prompt: 2.00, completion: 8.00 },
+    'o3-pro': { prompt: 20.00, completion: 80.00 },
     'o4-mini': { prompt: 1.10, completion: 4.40 },
     'text-embedding-3-small': { prompt: 0.02, completion: 0 },
     'text-embedding-3-large': { prompt: 0.13, completion: 0 },
+    // Anthropic Claude models
+    'claude-opus-4-6-20260205': { prompt: 5.00, completion: 25.00 },
+    'claude-sonnet-4-6-20260217': { prompt: 3.00, completion: 15.00 },
+    'claude-haiku-4-5-20251001': { prompt: 1.00, completion: 5.00 },
   };
 
-  const modelPricing = pricing[model] || pricing['gpt-4.1-mini']; // Fallback to mini
+  // Exact match first, then substring match for model variants
+  let modelPricing = pricing[model];
+  if (!modelPricing) {
+    const key = Object.keys(pricing).find(k => model.includes(k));
+    modelPricing = key ? pricing[key] : pricing['gpt-4.1-mini'];
+  }
 
   const promptCost = (promptTokens / 1_000_000) * modelPricing.prompt;
   const completionCost = (completionTokens / 1_000_000) * modelPricing.completion;

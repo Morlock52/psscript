@@ -8,6 +8,7 @@ import { FaExclamationTriangle, FaCheckCircle, FaInfoCircle, FaLightbulb, FaChar
 // LangGraph Integration
 import { streamAnalysis, AnalysisEvent } from '../services/langgraphService';
 import { AnalysisProgressPanel } from '../components/Analysis/AnalysisProgressPanel';
+import { AI_MODELS } from '../services/settings';
 
 // Define message type for AI chat
 interface Message {
@@ -34,19 +35,13 @@ const ScriptAnalysis: React.FC = () => {
   const [analysisError, setAnalysisError] = useState<string | null>(null);
   const cleanupRef = useRef<(() => void) | null>(null);
 
-  // AI Model selection state - Multi-model support
+  // AI Model selection — derived from single source of truth in settings.ts
   const [selectedModel, setSelectedModel] = useState('gpt-4.1');
-  const availableModels = [
-    // OpenAI models
-    { value: 'gpt-4.1', label: 'GPT-4.1 (Code)', provider: 'openai' },
-    { value: 'gpt-4.1-mini', label: 'GPT-4.1 Mini (Fast)', provider: 'openai' },
-    { value: 'gpt-5.4', label: 'GPT-5.4 (Flagship)', provider: 'openai' },
-    { value: 'o4-mini', label: 'O4 Mini (Reasoning)', provider: 'openai' },
-    // Anthropic Claude 4.6 models (February 2026)
-    { value: 'claude-sonnet-4-6-20260217', label: 'Claude Sonnet 4.6 (Balanced)', provider: 'anthropic' },
-    { value: 'claude-opus-4-6-20260205', label: 'Claude Opus 4.6 (Best)', provider: 'anthropic' },
-    { value: 'claude-haiku-4-5-20251001', label: 'Claude Haiku 4.5 (Fast)', provider: 'anthropic' },
-  ];
+  const availableModels = AI_MODELS.map(m => ({
+    value: m.id,
+    label: m.name,
+    provider: m.id.startsWith('claude-') ? 'anthropic' as const : 'openai' as const,
+  }));
 
   /** Infer AI provider from model ID prefix */
   const getProvider = (modelId: string) => modelId.startsWith('claude-') ? 'anthropic' : 'openai';

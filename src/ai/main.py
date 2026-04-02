@@ -2276,21 +2276,26 @@ async def stream_chat_with_powershell_expert(
     """
     import asyncio
 
+    # Determine provider from request model
+    requested_model = request.model
+    requested_provider = request.provider
+    if not requested_provider and requested_model and requested_model.startswith("claude-"):
+        requested_provider = "anthropic"
+
     # SECURITY: Resolve API key outside generator (header > config)
-    resolved_api_key = x_api_key or config.api_keys.openai
+    if requested_provider == "anthropic":
+        resolved_api_key = x_api_key or config.api_keys.anthropic
+    else:
+        resolved_api_key = x_api_key or config.api_keys.openai
 
     async def generate_stream():
         """Async generator for SSE streaming."""
         try:
-            # Import OpenAI client for streaming
-            from openai import AsyncOpenAI
-
             api_key = resolved_api_key
             if not api_key:
-                yield f"data: {json.dumps({'type': 'error', 'content': 'No API key configured'})}\n\n"
+                provider_label = "Anthropic" if requested_provider == "anthropic" else "OpenAI"
+                yield f"data: {json.dumps({'type': 'error', 'content': f'No {provider_label} API key configured'})}\n\n"
                 return
-
-            client = AsyncOpenAI(api_key=api_key)
 
             # Get the latest user message for guardrail validation
             latest_user_message = ""
@@ -2356,38 +2361,70 @@ TARGET: {script_requirements.get('target_system', 'windows') if script_requireme
 
 {security_guidelines}"""
 
-            # Build messages for OpenAI
+            # Build messages
             messages = [{"role": "system", "content": system_prompt}]
             for msg in request.messages:
                 msg_dict = msg.dict() if hasattr(msg, 'dict') else msg
                 messages.append({"role": msg_dict.get('role'), "content": msg_dict.get('content')})
 
-            # Stream from OpenAI
             start_time = time.time()
             total_tokens = 0
             full_response = ""
 
-            stream = await client.chat.completions.create(
-                model=config.agent.default_model,
-                messages=messages,
-                stream=True,
-                temperature=0.7,
-                max_tokens=4096
-            )
+            if requested_provider == "anthropic":
+                # Stream from Anthropic Claude
+                try:
+                    from anthropic import AsyncAnthropic
+                    anthropic_client = AsyncAnthropic(api_key=api_key)
+                    # Build user/assistant messages (no system role for Anthropic)
+                    claude_messages = [m for m in messages if m["role"] != "system"]
+                    model_id = requested_model or config.agent.claude_model
 
-            async for chunk in stream:
-                if chunk.choices and len(chunk.choices) > 0:
-                    delta = chunk.choices[0].delta
-                    if delta.content:
-                        content = delta.content
-                        full_response += content
-                        total_tokens += 1
-                        # Escape the content for JSON
-                        yield f"data: {json.dumps({'type': 'token', 'content': content})}\n\n"
+                    async with anthropic_client.messages.stream(
+                        model=model_id,
+                        max_tokens=4096,
+                        system=system_prompt,
+                        messages=claude_messages,
+                    ) as stream:
+                        async for text in stream.text_stream:
+                            full_response += text
+                            total_tokens += 1
+                            yield f"data: {json.dumps({'type': 'token', 'content': text})}\n\n"
+                except ImportError:
+                    yield f"data: {json.dumps({'type': 'error', 'content': 'Anthropic package not installed'})}\n\n"
+                    return
+            else:
+                # Stream from OpenAI
+                from openai import AsyncOpenAI
+                client = AsyncOpenAI(api_key=api_key)
+                model_id = requested_model or config.agent.default_model
+
+                # o-series models: no temperature, use max_completion_tokens
+                is_o_series = model_id.startswith("o")
+                stream_params: dict = {
+                    "model": model_id,
+                    "messages": messages,
+                    "stream": True,
+                }
+                if is_o_series:
+                    stream_params["max_completion_tokens"] = 4096
+                else:
+                    stream_params["temperature"] = 0.7
+                    stream_params["max_tokens"] = 4096
+
+                stream = await client.chat.completions.create(**stream_params)
+
+                async for chunk in stream:
+                    if chunk.choices and len(chunk.choices) > 0:
+                        delta = chunk.choices[0].delta
+                        if delta.content:
+                            full_response += delta.content
+                            total_tokens += 1
+                            yield f"data: {json.dumps({'type': 'token', 'content': delta.content})}\n\n"
 
             # Stream complete - send done event with metadata
             processing_time = time.time() - start_time
-            logger.info(f"Streaming chat completed in {processing_time:.2f}s, ~{total_tokens} tokens")
+            logger.info(f"Streaming chat completed in {processing_time:.2f}s, ~{total_tokens} tokens (provider={requested_provider})")
 
             yield f"data: {json.dumps({'type': 'done', 'session_id': request.session_id, 'tokens': total_tokens, 'time': round(processing_time, 2)})}\n\n"
 

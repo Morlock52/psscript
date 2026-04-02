@@ -122,7 +122,8 @@ export class ChatController {
       }, {
         headers: {
           'Content-Type': 'application/json',
-          'X-Request-ID': requestId
+          'X-Request-ID': requestId,
+          'X-API-Key': effectiveApiKey,
         },
         timeout: AI_CHAT_TIMEOUT_MS
       });
