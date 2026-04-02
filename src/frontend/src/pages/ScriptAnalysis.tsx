@@ -35,11 +35,10 @@ const ScriptAnalysis: React.FC = () => {
   const cleanupRef = useRef<(() => void) | null>(null);
 
   // AI Model selection state - Multi-model support
-  const [selectedModel, setSelectedModel] = useState('gpt-4');
+  const [selectedModel, setSelectedModel] = useState('gpt-4.1');
   const availableModels = [
-    { value: 'gpt-4', label: 'GPT-4 (OpenAI)', provider: 'openai' },
-    { value: 'gpt-4o', label: 'GPT-4o (OpenAI)', provider: 'openai' },
-    { value: 'gpt-4o-mini', label: 'GPT-4o Mini (Fast)', provider: 'openai' },
+    { value: 'gpt-4.1', label: 'GPT-4.1 (OpenAI)', provider: 'openai' },
+    { value: 'gpt-4.1-mini', label: 'GPT-4.1 Mini (Fast)', provider: 'openai' },
     { value: 'gpt-4.1', label: 'GPT-4.1 (Code)', provider: 'openai' },
     { value: 'claude-sonnet-4-20250514', label: 'Claude Sonnet 4 (Anthropic)', provider: 'anthropic' },
     { value: 'claude-opus-4-20250514', label: 'Claude Opus 4 (Best)', provider: 'anthropic' },

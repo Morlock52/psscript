@@ -89,7 +89,7 @@ const agentTemplates: Partial<Agent>[] = [
     name: 'PowerShell Expert',
     description: 'Specializes in PowerShell scripting advice, best practices, and code generation',
     capabilities: ['script_analysis', 'code_generation', 'best_practices'],
-    model: 'gpt-4o',
+    model: 'gpt-4.1',
     metadata: {
       category: 'programming',
       expertise: 'powershell'
@@ -99,7 +99,7 @@ const agentTemplates: Partial<Agent>[] = [
     name: 'Security Reviewer',
     description: 'Analyzes PowerShell scripts for security vulnerabilities and potential risks',
     capabilities: ['security_analysis', 'risk_assessment', 'remediation'],
-    model: 'gpt-4o',
+    model: 'gpt-4.1',
     metadata: {
       category: 'security',
       expertise: 'script_security'
@@ -109,7 +109,7 @@ const agentTemplates: Partial<Agent>[] = [
     name: 'Script Generator',
     description: 'Creates PowerShell scripts based on your requirements and specifications',
     capabilities: ['code_generation', 'requirements_analysis'],
-    model: 'gpt-4o',
+    model: 'gpt-4.1',
     metadata: {
       category: 'productivity',
       expertise: 'automation'
@@ -385,13 +385,13 @@ const AgentOrchestrationPage: React.FC = () => {
             <TextField
               select
               label="Default Model"
-              defaultValue="gpt-4o"
+              defaultValue="gpt-4.1"
               fullWidth
               sx={{ mb: 2 }}
               aria-label="Select default AI model"
             >
-              <option value="gpt-4o">GPT-4o (Recommended)</option>
-              <option value="gpt-3.5-turbo">GPT-3.5 Turbo (Faster)</option>
+              <option value="gpt-4.1">GPT-4.1 (Recommended)</option>
+              <option value="gpt-4.1-nano">GPT-4.1 Nano (Faster)</option>
             </TextField>
           </Box>
         </Paper>

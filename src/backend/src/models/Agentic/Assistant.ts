@@ -3,12 +3,14 @@ import { v4 as uuidv4 } from 'uuid';
 /**
  * Available model options for assistants
  */
-export type AssistantModel = 
+export type AssistantModel =
+  | 'gpt-5.4'
+  | 'gpt-5.4-mini'
   | 'gpt-4.1'
-  | 'gpt-4o' 
-  | 'gpt-4-turbo'
-  | 'gpt-4'
-  | 'gpt-3.5-turbo';
+  | 'gpt-4.1-mini'
+  | 'gpt-4.1-nano'
+  | 'o3'
+  | 'o4-mini';
 
 /**
  * Tool types supported by assistants

@@ -50,7 +50,7 @@ class AgentAssistant {
     this.assistants = new Map();
     this.threads = new Map();
     this.defaultAssistantId = process.env.OPENAI_ASSISTANT_ID;
-    this.defaultModel = process.env.OPENAI_MODEL || "gpt-4o";
+    this.defaultModel = process.env.OPENAI_MODEL || "gpt-4.1";
     this.isConnected = false;
   }
 

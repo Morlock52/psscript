@@ -75,7 +75,7 @@ export function initAIMetricsModel(sequelize: Sequelize): void {
       model: {
         type: DataTypes.STRING,
         allowNull: false,
-        comment: 'AI model used (e.g., gpt-4o, gpt-4o-mini, o3-mini)',
+        comment: 'AI model used (e.g., gpt-4.1, gpt-5.4, o4-mini)',
       },
       promptTokens: {
         type: DataTypes.INTEGER,
@@ -173,18 +173,20 @@ export function calculateCost(
   promptTokens: number,
   completionTokens: number
 ): number {
-  // Prices per 1M tokens (January 2026)
+  // Prices per 1M tokens (April 2026)
   const pricing: Record<string, { prompt: number; completion: number }> = {
-    'gpt-4o': { prompt: 2.50, completion: 10.00 },
-    'gpt-4o-mini': { prompt: 0.15, completion: 0.60 },
-    'o3-mini': { prompt: 1.10, completion: 4.40 },
-    'gpt-4-turbo': { prompt: 10.00, completion: 30.00 },
-    'gpt-3.5-turbo': { prompt: 0.50, completion: 1.50 },
+    'gpt-5.4': { prompt: 5.00, completion: 15.00 },
+    'gpt-5.4-mini': { prompt: 1.00, completion: 4.00 },
+    'gpt-4.1': { prompt: 2.00, completion: 8.00 },
+    'gpt-4.1-mini': { prompt: 0.40, completion: 1.60 },
+    'gpt-4.1-nano': { prompt: 0.10, completion: 0.40 },
+    'o3': { prompt: 10.00, completion: 40.00 },
+    'o4-mini': { prompt: 1.10, completion: 4.40 },
     'text-embedding-3-small': { prompt: 0.02, completion: 0 },
     'text-embedding-3-large': { prompt: 0.13, completion: 0 },
   };
 
-  const modelPricing = pricing[model] || pricing['gpt-4o-mini']; // Fallback to mini
+  const modelPricing = pricing[model] || pricing['gpt-4.1-mini']; // Fallback to mini
 
   const promptCost = (promptTokens / 1_000_000) * modelPricing.prompt;
   const completionCost = (completionTokens / 1_000_000) * modelPricing.completion;
@@ -214,7 +216,7 @@ export class AIAnalyticsMiddleware {
 
         // Extract usage data from response if available
         const usage = data?.usage || res.locals.usage;
-        const model = req.body?.model || res.locals.model || 'gpt-4o-mini';
+        const model = req.body?.model || res.locals.model || 'gpt-4.1-mini';
 
         if (usage) {
           const promptTokens = usage.prompt_tokens || 0;

@@ -311,13 +311,13 @@ class LangGraphAgent(BaseAgent):
     Updated for January 2026 with LangGraph 0.2.x+ and latest model configurations.
     """
 
-    def __init__(self, api_key: Optional[str] = None, model: str = "gpt-4o"):
+    def __init__(self, api_key: Optional[str] = None, model: str = "gpt-4.1"):
         """
         Initialize the LangGraph agent.
 
         Args:
             api_key: OpenAI API key to use for the agent
-            model: Model to use for the agent (default: gpt-4o for January 2026)
+            model: Model to use for the agent (default: gpt-4.1 for April 2026)
         """
         super().__init__(api_key)
 
@@ -329,7 +329,7 @@ class LangGraphAgent(BaseAgent):
             MSDocsReferenceTool()
         ]
 
-        # Initialize the LLM with updated model - gpt-4o is current best as of Jan 2026
+        # Initialize the LLM with updated model - gpt-4.1 is current best as of April 2026
         self.llm = ChatOpenAI(
             model=model,
             temperature=0.3,  # Lower temperature for more consistent analysis
@@ -687,7 +687,7 @@ If you have all the information you need to respond to the user, provide a final
                     "risk_score": powershell_analysis.get("risk_score", 5.0),
                     "reliability_score": powershell_analysis.get("reliability_score", 5.0),
                     "analyzed_at": int(time.time()),
-                    "model": "gpt-4o"  # Updated model name
+                    "model": "gpt-4.1"  # Updated model name
                 }
 
                 # Add command details if requested

@@ -12,44 +12,47 @@ from pathlib import Path
 
 logger = logging.getLogger("token_counter")
 
-# OpenAI Pricing as of January 2026 (per 1M tokens)
+# OpenAI Pricing as of April 2026 (per 1M tokens)
+# gpt-4o, gpt-4o-mini deprecated Feb 2026
 PRICING = {
-    # GPT-4 Series - Updated January 2026
-    "gpt-4o": {
-        "input": 2.50,
-        "output": 10.0,
+    # GPT-5.4 Series (Flagship) - April 2026
+    "gpt-5.4": {
+        "input": 5.00,
+        "output": 15.0,
     },
-    "gpt-4o-mini": {
-        "input": 0.15,
-        "output": 0.60,
+    "gpt-5.4-mini": {
+        "input": 1.00,
+        "output": 4.00,
     },
+    # GPT-4.1 Series (Code Specialist) - still current
+    "gpt-4.1": {
+        "input": 2.00,
+        "output": 8.00,
+    },
+    "gpt-4.1-mini": {
+        "input": 0.40,
+        "output": 1.60,
+    },
+    "gpt-4.1-nano": {
+        "input": 0.10,
+        "output": 0.40,
+    },
+    # Reasoning Models
     "o3": {
-        "input": 10.0,  # Reasoning model - higher cost
+        "input": 10.0,
         "output": 40.0,
     },
-    "gpt-4-turbo": {  # Legacy - kept for backwards compatibility
-        "input": 10.0,
-        "output": 30.0,
-    },
-    "gpt-4": {
-        "input": 30.0,
-        "output": 60.0,
-    },
-    "gpt-3.5-turbo": {
-        "input": 0.50,
-        "output": 1.50,
+    "o4-mini": {
+        "input": 1.10,
+        "output": 4.40,
     },
     # Embeddings
     "text-embedding-3-large": {
         "input": 0.13,
-        "output": 0.0,  # No output cost for embeddings
+        "output": 0.0,
     },
     "text-embedding-3-small": {
         "input": 0.02,
-        "output": 0.0,
-    },
-    "text-embedding-ada-002": {
-        "input": 0.10,
         "output": 0.0,
     },
 }
@@ -190,8 +193,8 @@ class TokenCounter:
                 break
 
         if model_key not in PRICING:
-            logger.warning(f"Unknown model for pricing: {model}, using gpt-4o pricing")
-            model_key = "gpt-4o"
+            logger.warning(f"Unknown model for pricing: {model}, using gpt-4.1-mini pricing")
+            model_key = "gpt-4.1-mini"
 
         pricing = PRICING[model_key]
 
@@ -290,7 +293,7 @@ if __name__ == "__main__":
 
     # Track some usage
     tokens, cost = counter.track_usage(
-        model="gpt-4o",
+        model="gpt-4.1",
         input_tokens=1000,
         output_tokens=500,
         operation="PowerShell analysis"
@@ -299,7 +302,7 @@ if __name__ == "__main__":
 
     # Estimate cost
     estimate = counter.estimate_cost(
-        model="gpt-4o",
+        model="gpt-4.1",
         estimated_input_tokens=2000,
         estimated_output_tokens=1000
     )

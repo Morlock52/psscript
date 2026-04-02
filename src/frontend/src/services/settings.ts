@@ -1,10 +1,9 @@
-// Available AI models for the application (updated March 2025)
+// Available AI models for the application (updated April 2026)
 export const AI_MODELS = [
-  { id: 'o3-mini', name: 'o3-mini (Efficient)', description: 'OpenAI\'s lightweight model optimized for speed and efficiency' },
-  { id: 'gpt-4o', name: 'GPT-4o (Optimal)', description: 'OpenAI\'s most advanced model with optimal balance of intelligence, speed, and cost' },
-  { id: 'gpt-4-turbo', name: 'GPT-4 Turbo (Powerful)', description: 'High-performance model with improved reasoning and context length' },
-  { id: 'gpt-4-vision', name: 'GPT-4 Vision (Image Analysis)', description: 'Capable of analyzing PowerShell scripts as images or screenshots' },
-  { id: 'gpt-3.5-turbo', name: 'GPT-3.5 Turbo (Fast)', description: 'Fast, cost-effective model for simpler analysis tasks' },
+  { id: 'o4-mini', name: 'o4-mini (Efficient)', description: 'OpenAI\'s lightweight reasoning model optimized for speed and efficiency' },
+  { id: 'gpt-4.1', name: 'GPT-4.1 (Optimal)', description: 'OpenAI\'s most advanced model with optimal balance of intelligence, speed, and cost' },
+  { id: 'gpt-4.1-mini', name: 'GPT-4.1 Mini (Balanced)', description: 'Efficient model with strong reasoning and smaller footprint' },
+  { id: 'gpt-4.1-nano', name: 'GPT-4.1 Nano (Fast)', description: 'Fast, cost-effective model for simpler analysis tasks' },
   { id: 'claude-3-5-sonnet', name: 'Claude 3.5 Sonnet (Premium)', description: 'Anthropic\'s most advanced model with superior reasoning abilities' },
   { id: 'claude-3-opus', name: 'Claude 3 Opus (Advanced)', description: 'Exceptional at complex security analysis and code understanding' },
   { id: 'claude-3-sonnet', name: 'Claude 3 Sonnet (Balanced)', description: 'Well-balanced model for script analysis with good performance' },
@@ -15,7 +14,7 @@ export const AI_MODELS = [
 
 // Default settings
 const DEFAULT_SETTINGS: AppSettings = {
-  aiModel: 'o3-mini',
+  aiModel: 'o4-mini',
   theme: 'dark',
   autoRunAnalysis: true,
   executionTimeout: 60,

@@ -36,13 +36,13 @@ class LangChainAgent:
     planning, and execution with access to external data sources.
     """
 
-    def __init__(self, api_key: Optional[str] = None, model: str = "gpt-4o"):
+    def __init__(self, api_key: Optional[str] = None, model: str = "gpt-4.1"):
         """
         Initialize the LangGraph agent.
 
         Args:
             api_key: OpenAI API key (optional, will use environment variable if not provided)
-            model: The model to use for the agent (default: gpt-4o)
+            model: The model to use for the agent (default: gpt-4.1)
         """
         # Set API key
         self.api_key = api_key or os.getenv("OPENAI_API_KEY")

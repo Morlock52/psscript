@@ -46,7 +46,7 @@ class AgentCoordinator:
         api_key: Optional[str] = None,
         memory_storage_path: Optional[str] = None,
         visualization_output_dir: Optional[str] = None,
-        model: str = "gpt-4o"  # Updated to gpt-4o for January 2026
+        model: str = "gpt-4.1"  # Updated to gpt-4.1 for April 2026 (gpt-4o deprecated Feb 2026)
     ):
         """
         Initialize the agent coordinator.
@@ -55,7 +55,7 @@ class AgentCoordinator:
             api_key: OpenAI API key
             memory_storage_path: Path to store memory
             visualization_output_dir: Directory to save visualizations
-            model: Model to use for agents (default: gpt-4o as of January 2026)
+            model: Model to use for agents (default: gpt-4.1 as of April 2026)
         """
         self.api_key = api_key or os.environ.get("OPENAI_API_KEY")
         self.model = model

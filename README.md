@@ -249,6 +249,7 @@ The helper is intended for local macOS use with `launchd` and does three things:
 - [Getting Started](./docs/GETTING-STARTED.md)
 - [Data Maintenance](./docs/DATA-MAINTENANCE.md)
 - [Voice API](./docs/README-VOICE-API.md)
+- [Deployment Platforms](./docs/DEPLOYMENT-PLATFORMS.md)
 - [Authentication Improvements](./docs/AUTHENTICATION-IMPROVEMENTS.md)
 - [Updates](./docs/UPDATES.md)
 - [Documentation Hub](./docs/index.md)

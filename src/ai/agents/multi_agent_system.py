@@ -227,7 +227,7 @@ class Agent:
         role: AgentRole,
         capabilities: List[AgentCapability],
         api_key: Optional[str] = None,
-        model: str = "gpt-4o",
+        model: str = "gpt-4.1",
         memory_system: Optional[EnhancedMemorySystem] = None
     ):
         """
@@ -444,7 +444,7 @@ class MultiAgentSystem:
                 AgentCapability.MEMORY_MANAGEMENT
             ],
             api_key=self.coordinator_api_key,
-            model="gpt-4o",
+            model="gpt-4.1",
             memory_system=self.system_memory
         )
         self.agents[coordinator.id] = coordinator
@@ -455,7 +455,7 @@ class MultiAgentSystem:
         role: AgentRole,
         capabilities: List[AgentCapability],
         api_key: Optional[str] = None,
-        model: str = "gpt-4o"
+        model: str = "gpt-4.1"
     ) -> str:
         """
         Add a new agent to the system.

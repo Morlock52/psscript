@@ -1,0 +1,96 @@
+databases:
+  - name: psscript-postgres
+    plan: starter
+    databaseName: psscript
+    user: psscript
+
+services:
+  - type: keyvalue
+    name: psscript-redis
+    plan: starter
+    ipAllowList: []
+
+  - type: web
+    name: psscript-ai
+    runtime: docker
+    plan: starter
+    dockerfilePath: ./deploy/docker/ai.Dockerfile
+    dockerContext: .
+    healthCheckPath: /health
+    envVars:
+      - key: OPENAI_API_KEY
+        sync: false
+      - key: ANTHROPIC_API_KEY
+        sync: false
+      - key: DB_HOST
+        fromDatabase:
+          name: psscript-postgres
+          property: host
+      - key: DB_PORT
+        fromDatabase:
+          name: psscript-postgres
+          property: port
+      - key: DB_NAME
+        fromDatabase:
+          name: psscript-postgres
+          property: database
+      - key: DB_USER
+        fromDatabase:
+          name: psscript-postgres
+          property: user
+      - key: DB_PASSWORD
+        fromDatabase:
+          name: psscript-postgres
+          property: password
+      - key: CORS_ORIGINS
+        sync: false
+
+  - type: web
+    name: psscript-backend
+    runtime: docker
+    plan: starter
+    dockerfilePath: ./deploy/docker/backend.Dockerfile
+    dockerContext: .
+    healthCheckPath: /health
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: PORT
+        value: "4000"
+      - key: DISABLE_AUTH
+        value: "false"
+      - key: RELAX_RATE_LIMITS
+        value: "false"
+      - key: FRONTEND_URL
+        sync: false
+      - key: JWT_SECRET
+        generateValue: true
+      - key: DB_HOST
+        fromDatabase:
+          name: psscript-postgres
+          property: host
+      - key: DB_PORT
+        fromDatabase:
+          name: psscript-postgres
+          property: port
+      - key: DB_NAME
+        fromDatabase:
+          name: psscript-postgres
+          property: database
+      - key: DB_USER
+        fromDatabase:
+          name: psscript-postgres
+          property: user
+      - key: DB_PASSWORD
+        fromDatabase:
+          name: psscript-postgres
+          property: password
+      - key: REDIS_URL
+        fromService:
+          type: keyvalue
+          name: psscript-redis
+          property: connectionString
+      - key: AI_SERVICE_URL
+        sync: false
+      - key: OPENAI_API_KEY
+        sync: false

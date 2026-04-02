@@ -42,7 +42,7 @@ class OpenAIAssistantAgent:
     def __init__(
         self,
         api_key: Optional[str] = None,
-        model: str = "gpt-4o",
+        model: str = "gpt-4.1",
         name: str = "PSScript Assistant",
         description: str = "PowerShell script analysis assistant with expertise in security, optimization, and best practices",
         instructions: Optional[str] = None,
@@ -55,7 +55,7 @@ class OpenAIAssistantAgent:
         
         Args:
             api_key: OpenAI API key
-            model: Model to use for the assistant (e.g., gpt-4o, gpt-4-turbo)
+            model: Model to use for the assistant (e.g., gpt-4.1, gpt-4.1-mini)
             name: Name of the assistant
             description: Description of the assistant
             instructions: Detailed instructions for the assistant

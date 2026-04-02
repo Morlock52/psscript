@@ -411,7 +411,7 @@ async def analyze_node(state: PowerShellAnalysisState, config: RunnableConfig) -
 
     # Get the LLM with tools
     llm = ChatOpenAI(
-        model=config.get("configurable", {}).get("model", "gpt-4o"),
+        model=config.get("configurable", {}).get("model", "gpt-4.1"),
         temperature=0,
         streaming=True
     )
@@ -474,7 +474,7 @@ async def synthesis_node(state: PowerShellAnalysisState, config: RunnableConfig)
     logger.info(f"Synthesizing results for workflow {state.get('workflow_id')}")
 
     llm = ChatOpenAI(
-        model=config.get("configurable", {}).get("model", "gpt-4o"),
+        model=config.get("configurable", {}).get("model", "gpt-4.1"),
         temperature=0.3,
         streaming=True
     )

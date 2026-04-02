@@ -28,13 +28,13 @@ class HybridAgent:
     3. Enhanced PowerShell-specific analysis with MS Docs integration
     """
     
-    def __init__(self, api_key: Optional[str] = None, model: str = "gpt-4o"):
+    def __init__(self, api_key: Optional[str] = None, model: str = "gpt-4.1"):
         """
         Initialize the hybrid agent.
 
         Args:
             api_key: The API key to use for OpenAI API calls
-            model: The model to use for analysis (default: gpt-4o)
+            model: The model to use for analysis (default: gpt-4.1)
         """
         self.api_key = api_key or os.environ.get("OPENAI_API_KEY")
         self.model = model

@@ -72,7 +72,7 @@ if os.getenv("REDIS_URL"):
 # Constants - Updated for January 2026 best models
 EMBEDDING_MODEL = os.getenv("EMBEDDING_MODEL", "text-embedding-3-large")
 ANALYSIS_MODEL = os.getenv("ANALYSIS_MODEL", "gpt-4.1")  # Default high-quality reasoning model
-FAST_MODEL = os.getenv("FAST_MODEL", "gpt-4o-mini")  # Fast model for quick tasks
+FAST_MODEL = os.getenv("FAST_MODEL", "gpt-4.1-mini")  # Fast model for quick tasks
 EMBEDDING_DIMENSION = 3072  # text-embedding-3-large dimension (can be customized 256-3072)
 CACHE_TTL = int(os.getenv("CACHE_TTL", "86400"))  # Default: 1 day in seconds
 MAX_WORKERS = int(os.getenv("MAX_WORKERS", "5"))  # Default: 5 concurrent workers
