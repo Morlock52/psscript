@@ -39,6 +39,7 @@ export const ErrorCodes = {
   AUTH_EXPIRED: 'AUTH_EXPIRED',
   FORBIDDEN: 'FORBIDDEN',
   NOT_FOUND: 'NOT_FOUND',
+  CONFLICT: 'CONFLICT',
   VALIDATION_ERROR: 'VALIDATION_ERROR',
   RATE_LIMITED: 'RATE_LIMITED',
   SERVER_ERROR: 'SERVER_ERROR',
@@ -55,6 +56,7 @@ const defaultMessages: Record<string, string> = {
   [ErrorCodes.AUTH_EXPIRED]: 'Your session has expired. Please log in again.',
   [ErrorCodes.FORBIDDEN]: 'You do not have permission to perform this action.',
   [ErrorCodes.NOT_FOUND]: 'The requested resource was not found.',
+  [ErrorCodes.CONFLICT]: 'This resource already exists.',
   [ErrorCodes.VALIDATION_ERROR]: 'Please check your input and try again.',
   [ErrorCodes.RATE_LIMITED]: 'Too many requests. Please wait a moment and try again.',
   [ErrorCodes.SERVER_ERROR]: 'A server error occurred. Please try again later.',
@@ -79,6 +81,7 @@ function determineErrorCode(error: unknown): string {
     if (status === 401) return ErrorCodes.AUTH_EXPIRED;
     if (status === 403) return ErrorCodes.FORBIDDEN;
     if (status === 404) return ErrorCodes.NOT_FOUND;
+    if (status === 409) return ErrorCodes.CONFLICT;
     if (status === 422 || status === 400) return ErrorCodes.VALIDATION_ERROR;
     if (status === 429) return ErrorCodes.RATE_LIMITED;
     if (status >= 500) return ErrorCodes.SERVER_ERROR;

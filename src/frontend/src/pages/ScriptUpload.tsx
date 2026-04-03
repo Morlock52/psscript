@@ -65,11 +65,28 @@ const ScriptUpload: React.FC = () => {
         console.error("Error uploading script:", error);
         setUploadProgress(0);
 
+        // Handle duplicate file (409) — navigate to existing script
+        const err = error as Record<string, unknown>;
+        const status = err.status ?? (err.response as Record<string, unknown>)?.status;
+        const responseData = (err.response as Record<string, unknown>)?.data as Record<string, unknown> | undefined;
+        const existingId = responseData?.existingScriptId ?? (err as Record<string, unknown>).existingScriptId;
+
+        if (status === 409 && existingId) {
+          setFileError(`This script already exists (ID: ${existingId}). Redirecting...`);
+          setIsNetworkError(false);
+          setTimeout(() => navigate(`/scripts/${existingId}`), 1500);
+          return;
+        }
+
         // Use centralized error detection for reliable network error identification
         setIsNetworkError(isRetryableError(error));
         setFileError(getErrorMessage(error, "Failed to upload script. Please try again."));
       },
       retry: (failureCount, error: unknown) => {
+        // Don't retry 409 (duplicate) — it will always fail
+        const err = error as Record<string, unknown>;
+        const status = err.status ?? (err.response as Record<string, unknown>)?.status;
+        if (status === 409) return false;
         // Only retry for retryable errors (network, timeout, server errors) up to MAX_RETRIES times
         return isRetryableError(error) && failureCount < MAX_RETRIES;
       },
