@@ -9,6 +9,7 @@ import { FaExclamationTriangle, FaCheckCircle, FaInfoCircle, FaLightbulb, FaChar
 import { streamAnalysis, AnalysisEvent } from '../services/langgraphService';
 import { AnalysisProgressPanel } from '../components/Analysis/AnalysisProgressPanel';
 import { AI_MODELS, loadSettings } from '../services/settings';
+import { getApiUrl } from '../utils/apiUrl';
 
 // Define message type for AI chat
 interface Message {
@@ -137,9 +138,8 @@ When generating or modifying scripts:
 - Implement proper error handling with try/catch
 - Follow Verb-Noun naming conventions`;
 
-      // Get the API URL from environment or use dynamic hostname
-      const apiUrl = import.meta.env.VITE_API_URL ||
-        `http://${window.location.hostname}:4000/api`;
+      // Use same-origin /api path (proxied to backend by Vite/server.js/tunnel)
+      const apiUrl = getApiUrl();
 
       // Call AI service with guardrails enabled on backend
       const response = await axios.post(`${apiUrl}/chat`, {

@@ -25,6 +25,8 @@ services:
       - VITE_DISABLE_AUTH=true
       - VITE_USE_MOCKS=true
       - VITE_PORT=3090
+      # Tell Vite proxy to route /api to Docker backend hostname
+      - DOCKER_ENV=true
       # TLS certificate paths for mTLS
       - TLS_CERT=/certs/frontend.crt
       - TLS_KEY=/certs/frontend.key

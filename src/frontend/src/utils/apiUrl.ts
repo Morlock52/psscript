@@ -16,40 +16,9 @@ export function getApiUrl(): string {
     return _cachedApiUrl;
   }
 
-  const hasWindow = typeof window !== 'undefined';
-  const pageProtocol = hasWindow && window.location.protocol === 'https:' ? 'https' : 'http';
-
+  // If explicitly configured, use that (e.g. for testing against a remote backend)
   if (import.meta.env.VITE_API_URL) {
-    const configuredRaw = String(import.meta.env.VITE_API_URL).trim();
-    let normalized = configuredRaw;
-
-    if (hasWindow) {
-      try {
-        const url = new URL(configuredRaw);
-        const pageHost = window.location.hostname;
-        const pageIsLocalhost = pageHost === 'localhost' || pageHost === '127.0.0.1';
-
-        if (pageIsLocalhost && url.hostname === 'backend' && url.port === '4000') {
-          url.hostname = pageHost;
-          url.protocol = window.location.protocol;
-          normalized = url.toString();
-        }
-
-        if (
-          pageProtocol === 'https' &&
-          url.protocol === 'http:' &&
-          (url.hostname === 'localhost' || url.hostname === '127.0.0.1') &&
-          url.port === '4000'
-        ) {
-          url.protocol = 'https:';
-          normalized = url.toString();
-        }
-      } catch {
-        // Leave invalid absolute URLs unchanged.
-      }
-    }
-
-    _cachedApiUrl = normalized.replace(/\/+$/, '');
+    _cachedApiUrl = String(import.meta.env.VITE_API_URL).trim().replace(/\/+$/, '');
     console.log('[apiUrl] Using VITE_API_URL:', _cachedApiUrl);
     return _cachedApiUrl;
   }
@@ -59,20 +28,14 @@ export function getApiUrl(): string {
     return 'http://localhost:4000/api';
   }
 
-  const protocol = pageProtocol;
-  const hostname = window.location.hostname;
-  const isLocalhost = hostname === 'localhost' || hostname === '127.0.0.1';
-  const origin =
-    (window.location as any).origin ||
-    `${window.location.protocol}//${hostname}${window.location.port ? `:${window.location.port}` : ''}`;
+  // Always use same-origin /api path. This works in all environments:
+  // - Docker dev: Vite proxy forwards /api → https://backend:4000 (secure:false)
+  // - Production: server.js proxy forwards /api → https://localhost:4000
+  // - Tunnel: Cloudflare config routes /api/* → backend service
+  // This avoids cross-origin HTTPS issues with self-signed certs.
+  _cachedApiUrl = '/api';
 
-  // Localhost always hits backend on port 4000, whether dev or production build.
-  // Non-localhost (tunnel/proxy) uses same-origin /api path.
-  _cachedApiUrl = isLocalhost
-    ? `${protocol}://${hostname}:4000/api`
-    : `${protocol}://${hostname}/api`;
-
-  console.log('[apiUrl] Runtime API URL:', _cachedApiUrl, '(hostname:', hostname, ', isLocalhost:', isLocalhost, ')');
+  console.log('[apiUrl] Runtime API URL:', _cachedApiUrl, '(same-origin proxy)');
   return _cachedApiUrl;
 }
 

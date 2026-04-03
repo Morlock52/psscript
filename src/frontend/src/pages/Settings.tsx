@@ -30,7 +30,7 @@ const Settings: React.FC = () => {
   });
 
   // Legacy Settings page (not routed by default). Keep URLs correct to avoid drift.
-  const docsBaseUrl = import.meta.env.VITE_DOCS_URL || `https://${window.location.hostname}:4000`;
+  const docsBaseUrl = import.meta.env.VITE_DOCS_URL || '';
   const docsRepoPdfBaseUrl = 'https://github.com/Morlock52/psscript/blob/main/docs/exports/pdf';
   const docsRepoBaseUrl = 'https://github.com/Morlock52/psscript/blob/main/docs';
   const docsRepoDocxBaseUrl = 'https://github.com/Morlock52/psscript/blob/main/docs/exports/docx';
