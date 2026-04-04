@@ -136,3 +136,4 @@ __pycache__/
 *.pyo
 *.egg-info/
 src/ai/voice_cache/
+src/ai/memory_storage/
