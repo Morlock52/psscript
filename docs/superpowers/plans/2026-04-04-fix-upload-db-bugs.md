@@ -6,6 +6,16 @@
 
 **Architecture:** Six verified bugs across AsyncUploadController, Script model, ScriptVersion model, and fileIntegrity utility. Fixes target model definitions, controller logic, and a new DB migration for hash uniqueness. Each task is independent and produces a working, testable change.
 
+> **Migration ordering:** Task 5 (MD5→SHA-256 rehash) **must run before** Task 4 (UNIQUE constraint). If duplicate MD5 hashes exist in the database, adding the UNIQUE constraint will fail. Task 5 recomputes all hashes as SHA-256, eliminating duplicates caused by MD5 collisions, so the constraint can be safely added afterward.
+
+> **Deployment sequence (no-skew):** To prevent a window where old nodes write MD5 hashes while new nodes write SHA-256 (which would bypass deduplication), deploy in this order:
+> 1. **Deploy code changes** (Tasks 1-3, 5 code, 6) to **all instances** — the new code writes SHA-256 but still reads both MD5 and SHA-256 via the deprecated aliases
+> 2. **Run Task 5 migration** (rehash existing MD5→SHA-256) — now all hashes in DB are SHA-256
+> 3. **Run Task 4 migration** (audit duplicates, reassign dependents, add UNIQUE constraint)
+> 4. **Verify:** `SELECT COUNT(*) FROM scripts WHERE length(file_hash) = 32;` should return 0
+>
+> In a single-instance deployment (Docker Compose), steps 1-3 can be done in sequence during a single maintenance window. For multi-instance deployments, step 1 must complete on all instances before step 2.
+
 **Tech Stack:** TypeScript, Sequelize 6, PostgreSQL 15, Express
 
 ---
@@ -14,11 +24,13 @@
 
 | Action | File | Responsibility |
 |--------|------|----------------|
-| Modify | `src/backend/src/models/Script.ts` | Add `hasMany(ScriptVersion)` association, add `content` to create calls |
+| Modify | `src/backend/src/models/Script.ts` | Add `hasMany(ScriptVersion)` association, mark `file_hash` index unique |
 | Modify | `src/backend/src/controllers/AsyncUploadController.ts` | Fix `Script.create` (missing content, ghost uploadId), fix `changes` → `changelog`, fix `getUploadStatus` query |
 | Modify | `src/backend/src/controllers/script/export.ts` | Move hash check inside transaction |
 | Modify | `src/backend/src/utils/fileIntegrity.ts` | Upgrade MD5 → SHA-256 |
-| Create | `src/db/migrations/add_unique_file_hash.sql` | Add UNIQUE constraint on `file_hash` |
+| Create | `src/db/migrations/upgrade_file_hash_sha256.sql` | Rehash MD5→SHA-256 (run first) |
+| Create | `src/db/migrations/add_unique_file_hash.sql` | Add UNIQUE constraint on `file_hash` (run after rehash) |
+| Create | `src/backend/src/models/__tests__/Script.associations.test.ts` | Association tests |
 | Create | `src/backend/src/controllers/__tests__/AsyncUploadController.test.ts` | Unit tests for upload pipeline fixes |
 
 ---
@@ -241,29 +253,51 @@ Three bugs fixed:
 
 The `getUploadStatus` method queries `Script.findOne({ where: { uploadId } })` but `uploadId` doesn't exist on the Script model. This means the "completed" status check always returns null, so uploads that succeed still show as "not_found".
 
-**Strategy:** Track completed uploads using an in-memory Map (matching the existing in-memory queue pattern). Store `uploadId → scriptId` when processing completes.
+**Strategy:** Track completed uploads using the existing `cache` service (Redis + in-memory fallback). This gives durability across restarts and shared state across multiple backend instances. Store `upload:status:{uploadId} → { scriptId, title, description, versions }` with a 1-hour TTL.
 
-- [ ] **Step 1: Add completed uploads tracking**
+- [ ] **Step 1: Add cache import**
 
-In `src/backend/src/controllers/AsyncUploadController.ts`, add a new property to the class after `private isProcessing`:
+In `src/backend/src/controllers/AsyncUploadController.ts`, add import at the top:
 
 ```typescript
-  private completedUploads: Map<string, { scriptId: number; title: string }> = new Map();
+import cache from '../services/cacheService';
 ```
 
-- [ ] **Step 2: Store completed upload info after successful processing**
+- [ ] **Step 2: Add helper methods for upload status persistence**
+
+Add these private methods to the AsyncUploadController class:
+
+```typescript
+  private static readonly UPLOAD_STATUS_TTL = 3600; // 1 hour in seconds
+
+  private storeCompletedUpload(uploadId: string, data: {
+    scriptId: number; title: string; description: string; versions: number;
+  }): void {
+    cache.set(`upload:status:${uploadId}`, data, AsyncUploadController.UPLOAD_STATUS_TTL);
+  }
+
+  private getCompletedUpload(uploadId: string): {
+    scriptId: number; title: string; description: string; versions: number;
+  } | null {
+    return cache.get(`upload:status:${uploadId}`);
+  }
+```
+
+- [ ] **Step 3: Store completed upload info after successful processing**
 
 In the `processNextFile` method, after the line `logger.info(\`Successfully processed file: ${uploadId}\`);` (line 314), add:
 
 ```typescript
-          // Track completed upload for status queries
-          this.completedUploads.set(uploadId, {
+          // Track completed upload for status queries (Redis-backed, 1hr TTL)
+          this.storeCompletedUpload(uploadId, {
             scriptId: script.id,
-            title: script.title
+            title: script.title,
+            description: description || '',
+            versions: 1
           });
 ```
 
-- [ ] **Step 3: Rewrite the getUploadStatus completed check**
+- [ ] **Step 4: Rewrite the getUploadStatus completed check**
 
 Replace the database query block in `getUploadStatus` (lines 191-210):
 
@@ -293,8 +327,8 @@ Replace the database query block in `getUploadStatus` (lines 191-210):
 
 **New code:**
 ```typescript
-      // Check if upload completed successfully
-      const completed = this.completedUploads.get(uploadId);
+      // Check if upload completed successfully (Redis-backed, shared across instances)
+      const completed = this.getCompletedUpload(uploadId);
       if (completed) {
         res.json({
           success: true,
@@ -302,7 +336,9 @@ Replace the database query block in `getUploadStatus` (lines 191-210):
           message: 'File processing completed successfully',
           scriptId: completed.scriptId,
           scriptDetails: {
-            title: completed.title
+            title: completed.title,
+            description: completed.description,
+            versions: completed.versions
           }
         });
         return;
@@ -322,7 +358,8 @@ git add src/backend/src/controllers/AsyncUploadController.ts
 git commit -m "fix: getUploadStatus was querying non-existent uploadId column
 
 Replaced broken Script.findOne({ where: { uploadId } }) with
-in-memory completed uploads Map, consistent with existing queue pattern."
+Redis-backed cache (1hr TTL), durable across restarts and shared
+across multiple backend instances."
 ```
 
 ---
@@ -340,10 +377,42 @@ The hash deduplication check happens outside the transaction. Two concurrent upl
 Create file `src/db/migrations/add_unique_file_hash.sql`:
 
 ```sql
--- Add UNIQUE constraint on file_hash to prevent duplicate uploads at the DB level.
+-- PREREQUISITE: Task 5 migration (upgrade_file_hash_sha256.sql) must have run first
+-- to rehash all MD5 values to SHA-256.
+--
+-- Step 1: Audit any remaining duplicate hashes into a temp table for review.
+-- This preserves a record of what was merged, so no data is silently lost.
+CREATE TABLE IF NOT EXISTS _duplicate_hash_audit AS
+  SELECT a.id AS removed_id, b.id AS kept_id, a.file_hash, a.title, a.created_at
+  FROM scripts a
+  JOIN scripts b ON a.file_hash = b.file_hash AND a.id < b.id
+  WHERE a.file_hash IS NOT NULL;
+
+-- Step 2: Reassign dependent records (versions, tags, analyses) from duplicates to the kept script.
+-- This prevents orphaned foreign key references.
+UPDATE script_versions SET script_id = d.kept_id
+  FROM _duplicate_hash_audit d WHERE script_versions.script_id = d.removed_id;
+
+UPDATE script_tags SET script_id = d.kept_id
+  FROM _duplicate_hash_audit d WHERE script_tags.script_id = d.removed_id
+  ON CONFLICT DO NOTHING;  -- skip if the kept script already has that tag
+
+UPDATE analysis_results SET script_id = d.kept_id
+  FROM _duplicate_hash_audit d WHERE analysis_results.script_id = d.removed_id;
+
+-- Step 3: Remove the duplicate rows (now safe — dependents have been reassigned).
+DELETE FROM scripts WHERE id IN (SELECT removed_id FROM _duplicate_hash_audit);
+
+-- Step 4: Add UNIQUE constraint on file_hash to prevent future duplicates.
 -- Null values are allowed (scripts without hashes) — PostgreSQL UNIQUE permits multiple NULLs.
 ALTER TABLE scripts ADD CONSTRAINT uq_scripts_file_hash UNIQUE (file_hash);
+
+-- Note: The _duplicate_hash_audit table is kept for post-migration review.
+-- Drop it manually after verifying the migration was successful:
+--   DROP TABLE IF EXISTS _duplicate_hash_audit;
 ```
+
+> **Important:** Before running this migration in production, verify the dependent table names match your schema (the above uses `script_versions`, `script_tags`, `analysis_results`). Check with: `SELECT table_name FROM information_schema.tables WHERE table_name LIKE 'script%' OR table_name LIKE 'analysis%';`
 
 - [ ] **Step 2: Update Script model index to be unique**
 
@@ -430,7 +499,7 @@ export const checkFileExists = async (
     );
 ```
 
-The `FOR UPDATE` clause locks the matching row within the transaction, preventing a second concurrent upload from reading "no match" while the first is still inserting.
+The `FOR UPDATE` clause locks the matching row within the transaction, preventing a second concurrent upload from reading a stale state while the first is still inserting. Note: `FOR UPDATE` only locks rows that match the WHERE clause — when no matching row exists (new hash), the UNIQUE constraint (Step 1) is the primary defense against concurrent duplicate inserts.
 
 - [ ] **Step 5: Add SequelizeUniqueConstraintError handling as a safety net**
 
@@ -486,10 +555,10 @@ Improved error message for hash-based duplicate detection."
 
 **Files:**
 - Modify: `src/backend/src/utils/fileIntegrity.ts`
-- Modify: `src/backend/src/models/Script.ts` (widen column from 32 to 64 chars)
+- Modify: `src/backend/src/utils/fileIntegrity.ts`
 - Create: `src/db/migrations/upgrade_file_hash_sha256.sql`
 
-CLAUDE.md documents SHA-256 for file integrity, but the code uses MD5 which is cryptographically broken. The `fileHash` column is already `STRING(64)` — enough for SHA-256 hex output (64 chars). But we need a migration for existing MD5 hashes (32 chars).
+CLAUDE.md documents SHA-256 for file integrity, but the code uses MD5 which is cryptographically broken. The `fileHash` column is already `STRING(64)` — enough for SHA-256 hex output (64 chars), so no column change is needed. But we need a migration to rehash existing MD5 values (32 chars) to SHA-256 (64 chars).
 
 - [ ] **Step 1: Create migration to rehash existing scripts**
 
@@ -497,9 +566,12 @@ Create file `src/db/migrations/upgrade_file_hash_sha256.sql`:
 
 ```sql
 -- Upgrade file hashes from MD5 (32 hex chars) to SHA-256 (64 hex chars).
--- Clear existing MD5 hashes so they get recomputed on next access.
+-- Recompute in-place to avoid a dedup gap where uploads could bypass duplicate detection.
 -- The application now uses SHA-256 for all new uploads.
-UPDATE scripts SET file_hash = NULL WHERE file_hash IS NOT NULL AND length(file_hash) = 32;
+CREATE EXTENSION IF NOT EXISTS pgcrypto;
+UPDATE scripts
+  SET file_hash = encode(digest(content::text, 'sha256'), 'hex')
+  WHERE file_hash IS NOT NULL AND length(file_hash) = 32;
 ```
 
 - [ ] **Step 2: Update fileIntegrity.ts to use SHA-256**
@@ -558,17 +630,9 @@ New:
 
 Note: This uses PostgreSQL's `pgcrypto` extension. The project already has `pgvector` so extensions are available. If `pgcrypto` isn't installed, the migration should add it.
 
-- [ ] **Step 3: Update the migration to ensure pgcrypto**
+- [ ] **Step 3: Verify pgcrypto is included in migration**
 
-Prepend to `src/db/migrations/upgrade_file_hash_sha256.sql`:
-
-```sql
-CREATE EXTENSION IF NOT EXISTS pgcrypto;
-
--- Upgrade file hashes from MD5 (32 hex chars) to SHA-256 (64 hex chars).
--- Clear existing MD5 hashes so they get recomputed on next access.
-UPDATE scripts SET file_hash = NULL WHERE file_hash IS NOT NULL AND length(file_hash) = 32;
-```
+The migration file from Step 1 already includes `CREATE EXTENSION IF NOT EXISTS pgcrypto` and recomputes hashes in-place. Verify the final file contains both statements. If deploying to an environment where migrations run separately from app startup, ensure this migration runs before any new uploads occur.
 
 - [ ] **Step 4: Run typecheck**
 
@@ -583,7 +647,7 @@ git add src/backend/src/utils/fileIntegrity.ts src/db/migrations/upgrade_file_ha
 git commit -m "fix: upgrade file hash from MD5 to SHA-256
 
 MD5 is cryptographically broken. SHA-256 matches the documented
-algorithm in CLAUDE.md. Existing MD5 hashes are cleared for recomputation.
+algorithm in CLAUDE.md. Existing MD5 hashes recomputed in-place as SHA-256.
 Old function names kept as deprecated aliases for backward compatibility."
 ```
 
@@ -601,24 +665,33 @@ The `AsyncUploadController.processNextFile` does NOT check for duplicate hashes 
 In `src/backend/src/controllers/AsyncUploadController.ts`, add imports at the top (after existing imports):
 
 ```typescript
-import { calculateBufferMD5 as calculateHash, checkFileExists } from '../utils/fileIntegrity';
+import { calculateBufferSHA256 as calculateHash, checkFileExists } from '../utils/fileIntegrity';
 ```
 
-Then in `processNextFile`, after reading the file content (line 260: `const fileContent = await readFileAsync(filePath, 'utf8');`), add the dedup check before the transaction:
+Then in `processNextFile`, after reading the file content (line 260: `const fileContent = await readFileAsync(filePath, 'utf8');`), compute the hash before the transaction, but perform the dedup check **inside** the transaction (consistent with Task 4's race-condition fix):
 
 ```typescript
-      // Calculate hash and check for duplicates
+      // Calculate hash before transaction
       const fileHash = calculateHash(Buffer.from(fileContent, 'utf8'));
-      const existingScriptId = await checkFileExists(fileHash, sequelize);
-      if (existingScriptId) {
-        logger.info(`Duplicate detected for upload ${uploadId}, existing script ID: ${existingScriptId}`);
-        this.completedUploads.set(uploadId, {
-          scriptId: existingScriptId,
-          title: `(duplicate of ${existingScriptId})`
-        });
-        await unlinkAsync(filePath);
-        return;
-      }
+```
+
+Then **inside** the transaction block (after `const transaction = await sequelize.transaction();`), add the dedup check:
+
+```typescript
+          // Check for duplicates inside transaction (prevents race condition — see Task 4)
+          const existingScriptId = await checkFileExists(fileHash, sequelize, transaction);
+          if (existingScriptId) {
+            await transaction.rollback();
+            logger.info(`Duplicate detected for upload ${uploadId}, existing script ID: ${existingScriptId}`);
+            this.storeCompletedUpload(uploadId, {
+              scriptId: existingScriptId,
+              title: `(duplicate of ${existingScriptId})`,
+              description: '',
+              versions: 1
+            });
+            await unlinkAsync(filePath);
+            return;
+          }
 ```
 
 Also add `fileHash` to the `Script.create` call:
@@ -635,6 +708,8 @@ Also add `fileHash` to the `Script.create` call:
             executionCount: 0
           }, { transaction });
 ```
+
+> **Note:** The UNIQUE constraint on `file_hash` (Task 4) is the primary defense against concurrent duplicate inserts. The `FOR UPDATE` lock in `checkFileExists` helps only when a matching row already exists — when no row matches, `FOR UPDATE` has nothing to lock. Two concurrent transactions can both see zero rows and proceed to INSERT, at which point the UNIQUE constraint catches the second one.
 
 - [ ] **Step 2: Run typecheck**
 
@@ -670,6 +745,6 @@ Now computes SHA-256 hash and checks before insert."
 **Placeholder scan:** No TBDs, TODOs, or "similar to Task N" references found.
 
 **Type consistency:**
-- `calculateBufferMD5` aliased to `calculateBufferSHA256` — all imports continue to work
+- `calculateBufferMD5` aliased to `calculateBufferSHA256` — all imports continue to work (Task 6 uses `calculateBufferSHA256` directly)
 - `checkFileExists` gains optional `transaction` param — backward compatible
 - `changelog` field name used consistently after Task 2 fix
