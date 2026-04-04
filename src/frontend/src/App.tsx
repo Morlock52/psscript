@@ -4,9 +4,9 @@ import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import { useAuth } from './hooks/useAuth';
-import lazyWithRetry from './utils/lazyWithRetry';
-
-// Eagerly load auth pages and core components (needed immediately)
+// All pages eagerly loaded — Cloudflare Access blocks dynamic chunk imports
+// because import() doesn't send the Access session cookie.
+// TODO: Re-enable lazy loading once Cloudflare Access bypass for /assets/* is confirmed working.
 import Login from './pages/Login';
 import Register from './pages/Register';
 import Navbar from './components/Navbar';
@@ -14,32 +14,30 @@ import Sidebar from './components/Sidebar';
 import VoiceAssistantDock from './components/VoiceAssistantDock';
 import ProtectedRoute from './components/ProtectedRoute';
 import LoadingScreen from './components/LoadingScreen';
-
-// Heavy pages are lazily loaded to reduce initial JS bundle size.
-const Dashboard = lazyWithRetry(() => import('./pages/Dashboard'));
-const Analytics = lazyWithRetry(() => import('./pages/Analytics'));
-const ScriptManagement = lazyWithRetry(() => import('./pages/ScriptManagement'));
-const ScriptUpload = lazyWithRetry(() => import('./pages/ScriptUpload'));
-const ScriptDetail = lazyWithRetry(() => import('./pages/ScriptDetail'));
-const ScriptEditor = lazyWithRetry(() => import('./pages/ScriptEditor'));
-const ScriptAnalysis = lazyWithRetry(() => import('./pages/ScriptAnalysis'));
-const SimpleChatWithAI = lazyWithRetry(() => import('./pages/SimpleChatWithAI'));
-const ChatHistory = lazyWithRetry(() => import('./pages/ChatHistory'));
-const AgenticAIPage = lazyWithRetry(() => import('./pages/AgenticAIPage'));
-const AgentOrchestrationPage = lazyWithRetry(() => import('./pages/AgentOrchestrationPage'));
-const Documentation = lazyWithRetry(() => import('./pages/Documentation'));
-const NotFound = lazyWithRetry(() => import('./pages/NotFound'));
-const DocumentationCrawl = lazyWithRetry(() => import('./pages/DocumentationCrawl'));
-const CrawledData = lazyWithRetry(() => import('./pages/CrawledData'));
-const UIComponentsDemo = lazyWithRetry(() => import('./pages/UIComponentsDemo'));
-const ProfileSettings = lazyWithRetry(() => import('./pages/Settings/ProfileSettings'));
-const AppearanceSettings = lazyWithRetry(() => import('./pages/Settings/AppearanceSettings'));
-const SecuritySettings = lazyWithRetry(() => import('./pages/Settings/SecuritySettings'));
-const NotificationSettings = lazyWithRetry(() => import('./pages/Settings/NotificationSettings'));
-const ApiSettings = lazyWithRetry(() => import('./pages/Settings/ApiSettings'));
-const UserManagement = lazyWithRetry(() => import('./pages/Settings/UserManagement'));
-const CategoriesSettings = lazyWithRetry(() => import('./pages/Settings/CategoriesSettings'));
-const DataMaintenanceSettings = lazyWithRetry(() => import('./pages/Settings/DataMaintenanceSettings'));
+import Dashboard from './pages/Dashboard';
+import Analytics from './pages/Analytics';
+import ScriptManagement from './pages/ScriptManagement';
+import ScriptUpload from './pages/ScriptUpload';
+import ScriptDetail from './pages/ScriptDetail';
+import ScriptEditor from './pages/ScriptEditor';
+import ScriptAnalysis from './pages/ScriptAnalysis';
+import SimpleChatWithAI from './pages/SimpleChatWithAI';
+import ChatHistory from './pages/ChatHistory';
+import AgenticAIPage from './pages/AgenticAIPage';
+import AgentOrchestrationPage from './pages/AgentOrchestrationPage';
+import Documentation from './pages/Documentation';
+import NotFound from './pages/NotFound';
+import DocumentationCrawl from './pages/DocumentationCrawl';
+import CrawledData from './pages/CrawledData';
+import UIComponentsDemo from './pages/UIComponentsDemo';
+import ProfileSettings from './pages/Settings/ProfileSettings';
+import AppearanceSettings from './pages/Settings/AppearanceSettings';
+import SecuritySettings from './pages/Settings/SecuritySettings';
+import NotificationSettings from './pages/Settings/NotificationSettings';
+import ApiSettings from './pages/Settings/ApiSettings';
+import UserManagement from './pages/Settings/UserManagement';
+import CategoriesSettings from './pages/Settings/CategoriesSettings';
+import DataMaintenanceSettings from './pages/Settings/DataMaintenanceSettings';
 
 // Create a client for React Query
 const queryClient = new QueryClient({

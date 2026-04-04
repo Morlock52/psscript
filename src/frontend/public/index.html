@@ -159,7 +159,7 @@
         
         function checkBackendStatus() {
             const backendStatusElement = document.querySelector('#backend-status span');
-            const backendUrl = 'http://' + window.location.hostname + ':4000/api/health';
+            const backendUrl = '/api/health';
             
             fetch(backendUrl)
                 .then(response => {
@@ -213,7 +213,7 @@
             
             resultElement.innerHTML = '<p>Analyzing script...</p>';
             
-            const backendUrl = 'http://' + window.location.hostname + ':4000/api/scripts/analyze';
+            const backendUrl = '/api/scripts/analyze';
             
             fetch(backendUrl, {
                 method: 'POST',

@@ -32,7 +32,8 @@ services:
     restart: unless-stopped
 
   # Frontend configuration for Cloudflare tunnel access
-  # Use Vite dev server to avoid expensive build-on-start (can OOM and kill backend/db).
+  # Serves pre-built dist via vite preview. Build on host first: cd src/frontend && npm run build
+  # Vite dev server HMR/WebSocket does NOT work through Cloudflare tunnel.
   frontend:
     build:
       context: ./src/frontend
@@ -42,7 +43,7 @@ services:
       - /app/node_modules
       - ./certs:/certs:ro
     environment:
-      NODE_ENV: development
+      NODE_ENV: production
       # Let frontend runtime-detect API URL (works for local + tunnel)
       VITE_API_URL:
       VITE_PORT: "3090"
@@ -55,7 +56,7 @@ services:
       TLS_KEY: /certs/frontend.key
     ports:
       - "3090:3090"
-    command: npm run dev -- --host 0.0.0.0 --port 3090
+    command: npx vite preview --host 0.0.0.0 --port 3090
     restart: unless-stopped
 
   # Development configuration for AI service
