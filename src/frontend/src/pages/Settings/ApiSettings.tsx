@@ -32,6 +32,15 @@ const ApiSettings: React.FC = () => {
       hasEnvValue: !!import.meta.env.VITE_OPENAI_API_KEY
     },
     {
+      name: 'anthropic_api_key',
+      key: '',
+      description: 'Anthropic API Key for Claude AI analysis and chat',
+      placeholder: 'sk-ant-...',
+      url: 'https://console.anthropic.com/settings/keys',
+      envKey: 'VITE_ANTHROPIC_API_KEY',
+      hasEnvValue: !!import.meta.env.VITE_ANTHROPIC_API_KEY
+    },
+    {
       name: 'google_api_key',
       key: '',
       description: 'Google API Key for search and other Google services',
@@ -87,6 +96,12 @@ const ApiSettings: React.FC = () => {
   const handleToggleEnvVariables = (event: React.ChangeEvent<HTMLInputElement>) => {
     setUseEnvVariables(event.target.checked);
   };
+
+  // TODO(human): Add a validateApiKey(apiKey: ApiKey) function here that checks
+  // if the key format matches the expected pattern for each provider.
+  // For Anthropic keys, consider checking for the 'sk-ant-' prefix.
+  // Return { valid: boolean; warning?: string } — use warnings (not errors)
+  // so users can still save keys with unexpected formats.
 
   // Save API keys
   const handleSave = () => {

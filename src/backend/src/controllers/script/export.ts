@@ -787,10 +787,10 @@ async function performAsyncAnalysis(
 
     const analysis = (analysisResponse as { data: AnalysisResponseData }).data;
 
-    // Create analysis record with transaction
+    // Upsert analysis record (re-analysis of existing scripts must update, not insert)
     const analysisTransaction = await sequelize.transaction();
     try {
-      await ScriptAnalysis.create({
+      await ScriptAnalysis.upsert({
         scriptId: scriptId,
         purpose: analysis.purpose || 'No purpose provided',
         parameters: analysis.parameters || {},
@@ -823,7 +823,7 @@ async function performAsyncAnalysis(
 
     // Create a basic analysis record even if AI analysis fails
     try {
-      await ScriptAnalysis.create({
+      await ScriptAnalysis.upsert({
         scriptId: scriptId,
         purpose: 'Analysis pending',
         parameters: {},
