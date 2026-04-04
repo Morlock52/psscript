@@ -269,8 +269,19 @@ const VoiceAssistantDock: React.FC = () => {
       setIsRecording(true);
       setStatus('Listening...');
     } catch (error: any) {
-      setStatus('Microphone unavailable');
-      toast.error(error?.message || 'Could not access the microphone.');
+      if (error?.name === 'NotAllowedError' || error?.name === 'PermissionDeniedError') {
+        setStatus('Microphone permission denied');
+        toast.error(
+          'Microphone access was denied. Click the lock icon in the address bar → Site Settings → allow Microphone, then try again.',
+          { autoClose: 8000 }
+        );
+      } else if (error?.name === 'NotFoundError') {
+        setStatus('No microphone found');
+        toast.error('No microphone detected. Please connect a microphone and try again.');
+      } else {
+        setStatus('Microphone unavailable');
+        toast.error(error?.message || 'Could not access the microphone.');
+      }
     }
   };
 
