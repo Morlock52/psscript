@@ -163,7 +163,7 @@ class OpenAIAssistantAgent:
                         description=self.description,
                         instructions=self.instructions,
                         tools=self.api_tools,
-                        file_ids=self.file_ids,
+                        # file_ids removed — deprecated in Assistants API v2, use tool_resources instead
                         metadata=self.metadata
                     )
                     logger.info(f"Updated assistant: {self.assistant_id}")
@@ -191,7 +191,7 @@ class OpenAIAssistantAgent:
                         description=self.description,
                         instructions=self.instructions,
                         tools=self.api_tools,
-                        file_ids=self.file_ids,
+                        # file_ids removed — deprecated in Assistants API v2, use tool_resources instead
                         metadata=self.metadata
                     )
                     logger.info(f"Updated assistant: {self.assistant_id}")
@@ -205,7 +205,7 @@ class OpenAIAssistantAgent:
                 instructions=self.instructions,
                 model=self.model,
                 tools=self.api_tools,
-                file_ids=self.file_ids,
+                # file_ids removed — deprecated in Assistants API v2, use tool_resources instead
                 metadata=self.metadata
             )
             self.assistant_id = assistant.id
