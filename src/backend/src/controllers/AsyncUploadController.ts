@@ -292,7 +292,7 @@ export class AsyncUploadController {
           const script = await Script.create({
             title: originalFilename,
             description,
-            uploadId,
+            content: fileContent,
             userId, // Use the authenticated user's ID from queue context
             categoryId,
             isPublic: false,
@@ -304,7 +304,7 @@ export class AsyncUploadController {
             scriptId: script.id,
             version: 1,
             content: fileContent,
-            changes: 'Initial version',
+            changelog: 'Initial version',
             userId // Use the authenticated user's ID from queue context
           }, { transaction });
           
