@@ -8,6 +8,7 @@ import multer from 'multer';
 import { sequelize } from '../database/connection';
 import logger from '../utils/logger';
 import { Script, ScriptVersion } from '../models';
+import cache from '../services/cacheService';
 import axios from 'axios';
 
 const readFileAsync = promisify(fs.readFile);
@@ -70,6 +71,19 @@ export class AsyncUploadController {
   private processingQueue: QueueItem[] = [];
   private isProcessing: boolean = false;
   private readonly AI_SERVICE_URL: string;
+  private static readonly UPLOAD_STATUS_TTL = 3600; // 1 hour in seconds
+
+  private storeCompletedUpload(uploadId: string, data: {
+    scriptId: number; title: string; description: string; versions: number;
+  }): void {
+    cache.set(`upload:status:${uploadId}`, data, AsyncUploadController.UPLOAD_STATUS_TTL);
+  }
+
+  private getCompletedUpload(uploadId: string): {
+    scriptId: number; title: string; description: string; versions: number;
+  } | null {
+    return cache.get(`upload:status:${uploadId}`);
+  }
   
   constructor() {
     this.AI_SERVICE_URL = process.env.AI_SERVICE_URL || 'http://localhost:8000';
@@ -188,22 +202,18 @@ export class AsyncUploadController {
         return;
       }
       
-      // Check if script was created in database
-      const script = await Script.findOne({
-        where: { uploadId },
-        include: [{ model: ScriptVersion, as: 'versions' }]
-      });
-      
-      if (script) {
+      // Check if upload completed successfully (Redis-backed, shared across instances)
+      const completed = this.getCompletedUpload(uploadId);
+      if (completed) {
         res.json({
           success: true,
           status: 'completed',
           message: 'File processing completed successfully',
-          scriptId: script.id,
+          scriptId: completed.scriptId,
           scriptDetails: {
-            title: script.title,
-            description: script.description,
-            versions: (script as any).versions?.length || 1
+            title: completed.title,
+            description: completed.description,
+            versions: completed.versions
           }
         });
         return;
@@ -312,6 +322,14 @@ export class AsyncUploadController {
           await unlinkAsync(filePath);
           
           logger.info(`Successfully processed file: ${uploadId}`);
+
+          // Track completed upload for status queries (Redis-backed, 1hr TTL)
+          this.storeCompletedUpload(uploadId, {
+            scriptId: script.id,
+            title: script.title,
+            description: description || '',
+            versions: 1
+          });
         } catch (error) {
           logger.error(`Error processing file ${uploadId}:`, error);
           throw error; // Rethrow to trigger transaction rollback
