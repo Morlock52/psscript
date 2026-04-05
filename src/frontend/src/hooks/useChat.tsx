@@ -61,10 +61,12 @@ export const useChat = (options: UseChatOptions = {}) => {
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const hasLoadedRef = useRef(false);
 
   // Save to localStorage and server if authenticated
+  // Skip first render to avoid overwriting saved history before load effect runs
   useEffect(() => {
-    if (!autoSave) return;
+    if (!autoSave || !hasLoadedRef.current) return;
 
     try {
       // Always save to localStorage
@@ -119,7 +121,7 @@ export const useChat = (options: UseChatOptions = {}) => {
     return () => clearTimeout(timeoutId);
   }, [messages, isAuthenticated, useMockService, autoSave]);
 
-  // Load from localStorage on mount
+  // Load from localStorage on mount (must run before save effect writes)
   useEffect(() => {
     try {
       const saved = localStorage.getItem('psscript_chat_history');
@@ -138,6 +140,8 @@ export const useChat = (options: UseChatOptions = {}) => {
     } catch (e) {
       console.error('Error accessing localStorage:', e);
     }
+    // Enable save effect now that we've loaded
+    hasLoadedRef.current = true;
   }, []);
 
   // Scroll to bottom when messages change
