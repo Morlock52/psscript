@@ -29,14 +29,19 @@ export const calculateStringMD5 = (content: string): string => {
  * @param sequelize - Sequelize instance
  * @returns Promise that resolves to the script ID if found, or null if not found
  */
-export const checkFileExists = async (fileHash: string, sequelize: Sequelize): Promise<number | null> => {
+export const checkFileExists = async (
+  fileHash: string,
+  sequelize: Sequelize,
+  transaction?: import('sequelize').Transaction
+): Promise<number | null> => {
   try {
     const [result] = await sequelize.query(
-      `SELECT id FROM scripts WHERE file_hash = :fileHash LIMIT 1`,
+      `SELECT id FROM scripts WHERE file_hash = :fileHash LIMIT 1 FOR UPDATE`,
       {
         replacements: { fileHash },
         type: 'SELECT',
-        raw: true
+        raw: true,
+        ...(transaction ? { transaction } : {})
       }
     );
     

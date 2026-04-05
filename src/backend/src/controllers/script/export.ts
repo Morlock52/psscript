@@ -508,10 +508,10 @@ export async function uploadScript(
     const fileHash = calculateBufferMD5(uploadedFileBuffer);
     logger.info(`Calculated file hash: ${fileHash}`);
 
-    // Check if a file with the same hash already exists
-    const existingScriptId = await checkFileExists(fileHash, sequelize);
+    // Check if a file with the same hash already exists (inside transaction with FOR UPDATE lock)
+    const existingScriptId = await checkFileExists(fileHash, sequelize, transaction);
     if (existingScriptId) {
-      if (transaction) await transaction.rollback();
+      await transaction.rollback();
       return res.status(409).json({
         error: 'duplicate_file',
         message: 'A script with identical content already exists',
@@ -712,8 +712,15 @@ export async function uploadScript(
     logger.error('Error in uploadScript:', error);
 
     // Provide more specific error messages
-    const err = error as { name?: string; errors?: Array<{ message: string }> };
+    const err = error as { name?: string; fields?: Record<string, unknown>; errors?: Array<{ message: string }> };
     if (err.name === 'SequelizeUniqueConstraintError') {
+      const fields = (err as any).fields || {};
+      if (fields.file_hash) {
+        return res.status(409).json({
+          error: 'duplicate_file',
+          message: 'A script with identical content already exists'
+        });
+      }
       return res.status(409).json({
         error: 'unique_constraint_error',
         message: 'A script with this title already exists'

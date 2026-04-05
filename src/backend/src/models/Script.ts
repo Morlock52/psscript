@@ -85,7 +85,7 @@ export default class Script extends Model {
       tableName: 'scripts',
       underscored: true,
       indexes: [
-        { fields: ['file_hash'], name: 'idx_scripts_file_hash' },
+        { unique: true, fields: ['file_hash'], name: 'idx_scripts_file_hash' },
         { fields: ['is_public', 'user_id'], name: 'idx_scripts_visibility' },
         { fields: ['user_id'], name: 'idx_scripts_user' },
         { fields: ['category_id'], name: 'idx_scripts_category' }
