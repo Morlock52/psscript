@@ -3,6 +3,7 @@ import User from './User';
 import Category from './Category';
 import ScriptAnalysis from './ScriptAnalysis';
 import Tag from './Tag';
+import ScriptVersion from './ScriptVersion';
 
 export default class Script extends Model {
   public id!: number;
@@ -101,6 +102,7 @@ export default class Script extends Model {
     Script.belongsTo(User, { foreignKey: 'userId', as: 'user' });
     Script.belongsTo(Category, { foreignKey: 'categoryId', as: 'category' });
     Script.hasOne(ScriptAnalysis, { foreignKey: 'scriptId', as: 'analysis' });
+    Script.hasMany(ScriptVersion, { foreignKey: 'scriptId', as: 'versions' });
     Script.belongsToMany(Tag, { 
       through: 'script_tags',
       foreignKey: 'script_id',
