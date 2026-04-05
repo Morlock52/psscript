@@ -7,6 +7,7 @@ import { promisify } from 'util';
 import multer from 'multer';
 import { sequelize } from '../database/connection';
 import logger from '../utils/logger';
+import { calculateBufferSHA256 as calculateHash, checkFileExists } from '../utils/fileIntegrity';
 import { Script, ScriptVersion } from '../models';
 import cache from '../services/cacheService';
 import axios from 'axios';
@@ -268,10 +269,28 @@ export class AsyncUploadController {
       
       // Read file content
       const fileContent = await readFileAsync(filePath, 'utf8');
-      
+
+      // Calculate hash before transaction
+      const fileHash = calculateHash(Buffer.from(fileContent, 'utf8'));
+
       // Process file with transaction
-      await sequelize.transaction(async (transaction) => {
-        try {
+      const transaction = await sequelize.transaction();
+      try {
+          // Check for duplicates inside transaction (prevents race condition)
+          const existingScriptId = await checkFileExists(fileHash, sequelize, transaction);
+          if (existingScriptId) {
+            await transaction.rollback();
+            logger.info(`Duplicate detected for upload ${uploadId}, existing script ID: ${existingScriptId}`);
+            this.storeCompletedUpload(uploadId, {
+              scriptId: existingScriptId,
+              title: `(duplicate of ${existingScriptId})`,
+              description: '',
+              versions: 1
+            });
+            await unlinkAsync(filePath);
+            return;
+          }
+
           // Extract filename without extension and path
           const originalFilename = path.basename(filePath, path.extname(filePath));
           
@@ -303,6 +322,7 @@ export class AsyncUploadController {
             title: originalFilename,
             description,
             content: fileContent,
+            fileHash,
             userId, // Use the authenticated user's ID from queue context
             categoryId,
             isPublic: false,
@@ -330,11 +350,13 @@ export class AsyncUploadController {
             description: description || '',
             versions: 1
           });
+
+          await transaction.commit();
         } catch (error) {
+          await transaction.rollback();
           logger.error(`Error processing file ${uploadId}:`, error);
-          throw error; // Rethrow to trigger transaction rollback
+          throw error; // Rethrow to outer catch for error file handling
         }
-      });
     } catch (error) {
       logger.error(`Failed to process file ${uploadId}:`, error);
       
