@@ -6,22 +6,28 @@ import { Sequelize } from 'sequelize';
 import logger from './logger';
 
 /**
- * Calculate MD5 hash of a file buffer
+ * Calculate SHA-256 hash of a file buffer
  * @param buffer - File buffer to hash
- * @returns MD5 hash as a hexadecimal string
+ * @returns SHA-256 hash as a hexadecimal string (64 chars)
  */
-export const calculateBufferMD5 = (buffer: Buffer): string => {
-  return crypto.createHash('md5').update(buffer).digest('hex');
+export const calculateBufferSHA256 = (buffer: Buffer): string => {
+  return crypto.createHash('sha256').update(buffer).digest('hex');
 };
 
+/** @deprecated Use calculateBufferSHA256 */
+export const calculateBufferMD5 = calculateBufferSHA256;
+
 /**
- * Calculate MD5 hash of a string
+ * Calculate SHA-256 hash of a string
  * @param content - String content to hash
- * @returns MD5 hash as a hexadecimal string
+ * @returns SHA-256 hash as a hexadecimal string (64 chars)
  */
-export const calculateStringMD5 = (content: string): string => {
-  return crypto.createHash('md5').update(content).digest('hex');
+export const calculateStringSHA256 = (content: string): string => {
+  return crypto.createHash('sha256').update(content).digest('hex');
 };
+
+/** @deprecated Use calculateStringSHA256 */
+export const calculateStringMD5 = calculateStringSHA256;
 
 /**
  * Check if a file with the same hash already exists in the database
@@ -105,7 +111,7 @@ export const updateFileHash = async (
 export const batchUpdateFileHashes = async (sequelize: Sequelize): Promise<number> => {
   try {
     const [result] = await sequelize.query(
-      `UPDATE scripts SET file_hash = md5(content::text) WHERE file_hash IS NULL RETURNING id`,
+      `UPDATE scripts SET file_hash = encode(digest(content::text, 'sha256'), 'hex') WHERE file_hash IS NULL RETURNING id`,
       {
         type: 'UPDATE'
       }
