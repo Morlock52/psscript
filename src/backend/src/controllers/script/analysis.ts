@@ -133,6 +133,103 @@ ${content.substring(0, 8000)}`
   }
 }
 
+type StreamEventPayload = {
+  type: 'connected' | 'stage_change' | 'tool_started' | 'tool_completed' | 'reasoning' | 'finding' | 'completed' | 'error' | 'human_review_required';
+  message?: string;
+  data?: Record<string, unknown>;
+  script_id?: string;
+  timestamp?: string;
+};
+
+export function normalizeLangGraphStreamEvent(
+  scriptId: string,
+  rawEvent: Record<string, unknown>,
+  requestId?: string
+): StreamEventPayload {
+  const timestamp =
+    typeof rawEvent.timestamp === 'string' ? rawEvent.timestamp : new Date().toISOString();
+
+  const workflowId =
+    typeof rawEvent.workflow_id === 'string'
+      ? rawEvent.workflow_id
+      : typeof rawEvent.thread_id === 'string'
+        ? rawEvent.thread_id
+        : undefined;
+
+  const nodeName =
+    typeof rawEvent.node_name === 'string'
+      ? rawEvent.node_name
+      : typeof rawEvent.node === 'string'
+        ? rawEvent.node
+        : undefined;
+
+  const stage =
+    typeof rawEvent.current_stage === 'string'
+      ? rawEvent.current_stage
+      : typeof rawEvent.stage === 'string'
+        ? rawEvent.stage
+        : 'unknown';
+
+  const normalizedData: Record<string, unknown> = {
+    workflow_id: workflowId,
+    stage,
+    node_name: nodeName,
+    request_id: requestId
+  };
+
+  if (rawEvent.type === 'completed') {
+    return {
+      type: 'completed',
+      message: typeof rawEvent.message === 'string' ? rawEvent.message : 'Analysis complete',
+      data: {
+        ...normalizedData,
+        final_response: rawEvent.final_response,
+        analysis_results: rawEvent.analysis_results
+      },
+      script_id: scriptId,
+      timestamp
+    };
+  }
+
+  if (rawEvent.type === 'error') {
+    return {
+      type: 'error',
+      message:
+        typeof rawEvent.message === 'string'
+          ? rawEvent.message
+          : typeof rawEvent.error === 'string'
+            ? rawEvent.error
+            : 'Analysis stream error',
+      data: normalizedData,
+      script_id: scriptId,
+      timestamp
+    };
+  }
+
+  if (rawEvent.type === 'human_review_required') {
+    return {
+      type: 'human_review_required',
+      message: typeof rawEvent.message === 'string' ? rawEvent.message : 'Human review required',
+      data: normalizedData,
+      script_id: scriptId,
+      timestamp
+    };
+  }
+
+  return {
+    type: 'stage_change',
+    message:
+      typeof rawEvent.message === 'string'
+        ? rawEvent.message
+        : typeof nodeName === 'string'
+          ? `Workflow advanced to ${nodeName}`
+          : `Workflow advanced to ${stage}`,
+    data: normalizedData,
+    script_id: scriptId,
+    timestamp
+  };
+}
+
 /**
  * Get script analysis by script ID
  */
@@ -787,17 +884,28 @@ export async function streamAnalysis(
   try {
     const scriptId = req.params.id;
     // eslint-disable-next-line camelcase -- API query params use snake_case
-    const { require_human_review = 'false', thread_id, model = 'gpt-4.1' } = req.query as {
+    const { require_human_review = 'false', thread_id, model = 'gpt-4.1', request_id } = req.query as {
       require_human_review?: string;
       thread_id?: string;
       model?: string;
+      request_id?: string;
     };
+    const requestId = request_id || `analysis-stream-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
 
-    logger.info(`[LangGraph] Starting streaming analysis for script ${scriptId}`);
+    logger.info('[LangGraph] Starting streaming analysis', {
+      requestId,
+      scriptId,
+      model,
+      threadId: thread_id,
+      requireHumanReview: require_human_review,
+      userId: req.user?.id,
+      hasHeaderApiKey: Boolean(req.headers['x-openai-api-key']),
+    });
 
     // Get the script
     const script = await Script.findByPk(scriptId);
     if (!script) {
+      logger.warn('[LangGraph] Script not found for streaming analysis', { requestId, scriptId });
       return res.status(404).json({ message: 'Script not found' });
     }
 
@@ -806,9 +914,10 @@ export async function streamAnalysis(
     res.setHeader('Cache-Control', 'no-cache');
     res.setHeader('Connection', 'keep-alive');
     res.setHeader('X-Accel-Buffering', 'no'); // Disable nginx buffering
+    res.setHeader('X-Analysis-Request-Id', requestId);
 
     // Send initial connection event
-    res.write(`data: ${JSON.stringify({ type: 'connected', message: 'Stream started' })}\n\n`);
+    res.write(`data: ${JSON.stringify({ type: 'connected', message: 'Stream started', data: { request_id: requestId, script_id: scriptId } })}\n\n`);
 
     // Get OpenAI API key from request headers
     const openaiApiKey = req.headers['x-openai-api-key'] as string;
@@ -835,10 +944,18 @@ export async function streamAnalysis(
         require_human_review: require_human_review === 'true', // eslint-disable-line camelcase
         stream: true,
         model,
-        api_key: openaiApiKey
+        api_key: openaiApiKey,
+        request_id: requestId
       },
       analysisConfig
     );
+
+    logger.info('[LangGraph] Upstream stream established', {
+      requestId,
+      scriptId,
+      model,
+      upstreamUrl: `${AI_SERVICE_URL}/langgraph/analyze`,
+    });
 
     // Forward events from LangGraph to client
     (langgraphStream.data as NodeJS.ReadableStream).on('data', (chunk: Buffer) => {
@@ -849,31 +966,35 @@ export async function streamAnalysis(
       for (const line of lines) {
         if (line.startsWith('data: ')) {
           try {
-            const eventData = JSON.parse(line.substring(6)) as Record<string, unknown>;
-
-            // Add script_id to each event for context
-            eventData.script_id = scriptId;
-
-            // Forward to client
+            const upstreamEvent = JSON.parse(line.substring(6)) as Record<string, unknown>;
+            const eventData = normalizeLangGraphStreamEvent(scriptId, upstreamEvent, requestId);
             res.write(`data: ${JSON.stringify(eventData)}\n\n`);
           } catch (_e) {
             // Skip malformed events
-            logger.warn('[LangGraph] Malformed event:', line);
+            logger.warn('[LangGraph] Malformed upstream stream event', {
+              requestId,
+              scriptId,
+              line,
+            });
           }
         }
       }
     });
 
     (langgraphStream.data as NodeJS.ReadableStream).on('end', () => {
-      res.write(`data: ${JSON.stringify({ type: 'completed', message: 'Analysis complete' })}\n\n`);
+      res.write(`data: ${JSON.stringify({ type: 'completed', message: 'Analysis complete', data: { request_id: requestId } })}\n\n`);
       res.end();
-      logger.info(`[LangGraph] Streaming completed for script ${scriptId}`);
+      logger.info('[LangGraph] Streaming completed', { requestId, scriptId });
     });
 
     (langgraphStream.data as NodeJS.ReadableStream).on('error', (error: Error) => {
-      res.write(`data: ${JSON.stringify({ type: 'error', message: error.message })}\n\n`);
+      res.write(`data: ${JSON.stringify({ type: 'error', message: error.message, data: { request_id: requestId } })}\n\n`);
       res.end();
-      logger.error(`[LangGraph] Streaming error for script ${scriptId}:`, error);
+      logger.error('[LangGraph] Upstream streaming error', {
+        requestId,
+        scriptId,
+        error,
+      });
     });
 
     // Handle client disconnect
@@ -882,20 +1003,30 @@ export async function streamAnalysis(
       if (typeof stream.destroy === 'function') {
         stream.destroy();
       }
-      logger.info(`[LangGraph] Client disconnected from stream for script ${scriptId}`);
+      logger.info('[LangGraph] Client disconnected from stream', { requestId, scriptId });
     });
   } catch (error) {
-    logger.error('[LangGraph] Streaming failed:', error);
+    const requestId =
+      (req.query.request_id as string | undefined) ||
+      `analysis-stream-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
+    logger.error('[LangGraph] Streaming failed before/while establishing stream', {
+      requestId,
+      scriptId: req.params.id,
+      query: req.query,
+      userId: req.user?.id,
+      error,
+    });
 
     // Send error event if connection is still open
     if (!res.headersSent) {
       return res.status(500).json({
         success: false,
         message: 'Failed to start analysis stream',
-        error: (error as Error).message
+        error: (error as Error).message,
+        requestId
       });
     } else {
-      res.write(`data: ${JSON.stringify({ type: 'error', message: (error as Error).message })}\n\n`);
+      res.write(`data: ${JSON.stringify({ type: 'error', message: (error as Error).message, data: { request_id: requestId } })}\n\n`);
       res.end();
     }
   }

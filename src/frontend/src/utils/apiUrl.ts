@@ -69,16 +69,10 @@ export function getAiServiceUrl(): string {
 
 export function getAssistantsApiUrl(): string {
   if (typeof window === 'undefined') {
-    return 'http://localhost:4001/api';
+    return 'http://localhost:4000/api';
   }
 
-  const protocol = window.location.protocol === 'https:' ? 'https' : 'http';
-  const hostname = window.location.hostname;
-  const isLocalhost = hostname === 'localhost' || hostname === '127.0.0.1';
-
-  return isLocalhost
-    ? `${protocol}://${hostname}:4001/api`
-    : `${protocol}://${hostname}/assistants-api`;
+  return getApiUrl();
 }
 
 export function clearUrlCache(): void {

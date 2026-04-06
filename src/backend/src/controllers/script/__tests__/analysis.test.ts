@@ -28,7 +28,8 @@ jest.mock('../shared', () => ({
   AI_SERVICE_URL: 'http://ai-service',
   TIMEOUTS: {
     STANDARD: 100,
-    FULL_ANALYSIS: 100
+    FULL_ANALYSIS: 100,
+    EXTENDED: 100
   },
   CACHE_TTL: {},
   fetchScriptAnalysis: jest.fn(),
@@ -38,7 +39,7 @@ jest.mock('../shared', () => ({
   }
 }));
 
-import { getScriptAnalysis, analyzeScript } from '../analysis';
+import { getScriptAnalysis, analyzeScript, normalizeLangGraphStreamEvent } from '../analysis';
 import * as shared from '../shared';
 
 function createResponse() {
@@ -114,6 +115,51 @@ describe('script analysis controller', () => {
     expect(res.json).toHaveBeenCalledWith({
       message: 'Analysis request timed out',
       error: 'analysis_timeout'
+    });
+  });
+
+  test('normalizeLangGraphStreamEvent converts workflow node events to stage_change', () => {
+    const event = normalizeLangGraphStreamEvent('42', {
+      node_name: 'tools',
+      stage: 'tool_execution',
+      workflow_id: 'wf-1',
+      timestamp: '2026-04-05T00:00:00.000Z'
+    });
+
+    expect(event).toEqual({
+      type: 'stage_change',
+      message: 'Workflow advanced to tools',
+      data: {
+        workflow_id: 'wf-1',
+        stage: 'tool_execution',
+        node_name: 'tools'
+      },
+      script_id: '42',
+      timestamp: '2026-04-05T00:00:00.000Z'
+    });
+  });
+
+  test('normalizeLangGraphStreamEvent preserves terminal completed events', () => {
+    const event = normalizeLangGraphStreamEvent('42', {
+      type: 'completed',
+      workflow_id: 'wf-2',
+      final_response: 'done',
+      analysis_results: { security_scan: '{}' },
+      timestamp: '2026-04-05T00:00:01.000Z'
+    });
+
+    expect(event).toEqual({
+      type: 'completed',
+      message: 'Analysis complete',
+      data: {
+        workflow_id: 'wf-2',
+        stage: 'unknown',
+        node_name: undefined,
+        final_response: 'done',
+        analysis_results: { security_scan: '{}' }
+      },
+      script_id: '42',
+      timestamp: '2026-04-05T00:00:01.000Z'
     });
   });
 });

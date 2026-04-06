@@ -1,6 +1,6 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { useQuery } from '@tanstack/react-query';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { scriptService } from '../services/api';
 import axios from 'axios';
 import ReactMarkdown from 'react-markdown';
@@ -20,6 +20,7 @@ interface Message {
 const ScriptAnalysis: React.FC = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
+  const queryClient = useQueryClient();
   const [activeTab, setActiveTab] = useState<string>('overview');
 
   // AI Assistant state
@@ -34,6 +35,7 @@ const ScriptAnalysis: React.FC = () => {
   const [currentStage, setCurrentStage] = useState('idle');
   const [workflowId, setWorkflowId] = useState<string | null>(null);
   const [analysisError, setAnalysisError] = useState<string | null>(null);
+  const [analysisRequestId, setAnalysisRequestId] = useState<string | null>(null);
   const cleanupRef = useRef<(() => void) | null>(null);
 
   // AI Model selection — derived from single source of truth in settings.ts
@@ -185,6 +187,7 @@ When generating or modifying scripts:
     setIsAnalyzing(true);
     setAnalysisEvents([]);
     setAnalysisError(null);
+    setAnalysisRequestId(null);
     setCurrentStage('analyzing');
 
     try {
@@ -212,9 +215,8 @@ When generating or modifying scripts:
             case 'completed':
               setIsAnalyzing(false);
               setCurrentStage('completed');
-              // Refetch the analysis to get updated results
               if (id) {
-                scriptService.getScriptAnalysis(id).catch(console.error);
+                queryClient.invalidateQueries({ queryKey: ['scriptAnalysis', id] }).catch(console.error);
               }
               break;
 
@@ -222,7 +224,13 @@ When generating or modifying scripts:
               setIsAnalyzing(false);
               setCurrentStage('failed');
               setAnalysisError(event.message || 'Analysis failed');
-              console.error('[LangGraph] Analysis error:', event.message);
+              console.error('[LangGraph] Analysis error', {
+                message: event.message,
+                requestId: event.data?.request_id,
+                workflowId: event.data?.workflow_id,
+                stage: event.data?.stage,
+                event,
+              });
               break;
 
             case 'human_review_required':
@@ -234,6 +242,9 @@ When generating or modifying scripts:
           // Extract workflow ID from first event that has it
           if (event.data?.workflow_id && !workflowId) {
             setWorkflowId(event.data.workflow_id);
+          }
+          if (event.data?.request_id && !analysisRequestId) {
+            setAnalysisRequestId(event.data.request_id);
           }
         },
         {
@@ -594,6 +605,9 @@ When generating or modifying scripts:
                     <div>
                       <h4 className="font-medium text-red-300">Analysis Failed</h4>
                       <p className="text-sm text-gray-300">{analysisError}</p>
+                      {analysisRequestId && (
+                        <p className="text-xs text-gray-400 mt-1">Request ID: {analysisRequestId}</p>
+                      )}
                     </div>
                   </div>
                 </div>

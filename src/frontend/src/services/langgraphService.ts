@@ -12,6 +12,7 @@
  */
 
 import { apiClient } from './api';
+import { getApiUrl } from '../utils/apiUrl';
 
 // ============================================================================
 // Types
@@ -41,6 +42,92 @@ export interface AnalysisEvent {
   data?: any;
   script_id?: string;
   timestamp?: string;
+}
+
+function createAnalysisRequestId(): string {
+  return `analysis-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
+}
+
+function inferStreamErrorMessage(error: unknown): string {
+  if (error instanceof Error && error.message) {
+    return error.message;
+  }
+
+  return 'Connection to analysis stream lost';
+}
+
+export function buildAnalysisStreamUrl(
+  scriptId: number,
+  options: LangGraphAnalysisOptions = {},
+  requestId?: string
+): string {
+  const params = new URLSearchParams();
+  if (options.require_human_review !== undefined) {
+    params.append('require_human_review', options.require_human_review.toString());
+  }
+  if (options.thread_id) {
+    params.append('thread_id', options.thread_id);
+  }
+  if (options.model) {
+    params.append('model', options.model);
+  }
+  if (requestId) {
+    params.append('request_id', requestId);
+  }
+
+  const baseUrl = getApiUrl();
+  const query = params.toString();
+  return `${baseUrl}/scripts/${scriptId}/analysis-stream${query ? `?${query}` : ''}`;
+}
+
+export function normalizeAnalysisEvent(payload: unknown): AnalysisEvent {
+  if (!payload || typeof payload !== 'object') {
+    return {
+      type: 'error',
+      message: 'Received malformed analysis event',
+    };
+  }
+
+  const event = payload as Record<string, any>;
+
+  if (event.type === 'connected' || event.type === 'completed' || event.type === 'error' || event.type === 'human_review_required') {
+    return event as AnalysisEvent;
+  }
+
+  if (event.type === 'stage_change') {
+    return {
+      type: 'stage_change',
+      message: event.message,
+      data: event.data,
+      script_id: event.script_id,
+      timestamp: event.timestamp,
+    };
+  }
+
+  if (event.type === 'tool_started' || event.type === 'tool_completed' || event.type === 'reasoning' || event.type === 'finding') {
+    return event as AnalysisEvent;
+  }
+
+  if (typeof event.stage === 'string') {
+    return {
+      type: 'stage_change',
+      message: event.message,
+      data: {
+        ...event.data,
+        workflow_id: event.workflow_id ?? event.data?.workflow_id,
+        stage: event.current_stage ?? event.stage,
+        node_name: event.node_name ?? event.node,
+      },
+      script_id: event.script_id,
+      timestamp: event.timestamp,
+    };
+  }
+
+  return {
+    type: 'error',
+    message: 'Received unknown analysis event format',
+    data: event,
+  };
 }
 
 export interface SecurityFinding {
@@ -153,62 +240,167 @@ export function streamAnalysis(
   onEvent: (event: AnalysisEvent) => void,
   options: LangGraphAnalysisOptions = {}
 ): () => void {
-  // Build query string
-  const params = new URLSearchParams();
-  if (options.require_human_review !== undefined) {
-    params.append('require_human_review', options.require_human_review.toString());
-  }
-  if (options.thread_id) {
-    params.append('thread_id', options.thread_id);
-  }
-  if (options.model) {
-    params.append('model', options.model);
-  }
-  // Note: provider is not passed for SSE streaming — the LangGraph
-  // orchestrator determines the provider from the model ID server-side.
+  const requestId = createAnalysisRequestId();
+  const url = buildAnalysisStreamUrl(scriptId, options, requestId);
+  const abortController = new AbortController();
+  let manuallyClosed = false;
+  let sawAnyEvent = false;
+  let sawTerminalEvent = false;
 
-  // Get auth token for headers
-  const token = localStorage.getItem('auth_token');
-
-  // Add token to query params since EventSource doesn't support custom headers
-  if (token) {
-    params.append('token', token);
-  }
-
-  const url = `${apiClient.defaults.baseURL}/scripts/${scriptId}/analysis-stream?${params.toString()}`;
-
-  // Create EventSource for SSE with credentials
-  // Note: withCredentials is required for CORS with credentials
-  const eventSource = new EventSource(url, { withCredentials: true });
-
-  // Handle incoming events
-  eventSource.onmessage = (event) => {
+  void (async () => {
     try {
-      const data = JSON.parse(event.data) as AnalysisEvent;
-      onEvent(data);
+      const token = localStorage.getItem('auth_token');
+      console.info('[LangGraph] Opening analysis stream', {
+        requestId,
+        scriptId,
+        model: options.model,
+        threadId: options.thread_id,
+        url,
+        hasAuthToken: Boolean(token),
+      });
 
-      // Auto-close on completion or error
-      if (data.type === 'completed' || data.type === 'error') {
-        eventSource.close();
+      const response = await fetch(url, {
+        method: 'GET',
+        headers: {
+          Accept: 'text/event-stream',
+          ...(token ? { Authorization: `Bearer ${token}` } : {}),
+        },
+        signal: abortController.signal,
+      });
+
+      if (!response.ok) {
+        let errorMessage = `Analysis stream request failed: ${response.status} ${response.statusText}`;
+        try {
+          const errorBody = await response.json() as { message?: string; error?: string };
+          errorMessage = errorBody.message || errorBody.error || errorMessage;
+          console.error('[LangGraph] Analysis stream HTTP error body', {
+            requestId,
+            scriptId,
+            status: response.status,
+            statusText: response.statusText,
+            errorBody,
+          });
+        } catch {
+          // Ignore JSON parsing issues and keep the default HTTP error message.
+          console.error('[LangGraph] Analysis stream HTTP error without JSON body', {
+            requestId,
+            scriptId,
+            status: response.status,
+            statusText: response.statusText,
+          });
+        }
+
+        onEvent({
+          type: 'error',
+          message: `${errorMessage} (request ${requestId})`,
+          data: { request_id: requestId, status: response.status },
+        });
+        sawTerminalEvent = true;
+        return;
+      }
+
+      console.info('[LangGraph] Analysis stream connected', {
+        requestId,
+        scriptId,
+        status: response.status,
+        contentType: response.headers.get('content-type'),
+        backendRequestId: response.headers.get('x-analysis-request-id'),
+      });
+
+      const reader = response.body?.getReader();
+      if (!reader) {
+        throw new Error('No readable analysis stream available');
+      }
+
+      const decoder = new TextDecoder();
+      let buffer = '';
+
+      while (!manuallyClosed) {
+        const { done, value } = await reader.read();
+        if (done) {
+          break;
+        }
+
+        buffer += decoder.decode(value, { stream: true });
+        const events = buffer.split('\n\n');
+        buffer = events.pop() || '';
+
+        for (const rawEvent of events) {
+          const dataLine = rawEvent
+            .split('\n')
+            .find((line) => line.startsWith('data: '));
+
+          if (!dataLine) {
+            continue;
+          }
+
+          try {
+            const data = normalizeAnalysisEvent(JSON.parse(dataLine.slice(6)));
+            sawAnyEvent = true;
+            if (!data.data) {
+              data.data = {};
+            }
+            if (!data.data.request_id) {
+              data.data.request_id = requestId;
+            }
+            onEvent(data);
+
+            if (data.type === 'completed' || data.type === 'error') {
+              console.info('[LangGraph] Analysis stream terminal event', {
+                requestId,
+                scriptId,
+                type: data.type,
+                message: data.message,
+                data: data.data,
+              });
+              sawTerminalEvent = true;
+              manuallyClosed = true;
+              abortController.abort();
+              return;
+            }
+          } catch (error) {
+            console.error('[LangGraph] Failed to parse streaming event', {
+              requestId,
+              scriptId,
+              rawEvent,
+              error,
+            });
+          }
+        }
+      }
+
+      if (!manuallyClosed && sawAnyEvent && !sawTerminalEvent) {
+        onEvent({
+          type: 'error',
+          message: `Analysis stream was interrupted before completion (request ${requestId})`,
+          data: { request_id: requestId },
+        });
       }
     } catch (error) {
-      console.error('[LangGraph] Failed to parse SSE event:', error);
+      if (manuallyClosed || sawTerminalEvent) {
+        return;
+      }
+
+      console.error('[LangGraph] Streaming request error', {
+        requestId,
+        scriptId,
+        model: options.model,
+        threadId: options.thread_id,
+        sawAnyEvent,
+        error,
+      });
+      onEvent({
+        type: 'error',
+        message: `${inferStreamErrorMessage(error)} (request ${requestId})`,
+        data: { request_id: requestId },
+      });
     }
-  };
+  })();
 
-  // Handle connection errors
-  eventSource.onerror = (error) => {
-    console.error('[LangGraph] SSE connection error:', error);
-    onEvent({
-      type: 'error',
-      message: 'Connection to analysis stream lost',
-    });
-    eventSource.close();
-  };
-
-  // Return cleanup function
   return () => {
-    eventSource.close();
+    manuallyClosed = true;
+    console.info('[LangGraph] Closing analysis stream', { requestId, scriptId });
+    abortController.abort();
   };
 }
 

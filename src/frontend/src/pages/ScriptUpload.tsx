@@ -7,6 +7,7 @@ import { isRetryableError, getErrorMessage } from '../utils/errorUtils';
 const ScriptUpload: React.FC = () => {
   const navigate = useNavigate();
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const redirectTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   
   const [title, setTitle] = useState('');
   const [description, setDescription] = useState('');
@@ -54,7 +55,9 @@ const ScriptUpload: React.FC = () => {
         const scriptId = data.script?.id || data.id;
         if (scriptId) {
           // Add a small delay to ensure the script is properly added to the mock data
-          setTimeout(() => {
+          if (redirectTimeoutRef.current) clearTimeout(redirectTimeoutRef.current);
+          redirectTimeoutRef.current = setTimeout(() => {
+            redirectTimeoutRef.current = null;
             navigate(`/scripts/${scriptId}`);
           }, 300);
         } else {
@@ -74,7 +77,11 @@ const ScriptUpload: React.FC = () => {
         if (status === 409 && existingId) {
           setFileError(`This script already exists (ID: ${existingId}). Redirecting...`);
           setIsNetworkError(false);
-          setTimeout(() => navigate(`/scripts/${existingId}`), 1500);
+          if (redirectTimeoutRef.current) clearTimeout(redirectTimeoutRef.current);
+          redirectTimeoutRef.current = setTimeout(() => {
+            redirectTimeoutRef.current = null;
+            navigate(`/scripts/${existingId}`);
+          }, 1500);
           return;
         }
 
@@ -231,6 +238,14 @@ const ScriptUpload: React.FC = () => {
       setRetryCount(uploadMutation.failureCount);
     }
   }, [uploadMutation.isPending, uploadMutation.isSuccess, uploadMutation.failureCount, retryCount, MAX_RETRIES]);
+
+  useEffect(() => {
+    return () => {
+      if (redirectTimeoutRef.current) {
+        clearTimeout(redirectTimeoutRef.current);
+      }
+    };
+  }, []);
   
   const validateForm = (): string | null => {
     if (!title || title.trim() === '') {

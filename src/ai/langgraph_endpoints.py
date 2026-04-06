@@ -23,13 +23,20 @@ router = APIRouter(prefix="/langgraph", tags=["LangGraph"])
 
 # Global orchestrator instance (initialized lazily)
 _orchestrator: Optional[LangGraphProductionOrchestrator] = None
+_orchestrator_signature: Optional[tuple[Optional[str], str]] = None
 
 
-def get_orchestrator(api_key: Optional[str] = None) -> LangGraphProductionOrchestrator:
+def get_orchestrator(
+    api_key: Optional[str] = None,
+    model: str = "gpt-4.1"
+) -> LangGraphProductionOrchestrator:
     """Get or create the global orchestrator instance."""
-    global _orchestrator
-    if _orchestrator is None:
-        _orchestrator = LangGraphProductionOrchestrator(api_key=api_key)
+    global _orchestrator, _orchestrator_signature
+
+    signature = (api_key, model)
+    if _orchestrator is None or _orchestrator_signature != signature:
+        _orchestrator = LangGraphProductionOrchestrator(api_key=api_key, model=model)
+        _orchestrator_signature = signature
     return _orchestrator
 
 
@@ -45,6 +52,7 @@ class LangGraphAnalysisRequest(BaseModel):
     stream: bool = Field(False, description="Whether to stream responses")
     model: Optional[str] = Field("gpt-4.1", description="Model to use for analysis (default: gpt-4.1)")
     api_key: Optional[str] = Field(None, description="Optional OpenAI API key")
+    request_id: Optional[str] = Field(None, description="Correlation ID for tracing a single analysis request")
 
 
 class LangGraphAnalysisResponse(BaseModel):
@@ -102,10 +110,19 @@ async def analyze_script(request: LangGraphAnalysisRequest):
     - If not streaming: Complete analysis results with security findings, quality metrics, and recommendations
     """
     try:
-        logger.info(f"Received LangGraph analysis request (stream={request.stream}) for thread_id: {request.thread_id}")
+        logger.info(
+            "Received LangGraph analysis request",
+            extra={
+                "request_id": request.request_id,
+                "stream": request.stream,
+                "thread_id": request.thread_id,
+                "model": request.model,
+                "require_human_review": request.require_human_review,
+            },
+        )
 
         # Get orchestrator
-        orchestrator = get_orchestrator(api_key=request.api_key)
+        orchestrator = get_orchestrator(api_key=request.api_key, model=request.model or "gpt-4.1")
 
         # Handle streaming mode
         if request.stream:
@@ -113,7 +130,7 @@ async def analyze_script(request: LangGraphAnalysisRequest):
                 """Generate SSE events for streaming analysis."""
                 try:
                     # Send connection event
-                    yield f"data: {json.dumps({'type': 'connected', 'message': 'Stream started'})}\n\n"
+                    yield f"data: {json.dumps({'type': 'connected', 'message': 'Stream started', 'data': {'request_id': request.request_id}})}\n\n"
 
                     # Call orchestrator with streaming enabled
                     # The orchestrator's analyze_script method returns events when stream=True
@@ -127,13 +144,11 @@ async def analyze_script(request: LangGraphAnalysisRequest):
                     # Stream the events from the orchestrator
                     # The orchestrator should yield events from the LangGraph workflow
                     if hasattr(result, '__aiter__'):
-                        # If result is an async iterator, stream it
+                        # If result is an async iterator, stream normalized events directly.
                         async for event in result:
-                            event_data = {
-                                'type': 'workflow_event',
-                                'data': event
-                            }
-                            yield f"data: {json.dumps(event_data)}\n\n"
+                            if request.request_id and isinstance(event, dict):
+                                event.setdefault("request_id", request.request_id)
+                            yield f"data: {json.dumps(event)}\n\n"
                     else:
                         # If result is a dict (non-streaming fallback), send as single event
                         yield f"data: {json.dumps({'type': 'completed', 'data': result})}\n\n"
@@ -167,12 +182,26 @@ async def analyze_script(request: LangGraphAnalysisRequest):
             stream=False
         )
 
-        logger.info(f"Analysis completed for workflow: {result.get('workflow_id')}")
+        if request.request_id and isinstance(result, dict):
+            result.setdefault("request_id", request.request_id)
+
+        logger.info(
+            "LangGraph analysis completed",
+            extra={
+                "request_id": request.request_id,
+                "workflow_id": result.get("workflow_id"),
+                "status": result.get("status"),
+            },
+        )
 
         return JSONResponse(content=result)
 
     except Exception as e:
-        logger.error(f"Error in analyze_script: {e}", exc_info=True)
+        logger.error(
+            "Error in analyze_script",
+            exc_info=True,
+            extra={"request_id": request.request_id, "thread_id": request.thread_id, "model": request.model},
+        )
         raise HTTPException(
             status_code=500,
             detail=f"Script analysis failed: {str(e)}"
@@ -202,7 +231,7 @@ async def provide_human_feedback(request: HumanFeedbackRequest):
         logger.info(f"Received human feedback for thread: {request.thread_id}")
 
         # Get orchestrator
-        orchestrator = get_orchestrator()
+        orchestrator = get_orchestrator(model="gpt-4.1")
 
         # Continue with feedback
         result = await orchestrator.continue_with_feedback(
@@ -231,7 +260,7 @@ async def health_check():
     information about available features.
     """
     try:
-        orchestrator = get_orchestrator()
+        orchestrator = get_orchestrator(model="gpt-4.1")
 
         return {
             "status": "healthy",

@@ -338,10 +338,7 @@ export class AssistantsController {
       // Update the run with tool outputs
       const updatedRun = await assistantsStore.updateRunStatus(
         runId,
-        'in_progress',
-        { 
-          required_action: null,
-        }
+        'in_progress'
       );
       
       if (!updatedRun) {

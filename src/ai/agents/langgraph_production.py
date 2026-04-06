@@ -771,7 +771,9 @@ class LangGraphProductionOrchestrator:
                 # LangGraph events are dicts with node names as keys
                 for node_name, node_state in event.items():
                     event_data = {
-                        "node": node_name,
+                        "type": "stage_change",
+                        "message": f"Workflow advanced to {node_name}",
+                        "node_name": node_name,
                         "stage": node_state.get("current_stage", "unknown"),
                         "workflow_id": workflow_id,
                         "timestamp": datetime.utcnow().isoformat()
@@ -791,7 +793,9 @@ class LangGraphProductionOrchestrator:
             # Yield final completion event
             if final_state:
                 yield {
-                    "node": "complete",
+                    "type": "completed",
+                    "message": "Analysis complete",
+                    "node_name": "complete",
                     "stage": "completed",
                     "workflow_id": workflow_id,
                     "final_response": final_state.get("final_response"),
@@ -802,7 +806,9 @@ class LangGraphProductionOrchestrator:
         except Exception as e:
             logger.error(f"Error in stream_analysis: {e}", exc_info=True)
             yield {
-                "node": "error",
+                "type": "error",
+                "message": str(e),
+                "node_name": "error",
                 "stage": "failed",
                 "workflow_id": workflow_id,
                 "error": str(e),

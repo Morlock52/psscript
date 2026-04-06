@@ -69,35 +69,6 @@ export async function handleAssistantRun(
       });
     }
     
-    // Handle tool outputs if provided
-    if (toolOutputs && toolOutputs.length > 0 && run.required_action) {
-      const toolCallsMap = new Map<string, ToolCall>();
-      
-      if (run.required_action.type === 'submit_tool_outputs') {
-        for (const toolCall of run.required_action.submit_tool_outputs.tool_calls) {
-          toolCallsMap.set(toolCall.id, toolCall);
-        }
-      }
-      
-      // Add tool outputs to conversation
-      for (const output of toolOutputs) {
-        const toolCall = toolCallsMap.get(output.tool_call_id);
-        if (toolCall && toolCall.type === 'function') {
-          // Update tool call with output
-          toolCall.function.output = output.output;
-          
-          // Create an assistant message with the tool output
-          await assistantsStore.createMessage({
-            thread_id: thread.id,
-            role: 'assistant',
-            content: `Function ${toolCall.function.name} returned: ${output.output}`,
-            run_id: runId,
-            assistant_id: assistant.id,
-          });
-        }
-      }
-    }
-    
     // Function for handling tool calls
     const handleToolCalls = async (toolCalls: any[]): Promise<any> => {
       const toolOutputs = [];
@@ -154,6 +125,31 @@ export async function handleAssistantRun(
       
       return toolOutputs;
     };
+
+    const continueWithToolOutputs = async (
+      currentHistory: Array<{ role: string; content: string }>,
+      toolCalls: ToolCall[],
+      outputs: SubmittedToolCallOutput[]
+    ) => {
+      const followupMessages = [
+        ...currentHistory,
+        {
+          role: 'assistant',
+          content: null,
+          tool_calls: toolCalls,
+        },
+        ...outputs.map(output => ({
+          role: 'tool',
+          tool_call_id: output.tool_call_id,
+          content: output.output,
+        })),
+      ];
+
+      return openai.chat.completions.create({
+        model: run.model,
+        messages: followupMessages as any,
+      });
+    };
     
     // Function to prepare tools for OpenAI API
     const prepareTools = (tools: AssistantTool[]): any[] => {
@@ -173,6 +169,40 @@ export async function handleAssistantRun(
     };
     
     try {
+      if (toolOutputs && toolOutputs.length > 0 && run.required_action?.type === 'submit_tool_outputs') {
+        const resumedCompletion = await continueWithToolOutputs(
+          conversationHistory,
+          run.required_action.submit_tool_outputs.tool_calls,
+          toolOutputs
+        );
+        const resumedMessage = resumedCompletion.choices[0]?.message;
+
+        if (!resumedMessage?.content) {
+          throw new Error('No response from OpenAI API after submitting tool outputs');
+        }
+
+        const message = await assistantsStore.createMessage({
+          thread_id: thread.id,
+          role: 'assistant',
+          content: resumedMessage.content,
+          run_id: runId,
+          assistant_id: assistant.id,
+        });
+
+        if (message) {
+          await assistantsStore.createRunStep({
+            run_id: runId,
+            thread_id: thread.id,
+            assistant_id: assistant.id,
+            type: 'message_creation',
+            message_id: message.id,
+          });
+        }
+
+        await assistantsStore.updateRunStatus(runId, 'completed');
+        return;
+      }
+
       // Call OpenAI API
       const completion = await openai.chat.completions.create({
         model: run.model,
@@ -210,28 +240,17 @@ export async function handleAssistantRun(
           
           // Continue the conversation with the outputs
           if (outputs && outputs.length > 0) {
-            const updatedCompletion = await openai.chat.completions.create({
-              model: run.model,
-              messages: [
-                ...conversationHistory,
-                {
-                  role: 'assistant',
-                  content: null,
-                  tool_calls: assistantMessage.tool_calls,
-                },
-                {
-                  role: 'tool',
-                  tool_call_id: outputs[0].tool_call_id,
-                  content: outputs[0].output,
-                },
-              ],
-            });
+            const updatedCompletion = await continueWithToolOutputs(
+              conversationHistory,
+              assistantMessage.tool_calls as ToolCall[],
+              outputs
+            );
 
             const finalMessage = updatedCompletion.choices[0]?.message;
             
             if (finalMessage && finalMessage.content) {
               // Create message from assistant
-              await assistantsStore.createMessage({
+              const message = await assistantsStore.createMessage({
                 thread_id: thread.id,
                 role: 'assistant',
                 content: finalMessage.content,
@@ -240,12 +259,15 @@ export async function handleAssistantRun(
               });
               
               // Create run step for message creation
-              const _messageStep = await assistantsStore.createRunStep({
-                run_id: runId,
-                thread_id: thread.id,
-                assistant_id: assistant.id,
-                type: 'message_creation',
-              });
+              if (message) {
+                await assistantsStore.createRunStep({
+                  run_id: runId,
+                  thread_id: thread.id,
+                  assistant_id: assistant.id,
+                  type: 'message_creation',
+                  message_id: message.id,
+                });
+              }
               
               // Mark run as completed
               await assistantsStore.updateRunStatus(runId, 'completed');
