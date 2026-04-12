@@ -2,3 +2,11 @@ node_modules/
 dist/
 .DS_Store
 .env
+coverage/
+playwright-report/
+test-results/
+artifacts/
+.vite/
+.vitest/
+*.log
+.eslintcache

@@ -1,26 +1,32 @@
-version: '3.8'
-
 services:
-  # Frontend service (production build)
   frontend:
     build:
       context: ./src/frontend
       dockerfile: Dockerfile.prod
     ports:
-      - "3002:3002"
+      - "3090:3090"
     environment:
       - NODE_ENV=production
+      - DOCKER_ENV=true
+      - VITE_DISABLE_AUTH=true
+      - VITE_USE_MOCKS=true
+      - VITE_DEMO_EMAIL=admin@example.com
+      - VITE_DEMO_PASSWORD=admin123
+      - VITE_PORT=3090
+      - TLS_CERT=/certs/frontend.crt
+      - TLS_KEY=/certs/frontend.key
+    volumes:
+      - ./certs:/certs:ro
     depends_on:
       - backend
     restart: unless-stopped
     healthcheck:
-      test: ["CMD", "wget", "-qO-", "http://localhost:3002"]
+      test: ["CMD", "wget", "--spider", "-q", "--no-check-certificate", "https://127.0.0.1:3090"]
       interval: 30s
       timeout: 10s
-      retries: 3
+      retries: 5
       start_period: 40s
 
-  # Backend API service (production build)
   backend:
     build:
       context: ./src/backend
@@ -33,7 +39,11 @@ services:
       - ai-service
     environment:
       - NODE_ENV=production
+      - DOCKER_ENV=true
       - PORT=4000
+      - DISABLE_AUTH=true
+      - RELAX_RATE_LIMITS=true
+      - RATE_LIMIT_MULTIPLIER=20
       - DB_HOST=postgres
       - DB_PORT=5432
       - DB_NAME=psscript
@@ -42,9 +52,13 @@ services:
       - REDIS_URL=redis://redis:6379
       - AI_SERVICE_URL=http://ai-service:8000
       - JWT_SECRET=${JWT_SECRET:-production_jwt_secret_key}
+      - TLS_CERT=/certs/backend.crt
+      - TLS_KEY=/certs/backend.key
+    volumes:
+      - ./certs:/certs:ro
+      - ./docs:/docs:ro
     restart: unless-stopped
 
-  # AI analysis service (production build)
   ai-service:
     build:
       context: ./src/ai
@@ -54,7 +68,8 @@ services:
     depends_on:
       - postgres
     environment:
-      - OPENAI_API_KEY=${OPENAI_API_KEY}
+      - OPENAI_API_KEY=${OPENAI_API_KEY:-}
+      - ANTHROPIC_API_KEY=${ANTHROPIC_API_KEY:-}
       - DB_HOST=postgres
       - DB_PORT=5432
       - DB_NAME=psscript
@@ -62,22 +77,23 @@ services:
       - DB_PASSWORD=${DB_PASSWORD:-postgres}
     restart: unless-stopped
 
-  # PostgreSQL with pgvector extension
   postgres:
     image: pgvector/pgvector:pg15
     ports:
       - "5432:5432"
     volumes:
       - postgres_data:/var/lib/postgresql/data
+      - ./src/db/00-init-pgvector.sh:/docker-entrypoint-initdb.d/00-init-pgvector.sh
       - ./src/db/schema.sql:/docker-entrypoint-initdb.d/01-schema.sql
       - ./src/db/seeds/01-initial-data.sql:/docker-entrypoint-initdb.d/02-seed-data.sql
     environment:
       - POSTGRES_DB=${DB_NAME:-psscript}
       - POSTGRES_USER=${DB_USER:-postgres}
       - POSTGRES_PASSWORD=${DB_PASSWORD:-postgres}
+    command: >
+      bash -c "ldconfig && docker-entrypoint.sh postgres"
     restart: unless-stopped
 
-  # Redis for caching
   redis:
     image: redis:7.0-alpine
     ports:
