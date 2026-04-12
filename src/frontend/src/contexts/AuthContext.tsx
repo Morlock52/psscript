@@ -96,7 +96,23 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     password: import.meta.env.VITE_DEMO_PASSWORD || 'admin123',
   });
 
+  const enableLocalOnlyDevSession = () => {
+    localStorage.setItem('auth_token', 'dev-auth-disabled');
+    setUser({
+      id: 'dev-admin',
+      username: 'dev-admin',
+      email: 'dev-admin@local',
+      role: 'admin',
+      created_at: new Date().toISOString(),
+    });
+  };
+
   const bootstrapDevSession = async () => {
+    if (disableAuth) {
+      enableLocalOnlyDevSession();
+      return;
+    }
+
     const existingToken = localStorage.getItem('auth_token');
 
     if (existingToken && existingToken !== 'dev-auth-disabled') {
@@ -130,21 +146,8 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   useEffect(() => {
     const loadUser = async () => {
       if (disableAuth) {
-        try {
-          await bootstrapDevSession();
-        } catch (devAuthError) {
-          console.warn('[Auth] Dev auth bootstrap failed, falling back to local-only session:', devAuthError);
-          localStorage.setItem('auth_token', 'dev-auth-disabled');
-          setUser({
-            id: 'dev-admin',
-            username: 'dev-admin',
-            email: 'dev-admin@local',
-            role: 'admin',
-            created_at: new Date().toISOString(),
-          });
-        } finally {
-          setIsLoading(false);
-        }
+        enableLocalOnlyDevSession();
+        setIsLoading(false);
         return;
       }
 
@@ -203,7 +206,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   //   3. Replace with a proper dev/staging authentication flow
   const defaultLogin = async () => {
     if (disableAuth) {
-      await bootstrapDevSession();
+      enableLocalOnlyDevSession();
       return;
     }
 
@@ -220,13 +223,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   const login = async (email: string, password: string) => {
     try {
       if (disableAuth) {
-        const nextEmail = email || getDevCredentials().email;
-        const nextPassword = password || getDevCredentials().password;
-        const response = await axios.post(`${getApiUrl()}/auth/login`, {
-          email: nextEmail,
-          password: nextPassword,
-        });
-        persistAuthenticatedSession(response.data);
+        enableLocalOnlyDevSession();
         return;
       }
 

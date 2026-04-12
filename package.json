@@ -8,6 +8,7 @@
     "backend:dev": "cd src/backend && npm run dev",
     "ai:dev": "cd src/ai && python -m uvicorn main:app --reload",
     "dev": "concurrently \"npm run frontend:dev\" \"npm run backend:dev\" \"npm run ai:dev\"",
+    "playwright:stack": "bash ./scripts/playwright-stack.sh",
     "install:all": "npm install && cd src/frontend && npm install && cd ../backend && npm install",
     "stress:data-maintenance": "node scripts/db-maintenance-stress-test.mjs",
     "stress:data-maintenance:smoke": "node scripts/db-maintenance-stress-test.mjs --smoke-only",

@@ -158,6 +158,7 @@ export const sortFieldMap: Record<string, string> = {
   'userId': 'user_id',
   'categoryId': 'category_id',
   'executionCount': 'execution_count',
+  'views': 'execution_count',
   'isPublic': 'is_public',
   'fileHash': 'file_hash'
 };

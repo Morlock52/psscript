@@ -14,7 +14,15 @@ Why this file still exists:
 - it prevents stale mock/demo instructions from being treated as current
 
 Current canonical screenshots:
+- `docs/screenshots/login.png`
 - `docs/screenshots/dashboard.png`
 - `docs/screenshots/scripts.png`
+- `docs/screenshots/upload.png`
+- `docs/screenshots/script-detail.png`
+- `docs/screenshots/analysis.png`
+- `docs/screenshots/documentation.png`
+- `docs/screenshots/chat.png`
+- `docs/screenshots/analytics.png`
+- `docs/screenshots/settings.png`
 - `docs/screenshots/settings-profile.png`
 - `docs/screenshots/data-maintenance.png`

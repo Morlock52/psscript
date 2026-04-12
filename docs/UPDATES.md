@@ -1,5 +1,28 @@
 # Application Updates
 
+## 2026-04-12 Docs and screenshot refresh
+
+### Engineering changes
+
+- Rebuilt the canonical screenshot generator so it captures the full active doc image set instead of only a partial subset.
+- Normalized screenshot capture around the current validated local stack: app-shell pages from `https://127.0.0.1:3090`, optional real login screen from an auth-enabled frontend such as `https://127.0.0.1:3191`.
+- Updated the root README, frontend README, getting-started guide, test docs, data-maintenance guide, and README archive note to match the current runtime, auth behavior, and screenshot workflow.
+
+### Screenshots refreshed
+
+- `docs/screenshots/login.png`
+- `docs/screenshots/dashboard.png`
+- `docs/screenshots/scripts.png`
+- `docs/screenshots/upload.png`
+- `docs/screenshots/script-detail.png`
+- `docs/screenshots/analysis.png`
+- `docs/screenshots/documentation.png`
+- `docs/screenshots/chat.png`
+- `docs/screenshots/analytics.png`
+- `docs/screenshots/settings.png`
+- `docs/screenshots/settings-profile.png`
+- `docs/screenshots/data-maintenance.png`
+
 ## 2026-03-08 Voice AI hardening and validation rerun
 
 ### Engineering changes

@@ -332,6 +332,18 @@ export const csrfProtection = (allowedOrigins?: string[]) => {
       ];
 
   const origins = allowedOrigins || defaultAllowed;
+  const isLocalDevOrigin = (origin: string): boolean => {
+    if (process.env.NODE_ENV === 'production') {
+      return false;
+    }
+
+    try {
+      const parsed = new URL(origin);
+      return ['localhost', '127.0.0.1'].includes(parsed.hostname);
+    } catch {
+      return false;
+    }
+  };
 
   return (req: Request, res: Response, next: NextFunction) => {
     // Skip CSRF check for safe methods (GET, HEAD, OPTIONS)
@@ -365,9 +377,12 @@ export const csrfProtection = (allowedOrigins?: string[]) => {
     // Check if origin is allowed
     const requestOrigin = origin || (referer ? new URL(referer).origin : null);
 
-    if (requestOrigin && !origins.some(allowed =>
-      requestOrigin === allowed ||
-      requestOrigin.endsWith('.morloksmaze.com') // Allow subdomains in production
+    if (requestOrigin && !(
+      isLocalDevOrigin(requestOrigin) ||
+      origins.some(allowed =>
+        requestOrigin === allowed ||
+        requestOrigin.endsWith('.morloksmaze.com') // Allow subdomains in production
+      )
     )) {
       logger.warn('CSRF: Request from disallowed origin blocked', {
         ip: req.ip,

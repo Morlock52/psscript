@@ -166,19 +166,19 @@ export function initAIMetricsModel(sequelize: Sequelize): void {
 
 /**
  * Calculate cost based on model and token usage
- * Pricing as of 2 April 2026
+ * Pricing as of April 12, 2026
  */
 export function calculateCost(
   model: string,
   promptTokens: number,
   completionTokens: number
 ): number {
-  // Prices per 1M tokens (2 April 2026)
+  // Prices per 1M tokens (April 12, 2026)
   const pricing: Record<string, { prompt: number; completion: number }> = {
     // OpenAI models
     'gpt-5.4': { prompt: 2.50, completion: 15.00 },
-    'gpt-5.4-mini': { prompt: 1.00, completion: 4.00 },
-    'gpt-5.4-nano': { prompt: 0.25, completion: 1.00 },
+    'gpt-5.4-mini': { prompt: 0.75, completion: 4.50 },
+    'gpt-5.4-nano': { prompt: 0.20, completion: 1.25 },
     'gpt-4.1': { prompt: 2.00, completion: 8.00 },
     'gpt-4.1-mini': { prompt: 0.40, completion: 1.60 },
     'gpt-4.1-nano': { prompt: 0.10, completion: 0.40 },

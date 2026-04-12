@@ -127,7 +127,7 @@ sequenceDiagram
 
 ## AI Models
 
-Updated April 2, 2026. All deprecated models (gpt-4o, gpt-4o-mini, gpt-3.5-turbo) have been replaced.
+Updated April 12, 2026. All deprecated models (gpt-4o, gpt-4o-mini, gpt-3.5-turbo) have been replaced.
 
 | Purpose | Model | Notes |
 |---------|-------|-------|
@@ -140,7 +140,7 @@ Updated April 2, 2026. All deprecated models (gpt-4o, gpt-4o-mini, gpt-3.5-turbo
 | **Text-to-speech** | `gpt-4o-mini-tts` | Instruction-controllable voice |
 | **Speech-to-text** | `gpt-4o-mini-transcribe` | Best accuracy STT |
 | **Diarization** | `gpt-4o-transcribe-diarize` | Speaker-labeled transcription |
-| **Anthropic fallback** | `claude-sonnet-4` | Alternative analysis provider |
+| **Anthropic fallback** | `claude-sonnet-4-6-20260217` | Alternative analysis provider |
 
 ### SDK Versions
 
@@ -151,7 +151,7 @@ Updated April 2, 2026. All deprecated models (gpt-4o, gpt-4o-mini, gpt-3.5-turbo
 | `langgraph` | >=1.1.0 | Python |
 | `langchain` | >=1.0.0 (GA) | Python |
 
-> **Note:** The OpenAI Assistants API sunsets August 26, 2026. All Assistants endpoints return `Deprecation` and `Sunset` headers. Migration to the Responses API is planned.
+> **Note:** The OpenAI Assistants API sunsets on August 26, 2026. The checked-in `/api/assistants` routes already return `Deprecation`, `Sunset`, and successor `Link` headers, and the migration target is the Responses API.
 
 ---
 
@@ -240,7 +240,7 @@ cd src/ai && pip install -r requirements.txt && python main.py
 
 ### Local dev auth
 
-The default local mode uses `DISABLE_AUTH=true` — the app auto-signs in as `dev-admin`. Set `DISABLE_AUTH=false` for real login behavior.
+The default local stack commonly runs with `DISABLE_AUTH=true` and `VITE_DISABLE_AUTH=true`, so the UI auto-enters the app shell as `dev-admin`. For a real login pass, run a separate frontend/backend pair with both flags set to `false`.
 
 ---
 
@@ -257,23 +257,24 @@ npm test -- --runInBand    # Unit tests
 cd src/frontend
 npm run lint && npm run build
 
-# E2E (requires services running)
+# E2E
 npx playwright test --project=chromium
 
 # Cache stress test
 cd src/backend && npx jest src/__tests__/cacheService.test.ts --forceExit
 ```
 
-### Latest Results (April 2, 2026)
+### Latest Results (April 12, 2026)
 
 | Suite | Result |
 |-------|--------|
 | TypeScript | **0 errors** |
 | ESLint | **0 errors** |
-| Backend unit tests | 24 passed |
-| Cache stress tests | **11/11 passed** (1000 ops in 32ms) |
-| Playwright E2E | **9/9 passed** |
-| Codex review | **Clean** (P3 fix applied) |
+| Backend targeted regression tests | **8/8 passed** |
+| Security middleware tests | **17/17 passed** |
+| Data maintenance verification | **passed** |
+| Playwright E2E | health `7/7`, script-management `6/6`, AI analytics `10/10`, review-validation `9/9`, categories `1/1` |
+| Auth-enabled browser pass | **passed** |
 
 ---
 

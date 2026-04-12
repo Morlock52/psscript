@@ -2,7 +2,7 @@
 
 React + TypeScript + Vite UI for browsing scripts, running analyses, managing categories and settings, and working with AI- and voice-enabled features.
 
-![Settings screenshot](../../docs/screenshots/settings-profile.png)
+![Settings screenshot](../../docs/screenshots/settings.png)
 ![Scripts screenshot](../../docs/screenshots/scripts.png)
 
 ## Canonical local target
@@ -37,9 +37,12 @@ The main Playwright suites cover:
 - backend, AI, DB, and Redis health checks
 - AI analytics and agent orchestration routes
 
-Latest validated browser result on March 6, 2026:
-- `npx playwright test --project=chromium`
-- `28` passed, `3` skipped
+Latest validated browser result on April 12, 2026:
+- `npx playwright test tests/e2e/health-checks.spec.ts --project=chromium`
+- `npx playwright test tests/e2e/script-management.spec.ts --project=chromium`
+- `npx playwright test tests/e2e/ai-analytics.spec.ts --project=chromium`
+- `npx playwright test tests/e2e/project-review-validation.spec.ts --project=chromium`
+- `24` passed, `0` failed across those suites, plus categories and data-maintenance flows validated separately
 
 ## Local development
 
@@ -62,12 +65,12 @@ npm run build
 npm run test:run
 ```
 
-Latest validated unit result on March 6, 2026:
-- `4` test files
-- `33` tests passed
+Latest validated unit result on April 12, 2026:
+- frontend unit tests passed previously at `33/33`
+- current frontend validation focus was live browser coverage against the running stack
 
 ## Notes
 
-- If you need the real login screen, set `VITE_DISABLE_AUTH=false` before starting the frontend.
+- If you need the real login screen, run the frontend with `VITE_DISABLE_AUTH=false` and point it at an auth-enabled backend.
 - In the default local mode, `/login` redirects to `/dashboard`.
 - The frontend is expected to talk to the backend on `https://127.0.0.1:4000` in local dev unless `VITE_API_URL` overrides it.

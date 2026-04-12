@@ -86,7 +86,10 @@ export default function DataMaintenanceSettings() {
     try {
       setLoading(true);
       setMessage(null);
-      const response = await apiClient.post('/admin/db/restore', { filename: selectedBackup });
+      const response = await apiClient.post('/admin/db/restore', {
+        filename: selectedBackup,
+        confirmText: restoreConfirm,
+      });
       setMessage({ type: 'success', text: response.data?.message || 'Restore completed' });
       setRestoreConfirm('');
     } catch (err: any) {

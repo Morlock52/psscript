@@ -14,7 +14,7 @@ import { test, expect } from '@playwright/test';
  * They skip gracefully when services aren't running.
  */
 
-const BACKEND = 'http://127.0.0.1:4000';
+const BACKEND = 'https://127.0.0.1:4000';
 
 async function backendAvailable(request: any): Promise<boolean> {
   try {

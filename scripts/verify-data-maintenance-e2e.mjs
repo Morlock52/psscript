@@ -7,7 +7,7 @@ import { constants as fsConstants } from 'node:fs';
 import { spawn } from 'node:child_process';
 import net from 'node:net';
 
-const DEFAULT_PORT = 3001;
+const DEFAULT_PORT = 4000;
 const DEFAULT_HEALTH_TIMEOUT_MS = 120_000;
 const DEFAULT_BACKUP_DIR = '/tmp/psscript-db-backups';
 const DEFAULT_LOG_FILE = '/tmp/psscript-maintenance-e2e-backend.log';

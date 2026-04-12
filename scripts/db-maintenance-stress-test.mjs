@@ -155,7 +155,10 @@ async function createBackup(name) {
 }
 
 async function restoreBackup(filename) {
-  const payload = await request('POST', '/api/admin/db/restore', { filename });
+  const payload = await request('POST', '/api/admin/db/restore', {
+    filename,
+    confirmText: 'RESTORE BACKUP'
+  });
   assert(payload?.success, 'Restore response did not return success=true.');
   return payload;
 }

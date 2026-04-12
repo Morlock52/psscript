@@ -4,6 +4,7 @@ import {
   sanitizeInput,
   securityLogger,
   validateRequestSize,
+  csrfProtection,
 } from '../security';
 
 // Mock the logger module used by securityLogger
@@ -192,6 +193,30 @@ describe('Security Middleware', () => {
       middleware(mockRequest as Request, mockResponse as Response, nextFunction);
 
       expect(mockResponse.status).toHaveBeenCalledWith(413);
+    });
+  });
+
+  describe('csrfProtection', () => {
+    it('allows localhost development origins on alternate ports', () => {
+      mockRequest.method = 'POST';
+      mockRequest.headers = { origin: 'https://127.0.0.1:3191' };
+
+      const middleware = csrfProtection();
+      middleware(mockRequest as Request, mockResponse as Response, nextFunction);
+
+      expect(nextFunction).toHaveBeenCalled();
+      expect(mockResponse.status).not.toHaveBeenCalled();
+    });
+
+    it('blocks unknown origins for state-changing requests', () => {
+      mockRequest.method = 'POST';
+      mockRequest.headers = { origin: 'https://evil.example.com' };
+
+      const middleware = csrfProtection();
+      middleware(mockRequest as Request, mockResponse as Response, nextFunction);
+
+      expect(mockResponse.status).toHaveBeenCalledWith(403);
+      expect(nextFunction).not.toHaveBeenCalled();
     });
   });
 });

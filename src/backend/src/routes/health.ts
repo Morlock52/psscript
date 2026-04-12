@@ -121,6 +121,7 @@ router.get('/db/status', async (req, res) => {
     // Get basic connection info
     const isConnected = dbConnectionInfo.isConnected();
     const lastConnect = dbConnectionInfo.lastSuccessfulConnection();
+    let liveTables = dbConnectionInfo.tables();
     
     // Get database info if connected
     let dbVersion = null;
@@ -138,6 +139,18 @@ router.get('/db/status', async (req, res) => {
     
     if (isConnected) {
       try {
+        const tableRows = await sequelize.query(
+          "SELECT table_name FROM information_schema.tables WHERE table_schema = 'public' ORDER BY table_name",
+          { type: QueryTypes.SELECT }
+        );
+        liveTables = (tableRows as any[])
+          .map((row: any) => {
+            if (Array.isArray(row)) return String(row[0] ?? '');
+            if (row && typeof row === 'object') return String((row.table_name ?? row.tableName ?? row[0]) ?? '');
+            return '';
+          })
+          .filter(Boolean);
+
         // Get database server information
         const dbInfo = await sequelize.query(
           `SELECT version() as version, 
@@ -200,7 +213,7 @@ router.get('/db/status', async (req, res) => {
       connectionDuration: connectionDuration ? Math.round(connectionDuration / 1000) : null,
       connectionAttempts: dbConnectionInfo.retryCount(),
       consecutiveFailures: dbConnectionInfo.consecutiveFailures(),
-      tables: dbConnectionInfo.tables(),
+      tables: liveTables,
       lastError: dbConnectionInfo.lastError() ? {
         message: dbConnectionInfo.lastError()?.message,
         time: null, // Error objects don't track time by default

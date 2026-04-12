@@ -81,35 +81,18 @@ export default defineConfig({
     },
   ],
 
-  // Run your local dev server before starting the tests
-  // NOTE: Disabled because services are running in Docker
-  // Enable this if you want Playwright to manage the services instead
-  // webServer: [
-  //   {
-  //     command: 'cd src/frontend && npm run dev',
-  //     url: 'http://localhost:3090',
-  //     reuseExistingServer: !process.env.CI,
-  //     timeout: 120000,
-  //     stdout: 'pipe',
-  //     stderr: 'pipe',
-  //   },
-  //   {
-  //     command: 'cd src/backend && npm run dev',
-  //     url: 'http://localhost:4000/health',
-  //     reuseExistingServer: !process.env.CI,
-  //     timeout: 120000,
-  //     stdout: 'pipe',
-  //     stderr: 'pipe',
-  //   },
-  //   {
-  //     command: 'cd src/ai && python -m uvicorn main:app --reload --port 8000',
-  //     url: 'http://localhost:8000/health',
-  //     reuseExistingServer: !process.env.CI,
-  //     timeout: 120000,
-  //     stdout: 'pipe',
-  //     stderr: 'pipe',
-  //   },
-  // ],
+  // Start the full Docker-backed app stack when it is not already running.
+  // This keeps the checked-in suites runnable from a fresh clone instead of
+  // depending on manual prestart steps.
+  webServer: {
+    command: 'npm run playwright:stack',
+    url: 'https://127.0.0.1:3090',
+    reuseExistingServer: true,
+    timeout: 240000,
+    stdout: 'pipe',
+    stderr: 'pipe',
+    ignoreHTTPSErrors: true,
+  },
 
   // Global timeout for each test (increased for complex interactions)
   timeout: 60000,

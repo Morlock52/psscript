@@ -1,6 +1,6 @@
 # PSScript - Getting Started Guide
 
-This guide reflects the current checked-in local development setup as of April 2, 2026.
+This guide reflects the current checked-in local development setup as of April 12, 2026.
 
 ## Canonical local URLs
 
@@ -22,7 +22,7 @@ That means:
 - login-form-only browser tests are intentionally skipped in the default local suite
 - older docs that reference hard-coded demo credentials are historical only
 
-If you need to validate real login behavior, disable `VITE_DISABLE_AUTH` and restart the frontend.
+If you need to validate real login behavior, run a separate frontend/backend pair with both auth-disable flags set to `false`.
 
 ## Prerequisites
 
@@ -67,6 +67,7 @@ cd src/ai && python test_langgraph_setup.py
 node scripts/verify-data-maintenance-e2e.mjs --reuse-backend --base-url https://127.0.0.1:4000 --insecure-tls
 node scripts/voice-tests-1-8.mjs --base-url https://127.0.0.1:4000 --insecure-tls
 npx playwright test --project=chromium
+PLAYWRIGHT_STACK_MODE=local npx playwright test tests/e2e/project-review-validation.spec.ts --project=chromium
 ```
 
 ## Canonical current docs
@@ -79,6 +80,16 @@ npx playwright test --project=chromium
 - `./README-VOICE-API.md`
 - `./AUTHENTICATION-IMPROVEMENTS.md`
 - `./UPDATES.md`
+
+## Canonical screenshots
+
+Refresh the checked-in screenshots with:
+
+```bash
+SCREENSHOT_LOGIN_URL=https://127.0.0.1:3191 node scripts/capture-screenshots.js
+```
+
+Use `3191` only when you have an auth-enabled frontend running there for the real login screen. The rest of the screenshot set can still come from the default local app on `3090`.
 
 ## Optional local Git auto-update
 

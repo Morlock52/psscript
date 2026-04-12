@@ -337,6 +337,13 @@ router.post('/backup', async (req, res) => {
 router.post('/restore', async (req, res) => {
   try {
     ensureBackupDir();
+    const confirmText = String(req.body?.confirmText || '');
+    if (confirmText !== 'RESTORE BACKUP') {
+      return res.status(400).json({
+        message: 'Confirmation text mismatch. Send confirmText as exactly: RESTORE BACKUP'
+      });
+    }
+
     const filename = sanitizeBackupFilename(req.body?.filename);
     const source = path.join(BACKUP_DIR, filename);
 

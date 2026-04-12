@@ -160,10 +160,21 @@ describe('admin-db routes', () => {
 
     const res = await request(app)
       .post('/api/admin/db/restore')
-      .send({ filename: 'does-not-exist.json' });
+      .send({ filename: 'does-not-exist.json', confirmText: 'RESTORE BACKUP' });
 
     expect(res.status).toBe(404);
     expect(res.body.message).toMatch(/not found/i);
+  });
+
+  test('POST /restore requires exact confirmation text', async () => {
+    const app = createApp();
+
+    const res = await request(app)
+      .post('/api/admin/db/restore')
+      .send({ filename: 'restore-source.json' });
+
+    expect(res.status).toBe(400);
+    expect(res.body.message).toMatch(/confirmation text mismatch/i);
   });
 
   test('POST /restore truncates and bulk-inserts table rows from backup', async () => {
@@ -194,7 +205,7 @@ describe('admin-db routes', () => {
 
     const res = await request(app)
       .post('/api/admin/db/restore')
-      .send({ filename: backupName });
+      .send({ filename: backupName, confirmText: 'RESTORE BACKUP' });
 
     expect(res.status).toBe(200);
     expect(res.body.success).toBe(true);

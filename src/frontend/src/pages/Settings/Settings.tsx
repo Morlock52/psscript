@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import {
   Container,
   Typography,
@@ -10,15 +10,12 @@ import {
   Tab,
   Alert,
   TextField,
-  Button,
   List,
   ListItem,
   ListItemIcon,
   ListItemText,
   Switch,
   FormControlLabel,
-  InputAdornment,
-  IconButton,
   FormControl,
   InputLabel,
   Select,
@@ -27,12 +24,8 @@ import {
 import { useAuth } from '../../hooks/useAuth';
 import { useTheme } from '../../hooks/useTheme';
 import { useLocation, useNavigate } from 'react-router-dom';
-import KeyIcon from '@mui/icons-material/Key';
-import VisibilityIcon from '@mui/icons-material/Visibility';
-import VisibilityOffIcon from '@mui/icons-material/VisibilityOff';
 import DarkModeIcon from '@mui/icons-material/DarkMode';
 import LightModeIcon from '@mui/icons-material/LightMode';
-import CheckCircleOutlineIcon from '@mui/icons-material/CheckCircleOutline';
 import PeopleIcon from '@mui/icons-material/People';
 
 interface TabPanelProps {
@@ -77,34 +70,6 @@ const Settings: React.FC = () => {
   };
 
   const [tabValue, setTabValue] = useState(getInitialTab());
-  const [openaiApiKey, setOpenaiApiKey] = useState('');
-  const [showApiKey, setShowApiKey] = useState(false);
-  const [isSaving, setIsSaving] = useState(false);
-  const [saveMessage, setSaveMessage] = useState('');
-  const [useEnvVariables, setUseEnvVariables] = useState(true);
-  const [hasEnvApiKey, setHasEnvApiKey] = useState(false);
-
-  // Load API key from localStorage or environment variable
-  useEffect(() => {
-    // Check for environment variable first
-    const envApiKey = import.meta.env.VITE_OPENAI_API_KEY;
-    
-    if (envApiKey) {
-      console.log('Environment variable API key detected');
-      setHasEnvApiKey(true);
-      if (!useEnvVariables) {
-        setOpenaiApiKey(''); // Don't display the actual key for security
-      }
-    } else {
-      console.log('No environment variable API key found');
-      setHasEnvApiKey(false);
-      // Otherwise check localStorage
-      const savedApiKey = localStorage.getItem('openai_api_key');
-      if (savedApiKey) {
-        setOpenaiApiKey(savedApiKey);
-      }
-    }
-  }, [useEnvVariables]);
 
   const handleTabChange = (_: React.SyntheticEvent, newValue: number) => {
     setTabValue(newValue);
@@ -112,32 +77,6 @@ const Settings: React.FC = () => {
     else if (newValue === 1) navigate('/settings/api');
     else if (newValue === 2) navigate('/settings/advanced');
     else if (newValue === 3) navigate('/settings/users');
-  };
-
-  const handleToggleEnvVariables = (event: React.ChangeEvent<HTMLInputElement>) => {
-    setUseEnvVariables(event.target.checked);
-  };
-
-  const handleSaveApiKey = () => {
-    setIsSaving(true);
-    setSaveMessage('');
-    
-    try {
-      // Save to localStorage
-      if (openaiApiKey) {
-        localStorage.setItem('openai_api_key', openaiApiKey);
-      } else {
-        localStorage.removeItem('openai_api_key');
-      }
-      
-      setSaveMessage('API key saved successfully');
-      setTimeout(() => setSaveMessage(''), 3000);
-    } catch (error) {
-      console.error('Error saving API key:', error);
-      setSaveMessage('Error saving API key');
-    } finally {
-      setIsSaving(false);
-    }
   };
 
   return (
@@ -201,86 +140,14 @@ const Settings: React.FC = () => {
             </Typography>
             
             <Typography variant="body2" color="text.secondary" sx={{ mb: 3 }}>
-              Configure your OpenAI API key for enhanced AI capabilities. If set through environment variables, you can use it directly.
+              API credentials are managed on the server. This client does not store or edit provider keys.
             </Typography>
 
-            {hasEnvApiKey && (
-              <Alert 
-                severity="success" 
-                sx={{ mb: 2 }}
-                icon={<CheckCircleOutlineIcon />}
-              >
-                OpenAI API key detected in environment variables
-              </Alert>
-            )}
-
-            <FormControlLabel
-              control={
-                <Switch
-                  checked={useEnvVariables}
-                  onChange={handleToggleEnvVariables}
-                  color="primary"
-                  disabled={!hasEnvApiKey}
-                  inputProps={{ 'aria-label': 'toggle environment variables' }}
-                />
-              }
-              label="Use environment variables when available"
-              sx={{ mb: 2, display: 'block' }}
-            />
-
-            <TextField
-              label="OpenAI API Key"
-              type={showApiKey ? "text" : "password"}
-              value={useEnvVariables && hasEnvApiKey ? '' : openaiApiKey}
-              onChange={(e) => setOpenaiApiKey(e.target.value)}
-              fullWidth
-              margin="normal"
-              disabled={useEnvVariables && hasEnvApiKey}
-              placeholder={useEnvVariables && hasEnvApiKey ? "Using environment variable" : "sk-..."}
-              InputProps={{
-                startAdornment: (
-                  <InputAdornment position="start">
-                    <KeyIcon />
-                  </InputAdornment>
-                ),
-                endAdornment: (
-                  <InputAdornment position="end">
-                    <IconButton
-                      aria-label="toggle password visibility"
-                      onClick={() => setShowApiKey(!showApiKey)}
-                      edge="end"
-                    >
-                      {showApiKey ? <VisibilityOffIcon /> : <VisibilityIcon />}
-                    </IconButton>
-                  </InputAdornment>
-                ),
-              }}
-              helperText={
-                useEnvVariables && hasEnvApiKey
-                  ? "Using environment variable (VITE_OPENAI_API_KEY)"
-                  : "Enter your OpenAI API key to use AI-powered features"
-              }
-            />
-            
-            {saveMessage && (
-              <Alert 
-                severity={saveMessage.includes('Error') ? 'error' : 'success'} 
-                sx={{ mt: 2, mb: 2 }}
-              >
-                {saveMessage}
-              </Alert>
-            )}
-            
-            <Box sx={{ mt: 2 }}>
-              <Button
-                variant="contained"
-                color="primary"
-                onClick={handleSaveApiKey}
-                disabled={(useEnvVariables && hasEnvApiKey) || isSaving}
-              >
-                {isSaving ? 'Saving...' : 'Save API Key'}
-              </Button>
-            </Box>
+            <Alert severity="info">
+              Configure OpenAI and other provider secrets through backend environment variables or your deployment
+              platform&apos;s secret manager. Do not place API keys in browser settings, client-side env vars, or
+              local storage.
+            </Alert>
           </CardContent>
         </Card>
       </TabPanel>

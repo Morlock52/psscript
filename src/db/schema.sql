@@ -131,6 +131,24 @@ COMMENT ON COLUMN script_analysis.code_complexity_metrics IS 'Cyclomatic complex
 COMMENT ON COLUMN script_analysis.compatibility_notes IS 'PowerShell version compatibility notes';
 COMMENT ON COLUMN script_analysis.execution_summary IS 'Summary of resources accessed/modified';
 
+-- AI usage metrics
+CREATE TABLE ai_metrics (
+    id SERIAL PRIMARY KEY,
+    user_id INTEGER REFERENCES users(id) ON DELETE SET NULL,
+    endpoint VARCHAR(255) NOT NULL,
+    model VARCHAR(255) NOT NULL,
+    prompt_tokens INTEGER NOT NULL DEFAULT 0,
+    completion_tokens INTEGER NOT NULL DEFAULT 0,
+    total_tokens INTEGER NOT NULL DEFAULT 0,
+    total_cost DECIMAL(10, 6) NOT NULL DEFAULT 0,
+    latency INTEGER NOT NULL DEFAULT 0,
+    success BOOLEAN NOT NULL DEFAULT true,
+    error_message TEXT,
+    request_payload JSONB,
+    response_payload JSONB,
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
+);
+
 -- Vector embeddings table
 CREATE TABLE script_embeddings (
     id SERIAL PRIMARY KEY,
@@ -205,6 +223,11 @@ CREATE INDEX idx_scripts_category ON scripts(category_id);
 CREATE INDEX idx_scripts_user ON scripts(user_id);
 CREATE INDEX idx_script_versions_script ON script_versions(script_id);
 CREATE INDEX idx_script_analysis_script ON script_analysis(script_id);
+CREATE INDEX idx_ai_metrics_user_id ON ai_metrics(user_id);
+CREATE INDEX idx_ai_metrics_endpoint ON ai_metrics(endpoint);
+CREATE INDEX idx_ai_metrics_model ON ai_metrics(model);
+CREATE INDEX idx_ai_metrics_created_at ON ai_metrics(created_at);
+CREATE INDEX idx_ai_metrics_success ON ai_metrics(success);
 CREATE INDEX idx_execution_logs_script ON execution_logs(script_id);
 CREATE INDEX idx_execution_logs_user ON execution_logs(user_id);
 CREATE INDEX idx_execution_logs_created_at ON execution_logs(created_at);

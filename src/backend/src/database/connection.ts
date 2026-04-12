@@ -257,6 +257,105 @@ async function refreshTableCache(sequelize: Sequelize, force = false): Promise<v
   }
 }
 
+async function markMigrationApplied(sequelize: Sequelize, name: string): Promise<void> {
+  await sequelize.query(
+    `
+      INSERT INTO schema_migrations (name)
+      VALUES (:name)
+      ON CONFLICT (name) DO NOTHING
+    `,
+    {
+      replacements: { name }
+    }
+  );
+}
+
+export async function ensureRuntimeCompatibility(sequelize: Sequelize): Promise<void> {
+  await sequelize.query(`
+    ALTER TABLE users
+      ADD COLUMN IF NOT EXISTS locked_until TIMESTAMP WITH TIME ZONE;
+  `);
+
+  await sequelize.query(`
+    UPDATE users
+    SET locked_until = COALESCE(locked_until, lockout_until)
+    WHERE EXISTS (
+      SELECT 1
+      FROM information_schema.columns
+      WHERE table_schema = 'public'
+        AND table_name = 'users'
+        AND column_name = 'lockout_until'
+    );
+  `);
+
+  await sequelize.query(`
+    CREATE INDEX IF NOT EXISTS idx_users_locked_until ON users(locked_until)
+    WHERE locked_until IS NOT NULL;
+  `);
+
+  await markMigrationApplied(sequelize, '20260412_fix_users_locked_until_column.sql');
+
+  // Self-heal legacy local databases that predate newer migrations.
+  await sequelize.query(`
+    CREATE TABLE IF NOT EXISTS ai_metrics (
+      id SERIAL PRIMARY KEY,
+      user_id INTEGER REFERENCES users(id) ON DELETE SET NULL,
+      endpoint VARCHAR(255) NOT NULL,
+      model VARCHAR(255) NOT NULL,
+      prompt_tokens INTEGER NOT NULL DEFAULT 0,
+      completion_tokens INTEGER NOT NULL DEFAULT 0,
+      total_tokens INTEGER NOT NULL DEFAULT 0,
+      total_cost DECIMAL(10, 6) NOT NULL DEFAULT 0,
+      latency INTEGER NOT NULL DEFAULT 0,
+      success BOOLEAN NOT NULL DEFAULT true,
+      error_message TEXT,
+      request_payload JSONB,
+      response_payload JSONB,
+      created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
+    );
+  `);
+
+  await sequelize.query(`
+    CREATE INDEX IF NOT EXISTS idx_ai_metrics_user_id ON ai_metrics(user_id);
+    CREATE INDEX IF NOT EXISTS idx_ai_metrics_endpoint ON ai_metrics(endpoint);
+    CREATE INDEX IF NOT EXISTS idx_ai_metrics_model ON ai_metrics(model);
+    CREATE INDEX IF NOT EXISTS idx_ai_metrics_created_at ON ai_metrics(created_at);
+    CREATE INDEX IF NOT EXISTS idx_ai_metrics_success ON ai_metrics(success);
+  `);
+
+  await markMigrationApplied(sequelize, '20260412_create_ai_metrics_table.sql');
+
+  const scoreColumns = await sequelize.query<
+    { column_name: string; data_type: string }
+  >(
+    `
+      SELECT column_name, data_type
+      FROM information_schema.columns
+      WHERE table_schema = 'public'
+        AND table_name = 'script_analysis'
+        AND column_name IN ('security_score', 'quality_score', 'risk_score')
+    `,
+    {
+      type: QueryTypes.SELECT
+    }
+  );
+
+  const needsScoreTypeFix = scoreColumns.some(
+    column => column.data_type !== 'real' && column.data_type !== 'double precision'
+  );
+
+  if (needsScoreTypeFix) {
+    await sequelize.query(`
+      ALTER TABLE script_analysis
+        ALTER COLUMN security_score TYPE DOUBLE PRECISION USING security_score::double precision,
+        ALTER COLUMN quality_score TYPE DOUBLE PRECISION USING quality_score::double precision,
+        ALTER COLUMN risk_score TYPE DOUBLE PRECISION USING risk_score::double precision;
+    `);
+  }
+
+  await markMigrationApplied(sequelize, '20260412_fix_script_analysis_score_types.sql');
+}
+
 /**
  * Sequelize database connection class
  */
@@ -416,6 +515,7 @@ class Database {
       
       // Create migrations table if it doesn't exist
       await this.createMigrationsTable();
+      await ensureRuntimeCompatibility(this.sequelize);
       await refreshTableCache(this.sequelize, true);
     } catch (error: any) {
       this.connected = false;
@@ -512,6 +612,7 @@ export const dbConnectionInfo = {
   retryCount: () => dbDiagnosticState.retryCount,
   consecutiveFailures: () => dbDiagnosticState.consecutiveFailures,
   tables: () => [...dbDiagnosticState.tables],
+  refreshTables: async (force = false) => refreshTableCache(sequelize, force),
   lastError: () => dbDiagnosticState.lastError,
   errorStats: () => ({ ...dbDiagnosticState.errorStats }),
   pgPoolStatus: () => getPoolStatus(sequelize),
