@@ -16,7 +16,8 @@ This batch captures the latest UI for new/updated features and is used to keep d
 ## Notes
 
 - Current canonical local stack ports:
-  - Frontend: `https://localhost:3090`
-  - Backend API: `https://localhost:4000`
+  - Frontend: `https://127.0.0.1:3090` for the full local TLS stack, or `http://127.0.0.1:3090` for an equivalent manually started Vite frontend
+  - Login frontend: `http://127.0.0.1:3191` with `VITE_DISABLE_AUTH=false`
+  - Backend API: `https://127.0.0.1:4000`
   - AI service: `http://localhost:8000`
-- The April 23, 2026 refresh was captured from the already-running local frontend on `http://127.0.0.1:3091` and copied into the same docs-site variant paths.
+- README screenshots require backend script data; the generator now fails rather than saving spinner or missing-content pages for script detail and analysis.

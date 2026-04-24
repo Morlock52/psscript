@@ -159,6 +159,12 @@ Updated April 12, 2026. All deprecated models (gpt-4o, gpt-4o-mini, gpt-3.5-turb
 ## Screenshots
 
 <details>
+<summary><strong>Login</strong> — Auth-enabled sign-in and demo access</summary>
+
+![Login](./docs/screenshots/login.png)
+</details>
+
+<details>
 <summary><strong>Dashboard</strong> — Health, activity, and AI usage overview</summary>
 
 ![Dashboard](./docs/screenshots/dashboard.png)
@@ -171,6 +177,12 @@ Updated April 12, 2026. All deprecated models (gpt-4o, gpt-4o-mini, gpt-3.5-turb
 </details>
 
 <details>
+<summary><strong>Upload</strong> — Script intake with metadata and preview</summary>
+
+![Upload](./docs/screenshots/upload.png)
+</details>
+
+<details>
 <summary><strong>Script Analysis</strong> — AI-powered security and quality scoring</summary>
 
 ![Analysis](./docs/screenshots/analysis.png)
@@ -180,6 +192,12 @@ Updated April 12, 2026. All deprecated models (gpt-4o, gpt-4o-mini, gpt-3.5-turb
 <summary><strong>Script Detail</strong> — Version history and code view</summary>
 
 ![Script Detail](./docs/screenshots/script-detail.png)
+</details>
+
+<details>
+<summary><strong>Documentation</strong> — PowerShell docs explorer and crawl tools</summary>
+
+![Documentation](./docs/screenshots/documentation.png)
 </details>
 
 <details>
@@ -274,6 +292,24 @@ npx playwright test --project=chromium
 cd src/backend && npx jest src/__tests__/cacheService.test.ts --forceExit
 ```
 
+### Screenshot Refresh
+
+The app-shell screenshots are captured from the standard local frontend on `3090` with the backend running and at least one script with analysis data available. Because that local stack commonly runs with `VITE_DISABLE_AUTH=true`, capture `login.png` from a second auth-enabled frontend:
+
+```bash
+# terminal 1: app shell + backend
+npm run playwright:stack
+
+# terminal 2: login page
+cd src/frontend
+VITE_DISABLE_AUTH=false VITE_USE_MOCKS=true npm run dev -- --host 0.0.0.0 --port 3191
+
+# terminal 3: refresh docs/screenshots
+SCREENSHOT_BASE_URL=https://127.0.0.1:3090 \
+SCREENSHOT_LOGIN_URL=http://127.0.0.1:3191 \
+node scripts/capture-screenshots.js
+```
+
 ### Latest Results (April 23, 2026)
 
 | Suite | Result |
@@ -281,7 +317,7 @@ cd src/backend && npx jest src/__tests__/cacheService.test.ts --forceExit
 | Frontend TypeScript | `./node_modules/.bin/tsc --noEmit --pretty false` passed |
 | UI browser smoke | Dashboard, mobile dashboard, and script analysis passed with no browser console/page errors |
 | Navigation smoke | Analysis Dashboard button routes to `/dashboard`; Dashboard nav gets `aria-current="page"` |
-| Screenshot refresh | Dashboard, scripts, upload, analysis, categories, data maintenance, analytics, and mobile dashboard refreshed |
+| Screenshot refresh | Login, dashboard, scripts, upload, script detail, analysis, documentation, chat, analytics, settings, and data maintenance refreshed |
 | ESLint | Targeted ESLint invocation hung with no output in this workspace and was killed; no lint result was claimed |
 
 Historical full-stack validation from April 12, 2026 remains documented in `docs/UPDATES.md`.

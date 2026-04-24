@@ -1,5 +1,13 @@
 # Application Updates
 
+## 2026-04-23 GitHub README screenshot correction
+
+- Refreshed the canonical GitHub README screenshot set from the running local UI.
+- Captured `login.png` from an auth-enabled frontend on `3191` and app-shell pages from the auth-disabled local frontend on `3090` with the backend connected to script data.
+- Removed checked-in zero-byte duplicate screenshot files ending in ` (1).png`.
+- Tightened `scripts/capture-screenshots.js` so login redirects report the exact auth-enabled frontend requirement, and script detail/analysis captures fail when real content is unavailable instead of saving spinners.
+- Updated the root README screenshot section to include the complete current tour: login, dashboard, scripts, upload, script detail, analysis, documentation, chat, analytics, settings, and data maintenance.
+
 ## 2026-04-23 UI branding, docs, and screenshot refresh
 
 ### UI changes
