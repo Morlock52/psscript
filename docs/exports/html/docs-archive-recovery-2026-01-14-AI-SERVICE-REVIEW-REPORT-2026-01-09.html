@@ -1,0 +1,538 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <base href="file:///Users/morlock/fun/02_PowerShell_Projects/psscript/" />
+  <title>docs-archive-recovery-2026-01-14-AI-SERVICE-REVIEW-REPORT-2026-01-09</title>
+  <style>
+:root {
+  color-scheme: light;
+}
+body {
+  font-family: "Segoe UI", "Helvetica Neue", Arial, sans-serif;
+  margin: 0;
+  padding: 0;
+  background: #ffffff;
+  color: #0f172a;
+}
+.markdown-body {
+  max-width: 980px;
+  margin: 40px auto 60px;
+  padding: 0 32px;
+  line-height: 1.65;
+}
+.markdown-body h1 {
+  font-size: 32px;
+  margin-bottom: 12px;
+  border-bottom: 2px solid #e2e8f0;
+  padding-bottom: 12px;
+  page-break-before: always;
+  page-break-after: avoid;
+  break-before: page;
+  break-after: avoid;
+}
+.markdown-body h1:first-of-type {
+  page-break-before: avoid;
+  break-before: avoid;
+}
+.markdown-body h2 {
+  font-size: 24px;
+  margin-top: 28px;
+  border-bottom: 1px solid #e2e8f0;
+  padding-bottom: 8px;
+  page-break-before: always;
+  page-break-after: avoid;
+  break-before: page;
+  break-after: avoid;
+}
+.markdown-body h3 {
+  font-size: 18px;
+  margin-top: 20px;
+  page-break-after: avoid;
+  break-after: avoid;
+}
+.markdown-body h4, .markdown-body h5, .markdown-body h6 {
+  page-break-after: avoid;
+  break-after: avoid;
+}
+.markdown-body table {
+  width: 100%;
+  border-collapse: collapse;
+  margin: 16px 0;
+  font-size: 14px;
+  page-break-inside: avoid;
+  break-inside: avoid;
+}
+.markdown-body th,
+.markdown-body td {
+  border: 1px solid #e2e8f0;
+  padding: 8px 10px;
+  text-align: left;
+}
+.markdown-body th {
+  background: #f8fafc;
+}
+.markdown-body tr {
+  page-break-inside: avoid;
+  break-inside: avoid;
+}
+.markdown-body code {
+  background: #f1f5f9;
+  padding: 2px 4px;
+  border-radius: 4px;
+  font-family: "SFMono-Regular", Menlo, Consolas, monospace;
+  font-size: 0.92em;
+}
+.markdown-body pre {
+  background: #0f172a;
+  color: #e2e8f0;
+  padding: 16px;
+  border-radius: 8px;
+  overflow-x: auto;
+  page-break-inside: avoid;
+  break-inside: avoid;
+}
+.markdown-body pre code {
+  background: transparent;
+  color: inherit;
+}
+.markdown-body blockquote {
+  border-left: 4px solid #38bdf8;
+  margin: 16px 0;
+  padding: 8px 16px;
+  background: #f8fafc;
+  color: #334155;
+}
+.markdown-body img {
+  max-width: 100%;
+  height: auto;
+  display: block;
+  margin: 16px 0;
+  border-radius: 10px;
+  box-shadow: 0 8px 20px rgba(15, 23, 42, 0.12);
+  page-break-inside: avoid;
+  break-inside: avoid;
+}
+.markdown-body figure {
+  page-break-inside: avoid;
+  break-inside: avoid;
+  margin: 16px 0;
+}
+.markdown-body a {
+  color: #2563eb;
+  text-decoration: none;
+}
+.markdown-body a:hover {
+  text-decoration: underline;
+}
+.cover {
+  padding: 80px 60px 60px;
+  background: linear-gradient(135deg, #0b1220 0%, #1e3a8a 100%);
+  color: #f8fafc;
+  border-radius: 18px;
+  margin-bottom: 32px;
+}
+.cover-title {
+  font-size: 36px;
+  font-weight: 700;
+  margin: 0 0 12px;
+}
+.cover-subtitle {
+  font-size: 18px;
+  color: #cbd5f5;
+  margin: 0 0 16px;
+}
+.cover-meta {
+  font-size: 13px;
+  color: #94a3b8;
+}
+.page-break {
+  page-break-after: always;
+  break-after: page;
+}
+.footer {
+  margin-top: 40px;
+  font-size: 12px;
+  color: #64748b;
+}
+/* Print and PDF-specific styles */
+@page {
+  margin: 20mm 18mm;
+}
+@media print {
+  .markdown-body {
+    orphans: 3;
+    widows: 3;
+  }
+  .markdown-body p {
+    orphans: 3;
+    widows: 3;
+  }
+  .markdown-body li {
+    page-break-inside: avoid;
+    break-inside: avoid;
+  }
+  .markdown-body ul, .markdown-body ol {
+    page-break-before: avoid;
+    break-before: avoid;
+  }
+  .markdown-body blockquote {
+    page-break-inside: avoid;
+    break-inside: avoid;
+  }
+  /* Keep section content together */
+  .markdown-body h2 + *, .markdown-body h3 + * {
+    page-break-before: avoid;
+    break-before: avoid;
+  }
+}
+</style>
+</head>
+<body>
+  <div class="markdown-body">
+    
+    <h1 id="ai-service-review-and-test-report">AI Service Review and Test Report</h1>
+<p><strong>Date:</strong> January 9, 2026<br />
+<strong>Project:</strong> PSScript Platform<br />
+<strong>Component:</strong> AI Service (<code>src/ai/</code>)  </p>
+<hr />
+<h2 id="executive-summary">Executive Summary</h2>
+<p>The AI service has a solid architecture with FastAPI, agent coordination, and multi-model support, but contains <strong>critical bugs</strong> and <strong>deprecated model references</strong> that will prevent the service from running in production. The main issues are:</p>
+<ol>
+<li><strong>Missing Import</strong>: <code>agent_factory</code> is used but never imported in <code>main.py</code> (CRITICAL)</li>
+<li><strong>Non-existent Models</strong>: References to models that don't exist (<code>gpt-5.2-codex</code>, <code>gpt-5.2</code>, <code>gpt-5.2-instant</code>)</li>
+<li><strong>Deprecated OpenAI API</strong>: Using old SDK style instead of modern OpenAI client</li>
+<li><strong>Incomplete Implementations</strong>: Several placeholder methods in <code>AgentCoordinator</code></li>
+</ol>
+<p><strong>Overall Status</strong>: ❌ <strong>Not Ready for Production</strong> - Critical bugs must be fixed before deployment</p>
+<hr />
+<h2 id="critical-issues-must-fix">Critical Issues (Must Fix)</h2>
+<h3 id="1-missing-agent_factory-import-in-mainpy">1. Missing <code>agent_factory</code> Import in <code>main.py</code></h3>
+<p><strong>Severity</strong>: 🔴 <strong>CRITICAL</strong><br />
+<strong>File</strong>: <code>src/ai/main.py</code><br />
+<strong>Lines</strong>: 407, 508, 550, 591, 1016, 1020</p>
+<p><strong>Issue</strong>: The code attempts to use <code>agent_factory.get_agent()</code> and <code>agent_factory.process_message()</code> but never imports the <code>agent_factory</code> module.</p>
+<pre><code class="language-python"># BROKEN - in main.py (line ~407)
+agent = agent_factory.get_agent(&quot;hybrid&quot;, api_key or config.api_keys.openai)
+# NameError: name 'agent_factory' is not defined
+</code></pre>
+<p><strong>Fix Required</strong>:</p>
+<pre><code class="language-python"># Add this import at the top of main.py
+from agents.agent_factory import agent_factory
+</code></pre>
+<p><strong>Impact</strong>: All fallback agent processing will fail, affecting:
+- <code>analyze_script_security()</code> endpoint
+- <code>categorize_script()</code> endpoint<br />
+- <code>find_documentation_references()</code> endpoint
+- <code>chat_with_powershell_expert()</code> endpoint</p>
+<hr />
+<h3 id="2-non-existent-openai-model-references">2. Non-existent OpenAI Model References</h3>
+<p><strong>Severity</strong>: 🔴 <strong>CRITICAL</strong><br />
+<strong>Files</strong>: Multiple<br />
+<strong>Affected Models</strong>: <code>gpt-5.2-codex</code>, <code>gpt-5.2</code>, <code>gpt-5.2-instant</code></p>
+<p><strong>Issue</strong>: Configuration and code reference non-existent OpenAI models that will cause API errors.</p>
+<p><strong>Files with issues</strong>:
+- <code>src/ai/config.py</code> (lines 46-47, 134, 136)
+- <code>src/ai/analysis/script_analyzer.py</code> (line 55)
+- <code>src/ai/agents/langchain_agent.py</code> (line 67)
+- <code>src/ai/agents/langgraph_production.py</code> (lines 410, 473, 651, 880)
+- <code>src/ai/utils/token_counter.py</code> (lines 20, 24, 28, 301, 310)</p>
+<p><strong>Current Config</strong> (in <code>config.py</code>):</p>
+<pre><code class="language-python">default_model: str = Field(&quot;gpt-5.2-codex&quot;, ...)  # INVALID
+reasoning_model: str = Field(&quot;gpt-5.2&quot;, ...)     # INVALID
+</code></pre>
+<p><strong>Fix Required</strong>: Use actual OpenAI models:</p>
+<pre><code class="language-python"># Recommended updates for January 2026
+default_model: str = Field(&quot;gpt-4-turbo&quot;, ...)     # For general tasks
+analysis_model: str = Field(&quot;gpt-4-turbo&quot;, ...)    # For script analysis
+embedding_model: str = Field(&quot;text-embedding-3-large&quot;, ...)  # For embeddings
+reasoning_model: str = Field(&quot;gpt-4o&quot;, ...)        # For complex reasoning
+</code></pre>
+<p><strong>Available OpenAI Models</strong> (as of January 2026):
+- <strong>Text Models</strong>: <code>gpt-4o</code>, <code>gpt-4-turbo</code>, <code>gpt-3.5-turbo</code>
+- <strong>Embeddings</strong>: <code>text-embedding-3-large</code>, <code>text-embedding-3-small</code>
+- <strong>Vision</strong>: <code>gpt-4-vision</code>, <code>gpt-4o</code></p>
+<hr />
+<h3 id="3-deprecated-openai-api-usage">3. Deprecated OpenAI API Usage</h3>
+<p><strong>Severity</strong>: 🟠 <strong>HIGH</strong><br />
+<strong>File</strong>: <code>src/ai/analysis/script_analyzer.py</code><br />
+<strong>Lines</strong>: Throughout the file</p>
+<p><strong>Issue</strong>: Using deprecated OpenAI SDK pattern.</p>
+<p><strong>Current (DEPRECATED)</strong>:</p>
+<pre><code class="language-python">import openai
+openai.api_key = os.getenv(&quot;OPENAI_API_KEY&quot;)  # Old way
+response = openai.embeddings.create(...)
+response = openai.chat.completions.create(...)
+</code></pre>
+<p><strong>Fix Required</strong> (Modern OpenAI SDK):</p>
+<pre><code class="language-python">from openai import OpenAI
+
+client = OpenAI(api_key=os.getenv(&quot;OPENAI_API_KEY&quot;))
+response = client.embeddings.create(...)
+response = client.chat.completions.create(...)
+</code></pre>
+<p><strong>Impact</strong>: The service may fail with newer versions of the OpenAI library.</p>
+<hr />
+<h2 id="high-priority-issues-should-fix">High Priority Issues (Should Fix)</h2>
+<h3 id="4-undefined-variable-in-mainpy">4. Undefined Variable in <code>main.py</code></h3>
+<p><strong>Severity</strong>: 🟠 <strong>HIGH</strong><br />
+<strong>File</strong>: <code>src/ai/main.py</code> (line ~49)</p>
+<p><strong>Issue</strong>: Reference to <code>agent_factory</code> global in chat endpoint fallback:</p>
+<pre><code class="language-python">response = await agent_factory.process_message(messages, api_key)
+</code></pre>
+<p><strong>Note</strong>: This is related to issue #1 above.</p>
+<hr />
+<h3 id="5-missing-error-handling-in-async-event-loops">5. Missing Error Handling in Async Event Loops</h3>
+<p><strong>Severity</strong>: 🟠 <strong>HIGH</strong><br />
+<strong>Files</strong>: <code>src/ai/analysis/script_analyzer.py</code></p>
+<p><strong>Issue</strong>: Creating new event loops in synchronous wrappers can cause issues:</p>
+<pre><code class="language-python">def generate_embedding(self, text: str) -&gt; List[float]:
+    loop = asyncio.new_event_loop()  # Problematic pattern
+    try:
+        return loop.run_until_complete(...)
+    finally:
+        loop.close()
+</code></pre>
+<p><strong>Better Approach</strong>: Use asyncio.run() or handle existing event loops:</p>
+<pre><code class="language-python">def generate_embedding(self, text: str) -&gt; List[float]:
+    try:
+        loop = asyncio.get_running_loop()
+    except RuntimeError:
+        return asyncio.run(self.generate_embedding_async(text))
+    # ... handle existing loop case
+</code></pre>
+<hr />
+<h3 id="6-incomplete-agentcoordinator-methods">6. Incomplete AgentCoordinator Methods</h3>
+<p><strong>Severity</strong>: 🟠 <strong>HIGH</strong><br />
+<strong>File</strong>: <code>src/ai/agents/agent_coordinator.py</code></p>
+<p><strong>Issue</strong>: Several methods return placeholder implementations:</p>
+<pre><code class="language-python">async def search_similar_scripts(self, script_content: str, limit: int = 5):
+    logger.info(f&quot;Searching for similar scripts (placeholder)&quot;)
+    return []  # TODO: Implement vector similarity search
+
+async def generate_script_embedding(self, script_content: str):
+    logger.info(f&quot;Generating script embedding (placeholder)&quot;)
+    return [0.0] * 1536  # TODO: Implement actual embedding generation
+</code></pre>
+<p><strong>Impact</strong>: These features won't work when calling the agent coordinator directly.</p>
+<hr />
+<h2 id="medium-priority-issues-nice-to-fix">Medium Priority Issues (Nice to Fix)</h2>
+<h3 id="7-inconsistent-error-handling">7. Inconsistent Error Handling</h3>
+<p><strong>Severity</strong>: 🟡 <strong>MEDIUM</strong><br />
+<strong>File</strong>: <code>src/ai/analysis/script_analyzer.py</code></p>
+<p><strong>Issue</strong>: Error responses don't maintain consistency with success responses:</p>
+<pre><code class="language-python">error_response = {
+    &quot;purpose&quot;: &quot;Error analyzing script&quot;,
+    &quot;security_analysis&quot;: f&quot;Analysis failed: {str(e)}&quot;,  # Different format than success
+    &quot;security_score&quot;: 5,  # Default value vs. actual analysis
+    ...
+}
+</code></pre>
+<p><strong>Recommendation</strong>: Return consistent error structure:</p>
+<pre><code class="language-python">if error:
+    return {
+        &quot;error&quot;: {
+            &quot;code&quot;: &quot;ANALYSIS_FAILED&quot;,
+            &quot;message&quot;: str(e),
+            &quot;timestamp&quot;: datetime.now().isoformat()
+        }
+    }
+</code></pre>
+<hr />
+<h3 id="8-missing-type-validation-in-pydantic-models">8. Missing Type Validation in Pydantic Models</h3>
+<p><strong>Severity</strong>: 🟡 <strong>MEDIUM</strong><br />
+<strong>File</strong>: <code>src/ai/main.py</code></p>
+<p><strong>Issue</strong>: Some response models don't validate expected data:</p>
+<pre><code class="language-python">class EmbeddingResponse(BaseModel):
+    embedding: List[float]
+</code></pre>
+<p>Missing validation could return embeddings of wrong dimensions (expects 3072 for text-embedding-3-large).</p>
+<p><strong>Recommendation</strong>:</p>
+<pre><code class="language-python">class EmbeddingResponse(BaseModel):
+    embedding: List[float] = Field(..., min_items=256, max_items=3072)
+    dimension: int
+    model: str
+</code></pre>
+<hr />
+<h3 id="9-missing-database-error-handling">9. Missing Database Error Handling</h3>
+<p><strong>Severity</strong>: 🟡 <strong>MEDIUM</strong><br />
+<strong>File</strong>: <code>src/ai/main.py</code> (lines ~440-475)</p>
+<p><strong>Issue</strong>: Database errors silently continue instead of propagating:</p>
+<pre><code class="language-python">try:
+    # Database operations...
+except Exception as e:
+    print(f&quot;Database error: {e}&quot;)
+    # Continue without saving
+finally:
+    if conn:
+        conn.close()
+</code></pre>
+<p><strong>Impact</strong>: Analysis results won't be saved if DB fails, but client doesn't know.</p>
+<hr />
+<h2 id="low-priority-issues">Low Priority Issues</h2>
+<h3 id="10-token-counter-using-non-existent-models">10. Token Counter Using Non-existent Models</h3>
+<p><strong>Severity</strong>: 🟡 <strong>LOW</strong><br />
+<strong>File</strong>: <code>src/ai/utils/token_counter.py</code></p>
+<p><strong>Issue</strong>: Token counting configured for non-existent models:</p>
+<pre><code class="language-python">&quot;gpt-5.2&quot;: {
+    &quot;input&quot;: 0.00150,
+    &quot;output&quot;: 0.00600
+},
+&quot;gpt-5.2-codex&quot;: {
+    &quot;input&quot;: 0.00200,
+    &quot;output&quot;: 0.00800
+}
+</code></pre>
+<p><strong>Recommendation</strong>: Remove these and use actual model token counts.</p>
+<hr />
+<h3 id="11-inconsistent-error-handling-in-agent-coordinator">11. Inconsistent Error Handling in Agent Coordinator</h3>
+<p><strong>Severity</strong>: 🟡 <strong>LOW</strong><br />
+<strong>File</strong>: <code>src/ai/agents/agent_coordinator.py</code></p>
+<p><strong>Issue</strong>: Tasks timeout after 300 seconds but error isn't clearly communicated:</p>
+<pre><code class="language-python">if not tasks_completed and time.time() - start_time &lt; timeout:
+    # Task timed out silently
+    results[&quot;analysis&quot;] = {&quot;error&quot;: &quot;Analysis task failed or timed out&quot;}
+</code></pre>
+<hr />
+<h2 id="architecture-design-notes">Architecture &amp; Design Notes</h2>
+<h3 id="strengths">Strengths ✅</h3>
+<ol>
+<li><strong>Clean separation of concerns</strong>: Agents, tools, memory systems separate</li>
+<li><strong>Multi-agent system</strong>: Good coordinator pattern for delegating tasks</li>
+<li><strong>Caching strategy</strong>: Disk + Redis fallback for analysis caching</li>
+<li><strong>Type safety</strong>: Pydantic models for request/response validation</li>
+<li><strong>CORS enabled</strong>: Allows frontend integration</li>
+<li><strong>Health check endpoint</strong>: Good for monitoring</li>
+</ol>
+<h3 id="areas-for-improvement">Areas for Improvement 📝</h3>
+<ol>
+<li><strong>Mock mode testing</strong>: Properly implemented for development without API keys</li>
+<li><strong>Vector DB integration</strong>: pgvector check is good, but implementations incomplete</li>
+<li><strong>Agent communication</strong>: Needs better error propagation from agents to API responses</li>
+<li><strong>Rate limiting</strong>: Configured but not enforced on routes</li>
+<li><strong>Logging</strong>: Good structure, but some logs are at wrong levels</li>
+</ol>
+<hr />
+<h2 id="deployment-readiness-checklist">Deployment Readiness Checklist</h2>
+<ul>
+<li>[ ] Fix missing <code>agent_factory</code> import in main.py</li>
+<li>[ ] Update all model references to valid OpenAI models</li>
+<li>[ ] Migrate from deprecated OpenAI API to modern SDK</li>
+<li>[ ] Implement actual embedding generation (currently placeholder)</li>
+<li>[ ] Implement actual vector similarity search (currently placeholder)</li>
+<li>[ ] Add proper error handling for agent coordinator task timeouts</li>
+<li>[ ] Test all endpoints with actual API keys</li>
+<li>[ ] Validate database connection on startup</li>
+<li>[ ] Add comprehensive unit tests</li>
+<li>[ ] Add integration tests for agent workflows</li>
+<li>[ ] Document API changes for frontend team</li>
+<li>[ ] Set up proper rate limiting enforcement</li>
+<li>[ ] Configure production logging levels</li>
+<li>[ ] Add request/response logging for debugging</li>
+</ul>
+<hr />
+<h2 id="testing-recommendations">Testing Recommendations</h2>
+<h3 id="unit-tests-needed">Unit Tests Needed</h3>
+<ol>
+<li><strong>AgentFactory</strong>: Test agent creation and fallback</li>
+<li><strong>ScriptAnalyzer</strong>: Test with mock embeddings before API calls</li>
+<li><strong>AgentCoordinator</strong>: Mock the multi-agent system</li>
+<li><strong>Pydantic Models</strong>: Validate input/output schemas</li>
+</ol>
+<h3 id="integration-tests-needed">Integration Tests Needed</h3>
+<ol>
+<li><strong>Full script analysis flow</strong>: From upload to results</li>
+<li><strong>Agent coordination</strong>: Multi-agent task execution</li>
+<li><strong>Database integration</strong>: Analysis storage and retrieval</li>
+<li><strong>Error scenarios</strong>: API failures, timeouts, invalid inputs</li>
+</ol>
+<h3 id="end-to-end-tests">End-to-End Tests</h3>
+<ol>
+<li>Chat endpoint with different agent types</li>
+<li>Script upload and analysis workflow</li>
+<li>Vector similarity search</li>
+<li>Token usage tracking and cost estimation</li>
+</ol>
+<hr />
+<h2 id="recommendations">Recommendations</h2>
+<h3 id="immediate-critical">Immediate (Critical)</h3>
+<ol>
+<li>Add <code>agent_factory</code> import to <code>main.py</code> line 1</li>
+<li>Update model references to valid OpenAI models</li>
+<li>Update ScriptAnalyzer to use modern OpenAI SDK</li>
+</ol>
+<h3 id="short-term-next-sprint">Short-term (Next Sprint)</h3>
+<ol>
+<li>Implement actual embedding generation</li>
+<li>Implement actual vector similarity search</li>
+<li>Add comprehensive error handling for all agent tasks</li>
+<li>Create unit test suite for core components</li>
+</ol>
+<h3 id="medium-term-next-release">Medium-term (Next Release)</h3>
+<ol>
+<li>Add streaming response support for chat endpoint</li>
+<li>Implement agent metrics and monitoring</li>
+<li>Add request/response caching strategy</li>
+<li>Optimize database queries for analysis storage</li>
+</ol>
+<hr />
+<h2 id="files-requiring-changes">Files Requiring Changes</h2>
+<table>
+<thead>
+<tr>
+<th>File</th>
+<th>Issues</th>
+<th>Priority</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>src/ai/main.py</code></td>
+<td>Missing import, undefined variables</td>
+<td>CRITICAL</td>
+</tr>
+<tr>
+<td><code>src/ai/config.py</code></td>
+<td>Invalid model names</td>
+<td>CRITICAL</td>
+</tr>
+<tr>
+<td><code>src/ai/analysis/script_analyzer.py</code></td>
+<td>Deprecated API, async issues, incomplete implementations</td>
+<td>CRITICAL</td>
+</tr>
+<tr>
+<td><code>src/ai/agents/agent_coordinator.py</code></td>
+<td>Placeholder implementations, timeout handling</td>
+<td>HIGH</td>
+</tr>
+<tr>
+<td><code>src/ai/agents/langchain_agent.py</code></td>
+<td>Invalid model reference</td>
+<td>HIGH</td>
+</tr>
+<tr>
+<td><code>src/ai/agents/langgraph_production.py</code></td>
+<td>Invalid model references</td>
+<td>HIGH</td>
+</tr>
+<tr>
+<td><code>src/ai/utils/token_counter.py</code></td>
+<td>Invalid model pricing</td>
+<td>MEDIUM</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="conclusion">Conclusion</h2>
+<p>The AI service has a well-designed architecture with proper separation of concerns and sophisticated agent coordination. However, it currently <strong>cannot be deployed to production</strong> due to critical bugs and non-existent model references. Once the critical issues are resolved, the service will provide a robust platform for PowerShell script analysis with multi-agent support.</p>
+<p><strong>Estimated Time to Fix Critical Issues</strong>: 2-4 hours<br />
+<strong>Estimated Time for Full Testing Suite</strong>: 16-24 hours</p>
+<hr />
+<p><strong>Report Generated</strong>: January 9, 2026<br />
+<strong>Reviewer</strong>: Claude Code AI Review System</p>
+    <div class="footer">Generated 2026-04-24 01:27 UTC</div>
+  </div>
+</body>
+</html>

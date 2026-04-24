@@ -1,0 +1,283 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <base href="file:///Users/morlock/fun/02_PowerShell_Projects/psscript/" />
+  <title>docs-DATA-MAINTENANCE</title>
+  <style>
+:root {
+  color-scheme: light;
+}
+body {
+  font-family: "Segoe UI", "Helvetica Neue", Arial, sans-serif;
+  margin: 0;
+  padding: 0;
+  background: #ffffff;
+  color: #0f172a;
+}
+.markdown-body {
+  max-width: 980px;
+  margin: 40px auto 60px;
+  padding: 0 32px;
+  line-height: 1.65;
+}
+.markdown-body h1 {
+  font-size: 32px;
+  margin-bottom: 12px;
+  border-bottom: 2px solid #e2e8f0;
+  padding-bottom: 12px;
+  page-break-before: always;
+  page-break-after: avoid;
+  break-before: page;
+  break-after: avoid;
+}
+.markdown-body h1:first-of-type {
+  page-break-before: avoid;
+  break-before: avoid;
+}
+.markdown-body h2 {
+  font-size: 24px;
+  margin-top: 28px;
+  border-bottom: 1px solid #e2e8f0;
+  padding-bottom: 8px;
+  page-break-before: always;
+  page-break-after: avoid;
+  break-before: page;
+  break-after: avoid;
+}
+.markdown-body h3 {
+  font-size: 18px;
+  margin-top: 20px;
+  page-break-after: avoid;
+  break-after: avoid;
+}
+.markdown-body h4, .markdown-body h5, .markdown-body h6 {
+  page-break-after: avoid;
+  break-after: avoid;
+}
+.markdown-body table {
+  width: 100%;
+  border-collapse: collapse;
+  margin: 16px 0;
+  font-size: 14px;
+  page-break-inside: avoid;
+  break-inside: avoid;
+}
+.markdown-body th,
+.markdown-body td {
+  border: 1px solid #e2e8f0;
+  padding: 8px 10px;
+  text-align: left;
+}
+.markdown-body th {
+  background: #f8fafc;
+}
+.markdown-body tr {
+  page-break-inside: avoid;
+  break-inside: avoid;
+}
+.markdown-body code {
+  background: #f1f5f9;
+  padding: 2px 4px;
+  border-radius: 4px;
+  font-family: "SFMono-Regular", Menlo, Consolas, monospace;
+  font-size: 0.92em;
+}
+.markdown-body pre {
+  background: #0f172a;
+  color: #e2e8f0;
+  padding: 16px;
+  border-radius: 8px;
+  overflow-x: auto;
+  page-break-inside: avoid;
+  break-inside: avoid;
+}
+.markdown-body pre code {
+  background: transparent;
+  color: inherit;
+}
+.markdown-body blockquote {
+  border-left: 4px solid #38bdf8;
+  margin: 16px 0;
+  padding: 8px 16px;
+  background: #f8fafc;
+  color: #334155;
+}
+.markdown-body img {
+  max-width: 100%;
+  height: auto;
+  display: block;
+  margin: 16px 0;
+  border-radius: 10px;
+  box-shadow: 0 8px 20px rgba(15, 23, 42, 0.12);
+  page-break-inside: avoid;
+  break-inside: avoid;
+}
+.markdown-body figure {
+  page-break-inside: avoid;
+  break-inside: avoid;
+  margin: 16px 0;
+}
+.markdown-body a {
+  color: #2563eb;
+  text-decoration: none;
+}
+.markdown-body a:hover {
+  text-decoration: underline;
+}
+.cover {
+  padding: 80px 60px 60px;
+  background: linear-gradient(135deg, #0b1220 0%, #1e3a8a 100%);
+  color: #f8fafc;
+  border-radius: 18px;
+  margin-bottom: 32px;
+}
+.cover-title {
+  font-size: 36px;
+  font-weight: 700;
+  margin: 0 0 12px;
+}
+.cover-subtitle {
+  font-size: 18px;
+  color: #cbd5f5;
+  margin: 0 0 16px;
+}
+.cover-meta {
+  font-size: 13px;
+  color: #94a3b8;
+}
+.page-break {
+  page-break-after: always;
+  break-after: page;
+}
+.footer {
+  margin-top: 40px;
+  font-size: 12px;
+  color: #64748b;
+}
+/* Print and PDF-specific styles */
+@page {
+  margin: 20mm 18mm;
+}
+@media print {
+  .markdown-body {
+    orphans: 3;
+    widows: 3;
+  }
+  .markdown-body p {
+    orphans: 3;
+    widows: 3;
+  }
+  .markdown-body li {
+    page-break-inside: avoid;
+    break-inside: avoid;
+  }
+  .markdown-body ul, .markdown-body ol {
+    page-break-before: avoid;
+    break-before: avoid;
+  }
+  .markdown-body blockquote {
+    page-break-inside: avoid;
+    break-inside: avoid;
+  }
+  /* Keep section content together */
+  .markdown-body h2 + *, .markdown-body h3 + * {
+    page-break-before: avoid;
+    break-before: avoid;
+  }
+}
+</style>
+</head>
+<body>
+  <div class="markdown-body">
+    
+    <h1 id="data-maintenance">Data Maintenance</h1>
+<p><em>Last updated: March 6, 2026</em></p>
+<p>Admin-only database maintenance is exposed through backend routes under <code>/api/admin/db/*</code> and through the frontend settings UI at <code>/settings/data</code>.</p>
+<p><img alt="Data maintenance screenshot" src="docs/screenshots/data-maintenance.png" /></p>
+<h2 id="canonical-runtime">Canonical runtime</h2>
+<ul>
+<li>frontend: <code>https://127.0.0.1:3090</code></li>
+<li>backend: <code>https://127.0.0.1:4000</code></li>
+</ul>
+<h2 id="current-fixes-reflected-in-code">Current fixes reflected in code</h2>
+<ul>
+<li>Admin DB endpoints use the same shared auth middleware as the rest of the backend.</li>
+<li>Backup listing bypasses the generic GET cache, so new backups appear immediately in <code>GET /api/admin/db/backups</code>.</li>
+<li>Restore inserts tables in foreign-key-safe order.</li>
+<li>Restore normalizes JSON-like backup values before insert.</li>
+<li>Restore reseeds serial and identity sequences after insert.</li>
+<li>Clear-test-data responses include requested, filtered, cleared, and ignored table lists.</li>
+</ul>
+<h2 id="endpoints">Endpoints</h2>
+<ul>
+<li><code>GET /api/admin/db/backups</code></li>
+<li><code>POST /api/admin/db/backup</code></li>
+<li><code>POST /api/admin/db/restore</code></li>
+<li><code>POST /api/admin/db/clear-test-data</code></li>
+</ul>
+<p>All endpoints require an admin JWT unless auth is disabled locally.</p>
+<h2 id="backup-directory">Backup directory</h2>
+<pre><code class="language-bash">export DB_BACKUP_DIR=/path/to/psscript-db-backups
+mkdir -p &quot;$DB_BACKUP_DIR&quot;
+</code></pre>
+<p>If <code>DB_BACKUP_DIR</code> is unset, the backend writes backups to <code>/tmp/psscript-db-backups</code>.</p>
+<h2 id="api-examples">API examples</h2>
+<h3 id="list-backups">List backups</h3>
+<pre><code class="language-bash">curl -k -X GET &quot;https://127.0.0.1:4000/api/admin/db/backups&quot; \
+  -H &quot;Authorization: Bearer $TOKEN&quot;
+</code></pre>
+<h3 id="create-backup">Create backup</h3>
+<pre><code class="language-bash">curl -k -X POST &quot;https://127.0.0.1:4000/api/admin/db/backup&quot; \
+  -H &quot;Authorization: Bearer $TOKEN&quot; \
+  -H &quot;Content-Type: application/json&quot; \
+  -d '{&quot;filename&quot;:&quot;before-release&quot;}'
+</code></pre>
+<h3 id="restore-backup">Restore backup</h3>
+<pre><code class="language-bash">curl -k -X POST &quot;https://127.0.0.1:4000/api/admin/db/restore&quot; \
+  -H &quot;Authorization: Bearer $TOKEN&quot; \
+  -H &quot;Content-Type: application/json&quot; \
+  -d '{&quot;filename&quot;:&quot;before-release.json&quot;}'
+</code></pre>
+<p>Restore semantics:
+- target tables are truncated with identity reset
+- backup rows are restored in FK-safe order
+- sequences are reseeded with <code>setval(...)</code> after inserts complete</p>
+<h3 id="clear-test-data">Clear test data</h3>
+<pre><code class="language-bash">curl -k -X POST &quot;https://127.0.0.1:4000/api/admin/db/clear-test-data&quot; \
+  -H &quot;Authorization: Bearer $TOKEN&quot; \
+  -H &quot;Content-Type: application/json&quot; \
+  -d '{
+        &quot;confirmText&quot;:&quot;CLEAR TEST DATA&quot;,
+        &quot;backupFirst&quot;:true,
+        &quot;backupFilename&quot;:&quot;pre-clear-test-data&quot;
+      }'
+</code></pre>
+<h2 id="validation-helpers">Validation helpers</h2>
+<p>From repo root:</p>
+<pre><code class="language-bash">node scripts/db-maintenance-stress-test.mjs --base-url &quot;https://127.0.0.1:4000&quot; --smoke-only --restore-after-clear --insecure-tls
+node scripts/verify-data-maintenance-e2e.mjs --reuse-backend --base-url &quot;https://127.0.0.1:4000&quot; --insecure-tls
+</code></pre>
+<p>Latest live verification on April 12, 2026:
+- backup listing passed
+- backup creation passed
+- restore passed
+- clear-test-data passed
+- restore-after-clear passed</p>
+<p>Latest verified result on March 6, 2026:
+- smoke check passed
+- backup creation and immediate listing passed
+- restore passed
+- clear-test-data passed
+- restore-after-clear passed</p>
+<h2 id="operational-notes">Operational notes</h2>
+<ul>
+<li>Back up before destructive cleanup.</li>
+<li>Use a maintenance window for production restores.</li>
+<li>If a long-running frontend container does not show <code>/settings/data</code>, rebuild or restart that container; the current source tree includes the page.</li>
+</ul>
+    <div class="footer">Generated 2026-04-24 01:27 UTC</div>
+  </div>
+</body>
+</html>

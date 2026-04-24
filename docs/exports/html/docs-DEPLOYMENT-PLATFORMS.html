@@ -1,0 +1,519 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <base href="file:///Users/morlock/fun/02_PowerShell_Projects/psscript/" />
+  <title>docs-DEPLOYMENT-PLATFORMS</title>
+  <style>
+:root {
+  color-scheme: light;
+}
+body {
+  font-family: "Segoe UI", "Helvetica Neue", Arial, sans-serif;
+  margin: 0;
+  padding: 0;
+  background: #ffffff;
+  color: #0f172a;
+}
+.markdown-body {
+  max-width: 980px;
+  margin: 40px auto 60px;
+  padding: 0 32px;
+  line-height: 1.65;
+}
+.markdown-body h1 {
+  font-size: 32px;
+  margin-bottom: 12px;
+  border-bottom: 2px solid #e2e8f0;
+  padding-bottom: 12px;
+  page-break-before: always;
+  page-break-after: avoid;
+  break-before: page;
+  break-after: avoid;
+}
+.markdown-body h1:first-of-type {
+  page-break-before: avoid;
+  break-before: avoid;
+}
+.markdown-body h2 {
+  font-size: 24px;
+  margin-top: 28px;
+  border-bottom: 1px solid #e2e8f0;
+  padding-bottom: 8px;
+  page-break-before: always;
+  page-break-after: avoid;
+  break-before: page;
+  break-after: avoid;
+}
+.markdown-body h3 {
+  font-size: 18px;
+  margin-top: 20px;
+  page-break-after: avoid;
+  break-after: avoid;
+}
+.markdown-body h4, .markdown-body h5, .markdown-body h6 {
+  page-break-after: avoid;
+  break-after: avoid;
+}
+.markdown-body table {
+  width: 100%;
+  border-collapse: collapse;
+  margin: 16px 0;
+  font-size: 14px;
+  page-break-inside: avoid;
+  break-inside: avoid;
+}
+.markdown-body th,
+.markdown-body td {
+  border: 1px solid #e2e8f0;
+  padding: 8px 10px;
+  text-align: left;
+}
+.markdown-body th {
+  background: #f8fafc;
+}
+.markdown-body tr {
+  page-break-inside: avoid;
+  break-inside: avoid;
+}
+.markdown-body code {
+  background: #f1f5f9;
+  padding: 2px 4px;
+  border-radius: 4px;
+  font-family: "SFMono-Regular", Menlo, Consolas, monospace;
+  font-size: 0.92em;
+}
+.markdown-body pre {
+  background: #0f172a;
+  color: #e2e8f0;
+  padding: 16px;
+  border-radius: 8px;
+  overflow-x: auto;
+  page-break-inside: avoid;
+  break-inside: avoid;
+}
+.markdown-body pre code {
+  background: transparent;
+  color: inherit;
+}
+.markdown-body blockquote {
+  border-left: 4px solid #38bdf8;
+  margin: 16px 0;
+  padding: 8px 16px;
+  background: #f8fafc;
+  color: #334155;
+}
+.markdown-body img {
+  max-width: 100%;
+  height: auto;
+  display: block;
+  margin: 16px 0;
+  border-radius: 10px;
+  box-shadow: 0 8px 20px rgba(15, 23, 42, 0.12);
+  page-break-inside: avoid;
+  break-inside: avoid;
+}
+.markdown-body figure {
+  page-break-inside: avoid;
+  break-inside: avoid;
+  margin: 16px 0;
+}
+.markdown-body a {
+  color: #2563eb;
+  text-decoration: none;
+}
+.markdown-body a:hover {
+  text-decoration: underline;
+}
+.cover {
+  padding: 80px 60px 60px;
+  background: linear-gradient(135deg, #0b1220 0%, #1e3a8a 100%);
+  color: #f8fafc;
+  border-radius: 18px;
+  margin-bottom: 32px;
+}
+.cover-title {
+  font-size: 36px;
+  font-weight: 700;
+  margin: 0 0 12px;
+}
+.cover-subtitle {
+  font-size: 18px;
+  color: #cbd5f5;
+  margin: 0 0 16px;
+}
+.cover-meta {
+  font-size: 13px;
+  color: #94a3b8;
+}
+.page-break {
+  page-break-after: always;
+  break-after: page;
+}
+.footer {
+  margin-top: 40px;
+  font-size: 12px;
+  color: #64748b;
+}
+/* Print and PDF-specific styles */
+@page {
+  margin: 20mm 18mm;
+}
+@media print {
+  .markdown-body {
+    orphans: 3;
+    widows: 3;
+  }
+  .markdown-body p {
+    orphans: 3;
+    widows: 3;
+  }
+  .markdown-body li {
+    page-break-inside: avoid;
+    break-inside: avoid;
+  }
+  .markdown-body ul, .markdown-body ol {
+    page-break-before: avoid;
+    break-before: avoid;
+  }
+  .markdown-body blockquote {
+    page-break-inside: avoid;
+    break-inside: avoid;
+  }
+  /* Keep section content together */
+  .markdown-body h2 + *, .markdown-body h3 + * {
+    page-break-before: avoid;
+    break-before: avoid;
+  }
+}
+</style>
+</head>
+<body>
+  <div class="markdown-body">
+    
+    <h1 id="deployment-platforms">Deployment Platforms</h1>
+<p>This is the current deployment plan for running PSScript without the local-only issues that come from <code>127.0.0.1</code>, self-signed TLS, and dev-mode auth shortcuts.</p>
+<h2 id="recommended-topology">Recommended topology</h2>
+<p>Use this layout:</p>
+<ol>
+<li>Netlify for the frontend SPA</li>
+<li>Render or Railway for the backend API</li>
+<li>Render or Railway for the AI service</li>
+<li>Managed PostgreSQL</li>
+<li>Managed Redis / Key Value</li>
+</ol>
+<p>This matches the actual codebase structure:</p>
+<ul>
+<li>frontend: React + Vite in <code>/src/frontend</code></li>
+<li>backend: Express + TypeScript in <code>/src/backend</code></li>
+<li>AI service: FastAPI in <code>/src/ai</code></li>
+<li>stateful services: PostgreSQL and Redis</li>
+</ul>
+<h2 id="why-this-is-the-low-risk-path">Why this is the low-risk path</h2>
+<ul>
+<li>Netlify is a strong fit for the Vite frontend.</li>
+<li>The backend and AI service both need long-running server processes and live database connectivity.</li>
+<li>The AI service is Python-based and should stay deployable as its own service.</li>
+<li>PostgreSQL and Redis should be managed services instead of app-local containers in production.</li>
+</ul>
+<h2 id="environment-map">Environment map</h2>
+<h3 id="frontend">Frontend</h3>
+<table>
+<thead>
+<tr>
+<th>Variable</th>
+<th>Required</th>
+<th>Purpose</th>
+<th>Example</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>VITE_API_URL</code></td>
+<td>yes</td>
+<td>Public backend API base URL</td>
+<td><code>https://api.example.com/api</code></td>
+</tr>
+<tr>
+<td><code>VITE_DISABLE_AUTH</code></td>
+<td>yes</td>
+<td>Must be <code>false</code> in production</td>
+<td><code>false</code></td>
+</tr>
+<tr>
+<td><code>VITE_DEMO_EMAIL</code></td>
+<td>no</td>
+<td>Local-only convenience</td>
+<td>empty</td>
+</tr>
+<tr>
+<td><code>VITE_DEMO_PASSWORD</code></td>
+<td>no</td>
+<td>Local-only convenience</td>
+<td>empty</td>
+</tr>
+</tbody>
+</table>
+<h3 id="backend">Backend</h3>
+<table>
+<thead>
+<tr>
+<th>Variable</th>
+<th>Required</th>
+<th>Purpose</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>NODE_ENV</code></td>
+<td>yes</td>
+<td>Use <code>production</code></td>
+</tr>
+<tr>
+<td><code>PORT</code></td>
+<td>yes</td>
+<td>Bind port from host platform</td>
+</tr>
+<tr>
+<td><code>FRONTEND_URL</code></td>
+<td>yes</td>
+<td>Public frontend origin for CSRF/CORS</td>
+</tr>
+<tr>
+<td><code>JWT_SECRET</code></td>
+<td>yes</td>
+<td>JWT signing secret</td>
+</tr>
+<tr>
+<td><code>DISABLE_AUTH</code></td>
+<td>yes</td>
+<td>Must be <code>false</code> in production</td>
+</tr>
+<tr>
+<td><code>DB_HOST</code></td>
+<td>yes</td>
+<td>Postgres host</td>
+</tr>
+<tr>
+<td><code>DB_PORT</code></td>
+<td>yes</td>
+<td>Postgres port</td>
+</tr>
+<tr>
+<td><code>DB_NAME</code></td>
+<td>yes</td>
+<td>Postgres database</td>
+</tr>
+<tr>
+<td><code>DB_USER</code></td>
+<td>yes</td>
+<td>Postgres user</td>
+</tr>
+<tr>
+<td><code>DB_PASSWORD</code></td>
+<td>yes</td>
+<td>Postgres password</td>
+</tr>
+<tr>
+<td><code>REDIS_URL</code></td>
+<td>yes</td>
+<td>Redis / Key Value connection string</td>
+</tr>
+<tr>
+<td><code>AI_SERVICE_URL</code></td>
+<td>yes</td>
+<td>Internal AI service URL</td>
+</tr>
+<tr>
+<td><code>OPENAI_API_KEY</code></td>
+<td>yes</td>
+<td>Used by backend-side OpenAI paths</td>
+</tr>
+</tbody>
+</table>
+<h3 id="ai-service">AI service</h3>
+<table>
+<thead>
+<tr>
+<th>Variable</th>
+<th>Required</th>
+<th>Purpose</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>PORT</code></td>
+<td>yes</td>
+<td>Bind port from host platform</td>
+</tr>
+<tr>
+<td><code>OPENAI_API_KEY</code></td>
+<td>yes</td>
+<td>Primary OpenAI access</td>
+</tr>
+<tr>
+<td><code>ANTHROPIC_API_KEY</code></td>
+<td>no</td>
+<td>Optional secondary provider</td>
+</tr>
+<tr>
+<td><code>DB_HOST</code></td>
+<td>yes</td>
+<td>Postgres host</td>
+</tr>
+<tr>
+<td><code>DB_PORT</code></td>
+<td>yes</td>
+<td>Postgres port</td>
+</tr>
+<tr>
+<td><code>DB_NAME</code></td>
+<td>yes</td>
+<td>Postgres database</td>
+</tr>
+<tr>
+<td><code>DB_USER</code></td>
+<td>yes</td>
+<td>Postgres user</td>
+</tr>
+<tr>
+<td><code>DB_PASSWORD</code></td>
+<td>yes</td>
+<td>Postgres password</td>
+</tr>
+<tr>
+<td><code>CORS_ORIGINS</code></td>
+<td>yes</td>
+<td>Public frontend origins allowed to call AI routes through the backend</td>
+</tr>
+</tbody>
+</table>
+<h2 id="pre-deploy-checklist">Pre-deploy checklist</h2>
+<ol>
+<li>Set <code>VITE_DISABLE_AUTH=false</code></li>
+<li>Set a real public <code>VITE_API_URL</code></li>
+<li>Set <code>DISABLE_AUTH=false</code> on the backend</li>
+<li>Set <code>FRONTEND_URL</code> to the real frontend origin</li>
+<li>Set <code>CORS_ORIGINS</code> on the AI service to the real frontend origin list</li>
+<li>Set <code>OPENAI_API_KEY</code> on backend and AI</li>
+<li>Provision Postgres and Redis before deploying the backend</li>
+<li>Deploy the AI service before the backend, or deploy both together with the backend pointed at the AI service URL</li>
+</ol>
+<h2 id="netlify">Netlify</h2>
+<p>The repo already includes:</p>
+<ul>
+<li><code>/netlify.toml</code></li>
+</ul>
+<p>It builds the frontend from <code>/src/frontend</code> and publishes the Vite <code>dist</code> output with SPA fallback routing.</p>
+<h3 id="netlify-variables">Netlify variables</h3>
+<p>Set these in Netlify:</p>
+<ul>
+<li><code>VITE_API_URL=https://your-backend-domain/api</code></li>
+<li><code>VITE_DISABLE_AUTH=false</code></li>
+</ul>
+<h2 id="render">Render</h2>
+<p>Official references used here:</p>
+<ul>
+<li><a href="https://render.com/docs/blueprint-spec">Blueprint YAML reference</a></li>
+<li><a href="https://render.com/docs/infrastructure-as-code">Blueprints / infrastructure as code</a></li>
+<li><a href="https://render.com/docs/monorepo-support">Monorepo support</a></li>
+<li><a href="https://render.com/docs/docker">Docker on Render</a></li>
+</ul>
+<p>This repo now includes:</p>
+<ul>
+<li><code>/render.yaml</code></li>
+<li><code>/deploy/docker/backend.Dockerfile</code></li>
+<li><code>/deploy/docker/ai.Dockerfile</code></li>
+<li><code>/deploy/docker/frontend.Dockerfile</code></li>
+</ul>
+<h3 id="render-plan">Render plan</h3>
+<p>The blueprint provisions:</p>
+<ol>
+<li>Render Postgres</li>
+<li>Render Key Value</li>
+<li>AI web service</li>
+<li>Backend web service</li>
+</ol>
+<p>Values still marked <code>sync: false</code> must be set in Render after the first sync:</p>
+<ul>
+<li><code>OPENAI_API_KEY</code></li>
+<li><code>ANTHROPIC_API_KEY</code> if used</li>
+<li><code>FRONTEND_URL</code></li>
+<li><code>CORS_ORIGINS</code></li>
+</ul>
+<h3 id="render-sequence">Render sequence</h3>
+<ol>
+<li>Create a new Blueprint from this repo</li>
+<li>Let Render create Postgres and Key Value</li>
+<li>Set the missing secret/env values</li>
+<li>Deploy AI</li>
+<li>Deploy backend</li>
+<li>Point Netlify <code>VITE_API_URL</code> at the backend public URL</li>
+</ol>
+<h2 id="railway">Railway</h2>
+<p>Official references used here:</p>
+<ul>
+<li><a href="https://docs.railway.com/guides/monorepo">Deploying a monorepo</a></li>
+<li><a href="https://docs.railway.com/deploy/dockerfiles">Dockerfiles</a></li>
+<li><a href="https://docs.railway.com/builds/build-configuration">Build configuration</a></li>
+<li><a href="https://docs.railway.com/guides/services">Services</a></li>
+</ul>
+<p>Railway monorepos are easier to keep stable here by deploying each service with a dedicated Dockerfile path instead of relying on auto-detection from subdirectories.</p>
+<p>Use the Dockerfiles in:</p>
+<ul>
+<li><code>/deploy/docker/frontend.Dockerfile</code></li>
+<li><code>/deploy/docker/backend.Dockerfile</code></li>
+<li><code>/deploy/docker/ai.Dockerfile</code></li>
+</ul>
+<h3 id="railway-service-setup">Railway service setup</h3>
+<p>Create these Railway services:</p>
+<ol>
+<li><code>psscript-frontend</code></li>
+<li><code>psscript-backend</code></li>
+<li><code>psscript-ai</code></li>
+<li>PostgreSQL service</li>
+<li>Redis service</li>
+</ol>
+<p>For each app service:</p>
+<ol>
+<li>Connect the GitHub repo</li>
+<li>Keep the source at repo root <code>/</code></li>
+<li>In the Railway service settings, point the service at one of these Dockerfiles:</li>
+<li><code>/deploy/docker/frontend.Dockerfile</code></li>
+<li><code>/deploy/docker/backend.Dockerfile</code></li>
+<li><code>/deploy/docker/ai.Dockerfile</code></li>
+<li>Set the runtime env variables from the tables above</li>
+<li>Generate a public domain for frontend and backend</li>
+</ol>
+<h3 id="railway-notes">Railway notes</h3>
+<ul>
+<li>The frontend Docker image serves the built SPA with nginx and SPA fallback routing.</li>
+<li>The backend and AI images bind to <code>0.0.0.0</code> and use runtime <code>PORT</code>.</li>
+<li>Keep <code>VITE_DISABLE_AUTH=false</code> and <code>DISABLE_AUTH=false</code> in production Railway services.</li>
+</ul>
+<h2 id="post-deploy-smoke-checks">Post-deploy smoke checks</h2>
+<p>Run these after deployment:</p>
+<ol>
+<li>Frontend root loads</li>
+<li>Backend <code>/health</code> returns healthy</li>
+<li>AI <code>/health</code> returns healthy</li>
+<li>Login works with real auth</li>
+<li>Script upload succeeds</li>
+<li>Script analysis completes</li>
+<li>Voice synth works</li>
+<li>Voice recognition works</li>
+<li>Admin backup listing and creation both work</li>
+</ol>
+<h2 id="recommended-first-production-path">Recommended first production path</h2>
+<p>If you want the fewest moving parts:</p>
+<ol>
+<li>Deploy frontend on Netlify</li>
+<li>Deploy backend and AI on Render</li>
+<li>Use managed Postgres and Render Key Value</li>
+</ol>
+<p>That is the cleanest path for this repository as it exists today.</p>
+    <div class="footer">Generated 2026-04-24 01:27 UTC</div>
+  </div>
+</body>
+</html>

@@ -1,0 +1,404 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <base href="file:///Users/morlock/fun/02_PowerShell_Projects/psscript/" />
+  <title>docs-archive-recovery-2026-01-14-IMMEDIATE_FIX_STEPS</title>
+  <style>
+:root {
+  color-scheme: light;
+}
+body {
+  font-family: "Segoe UI", "Helvetica Neue", Arial, sans-serif;
+  margin: 0;
+  padding: 0;
+  background: #ffffff;
+  color: #0f172a;
+}
+.markdown-body {
+  max-width: 980px;
+  margin: 40px auto 60px;
+  padding: 0 32px;
+  line-height: 1.65;
+}
+.markdown-body h1 {
+  font-size: 32px;
+  margin-bottom: 12px;
+  border-bottom: 2px solid #e2e8f0;
+  padding-bottom: 12px;
+  page-break-before: always;
+  page-break-after: avoid;
+  break-before: page;
+  break-after: avoid;
+}
+.markdown-body h1:first-of-type {
+  page-break-before: avoid;
+  break-before: avoid;
+}
+.markdown-body h2 {
+  font-size: 24px;
+  margin-top: 28px;
+  border-bottom: 1px solid #e2e8f0;
+  padding-bottom: 8px;
+  page-break-before: always;
+  page-break-after: avoid;
+  break-before: page;
+  break-after: avoid;
+}
+.markdown-body h3 {
+  font-size: 18px;
+  margin-top: 20px;
+  page-break-after: avoid;
+  break-after: avoid;
+}
+.markdown-body h4, .markdown-body h5, .markdown-body h6 {
+  page-break-after: avoid;
+  break-after: avoid;
+}
+.markdown-body table {
+  width: 100%;
+  border-collapse: collapse;
+  margin: 16px 0;
+  font-size: 14px;
+  page-break-inside: avoid;
+  break-inside: avoid;
+}
+.markdown-body th,
+.markdown-body td {
+  border: 1px solid #e2e8f0;
+  padding: 8px 10px;
+  text-align: left;
+}
+.markdown-body th {
+  background: #f8fafc;
+}
+.markdown-body tr {
+  page-break-inside: avoid;
+  break-inside: avoid;
+}
+.markdown-body code {
+  background: #f1f5f9;
+  padding: 2px 4px;
+  border-radius: 4px;
+  font-family: "SFMono-Regular", Menlo, Consolas, monospace;
+  font-size: 0.92em;
+}
+.markdown-body pre {
+  background: #0f172a;
+  color: #e2e8f0;
+  padding: 16px;
+  border-radius: 8px;
+  overflow-x: auto;
+  page-break-inside: avoid;
+  break-inside: avoid;
+}
+.markdown-body pre code {
+  background: transparent;
+  color: inherit;
+}
+.markdown-body blockquote {
+  border-left: 4px solid #38bdf8;
+  margin: 16px 0;
+  padding: 8px 16px;
+  background: #f8fafc;
+  color: #334155;
+}
+.markdown-body img {
+  max-width: 100%;
+  height: auto;
+  display: block;
+  margin: 16px 0;
+  border-radius: 10px;
+  box-shadow: 0 8px 20px rgba(15, 23, 42, 0.12);
+  page-break-inside: avoid;
+  break-inside: avoid;
+}
+.markdown-body figure {
+  page-break-inside: avoid;
+  break-inside: avoid;
+  margin: 16px 0;
+}
+.markdown-body a {
+  color: #2563eb;
+  text-decoration: none;
+}
+.markdown-body a:hover {
+  text-decoration: underline;
+}
+.cover {
+  padding: 80px 60px 60px;
+  background: linear-gradient(135deg, #0b1220 0%, #1e3a8a 100%);
+  color: #f8fafc;
+  border-radius: 18px;
+  margin-bottom: 32px;
+}
+.cover-title {
+  font-size: 36px;
+  font-weight: 700;
+  margin: 0 0 12px;
+}
+.cover-subtitle {
+  font-size: 18px;
+  color: #cbd5f5;
+  margin: 0 0 16px;
+}
+.cover-meta {
+  font-size: 13px;
+  color: #94a3b8;
+}
+.page-break {
+  page-break-after: always;
+  break-after: page;
+}
+.footer {
+  margin-top: 40px;
+  font-size: 12px;
+  color: #64748b;
+}
+/* Print and PDF-specific styles */
+@page {
+  margin: 20mm 18mm;
+}
+@media print {
+  .markdown-body {
+    orphans: 3;
+    widows: 3;
+  }
+  .markdown-body p {
+    orphans: 3;
+    widows: 3;
+  }
+  .markdown-body li {
+    page-break-inside: avoid;
+    break-inside: avoid;
+  }
+  .markdown-body ul, .markdown-body ol {
+    page-break-before: avoid;
+    break-before: avoid;
+  }
+  .markdown-body blockquote {
+    page-break-inside: avoid;
+    break-inside: avoid;
+  }
+  /* Keep section content together */
+  .markdown-body h2 + *, .markdown-body h3 + * {
+    page-break-before: avoid;
+    break-before: avoid;
+  }
+}
+</style>
+</head>
+<body>
+  <div class="markdown-body">
+    
+    <h1 id="immediate-fix-steps-psscript-backend-recovery">IMMEDIATE FIX STEPS - PSScript Backend Recovery</h1>
+<p><strong>Status:</strong> SSH Port 22 is blocked - Cannot access server remotely<br />
+<strong>Critical:</strong> Backend API service not responding (Error 1033)<br />
+<strong>Action Required:</strong> Access via hosting provider console</p>
+<hr />
+<h2 id="option-1-access-via-hosting-provider-console-recommended">Option 1: Access Via Hosting Provider Console (RECOMMENDED)</h2>
+<h3 id="step-1-log-into-your-hosting-providers-control-panel">Step 1: Log into your hosting provider's control panel</h3>
+<p>Your server: <strong>74.208.184.195</strong></p>
+<p>Common hosting providers and their console access:</p>
+<ul>
+<li><strong>DigitalOcean:</strong> Droplets → Select your droplet → "Console" button (top right)</li>
+<li><strong>Linode:</strong> Linodes → Select your instance → "Launch LISH Console"</li>
+<li><strong>Vultr:</strong> Instances → Select instance → View Console (screen icon)</li>
+<li><strong>AWS EC2:</strong> EC2 Dashboard → Instances → Select instance → "Connect" → "EC2 Instance Connect"</li>
+<li><strong>Hetzner:</strong> Cloud Console → Servers → Select server → "Console" button</li>
+<li><strong>OVH:</strong> Manager → Servers → Select server → "KVM/IPMI" or "Serial Console"</li>
+</ul>
+<h3 id="step-2-once-in-the-console-run-these-commands">Step 2: Once in the console, run these commands</h3>
+<pre><code class="language-bash"># 1. Check if SSH service is running
+systemctl status sshd
+
+# If not running, start it:
+systemctl start sshd
+systemctl enable sshd
+
+# 2. Check firewall status
+ufw status
+
+# If SSH is blocked, allow it:
+ufw allow 22/tcp
+ufw reload
+
+# 3. Check if server is overloaded
+top -bn1 | head -20
+free -h
+df -h
+
+# 4. Navigate to project directory
+cd /opt/psscript
+
+# 5. Check Docker container status
+docker ps -a
+
+# 6. Check backend logs
+docker logs backend --tail 50
+
+# 7. Restart backend service
+docker compose restart backend
+
+# Wait 30 seconds
+sleep 30
+
+# 8. Verify backend health
+curl http://localhost:4000/api/health
+
+# 9. Check if backend is now responding
+curl https://psscript.morloksmaze.com/api/health
+
+# 10. If still not working, restart all services
+docker compose restart
+
+# 11. Monitor logs
+docker compose logs -f backend
+</code></pre>
+<hr />
+<h2 id="option-2-if-you-have-vncconsole-access">Option 2: If You Have VNC/Console Access</h2>
+<p>Some providers offer VNC or web-based console access:</p>
+<ol>
+<li>Access the console through your provider's dashboard</li>
+<li>Login with: <strong>root</strong> / <strong>xyyCbL6G</strong></li>
+<li>Follow the same commands as Option 1, Step 2</li>
+</ol>
+<hr />
+<h2 id="option-3-check-hosting-provider-firewall">Option 3: Check Hosting Provider Firewall</h2>
+<p>Some hosting providers have network-level firewalls:</p>
+<ol>
+<li>Log into your hosting provider dashboard</li>
+<li>Look for "Firewall" or "Security Groups" or "Network" settings</li>
+<li>Check if port 22 (SSH) is allowed</li>
+<li>Add rule to allow TCP port 22 from your IP address</li>
+<li>Try SSH connection again</li>
+</ol>
+<hr />
+<h2 id="expected-backend-health-response">Expected Backend Health Response</h2>
+<p>When the backend is working correctly, you should see:</p>
+<pre><code class="language-json">{
+  &quot;status&quot;: &quot;healthy&quot;,
+  &quot;database&quot;: &quot;connected&quot;,
+  &quot;redis&quot;: &quot;connected&quot;,
+  &quot;timestamp&quot;: &quot;2026-01-14T15:30:00.000Z&quot;
+}
+</code></pre>
+<hr />
+<h2 id="common-backend-issues-and-fixes">Common Backend Issues and Fixes</h2>
+<h3 id="issue-1-backend-container-not-running">Issue 1: Backend Container Not Running</h3>
+<pre><code class="language-bash"># Check container status
+docker ps -a | grep backend
+
+# If status is &quot;Exited&quot;, check logs for errors
+docker logs backend --tail 100
+
+# Restart it
+docker compose up -d backend
+</code></pre>
+<h3 id="issue-2-backend-started-but-crashing">Issue 2: Backend Started But Crashing</h3>
+<pre><code class="language-bash"># Watch logs in real-time
+docker logs backend --follow
+
+# Common errors:
+# - &quot;EADDRINUSE&quot; → Port conflict, restart: docker compose restart backend
+# - &quot;ECONNREFUSED postgres&quot; → Database not ready, restart both:
+docker compose restart postgres backend
+# - &quot;Cannot find module&quot; → Rebuild: docker compose build --no-cache backend
+</code></pre>
+<h3 id="issue-3-database-connection-issues">Issue 3: Database Connection Issues</h3>
+<pre><code class="language-bash"># Check PostgreSQL is running
+docker ps | grep postgres
+
+# Check PostgreSQL logs
+docker logs postgres --tail 50
+
+# Restart database and backend
+docker compose restart postgres
+sleep 15
+docker compose restart backend
+</code></pre>
+<h3 id="issue-4-out-of-memoryresources">Issue 4: Out of Memory/Resources</h3>
+<pre><code class="language-bash"># Check system resources
+free -h
+df -h
+docker stats --no-stream
+
+# If memory is full, restart Docker
+systemctl restart docker
+cd /opt/psscript
+docker compose up -d
+</code></pre>
+<hr />
+<h2 id="after-fixing-verification-checklist">After Fixing - Verification Checklist</h2>
+<ul>
+<li>[ ] SSH connection works: <code>ssh root@74.208.184.195</code></li>
+<li>[ ] All containers running: <code>docker ps</code> shows 8 containers "Up"</li>
+<li>[ ] Backend health OK: <code>curl http://localhost:4000/api/health</code> returns 200</li>
+<li>[ ] API via tunnel OK: <code>curl https://psscript.morloksmaze.com/api/health</code> returns 200</li>
+<li>[ ] Frontend loads: Visit https://psscript.morloksmaze.com in browser</li>
+<li>[ ] Authentication works: Complete Cloudflare Access login</li>
+<li>[ ] Application functional: Test core features</li>
+</ul>
+<hr />
+<h2 id="if-you-cannot-access-console">If You Cannot Access Console</h2>
+<p>If you cannot access the hosting provider console:</p>
+<ol>
+<li><strong>Contact hosting provider support</strong> and ask them to:</li>
+<li>Check if SSH service (sshd) is running</li>
+<li>Enable port 22 in firewall rules</li>
+<li>Check if server is experiencing high load</li>
+<li>
+<p>Reboot the server if necessary</p>
+</li>
+<li>
+<p><strong>Provide them with:</strong></p>
+</li>
+<li>Server IP: 74.208.184.195</li>
+<li>Issue: Cannot connect via SSH (port 22 timeout)</li>
+<li>Request: Check firewall rules and SSH service status</li>
+</ol>
+<hr />
+<h2 id="alternative-use-cloudflare-tunnel-for-ssh-advanced">Alternative: Use Cloudflare Tunnel for SSH (Advanced)</h2>
+<p>If you want SSH access through the Cloudflare Tunnel:</p>
+<ol>
+<li>Modify <code>/opt/psscript/cloudflared/config.yml</code> to add SSH access:</li>
+</ol>
+<pre><code class="language-yaml">tunnel: de34187a-1d92-4d21-a99f-504533e2acbd
+credentials-file: /etc/cloudflared/de34187a-1d92-4d21-a99f-504533e2acbd.json
+
+ingress:
+  - hostname: ssh.morloksmaze.com
+    service: ssh://localhost:22
+  - hostname: psscript.morloksmaze.com
+    path: /api/*
+    service: http://backend:4000
+  - hostname: psscript.morloksmaze.com
+    service: http://frontend:3000
+  - service: http_status:404
+</code></pre>
+<ol>
+<li>Add DNS record for ssh.morloksmaze.com pointing to tunnel</li>
+<li>Install cloudflared on your local machine</li>
+<li>Connect: <code>cloudflared access ssh --hostname ssh.morloksmaze.com</code></li>
+</ol>
+<p><em>Note: This requires console access to modify the config initially</em></p>
+<hr />
+<h2 id="quick-reference-commands">Quick Reference Commands</h2>
+<pre><code class="language-bash"># One-liner to check and fix everything
+cd /opt/psscript &amp;&amp; docker compose ps &amp;&amp; docker compose restart backend &amp;&amp; sleep 30 &amp;&amp; curl http://localhost:4000/api/health
+
+# Emergency full restart
+cd /opt/psscript &amp;&amp; docker compose down &amp;&amp; docker compose up -d &amp;&amp; docker compose logs -f
+
+# Check what's wrong
+docker compose ps &amp;&amp; docker logs backend --tail 20 &amp;&amp; docker logs cloudflared --tail 20
+</code></pre>
+<hr />
+<p><strong>Created:</strong> January 14, 2026<br />
+<strong>Priority:</strong> CRITICAL - Blocks all other fixes<br />
+<strong>Estimated Time:</strong> 10-15 minutes once console access is obtained</p>
+    <div class="footer">Generated 2026-04-24 01:27 UTC</div>
+  </div>
+</body>
+</html>

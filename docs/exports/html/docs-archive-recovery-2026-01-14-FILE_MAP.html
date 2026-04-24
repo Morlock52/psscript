@@ -1,0 +1,503 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <base href="file:///Users/morlock/fun/02_PowerShell_Projects/psscript/" />
+  <title>docs-archive-recovery-2026-01-14-FILE_MAP</title>
+  <style>
+:root {
+  color-scheme: light;
+}
+body {
+  font-family: "Segoe UI", "Helvetica Neue", Arial, sans-serif;
+  margin: 0;
+  padding: 0;
+  background: #ffffff;
+  color: #0f172a;
+}
+.markdown-body {
+  max-width: 980px;
+  margin: 40px auto 60px;
+  padding: 0 32px;
+  line-height: 1.65;
+}
+.markdown-body h1 {
+  font-size: 32px;
+  margin-bottom: 12px;
+  border-bottom: 2px solid #e2e8f0;
+  padding-bottom: 12px;
+  page-break-before: always;
+  page-break-after: avoid;
+  break-before: page;
+  break-after: avoid;
+}
+.markdown-body h1:first-of-type {
+  page-break-before: avoid;
+  break-before: avoid;
+}
+.markdown-body h2 {
+  font-size: 24px;
+  margin-top: 28px;
+  border-bottom: 1px solid #e2e8f0;
+  padding-bottom: 8px;
+  page-break-before: always;
+  page-break-after: avoid;
+  break-before: page;
+  break-after: avoid;
+}
+.markdown-body h3 {
+  font-size: 18px;
+  margin-top: 20px;
+  page-break-after: avoid;
+  break-after: avoid;
+}
+.markdown-body h4, .markdown-body h5, .markdown-body h6 {
+  page-break-after: avoid;
+  break-after: avoid;
+}
+.markdown-body table {
+  width: 100%;
+  border-collapse: collapse;
+  margin: 16px 0;
+  font-size: 14px;
+  page-break-inside: avoid;
+  break-inside: avoid;
+}
+.markdown-body th,
+.markdown-body td {
+  border: 1px solid #e2e8f0;
+  padding: 8px 10px;
+  text-align: left;
+}
+.markdown-body th {
+  background: #f8fafc;
+}
+.markdown-body tr {
+  page-break-inside: avoid;
+  break-inside: avoid;
+}
+.markdown-body code {
+  background: #f1f5f9;
+  padding: 2px 4px;
+  border-radius: 4px;
+  font-family: "SFMono-Regular", Menlo, Consolas, monospace;
+  font-size: 0.92em;
+}
+.markdown-body pre {
+  background: #0f172a;
+  color: #e2e8f0;
+  padding: 16px;
+  border-radius: 8px;
+  overflow-x: auto;
+  page-break-inside: avoid;
+  break-inside: avoid;
+}
+.markdown-body pre code {
+  background: transparent;
+  color: inherit;
+}
+.markdown-body blockquote {
+  border-left: 4px solid #38bdf8;
+  margin: 16px 0;
+  padding: 8px 16px;
+  background: #f8fafc;
+  color: #334155;
+}
+.markdown-body img {
+  max-width: 100%;
+  height: auto;
+  display: block;
+  margin: 16px 0;
+  border-radius: 10px;
+  box-shadow: 0 8px 20px rgba(15, 23, 42, 0.12);
+  page-break-inside: avoid;
+  break-inside: avoid;
+}
+.markdown-body figure {
+  page-break-inside: avoid;
+  break-inside: avoid;
+  margin: 16px 0;
+}
+.markdown-body a {
+  color: #2563eb;
+  text-decoration: none;
+}
+.markdown-body a:hover {
+  text-decoration: underline;
+}
+.cover {
+  padding: 80px 60px 60px;
+  background: linear-gradient(135deg, #0b1220 0%, #1e3a8a 100%);
+  color: #f8fafc;
+  border-radius: 18px;
+  margin-bottom: 32px;
+}
+.cover-title {
+  font-size: 36px;
+  font-weight: 700;
+  margin: 0 0 12px;
+}
+.cover-subtitle {
+  font-size: 18px;
+  color: #cbd5f5;
+  margin: 0 0 16px;
+}
+.cover-meta {
+  font-size: 13px;
+  color: #94a3b8;
+}
+.page-break {
+  page-break-after: always;
+  break-after: page;
+}
+.footer {
+  margin-top: 40px;
+  font-size: 12px;
+  color: #64748b;
+}
+/* Print and PDF-specific styles */
+@page {
+  margin: 20mm 18mm;
+}
+@media print {
+  .markdown-body {
+    orphans: 3;
+    widows: 3;
+  }
+  .markdown-body p {
+    orphans: 3;
+    widows: 3;
+  }
+  .markdown-body li {
+    page-break-inside: avoid;
+    break-inside: avoid;
+  }
+  .markdown-body ul, .markdown-body ol {
+    page-break-before: avoid;
+    break-before: avoid;
+  }
+  .markdown-body blockquote {
+    page-break-inside: avoid;
+    break-inside: avoid;
+  }
+  /* Keep section content together */
+  .markdown-body h2 + *, .markdown-body h3 + * {
+    page-break-before: avoid;
+    break-before: avoid;
+  }
+}
+</style>
+</head>
+<body>
+  <div class="markdown-body">
+    
+    <h1 id="psscript-recovery-complete-file-map">PSScript Recovery - Complete File Map</h1>
+<p><strong>Total Documents:</strong> 12 recovery files
+<strong>Generated:</strong> January 14, 2026
+<strong>Purpose:</strong> Navigate all resources efficiently</p>
+<hr />
+<h2 id="start-here-priority-order">🚨 START HERE (Priority Order)</h2>
+<h3 id="1-executive_summarymd-51-kb">1. EXECUTIVE_SUMMARY.md (5.1 KB) ⭐⭐⭐</h3>
+<p><strong>MOST IMPORTANT - READ FIRST</strong>
+- High-level situation overview
+- 3-step fix procedure
+- Current status (60% operational)
+- Bottom line: 5 minutes to fix</p>
+<h3 id="2-console_quickrefpdf-38-kb">2. CONSOLE_QUICKREF.pdf (3.8 KB) ⭐⭐⭐</h3>
+<p><strong>PRINT THIS - KEEP IT OPEN</strong>
+- One-page command reference
+- Server credentials
+- All commands in order
+- Expected results checklist</p>
+<h3 id="3-console_fix_commandssh-27-kb">3. CONSOLE_FIX_COMMANDS.sh (2.7 KB) ⭐⭐⭐</h3>
+<p><strong>RUN THIS IN CONSOLE</strong></p>
+<pre><code class="language-bash">bash /opt/psscript/CONSOLE_FIX_COMMANDS.sh
+</code></pre>
+<ul>
+<li>Automated recovery script</li>
+<li>Fixes SSH + Backend</li>
+<li>Verifies all services</li>
+<li>Provides status report</li>
+</ul>
+<hr />
+<h2 id="step-by-step-guides-4-formats">📋 Step-by-Step Guides (4 Formats)</h2>
+<h3 id="4-immediate_fix_stepsmd-61-kb">4. IMMEDIATE_FIX_STEPS.md (6.1 KB)</h3>
+<p><strong>Primary Reference - Markdown Format</strong>
+- Detailed step-by-step instructions
+- Console access methods
+- Fix procedures
+- Verification steps
+- Best for: Reading in terminal</p>
+<h3 id="5-immediate_fix_stepsdocx-13-kb">5. IMMEDIATE_FIX_STEPS.docx (13 KB)</h3>
+<p><strong>Microsoft Word Format</strong>
+- Professional formatting
+- Tables and organization
+- Print-friendly
+- Best for: Printing, sharing via email</p>
+<h3 id="6-immediate_fix_stepsxlsx-13-kb">6. IMMEDIATE_FIX_STEPS.xlsx (13 KB)</h3>
+<p><strong>Excel Format - 8 Worksheets</strong>
+- Overview
+- Step 1: Console Access
+- Step 2: Fix SSH
+- Step 3: Check Docker
+- Step 4: Fix Backend
+- Step 5: Verification
+- Troubleshooting
+- Quick Reference
+- Best for: Tracking progress, printing specific tabs</p>
+<h3 id="7-immediate_fix_stepspdf-13-kb">7. IMMEDIATE_FIX_STEPS.pdf (13 KB)</h3>
+<p><strong>PDF Format</strong>
+- Portable, universal format
+- Email-friendly
+- No software required
+- Best for: Mobile viewing, archiving</p>
+<hr />
+<h2 id="technical-reports">📊 Technical Reports</h2>
+<h3 id="8-stress_test_reportmd-15-kb">8. STRESS_TEST_REPORT.md (15 KB)</h3>
+<p><strong>Performance Testing Results</strong>
+- SSL/TLS: 55ms avg handshake, TLSv1.3
+- HTTP: 128ms avg response time
+- Load: 50+ req/sec capacity
+- All metrics and benchmarks
+- Best for: Understanding system performance</p>
+<h3 id="9-deployment_summarymd-11-kb">9. DEPLOYMENT_SUMMARY.md (11 KB)</h3>
+<p><strong>Complete System Status</strong>
+- What's deployed (8 containers)
+- What's working (60%)
+- What needs fixing (40%)
+- Configuration references
+- Commands cheat sheet
+- Best for: Technical overview</p>
+<h3 id="10-api_fix_guidemd-98-kb">10. API_FIX_GUIDE.md (9.8 KB)</h3>
+<p><strong>Backend Troubleshooting</strong>
+- Error 1033 explained
+- Diagnostic procedures
+- Fix procedures
+- Verification steps
+- Preventive measures
+- Best for: If backend issues persist</p>
+<hr />
+<h2 id="recovery-plans">🔧 Recovery Plans</h2>
+<h3 id="11-recovery_planmd-73-kb">11. RECOVERY_PLAN.md (7.3 KB)</h3>
+<p><strong>Full System Recovery</strong>
+- 5-phase recovery plan
+- SSH restoration
+- Service verification
+- Diagnostic commands
+- Best for: Complete system failure scenarios</p>
+<h3 id="12-execution_reportmd-84-kb">12. EXECUTION_REPORT.md (8.4 KB)</h3>
+<p><strong>Access Attempt Results</strong>
+- All remote access methods tested
+- SSH attempts (failed)
+- Alternative ports (failed)
+- Tunnel tests (frontend working)
+- DNS discovery (pbiaas.com)
+- Best for: Understanding why manual console access is needed</p>
+<h3 id="13-final_statusmd-86-kb">13. FINAL_STATUS.md (8.6 KB)</h3>
+<p><strong>Complete Status Summary</strong>
+- Working components (60%)
+- Broken components (40%)
+- All test results
+- Next steps
+- Best for: Current state reference</p>
+<hr />
+<h2 id="additional-resources">📚 Additional Resources</h2>
+<h3 id="14-readmemd-11-kb">14. README.md (11 KB)</h3>
+<p><strong>Documentation Index</strong>
+- Complete file listing
+- Quick start guides
+- Useful commands
+- Support information
+- Performance metrics
+- Best for: Finding specific information</p>
+<h3 id="15-access_attempt_resultsjson">15. access_attempt_results.json</h3>
+<p><strong>Raw Test Data</strong>
+- All access attempt results in JSON
+- SSH test details
+- Port scan results
+- Tunnel test responses
+- Best for: Technical analysis</p>
+<hr />
+<h2 id="file-organization">🗂️ File Organization</h2>
+<pre><code>/opt/psscript/
+├── 🚨 START HERE
+│   ├── EXECUTIVE_SUMMARY.md          ⭐⭐⭐ Read this first
+│   ├── CONSOLE_QUICKREF.pdf          ⭐⭐⭐ Print this
+│   └── CONSOLE_FIX_COMMANDS.sh       ⭐⭐⭐ Run this
+│
+├── 📋 STEP-BY-STEP GUIDES (Pick One)
+│   ├── IMMEDIATE_FIX_STEPS.md        (Markdown)
+│   ├── IMMEDIATE_FIX_STEPS.docx      (Word)
+│   ├── IMMEDIATE_FIX_STEPS.xlsx      (Excel)
+│   └── IMMEDIATE_FIX_STEPS.pdf       (PDF)
+│
+├── 📊 TECHNICAL REPORTS
+│   ├── STRESS_TEST_REPORT.md         (Performance)
+│   ├── DEPLOYMENT_SUMMARY.md         (System status)
+│   └── API_FIX_GUIDE.md              (Backend)
+│
+├── 🔧 RECOVERY PLANS
+│   ├── RECOVERY_PLAN.md              (Full recovery)
+│   ├── EXECUTION_REPORT.md           (Access attempts)
+│   └── FINAL_STATUS.md               (Current state)
+│
+└── 📚 ADDITIONAL
+    ├── README.md                     (Index)
+    ├── FILE_MAP.md                   (This file)
+    └── access_attempt_results.json   (Raw data)
+</code></pre>
+<hr />
+<h2 id="quick-decision-guide">💡 Quick Decision Guide</h2>
+<p><strong>I need to fix it NOW:</strong>
+→ Read EXECUTIVE_SUMMARY.md → Open CONSOLE_QUICKREF.pdf → Run CONSOLE_FIX_COMMANDS.sh</p>
+<p><strong>I want detailed instructions:</strong>
+→ Read IMMEDIATE_FIX_STEPS.md (or .docx, .xlsx, .pdf)</p>
+<p><strong>I want to understand the problem:</strong>
+→ Read DEPLOYMENT_SUMMARY.md → Read API_FIX_GUIDE.md</p>
+<p><strong>I want performance data:</strong>
+→ Read STRESS_TEST_REPORT.md</p>
+<p><strong>I want to know what was tried:</strong>
+→ Read EXECUTION_REPORT.md → Read FINAL_STATUS.md</p>
+<p><strong>I want to understand the architecture:</strong>
+→ Read DEPLOYMENT_SUMMARY.md → Read README.md</p>
+<p><strong>I need to troubleshoot after fix:</strong>
+→ Read API_FIX_GUIDE.md → Read RECOVERY_PLAN.md</p>
+<hr />
+<h2 id="format-recommendations">📱 Format Recommendations</h2>
+<h3 id="for-mobiletablet">For Mobile/Tablet</h3>
+<ul>
+<li>CONSOLE_QUICKREF.pdf (easiest to view)</li>
+<li>IMMEDIATE_FIX_STEPS.pdf</li>
+<li>EXECUTIVE_SUMMARY.md (if you have a markdown viewer)</li>
+</ul>
+<h3 id="for-desktop">For Desktop</h3>
+<ul>
+<li>Any format works</li>
+<li>Markdown (.md) files best in terminal/VS Code</li>
+<li>Excel (.xlsx) great for tracking progress</li>
+</ul>
+<h3 id="for-printing">For Printing</h3>
+<ul>
+<li>CONSOLE_QUICKREF.pdf (1 page)</li>
+<li>IMMEDIATE_FIX_STEPS.docx (best formatting)</li>
+</ul>
+<h3 id="for-sharing">For Sharing</h3>
+<ul>
+<li>EXECUTIVE_SUMMARY.md (quick overview)</li>
+<li>IMMEDIATE_FIX_STEPS.pdf (universal format)</li>
+</ul>
+<hr />
+<h2 id="common-scenarios">🎯 Common Scenarios</h2>
+<h3 id="scenario-1-i-just-want-to-fix-it">Scenario 1: "I just want to fix it"</h3>
+<p>Files needed: 3
+1. EXECUTIVE_SUMMARY.md
+2. CONSOLE_QUICKREF.pdf
+3. CONSOLE_FIX_COMMANDS.sh</p>
+<p>Time: 5 minutes</p>
+<h3 id="scenario-2-i-want-to-understand-everything-first">Scenario 2: "I want to understand everything first"</h3>
+<p>Files needed: 5
+1. EXECUTIVE_SUMMARY.md
+2. DEPLOYMENT_SUMMARY.md
+3. STRESS_TEST_REPORT.md
+4. IMMEDIATE_FIX_STEPS.md
+5. API_FIX_GUIDE.md</p>
+<p>Time: 20 minutes reading</p>
+<h3 id="scenario-3-i-want-to-track-progress-carefully">Scenario 3: "I want to track progress carefully"</h3>
+<p>Files needed: 2
+1. IMMEDIATE_FIX_STEPS.xlsx (track in spreadsheet)
+2. CONSOLE_FIX_COMMANDS.sh (run the fixes)</p>
+<p>Time: 10 minutes</p>
+<h3 id="scenario-4-something-went-wrong-during-fix">Scenario 4: "Something went wrong during fix"</h3>
+<p>Files needed: 3
+1. API_FIX_GUIDE.md
+2. RECOVERY_PLAN.md
+3. DEPLOYMENT_SUMMARY.md (for reference)</p>
+<p>Time: 30 minutes troubleshooting</p>
+<hr />
+<h2 id="file-size-summary">📊 File Size Summary</h2>
+<table>
+<thead>
+<tr>
+<th>Category</th>
+<th>Files</th>
+<th>Total Size</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Priority (Start Here)</td>
+<td>3</td>
+<td>11.6 KB</td>
+</tr>
+<tr>
+<td>Step-by-Step Guides</td>
+<td>4</td>
+<td>45.1 KB</td>
+</tr>
+<tr>
+<td>Technical Reports</td>
+<td>3</td>
+<td>35.8 KB</td>
+</tr>
+<tr>
+<td>Recovery Plans</td>
+<td>3</td>
+<td>24.3 KB</td>
+</tr>
+<tr>
+<td>Additional Resources</td>
+<td>2</td>
+<td>11 KB + JSON</td>
+</tr>
+<tr>
+<td><strong>TOTAL</strong></td>
+<td><strong>15</strong></td>
+<td><strong>~128 KB</strong></td>
+</tr>
+</tbody>
+</table>
+<p>All documentation fits on a single floppy disk (1.44 MB)! 💾</p>
+<hr />
+<h2 id="verification-checklist">✅ Verification Checklist</h2>
+<p>Use this to ensure you have everything:</p>
+<ul>
+<li>[ ] Read EXECUTIVE_SUMMARY.md</li>
+<li>[ ] Printed/opened CONSOLE_QUICKREF.pdf</li>
+<li>[ ] Know where CONSOLE_FIX_COMMANDS.sh is located</li>
+<li>[ ] Have chosen your preferred format for detailed steps</li>
+<li>[ ] Understand the current status (60% working)</li>
+<li>[ ] Know what will be fixed (SSH + Backend)</li>
+<li>[ ] Estimated time to fix (5-10 minutes)</li>
+</ul>
+<hr />
+<h2 id="search-tips">🔍 Search Tips</h2>
+<h3 id="find-specific-commands">Find Specific Commands</h3>
+<p>→ CONSOLE_QUICKREF.pdf or README.md "Useful Commands"</p>
+<h3 id="find-error-information">Find Error Information</h3>
+<p>→ API_FIX_GUIDE.md or STRESS_TEST_REPORT.md</p>
+<h3 id="find-container-info">Find Container Info</h3>
+<p>→ DEPLOYMENT_SUMMARY.md "Docker Services"</p>
+<h3 id="find-performance-data">Find Performance Data</h3>
+<p>→ STRESS_TEST_REPORT.md "Performance Metrics"</p>
+<h3 id="find-credentials">Find Credentials</h3>
+<p>→ EXECUTIVE_SUMMARY.md or CONSOLE_QUICKREF.pdf</p>
+<hr />
+<h2 id="still-need-help">📞 Still Need Help?</h2>
+<p>If you've read the documentation and still have questions:</p>
+<ol>
+<li><strong>Check:</strong> README.md - Most comprehensive index</li>
+<li><strong>Search:</strong> All .md files are text-searchable</li>
+<li><strong>Review:</strong> EXECUTION_REPORT.md to see what was already tried</li>
+<li><strong>Contact:</strong> morlok52@gmail.com (Dave)</li>
+</ol>
+<hr />
+<p><strong>Pro Tip:</strong> Bookmark this file! It's your navigation hub for all recovery documentation.</p>
+<hr />
+<p><strong>Generated:</strong> January 14, 2026
+<strong>Purpose:</strong> Navigate 15 recovery documents efficiently
+<strong>Status:</strong> Complete documentation package ready</p>
+    <div class="footer">Generated 2026-04-24 01:27 UTC</div>
+  </div>
+</body>
+</html>

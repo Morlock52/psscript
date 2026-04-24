@@ -1,0 +1,762 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <base href="file:///Users/morlock/fun/02_PowerShell_Projects/psscript/" />
+  <title>docs-UPLOAD-WORKFLOW</title>
+  <style>
+:root {
+  color-scheme: light;
+}
+body {
+  font-family: "Segoe UI", "Helvetica Neue", Arial, sans-serif;
+  margin: 0;
+  padding: 0;
+  background: #ffffff;
+  color: #0f172a;
+}
+.markdown-body {
+  max-width: 980px;
+  margin: 40px auto 60px;
+  padding: 0 32px;
+  line-height: 1.65;
+}
+.markdown-body h1 {
+  font-size: 32px;
+  margin-bottom: 12px;
+  border-bottom: 2px solid #e2e8f0;
+  padding-bottom: 12px;
+  page-break-before: always;
+  page-break-after: avoid;
+  break-before: page;
+  break-after: avoid;
+}
+.markdown-body h1:first-of-type {
+  page-break-before: avoid;
+  break-before: avoid;
+}
+.markdown-body h2 {
+  font-size: 24px;
+  margin-top: 28px;
+  border-bottom: 1px solid #e2e8f0;
+  padding-bottom: 8px;
+  page-break-before: always;
+  page-break-after: avoid;
+  break-before: page;
+  break-after: avoid;
+}
+.markdown-body h3 {
+  font-size: 18px;
+  margin-top: 20px;
+  page-break-after: avoid;
+  break-after: avoid;
+}
+.markdown-body h4, .markdown-body h5, .markdown-body h6 {
+  page-break-after: avoid;
+  break-after: avoid;
+}
+.markdown-body table {
+  width: 100%;
+  border-collapse: collapse;
+  margin: 16px 0;
+  font-size: 14px;
+  page-break-inside: avoid;
+  break-inside: avoid;
+}
+.markdown-body th,
+.markdown-body td {
+  border: 1px solid #e2e8f0;
+  padding: 8px 10px;
+  text-align: left;
+}
+.markdown-body th {
+  background: #f8fafc;
+}
+.markdown-body tr {
+  page-break-inside: avoid;
+  break-inside: avoid;
+}
+.markdown-body code {
+  background: #f1f5f9;
+  padding: 2px 4px;
+  border-radius: 4px;
+  font-family: "SFMono-Regular", Menlo, Consolas, monospace;
+  font-size: 0.92em;
+}
+.markdown-body pre {
+  background: #0f172a;
+  color: #e2e8f0;
+  padding: 16px;
+  border-radius: 8px;
+  overflow-x: auto;
+  page-break-inside: avoid;
+  break-inside: avoid;
+}
+.markdown-body pre code {
+  background: transparent;
+  color: inherit;
+}
+.markdown-body blockquote {
+  border-left: 4px solid #38bdf8;
+  margin: 16px 0;
+  padding: 8px 16px;
+  background: #f8fafc;
+  color: #334155;
+}
+.markdown-body img {
+  max-width: 100%;
+  height: auto;
+  display: block;
+  margin: 16px 0;
+  border-radius: 10px;
+  box-shadow: 0 8px 20px rgba(15, 23, 42, 0.12);
+  page-break-inside: avoid;
+  break-inside: avoid;
+}
+.markdown-body figure {
+  page-break-inside: avoid;
+  break-inside: avoid;
+  margin: 16px 0;
+}
+.markdown-body a {
+  color: #2563eb;
+  text-decoration: none;
+}
+.markdown-body a:hover {
+  text-decoration: underline;
+}
+.cover {
+  padding: 80px 60px 60px;
+  background: linear-gradient(135deg, #0b1220 0%, #1e3a8a 100%);
+  color: #f8fafc;
+  border-radius: 18px;
+  margin-bottom: 32px;
+}
+.cover-title {
+  font-size: 36px;
+  font-weight: 700;
+  margin: 0 0 12px;
+}
+.cover-subtitle {
+  font-size: 18px;
+  color: #cbd5f5;
+  margin: 0 0 16px;
+}
+.cover-meta {
+  font-size: 13px;
+  color: #94a3b8;
+}
+.page-break {
+  page-break-after: always;
+  break-after: page;
+}
+.footer {
+  margin-top: 40px;
+  font-size: 12px;
+  color: #64748b;
+}
+/* Print and PDF-specific styles */
+@page {
+  margin: 20mm 18mm;
+}
+@media print {
+  .markdown-body {
+    orphans: 3;
+    widows: 3;
+  }
+  .markdown-body p {
+    orphans: 3;
+    widows: 3;
+  }
+  .markdown-body li {
+    page-break-inside: avoid;
+    break-inside: avoid;
+  }
+  .markdown-body ul, .markdown-body ol {
+    page-break-before: avoid;
+    break-before: avoid;
+  }
+  .markdown-body blockquote {
+    page-break-inside: avoid;
+    break-inside: avoid;
+  }
+  /* Keep section content together */
+  .markdown-body h2 + *, .markdown-body h3 + * {
+    page-break-before: avoid;
+    break-before: avoid;
+  }
+}
+</style>
+</head>
+<body>
+  <div class="markdown-body">
+    
+    <h1 id="file-upload-workflow-documentation">File Upload Workflow Documentation</h1>
+<p><em>Last updated: April 2, 2026</em></p>
+<h2 id="overview">Overview</h2>
+<p>The upload workflow handles PowerShell script files from the user's browser to persistent storage in PostgreSQL. It supports drag-and-drop, file picker, and paste-based input with automatic AI analysis.</p>
+<h2 id="flow-diagram">Flow Diagram</h2>
+<pre><code>User selects .ps1 file
+       |
+       v
+[Frontend: ScriptUpload.tsx]
+  1. FileReader reads content into state
+  2. File metadata extracted (name, size, type)
+  3. Content preview rendered (14-line preview)
+  4. User fills title, description, tags, category
+       |
+       v
+[Frontend: prepareFormData()]
+  5. Builds FormData with fields:
+     - title (string)
+     - description (string)
+     - content (string - file text)
+     - category_id (string, optional)
+     - tags (JSON string array, optional)
+     - is_public (string: 'true'/'false')
+     - analyze_with_ai (string: 'true'/'false')
+     - script_file (File blob from input or content)
+       |
+       v
+[Frontend: api.ts uploadScript()]
+  6. Sends POST to /api/scripts/upload (FormData)
+     - Or /api/scripts/upload/large for files &gt; 2MB
+     - Auth token in Authorization header
+     - Browser auto-sets Content-Type: multipart/form-data
+       |
+       v
+[Backend: routes/scripts.ts]
+  7. Middleware chain:
+     uploadCorsMiddleware -&gt; authenticateJWT -&gt;
+     handleNetworkErrors -&gt; handleUploadProgress -&gt;
+     multer.single('script_file') -&gt; handleMulterError -&gt;
+     ScriptExportController.uploadScript
+       |
+       v
+[Backend: export.ts uploadScript()]
+  8. Extract file content:
+     - Primary: req.file.buffer (multer memory storage)
+     - Fallback: req.body.content (FormData text field)
+  9. Calculate MD5 hash for deduplication
+  10. Check for duplicate hash in scripts table
+  11. Validate UTF-8 readability (reject binary)
+  12. Validate PowerShell structure for .ps1 files
+       |
+       v
+[Database: PostgreSQL]
+  13. BEGIN TRANSACTION
+  14. INSERT INTO scripts (title, content, user_id, file_hash, ...)
+  15. INSERT INTO script_versions (script_id, version=1, content, ...)
+  16. INSERT INTO tags + script_tags (if tags provided)
+  17. COMMIT
+  18. Save file to uploads/ directory
+       |
+       v
+[Response: 201 Created]
+  19. Return { success, script, message, filePath }
+       |
+       v
+[Async: AI Analysis]
+  20. If analyze_with_ai=true, fire-and-forget with 2 retries
+  21. POST to AI service /analyze
+  22. UPSERT into script_analysis table
+</code></pre>
+<h2 id="database-schema">Database Schema</h2>
+<h3 id="scripts-table">scripts table</h3>
+<table>
+<thead>
+<tr>
+<th>Column</th>
+<th>Type</th>
+<th>Nullable</th>
+<th>Default</th>
+<th>Notes</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>id</td>
+<td>integer</td>
+<td>NOT NULL</td>
+<td>auto-increment</td>
+<td>Primary key</td>
+</tr>
+<tr>
+<td>title</td>
+<td>varchar(255)</td>
+<td>NOT NULL</td>
+<td>-</td>
+<td>Script display name</td>
+</tr>
+<tr>
+<td>description</td>
+<td>text</td>
+<td>YES</td>
+<td>-</td>
+<td>User description</td>
+</tr>
+<tr>
+<td>content</td>
+<td>text</td>
+<td>NOT NULL</td>
+<td>-</td>
+<td>Full script content</td>
+</tr>
+<tr>
+<td>user_id</td>
+<td>integer</td>
+<td>YES</td>
+<td>-</td>
+<td>FK to users.id (CASCADE delete)</td>
+</tr>
+<tr>
+<td>category_id</td>
+<td>integer</td>
+<td>YES</td>
+<td>-</td>
+<td>FK to categories.id (SET NULL delete)</td>
+</tr>
+<tr>
+<td>version</td>
+<td>integer</td>
+<td>NOT NULL</td>
+<td>1</td>
+<td>Current version number</td>
+</tr>
+<tr>
+<td>is_public</td>
+<td>boolean</td>
+<td>NOT NULL</td>
+<td>false</td>
+<td>Visibility flag</td>
+</tr>
+<tr>
+<td>execution_count</td>
+<td>integer</td>
+<td>NOT NULL</td>
+<td>0</td>
+<td>Times executed</td>
+</tr>
+<tr>
+<td>file_hash</td>
+<td>varchar(255)</td>
+<td>YES</td>
+<td>-</td>
+<td>MD5 for dedup (model maps to STRING(64))</td>
+</tr>
+<tr>
+<td>views</td>
+<td>integer</td>
+<td>NOT NULL</td>
+<td>0</td>
+<td>View count</td>
+</tr>
+<tr>
+<td>created_at</td>
+<td>timestamptz</td>
+<td>YES</td>
+<td>CURRENT_TIMESTAMP</td>
+<td>Auto-set</td>
+</tr>
+<tr>
+<td>updated_at</td>
+<td>timestamptz</td>
+<td>YES</td>
+<td>CURRENT_TIMESTAMP</td>
+<td>Auto-updated via trigger</td>
+</tr>
+</tbody>
+</table>
+<h3 id="script_versions-table">script_versions table</h3>
+<table>
+<thead>
+<tr>
+<th>Column</th>
+<th>Type</th>
+<th>Nullable</th>
+<th>Default</th>
+<th>Notes</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>id</td>
+<td>integer</td>
+<td>NOT NULL</td>
+<td>auto-increment</td>
+<td>Primary key</td>
+</tr>
+<tr>
+<td>script_id</td>
+<td>integer</td>
+<td>YES</td>
+<td>-</td>
+<td>FK to scripts.id (CASCADE delete)</td>
+</tr>
+<tr>
+<td>version</td>
+<td>integer</td>
+<td>NOT NULL</td>
+<td>-</td>
+<td>Version number</td>
+</tr>
+<tr>
+<td>content</td>
+<td>text</td>
+<td>NOT NULL</td>
+<td>-</td>
+<td>Full content at this version</td>
+</tr>
+<tr>
+<td>commit_message</td>
+<td>text</td>
+<td>YES</td>
+<td>-</td>
+<td>Changelog (model field: <code>changelog</code>)</td>
+</tr>
+<tr>
+<td>user_id</td>
+<td>integer</td>
+<td>YES</td>
+<td>-</td>
+<td>FK to users.id (SET NULL delete)</td>
+</tr>
+<tr>
+<td>created_at</td>
+<td>timestamptz</td>
+<td>YES</td>
+<td>CURRENT_TIMESTAMP</td>
+<td>Auto-set</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Unique constraint:</strong> (script_id, version)</p>
+<h3 id="script_analysis-table">script_analysis table</h3>
+<table>
+<thead>
+<tr>
+<th>Column</th>
+<th>Type</th>
+<th>Nullable</th>
+<th>Default</th>
+<th>Notes</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>id</td>
+<td>integer</td>
+<td>NOT NULL</td>
+<td>auto-increment</td>
+<td>Primary key</td>
+</tr>
+<tr>
+<td>script_id</td>
+<td>integer</td>
+<td>YES</td>
+<td>-</td>
+<td>FK to scripts.id (CASCADE delete), UNIQUE</td>
+</tr>
+<tr>
+<td>purpose</td>
+<td>text</td>
+<td>YES</td>
+<td>-</td>
+<td>AI-detected purpose</td>
+</tr>
+<tr>
+<td>security_score</td>
+<td>double</td>
+<td>YES</td>
+<td>-</td>
+<td>0-10 scale</td>
+</tr>
+<tr>
+<td>quality_score</td>
+<td>double</td>
+<td>YES</td>
+<td>-</td>
+<td>0-10 scale</td>
+</tr>
+<tr>
+<td>risk_score</td>
+<td>double</td>
+<td>YES</td>
+<td>-</td>
+<td>0-10 scale</td>
+</tr>
+<tr>
+<td>parameter_docs</td>
+<td>jsonb</td>
+<td>YES</td>
+<td>{}</td>
+<td>Detected parameters</td>
+</tr>
+<tr>
+<td>suggestions</td>
+<td>jsonb</td>
+<td>YES</td>
+<td>[]</td>
+<td>Optimization suggestions</td>
+</tr>
+<tr>
+<td>command_details</td>
+<td>jsonb</td>
+<td>YES</td>
+<td>[]</td>
+<td>PowerShell commands found</td>
+</tr>
+<tr>
+<td>ms_docs_references</td>
+<td>jsonb</td>
+<td>YES</td>
+<td>[]</td>
+<td>Microsoft docs links</td>
+</tr>
+<tr>
+<td>security_issues</td>
+<td>jsonb</td>
+<td>YES</td>
+<td>[]</td>
+<td>Detailed security findings</td>
+</tr>
+<tr>
+<td>best_practice_violations</td>
+<td>jsonb</td>
+<td>YES</td>
+<td>[]</td>
+<td>PSScriptAnalyzer-style violations</td>
+</tr>
+<tr>
+<td>performance_insights</td>
+<td>jsonb</td>
+<td>YES</td>
+<td>[]</td>
+<td>Performance recommendations</td>
+</tr>
+<tr>
+<td>potential_risks</td>
+<td>jsonb</td>
+<td>YES</td>
+<td>[]</td>
+<td>Identified risks</td>
+</tr>
+<tr>
+<td>code_complexity_metrics</td>
+<td>jsonb</td>
+<td>YES</td>
+<td>{}</td>
+<td>Complexity scores</td>
+</tr>
+<tr>
+<td>compatibility_notes</td>
+<td>jsonb</td>
+<td>YES</td>
+<td>[]</td>
+<td>PS version compatibility</td>
+</tr>
+<tr>
+<td>execution_summary</td>
+<td>jsonb</td>
+<td>YES</td>
+<td>{}</td>
+<td>Execution behavior summary</td>
+</tr>
+<tr>
+<td>analysis_version</td>
+<td>varchar(50)</td>
+<td>YES</td>
+<td>'1.0'</td>
+<td>Analysis engine version</td>
+</tr>
+</tbody>
+</table>
+<h2 id="field-name-mappings">Field Name Mappings</h2>
+<h3 id="frontend-formdata-backend-reqbody">Frontend FormData -&gt; Backend req.body</h3>
+<table>
+<thead>
+<tr>
+<th>FormData Key</th>
+<th>req.body Field</th>
+<th>Type</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>title</code></td>
+<td><code>title</code></td>
+<td>string</td>
+</tr>
+<tr>
+<td><code>description</code></td>
+<td><code>description</code></td>
+<td>string</td>
+</tr>
+<tr>
+<td><code>content</code></td>
+<td><code>content</code></td>
+<td>string</td>
+</tr>
+<tr>
+<td><code>category_id</code></td>
+<td><code>category_id</code></td>
+<td>string (numeric)</td>
+</tr>
+<tr>
+<td><code>tags</code></td>
+<td><code>tags</code></td>
+<td>string (JSON array)</td>
+</tr>
+<tr>
+<td><code>is_public</code></td>
+<td><code>is_public</code></td>
+<td>string ('true'/'false')</td>
+</tr>
+<tr>
+<td><code>analyze_with_ai</code></td>
+<td><code>analyze_with_ai</code></td>
+<td>string ('true'/'false')</td>
+</tr>
+<tr>
+<td><code>script_file</code></td>
+<td><code>req.file</code> (multer)</td>
+<td>File object</td>
+</tr>
+</tbody>
+</table>
+<h3 id="backend-model-database-column">Backend Model -&gt; Database Column</h3>
+<table>
+<thead>
+<tr>
+<th>Model Field</th>
+<th>DB Column</th>
+<th>Sequelize Mapping</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>userId</code></td>
+<td><code>user_id</code></td>
+<td><code>underscored: true</code></td>
+</tr>
+<tr>
+<td><code>categoryId</code></td>
+<td><code>category_id</code></td>
+<td><code>underscored: true</code></td>
+</tr>
+<tr>
+<td><code>isPublic</code></td>
+<td><code>is_public</code></td>
+<td><code>underscored: true</code></td>
+</tr>
+<tr>
+<td><code>fileHash</code></td>
+<td><code>file_hash</code></td>
+<td><code>field: 'file_hash'</code></td>
+</tr>
+<tr>
+<td><code>executionCount</code></td>
+<td><code>execution_count</code></td>
+<td><code>underscored: true</code></td>
+</tr>
+<tr>
+<td><code>changelog</code></td>
+<td><code>commit_message</code></td>
+<td><code>field: 'commit_message'</code></td>
+</tr>
+<tr>
+<td><code>scriptId</code></td>
+<td><code>script_id</code></td>
+<td><code>field: 'script_id'</code></td>
+</tr>
+</tbody>
+</table>
+<h2 id="error-handling">Error Handling</h2>
+<table>
+<thead>
+<tr>
+<th>Error</th>
+<th>Status</th>
+<th>Cause</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>missing_file</code></td>
+<td>400</td>
+<td>No file attachment AND no content in FormData</td>
+</tr>
+<tr>
+<td><code>missing_file_content</code></td>
+<td>400</td>
+<td>File attachment present but unreadable</td>
+</tr>
+<tr>
+<td><code>duplicate_file</code></td>
+<td>409</td>
+<td>MD5 hash matches existing script</td>
+</tr>
+<tr>
+<td><code>file_read_error</code></td>
+<td>400</td>
+<td>File content not valid UTF-8</td>
+</tr>
+<tr>
+<td><code>invalid_content</code></td>
+<td>400</td>
+<td>.ps1 file fails PowerShell validation</td>
+</tr>
+<tr>
+<td><code>authentication_required</code></td>
+<td>401</td>
+<td>No valid JWT token</td>
+</tr>
+<tr>
+<td><code>server_error</code></td>
+<td>500</td>
+<td>Unexpected database or server error</td>
+</tr>
+</tbody>
+</table>
+<h2 id="multer-configuration">Multer Configuration</h2>
+<table>
+<thead>
+<tr>
+<th>Setting</th>
+<th>Memory Upload</th>
+<th>Disk Upload</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Storage</td>
+<td><code>memoryStorage()</code></td>
+<td><code>diskStorage(./uploads)</code></td>
+</tr>
+<tr>
+<td>Field name</td>
+<td><code>script_file</code></td>
+<td><code>script_file</code></td>
+</tr>
+<tr>
+<td>Max file size</td>
+<td>10 MB</td>
+<td>20 MB</td>
+</tr>
+<tr>
+<td>Allowed extensions</td>
+<td>.ps1, .psm1, .psd1, .ps1xml, .txt, .json</td>
+<td>Same</td>
+</tr>
+<tr>
+<td>Used when</td>
+<td>File &lt; 2MB</td>
+<td>File &gt;= 2MB</td>
+</tr>
+</tbody>
+</table>
+    <div class="footer">Generated 2026-04-24 01:27 UTC</div>
+  </div>
+</body>
+</html>

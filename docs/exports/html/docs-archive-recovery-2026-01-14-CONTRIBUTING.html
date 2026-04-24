@@ -1,0 +1,326 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <base href="file:///Users/morlock/fun/02_PowerShell_Projects/psscript/" />
+  <title>docs-archive-recovery-2026-01-14-CONTRIBUTING</title>
+  <style>
+:root {
+  color-scheme: light;
+}
+body {
+  font-family: "Segoe UI", "Helvetica Neue", Arial, sans-serif;
+  margin: 0;
+  padding: 0;
+  background: #ffffff;
+  color: #0f172a;
+}
+.markdown-body {
+  max-width: 980px;
+  margin: 40px auto 60px;
+  padding: 0 32px;
+  line-height: 1.65;
+}
+.markdown-body h1 {
+  font-size: 32px;
+  margin-bottom: 12px;
+  border-bottom: 2px solid #e2e8f0;
+  padding-bottom: 12px;
+  page-break-before: always;
+  page-break-after: avoid;
+  break-before: page;
+  break-after: avoid;
+}
+.markdown-body h1:first-of-type {
+  page-break-before: avoid;
+  break-before: avoid;
+}
+.markdown-body h2 {
+  font-size: 24px;
+  margin-top: 28px;
+  border-bottom: 1px solid #e2e8f0;
+  padding-bottom: 8px;
+  page-break-before: always;
+  page-break-after: avoid;
+  break-before: page;
+  break-after: avoid;
+}
+.markdown-body h3 {
+  font-size: 18px;
+  margin-top: 20px;
+  page-break-after: avoid;
+  break-after: avoid;
+}
+.markdown-body h4, .markdown-body h5, .markdown-body h6 {
+  page-break-after: avoid;
+  break-after: avoid;
+}
+.markdown-body table {
+  width: 100%;
+  border-collapse: collapse;
+  margin: 16px 0;
+  font-size: 14px;
+  page-break-inside: avoid;
+  break-inside: avoid;
+}
+.markdown-body th,
+.markdown-body td {
+  border: 1px solid #e2e8f0;
+  padding: 8px 10px;
+  text-align: left;
+}
+.markdown-body th {
+  background: #f8fafc;
+}
+.markdown-body tr {
+  page-break-inside: avoid;
+  break-inside: avoid;
+}
+.markdown-body code {
+  background: #f1f5f9;
+  padding: 2px 4px;
+  border-radius: 4px;
+  font-family: "SFMono-Regular", Menlo, Consolas, monospace;
+  font-size: 0.92em;
+}
+.markdown-body pre {
+  background: #0f172a;
+  color: #e2e8f0;
+  padding: 16px;
+  border-radius: 8px;
+  overflow-x: auto;
+  page-break-inside: avoid;
+  break-inside: avoid;
+}
+.markdown-body pre code {
+  background: transparent;
+  color: inherit;
+}
+.markdown-body blockquote {
+  border-left: 4px solid #38bdf8;
+  margin: 16px 0;
+  padding: 8px 16px;
+  background: #f8fafc;
+  color: #334155;
+}
+.markdown-body img {
+  max-width: 100%;
+  height: auto;
+  display: block;
+  margin: 16px 0;
+  border-radius: 10px;
+  box-shadow: 0 8px 20px rgba(15, 23, 42, 0.12);
+  page-break-inside: avoid;
+  break-inside: avoid;
+}
+.markdown-body figure {
+  page-break-inside: avoid;
+  break-inside: avoid;
+  margin: 16px 0;
+}
+.markdown-body a {
+  color: #2563eb;
+  text-decoration: none;
+}
+.markdown-body a:hover {
+  text-decoration: underline;
+}
+.cover {
+  padding: 80px 60px 60px;
+  background: linear-gradient(135deg, #0b1220 0%, #1e3a8a 100%);
+  color: #f8fafc;
+  border-radius: 18px;
+  margin-bottom: 32px;
+}
+.cover-title {
+  font-size: 36px;
+  font-weight: 700;
+  margin: 0 0 12px;
+}
+.cover-subtitle {
+  font-size: 18px;
+  color: #cbd5f5;
+  margin: 0 0 16px;
+}
+.cover-meta {
+  font-size: 13px;
+  color: #94a3b8;
+}
+.page-break {
+  page-break-after: always;
+  break-after: page;
+}
+.footer {
+  margin-top: 40px;
+  font-size: 12px;
+  color: #64748b;
+}
+/* Print and PDF-specific styles */
+@page {
+  margin: 20mm 18mm;
+}
+@media print {
+  .markdown-body {
+    orphans: 3;
+    widows: 3;
+  }
+  .markdown-body p {
+    orphans: 3;
+    widows: 3;
+  }
+  .markdown-body li {
+    page-break-inside: avoid;
+    break-inside: avoid;
+  }
+  .markdown-body ul, .markdown-body ol {
+    page-break-before: avoid;
+    break-before: avoid;
+  }
+  .markdown-body blockquote {
+    page-break-inside: avoid;
+    break-inside: avoid;
+  }
+  /* Keep section content together */
+  .markdown-body h2 + *, .markdown-body h3 + * {
+    page-break-before: avoid;
+    break-before: avoid;
+  }
+}
+</style>
+</head>
+<body>
+  <div class="markdown-body">
+    
+    <h1 id="contributing-to-psscript-manager">Contributing to PSScript Manager</h1>
+<p>Thank you for considering contributing to PSScript Manager! This document provides guidelines and instructions for contributing to this project.</p>
+<h2 id="code-of-conduct">Code of Conduct</h2>
+<p>By participating in this project, you agree to abide by our Code of Conduct. Please be respectful and considerate of others.</p>
+<h2 id="how-can-i-contribute">How Can I Contribute?</h2>
+<h3 id="reporting-bugs">Reporting Bugs</h3>
+<p>If you find a bug, please create an issue with the following information:</p>
+<ul>
+<li>A clear, descriptive title</li>
+<li>Steps to reproduce the issue</li>
+<li>Expected behavior</li>
+<li>Actual behavior</li>
+<li>Screenshots (if applicable)</li>
+<li>Environment details (OS, browser, etc.)</li>
+</ul>
+<h3 id="suggesting-features">Suggesting Features</h3>
+<p>We welcome feature suggestions! Please create an issue with:</p>
+<ul>
+<li>A clear, descriptive title</li>
+<li>Detailed description of the proposed feature</li>
+<li>Any relevant examples or mockups</li>
+<li>Explanation of why this feature would be useful</li>
+</ul>
+<h3 id="pull-requests">Pull Requests</h3>
+<ol>
+<li>Fork the repository</li>
+<li>Create a new branch (<code>git checkout -b feature/amazing-feature</code>)</li>
+<li>Make your changes</li>
+<li>Run tests to ensure your changes don't break existing functionality</li>
+<li>Commit your changes (<code>git commit -m 'Add some amazing feature'</code>)</li>
+<li>Push to the branch (<code>git push origin feature/amazing-feature</code>)</li>
+<li>Open a Pull Request</li>
+</ol>
+<h2 id="development-setup">Development Setup</h2>
+<h3 id="prerequisites">Prerequisites</h3>
+<ul>
+<li>Node.js (v16+)</li>
+<li>PostgreSQL (v14+) with pgvector extension</li>
+<li>Python (v3.9+)</li>
+<li>Docker (optional, for containerized deployment)</li>
+</ul>
+<h3 id="installation">Installation</h3>
+<ol>
+<li>
+<p>Clone your fork of the repository
+   <code>bash
+   git clone https://github.com/YOUR_USERNAME/psscript-manager.git
+   cd psscript-manager</code></p>
+</li>
+<li>
+<p>Set up environment variables
+   <code>bash
+   cp .env.example .env</code>
+   Edit the <code>.env</code> file with your configuration.</p>
+</li>
+<li>
+<p>Set up the database
+   <code>bash
+   ./setup-local-db.sh</code></p>
+</li>
+<li>
+<p>Install dependencies
+   ```bash
+   # Install backend dependencies
+   cd src/backend
+   npm install</p>
+</li>
+</ol>
+<p># Install frontend dependencies
+   cd ../frontend
+   npm install</p>
+<p># Install AI service dependencies
+   cd ../ai
+   pip install -r requirements.txt
+   ```</p>
+<ol>
+<li>Start the services
+   <code>bash
+   ./start-all.sh</code></li>
+</ol>
+<h2 id="coding-standards">Coding Standards</h2>
+<h3 id="javascripttypescript">JavaScript/TypeScript</h3>
+<ul>
+<li>Use ESLint with the provided configuration</li>
+<li>Follow the existing code style</li>
+<li>Write meaningful variable and function names</li>
+<li>Add comments for complex logic</li>
+<li>Use TypeScript types appropriately</li>
+</ul>
+<h3 id="python">Python</h3>
+<ul>
+<li>Follow PEP 8 style guide</li>
+<li>Use type hints where appropriate</li>
+<li>Document functions and classes with docstrings</li>
+<li>Use meaningful variable and function names</li>
+</ul>
+<h3 id="cssscss">CSS/SCSS</h3>
+<ul>
+<li>Follow the existing component structure</li>
+<li>Use Tailwind CSS utility classes when possible</li>
+<li>Keep styles modular and reusable</li>
+</ul>
+<h2 id="testing">Testing</h2>
+<ul>
+<li>Write tests for new features and bug fixes</li>
+<li>Ensure all tests pass before submitting a pull request</li>
+<li>Follow the existing testing patterns</li>
+</ul>
+<h2 id="documentation">Documentation</h2>
+<ul>
+<li>Update documentation for any changes to APIs, features, or behavior</li>
+<li>Use clear, concise language</li>
+<li>Include examples where appropriate</li>
+</ul>
+<h2 id="commit-messages">Commit Messages</h2>
+<ul>
+<li>Use clear, descriptive commit messages</li>
+<li>Reference issue numbers when applicable</li>
+<li>Keep commits focused on a single change</li>
+</ul>
+<h2 id="review-process">Review Process</h2>
+<ul>
+<li>All pull requests will be reviewed by maintainers</li>
+<li>Address any requested changes promptly</li>
+<li>Be open to feedback and suggestions</li>
+</ul>
+<h2 id="license">License</h2>
+<p>By contributing to PSScript Manager, you agree that your contributions will be licensed under the project's MIT License.</p>
+    <div class="footer">Generated 2026-04-24 01:27 UTC</div>
+  </div>
+</body>
+</html>

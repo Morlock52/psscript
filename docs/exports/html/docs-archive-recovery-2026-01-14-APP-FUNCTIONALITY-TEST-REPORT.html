@@ -1,0 +1,558 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <base href="file:///Users/morlock/fun/02_PowerShell_Projects/psscript/" />
+  <title>docs-archive-recovery-2026-01-14-APP-FUNCTIONALITY-TEST-REPORT</title>
+  <style>
+:root {
+  color-scheme: light;
+}
+body {
+  font-family: "Segoe UI", "Helvetica Neue", Arial, sans-serif;
+  margin: 0;
+  padding: 0;
+  background: #ffffff;
+  color: #0f172a;
+}
+.markdown-body {
+  max-width: 980px;
+  margin: 40px auto 60px;
+  padding: 0 32px;
+  line-height: 1.65;
+}
+.markdown-body h1 {
+  font-size: 32px;
+  margin-bottom: 12px;
+  border-bottom: 2px solid #e2e8f0;
+  padding-bottom: 12px;
+  page-break-before: always;
+  page-break-after: avoid;
+  break-before: page;
+  break-after: avoid;
+}
+.markdown-body h1:first-of-type {
+  page-break-before: avoid;
+  break-before: avoid;
+}
+.markdown-body h2 {
+  font-size: 24px;
+  margin-top: 28px;
+  border-bottom: 1px solid #e2e8f0;
+  padding-bottom: 8px;
+  page-break-before: always;
+  page-break-after: avoid;
+  break-before: page;
+  break-after: avoid;
+}
+.markdown-body h3 {
+  font-size: 18px;
+  margin-top: 20px;
+  page-break-after: avoid;
+  break-after: avoid;
+}
+.markdown-body h4, .markdown-body h5, .markdown-body h6 {
+  page-break-after: avoid;
+  break-after: avoid;
+}
+.markdown-body table {
+  width: 100%;
+  border-collapse: collapse;
+  margin: 16px 0;
+  font-size: 14px;
+  page-break-inside: avoid;
+  break-inside: avoid;
+}
+.markdown-body th,
+.markdown-body td {
+  border: 1px solid #e2e8f0;
+  padding: 8px 10px;
+  text-align: left;
+}
+.markdown-body th {
+  background: #f8fafc;
+}
+.markdown-body tr {
+  page-break-inside: avoid;
+  break-inside: avoid;
+}
+.markdown-body code {
+  background: #f1f5f9;
+  padding: 2px 4px;
+  border-radius: 4px;
+  font-family: "SFMono-Regular", Menlo, Consolas, monospace;
+  font-size: 0.92em;
+}
+.markdown-body pre {
+  background: #0f172a;
+  color: #e2e8f0;
+  padding: 16px;
+  border-radius: 8px;
+  overflow-x: auto;
+  page-break-inside: avoid;
+  break-inside: avoid;
+}
+.markdown-body pre code {
+  background: transparent;
+  color: inherit;
+}
+.markdown-body blockquote {
+  border-left: 4px solid #38bdf8;
+  margin: 16px 0;
+  padding: 8px 16px;
+  background: #f8fafc;
+  color: #334155;
+}
+.markdown-body img {
+  max-width: 100%;
+  height: auto;
+  display: block;
+  margin: 16px 0;
+  border-radius: 10px;
+  box-shadow: 0 8px 20px rgba(15, 23, 42, 0.12);
+  page-break-inside: avoid;
+  break-inside: avoid;
+}
+.markdown-body figure {
+  page-break-inside: avoid;
+  break-inside: avoid;
+  margin: 16px 0;
+}
+.markdown-body a {
+  color: #2563eb;
+  text-decoration: none;
+}
+.markdown-body a:hover {
+  text-decoration: underline;
+}
+.cover {
+  padding: 80px 60px 60px;
+  background: linear-gradient(135deg, #0b1220 0%, #1e3a8a 100%);
+  color: #f8fafc;
+  border-radius: 18px;
+  margin-bottom: 32px;
+}
+.cover-title {
+  font-size: 36px;
+  font-weight: 700;
+  margin: 0 0 12px;
+}
+.cover-subtitle {
+  font-size: 18px;
+  color: #cbd5f5;
+  margin: 0 0 16px;
+}
+.cover-meta {
+  font-size: 13px;
+  color: #94a3b8;
+}
+.page-break {
+  page-break-after: always;
+  break-after: page;
+}
+.footer {
+  margin-top: 40px;
+  font-size: 12px;
+  color: #64748b;
+}
+/* Print and PDF-specific styles */
+@page {
+  margin: 20mm 18mm;
+}
+@media print {
+  .markdown-body {
+    orphans: 3;
+    widows: 3;
+  }
+  .markdown-body p {
+    orphans: 3;
+    widows: 3;
+  }
+  .markdown-body li {
+    page-break-inside: avoid;
+    break-inside: avoid;
+  }
+  .markdown-body ul, .markdown-body ol {
+    page-break-before: avoid;
+    break-before: avoid;
+  }
+  .markdown-body blockquote {
+    page-break-inside: avoid;
+    break-inside: avoid;
+  }
+  /* Keep section content together */
+  .markdown-body h2 + *, .markdown-body h3 + * {
+    page-break-before: avoid;
+    break-before: avoid;
+  }
+}
+</style>
+</head>
+<body>
+  <div class="markdown-body">
+    
+    <h1 id="psscript-application-functionality-test-report">PSScript Application Functionality Test Report</h1>
+<p><strong>Date:</strong> 2026-01-09
+<strong>Test Type:</strong> Comprehensive Application Review
+<strong>Tester:</strong> Claude Code (Automated Testing)</p>
+<hr />
+<h2 id="executive-summary">Executive Summary</h2>
+<p>Completed comprehensive testing of the PSScript PowerShell management platform, including API endpoint testing, frontend route verification, and TypeScript build validation. The application is <strong>functionally operational</strong> but has <strong>critical TypeScript build errors</strong> that must be addressed before production deployment.</p>
+<p><strong>Overall Status:</strong> ⚠️ <strong>Needs Attention</strong>
+- ✅ Services: All running
+- ✅ API Routes: Core functionality working
+- ❌ Frontend Build: TypeScript errors present
+- ⚠️ Scripts Endpoint: Database query issues</p>
+<hr />
+<h2 id="1-service-health-status">1. Service Health Status</h2>
+<h3 id="backend-service-port-4000">Backend Service (Port 4000) ✅</h3>
+<ul>
+<li><strong>Status:</strong> Healthy</li>
+<li><strong>Database:</strong> Connected (PostgreSQL)</li>
+<li><strong>Cache:</strong> Connected (In-memory with Redis)</li>
+<li><strong>Uptime:</strong> 33,173 seconds</li>
+<li><strong>Environment:</strong> Development</li>
+</ul>
+<h3 id="frontend-service-port-3000">Frontend Service (Port 3000) ⚠️</h3>
+<ul>
+<li><strong>Status:</strong> Running (marked unhealthy in Docker)</li>
+<li><strong>Issue:</strong> Vite server running but health check failing</li>
+<li><strong>Reason:</strong> Node version mismatch warnings (v18.20.8 vs required v20+)</li>
+<li><strong>Impact:</strong> Development server works, but may have dependency issues</li>
+</ul>
+<h3 id="ai-service-port-8000">AI Service (Port 8000) ✅</h3>
+<ul>
+<li><strong>Status:</strong> Healthy</li>
+<li><strong>Version:</strong> 0.2.0</li>
+<li><strong>Mode:</strong> Mock (for development)</li>
+<li><strong>Agent Coordinator:</strong> Disabled</li>
+</ul>
+<hr />
+<h2 id="2-api-endpoint-testing-results">2. API Endpoint Testing Results</h2>
+<h3 id="authentication-endpoints">Authentication Endpoints ✅</h3>
+<table>
+<thead>
+<tr>
+<th>Endpoint</th>
+<th>Method</th>
+<th>Status</th>
+<th>Notes</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>/api/auth/register</code></td>
+<td>POST</td>
+<td>✅ Working</td>
+<td>Successfully created test user</td>
+</tr>
+<tr>
+<td><code>/api/auth/login</code></td>
+<td>POST</td>
+<td>✅ Working</td>
+<td>Returns JWT token correctly</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Test Result:</strong></p>
+<pre><code class="language-json">{
+  &quot;success&quot;: true,
+  &quot;token&quot;: &quot;eyJhbGci...&quot;,
+  &quot;user&quot;: {
+    &quot;id&quot;: 4,
+    &quot;username&quot;: &quot;testuser123&quot;,
+    &quot;email&quot;: &quot;test@test.com&quot;,
+    &quot;role&quot;: &quot;user&quot;
+  }
+}
+</code></pre>
+<h3 id="core-api-endpoints">Core API Endpoints</h3>
+<h4 id="health-info">Health &amp; Info ✅</h4>
+<ul>
+<li><code>/health</code> - ✅ Working</li>
+<li><code>/api</code> - ✅ Working (returns API info)</li>
+<li><code>/api-docs</code> - ✅ Working (Swagger UI redirect)</li>
+</ul>
+<h4 id="categories">Categories ✅</h4>
+<ul>
+<li><code>/api/categories</code> - ✅ Working</li>
+<li>Returns 14 categories including: System Administration, Security, Automation, Development, etc.</li>
+</ul>
+<h4 id="scripts">Scripts ❌</h4>
+<ul>
+<li><code>/api/scripts</code> - ❌ <strong>Database Error</strong></li>
+<li><strong>Error:</strong> Internal Server Error with Sequelize query issue</li>
+<li><strong>Impact:</strong> Cannot list scripts in the application</li>
+<li><strong>Recommendation:</strong> Investigate database schema/model mismatch</li>
+</ul>
+<h4 id="tags">Tags ⚠️</h4>
+<ul>
+<li><code>/api/tags</code> - ⚠️ Placeholder response</li>
+<li>Returns: "Get tags endpoint (to be implemented)"</li>
+</ul>
+<h4 id="analytics">Analytics 🔒</h4>
+<ul>
+<li><code>/api/analytics</code> - 🔒 Requires authentication</li>
+<li>Tested with auth token but encountered token format issue</li>
+<li>Endpoint exists and requires valid JWT</li>
+</ul>
+<h4 id="chat">Chat 🔑</h4>
+<ul>
+<li><code>/api/chat</code> - 🔑 Requires OpenAI API key</li>
+<li>Returns: "OpenAI API key is required"</li>
+<li>Endpoint functional, needs configuration</li>
+</ul>
+<h4 id="ai-agent">AI Agent ⚠️</h4>
+<ul>
+<li><code>/api/ai-agent/please</code> - ⚠️ Parameter validation issue</li>
+<li>Returns: "Question is required"</li>
+<li>Endpoint exists, needs proper request format</li>
+</ul>
+<hr />
+<h2 id="3-frontend-route-configuration">3. Frontend Route Configuration</h2>
+<h3 id="page-imports">Page Imports ✅</h3>
+<p>All page components imported in <code>App.tsx</code> exist:</p>
+<p><strong>Main Pages:</strong>
+- ✅ Dashboard
+- ✅ ScriptManagement
+- ✅ ScriptDetail
+- ✅ ScriptEditor
+- ✅ ScriptAnalysis
+- ✅ ScriptUpload
+- ✅ SimpleChatWithAI
+- ✅ Documentation
+- ✅ Login
+- ✅ Register
+- ✅ Settings
+- ✅ NotFound
+- ✅ ChatHistory
+- ✅ DocumentationCrawl
+- ✅ AgenticAIPage
+- ✅ AgentOrchestrationPage
+- ✅ UIComponentsDemo
+- ✅ Analytics</p>
+<p><strong>Settings Subpages:</strong>
+- ✅ ProfileSettings
+- ✅ AppearanceSettings
+- ✅ SecuritySettings
+- ✅ NotificationSettings
+- ✅ ApiSettings
+- ✅ UserManagement</p>
+<h3 id="route-structure">Route Structure ✅</h3>
+<pre><code>/ → Dashboard (or Login if not authenticated)
+/login → Login page
+/register → Register page
+/dashboard → Dashboard (protected)
+/analytics → Analytics page (protected)
+/scripts → Script Management (protected)
+/scripts/upload → Script Upload (protected)
+/scripts/:id → Script Detail
+/scripts/:id/edit → Script Editor (protected)
+/scripts/:id/analysis → Script Analysis
+/chat → AI Chat Assistant
+/chat/history → Chat History (protected)
+/ai/assistant → Agentic AI Page
+/ai/agents → Agent Orchestration (protected)
+/documentation → Documentation
+/documentation/crawl → Documentation Crawler (protected)
+/ui-components → UI Components Demo
+/settings → Settings (protected)
+/settings/* → Settings subpages (protected)
+</code></pre>
+<h3 id="navigation-links">Navigation Links ✅</h3>
+<p><strong>Sidebar Navigation:</strong>
+- ✅ Dashboard (/)
+- ✅ Script Management (/scripts)
+- ✅ AI Assistant (expandable submenu)
+  - ✅ Chat Assistant (/chat)
+  - ✅ Agentic Assistant (/ai/assistant)
+- ✅ Documentation (/documentation)
+- ✅ UI Components (/ui-components)
+- ✅ Settings (/settings) - auth only
+- ✅ Login/Register - non-auth only</p>
+<p><strong>Navbar Actions:</strong>
+- ✅ Search button → navigates to /scripts?search=true
+- ✅ Theme toggle → working (dark/light mode)
+- ✅ Notifications dropdown → UI implemented
+- ✅ User menu dropdown → Settings, My Scripts, Sign Out</p>
+<hr />
+<h2 id="4-typescript-build-errors">4. TypeScript Build Errors ❌</h2>
+<h3 id="critical-issues-found-21-errors">Critical Issues Found (21 errors)</h3>
+<h4 id="1-tanstack-query-v5-migration-issues-11-errors">1. TanStack Query v5 Migration Issues (11 errors)</h4>
+<p><strong>Problem:</strong> Code using deprecated <code>isLoading</code> property from React Query v4
+<strong>Affected Files:</strong>
+- <code>ScriptDetail.tsx</code> (2 instances)
+- <code>ScriptUpload.tsx</code> (7 instances)</p>
+<p><strong>Fix Required:</strong> Replace <code>isLoading</code> with <code>isPending</code></p>
+<pre><code class="language-typescript">// OLD (v4)
+const { mutate, isLoading } = useMutation(...)
+
+// NEW (v5)
+const { mutate, isPending } = useMutation(...)
+</code></pre>
+<h4 id="2-react-query-hook-signature-issues-3-errors">2. React Query Hook Signature Issues (3 errors)</h4>
+<p><strong>File:</strong> <code>hooks/useScripts.ts</code>
+<strong>Problem:</strong> <code>useQuery</code> called with 3 arguments (v4 syntax) instead of single config object (v5)</p>
+<p><strong>Fix Required:</strong></p>
+<pre><code class="language-typescript">// OLD (v4)
+useQuery('key', fetchFn, options)
+
+// NEW (v5)
+useQuery({ queryKey: ['key'], queryFn: fetchFn, ...options })
+</code></pre>
+<h4 id="3-marked-library-type-error-2-errors">3. Marked Library Type Error (2 errors)</h4>
+<p><strong>File:</strong> <code>components/Agentic/MessageList.tsx</code>
+<strong>Problem:</strong>
+- <code>highlight</code> property doesn't exist in MarkedOptions
+- Type mismatch in marked parsing</p>
+<h4 id="4-missing-dependency-1-error">4. Missing Dependency (1 error)</h4>
+<p><strong>File:</strong> <code>components/CommandPalette.tsx</code>
+<strong>Problem:</strong> Cannot find module 'cmdk'
+<strong>Fix Required:</strong> Install dependency: <code>npm install cmdk</code></p>
+<h4 id="5-component-prop-mismatches-2-errors">5. Component Prop Mismatches (2 errors)</h4>
+<p><strong>File:</strong> <code>components/Layout.tsx</code>
+<strong>Problem:</strong> Passing props that don't exist in component interfaces
+- Sidebar: <code>collapsed</code> prop doesn't exist
+- Navbar: <code>onToggleSidebar</code> prop doesn't exist</p>
+<h4 id="6-type-comparison-issues-4-errors">6. Type Comparison Issues (4 errors)</h4>
+<p><strong>File:</strong> <code>pages/Settings/UserManagement.tsx</code>
+<strong>Problem:</strong> Comparing string to number (user.id comparison issues)
+<strong>Fix Required:</strong> Ensure consistent typing for user IDs</p>
+<hr />
+<h2 id="5-navigation-link-testing">5. Navigation &amp; Link Testing</h2>
+<h3 id="all-links-verified">All Links Verified ✅</h3>
+<ul>
+<li>✅ All sidebar navigation links point to valid routes</li>
+<li>✅ All routes have corresponding page components</li>
+<li>✅ Protected routes properly wrapped with <code>&lt;ProtectedRoute&gt;</code></li>
+<li>✅ 404 fallback route configured</li>
+<li>✅ Auth redirection logic implemented</li>
+</ul>
+<h3 id="user-flow-paths">User Flow Paths ✅</h3>
+<ol>
+<li><strong>Unauthenticated:</strong></li>
+<li><code>/</code> → redirects to <code>/login</code></li>
+<li>
+<p>Can access: login, register, documentation, UI components, chat</p>
+</li>
+<li>
+<p><strong>Authenticated:</strong></p>
+</li>
+<li><code>/</code> → Dashboard</li>
+<li>Full access to all protected routes</li>
+<li>User menu shows: Settings, My Scripts, Sign Out</li>
+</ol>
+<hr />
+<h2 id="6-key-findings-recommendations">6. Key Findings &amp; Recommendations</h2>
+<h3 id="immediate-action-required">Immediate Action Required 🚨</h3>
+<ol>
+<li><strong>Fix Scripts Endpoint Database Error</strong></li>
+<li>Priority: HIGH</li>
+<li>Impact: Cannot display scripts in application</li>
+<li>Location: <code>src/backend/src/controllers/ScriptController.ts</code></li>
+<li>
+<p>Action: Check Sequelize query and model relationships</p>
+</li>
+<li>
+<p><strong>Fix TypeScript Build Errors</strong></p>
+</li>
+<li>Priority: HIGH</li>
+<li>Impact: Production build fails</li>
+<li>Count: 21 errors</li>
+<li>Primary Issue: TanStack Query v5 migration incomplete</li>
+<li>
+<p>Action: Complete React Query v5 migration</p>
+</li>
+<li>
+<p><strong>Install Missing Dependency</strong></p>
+</li>
+<li>Priority: MEDIUM</li>
+<li>Package: <code>cmdk</code></li>
+<li>Command: <code>cd src/frontend &amp;&amp; npm install cmdk</code></li>
+</ol>
+<h3 id="configuration-needed">Configuration Needed ⚙️</h3>
+<ol>
+<li><strong>OpenAI API Key</strong></li>
+<li>Chat functionality requires API key configuration</li>
+<li>
+<p>Set in environment variables or Settings page</p>
+</li>
+<li>
+<p><strong>Frontend Node Version</strong></p>
+</li>
+<li>Current: v18.20.8</li>
+<li>Required: v20+ or v22+</li>
+<li>Consider updating Docker image</li>
+</ol>
+<h3 id="enhancement-opportunities">Enhancement Opportunities 💡</h3>
+<ol>
+<li><strong>Tags Endpoint</strong> - Implement full functionality (currently placeholder)</li>
+<li><strong>Analytics Authentication</strong> - Verify token handling and format</li>
+<li><strong>Frontend Health Check</strong> - Fix Docker health check or adjust configuration</li>
+<li><strong>AI Agent Endpoint</strong> - Document required request parameters</li>
+</ol>
+<hr />
+<h2 id="7-testing-summary">7. Testing Summary</h2>
+<h3 id="what-works">What Works ✅</h3>
+<ul>
+<li>Authentication system (register, login, JWT)</li>
+<li>Service orchestration (all containers running)</li>
+<li>Frontend routing and navigation</li>
+<li>Category management</li>
+<li>Health monitoring</li>
+<li>Swagger API documentation</li>
+<li>Theme switching (dark/light mode)</li>
+<li>Protected route logic</li>
+<li>User session management</li>
+</ul>
+<h3 id="what-needs-fixing">What Needs Fixing ❌</h3>
+<ol>
+<li>Scripts listing endpoint (database error)</li>
+<li>TypeScript compilation (21 errors)</li>
+<li>Missing cmdk dependency</li>
+<li>Component prop type mismatches</li>
+<li>React Query v5 migration completion</li>
+</ol>
+<h3 id="what-needs-configuration">What Needs Configuration ⚙️</h3>
+<ol>
+<li>OpenAI API key for chat functionality</li>
+<li>Analytics endpoint authentication</li>
+<li>Node version alignment</li>
+</ol>
+<hr />
+<h2 id="8-next-steps">8. Next Steps</h2>
+<h3 id="priority-1-critical">Priority 1 (Critical) 🔴</h3>
+<ol>
+<li>Fix scripts endpoint database query error</li>
+<li>Complete TanStack Query v5 migration (replace <code>isLoading</code> with <code>isPending</code>)</li>
+<li>Install <code>cmdk</code> package</li>
+<li>Fix component prop type mismatches in Layout components</li>
+</ol>
+<h3 id="priority-2-important">Priority 2 (Important) 🟡</h3>
+<ol>
+<li>Resolve UserManagement type comparison issues</li>
+<li>Fix Marked library type errors in MessageList</li>
+<li>Configure OpenAI API key for chat</li>
+<li>Verify analytics endpoint authentication</li>
+</ol>
+<h3 id="priority-3-nice-to-have">Priority 3 (Nice to Have) 🟢</h3>
+<ol>
+<li>Implement tags endpoint fully</li>
+<li>Upgrade Node version in Docker</li>
+<li>Fix frontend health check</li>
+<li>Document AI agent API request format</li>
+</ol>
+<hr />
+<h2 id="conclusion">Conclusion</h2>
+<p>The PSScript application has a <strong>solid foundation</strong> with well-structured routing, comprehensive page coverage, and working core services. However, <strong>TypeScript build errors must be addressed</strong> before production deployment. The primary issues stem from an incomplete migration to TanStack Query v5 and a few type mismatches.</p>
+<p><strong>Estimated Fix Time:</strong> 2-4 hours for critical issues</p>
+<p><strong>Recommended Action:</strong> Focus on completing the React Query v5 migration and fixing the scripts endpoint database error as these are blocking core functionality.</p>
+<hr />
+<p><strong>Report Generated:</strong> 2026-01-09
+<strong>Test Coverage:</strong> API endpoints, Frontend routes, Component imports, TypeScript compilation
+<strong>Tools Used:</strong> curl, jq, npm build, file system analysis</p>
+    <div class="footer">Generated 2026-04-24 01:27 UTC</div>
+  </div>
+</body>
+</html>

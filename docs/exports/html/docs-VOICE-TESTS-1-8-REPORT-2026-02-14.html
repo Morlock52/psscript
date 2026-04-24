@@ -1,0 +1,356 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <base href="file:///Users/morlock/fun/02_PowerShell_Projects/psscript/" />
+  <title>docs-VOICE-TESTS-1-8-REPORT-2026-02-14</title>
+  <style>
+:root {
+  color-scheme: light;
+}
+body {
+  font-family: "Segoe UI", "Helvetica Neue", Arial, sans-serif;
+  margin: 0;
+  padding: 0;
+  background: #ffffff;
+  color: #0f172a;
+}
+.markdown-body {
+  max-width: 980px;
+  margin: 40px auto 60px;
+  padding: 0 32px;
+  line-height: 1.65;
+}
+.markdown-body h1 {
+  font-size: 32px;
+  margin-bottom: 12px;
+  border-bottom: 2px solid #e2e8f0;
+  padding-bottom: 12px;
+  page-break-before: always;
+  page-break-after: avoid;
+  break-before: page;
+  break-after: avoid;
+}
+.markdown-body h1:first-of-type {
+  page-break-before: avoid;
+  break-before: avoid;
+}
+.markdown-body h2 {
+  font-size: 24px;
+  margin-top: 28px;
+  border-bottom: 1px solid #e2e8f0;
+  padding-bottom: 8px;
+  page-break-before: always;
+  page-break-after: avoid;
+  break-before: page;
+  break-after: avoid;
+}
+.markdown-body h3 {
+  font-size: 18px;
+  margin-top: 20px;
+  page-break-after: avoid;
+  break-after: avoid;
+}
+.markdown-body h4, .markdown-body h5, .markdown-body h6 {
+  page-break-after: avoid;
+  break-after: avoid;
+}
+.markdown-body table {
+  width: 100%;
+  border-collapse: collapse;
+  margin: 16px 0;
+  font-size: 14px;
+  page-break-inside: avoid;
+  break-inside: avoid;
+}
+.markdown-body th,
+.markdown-body td {
+  border: 1px solid #e2e8f0;
+  padding: 8px 10px;
+  text-align: left;
+}
+.markdown-body th {
+  background: #f8fafc;
+}
+.markdown-body tr {
+  page-break-inside: avoid;
+  break-inside: avoid;
+}
+.markdown-body code {
+  background: #f1f5f9;
+  padding: 2px 4px;
+  border-radius: 4px;
+  font-family: "SFMono-Regular", Menlo, Consolas, monospace;
+  font-size: 0.92em;
+}
+.markdown-body pre {
+  background: #0f172a;
+  color: #e2e8f0;
+  padding: 16px;
+  border-radius: 8px;
+  overflow-x: auto;
+  page-break-inside: avoid;
+  break-inside: avoid;
+}
+.markdown-body pre code {
+  background: transparent;
+  color: inherit;
+}
+.markdown-body blockquote {
+  border-left: 4px solid #38bdf8;
+  margin: 16px 0;
+  padding: 8px 16px;
+  background: #f8fafc;
+  color: #334155;
+}
+.markdown-body img {
+  max-width: 100%;
+  height: auto;
+  display: block;
+  margin: 16px 0;
+  border-radius: 10px;
+  box-shadow: 0 8px 20px rgba(15, 23, 42, 0.12);
+  page-break-inside: avoid;
+  break-inside: avoid;
+}
+.markdown-body figure {
+  page-break-inside: avoid;
+  break-inside: avoid;
+  margin: 16px 0;
+}
+.markdown-body a {
+  color: #2563eb;
+  text-decoration: none;
+}
+.markdown-body a:hover {
+  text-decoration: underline;
+}
+.cover {
+  padding: 80px 60px 60px;
+  background: linear-gradient(135deg, #0b1220 0%, #1e3a8a 100%);
+  color: #f8fafc;
+  border-radius: 18px;
+  margin-bottom: 32px;
+}
+.cover-title {
+  font-size: 36px;
+  font-weight: 700;
+  margin: 0 0 12px;
+}
+.cover-subtitle {
+  font-size: 18px;
+  color: #cbd5f5;
+  margin: 0 0 16px;
+}
+.cover-meta {
+  font-size: 13px;
+  color: #94a3b8;
+}
+.page-break {
+  page-break-after: always;
+  break-after: page;
+}
+.footer {
+  margin-top: 40px;
+  font-size: 12px;
+  color: #64748b;
+}
+/* Print and PDF-specific styles */
+@page {
+  margin: 20mm 18mm;
+}
+@media print {
+  .markdown-body {
+    orphans: 3;
+    widows: 3;
+  }
+  .markdown-body p {
+    orphans: 3;
+    widows: 3;
+  }
+  .markdown-body li {
+    page-break-inside: avoid;
+    break-inside: avoid;
+  }
+  .markdown-body ul, .markdown-body ol {
+    page-break-before: avoid;
+    break-before: avoid;
+  }
+  .markdown-body blockquote {
+    page-break-inside: avoid;
+    break-inside: avoid;
+  }
+  /* Keep section content together */
+  .markdown-body h2 + *, .markdown-body h3 + * {
+    page-break-before: avoid;
+    break-before: avoid;
+  }
+}
+</style>
+</head>
+<body>
+  <div class="markdown-body">
+    
+    <h1 id="voice-api-tests-1-8-report-2026-02-14">Voice API Tests 1-8 Report (2026-02-14)</h1>
+<h2 id="scope">Scope</h2>
+<p>Validated and hardened the OpenAI-based voice pipeline across:
+- Python AI service (<code>/synthesize</code>, <code>/recognize</code>)
+- Node backend voice controller/routes
+- Auth, caching, payload validation, telemetry, and stress behavior</p>
+<p>Test runner used:
+- <code>/tmp/voice_test_runner.mjs</code>
+- Latest execution date: <strong>2026-02-14</strong></p>
+<p>Raw result artifact:
+- <code>/tmp/voice_test_results.json</code></p>
+<h2 id="executive-result">Executive Result</h2>
+<p>All eight tests executed successfully against the current implementation.</p>
+<ul>
+<li>Critical failures: <strong>0</strong></li>
+<li>Regressions: <strong>0</strong></li>
+<li>Remaining intentional constraints: STT does not accept <code>opus</code>/<code>pcm</code> payloads (returns <code>400</code>)</li>
+</ul>
+<h2 id="test-results">Test Results</h2>
+<h3 id="1-route-and-basic-functional-checks">1) Route and basic functional checks</h3>
+<ul>
+<li><code>GET /api/voice/voices</code>: <code>200</code></li>
+<li><code>GET /api/voice/settings</code>: <code>200</code></li>
+<li><code>POST /api/voice/synthesize</code>: <code>200</code> with audio payload</li>
+<li><code>POST /api/voice/recognize</code>: <code>200</code> with transcript (<code>"Test one route."</code>)</li>
+</ul>
+<p>Status: <strong>PASS</strong></p>
+<h3 id="2-loadstress-checks-synthesize">2) Load/stress checks (synthesize)</h3>
+<ul>
+<li>Concurrency 10: 10/10 success, p95 ~218ms</li>
+<li>Concurrency 25: 25/25 success, p95 ~366ms</li>
+<li>Concurrency 50: 50/50 success, p95 ~528ms</li>
+</ul>
+<p>Status: <strong>PASS</strong></p>
+<h3 id="3-formatvoice-matrix">3) Format/voice matrix</h3>
+<p>Voices tested: <code>alloy</code>, <code>nova</code>, <code>cedar</code>
+Formats tested: <code>mp3</code>, <code>wav</code>, <code>flac</code>, <code>opus</code></p>
+<ul>
+<li><code>mp3/wav/flac</code>: synth <code>200</code>, recognize <code>200</code></li>
+<li><code>opus</code>: synth <code>200</code>, recognize <code>400</code> (expected unsupported STT format)</li>
+</ul>
+<p>Status: <strong>PASS</strong> (with documented format limitation)</p>
+<h3 id="4-robustness-tests">4) Robustness tests</h3>
+<ul>
+<li>Silence WAV: <code>200</code>, no transcript (expected)</li>
+<li>Random noise: <code>400</code> invalid/unsupported content (expected)</li>
+<li>Accent phrase: <code>200</code>, correct transcript</li>
+<li>Spanish phrase (<code>es-ES</code>): <code>200</code>, correct transcript</li>
+</ul>
+<p>Status: <strong>PASS</strong></p>
+<h3 id="5-failure-path-validation">5) Failure path validation</h3>
+<ul>
+<li>Invalid API key: <code>401</code> (correct)</li>
+<li>Malformed base64 audio: <code>400</code> (correct)</li>
+<li>Missing text: <code>400</code> (correct)</li>
+</ul>
+<p>Status: <strong>PASS</strong></p>
+<h3 id="6-cache-behavior">6) Cache behavior</h3>
+<ul>
+<li>First synth request: ~1024ms</li>
+<li>Second synth request (same request): ~130ms</li>
+<li>Improvement observed: true</li>
+</ul>
+<p>Status: <strong>PASS</strong></p>
+<h3 id="7-security-checks">7) Security checks</h3>
+<ul>
+<li>Unauthenticated voices route: <code>401</code></li>
+<li>Oversized text: <code>413</code></li>
+<li>Oversized audio: <code>413</code></li>
+<li>Prompt-injection-like synthesis input: <code>200</code> (returns audio, no crash)</li>
+</ul>
+<p>Status: <strong>PASS</strong></p>
+<h3 id="8-telemetry-checks">8) Telemetry checks</h3>
+<p>AI analytics summary now includes voice endpoints in top endpoint list:
+- <code>/api/voice/synthesize</code>
+- <code>/api/voice/recognize</code></p>
+<p>Status: <strong>PASS</strong></p>
+<h2 id="issues-fixed-during-this-cycle">Issues Fixed During This Cycle</h2>
+<ol>
+<li>Invalid API key cache contamination risk</li>
+<li>Problem: cached synth responses could be reused across different API key contexts.</li>
+<li>Fix: include API key scope fingerprint in AI-service voice cache key generation.</li>
+<li>
+<p>File: <code>src/ai/voice_service.py</code></p>
+</li>
+<li>
+<p>HTTP error semantics were being flattened to 500 in some paths</p>
+</li>
+<li>Problem: expected 4xx errors (bad base64, unsupported format, invalid key) could be masked.</li>
+<li>Fix: preserve <code>HTTPException</code> and rethrow in service/endpoint layers.</li>
+<li>Files:</li>
+<li><code>src/ai/voice_service.py</code></li>
+<li>
+<p><code>src/ai/voice_endpoints.py</code></p>
+</li>
+<li>
+<p>STT format handling and clearer validation</p>
+</li>
+<li>Problem: unsupported transcription formats could surface as opaque failures.</li>
+<li>Fix: added request <code>audio_format</code> passthrough and explicit rejection (<code>400</code>) for unsupported formats.</li>
+<li>Files:</li>
+<li><code>src/ai/voice_endpoints.py</code></li>
+<li>
+<p><code>src/backend/src/controllers/VoiceController.ts</code></p>
+</li>
+<li>
+<p>Voice route auth hardening</p>
+</li>
+<li>Problem: development auth bypass configurations could expose route behavior too broadly.</li>
+<li>Fix: enforced bearer token presence middleware on voice routes.</li>
+<li>
+<p>File: <code>src/backend/src/routes/voice.ts</code></p>
+</li>
+<li>
+<p>Cache middleware exposure for voice routes</p>
+</li>
+<li>Problem: GET response caching for voice endpoints could serve stale/auth-dependent responses.</li>
+<li>Fix: added <code>/api/voice</code> to backend cache skip list.</li>
+<li>
+<p>File: <code>src/backend/src/index.ts</code></p>
+</li>
+<li>
+<p>Input size guardrails for abuse resistance</p>
+</li>
+<li>Problem: no strict upper bounds on text/audio payload size for voice operations.</li>
+<li>Fix: enforce text/audio limits and return <code>413</code> for oversized payloads.</li>
+<li>
+<p>File: <code>src/backend/src/controllers/VoiceController.ts</code></p>
+</li>
+<li>
+<p>OpenAI voice defaults + catalog alignment</p>
+</li>
+<li>Problem: mixed provider-era defaults could create mismatched voice IDs.</li>
+<li>Fix: OpenAI voice catalog and default voice alignment across backend/frontend.</li>
+<li>Files:</li>
+<li><code>src/backend/src/controllers/VoiceController.ts</code></li>
+<li>
+<p><code>src/frontend/components/VoiceChatInterface.jsx</code></p>
+</li>
+<li>
+<p>Voice telemetry visibility gap</p>
+</li>
+<li>Problem: voice activity was not clearly represented in AI analytics.</li>
+<li>Fix: added explicit AI metric writes for synth/recognize endpoints.</li>
+<li>File: <code>src/backend/src/controllers/VoiceController.ts</code></li>
+</ol>
+<h2 id="current-known-limitations">Current Known Limitations</h2>
+<ul>
+<li><code>opus</code> (and raw <code>pcm</code>) are not accepted for current STT flow and intentionally return <code>400</code>.</li>
+<li>Noise-only payloads may return provider-level <code>400 unsupported_format</code>, which is propagated as client error by design.</li>
+</ul>
+<h2 id="verification-commands">Verification Commands</h2>
+<pre><code class="language-bash"># Run full voice 1-8 suite
+node /tmp/voice_test_runner.mjs
+
+# Optional: inspect latest JSON artifact
+cat /tmp/voice_test_results.json
+</code></pre>
+    <div class="footer">Generated 2026-04-24 01:27 UTC</div>
+  </div>
+</body>
+</html>

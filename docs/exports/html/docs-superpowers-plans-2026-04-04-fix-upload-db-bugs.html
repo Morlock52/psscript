@@ -1,0 +1,865 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <base href="file:///Users/morlock/fun/02_PowerShell_Projects/psscript/" />
+  <title>docs-superpowers-plans-2026-04-04-fix-upload-db-bugs</title>
+  <style>
+:root {
+  color-scheme: light;
+}
+body {
+  font-family: "Segoe UI", "Helvetica Neue", Arial, sans-serif;
+  margin: 0;
+  padding: 0;
+  background: #ffffff;
+  color: #0f172a;
+}
+.markdown-body {
+  max-width: 980px;
+  margin: 40px auto 60px;
+  padding: 0 32px;
+  line-height: 1.65;
+}
+.markdown-body h1 {
+  font-size: 32px;
+  margin-bottom: 12px;
+  border-bottom: 2px solid #e2e8f0;
+  padding-bottom: 12px;
+  page-break-before: always;
+  page-break-after: avoid;
+  break-before: page;
+  break-after: avoid;
+}
+.markdown-body h1:first-of-type {
+  page-break-before: avoid;
+  break-before: avoid;
+}
+.markdown-body h2 {
+  font-size: 24px;
+  margin-top: 28px;
+  border-bottom: 1px solid #e2e8f0;
+  padding-bottom: 8px;
+  page-break-before: always;
+  page-break-after: avoid;
+  break-before: page;
+  break-after: avoid;
+}
+.markdown-body h3 {
+  font-size: 18px;
+  margin-top: 20px;
+  page-break-after: avoid;
+  break-after: avoid;
+}
+.markdown-body h4, .markdown-body h5, .markdown-body h6 {
+  page-break-after: avoid;
+  break-after: avoid;
+}
+.markdown-body table {
+  width: 100%;
+  border-collapse: collapse;
+  margin: 16px 0;
+  font-size: 14px;
+  page-break-inside: avoid;
+  break-inside: avoid;
+}
+.markdown-body th,
+.markdown-body td {
+  border: 1px solid #e2e8f0;
+  padding: 8px 10px;
+  text-align: left;
+}
+.markdown-body th {
+  background: #f8fafc;
+}
+.markdown-body tr {
+  page-break-inside: avoid;
+  break-inside: avoid;
+}
+.markdown-body code {
+  background: #f1f5f9;
+  padding: 2px 4px;
+  border-radius: 4px;
+  font-family: "SFMono-Regular", Menlo, Consolas, monospace;
+  font-size: 0.92em;
+}
+.markdown-body pre {
+  background: #0f172a;
+  color: #e2e8f0;
+  padding: 16px;
+  border-radius: 8px;
+  overflow-x: auto;
+  page-break-inside: avoid;
+  break-inside: avoid;
+}
+.markdown-body pre code {
+  background: transparent;
+  color: inherit;
+}
+.markdown-body blockquote {
+  border-left: 4px solid #38bdf8;
+  margin: 16px 0;
+  padding: 8px 16px;
+  background: #f8fafc;
+  color: #334155;
+}
+.markdown-body img {
+  max-width: 100%;
+  height: auto;
+  display: block;
+  margin: 16px 0;
+  border-radius: 10px;
+  box-shadow: 0 8px 20px rgba(15, 23, 42, 0.12);
+  page-break-inside: avoid;
+  break-inside: avoid;
+}
+.markdown-body figure {
+  page-break-inside: avoid;
+  break-inside: avoid;
+  margin: 16px 0;
+}
+.markdown-body a {
+  color: #2563eb;
+  text-decoration: none;
+}
+.markdown-body a:hover {
+  text-decoration: underline;
+}
+.cover {
+  padding: 80px 60px 60px;
+  background: linear-gradient(135deg, #0b1220 0%, #1e3a8a 100%);
+  color: #f8fafc;
+  border-radius: 18px;
+  margin-bottom: 32px;
+}
+.cover-title {
+  font-size: 36px;
+  font-weight: 700;
+  margin: 0 0 12px;
+}
+.cover-subtitle {
+  font-size: 18px;
+  color: #cbd5f5;
+  margin: 0 0 16px;
+}
+.cover-meta {
+  font-size: 13px;
+  color: #94a3b8;
+}
+.page-break {
+  page-break-after: always;
+  break-after: page;
+}
+.footer {
+  margin-top: 40px;
+  font-size: 12px;
+  color: #64748b;
+}
+/* Print and PDF-specific styles */
+@page {
+  margin: 20mm 18mm;
+}
+@media print {
+  .markdown-body {
+    orphans: 3;
+    widows: 3;
+  }
+  .markdown-body p {
+    orphans: 3;
+    widows: 3;
+  }
+  .markdown-body li {
+    page-break-inside: avoid;
+    break-inside: avoid;
+  }
+  .markdown-body ul, .markdown-body ol {
+    page-break-before: avoid;
+    break-before: avoid;
+  }
+  .markdown-body blockquote {
+    page-break-inside: avoid;
+    break-inside: avoid;
+  }
+  /* Keep section content together */
+  .markdown-body h2 + *, .markdown-body h3 + * {
+    page-break-before: avoid;
+    break-before: avoid;
+  }
+}
+</style>
+</head>
+<body>
+  <div class="markdown-body">
+    
+    <h1 id="fix-backend-api-database-issues-in-script-upload-pipeline">Fix Backend API Database Issues in Script Upload Pipeline</h1>
+<blockquote>
+<p><strong>For agentic workers:</strong> REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (<code>- [ ]</code>) syntax for tracking.</p>
+</blockquote>
+<p><strong>Goal:</strong> Fix all database-related bugs in the script upload pipeline that cause silent failures, data loss, and broken status tracking.</p>
+<p><strong>Architecture:</strong> Six verified bugs across AsyncUploadController, Script model, ScriptVersion model, and fileIntegrity utility. Fixes target model definitions, controller logic, and a new DB migration for hash uniqueness. Each task is independent and produces a working, testable change.</p>
+<blockquote>
+<p><strong>Migration ordering:</strong> Task 5 (MD5→SHA-256 rehash) <strong>must run before</strong> Task 4 (UNIQUE constraint). If duplicate MD5 hashes exist in the database, adding the UNIQUE constraint will fail. Task 5 recomputes all hashes as SHA-256, eliminating duplicates caused by MD5 collisions, so the constraint can be safely added afterward.</p>
+<p><strong>Deployment sequence (no-skew):</strong> To prevent a window where old nodes write MD5 hashes while new nodes write SHA-256 (which would bypass deduplication), deploy in this order:
+1. <strong>Deploy code changes</strong> (Tasks 1-3, 5 code, 6) to <strong>all instances</strong> — the new code writes SHA-256 but still reads both MD5 and SHA-256 via the deprecated aliases
+2. <strong>Run Task 5 migration</strong> (rehash existing MD5→SHA-256) — now all hashes in DB are SHA-256
+3. <strong>Run Task 4 migration</strong> (audit duplicates, reassign dependents, add UNIQUE constraint)
+4. <strong>Verify:</strong> <code>SELECT COUNT(*) FROM scripts WHERE length(file_hash) = 32;</code> should return 0</p>
+<p>In a single-instance deployment (Docker Compose), steps 1-3 can be done in sequence during a single maintenance window. For multi-instance deployments, step 1 must complete on all instances before step 2.</p>
+</blockquote>
+<p><strong>Tech Stack:</strong> TypeScript, Sequelize 6, PostgreSQL 15, Express</p>
+<hr />
+<h2 id="file-structure">File Structure</h2>
+<table>
+<thead>
+<tr>
+<th>Action</th>
+<th>File</th>
+<th>Responsibility</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Modify</td>
+<td><code>src/backend/src/models/Script.ts</code></td>
+<td>Add <code>hasMany(ScriptVersion)</code> association, mark <code>file_hash</code> index unique</td>
+</tr>
+<tr>
+<td>Modify</td>
+<td><code>src/backend/src/controllers/AsyncUploadController.ts</code></td>
+<td>Fix <code>Script.create</code> (missing content, ghost uploadId), fix <code>changes</code> → <code>changelog</code>, fix <code>getUploadStatus</code> query</td>
+</tr>
+<tr>
+<td>Modify</td>
+<td><code>src/backend/src/controllers/script/export.ts</code></td>
+<td>Move hash check inside transaction</td>
+</tr>
+<tr>
+<td>Modify</td>
+<td><code>src/backend/src/utils/fileIntegrity.ts</code></td>
+<td>Upgrade MD5 → SHA-256</td>
+</tr>
+<tr>
+<td>Create</td>
+<td><code>src/db/migrations/upgrade_file_hash_sha256.sql</code></td>
+<td>Rehash MD5→SHA-256 (run first)</td>
+</tr>
+<tr>
+<td>Create</td>
+<td><code>src/db/migrations/add_unique_file_hash.sql</code></td>
+<td>Add UNIQUE constraint on <code>file_hash</code> (run after rehash)</td>
+</tr>
+<tr>
+<td>Create</td>
+<td><code>src/backend/src/models/__tests__/Script.associations.test.ts</code></td>
+<td>Association tests</td>
+</tr>
+<tr>
+<td>Create</td>
+<td><code>src/backend/src/controllers/__tests__/AsyncUploadController.test.ts</code></td>
+<td>Unit tests for upload pipeline fixes</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h3 id="task-1-add-missing-hasmanyscriptversion-association-to-script-model">Task 1: Add Missing <code>hasMany(ScriptVersion)</code> Association to Script Model</h3>
+<p><strong>Files:</strong>
+- Modify: <code>src/backend/src/models/Script.ts:100-110</code> (associate method)</p>
+<p>The <code>AsyncUploadController.getUploadStatus</code> (line 194) does <code>include: [{ model: ScriptVersion, as: 'versions' }]</code> but <code>Script</code> has no <code>hasMany(ScriptVersion)</code> association. This causes a Sequelize eager-loading error.</p>
+<ul>
+<li>[ ] <strong>Step 1: Write the failing test</strong></li>
+</ul>
+<p>Create file <code>src/backend/src/models/__tests__/Script.associations.test.ts</code>:</p>
+<pre><code class="language-typescript">import Script from '../Script';
+import ScriptVersion from '../ScriptVersion';
+import { sequelize } from '../../database/connection';
+
+// Initialize models (mimics src/models/index.ts)
+Script.initialize(sequelize);
+ScriptVersion.initialize(sequelize);
+Script.associate();
+ScriptVersion.associate();
+
+describe('Script model associations', () =&gt; {
+  it('should have a hasMany association with ScriptVersion as &quot;versions&quot;', () =&gt; {
+    const associations = Script.associations;
+    expect(associations).toHaveProperty('versions');
+    expect(associations.versions.associationType).toBe('HasMany');
+  });
+});
+</code></pre>
+<ul>
+<li>[ ] <strong>Step 2: Run test to verify it fails</strong></li>
+</ul>
+<p>Run: <code>cd src/backend &amp;&amp; npx jest src/models/__tests__/Script.associations.test.ts --no-cache 2&gt;&amp;1 | head -30</code></p>
+<p>Expected: FAIL — <code>associations.versions</code> is undefined</p>
+<ul>
+<li>[ ] <strong>Step 3: Add the hasMany association</strong></li>
+</ul>
+<p>In <code>src/backend/src/models/Script.ts</code>, inside the <code>associate()</code> method, after the existing <code>Script.belongsToMany(Tag, ...)</code> line, add:</p>
+<pre><code class="language-typescript">    Script.hasMany(ScriptVersion, { foreignKey: 'scriptId', as: 'versions' });
+</code></pre>
+<p>The full associate method becomes:</p>
+<pre><code class="language-typescript">  static associate() {
+    Script.belongsTo(User, { foreignKey: 'userId', as: 'user' });
+    Script.belongsTo(Category, { foreignKey: 'categoryId', as: 'category' });
+    Script.hasOne(ScriptAnalysis, { foreignKey: 'scriptId', as: 'analysis' });
+    Script.belongsToMany(Tag, { 
+      through: 'script_tags',
+      foreignKey: 'script_id',
+      otherKey: 'tag_id',
+      as: 'tags'
+    });
+    Script.hasMany(ScriptVersion, { foreignKey: 'scriptId', as: 'versions' });
+  }
+</code></pre>
+<p>You must also add the import at the top of the file:</p>
+<pre><code class="language-typescript">import ScriptVersion from './ScriptVersion';
+</code></pre>
+<ul>
+<li>[ ] <strong>Step 4: Run test to verify it passes</strong></li>
+</ul>
+<p>Run: <code>cd src/backend &amp;&amp; npx jest src/models/__tests__/Script.associations.test.ts --no-cache 2&gt;&amp;1 | head -30</code></p>
+<p>Expected: PASS</p>
+<ul>
+<li>[ ] <strong>Step 5: Commit</strong></li>
+</ul>
+<pre><code class="language-bash">git add src/backend/src/models/Script.ts src/backend/src/models/__tests__/Script.associations.test.ts
+git commit -m &quot;fix: add missing hasMany(ScriptVersion) association to Script model
+
+The AsyncUploadController.getUploadStatus queried Script with
+include: ScriptVersion as 'versions', but no such association existed,
+causing eager-loading failures.&quot;
+</code></pre>
+<hr />
+<h3 id="task-2-fix-asyncuploadcontroller-scriptcreate-missing-content-ghost-uploadid">Task 2: Fix AsyncUploadController <code>Script.create</code> — Missing <code>content</code>, Ghost <code>uploadId</code></h3>
+<p><strong>Files:</strong>
+- Modify: <code>src/backend/src/controllers/AsyncUploadController.ts:291-300</code> (Script.create call)</p>
+<p>Two bugs in the <code>processNextFile</code> method:
+1. <code>Script.create</code> passes <code>uploadId</code> — this field doesn't exist on the Script model, Sequelize silently ignores it
+2. <code>Script.create</code> is missing <code>content: fileContent</code> — the <code>content</code> column is <code>allowNull: false</code>, so this INSERT always fails with a validation error</p>
+<ul>
+<li>[ ] <strong>Step 1: Write the failing test</strong></li>
+</ul>
+<p>Create file <code>src/backend/src/controllers/__tests__/AsyncUploadController.test.ts</code>:</p>
+<pre><code class="language-typescript">/**
+ * Tests for AsyncUploadController bug fixes.
+ * These tests verify that Script.create receives the correct fields.
+ */
+import Script from '../../models/Script';
+import ScriptVersion from '../../models/ScriptVersion';
+
+// We test the data shape, not the full controller flow (that needs HTTP + multer)
+describe('AsyncUploadController Script.create contract', () =&gt; {
+  it('Script model requires content field (allowNull: false)', () =&gt; {
+    // Verify the model definition enforces content
+    const attributes = Script.getAttributes?.() || (Script as any).rawAttributes;
+    expect(attributes.content).toBeDefined();
+    expect(attributes.content.allowNull).toBe(false);
+  });
+
+  it('Script model does NOT have an uploadId field', () =&gt; {
+    const attributes = Script.getAttributes?.() || (Script as any).rawAttributes;
+    expect(attributes.uploadId).toBeUndefined();
+  });
+
+  it('ScriptVersion model uses changelog field, not changes', () =&gt; {
+    const attributes = ScriptVersion.getAttributes?.() || (ScriptVersion as any).rawAttributes;
+    expect(attributes.changelog).toBeDefined();
+    expect(attributes.changes).toBeUndefined();
+  });
+});
+</code></pre>
+<ul>
+<li>[ ] <strong>Step 2: Run test to verify it passes (these tests document the model contract)</strong></li>
+</ul>
+<p>Run: <code>cd src/backend &amp;&amp; npx jest src/controllers/__tests__/AsyncUploadController.test.ts --no-cache 2&gt;&amp;1 | head -30</code></p>
+<p>Expected: PASS — these tests prove the model contract that the controller violates</p>
+<ul>
+<li>[ ] <strong>Step 3: Fix the Script.create call and ScriptVersion.create call</strong></li>
+</ul>
+<p>In <code>src/backend/src/controllers/AsyncUploadController.ts</code>, replace lines 291-309:</p>
+<p><strong>Old code (lines 291-309):</strong></p>
+<pre><code class="language-typescript">          // Create script record with authenticated user's ID
+          const script = await Script.create({
+            title: originalFilename,
+            description,
+            uploadId,
+            userId, // Use the authenticated user's ID from queue context
+            categoryId,
+            isPublic: false,
+            executionCount: 0
+          }, { transaction });
+
+          // Create script version with authenticated user's ID
+          await ScriptVersion.create({
+            scriptId: script.id,
+            version: 1,
+            content: fileContent,
+            changes: 'Initial version',
+            userId // Use the authenticated user's ID from queue context
+          }, { transaction });
+</code></pre>
+<p><strong>New code:</strong></p>
+<pre><code class="language-typescript">          // Create script record with authenticated user's ID
+          const script = await Script.create({
+            title: originalFilename,
+            description,
+            content: fileContent,
+            userId,
+            categoryId,
+            isPublic: false,
+            executionCount: 0
+          }, { transaction });
+
+          // Create script version with authenticated user's ID
+          await ScriptVersion.create({
+            scriptId: script.id,
+            version: 1,
+            content: fileContent,
+            changelog: 'Initial version',
+            userId
+          }, { transaction });
+</code></pre>
+<p>Changes:
+- Removed <code>uploadId</code> (doesn't exist on model)
+- Added <code>content: fileContent</code> (required field)
+- Changed <code>changes</code> to <code>changelog</code> (correct model field name)</p>
+<ul>
+<li>[ ] <strong>Step 4: Run tests to verify</strong></li>
+</ul>
+<p>Run: <code>cd src/backend &amp;&amp; npx jest src/controllers/__tests__/AsyncUploadController.test.ts --no-cache 2&gt;&amp;1 | head -30</code></p>
+<p>Expected: PASS</p>
+<ul>
+<li>[ ] <strong>Step 5: Commit</strong></li>
+</ul>
+<pre><code class="language-bash">git add src/backend/src/controllers/AsyncUploadController.ts src/backend/src/controllers/__tests__/AsyncUploadController.test.ts
+git commit -m &quot;fix: AsyncUploadController Script.create missing content, wrong field names
+
+Three bugs fixed:
+1. Added missing content field to Script.create (allowNull: false)
+2. Removed ghost uploadId field (not in Script model)
+3. Changed 'changes' to 'changelog' in ScriptVersion.create&quot;
+</code></pre>
+<hr />
+<h3 id="task-3-fix-getuploadstatus-broken-status-tracking">Task 3: Fix <code>getUploadStatus</code> — Broken Status Tracking</h3>
+<p><strong>Files:</strong>
+- Modify: <code>src/backend/src/controllers/AsyncUploadController.ts:191-210</code> (getUploadStatus method)</p>
+<p>The <code>getUploadStatus</code> method queries <code>Script.findOne({ where: { uploadId } })</code> but <code>uploadId</code> doesn't exist on the Script model. This means the "completed" status check always returns null, so uploads that succeed still show as "not_found".</p>
+<p><strong>Strategy:</strong> Track completed uploads using the existing <code>cache</code> service (Redis + in-memory fallback). This gives durability across restarts and shared state across multiple backend instances. Store <code>upload:status:{uploadId} → { scriptId, title, description, versions }</code> with a 1-hour TTL.</p>
+<ul>
+<li>[ ] <strong>Step 1: Add cache import</strong></li>
+</ul>
+<p>In <code>src/backend/src/controllers/AsyncUploadController.ts</code>, add import at the top:</p>
+<pre><code class="language-typescript">import cache from '../services/cacheService';
+</code></pre>
+<ul>
+<li>[ ] <strong>Step 2: Add helper methods for upload status persistence</strong></li>
+</ul>
+<p>Add these private methods to the AsyncUploadController class:</p>
+<pre><code class="language-typescript">  private static readonly UPLOAD_STATUS_TTL = 3600; // 1 hour in seconds
+
+  private storeCompletedUpload(uploadId: string, data: {
+    scriptId: number; title: string; description: string; versions: number;
+  }): void {
+    cache.set(`upload:status:${uploadId}`, data, AsyncUploadController.UPLOAD_STATUS_TTL);
+  }
+
+  private getCompletedUpload(uploadId: string): {
+    scriptId: number; title: string; description: string; versions: number;
+  } | null {
+    return cache.get(`upload:status:${uploadId}`);
+  }
+</code></pre>
+<ul>
+<li>[ ] <strong>Step 3: Store completed upload info after successful processing</strong></li>
+</ul>
+<p>In the <code>processNextFile</code> method, after the line <code>logger.info(\</code>Successfully processed file: ${uploadId}`);` (line 314), add:</p>
+<pre><code class="language-typescript">          // Track completed upload for status queries (Redis-backed, 1hr TTL)
+          this.storeCompletedUpload(uploadId, {
+            scriptId: script.id,
+            title: script.title,
+            description: description || '',
+            versions: 1
+          });
+</code></pre>
+<ul>
+<li>[ ] <strong>Step 4: Rewrite the getUploadStatus completed check</strong></li>
+</ul>
+<p>Replace the database query block in <code>getUploadStatus</code> (lines 191-210):</p>
+<p><strong>Old code:</strong></p>
+<pre><code class="language-typescript">      // Check if script was created in database
+      const script = await Script.findOne({
+        where: { uploadId },
+        include: [{ model: ScriptVersion, as: 'versions' }]
+      });
+
+      if (script) {
+        res.json({
+          success: true,
+          status: 'completed',
+          message: 'File processing completed successfully',
+          scriptId: script.id,
+          scriptDetails: {
+            title: script.title,
+            description: script.description,
+            versions: (script as any).versions?.length || 1
+          }
+        });
+        return;
+      }
+</code></pre>
+<p><strong>New code:</strong></p>
+<pre><code class="language-typescript">      // Check if upload completed successfully (Redis-backed, shared across instances)
+      const completed = this.getCompletedUpload(uploadId);
+      if (completed) {
+        res.json({
+          success: true,
+          status: 'completed',
+          message: 'File processing completed successfully',
+          scriptId: completed.scriptId,
+          scriptDetails: {
+            title: completed.title,
+            description: completed.description,
+            versions: completed.versions
+          }
+        });
+        return;
+      }
+</code></pre>
+<ul>
+<li>[ ] <strong>Step 4: Run typecheck</strong></li>
+</ul>
+<p>Run: <code>cd src/backend &amp;&amp; npx tsc --noEmit 2&gt;&amp;1 | head -30</code></p>
+<p>Expected: No errors related to AsyncUploadController</p>
+<ul>
+<li>[ ] <strong>Step 5: Commit</strong></li>
+</ul>
+<pre><code class="language-bash">git add src/backend/src/controllers/AsyncUploadController.ts
+git commit -m &quot;fix: getUploadStatus was querying non-existent uploadId column
+
+Replaced broken Script.findOne({ where: { uploadId } }) with
+Redis-backed cache (1hr TTL), durable across restarts and shared
+across multiple backend instances.&quot;
+</code></pre>
+<hr />
+<h3 id="task-4-fix-race-condition-in-hash-deduplication">Task 4: Fix Race Condition in Hash Deduplication</h3>
+<p><strong>Files:</strong>
+- Modify: <code>src/backend/src/controllers/script/export.ts:506-519</code> (hash check)
+- Create: <code>src/db/migrations/add_unique_file_hash.sql</code></p>
+<p>The hash deduplication check happens outside the transaction. Two concurrent uploads with identical content can both pass the check. Fix: move check inside transaction + add UNIQUE constraint.</p>
+<ul>
+<li>[ ] <strong>Step 1: Create the migration file</strong></li>
+</ul>
+<p>Create file <code>src/db/migrations/add_unique_file_hash.sql</code>:</p>
+<pre><code class="language-sql">-- PREREQUISITE: Task 5 migration (upgrade_file_hash_sha256.sql) must have run first
+-- to rehash all MD5 values to SHA-256.
+--
+-- Step 1: Audit any remaining duplicate hashes into a temp table for review.
+-- This preserves a record of what was merged, so no data is silently lost.
+CREATE TABLE IF NOT EXISTS _duplicate_hash_audit AS
+  SELECT a.id AS removed_id, b.id AS kept_id, a.file_hash, a.title, a.created_at
+  FROM scripts a
+  JOIN scripts b ON a.file_hash = b.file_hash AND a.id &lt; b.id
+  WHERE a.file_hash IS NOT NULL;
+
+-- Step 2: Reassign dependent records (versions, tags, analyses) from duplicates to the kept script.
+-- This prevents orphaned foreign key references.
+UPDATE script_versions SET script_id = d.kept_id
+  FROM _duplicate_hash_audit d WHERE script_versions.script_id = d.removed_id;
+
+UPDATE script_tags SET script_id = d.kept_id
+  FROM _duplicate_hash_audit d WHERE script_tags.script_id = d.removed_id
+  ON CONFLICT DO NOTHING;  -- skip if the kept script already has that tag
+
+UPDATE analysis_results SET script_id = d.kept_id
+  FROM _duplicate_hash_audit d WHERE analysis_results.script_id = d.removed_id;
+
+-- Step 3: Remove the duplicate rows (now safe — dependents have been reassigned).
+DELETE FROM scripts WHERE id IN (SELECT removed_id FROM _duplicate_hash_audit);
+
+-- Step 4: Add UNIQUE constraint on file_hash to prevent future duplicates.
+-- Null values are allowed (scripts without hashes) — PostgreSQL UNIQUE permits multiple NULLs.
+ALTER TABLE scripts ADD CONSTRAINT uq_scripts_file_hash UNIQUE (file_hash);
+
+-- Note: The _duplicate_hash_audit table is kept for post-migration review.
+-- Drop it manually after verifying the migration was successful:
+--   DROP TABLE IF EXISTS _duplicate_hash_audit;
+</code></pre>
+<blockquote>
+<p><strong>Important:</strong> Before running this migration in production, verify the dependent table names match your schema (the above uses <code>script_versions</code>, <code>script_tags</code>, <code>analysis_results</code>). Check with: <code>SELECT table_name FROM information_schema.tables WHERE table_name LIKE 'script%' OR table_name LIKE 'analysis%';</code></p>
+</blockquote>
+<ul>
+<li>[ ] <strong>Step 2: Update Script model index to be unique</strong></li>
+</ul>
+<p>In <code>src/backend/src/models/Script.ts</code>, change the <code>file_hash</code> index from non-unique to unique:</p>
+<p><strong>Old:</strong></p>
+<pre><code class="language-typescript">        { fields: ['file_hash'], name: 'idx_scripts_file_hash' },
+</code></pre>
+<p><strong>New:</strong></p>
+<pre><code class="language-typescript">        { unique: true, fields: ['file_hash'], name: 'idx_scripts_file_hash' },
+</code></pre>
+<ul>
+<li>[ ] <strong>Step 3: Move hash check inside the transaction in export.ts</strong></li>
+</ul>
+<p>In <code>src/backend/src/controllers/script/export.ts</code>, the hash check at lines 512-519 currently happens after the transaction starts but reads outside of it. Update the <code>checkFileExists</code> call to pass the transaction:</p>
+<p>Replace lines 512-519:</p>
+<p><strong>Old code:</strong></p>
+<pre><code class="language-typescript">    // Check if a file with the same hash already exists
+    const existingScriptId = await checkFileExists(fileHash, sequelize);
+    if (existingScriptId) {
+      if (transaction) await transaction.rollback();
+      return res.status(409).json({
+        error: 'duplicate_file',
+        message: 'A script with identical content already exists',
+        existingScriptId
+      });
+    }
+</code></pre>
+<p><strong>New code:</strong></p>
+<pre><code class="language-typescript">    // Check if a file with the same hash already exists (inside transaction for atomicity)
+    const existingScriptId = await checkFileExists(fileHash, sequelize, transaction);
+    if (existingScriptId) {
+      await transaction.rollback();
+      return res.status(409).json({
+        error: 'duplicate_file',
+        message: 'A script with identical content already exists',
+        existingScriptId
+      });
+    }
+</code></pre>
+<ul>
+<li>[ ] <strong>Step 4: Update checkFileExists to accept an optional transaction</strong></li>
+</ul>
+<p>In <code>src/backend/src/utils/fileIntegrity.ts</code>, update the <code>checkFileExists</code> function signature and implementation:</p>
+<p><strong>Old code:</strong></p>
+<pre><code class="language-typescript">export const checkFileExists = async (fileHash: string, sequelize: Sequelize): Promise&lt;number | null&gt; =&gt; {
+  try {
+    const [result] = await sequelize.query(
+      `SELECT id FROM scripts WHERE file_hash = :fileHash LIMIT 1`,
+      {
+        replacements: { fileHash },
+        type: 'SELECT',
+        raw: true
+      }
+    );
+</code></pre>
+<p><strong>New code:</strong></p>
+<pre><code class="language-typescript">export const checkFileExists = async (
+  fileHash: string,
+  sequelize: Sequelize,
+  transaction?: import('sequelize').Transaction
+): Promise&lt;number | null&gt; =&gt; {
+  try {
+    const [result] = await sequelize.query(
+      `SELECT id FROM scripts WHERE file_hash = :fileHash LIMIT 1 FOR UPDATE`,
+      {
+        replacements: { fileHash },
+        type: 'SELECT',
+        raw: true,
+        ...(transaction ? { transaction } : {})
+      }
+    );
+</code></pre>
+<p>The <code>FOR UPDATE</code> clause locks the matching row within the transaction, preventing a second concurrent upload from reading a stale state while the first is still inserting. Note: <code>FOR UPDATE</code> only locks rows that match the WHERE clause — when no matching row exists (new hash), the UNIQUE constraint (Step 1) is the primary defense against concurrent duplicate inserts.</p>
+<ul>
+<li>[ ] <strong>Step 5: Add SequelizeUniqueConstraintError handling as a safety net</strong></li>
+</ul>
+<p>In <code>src/backend/src/controllers/script/export.ts</code>, the catch block at line 716 already handles <code>SequelizeUniqueConstraintError</code> but returns a generic "title already exists" message. Update it to also handle hash conflicts:</p>
+<p><strong>Old code (line 716-719):</strong></p>
+<pre><code class="language-typescript">    if (err.name === 'SequelizeUniqueConstraintError') {
+      return res.status(409).json({
+        error: 'unique_constraint_error',
+        message: 'A script with this title already exists'
+      });
+    }
+</code></pre>
+<p><strong>New code:</strong></p>
+<pre><code class="language-typescript">    if (err.name === 'SequelizeUniqueConstraintError') {
+      const fields = (err as any).fields || {};
+      if (fields.file_hash) {
+        return res.status(409).json({
+          error: 'duplicate_file',
+          message: 'A script with identical content already exists'
+        });
+      }
+      return res.status(409).json({
+        error: 'unique_constraint_error',
+        message: 'A script with this title already exists'
+      });
+    }
+</code></pre>
+<ul>
+<li>[ ] <strong>Step 6: Run typecheck</strong></li>
+</ul>
+<p>Run: <code>cd src/backend &amp;&amp; npx tsc --noEmit 2&gt;&amp;1 | head -30</code></p>
+<p>Expected: No errors</p>
+<ul>
+<li>[ ] <strong>Step 7: Commit</strong></li>
+</ul>
+<pre><code class="language-bash">git add src/backend/src/models/Script.ts src/backend/src/controllers/script/export.ts src/backend/src/utils/fileIntegrity.ts src/db/migrations/add_unique_file_hash.sql
+git commit -m &quot;fix: race condition in hash deduplication during concurrent uploads
+
+Moved hash check inside transaction with FOR UPDATE lock.
+Added UNIQUE constraint on file_hash column as DB-level safety net.
+Improved error message for hash-based duplicate detection.&quot;
+</code></pre>
+<hr />
+<h3 id="task-5-upgrade-hash-algorithm-from-md5-to-sha-256">Task 5: Upgrade Hash Algorithm from MD5 to SHA-256</h3>
+<p><strong>Files:</strong>
+- Modify: <code>src/backend/src/utils/fileIntegrity.ts</code>
+- Modify: <code>src/backend/src/utils/fileIntegrity.ts</code>
+- Create: <code>src/db/migrations/upgrade_file_hash_sha256.sql</code></p>
+<p>CLAUDE.md documents SHA-256 for file integrity, but the code uses MD5 which is cryptographically broken. The <code>fileHash</code> column is already <code>STRING(64)</code> — enough for SHA-256 hex output (64 chars), so no column change is needed. But we need a migration to rehash existing MD5 values (32 chars) to SHA-256 (64 chars).</p>
+<ul>
+<li>[ ] <strong>Step 1: Create migration to rehash existing scripts</strong></li>
+</ul>
+<p>Create file <code>src/db/migrations/upgrade_file_hash_sha256.sql</code>:</p>
+<pre><code class="language-sql">-- Upgrade file hashes from MD5 (32 hex chars) to SHA-256 (64 hex chars).
+-- Recompute in-place to avoid a dedup gap where uploads could bypass duplicate detection.
+-- The application now uses SHA-256 for all new uploads.
+CREATE EXTENSION IF NOT EXISTS pgcrypto;
+UPDATE scripts
+  SET file_hash = encode(digest(content::text, 'sha256'), 'hex')
+  WHERE file_hash IS NOT NULL AND length(file_hash) = 32;
+</code></pre>
+<ul>
+<li>[ ] <strong>Step 2: Update fileIntegrity.ts to use SHA-256</strong></li>
+</ul>
+<p>In <code>src/backend/src/utils/fileIntegrity.ts</code>:</p>
+<p><strong>Replace <code>calculateBufferMD5</code>:</strong></p>
+<p>Old:</p>
+<pre><code class="language-typescript">export const calculateBufferMD5 = (buffer: Buffer): string =&gt; {
+  return crypto.createHash('md5').update(buffer).digest('hex');
+};
+</code></pre>
+<p>New:</p>
+<pre><code class="language-typescript">export const calculateBufferSHA256 = (buffer: Buffer): string =&gt; {
+  return crypto.createHash('sha256').update(buffer).digest('hex');
+};
+
+/** @deprecated Use calculateBufferSHA256 */
+export const calculateBufferMD5 = calculateBufferSHA256;
+</code></pre>
+<p><strong>Replace <code>calculateStringMD5</code>:</strong></p>
+<p>Old:</p>
+<pre><code class="language-typescript">export const calculateStringMD5 = (content: string): string =&gt; {
+  return crypto.createHash('md5').update(content).digest('hex');
+};
+</code></pre>
+<p>New:</p>
+<pre><code class="language-typescript">export const calculateStringSHA256 = (content: string): string =&gt; {
+  return crypto.createHash('sha256').update(content).digest('hex');
+};
+
+/** @deprecated Use calculateStringSHA256 */
+export const calculateStringMD5 = calculateStringSHA256;
+</code></pre>
+<p><strong>Update <code>batchUpdateFileHashes</code> to use SHA-256:</strong></p>
+<p>Old:</p>
+<pre><code class="language-typescript">      `UPDATE scripts SET file_hash = md5(content::text) WHERE file_hash IS NULL RETURNING id`,
+</code></pre>
+<p>New:</p>
+<pre><code class="language-typescript">      `UPDATE scripts SET file_hash = encode(digest(content::text, 'sha256'), 'hex') WHERE file_hash IS NULL RETURNING id`,
+</code></pre>
+<p>Note: This uses PostgreSQL's <code>pgcrypto</code> extension. The project already has <code>pgvector</code> so extensions are available. If <code>pgcrypto</code> isn't installed, the migration should add it.</p>
+<ul>
+<li>[ ] <strong>Step 3: Verify pgcrypto is included in migration</strong></li>
+</ul>
+<p>The migration file from Step 1 already includes <code>CREATE EXTENSION IF NOT EXISTS pgcrypto</code> and recomputes hashes in-place. Verify the final file contains both statements. If deploying to an environment where migrations run separately from app startup, ensure this migration runs before any new uploads occur.</p>
+<ul>
+<li>[ ] <strong>Step 4: Run typecheck</strong></li>
+</ul>
+<p>Run: <code>cd src/backend &amp;&amp; npx tsc --noEmit 2&gt;&amp;1 | head -30</code></p>
+<p>Expected: No errors (deprecated alias keeps all existing imports working)</p>
+<ul>
+<li>[ ] <strong>Step 5: Commit</strong></li>
+</ul>
+<pre><code class="language-bash">git add src/backend/src/utils/fileIntegrity.ts src/db/migrations/upgrade_file_hash_sha256.sql
+git commit -m &quot;fix: upgrade file hash from MD5 to SHA-256
+
+MD5 is cryptographically broken. SHA-256 matches the documented
+algorithm in CLAUDE.md. Existing MD5 hashes recomputed in-place as SHA-256.
+Old function names kept as deprecated aliases for backward compatibility.&quot;
+</code></pre>
+<hr />
+<h3 id="task-6-add-hash-deduplication-to-asyncuploadcontroller">Task 6: Add Hash Deduplication to AsyncUploadController</h3>
+<p><strong>Files:</strong>
+- Modify: <code>src/backend/src/controllers/AsyncUploadController.ts:260-300</code></p>
+<p>The <code>AsyncUploadController.processNextFile</code> does NOT check for duplicate hashes before creating a script. Only <code>export.ts</code> (the synchronous upload) does dedup. This means async bulk uploads can create duplicates.</p>
+<ul>
+<li>[ ] <strong>Step 1: Add hash check to processNextFile</strong></li>
+</ul>
+<p>In <code>src/backend/src/controllers/AsyncUploadController.ts</code>, add imports at the top (after existing imports):</p>
+<pre><code class="language-typescript">import { calculateBufferSHA256 as calculateHash, checkFileExists } from '../utils/fileIntegrity';
+</code></pre>
+<p>Then in <code>processNextFile</code>, after reading the file content (line 260: <code>const fileContent = await readFileAsync(filePath, 'utf8');</code>), compute the hash before the transaction, but perform the dedup check <strong>inside</strong> the transaction (consistent with Task 4's race-condition fix):</p>
+<pre><code class="language-typescript">      // Calculate hash before transaction
+      const fileHash = calculateHash(Buffer.from(fileContent, 'utf8'));
+</code></pre>
+<p>Then <strong>inside</strong> the transaction block (after <code>const transaction = await sequelize.transaction();</code>), add the dedup check:</p>
+<pre><code class="language-typescript">          // Check for duplicates inside transaction (prevents race condition — see Task 4)
+          const existingScriptId = await checkFileExists(fileHash, sequelize, transaction);
+          if (existingScriptId) {
+            await transaction.rollback();
+            logger.info(`Duplicate detected for upload ${uploadId}, existing script ID: ${existingScriptId}`);
+            this.storeCompletedUpload(uploadId, {
+              scriptId: existingScriptId,
+              title: `(duplicate of ${existingScriptId})`,
+              description: '',
+              versions: 1
+            });
+            await unlinkAsync(filePath);
+            return;
+          }
+</code></pre>
+<p>Also add <code>fileHash</code> to the <code>Script.create</code> call:</p>
+<pre><code class="language-typescript">          const script = await Script.create({
+            title: originalFilename,
+            description,
+            content: fileContent,
+            fileHash,
+            userId,
+            categoryId,
+            isPublic: false,
+            executionCount: 0
+          }, { transaction });
+</code></pre>
+<blockquote>
+<p><strong>Note:</strong> The UNIQUE constraint on <code>file_hash</code> (Task 4) is the primary defense against concurrent duplicate inserts. The <code>FOR UPDATE</code> lock in <code>checkFileExists</code> helps only when a matching row already exists — when no row matches, <code>FOR UPDATE</code> has nothing to lock. Two concurrent transactions can both see zero rows and proceed to INSERT, at which point the UNIQUE constraint catches the second one.</p>
+</blockquote>
+<ul>
+<li>[ ] <strong>Step 2: Run typecheck</strong></li>
+</ul>
+<p>Run: <code>cd src/backend &amp;&amp; npx tsc --noEmit 2&gt;&amp;1 | head -30</code></p>
+<p>Expected: No errors</p>
+<ul>
+<li>[ ] <strong>Step 3: Commit</strong></li>
+</ul>
+<pre><code class="language-bash">git add src/backend/src/controllers/AsyncUploadController.ts
+git commit -m &quot;fix: add hash dedup to AsyncUploadController
+
+Async bulk uploads were not checking for duplicate content,
+allowing identical scripts to be stored multiple times.
+Now computes SHA-256 hash and checks before insert.&quot;
+</code></pre>
+<hr />
+<h2 id="self-review-checklist">Self-Review Checklist</h2>
+<p><strong>Spec coverage:</strong>
+- [x] Missing <code>content</code> field in Script.create → Task 2
+- [x] Ghost <code>uploadId</code> field → Task 2, Task 3
+- [x] Wrong field name <code>changes</code> → Task 2
+- [x] Missing Script-ScriptVersion association → Task 1
+- [x] Race condition in hash dedup → Task 4
+- [x] MD5 vs SHA-256 mismatch → Task 5
+- [x] No dedup in async upload path → Task 6
+- [x] Broken upload status tracking → Task 3</p>
+<p><strong>Placeholder scan:</strong> No TBDs, TODOs, or "similar to Task N" references found.</p>
+<p><strong>Type consistency:</strong>
+- <code>calculateBufferMD5</code> aliased to <code>calculateBufferSHA256</code> — all imports continue to work (Task 6 uses <code>calculateBufferSHA256</code> directly)
+- <code>checkFileExists</code> gains optional <code>transaction</code> param — backward compatible
+- <code>changelog</code> field name used consistently after Task 2 fix</p>
+    <div class="footer">Generated 2026-04-24 01:27 UTC</div>
+  </div>
+</body>
+</html>

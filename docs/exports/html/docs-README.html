@@ -1,0 +1,233 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <base href="file:///Users/morlock/fun/02_PowerShell_Projects/psscript/" />
+  <title>docs-README</title>
+  <style>
+:root {
+  color-scheme: light;
+}
+body {
+  font-family: "Segoe UI", "Helvetica Neue", Arial, sans-serif;
+  margin: 0;
+  padding: 0;
+  background: #ffffff;
+  color: #0f172a;
+}
+.markdown-body {
+  max-width: 980px;
+  margin: 40px auto 60px;
+  padding: 0 32px;
+  line-height: 1.65;
+}
+.markdown-body h1 {
+  font-size: 32px;
+  margin-bottom: 12px;
+  border-bottom: 2px solid #e2e8f0;
+  padding-bottom: 12px;
+  page-break-before: always;
+  page-break-after: avoid;
+  break-before: page;
+  break-after: avoid;
+}
+.markdown-body h1:first-of-type {
+  page-break-before: avoid;
+  break-before: avoid;
+}
+.markdown-body h2 {
+  font-size: 24px;
+  margin-top: 28px;
+  border-bottom: 1px solid #e2e8f0;
+  padding-bottom: 8px;
+  page-break-before: always;
+  page-break-after: avoid;
+  break-before: page;
+  break-after: avoid;
+}
+.markdown-body h3 {
+  font-size: 18px;
+  margin-top: 20px;
+  page-break-after: avoid;
+  break-after: avoid;
+}
+.markdown-body h4, .markdown-body h5, .markdown-body h6 {
+  page-break-after: avoid;
+  break-after: avoid;
+}
+.markdown-body table {
+  width: 100%;
+  border-collapse: collapse;
+  margin: 16px 0;
+  font-size: 14px;
+  page-break-inside: avoid;
+  break-inside: avoid;
+}
+.markdown-body th,
+.markdown-body td {
+  border: 1px solid #e2e8f0;
+  padding: 8px 10px;
+  text-align: left;
+}
+.markdown-body th {
+  background: #f8fafc;
+}
+.markdown-body tr {
+  page-break-inside: avoid;
+  break-inside: avoid;
+}
+.markdown-body code {
+  background: #f1f5f9;
+  padding: 2px 4px;
+  border-radius: 4px;
+  font-family: "SFMono-Regular", Menlo, Consolas, monospace;
+  font-size: 0.92em;
+}
+.markdown-body pre {
+  background: #0f172a;
+  color: #e2e8f0;
+  padding: 16px;
+  border-radius: 8px;
+  overflow-x: auto;
+  page-break-inside: avoid;
+  break-inside: avoid;
+}
+.markdown-body pre code {
+  background: transparent;
+  color: inherit;
+}
+.markdown-body blockquote {
+  border-left: 4px solid #38bdf8;
+  margin: 16px 0;
+  padding: 8px 16px;
+  background: #f8fafc;
+  color: #334155;
+}
+.markdown-body img {
+  max-width: 100%;
+  height: auto;
+  display: block;
+  margin: 16px 0;
+  border-radius: 10px;
+  box-shadow: 0 8px 20px rgba(15, 23, 42, 0.12);
+  page-break-inside: avoid;
+  break-inside: avoid;
+}
+.markdown-body figure {
+  page-break-inside: avoid;
+  break-inside: avoid;
+  margin: 16px 0;
+}
+.markdown-body a {
+  color: #2563eb;
+  text-decoration: none;
+}
+.markdown-body a:hover {
+  text-decoration: underline;
+}
+.cover {
+  padding: 80px 60px 60px;
+  background: linear-gradient(135deg, #0b1220 0%, #1e3a8a 100%);
+  color: #f8fafc;
+  border-radius: 18px;
+  margin-bottom: 32px;
+}
+.cover-title {
+  font-size: 36px;
+  font-weight: 700;
+  margin: 0 0 12px;
+}
+.cover-subtitle {
+  font-size: 18px;
+  color: #cbd5f5;
+  margin: 0 0 16px;
+}
+.cover-meta {
+  font-size: 13px;
+  color: #94a3b8;
+}
+.page-break {
+  page-break-after: always;
+  break-after: page;
+}
+.footer {
+  margin-top: 40px;
+  font-size: 12px;
+  color: #64748b;
+}
+/* Print and PDF-specific styles */
+@page {
+  margin: 20mm 18mm;
+}
+@media print {
+  .markdown-body {
+    orphans: 3;
+    widows: 3;
+  }
+  .markdown-body p {
+    orphans: 3;
+    widows: 3;
+  }
+  .markdown-body li {
+    page-break-inside: avoid;
+    break-inside: avoid;
+  }
+  .markdown-body ul, .markdown-body ol {
+    page-break-before: avoid;
+    break-before: avoid;
+  }
+  .markdown-body blockquote {
+    page-break-inside: avoid;
+    break-inside: avoid;
+  }
+  /* Keep section content together */
+  .markdown-body h2 + *, .markdown-body h3 + * {
+    page-break-before: avoid;
+    break-before: avoid;
+  }
+}
+</style>
+</head>
+<body>
+  <div class="markdown-body">
+    
+    <h1 id="psscript-documentation">PSScript Documentation</h1>
+<p>This folder contains active product docs, operational references, screenshots, training material, and historical reports.</p>
+<h2 id="start-here">Start Here</h2>
+<ul>
+<li><a href="./index.md">Documentation Hub</a> - active index and source-of-truth links</li>
+<li><a href="./GETTING-STARTED.md">Getting Started</a> - local setup and first validation</li>
+<li><a href="./REPOSITORY-ORGANIZATION.md">Repository Organization</a> - where files belong and what should be archived</li>
+<li><a href="./DATA-MAINTENANCE.md">Data Maintenance</a> - admin database backup, restore, cleanup, and integrity flows</li>
+<li><a href="./README-VOICE-API.md">Voice API</a> - voice/listening implementation and API behavior</li>
+<li><a href="./UPDATES.md">Updates</a> - chronological change log and validation history</li>
+</ul>
+<h2 id="current-documentation-taxonomy">Current Documentation Taxonomy</h2>
+<p>The active docs use a practical Diataxis-style split:</p>
+<ul>
+<li>Tutorials and walkthroughs: <code>GETTING-STARTED.md</code>, <code>training-suite/</code>, <code>UPLOAD-WORKFLOW.md</code></li>
+<li>How-to and operations: <code>DATA-MAINTENANCE.md</code>, <code>DEPLOYMENT-PLATFORMS.md</code>, <code>SUPPORT.md</code>, <code>MANAGEMENT-PLAYBOOK.md</code></li>
+<li>Reference: <code>DATABASE_DOCUMENTATION.md</code>, <code>README-VOICE-API.md</code>, <code>README-VECTOR-SEARCH.md</code></li>
+<li>Explanation and decisions: <code>PROJECT-REVIEW-2026-04-01.md</code>, <code>TECH-REVIEW-2026.md</code>, <code>AI-FUNCTIONS-REVIEW-2026-04-02.md</code></li>
+<li>Historical artifacts: <code>archive/</code> and duplicated <code>* (1).md</code> files pending cleanup</li>
+<li>Generated exports: <code>exports/</code> and should be regenerated, not hand-edited</li>
+</ul>
+<h2 id="screenshot-locations">Screenshot Locations</h2>
+<ul>
+<li>Product screenshots: <code>screenshots/</code></li>
+<li>Docs site variants: <code>../docs-site/static/images/screenshots/variants/</code></li>
+<li>Screenshot index: <code>../docs-site/SCREENSHOT_LIST.md</code></li>
+</ul>
+<h2 id="maintenance-rules">Maintenance Rules</h2>
+<ul>
+<li>Link active docs from <a href="./index.md">index.md</a>.</li>
+<li>Put new operational docs in <code>docs/</code> with clear names.</li>
+<li>Put historical reports under <code>docs/archive/</code>.</li>
+<li>Do not create duplicate <code>filename (1).md</code> files.</li>
+<li>Do not hand-edit generated exports in <code>docs/exports/</code>.</li>
+</ul>
+    <div class="footer">Generated 2026-04-24 01:27 UTC</div>
+  </div>
+</body>
+</html>
