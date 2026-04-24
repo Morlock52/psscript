@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <base href="file:///Users/morlock/fun/psscript/" />
+  <base href="file:///Users/morlock/fun/02_PowerShell_Projects/psscript/" />
   <title>README</title>
   <style>
 :root {
@@ -198,360 +198,597 @@ body {
     <p class="cover-meta">Product README</p>
   </section>
   
-    <h1 id="psscript-deployment-complete-documentation-package">PSScript Deployment - Complete Documentation Package</h1>
-<p><strong>Server:</strong> 74.208.184.195<br />
-<strong>Application:</strong> https://psscript.morloksmaze.com<br />
-<strong>Date:</strong> January 14, 2026</p>
+    <p align="center">
+  <img src="./docs/screenshots/dashboard.png" alt="PSScript Dashboard" width="800" />
+</p>
+
+<h1 align="center">PSScript</h1>
+
+<p align="center">
+  <strong>PowerShell Script Management with Agentic AI Analysis</strong>
+</p>
+
+<p align="center">
+  <a href="#quick-start">Quick Start</a> &bull;
+  <a href="#features">Features</a> &bull;
+  <a href="#architecture">Architecture</a> &bull;
+  <a href="#ai-models">AI Models</a> &bull;
+  <a href="#screenshots">Screenshots</a> &bull;
+  <a href="#documentation">Docs</a>
+</p>
+
 <hr />
-<h2 id="urgent-current-status">🚨 URGENT: Current Status</h2>
+<h2 id="overview">Overview</h2>
+<p>PSScript is a full-stack platform for teams that need to <strong>store, search, analyze, and operate on PowerShell scripts</strong> from one interface. It combines script management with agentic AI workflows, semantic search, voice interactions, and enterprise-grade security analysis.</p>
+<h3 id="how-it-works">How it works</h3>
+<ol>
+<li>Upload or create a PowerShell script in the React frontend</li>
+<li>The Express API validates, persists with version history in PostgreSQL, and deduplicates via SHA-256 hashing</li>
+<li>The AI service runs multi-step analysis through GPT-4.1 and LangGraph workflows with security scoring, code quality metrics, and optimization recommendations</li>
+<li>Results surface in the UI alongside semantic search, documentation, analytics, and admin tooling</li>
+<li>A voice dock enables speech-to-text dictation and text-to-speech playback across the app</li>
+</ol>
+<hr />
+<h2 id="features">Features</h2>
 <table>
 <thead>
 <tr>
-<th>Component</th>
-<th>Status</th>
-<th>Action Required</th>
+<th>Area</th>
+<th>What it does</th>
 </tr>
 </thead>
 <tbody>
 <tr>
-<td>SSH Access</td>
-<td>❌ <strong>BLOCKED</strong></td>
-<td>Restore via hosting provider console</td>
+<td><strong>Script Management</strong></td>
+<td>Upload, store, version, filter, search, and export PowerShell scripts</td>
 </tr>
 <tr>
-<td>Backend API</td>
-<td>❌ <strong>DOWN</strong></td>
-<td>Fix after SSH restored (Error 1033)</td>
+<td><strong>AI Analysis</strong></td>
+<td>Security scoring, code quality assessment, risk analysis, and remediation guidance</td>
 </tr>
 <tr>
-<td>Frontend</td>
-<td>✅ Working</td>
-<td>Cloudflare Tunnel operational</td>
+<td><strong>Agentic Workflows</strong></td>
+<td>Multi-step LangGraph orchestration with tool calling and human-in-the-loop</td>
 </tr>
 <tr>
-<td>SSL/TLS</td>
-<td>✅ Valid</td>
-<td>Certificate until Feb 23, 2026</td>
+<td><strong>Semantic Search</strong></td>
+<td>Vector embeddings via <code>text-embedding-3-large</code> for similarity-based discovery</td>
+</tr>
+<tr>
+<td><strong>Voice</strong></td>
+<td>OpenAI-powered TTS (<code>gpt-4o-mini-tts</code>), STT (<code>gpt-4o-mini-transcribe</code>), and diarization</td>
+</tr>
+<tr>
+<td><strong>Analytics</strong></td>
+<td>Usage metrics, AI cost tracking, security dashboards, and category distribution</td>
+</tr>
+<tr>
+<td><strong>Admin Tools</strong></td>
+<td>Database backup/restore, test-data cleanup, sequence reseeding, cache management</td>
+</tr>
+<tr>
+<td><strong>Documentation Crawl</strong></td>
+<td>Index and search external documentation within the app</td>
+</tr>
+<tr>
+<td><strong>Responsive App Shell</strong></td>
+<td>Dark left-nav UI with dashboard, script management, AI, documentation, analytics, and settings views</td>
 </tr>
 </tbody>
 </table>
 <hr />
-<h2 id="documentation-files">📚 Documentation Files</h2>
-<h3 id="1-immediate_fix_stepsmd-start-here">1. <strong>IMMEDIATE_FIX_STEPS.md</strong> ⭐ START HERE</h3>
-<p><strong>Purpose:</strong> Step-by-step guide to fix critical issues<br />
-<strong>Format:</strong> Markdown<br />
-<strong>Use:</strong> Primary reference for fixing SSH and backend issues</p>
-<h3 id="2-immediate_fix_stepsdocx">2. <strong>IMMEDIATE_FIX_STEPS.docx</strong></h3>
-<p><strong>Purpose:</strong> Professional Word document with detailed instructions<br />
-<strong>Format:</strong> Microsoft Word<br />
-<strong>Use:</strong> Print-friendly format with formatting and tables</p>
-<h3 id="3-immediate_fix_stepsxlsx">3. <strong>IMMEDIATE_FIX_STEPS.xlsx</strong></h3>
-<p><strong>Purpose:</strong> Excel workbook with organized tabs<br />
-<strong>Format:</strong> Microsoft Excel (8 worksheets)<br />
-<strong>Worksheets:</strong>
-- Overview - Status and server info
-- Step 1 - Console Access - Provider-specific instructions
-- Step 2 - Fix SSH - SSH restoration commands
-- Step 3 - Check Docker - Container verification
-- Step 4 - Fix Backend - Backend troubleshooting
-- Step 5 - Verification - Post-fix checklist
-- Troubleshooting - Common issues and solutions
-- Quick Reference - Command reference table</p>
-<h3 id="4-immediate_fix_stepspdf">4. <strong>IMMEDIATE_FIX_STEPS.pdf</strong></h3>
-<p><strong>Purpose:</strong> Portable document for easy sharing<br />
-<strong>Format:</strong> PDF<br />
-<strong>Use:</strong> Email-friendly, universal format</p>
-<h3 id="5-stress_test_reportmd">5. <strong>STRESS_TEST_REPORT.md</strong></h3>
-<p><strong>Purpose:</strong> Complete stress testing results<br />
-<strong>Contains:</strong>
-- SSL/TLS performance metrics (55ms avg handshake)
-- HTTP response time analysis (128ms avg)
-- Load testing results (50+ req/sec at 20 concurrent)
-- API endpoint testing (Error 1033 documented)
-- Performance benchmarks and recommendations</p>
-<h3 id="6-api_fix_guidemd">6. <strong>API_FIX_GUIDE.md</strong></h3>
-<p><strong>Purpose:</strong> Comprehensive API troubleshooting<br />
-<strong>Contains:</strong>
-- Error 1033 explanation and diagnosis
-- Step-by-step diagnostic procedures
-- Common error patterns and fixes
-- Verification steps after fixes
-- Preventive measures and monitoring</p>
-<h3 id="7-deployment_summarymd">7. <strong>DEPLOYMENT_SUMMARY.md</strong></h3>
-<p><strong>Purpose:</strong> Complete deployment status report<br />
-<strong>Contains:</strong>
-- What's deployed (8 Docker containers)
-- What's working (60%)
-- What needs fixing (40%)
-- Configuration files reference
-- Commands cheat sheet
-- Next steps and priorities</p>
-<h3 id="8-recovery_planmd">8. <strong>RECOVERY_PLAN.md</strong></h3>
-<p><strong>Purpose:</strong> Full system recovery procedures<br />
-<strong>Contains:</strong>
-- 5-phase recovery plan
-- SSH restoration steps
-- Service verification procedures
-- Quick reference commands</p>
-<h3 id="9-deployment_statusmd">9. <strong>DEPLOYMENT_STATUS.md</strong></h3>
-<p><strong>Purpose:</strong> Original deployment status (from initial deployment)
-<strong>Contains:</strong>
-- Deployment timeline
-- Services deployed
-- Known issues at deployment time</p>
-<h3 id="10-console_fix_commandssh-run-this-script">10. <strong>CONSOLE_FIX_COMMANDS.sh</strong> ⚡ RUN THIS SCRIPT</h3>
-<p><strong>Purpose:</strong> Automated recovery script for console
-<strong>Format:</strong> Bash script
-<strong>Use:</strong> Run this in hosting provider console for automatic fix
-<strong>Command:</strong> <code>bash /opt/psscript/CONSOLE_FIX_COMMANDS.sh</code></p>
-<h3 id="11-console_quickrefpdf-print-this">11. <strong>CONSOLE_QUICKREF.pdf</strong> 📋 PRINT THIS</h3>
-<p><strong>Purpose:</strong> One-page quick reference for console access
-<strong>Format:</strong> PDF
-<strong>Use:</strong> Keep this open while working in console
-<strong>Contains:</strong>
-- Server credentials
-- All critical commands in order
-- Expected results checklist</p>
-<hr />
-<h2 id="quick-start-guide">🎯 Quick Start Guide</h2>
-<h3 id="if-you-need-to-fix-the-server-right-now">If you need to fix the server RIGHT NOW:</h3>
-<ol>
-<li><strong>Open:</strong> <code>IMMEDIATE_FIX_STEPS.md</code> (or .docx, .xlsx, .pdf)</li>
-<li><strong>Do:</strong> Follow Step 1 - Access your hosting provider console</li>
-<li><strong>Run:</strong> Commands in Step 2-4 exactly as shown</li>
-<li><strong>Verify:</strong> Use Step 5 checklist to confirm everything works</li>
-</ol>
-<h3 id="if-you-need-to-understand-whats-wrong">If you need to understand what's wrong:</h3>
-<ol>
-<li><strong>Read:</strong> <code>STRESS_TEST_REPORT.md</code> - Complete testing results</li>
-<li><strong>Read:</strong> <code>API_FIX_GUIDE.md</code> - Backend-specific troubleshooting</li>
-</ol>
-<h3 id="if-you-need-deployment-information">If you need deployment information:</h3>
-<ol>
-<li><strong>Read:</strong> <code>DEPLOYMENT_SUMMARY.md</code> - Current state and what's next</li>
-<li><strong>Read:</strong> <code>RECOVERY_PLAN.md</code> - How to recover if things go wrong</li>
-</ol>
-<hr />
-<h2 id="critical-information">🔧 Critical Information</h2>
-<h3 id="server-access">Server Access</h3>
-<ul>
-<li><strong>IP:</strong> 74.208.184.195</li>
-<li><strong>SSH User:</strong> root</li>
-<li><strong>SSH Password:</strong> xyyCbL6G</li>
-<li><strong>SSH Status:</strong> ❌ Port 22 blocked (requires console access)</li>
-</ul>
-<h3 id="application-urls">Application URLs</h3>
-<ul>
-<li><strong>Production:</strong> https://psscript.morloksmaze.com</li>
-<li><strong>API Base:</strong> https://psscript.morloksmaze.com/api (currently down)</li>
-<li><strong>Authentication:</strong> Cloudflare Access</li>
-</ul>
-<h3 id="docker-services-8-containers">Docker Services (8 Containers)</h3>
-<ol>
-<li><strong>frontend</strong> (port 3000) - ✅ Working</li>
-<li><strong>backend</strong> (port 4000) - ❌ Down (Error 1033)</li>
-<li><strong>postgres</strong> (port 5432) - ❓ Unknown</li>
-<li><strong>redis</strong> (port 6379) - ❓ Unknown</li>
-<li><strong>ai-service</strong> (port 5000) - ❓ Unknown</li>
-<li><strong>cloudflared</strong> - ✅ Working</li>
-<li><strong>pgadmin</strong> (port 5050) - ❓ Unknown</li>
-<li><strong>redis-commander</strong> (port 8081) - ❓ Unknown</li>
-</ol>
-<h3 id="cloudflare-configuration">Cloudflare Configuration</h3>
-<ul>
-<li><strong>Tunnel ID:</strong> de34187a-1d92-4d21-a99f-504533e2acbd</li>
-<li><strong>Config:</strong> <code>/opt/psscript/cloudflared/config.yml</code></li>
-<li><strong>Status:</strong> ✅ Active and routing traffic</li>
-</ul>
-<hr />
-<h2 id="test-results-summary">📊 Test Results Summary</h2>
-<h3 id="what-we-tested">What We Tested</h3>
-<ul>
-<li>✅ SSL/TLS performance (10 handshakes)</li>
-<li>✅ HTTP response times (10 sequential requests)</li>
-<li>✅ Concurrent load testing (5, 10, 20 concurrent)</li>
-<li>✅ API endpoints (all failing with Error 1033)</li>
-<li>✅ Port accessibility (all blocked)</li>
-<li>✅ SSL certificate validity</li>
-</ul>
-<h3 id="key-findings">Key Findings</h3>
-<ul>
-<li><strong>SSL/TLS:</strong> Excellent (TLSv1.3, 55ms avg handshake)</li>
-<li><strong>Load Handling:</strong> Exceptional (100% success, 50+ req/sec)</li>
-<li><strong>Frontend:</strong> Working perfectly via tunnel</li>
-<li><strong>Backend API:</strong> Not responding (Error 1033)</li>
-<li><strong>Infrastructure:</strong> Well-designed, secure, high-performance</li>
-</ul>
-<hr />
-<h2 id="next-steps-priority-order">🔄 Next Steps (Priority Order)</h2>
-<h3 id="critical-do-first">CRITICAL - Do First</h3>
-<ol>
-<li>⚠️ <strong>Restore SSH access</strong> via hosting provider console</li>
-<li>⚠️ <strong>Fix backend service</strong> - restart and verify health</li>
-<li>⚠️ <strong>Verify all containers</strong> - ensure 8 containers running</li>
-</ol>
-<h3 id="after-ssh-is-restored">After SSH is Restored</h3>
-<ol>
-<li>Check PostgreSQL and Redis connectivity</li>
-<li>Test complete application flow</li>
-<li>Verify all API endpoints work</li>
-<li>Test authentication and authorization</li>
-</ol>
-<h3 id="production-hardening">Production Hardening</h3>
-<ol>
-<li>Implement monitoring and alerting</li>
-<li>Set up automated backups</li>
-<li>Configure health checks in docker-compose</li>
-<li>Security hardening (close port 22, SSH keys only)</li>
-<li>Document recovery procedures</li>
-</ol>
-<hr />
-<h2 id="useful-commands">💡 Useful Commands</h2>
-<h3 id="quick-status-check">Quick Status Check</h3>
-<pre><code class="language-bash">cd /opt/psscript
-docker compose ps
-docker logs backend --tail 20
-curl http://localhost:4000/api/health
+<h2 id="architecture">Architecture</h2>
+<pre><code class="language-mermaid">graph TB
+    subgraph Frontend
+        UI[React / TypeScript / Vite&lt;br/&gt;Port 3090]
+    end
+
+    subgraph Backend
+        API[Express / TypeScript&lt;br/&gt;Port 4000]
+        Cache[Redis Cache&lt;br/&gt;Port 6379]
+        DB[(PostgreSQL + pgvector&lt;br/&gt;Port 5432)]
+    end
+
+    subgraph AI Service
+        FastAPI[FastAPI / Python&lt;br/&gt;Port 8000]
+        LG[LangGraph&lt;br/&gt;Orchestrator]
+        Guard[Guardrails&lt;br/&gt;3-Layer Security]
+    end
+
+    subgraph External
+        OpenAI[OpenAI API&lt;br/&gt;GPT-4.1 / GPT-5.4 / o3]
+        Anthropic[Anthropic API&lt;br/&gt;Claude Sonnet 4]
+    end
+
+    UI --&gt;|REST + WebSocket| API
+    API --&gt;|Sequelize ORM| DB
+    API --&gt;|ioredis| Cache
+    API --&gt;|HTTP| FastAPI
+    FastAPI --&gt; LG
+    FastAPI --&gt; Guard
+    LG --&gt; OpenAI
+    LG --&gt; Anthropic
+
+    style UI fill:#3b82f6,color:#fff
+    style API fill:#10b981,color:#fff
+    style FastAPI fill:#8b5cf6,color:#fff
+    style DB fill:#f59e0b,color:#000
+    style Cache fill:#ef4444,color:#fff
+    style OpenAI fill:#000,color:#fff
+    style Anthropic fill:#d97706,color:#fff
 </code></pre>
-<h3 id="restart-services">Restart Services</h3>
-<pre><code class="language-bash">docker compose restart backend          # Restart backend only
-docker compose restart                  # Restart all services
-docker compose down &amp;&amp; docker compose up -d  # Full restart
-</code></pre>
-<h3 id="view-logs">View Logs</h3>
-<pre><code class="language-bash">docker logs backend --follow           # Follow backend logs
-docker logs cloudflared --tail 50      # Check tunnel logs
-docker compose logs -f                 # Follow all logs
-</code></pre>
-<h3 id="check-resources">Check Resources</h3>
-<pre><code class="language-bash">docker stats --no-stream              # Container resource usage
-top -bn1 | head -20                   # Server CPU/memory
-free -h &amp;&amp; df -h                      # Memory and disk
+<h3 id="service-map">Service Map</h3>
+<table>
+<thead>
+<tr>
+<th>Service</th>
+<th>Port</th>
+<th>Stack</th>
+<th>Purpose</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Frontend</strong></td>
+<td>3090</td>
+<td>React, TypeScript, Vite, TailwindCSS</td>
+<td>UI, user flows, visualization</td>
+</tr>
+<tr>
+<td><strong>Backend</strong></td>
+<td>4000</td>
+<td>Express, TypeScript, Sequelize</td>
+<td>API, orchestration, auth, caching</td>
+</tr>
+<tr>
+<td><strong>AI Service</strong></td>
+<td>8000</td>
+<td>FastAPI, LangGraph 1.1, Python</td>
+<td>Model inference, agentic workflows</td>
+</tr>
+<tr>
+<td><strong>PostgreSQL</strong></td>
+<td>5432</td>
+<td>PostgreSQL 15 + pgvector</td>
+<td>Persistent data, vector embeddings</td>
+</tr>
+<tr>
+<td><strong>Redis</strong></td>
+<td>6379</td>
+<td>Redis 7</td>
+<td>Cache layer (with in-memory fallback)</td>
+</tr>
+</tbody>
+</table>
+<h3 id="request-flow">Request Flow</h3>
+<pre><code class="language-mermaid">sequenceDiagram
+    participant User
+    participant Frontend
+    participant Backend
+    participant AI Service
+    participant OpenAI
+
+    User-&gt;&gt;Frontend: Upload script
+    Frontend-&gt;&gt;Backend: POST /api/scripts
+    Backend-&gt;&gt;Backend: SHA-256 dedup check
+    Backend-&gt;&gt;Backend: Store in PostgreSQL
+    Backend--&gt;&gt;Frontend: 201 Created
+    Backend-&gt;&gt;AI Service: Async analysis (retry x2)
+    AI Service-&gt;&gt;OpenAI: GPT-4.1 analysis
+    OpenAI--&gt;&gt;AI Service: Security + quality scores
+    AI Service--&gt;&gt;Backend: Store results
+    Backend--&gt;&gt;Frontend: WebSocket update
 </code></pre>
 <hr />
-<h2 id="support-information">📞 Support Information</h2>
-<h3 id="user-details">User Details</h3>
-<ul>
-<li><strong>Name:</strong> Dave</li>
-<li><strong>Email:</strong> morlok52@gmail.com</li>
-</ul>
-<h3 id="when-you-need-help">When You Need Help</h3>
-<p>If you cannot resolve issues using these documents:</p>
-<ol>
-<li><strong>Collect Information:</strong></li>
-<li>Output of <code>docker compose ps</code></li>
-<li>Output of <code>docker logs backend --tail 100</code></li>
-<li>Output of <code>docker logs cloudflared --tail 50</code></li>
-<li>
-<p>Screenshots of any error messages</p>
-</li>
-<li>
-<p><strong>Check Documentation:</strong></p>
-</li>
-<li>Review <code>API_FIX_GUIDE.md</code> for backend issues</li>
-<li>Review <code>RECOVERY_PLAN.md</code> for SSH issues</li>
-<li>
-<p>Check <code>Troubleshooting</code> tab in IMMEDIATE_FIX_STEPS.xlsx</p>
-</li>
-<li>
-<p><strong>Hosting Provider:</strong></p>
-</li>
-<li>Contact your hosting provider support</li>
-<li>Provide server IP: 74.208.184.195</li>
-<li>Explain: SSH not accessible, need console access</li>
-</ol>
+<h2 id="ai-models">AI Models</h2>
+<p>Updated April 12, 2026. All deprecated models (gpt-4o, gpt-4o-mini, gpt-3.5-turbo) have been replaced.</p>
+<table>
+<thead>
+<tr>
+<th>Purpose</th>
+<th>Model</th>
+<th>Notes</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Code generation</strong></td>
+<td><code>gpt-4.1</code></td>
+<td>1M token context, best for PowerShell</td>
+</tr>
+<tr>
+<td><strong>Flagship tasks</strong></td>
+<td><code>gpt-5.4</code></td>
+<td>Complex multi-step analysis</td>
+</tr>
+<tr>
+<td><strong>Fast tasks</strong></td>
+<td><code>gpt-4.1-mini</code></td>
+<td>Quick responses, cost-effective</td>
+</tr>
+<tr>
+<td><strong>Reasoning</strong></td>
+<td><code>o3</code></td>
+<td>Complex debugging and architecture</td>
+</tr>
+<tr>
+<td><strong>Fast reasoning</strong></td>
+<td><code>o4-mini</code></td>
+<td>Lightweight step-by-step</td>
+</tr>
+<tr>
+<td><strong>Embeddings</strong></td>
+<td><code>text-embedding-3-large</code></td>
+<td>3072 dimensions for semantic search</td>
+</tr>
+<tr>
+<td><strong>Text-to-speech</strong></td>
+<td><code>gpt-4o-mini-tts</code></td>
+<td>Instruction-controllable voice</td>
+</tr>
+<tr>
+<td><strong>Speech-to-text</strong></td>
+<td><code>gpt-4o-mini-transcribe</code></td>
+<td>Best accuracy STT</td>
+</tr>
+<tr>
+<td><strong>Diarization</strong></td>
+<td><code>gpt-4o-transcribe-diarize</code></td>
+<td>Speaker-labeled transcription</td>
+</tr>
+<tr>
+<td><strong>Anthropic fallback</strong></td>
+<td><code>claude-sonnet-4-6-20260217</code></td>
+<td>Alternative analysis provider</td>
+</tr>
+</tbody>
+</table>
+<h3 id="sdk-versions">SDK Versions</h3>
+<table>
+<thead>
+<tr>
+<th>Package</th>
+<th>Version</th>
+<th>Language</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>openai</code></td>
+<td>^6.33.0</td>
+<td>Node.js</td>
+</tr>
+<tr>
+<td><code>openai</code></td>
+<td>&gt;=2.30.0</td>
+<td>Python</td>
+</tr>
+<tr>
+<td><code>langgraph</code></td>
+<td>&gt;=1.1.0</td>
+<td>Python</td>
+</tr>
+<tr>
+<td><code>langchain</code></td>
+<td>&gt;=1.0.0 (GA)</td>
+<td>Python</td>
+</tr>
+</tbody>
+</table>
+<blockquote>
+<p><strong>Note:</strong> The OpenAI Assistants API sunsets on August 26, 2026. The checked-in <code>/api/assistants</code> routes already return <code>Deprecation</code>, <code>Sunset</code>, and successor <code>Link</code> headers, and the migration target is the Responses API.</p>
+</blockquote>
 <hr />
-<h2 id="performance-metrics">📈 Performance Metrics</h2>
-<h3 id="ssltls-performance">SSL/TLS Performance</h3>
+<h2 id="screenshots">Screenshots</h2>
+<details>
+<summary><strong>Login</strong> — Auth-enabled sign-in and demo access</summary>
+
+![Login](docs/screenshots/login.png)
+</details>
+
+<details>
+<summary><strong>Dashboard</strong> — Health, activity, and AI usage overview</summary>
+
+![Dashboard](docs/screenshots/dashboard.png)
+</details>
+
+<details>
+<summary><strong>Scripts</strong> — Upload, browse, filter, and analyze</summary>
+
+![Scripts](docs/screenshots/scripts.png)
+</details>
+
+<details>
+<summary><strong>Upload</strong> — Script intake with metadata and preview</summary>
+
+![Upload](docs/screenshots/upload.png)
+</details>
+
+<details>
+<summary><strong>Script Analysis</strong> — AI-powered security and quality scoring</summary>
+
+![Analysis](docs/screenshots/analysis.png)
+</details>
+
+<details>
+<summary><strong>Script Detail</strong> — Version history and code view</summary>
+
+![Script Detail](docs/screenshots/script-detail.png)
+</details>
+
+<details>
+<summary><strong>Documentation</strong> — PowerShell docs explorer and crawl tools</summary>
+
+![Documentation](docs/screenshots/documentation.png)
+</details>
+
+<details>
+<summary><strong>Chat with AI</strong> — Conversational PowerShell assistant</summary>
+
+![Chat](docs/screenshots/chat.png)
+</details>
+
+<details>
+<summary><strong>Analytics</strong> — Usage metrics and reporting</summary>
+
+![Analytics](docs/screenshots/analytics.png)
+</details>
+
+<details>
+<summary><strong>Settings</strong> — Profile and application configuration</summary>
+
+![Settings](docs/screenshots/settings-profile.png)
+</details>
+
+<details>
+<summary><strong>Data Maintenance</strong> — Admin backup, restore, cleanup</summary>
+
+![Data Maintenance](docs/screenshots/data-maintenance.png)
+</details>
+
+<hr />
+<h2 id="quick-start">Quick Start</h2>
+<h3 id="prerequisites">Prerequisites</h3>
 <ul>
-<li>Average Handshake: 55.53ms</li>
-<li>Min: 19.27ms / Max: 158.31ms</li>
-<li>Protocol: TLSv1.3</li>
-<li>Cipher: TLS_AES_256_GCM_SHA384 (256-bit)</li>
+<li>Node.js 18+</li>
+<li>Python 3.10+</li>
+<li>Docker Engine with <code>docker compose</code></li>
 </ul>
-<h3 id="http-performance">HTTP Performance</h3>
+<h3 id="full-stack-docker">Full stack (Docker)</h3>
+<pre><code class="language-bash">npm run install:all
+python -m pip install -r src/ai/requirements.txt
+docker compose up -d --build
+</code></pre>
+<p>Open <code>https://127.0.0.1:3090</code></p>
+<h3 id="individual-services">Individual services</h3>
+<pre><code class="language-bash"># Backend (port 4000)
+cd src/backend &amp;&amp; npm install &amp;&amp; npm run dev
+
+# Frontend (port 3090)
+cd src/frontend &amp;&amp; npm install &amp;&amp; npm run dev
+
+# AI Service (port 8000)
+cd src/ai &amp;&amp; pip install -r requirements.txt &amp;&amp; python main.py
+</code></pre>
+<h3 id="local-dev-auth">Local dev auth</h3>
+<p>The default local stack commonly runs with <code>DISABLE_AUTH=true</code> and <code>VITE_DISABLE_AUTH=true</code>, so the UI auto-enters the app shell as <code>dev-admin</code>. For a real login pass, run a separate frontend/backend pair with both flags set to <code>false</code>.</p>
+<h3 id="current-ui-shell">Current UI shell</h3>
+<p>The current running UI is a dark PSScript application shell:</p>
 <ul>
-<li>Average Response: 128.21ms</li>
-<li>Min: 63.81ms / Max: 341.27ms</li>
-<li>70% of requests under 100ms</li>
-</ul>
-<h3 id="load-testing">Load Testing</h3>
-<ul>
-<li>5 concurrent: 34.11 req/sec (100% success)</li>
-<li>10 concurrent: 40.43 req/sec (100% success)</li>
-<li>20 concurrent: 50.32 req/sec (100% success)</li>
-</ul>
-<h3 id="system-assessment">System Assessment</h3>
-<ul>
-<li><strong>Infrastructure:</strong> ⭐⭐⭐⭐⭐ Excellent design</li>
-<li><strong>Security:</strong> ⭐⭐⭐⭐⭐ Cloudflare Tunnel + Access</li>
-<li><strong>Performance:</strong> ⭐⭐⭐⭐⭐ Fast, scalable, reliable</li>
-<li><strong>Current Status:</strong> ⚠️⚠️ Backend needs fix</li>
+<li>the sidebar and top bar provide navigation across Dashboard, Script Management, AI Assistant, Documentation, UI Components, and Settings</li>
+<li>the dashboard shows script totals, categories, security metrics, activity, and trends from the backend</li>
+<li>script detail and analysis pages show real script content and saved AI-analysis data</li>
+<li>the checked-in screenshots are captured from the running app with backend data, not mock image placeholders</li>
 </ul>
 <hr />
-<h2 id="lessons-learned">🎓 Lessons Learned</h2>
-<h3 id="what-went-right">What Went Right</h3>
-<ul>
-<li>Cloudflare Tunnel architecture is solid</li>
-<li>SSL/TLS configuration is optimal</li>
-<li>Load balancing handles high concurrency</li>
-<li>Frontend deployment successful</li>
-<li>Security layers (Access) working perfectly</li>
-</ul>
-<h3 id="what-needs-attention">What Needs Attention</h3>
-<ul>
-<li>Backend service health monitoring</li>
-<li>SSH access management</li>
-<li>Container restart policies</li>
-<li>Automated health checks</li>
-<li>Monitoring and alerting</li>
-</ul>
-<h3 id="recommendations">Recommendations</h3>
-<ol>
-<li>Add health checks to docker-compose.yml</li>
-<li>Implement container restart policies</li>
-<li>Set up uptime monitoring</li>
-<li>Configure alerting for Error 1033</li>
-<li>Document this experience for future deployments</li>
-</ol>
+<h2 id="validation">Validation</h2>
+<pre><code class="language-bash"># Backend
+cd src/backend
+npm run typecheck          # TypeScript: 0 errors
+npm run lint               # ESLint: 0 errors
+npm test -- --runInBand    # Unit tests
+
+# Frontend
+cd src/frontend
+npm run lint &amp;&amp; npm run build
+
+# E2E
+npx playwright test --project=chromium
+
+# Cache stress test
+cd src/backend &amp;&amp; npx jest src/__tests__/cacheService.test.ts --forceExit
+</code></pre>
+<h3 id="screenshot-refresh">Screenshot Refresh</h3>
+<p>The app-shell screenshots are captured from the standard local frontend on <code>3090</code> with the backend running and at least one script with analysis data available. Because that local stack commonly runs with <code>VITE_DISABLE_AUTH=true</code>, capture <code>login.png</code> from a second auth-enabled frontend:</p>
+<pre><code class="language-bash"># terminal 1: app shell + backend
+npm run playwright:stack
+
+# terminal 2: login page
+cd src/frontend
+VITE_DISABLE_AUTH=false VITE_USE_MOCKS=true npm run dev -- --host 0.0.0.0 --port 3191
+
+# terminal 3: refresh docs/screenshots
+SCREENSHOT_BASE_URL=https://127.0.0.1:3090 \
+SCREENSHOT_LOGIN_URL=http://127.0.0.1:3191 \
+node scripts/capture-screenshots.js
+</code></pre>
+<h3 id="latest-results-april-24-2026">Latest Results (April 24, 2026)</h3>
+<table>
+<thead>
+<tr>
+<th>Suite</th>
+<th>Result</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>GitHub README audit</td>
+<td>Remote <code>main</code> checked against the local source</td>
+</tr>
+<tr>
+<td>Screenshot refresh</td>
+<td>Login, dashboard, scripts, upload, script detail, analysis, documentation, chat, analytics, settings, and data maintenance refreshed</td>
+</tr>
+<tr>
+<td>Screenshot guardrails</td>
+<td>Capture script fails instead of saving login redirects, missing script data, or script-analysis loading pages</td>
+</tr>
+<tr>
+<td>Screenshot files</td>
+<td>Empty duplicate <code>* (1).png</code> files removed</td>
+</tr>
+<tr>
+<td>Exported docs</td>
+<td>GitHub-facing HTML exports regenerated from current Markdown</td>
+</tr>
+</tbody>
+</table>
 <hr />
-<h2 id="timeline">📅 Timeline</h2>
+<h2 id="project-structure">Project Structure</h2>
+<pre><code>psscript/
+├── .github/                  # Workflows, issue templates, PR template
+├── docs/                     # Active docs, screenshots, exports, archive
+├── docs-site/                # Documentation site assets and screenshot variants
+├── docker/                   # Docker support services and backup tooling
+├── scripts/                  # Operational scripts and validation helpers
+├── src/
+│   ├── backend/              # Express API (TypeScript)
+│   │   └── src/
+│   │       ├── controllers/  # Route handlers (modular script CRUD)
+│   │       ├── services/     # Cache, OpenAI client, agentic tools
+│   │       ├── models/       # Sequelize models (14 tables)
+│   │       ├── middleware/    # Auth, security, rate limiting
+│   │       └── routes/       # API route definitions
+│   ├── frontend/             # React UI (Vite + TypeScript)
+│   │   └── src/
+│   │       ├── pages/        # Dashboard, Scripts, Chat, Analytics
+│   │       ├── components/   # Reusable UI components
+│   │       └── services/     # API client, voice, settings
+│   └── ai/                   # Python AI service (FastAPI)
+│       ├── agents/           # LangGraph, Anthropic, multi-agent
+│       ├── guardrails/       # 3-layer input/output validation
+│       ├── utils/            # Model router, token counter
+│       └── analysis/         # Script analyzer, embeddings
+├── tests/e2e/                # Playwright E2E tests
+├── crawl4ai-vector-db/       # Support project for crawl/vector search workflows
+├── product-website/          # Product/marketing website assets
+└── docker-compose.yml        # Full stack orchestration
+</code></pre>
+<hr />
+<h2 id="engineering-notes">Engineering Notes</h2>
+<details>
+<summary><strong>April 2026 Project Review</strong> — 22 issues fixed, AI models updated</summary>
+
+### Database & Models (9 fixes)
+- Added missing `ExecutionLog.output` column
+- Fixed `Script.fileHash` from STRING(32) to STRING(64) for SHA-256
+- Refactored ChatHistory to consistent class pattern
+- Added CASCADE on ScriptAnalysis foreign key
+- Fixed ScriptVersion timestamp mismatch
+- Standardized FK naming across models
+- Added missing indexes (file_hash, visibility compound)
+- Updated embedding model default
+- Increased password hash field for argon2id compatibility
+
+### API & Backend (13 fixes)
+- Removed `@ts-nocheck` from 7 files with proper type declarations
+- Fixed default port mismatch (4001 -> 4000)
+- Transaction isolation: SERIALIZABLE -> READ COMMITTED
+- Added pagination limit guard (max 100)
+- Implemented analytics summary endpoint (was TODO stub)
+- Made AI analysis non-blocking with retry (exponential backoff)
+- Fixed unhandledRejection handler
+- Added express-validator to script routes
+- Created standardized API response envelope helpers
+- Replaced console.warn with Winston in security middleware
+
+### Architecture (3 fixes)
+- Extracted 350-line inline cache to standalone `cacheService.ts`
+- Added Redis integration with in-memory fallback via ioredis
+- Resolved circular dependency (eliminated runtime `require()`)
+
+### AI Updates
+- Replaced all deprecated models: gpt-4o -> gpt-4.1, gpt-4o-mini -> gpt-4.1-mini
+- Added GPT-5.4 as flagship model, o4-mini for lightweight reasoning
+- Updated SDKs: OpenAI Node 6.33.0, Python 2.30.0, LangGraph 1.1.0, LangChain 1.0
+- Created shared OpenAI client singleton (replaces 3 separate instances)
+- Added Assistants API sunset warning headers
+
+Full details: [PROJECT-REVIEW-2026-04-01.md](./docs/PROJECT-REVIEW-2026-04-01.md) | [AI-FUNCTIONS-REVIEW-2026-04-02.md](./docs/AI-FUNCTIONS-REVIEW-2026-04-02.md)
+</details>
+
+<details>
+<summary><strong>Key technical decisions</strong></summary>
+
+- JWT auth with refresh token rotation, bcrypt (12 rounds), account lockout
+- Script uploads deduplicated via SHA-256 file hashing
+- AI analysis runs as fire-and-forget with 2-retry exponential backoff
+- Cache: Redis primary (via ioredis) with automatic in-memory fallback
+- Structured API responses: `{ success: true, data }` / `{ success: false, error: { code, message } }`
+- Multi-model routing: task complexity determines model selection (nano -> mini -> standard -> flagship)
+- 3-layer AI guardrails: input validation, context construction, output validation
+- Voice pipeline: `gpt-4o-mini-transcribe` -> `gpt-4.1` reasoning -> `gpt-4o-mini-tts`
+</details>
+
+<hr />
+<h2 id="documentation">Documentation</h2>
+<table>
+<thead>
+<tr>
+<th>Document</th>
+<th>Purpose</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><a href="./docs/GETTING-STARTED.md">Getting Started</a></td>
+<td>Local bootstrap and first-run</td>
+</tr>
+<tr>
+<td><a href="./docs/REPOSITORY-ORGANIZATION.md">Repository Organization</a></td>
+<td>Repo layout, docs taxonomy, and cleanup backlog</td>
+</tr>
+<tr>
+<td><a href="./docs/DATA-MAINTENANCE.md">Data Maintenance</a></td>
+<td>Admin backup, restore, cleanup</td>
+</tr>
+<tr>
+<td><a href="./docs/README-VOICE-API.md">Voice API</a></td>
+<td>Voice/listening implementation</td>
+</tr>
+<tr>
+<td><a href="./docs/DEPLOYMENT-PLATFORMS.md">Deployment Platforms</a></td>
+<td>Render, Netlify, Docker configs</td>
+</tr>
+<tr>
+<td><a href="./docs/PROJECT-REVIEW-2026-04-01.md">Project Review</a></td>
+<td>April 2026 comprehensive review</td>
+</tr>
+<tr>
+<td><a href="./docs/AI-FUNCTIONS-REVIEW-2026-04-02.md">AI Functions Review</a></td>
+<td>AI audit and model migration</td>
+</tr>
+<tr>
+<td><a href="./docs/index.md">Documentation Hub</a></td>
+<td>Full docs index</td>
+</tr>
+<tr>
+<td><a href="./docs/UI-BRANDING-REFRESH-2026-04-23.md">UI Branding Refresh</a></td>
+<td>Current branded UI and screenshot refresh notes</td>
+</tr>
+</tbody>
+</table>
+<h3 id="service-readmes">Service READMEs</h3>
 <ul>
-<li><strong>Deployment Started:</strong> January 14, 2026 (morning)</li>
-<li><strong>Docker Installed:</strong> Successfully</li>
-<li><strong>Application Transferred:</strong> 1,507 files via SFTP</li>
-<li><strong>Containers Built:</strong> All 8 containers</li>
-<li><strong>Backend Working:</strong> Temporarily (before SSH loss)</li>
-<li><strong>SSH Access Lost:</strong> ~1 hour into session</li>
-<li><strong>Stress Testing:</strong> Completed (20 minutes)</li>
-<li><strong>Documentation:</strong> Created (complete package)</li>
+<li><a href="./src/backend/README.md">Backend</a> — Routes, validation, middleware</li>
+<li><a href="./src/frontend/README.md">Frontend</a> — Components, pages, state</li>
+<li><a href="./src/ai/README.md">AI Service</a> — Models, agents, guardrails</li>
 </ul>
 <hr />
-<h2 id="final-checklist">✅ Final Checklist</h2>
-<p>Use this to track your progress:</p>
-<ul>
-<li>[ ] Read IMMEDIATE_FIX_STEPS.md completely</li>
-<li>[ ] Access hosting provider console</li>
-<li>[ ] Fix SSH access (ufw allow 22/tcp)</li>
-<li>[ ] Test SSH from local machine</li>
-<li>[ ] Check Docker container status</li>
-<li>[ ] Read backend logs</li>
-<li>[ ] Restart backend service</li>
-<li>[ ] Test backend health locally</li>
-<li>[ ] Test API via tunnel</li>
-<li>[ ] Verify all 8 containers running</li>
-<li>[ ] Complete verification checklist</li>
-<li>[ ] Test full application flow</li>
-<li>[ ] Implement monitoring</li>
-<li>[ ] Set up backups</li>
-<li>[ ] Document final configuration</li>
-</ul>
-<hr />
-<p><strong>Generated by:</strong> Claude AI (Anthropic)<br />
-<strong>Date:</strong> January 14, 2026<br />
-<strong>Version:</strong> 1.0</p>
-<p><strong>Note:</strong> This is a comprehensive documentation package created after extensive testing and analysis. All technical details are accurate as of the generation date. The application infrastructure is well-designed and production-ready once the backend service is restored.</p>
-    <div class="footer">Generated 2026-01-16 23:34 UTC</div>
+<p align="center">
+  <sub>Last updated: April 24, 2026</sub>
+</p>
+    <div class="footer">Generated 2026-04-24 01:59 UTC</div>
   </div>
 </body>
 </html>

@@ -17,7 +17,6 @@ const APP_SHOTS = [
   { name: 'dashboard.png', path: '/dashboard' },
   { name: 'scripts.png', path: '/scripts' },
   { name: 'upload.png', path: '/scripts/upload' },
-  { name: 'analysis.png', path: '/scripts/1/analysis' },
   { name: 'documentation.png', path: '/documentation' },
   { name: 'chat.png', path: '/chat' },
   { name: 'analytics.png', path: '/analytics' },
@@ -36,9 +35,29 @@ async function waitForHeading(page, regex, timeout = 15000) {
   await page.getByRole('heading', { name: regex }).first().waitFor({ state: 'visible', timeout });
 }
 
+async function waitForScreenSettle(page) {
+  await page.waitForLoadState('networkidle');
+  await page.waitForFunction(() => document.querySelectorAll('.animate-spin').length === 0, null, {
+    timeout: 10000,
+  }).catch(() => {});
+  await page.waitForTimeout(1000);
+}
+
 async function captureLogin(page) {
   console.log(`Capturing login from ${LOGIN_BASE_URL}/login`);
   await page.goto(`${LOGIN_BASE_URL}/login`, { waitUntil: 'domcontentloaded', timeout: 30000 });
+  await waitForScreenSettle(page);
+
+  const currentPath = new URL(page.url()).pathname;
+  if (!/\/login$/i.test(currentPath)) {
+    throw new Error(
+      'Login capture was redirected away from /login. ' +
+      'Start an auth-enabled frontend and set SCREENSHOT_LOGIN_URL, for example: ' +
+      'VITE_DISABLE_AUTH=false npm run dev -- --host 0.0.0.0 --port 3191, then ' +
+      'SCREENSHOT_LOGIN_URL=http://127.0.0.1:3191 node scripts/capture-screenshots.js'
+    );
+  }
+
   await waitForHeading(page, /login/i);
   await page.screenshot({
     path: path.join(SCREENSHOTS_DIR, 'login.png'),
@@ -48,7 +67,7 @@ async function captureLogin(page) {
 
 async function ensureAppReady(page) {
   await page.goto(`${APP_BASE_URL}/`, { waitUntil: 'domcontentloaded', timeout: 30000 });
-  await page.waitForLoadState('networkidle');
+  await waitForScreenSettle(page);
 
   if (page.url().includes('/login')) {
     const defaultLoginButton = page.getByRole('button', { name: /use default login|sign in as demo admin/i });
@@ -65,8 +84,7 @@ async function captureAppScreens(page) {
   for (const pageInfo of APP_SHOTS) {
     console.log(`Capturing ${pageInfo.name} from ${APP_BASE_URL}${pageInfo.path}`);
     await page.goto(`${APP_BASE_URL}${pageInfo.path}`, { waitUntil: 'domcontentloaded', timeout: 30000 });
-    await page.waitForLoadState('networkidle');
-    await page.waitForTimeout(1000);
+    await waitForScreenSettle(page);
     await page.screenshot({
       path: path.join(SCREENSHOTS_DIR, pageInfo.name),
       fullPage: true,
@@ -77,20 +95,35 @@ async function captureAppScreens(page) {
 async function captureScriptDetail(page) {
   console.log(`Capturing script-detail.png from ${APP_BASE_URL}/scripts`);
   await page.goto(`${APP_BASE_URL}/scripts`, { waitUntil: 'domcontentloaded', timeout: 30000 });
-  await page.waitForLoadState('networkidle');
+  await waitForScreenSettle(page);
 
-  const scriptLink = page.locator('a[href^="/scripts/"]').first();
+  const scriptLink = page.locator('a[href^="/scripts/"]:not([href="/scripts/upload"])').first();
+  await scriptLink.waitFor({ state: 'visible', timeout: 30000 }).catch(() => {});
   if (await scriptLink.count()) {
     await scriptLink.click();
     await page.waitForURL(/\/scripts\/\d+$/i, { timeout: 30000 });
   } else {
-    await page.goto(`${APP_BASE_URL}/scripts/1`, { waitUntil: 'domcontentloaded', timeout: 30000 });
+    throw new Error('No script detail link was found. Seed or upload at least one script before refreshing README screenshots.');
   }
 
-  await page.waitForLoadState('networkidle');
-  await page.waitForTimeout(1000);
+  await waitForScreenSettle(page);
+  await page.getByText(/Script Content/i).first().waitFor({ state: 'visible', timeout: 30000 });
   await page.screenshot({
     path: path.join(SCREENSHOTS_DIR, 'script-detail.png'),
+    fullPage: true,
+  });
+
+  return new URL(page.url()).pathname;
+}
+
+async function captureScriptAnalysis(page, detailPath) {
+  const analysisPath = `${detailPath}/analysis`;
+  console.log(`Capturing analysis.png from ${APP_BASE_URL}${analysisPath}`);
+  await page.goto(`${APP_BASE_URL}${analysisPath}`, { waitUntil: 'domcontentloaded', timeout: 30000 });
+  await waitForScreenSettle(page);
+  await page.getByText(/AI Analysis/i).first().waitFor({ state: 'visible', timeout: 30000 });
+  await page.screenshot({
+    path: path.join(SCREENSHOTS_DIR, 'analysis.png'),
     fullPage: true,
   });
 }
@@ -110,7 +143,8 @@ async function main() {
     await captureLogin(page);
     await ensureAppReady(page);
     await captureAppScreens(page);
-    await captureScriptDetail(page);
+    const detailPath = await captureScriptDetail(page);
+    await captureScriptAnalysis(page, detailPath);
     console.log('\nScreenshot capture completed.');
   } finally {
     await browser.close();

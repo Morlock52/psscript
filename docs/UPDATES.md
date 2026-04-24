@@ -1,5 +1,14 @@
 # Application Updates
 
+## 2026-04-24 GitHub README screenshot correction
+
+- Checked the live GitHub `main` README and confirmed it was still showing the older screenshot tour and stale April 2/April 12 documentation state.
+- Refreshed the canonical GitHub README screenshot set from the running local UI and aligned the README wording to the actual dark PSScript app shell.
+- Captured `login.png` from an auth-enabled frontend on `3191` and app-shell pages from the local frontend on `3090` with the backend connected to script data.
+- Removed checked-in zero-byte duplicate screenshot files ending in ` (1).png`.
+- Tightened `scripts/capture-screenshots.js` so login redirects report the exact auth-enabled frontend requirement, app pages wait for loading spinners to settle, and script detail/analysis captures fail when real content is unavailable instead of saving spinners.
+- Updated the root README screenshot section to include the complete current tour: login, dashboard, scripts, upload, script detail, analysis, documentation, chat, analytics, settings, and data maintenance.
+
 ## 2026-04-12 Docs and screenshot refresh
 
 ### Engineering changes

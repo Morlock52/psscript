@@ -99,13 +99,20 @@ That means:
 
 ## Screenshot generation
 
-The canonical docs screenshots come from:
+The canonical docs screenshots require a running app shell with backend data, plus a second auth-enabled frontend for the login page:
 
 ```bash
-SCREENSHOT_LOGIN_URL=https://127.0.0.1:3191 node scripts/capture-screenshots.js
+npm run playwright:stack
+
+cd src/frontend
+VITE_DISABLE_AUTH=false VITE_USE_MOCKS=true npm run dev -- --host 0.0.0.0 --port 3191
+
+SCREENSHOT_BASE_URL=https://127.0.0.1:3090 \
+SCREENSHOT_LOGIN_URL=http://127.0.0.1:3191 \
+node scripts/capture-screenshots.js
 ```
 
-The generator uses the standard local app on `3090` for the main app-shell screenshots and an optional auth-enabled frontend on `3191` for `login.png`.
+The generator uses the standard local app on `3090` for the main app-shell screenshots and an auth-enabled frontend on `3191` for `login.png`. It fails when no script detail or analysis content is available, instead of saving loading spinners.
 
 Additional UI-specific screenshot specs live under `tests/e2e/*screenshots*.spec.ts`.
 Those screenshot and `tests/e2e/tmp/*` specs are utility flows and are excluded from the default Playwright matrix.

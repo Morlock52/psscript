@@ -1,6 +1,6 @@
-# Screenshot Batch 2 (Feb 2026)
+# Screenshot Batch 2 (Current through Apr 24, 2026)
 
-This batch captures the latest UI for new/updated features (Feb 2026) and is used to keep docs screenshots in sync with the current app output.
+This batch captures the latest UI for new/updated features and is used to keep docs screenshots in sync with the current app output.
 
 ## Captured
 
@@ -15,8 +15,9 @@ This batch captures the latest UI for new/updated features (Feb 2026) and is use
 
 ## Notes
 
-- Local dev stack ports (Feb 2026):
-  - Frontend: `https://localhost:3090`
-  - Backend API: `https://localhost:4000`
+- Current canonical local stack ports:
+  - Frontend: `https://127.0.0.1:3090` for the full local TLS stack, or `http://127.0.0.1:3090` for an equivalent manually started Vite frontend
+  - Login frontend: `http://127.0.0.1:3191` with `VITE_DISABLE_AUTH=false`
+  - Backend API: `https://127.0.0.1:4000`
   - AI service: `http://localhost:8000`
-
+- README screenshots require backend script data; the generator now fails rather than saving spinner or missing-content pages for script detail and analysis.
