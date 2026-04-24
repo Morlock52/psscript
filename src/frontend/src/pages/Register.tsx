@@ -1,12 +1,14 @@
 import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../hooks/useAuth';
+import BrandMark from '../components/BrandMark';
+import { isHostedAuthConfigurationMissing } from '../services/supabase';
 
 // Reusable style constants for theme-aware styling
-const inputStyles = "w-full px-3 py-2 rounded-md focus:outline-none focus:ring-2 focus:ring-[var(--color-primary)] bg-[var(--color-bg-primary)] border border-[var(--color-border-default)] text-[var(--color-text-primary)]";
+const inputStyles = "w-full px-4 py-3 rounded-xl focus:outline-none focus:ring-2 focus:ring-[var(--color-primary)] bg-[var(--color-bg-primary)] border border-[var(--color-border-default)] text-[var(--color-text-primary)]";
 const labelStyles = "block text-sm font-medium mb-2 text-[var(--color-text-secondary)]";
 const linkStyles = "text-[var(--color-primary)] hover:text-[var(--color-primary-light)]";
-const buttonPrimaryStyles = "w-full bg-[var(--color-primary)] hover:bg-[var(--color-primary-dark)] text-white font-medium py-2 px-4 rounded-md focus:outline-none focus:ring-2 focus:ring-[var(--color-primary)] focus:ring-offset-2 focus:ring-offset-[var(--color-bg-elevated)] disabled:opacity-50 disabled:cursor-not-allowed";
+const buttonPrimaryStyles = "w-full bg-[var(--gradient-primary)] hover:opacity-95 text-slate-950 font-bold py-3 px-4 rounded-xl focus:outline-none focus:ring-2 focus:ring-[var(--color-primary)] focus:ring-offset-2 focus:ring-offset-[var(--color-bg-elevated)] disabled:opacity-50 disabled:cursor-not-allowed shadow-[var(--shadow-glow)]";
 
 const Register: React.FC = () => {
   const [username, setUsername] = useState('');
@@ -17,6 +19,7 @@ const Register: React.FC = () => {
 
   const { register, error, isLoading } = useAuth();
   const navigate = useNavigate();
+  const hostedAuthMissing = isHostedAuthConfigurationMissing();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -47,15 +50,27 @@ const Register: React.FC = () => {
   };
 
   return (
-    <div className="flex items-center justify-center min-h-screen px-4 bg-[var(--color-bg-secondary)]">
-      <div className="w-full max-w-md">
+    <div className="relative flex min-h-screen items-center justify-center overflow-hidden px-4 bg-[var(--gradient-surface)]">
+      <div className="absolute -left-24 top-12 h-72 w-72 rounded-full bg-[var(--color-primary)]/20 blur-3xl" />
+      <div className="absolute -right-20 bottom-10 h-80 w-80 rounded-full bg-[var(--color-accent)]/20 blur-3xl" />
+      <div className="relative w-full max-w-md">
         <div className="text-center mb-10">
-          <h1 className="text-3xl font-bold text-[var(--color-text-primary)]">PSScript</h1>
-          <p className="mt-2 text-[var(--color-text-secondary)]">PowerShell Script Management</p>
+          <BrandMark size="lg" className="justify-center" />
+          <p className="mt-4 text-[var(--color-text-secondary)]">Join the AI Ops Studio for PowerShell teams.</p>
         </div>
 
-        <div className="rounded-lg shadow-[var(--shadow-xl)] p-8 bg-[var(--color-bg-elevated)] border border-[var(--color-border-default)]">
-          <h2 className="text-2xl font-bold mb-6 text-[var(--color-text-primary)]">Create an Account</h2>
+        <div className="rounded-3xl shadow-[var(--shadow-xl)] p-8 bg-[var(--color-bg-elevated)]/92 border border-[var(--color-border-default)] backdrop-blur-xl">
+          <p className="text-xs font-bold uppercase tracking-[0.24em] text-[var(--color-primary)]">Start secure</p>
+          <h2 className="mt-2 text-2xl font-black mb-6 text-[var(--color-text-primary)]">Create an account</h2>
+
+          {hostedAuthMissing && (
+            <div className="mb-4 rounded-2xl border border-amber-400/30 bg-amber-400/10 px-4 py-3 text-sm text-amber-100">
+              <p className="font-bold text-amber-200">Hosted auth is not configured.</p>
+              <p className="mt-1 text-amber-100/90">
+                Set `VITE_SUPABASE_URL` and `VITE_SUPABASE_ANON_KEY` in Netlify build environment variables, then rebuild this deploy.
+              </p>
+            </div>
+          )}
 
           {(error || formError) && (
             <div className="px-4 py-3 rounded mb-4 bg-red-500/10 border border-red-500/30 text-red-500">
@@ -129,7 +144,7 @@ const Register: React.FC = () => {
 
             <button
               type="submit"
-              disabled={isLoading}
+              disabled={isLoading || hostedAuthMissing}
               className={buttonPrimaryStyles}
             >
               {isLoading ? (

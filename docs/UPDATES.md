@@ -1,5 +1,14 @@
 # Application Updates
 
+## 2026-04-24 Browser Use QA, documentation table fix, and docs refresh
+
+- Created and completed the Browser Use QA matrix in `BROWSER_USE_QA.md` against `http://127.0.0.1:3191`.
+- Fixed the concrete documentation API failure by adding `src/db/migrations/20260424_create_documentation_table.sql`, updating `src/db/schema.sql`, and applying the migration to the running local Postgres database.
+- Retested documentation endpoints and pages; `/documentation`, `/documentation/crawl`, and `/documentation/data` now render.
+- Muted bright chat, navbar, Voice Copilot, and global action colors to match the current enterprise PSScript brand.
+- Corrected Browser Use readiness checks so route tests wait past `Loading PSScript...`; the full RUN2 pass confirmed health, auth/session, shell, navigation, analytics, scripts, AI chat, chat controls, voice dock, agents, docs, UI components, settings, 404, and current console health.
+- Added current-status, repository-organization, and UI-branding docs so historical reports no longer appear to be the source of truth.
+
 ## 2026-04-24 GitHub README screenshot correction
 
 - Checked the live GitHub `main` README and confirmed it was still showing the older screenshot tour and stale April 2/April 12 documentation state.

@@ -84,6 +84,8 @@ src/backend/uploads/
 # Cache directories
 .cache/
 .parcel-cache/
+.netlify/functions/
+.netlify/plugins/
 .npm/
 .eslintcache
 .stylelintcache

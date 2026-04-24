@@ -4,7 +4,9 @@ import logger from '../utils/logger';
 import { ChatHistory } from '../models';
 import { Op } from 'sequelize';
 import { cache } from '../services/cacheService';
-import { inferProvider } from '../services/openaiClient';
+import { anthropic, inferProvider, MODELS, openai } from '../services/openaiClient';
+import OpenAI from 'openai';
+import Anthropic from '@anthropic-ai/sdk';
 
 const AI_CHAT_TIMEOUT_MS = Number(process.env.AI_CHAT_TIMEOUT_MS || 20000);
 
@@ -44,6 +46,78 @@ export class ChatController {
       ? (process.env.AI_SERVICE_URL || 'http://ai-service:8000') 
       : (process.env.AI_SERVICE_URL || 'http://localhost:8000');
     logger.info(`ChatController initialized with AI service URL: ${this.aiServiceUrl}`);
+  }
+
+  private buildSystemPrompt(systemPrompt?: string): string {
+    return systemPrompt || [
+      'You are PSScript AI Assistant, an enterprise PowerShell expert.',
+      'Give practical, safe, concise answers.',
+      'Prefer read-only commands unless the user explicitly asks for changes.',
+      'Warn before destructive operations and explain verification steps.'
+    ].join(' ');
+  }
+
+  private toOpenAIInput(messages: Array<{ role: string; content: string }>, systemPrompt?: string): any[] {
+    const input: any[] = [{ role: 'system', content: this.buildSystemPrompt(systemPrompt) }];
+    for (const message of messages) {
+      input.push({
+        role: message.role === 'assistant' ? 'assistant' : 'user',
+        content: message.content
+      });
+    }
+    return input;
+  }
+
+  private toAnthropicMessages(messages: Array<{ role: string; content: string }>): Array<{ role: 'user' | 'assistant'; content: string }> {
+    return messages.map((message) => ({
+      role: message.role === 'assistant' ? 'assistant' : 'user',
+      content: message.content
+    }));
+  }
+
+  private async createChatCompletion(args: {
+    messages: Array<{ role: string; content: string }>;
+    systemPrompt?: string;
+    provider: string;
+    model?: string;
+    apiKey?: string;
+  }): Promise<{ response: string; provider: string; model: string }> {
+    if (args.provider === 'anthropic') {
+      const anthropicClient = args.apiKey ? new Anthropic({ apiKey: args.apiKey }) : anthropic;
+      if (!anthropicClient) {
+        throw Object.assign(new Error('Anthropic API key is required. Configure ANTHROPIC_API_KEY or choose an OpenAI model.'), {
+          status: 400
+        });
+      }
+
+      const model = args.model || MODELS.CLAUDE_SONNET;
+      const response = await anthropicClient.messages.create({
+        model,
+        system: this.buildSystemPrompt(args.systemPrompt),
+        messages: this.toAnthropicMessages(args.messages),
+        max_tokens: Number(process.env.ANTHROPIC_MAX_TOKENS || 1200)
+      });
+      const text = response.content
+        .map((block: any) => block?.type === 'text' ? block.text : '')
+        .filter(Boolean)
+        .join('\n')
+        .trim();
+
+      return { response: text, provider: 'anthropic', model };
+    }
+
+    const model = args.model || process.env.OPENAI_MODEL || MODELS.FAST;
+    const openaiClient = args.apiKey && args.apiKey !== process.env.OPENAI_API_KEY
+      ? new OpenAI({ apiKey: args.apiKey, maxRetries: 2 })
+      : openai;
+    const response = await openaiClient.responses.create({
+      model,
+      input: this.toOpenAIInput(args.messages, args.systemPrompt),
+      max_output_tokens: Number(process.env.OPENAI_MAX_OUTPUT_TOKENS || 1200)
+    } as any);
+
+    const text = (response as any).output_text || '';
+    return { response: text.trim(), provider: 'openai', model };
   }
   
   /**
@@ -106,37 +180,27 @@ export class ChatController {
         return;
       }
       
-      // Log the request for debugging (with sensitive info redacted)
-      logger.debug(`[${requestId}] Sending chat request to ${this.aiServiceUrl}/chat with ${messages.length} messages`);
-      
-      // Forward request to AI service with the effective API key
+      // Call provider SDKs directly. The previous Python AI-service proxy can
+      // hang locally and is not part of the Netlify production path.
+      logger.debug(`[${requestId}] Sending chat request to ${effectiveProvider} with ${messages.length} messages`);
       const startTime = Date.now();
-      // eslint-disable-next-line camelcase -- API endpoint expects snake_case
-      const response = await axios.post(`${this.aiServiceUrl}/chat`, {
+      const completion = await this.createChatCompletion({
         messages,
-        system_prompt, // eslint-disable-line camelcase
-        agent_type, // eslint-disable-line camelcase
-        session_id, // eslint-disable-line camelcase
+        systemPrompt: system_prompt,
+        provider: effectiveProvider,
         model,
-        provider,
-      }, {
-        headers: {
-          'Content-Type': 'application/json',
-          'X-Request-ID': requestId,
-          'X-API-Key': effectiveApiKey,
-        },
-        timeout: AI_CHAT_TIMEOUT_MS
+        apiKey: effectiveApiKey,
       });
       
       const duration = Date.now() - startTime;
-      logger.info(`[${requestId}] AI service responded in ${duration}ms`);
+      logger.info(`[${requestId}] ${completion.provider} responded in ${duration}ms`);
       
       // Validate response format
-      if (!response.data || !response.data.response) {
-        logger.warn(`[${requestId}] Invalid response format from AI service`);
+      if (!completion.response) {
+        logger.warn(`[${requestId}] Empty response from AI provider`);
         res.status(502).json({ 
-          error: 'Invalid response from AI service',
-          details: 'The AI service returned an unexpected response format'
+          error: 'Invalid response from AI provider',
+          details: 'The AI provider returned an empty response'
         });
         return;
       }
@@ -144,7 +208,7 @@ export class ChatController {
       // Store in chat history if user is authenticated
       if (req.user && req.user.id) {
         try {
-          await this.storeChatHistory(req.user.id, messages, response.data.response);
+          await this.storeChatHistory(req.user.id, messages, completion.response);
           logger.debug(`[${requestId}] Chat history stored for user ${req.user.id}`);
         } catch (historyError) {
           // Log but don't fail the request if history storage fails
@@ -152,19 +216,12 @@ export class ChatController {
         }
       }
       
-      const normalizedResponse =
-        response.data && typeof response.data === 'object'
-          ? {
-              ...response.data,
-              response: response.data.response,
-              text: response.data.response || response.data.text,
-            }
-          : {
-              response: response.data,
-              text: response.data,
-            };
-
-      res.status(200).json(normalizedResponse);
+      res.status(200).json({
+        response: completion.response,
+        text: completion.response,
+        provider: completion.provider,
+        model: completion.model
+      });
     } catch (error) {
       // Generate a user-friendly error message while logging the technical details
       logger.error(`[${requestId}] Error in sendMessage`, { error: summarizeError(error) });
@@ -269,48 +326,20 @@ export class ChatController {
     res.setHeader('X-Accel-Buffering', 'no');
     (res as any).flushHeaders?.();
 
-    const abort = new AbortController();
-    req.on('close', () => abort.abort());
-
     try {
-      logger.debug(`[${requestId}] Proxying SSE stream to ${this.aiServiceUrl}/chat/stream`);
-
-      // eslint-disable-next-line camelcase -- API endpoint expects snake_case
-      const upstream = await axios.post(
-        `${this.aiServiceUrl}/chat/stream`,
-        {
-          messages,
-          system_prompt, // eslint-disable-line camelcase
-          agent_type, // eslint-disable-line camelcase
-          session_id, // eslint-disable-line camelcase
-          model,
-          provider,
-        },
-        {
-          headers: {
-            'Content-Type': 'application/json',
-            Accept: 'text/event-stream',
-            'X-Request-ID': requestId,
-            'X-API-Key': effectiveApiKey,
-          },
-          responseType: 'stream',
-          timeout: 0, // don't time out streaming
-          signal: abort.signal as any,
-        }
-      );
-
-      // Pipe upstream SSE directly to client.
-      upstream.data.on('error', (err: any) => {
-        logger.warn(`[${requestId}] Upstream SSE stream error`, { error: summarizeError(err) });
-        try {
-          res.write(`data: ${JSON.stringify({ type: 'error', content: 'Streaming error from AI service' })}\n\n`);
-        } catch (_err) {
-          // Ignore write errors after client disconnects.
-        }
-        res.end();
+      logger.debug(`[${requestId}] Creating direct ${effectiveProvider} chat response for SSE client`);
+      const completion = await this.createChatCompletion({
+        messages,
+        systemPrompt: system_prompt,
+        provider: effectiveProvider,
+        model,
+        apiKey: effectiveApiKey,
       });
 
-      upstream.data.pipe(res);
+      res.write(`data: ${JSON.stringify({ type: 'message', content: completion.response })}\n\n`);
+      res.write(`data: ${JSON.stringify({ type: 'metadata', provider: completion.provider, model: completion.model })}\n\n`);
+      res.write('data: [DONE]\n\n');
+      res.end();
     } catch (error) {
       logger.error(`[${requestId}] Error proxying SSE stream`, { error: summarizeError(error) });
       try {

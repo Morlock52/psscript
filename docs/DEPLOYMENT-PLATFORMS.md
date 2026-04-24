@@ -1,10 +1,30 @@
 # Deployment Platforms
 
-This is the current deployment plan for running PSScript without the local-only issues that come from `127.0.0.1`, self-signed TLS, and dev-mode auth shortcuts.
+This page records deployment options for PSScript. The current hosted recovery path is Netlify + Supabase; the older split-service Render/Railway topology remains useful if you want to host the existing Express and Python services as long-running processes.
 
-## Recommended topology
+For the active hosted plan, start with [`NETLIFY-SUPABASE-DEPLOYMENT.md`](./NETLIFY-SUPABASE-DEPLOYMENT.md).
 
-Use this layout:
+## Current Hosted Path
+
+Use this layout for the Netlify/Supabase production target:
+
+1. Netlify serves the Vite SPA from `src/frontend/dist`.
+2. Netlify Functions serve same-origin `/api/*` routes from `netlify/functions`.
+3. Supabase Auth owns browser sessions.
+4. Supabase Postgres stores hosted app data with `pgvector`.
+5. Supabase Storage is used where persistent import/export artifacts are needed.
+6. Hosted production keeps arbitrary PowerShell execution disabled and exposes static analysis behavior instead.
+
+Required current files:
+
+- `netlify.toml`
+- `netlify/functions/api.ts`
+- `supabase/migrations/20260424_hosted_schema.sql`
+- `docs/NETLIFY-SUPABASE-DEPLOYMENT.md`
+
+## Split-Service Alternative
+
+Use this layout only when you want to deploy the existing local-style services separately:
 
 1. Netlify for the frontend SPA
 2. Render or Railway for the backend API
@@ -19,7 +39,7 @@ This matches the actual codebase structure:
 - AI service: FastAPI in `/src/ai`
 - stateful services: PostgreSQL and Redis
 
-## Why this is the low-risk path
+## Why the split-service path is lower risk for the legacy local stack
 
 - Netlify is a strong fit for the Vite frontend.
 - The backend and AI service both need long-running server processes and live database connectivity.
@@ -86,14 +106,16 @@ The repo already includes:
 
 - `/netlify.toml`
 
-It builds the frontend from `/src/frontend` and publishes the Vite `dist` output with SPA fallback routing.
+It builds the frontend from `/src/frontend`, publishes the Vite `dist` output with SPA fallback routing, and routes `/api/*` to `netlify/functions/api.ts`.
 
 ### Netlify variables
 
-Set these in Netlify:
+For split-service frontend-only hosting, set:
 
 - `VITE_API_URL=https://your-backend-domain/api`
 - `VITE_DISABLE_AUTH=false`
+
+For the current Netlify + Supabase hosted path, use the full variable list in [`NETLIFY-SUPABASE-DEPLOYMENT.md`](./NETLIFY-SUPABASE-DEPLOYMENT.md), including Supabase browser keys, server-side Supabase service role key, `DATABASE_URL`, and AI provider keys.
 
 ## Render
 

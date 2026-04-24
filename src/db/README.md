@@ -14,7 +14,7 @@ PostgreSQL + `pgvector` storage for scripts, analysis artifacts, embeddings, use
 - `scripts`, `script_versions`, `script_analysis`, `script_embeddings`
 - `users`, `user_favorites`
 - `categories`, `tags`, `script_tags`
-- `documentation`
+- `documentation` for crawled/imported PowerShell docs, source/tag filtering, extracted commands/modules/functions, and metadata
 - `chat_history`
 - `execution_logs`
 - `ai_metrics`
@@ -25,6 +25,11 @@ Docker bootstrap mounts:
 - `src/db/00-init-pgvector.sh`
 - `src/db/schema.sql`
 - `src/db/seeds/01-initial-data.sql`
+
+Current explicit migration:
+- `src/db/migrations/20260424_create_documentation_table.sql`
+
+The documentation migration was added after Browser Use found 500s from missing `documentation` storage on 2026-04-24.
 
 ## Local development
 

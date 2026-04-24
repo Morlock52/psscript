@@ -69,6 +69,26 @@ const findBestResponse = (input: string): string => {
   return POWERSHELL_RESPONSES.default;
 };
 
+function isMockModeEnabled(): boolean {
+  return localStorage.getItem('psscript_mock_mode') === 'true' || import.meta.env.DEV;
+}
+
+function getAuthHeaders(): Record<string, string> {
+  const token = localStorage.getItem('auth_token');
+  return {
+    'Content-Type': 'application/json',
+    ...(token ? { Authorization: `Bearer ${token}` } : {}),
+  };
+}
+
+function getErrorMessage(error: unknown): string {
+  if (axios.isAxiosError(error)) {
+    const payload = error.response?.data as any;
+    return payload?.message || payload?.error || error.message;
+  }
+  return error instanceof Error ? error.message : 'AI request failed';
+}
+
 // Chat service
 export const chatService = {
   // Send a chat message to the AI
@@ -82,11 +102,14 @@ export const chatService = {
           agent_type: agent_type || 'assistant',
           session_id,
         }, {
-          headers: { 'Content-Type': 'application/json' },
+          headers: getAuthHeaders(),
           timeout: 60000,
         });
         return response.data;
       } catch (error) {
+        if (!isMockModeEnabled()) {
+          throw new Error(getErrorMessage(error));
+        }
         console.warn('Backend chat proxy failed, using mock:', error);
       }
       
@@ -111,6 +134,9 @@ export const chatService = {
       return { response };
     } catch (error) {
       console.error('Error sending chat message:', error);
+      if (!isMockModeEnabled()) {
+        throw new Error(getErrorMessage(error));
+      }
       return { 
         response: 'Sorry, I encountered an error. Please try again later.'
       };
@@ -135,7 +161,7 @@ export const chatService = {
       const response = await fetch(`${apiUrl}/chat/stream`, {
         method: 'POST',
         headers: {
-          'Content-Type': 'application/json',
+          ...getAuthHeaders(),
           'Accept': 'text/event-stream',
         },
         body: JSON.stringify({
@@ -146,7 +172,8 @@ export const chatService = {
       });
 
       if (!response.ok) {
-        throw new Error(`Streaming failed: ${response.status} ${response.statusText}`);
+        const payload = await response.json().catch(() => null);
+        throw new Error(payload?.message || payload?.error || `Streaming failed: ${response.status} ${response.statusText}`);
       }
 
       const reader = response.body?.getReader();

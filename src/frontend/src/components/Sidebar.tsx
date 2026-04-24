@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { NavLink } from 'react-router-dom';
 import { useAuth } from '../hooks/useAuth';
+import BrandMark from './BrandMark';
 
 // Define submenu item interface
 interface SubmenuItem {
@@ -186,22 +187,7 @@ const Sidebar: React.FC<SidebarProps> = ({ isOpen, onClose }) => {
       >
         {/* Logo and close button */}
         <div className="flex items-center justify-between p-4 border-b border-[var(--color-border-default)]">
-          <div className="flex items-center gap-3">
-            {/* Logo icon */}
-            <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-[var(--color-primary)] to-[var(--color-accent)] flex items-center justify-center shadow-lg">
-              <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-              </svg>
-            </div>
-            <div>
-              <div className="text-lg font-bold bg-gradient-to-r from-[var(--color-primary)] to-[var(--color-accent)] bg-clip-text text-transparent">
-                PSScript
-              </div>
-              <div className="text-xs text-[var(--color-text-tertiary)]">
-                AI-Powered
-              </div>
-            </div>
-          </div>
+          <BrandMark size="sm" />
           <button
             onClick={onClose}
             className="p-2 rounded-lg lg:hidden text-[var(--color-text-secondary)] hover:text-[var(--color-text-primary)] hover:bg-[var(--color-bg-tertiary)] transition-colors"
@@ -279,8 +265,8 @@ const Sidebar: React.FC<SidebarProps> = ({ isOpen, onClose }) => {
         <div className="absolute bottom-0 w-full p-4 border-t border-[var(--color-border-default)]">
           <div className="flex items-center justify-between">
             <div className="text-xs text-[var(--color-text-tertiary)]">
-              <p className="font-medium">&copy; 2025 PSScript</p>
-              <p className="mt-0.5 opacity-75">AI-Powered Management</p>
+              <p className="font-medium">&copy; 2026 PSScript</p>
+              <p className="mt-0.5 opacity-75">Secure script intelligence</p>
             </div>
             {/* Version badge */}
             <span className="px-2 py-1 text-xs font-medium rounded-full bg-[var(--color-bg-tertiary)] text-[var(--color-text-tertiary)]">

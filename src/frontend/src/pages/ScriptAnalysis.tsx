@@ -2,7 +2,6 @@ import React, { useState, useRef, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import { scriptService } from '../services/api';
-import axios from 'axios';
 import ReactMarkdown from 'react-markdown';
 import { FaExclamationTriangle, FaCheckCircle, FaInfoCircle, FaLightbulb, FaChartLine, FaPaperPlane, FaRobot } from 'react-icons/fa';
 // LangGraph Integration
@@ -105,6 +104,8 @@ What would you like to know about your script?`
     setIsLoading(true);
     setMessages(prev => [...prev, userMessage]);
 
+    let timeout: number | undefined;
+
     try {
       // Prepare enhanced context about the script for the AI
       // The backend has guardrails to ensure PowerShell/scripting focus
@@ -141,24 +142,36 @@ When generating or modifying scripts:
       // Use same-origin /api path (proxied to backend by Vite/server.js/tunnel)
       const apiUrl = getApiUrl();
 
-      // Call AI service with guardrails enabled on backend
-      const response = await axios.post(`${apiUrl}/chat`, {
-        messages: [...messages, userMessage],
-        system_prompt: systemPrompt,
-        model: selectedModel,
-        provider: getProvider(selectedModel),
-      }, {
+      const controller = new AbortController();
+      timeout = window.setTimeout(() => controller.abort(), 60000);
+
+      // Call AI service with guardrails enabled on backend.
+      const response = await fetch(`${apiUrl}/chat`, {
+        method: 'POST',
         headers: {
           'Content-Type': 'application/json'
         },
-        timeout: 60000 // 60 second timeout for script generation
+        body: JSON.stringify({
+          messages: [...messages, userMessage],
+          system_prompt: systemPrompt,
+          model: selectedModel,
+          provider: getProvider(selectedModel),
+        }),
+        signal: controller.signal,
       });
+      if (!response.ok) {
+        throw new Error(`AI service returned ${response.status}`);
+      }
+
+      const responseText = await response.text();
+      const data = responseText ? JSON.parse(responseText) : {};
+      const assistantContent = data.response || data.text;
 
       // Add AI response
-      if (response.data && response.data.response) {
+      if (assistantContent) {
         setMessages(prev => [
           ...prev,
-          { role: 'assistant', content: response.data.response }
+          { role: 'assistant', content: assistantContent }
         ]);
       } else {
         throw new Error('Invalid response format from AI service');
@@ -174,6 +187,9 @@ When generating or modifying scripts:
         }
       ]);
     } finally {
+      if (timeout !== undefined) {
+        window.clearTimeout(timeout);
+      }
       setIsLoading(false);
     }
   };
@@ -185,7 +201,7 @@ When generating or modifying scripts:
     setIsAnalyzing(true);
     setAnalysisEvents([]);
     setAnalysisError(null);
-    setCurrentStage('analyzing');
+    setCurrentStage('analyze');
 
     try {
       // Start streaming analysis
@@ -250,6 +266,18 @@ When generating or modifying scripts:
       setCurrentStage('failed');
       setAnalysisError(error instanceof Error ? error.message : 'Failed to start analysis');
     }
+  };
+
+  const handleExportAnalysis = () => {
+    if (!id) return;
+
+    const link = document.createElement('a');
+    link.href = `${getApiUrl()}/scripts/${encodeURIComponent(id)}/export-analysis`;
+    link.download = '';
+    link.rel = 'noopener noreferrer';
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
   };
 
   // Cleanup on unmount
@@ -1325,13 +1353,7 @@ This script follows the PowerShell cmdlet naming convention "Verb-Noun" and uses
                   Edit Script
                 </button>
                 <button
-                  onClick={() => {
-                    const apiUrl = import.meta.env.VITE_API_URL ||
-                      (typeof window !== 'undefined' && window.location.hostname === 'localhost'
-                        ? 'http://localhost:4005/api'
-                        : '/api');
-                    window.open(`${apiUrl}/scripts/${id}/export-analysis`, '_blank');
-                  }}
+                  onClick={handleExportAnalysis}
                   className="w-full px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 flex items-center justify-center"
                 >
                   <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">

@@ -12,6 +12,7 @@
  */
 
 import { apiClient } from './api';
+import { getApiUrl } from '../utils/apiUrl';
 
 // ============================================================================
 // Types
@@ -36,7 +37,8 @@ export interface ToolExecution {
 
 export interface AnalysisEvent {
   type: 'connected' | 'stage_change' | 'tool_started' | 'tool_completed' |
-        'reasoning' | 'finding' | 'completed' | 'error' | 'human_review_required';
+        'reasoning' | 'finding' | 'completed' | 'error' | 'human_review_required' |
+        'workflow_event';
   message?: string;
   data?: any;
   script_id?: string;
@@ -93,6 +95,68 @@ export interface LangGraphAnalysisResults {
 export interface FeedbackOptions {
   thread_id: string;
   feedback: string;
+}
+
+function mapWorkflowStage(eventData: any): string {
+  const node = eventData?.node;
+  const stage = eventData?.current_stage || eventData?.stage;
+
+  if (node === 'analyze' || stage === 'analysis') {
+    return 'analyze';
+  }
+
+  if (node === 'tools' || stage === 'tool_execution') {
+    return 'tools';
+  }
+
+  if (node === 'synthesis') {
+    return 'synthesis';
+  }
+
+  if (node === 'complete' || stage === 'completed') {
+    return 'completed';
+  }
+
+  return stage || node || 'unknown';
+}
+
+function normalizeAnalysisEvents(event: AnalysisEvent): AnalysisEvent[] {
+  if (event.type !== 'workflow_event') {
+    return [event];
+  }
+
+  const workflowData = event.data || {};
+  const normalizedStage = mapWorkflowStage(workflowData);
+  const normalizedData = {
+    ...workflowData,
+    raw_stage: workflowData.stage,
+    stage: normalizedStage,
+  };
+  const message =
+    event.message ||
+    workflowData.message ||
+    workflowData.final_response ||
+    `LangGraph stage: ${normalizedStage}`;
+
+  const events: AnalysisEvent[] = [
+    {
+      ...event,
+      type: 'stage_change',
+      message,
+      data: normalizedData,
+    },
+  ];
+
+  if (workflowData.node === 'complete') {
+    events.push({
+      ...event,
+      type: 'completed',
+      message: 'Analysis complete',
+      data: normalizedData,
+    });
+  }
+
+  return events;
 }
 
 // ============================================================================
@@ -175,7 +239,7 @@ export function streamAnalysis(
     params.append('token', token);
   }
 
-  const url = `${apiClient.defaults.baseURL}/scripts/${scriptId}/analysis-stream?${params.toString()}`;
+  const url = `${getApiUrl()}/scripts/${scriptId}/analysis-stream?${params.toString()}`;
 
   // Create EventSource for SSE with credentials
   // Note: withCredentials is required for CORS with credentials
@@ -185,10 +249,12 @@ export function streamAnalysis(
   eventSource.onmessage = (event) => {
     try {
       const data = JSON.parse(event.data) as AnalysisEvent;
-      onEvent(data);
+      const normalizedEvents = normalizeAnalysisEvents(data);
+
+      normalizedEvents.forEach(onEvent);
 
       // Auto-close on completion or error
-      if (data.type === 'completed' || data.type === 'error') {
+      if (normalizedEvents.some((item) => item.type === 'completed' || item.type === 'error')) {
         eventSource.close();
       }
     } catch (error) {

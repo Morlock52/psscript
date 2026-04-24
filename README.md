@@ -9,6 +9,10 @@
 </p>
 
 <p align="center">
+  <strong>Current status:</strong> Browser Use RUN3 passed on April 24, 2026 · Netlify/Supabase hosted path documented · latest app-shell screenshots refreshed
+</p>
+
+<p align="center">
   <a href="#quick-start">Quick Start</a> &bull;
   <a href="#features">Features</a> &bull;
   <a href="#architecture">Architecture</a> &bull;
@@ -35,128 +39,129 @@ PSScript is a full-stack platform for teams that need to **store, search, analyz
 
 ## Features
 
-| Area | What it does |
-|------|-------------|
-| **Script Management** | Upload, store, version, filter, search, and export PowerShell scripts |
-| **AI Analysis** | Security scoring, code quality assessment, risk analysis, and remediation guidance |
-| **Agentic Workflows** | Multi-step LangGraph orchestration with tool calling and human-in-the-loop |
-| **Semantic Search** | Vector embeddings via `text-embedding-3-large` for similarity-based discovery |
-| **Voice** | OpenAI-powered TTS (`gpt-4o-mini-tts`), STT (`gpt-4o-mini-transcribe`), and diarization |
-| **Analytics** | Usage metrics, AI cost tracking, security dashboards, and category distribution |
-| **Admin Tools** | Database backup/restore, test-data cleanup, sequence reseeding, cache management |
-| **Documentation Crawl** | Index and search external documentation within the app |
-| **Responsive App Shell** | Dark left-nav UI with dashboard, script management, AI, documentation, analytics, and settings views |
+| Area | User Outcome | Current Evidence |
+| --- | --- | --- |
+| **Script Workspace** | Upload, browse, version, filter, search, inspect, and export PowerShell scripts. | Browser Use RUN3 passed `/scripts`, `/scripts/upload`, and `/scripts/1/analysis`. |
+| **AI Analysis** | Security scoring, quality review, remediation guidance, and recommendations. | Script analysis route and AI chat both passed in RUN3. |
+| **Agentic Workflows** | Multi-step analysis, orchestration, and assistant flows for complex script work. | `/ai/assistant` and `/ai/agents` screenshots and RUN3 tests passed. |
+| **Semantic Search** | Similarity search through pgvector-backed embeddings. | Local schema includes script embeddings; hosted Supabase schema uses `vector(1536)`. |
+| **Voice Copilot** | Dictation and speech playback from a docked OpenAI Audio UI. | Voice dock opened in RUN3; microphone permission intentionally skipped. |
+| **Documentation Explorer** | Crawl, store, filter, and search PowerShell documentation. | Missing `documentation` table was fixed and docs routes now pass. |
+| **Operations + Analytics** | Dashboard metrics, usage reporting, backups, restore, cleanup, and settings. | Dashboard, analytics, settings, and data maintenance screenshots refreshed. |
+| **Hosted Deployment** | Netlify SPA/functions plus Supabase Auth/Postgres for production v1. | `netlify.toml`, `netlify/functions/api.ts`, and Supabase migration are checked in. |
 
 ---
 
 ## Architecture
 
+The local stack runs as a traditional full-stack app. The hosted v1 path keeps the Vite UI on Netlify, moves same-origin API routes into Netlify Functions, and uses Supabase for Auth/Postgres. GitHub renders Mermaid diagrams directly in Markdown, so the diagrams below stay source-controlled and maintainable.
+
 ```mermaid
-graph TB
-    subgraph Frontend
-        UI[React / TypeScript / Vite<br/>Port 3090]
+flowchart LR
+    User["PowerShell user"] --> UI["React + Vite app<br/>local 3090 / hosted Netlify"]
+
+    subgraph Local["Local full stack"]
+        UI --> API["Express API<br/>4000"]
+        API --> DB[("PostgreSQL 15<br/>pgvector")]
+        API --> Redis[("Redis 7<br/>cache")]
+        API --> AI["FastAPI AI service<br/>8000"]
+        AI --> Graph["LangGraph workflows<br/>guardrails"]
     end
 
-    subgraph Backend
-        API[Express / TypeScript<br/>Port 4000]
-        Cache[Redis Cache<br/>Port 6379]
-        DB[(PostgreSQL + pgvector<br/>Port 5432)]
+    subgraph Hosted["Hosted v1 target"]
+        UI --> Fn["Netlify Functions<br/>same-origin /api/*"]
+        Fn --> SupaAuth["Supabase Auth"]
+        Fn --> SupaDB[("Supabase Postgres<br/>pgvector")]
+        Fn --> StaticOnly["Static analysis only<br/>no remote script execution"]
     end
 
-    subgraph AI Service
-        FastAPI[FastAPI / Python<br/>Port 8000]
-        LG[LangGraph<br/>Orchestrator]
-        Guard[Guardrails<br/>3-Layer Security]
-    end
+    Graph --> OpenAI["OpenAI<br/>Responses + Audio + Embeddings"]
+    Graph --> Anthropic["Anthropic<br/>Messages fallback"]
+    Fn --> OpenAI
+    Fn --> Anthropic
 
-    subgraph External
-        OpenAI[OpenAI API<br/>GPT-4.1 / GPT-5.4 / o3]
-        Anthropic[Anthropic API<br/>Claude Sonnet 4]
-    end
-
-    UI -->|REST + WebSocket| API
-    API -->|Sequelize ORM| DB
-    API -->|ioredis| Cache
-    API -->|HTTP| FastAPI
-    FastAPI --> LG
-    FastAPI --> Guard
-    LG --> OpenAI
-    LG --> Anthropic
-
-    style UI fill:#3b82f6,color:#fff
-    style API fill:#10b981,color:#fff
-    style FastAPI fill:#8b5cf6,color:#fff
-    style DB fill:#f59e0b,color:#000
-    style Cache fill:#ef4444,color:#fff
-    style OpenAI fill:#000,color:#fff
-    style Anthropic fill:#d97706,color:#fff
+    classDef ui fill:#15314d,stroke:#80bdb0,color:#f8fafc
+    classDef data fill:#243b30,stroke:#72a98f,color:#f8fafc
+    classDef ai fill:#2d3558,stroke:#8aa4d6,color:#f8fafc
+    classDef host fill:#3b2f1f,stroke:#d6a95c,color:#fff8e6
+    class UI ui
+    class DB,Redis,SupaDB data
+    class AI,Graph,OpenAI,Anthropic ai
+    class Fn,SupaAuth,StaticOnly host
 ```
 
 ### Service Map
 
-| Service | Port | Stack | Purpose |
-|---------|------|-------|---------|
-| **Frontend** | 3090 | React, TypeScript, Vite, TailwindCSS | UI, user flows, visualization |
-| **Backend** | 4000 | Express, TypeScript, Sequelize | API, orchestration, auth, caching |
-| **AI Service** | 8000 | FastAPI, LangGraph 1.1, Python | Model inference, agentic workflows |
-| **PostgreSQL** | 5432 | PostgreSQL 15 + pgvector | Persistent data, vector embeddings |
-| **Redis** | 6379 | Redis 7 | Cache layer (with in-memory fallback) |
+| Runtime | Component | Stack | Current Role |
+| --- | --- | --- | --- |
+| **Local** | Frontend on `3090` | React 18, TypeScript, Vite, TailwindCSS | Primary app shell, screenshots, and local UI flows. |
+| **Local** | Backend on `4000` | Express, TypeScript, Sequelize | Auth, script APIs, analytics, docs, voice proxy, and AI orchestration. |
+| **Local** | AI service on `8000` | FastAPI, LangGraph, Python | Model routing, guardrails, script analysis, and voice helpers. |
+| **Local** | PostgreSQL + Redis | PostgreSQL 15 + pgvector, Redis 7 | Persistent data, vectors, cache, sessions, analytics. |
+| **Hosted** | Netlify | Vite SPA + Functions | Static app hosting and same-origin `/api/*` route surface. |
+| **Hosted** | Supabase | Auth, Postgres, Storage-ready | Hosted identity and durable app data for production v1. |
 
 ### Request Flow
 
 ```mermaid
 sequenceDiagram
     participant User
-    participant Frontend
-    participant Backend
-    participant AI Service
+    participant UI as React UI
+    participant API as API layer
+    participant DB as Postgres/pgvector
+    participant AI as AI workflow
     participant OpenAI
+    participant Claude as Anthropic
 
-    User->>Frontend: Upload script
-    Frontend->>Backend: POST /api/scripts
-    Backend->>Backend: SHA-256 dedup check
-    Backend->>Backend: Store in PostgreSQL
-    Backend-->>Frontend: 201 Created
-    Backend->>AI Service: Async analysis (retry x2)
-    AI Service->>OpenAI: GPT-4.1 analysis
-    OpenAI-->>AI Service: Security + quality scores
-    AI Service-->>Backend: Store results
-    Backend-->>Frontend: WebSocket update
+    User->>UI: Upload or ask about a script
+    UI->>API: Same-origin /api request
+    API->>API: Validate auth, payload, file hash
+    API->>DB: Store script, metadata, docs, chat, metrics
+    API->>AI: Start analysis or chat workflow
+    AI->>OpenAI: Primary model call
+    AI->>Claude: Optional fallback/provider switch
+    AI-->>API: Structured result or chat answer
+    API->>DB: Persist analysis, history, metrics
+    API-->>UI: Render score, answer, docs, or dashboard update
 ```
 
 ---
 
 ## AI Models
 
-Updated April 12, 2026. All deprecated models (gpt-4o, gpt-4o-mini, gpt-3.5-turbo) have been replaced.
+Updated April 24, 2026 from checked-in model constants and settings. Deprecated `gpt-4o`, `gpt-4o-mini`, and legacy Claude 3 IDs are mapped to current configured models in the app settings layer.
 
-| Purpose | Model | Notes |
-|---------|-------|-------|
-| **Code generation** | `gpt-4.1` | 1M token context, best for PowerShell |
-| **Flagship tasks** | `gpt-5.4` | Complex multi-step analysis |
-| **Fast tasks** | `gpt-4.1-mini` | Quick responses, cost-effective |
-| **Reasoning** | `o3` | Complex debugging and architecture |
-| **Fast reasoning** | `o4-mini` | Lightweight step-by-step |
-| **Embeddings** | `text-embedding-3-large` | 3072 dimensions for semantic search |
-| **Text-to-speech** | `gpt-4o-mini-tts` | Instruction-controllable voice |
-| **Speech-to-text** | `gpt-4o-mini-transcribe` | Best accuracy STT |
-| **Diarization** | `gpt-4o-transcribe-diarize` | Speaker-labeled transcription |
-| **Anthropic fallback** | `claude-sonnet-4-6-20260217` | Alternative analysis provider |
+| Capability | Primary Model(s) | Fallback / Variant | Repo Evidence |
+| --- | --- | --- | --- |
+| **Code + PowerShell generation** | `gpt-4.1` | `gpt-4.1-mini` for faster work | `src/backend/src/services/openaiClient.ts`, `src/ai/utils/model_router.py` |
+| **Flagship multi-step work** | `gpt-5.4` | `claude-opus-4-6-20260205` | Backend model constants and AI router |
+| **Low-cost quick tasks** | `gpt-4.1-mini` | `gpt-4.1-nano` | Backend and frontend settings |
+| **Reasoning** | `o3` | `o4-mini` for lightweight reasoning | Backend model constants and AI router |
+| **Anthropic provider** | `claude-sonnet-4-6-20260217` | `claude-opus-4-6-20260205`, `claude-haiku-4-5-20251001` | Backend constants and frontend settings |
+| **Local embeddings** | `text-embedding-3-large` | Hosted Supabase path uses `text-embedding-3-small` for `vector(1536)` | Backend constants and Netlify/Supabase docs |
+| **Text-to-speech** | `gpt-4o-mini-tts` | Voice selection in app settings | `src/ai/voice_service.py` |
+| **Speech-to-text** | `gpt-4o-mini-transcribe` | `gpt-4o-transcribe-diarize` for speaker segments | `src/ai/voice_service.py` |
 
 ### SDK Versions
 
-| Package | Version | Language |
-|---------|---------|----------|
-| `openai` | ^6.33.0 | Node.js |
-| `openai` | >=2.30.0 | Python |
-| `langgraph` | >=1.1.0 | Python |
-| `langchain` | >=1.0.0 (GA) | Python |
+| Package | Version in Repo | Used By |
+| --- | --- | --- |
+| `openai` | `^6.34.0` root / `^6.33.0` backend | Netlify functions, backend AI routes |
+| `@anthropic-ai/sdk` | `^0.82.0` root/backend | Claude fallback/provider routes |
+| `@supabase/supabase-js` | `^2.89.0` root/frontend | Hosted Supabase Auth/browser client |
+| `@netlify/functions` | `^4.2.5` | Hosted API functions |
+| `openai` | `>=2.30.0` Python | FastAPI AI and voice service |
+| `anthropic` | `>=0.40.0` Python | FastAPI Claude provider |
+| `langgraph` | `>=0.2.0` Python | Agentic workflows |
+| `langchain` | `>=0.3.0` Python | AI workflow integrations |
 
 > **Note:** The OpenAI Assistants API sunsets on August 26, 2026. The checked-in `/api/assistants` routes already return `Deprecation`, `Sunset`, and successor `Link` headers, and the migration target is the Responses API.
 
 ---
 
 ## Screenshots
+
+The app-shell images below were regenerated from the running local frontend on `https://127.0.0.1:3090` on April 24, 2026. The login image is preserved from the auth-enabled capture path because the default local stack redirects `/login` when dev auth is enabled.
 
 <details>
 <summary><strong>Login</strong> — Auth-enabled sign-in and demo access</summary>
@@ -213,7 +218,31 @@ Updated April 12, 2026. All deprecated models (gpt-4o, gpt-4o-mini, gpt-3.5-turb
 </details>
 
 <details>
-<summary><strong>Settings</strong> — Profile and application configuration</summary>
+<summary><strong>Agentic Assistant</strong> — Multi-step AI assistant workspace</summary>
+
+![Agentic Assistant](./docs/screenshots/agentic-assistant.png)
+</details>
+
+<details>
+<summary><strong>Agent Orchestration</strong> — Agent workflow and orchestration controls</summary>
+
+![Agent Orchestration](./docs/screenshots/agent-orchestration.png)
+</details>
+
+<details>
+<summary><strong>UI Components</strong> — Current muted button, shell, and component styling</summary>
+
+![UI Components](./docs/screenshots/ui-components.png)
+</details>
+
+<details>
+<summary><strong>Settings</strong> — Application configuration overview</summary>
+
+![Settings](./docs/screenshots/settings.png)
+</details>
+
+<details>
+<summary><strong>Settings Profile</strong> — Profile and account configuration</summary>
 
 ![Settings](./docs/screenshots/settings-profile.png)
 </details>
@@ -312,13 +341,15 @@ node scripts/capture-screenshots.js
 
 ### Latest Results (April 24, 2026)
 
-| Suite | Result |
-|-------|--------|
-| GitHub README audit | Remote `main` checked against the local source |
-| Screenshot refresh | Login, dashboard, scripts, upload, script detail, analysis, documentation, chat, analytics, settings, and data maintenance refreshed |
-| Screenshot guardrails | Capture script fails instead of saving login redirects, missing script data, or script-analysis loading pages |
-| Screenshot files | Empty duplicate `* (1).png` files removed |
-| Exported docs | GitHub-facing HTML exports regenerated from current Markdown |
+| Check | Current Result | Evidence |
+| --- | --- | --- |
+| **Browser Use RUN3** | Passed health, auth/session, shell, navigation, analytics, scripts, AI chat, chat controls, Voice Copilot, agent pages, documentation, UI components, settings, 404, and console health. | [BROWSER_USE_QA.md](./BROWSER_USE_QA.md) |
+| **README screenshots** | Refreshed app-shell screenshots from `https://127.0.0.1:3090`; preserved login screenshot from auth-enabled capture. | `docs/screenshots/*.png` |
+| **Documentation API** | Fixed missing `documentation` table and retested documentation pages. | `src/db/migrations/20260424_create_documentation_table.sql` |
+| **Muted UI brand** | Chat/header/button/Voice Copilot/navbar colors muted and validated in browser. | [UI Branding Refresh](./docs/UI-BRANDING-REFRESH-2026-04-23.md) |
+| **Hosted path** | Netlify Functions + Supabase schema documented for production v1. | [Netlify + Supabase Deployment](./docs/NETLIFY-SUPABASE-DEPLOYMENT.md) |
+
+Current QA details are recorded in [BROWSER_USE_QA.md](./BROWSER_USE_QA.md). Destructive or permission-gated actions were intentionally skipped during automated browser testing.
 
 ---
 
@@ -420,14 +451,17 @@ Full details: [PROJECT-REVIEW-2026-04-01.md](./docs/PROJECT-REVIEW-2026-04-01.md
 | Document | Purpose |
 |----------|---------|
 | [Getting Started](./docs/GETTING-STARTED.md) | Local bootstrap and first-run |
+| [Current Status](./docs/CURRENT-STATUS-2026-04-24.md) | Current runtime, QA, deployment, and known caveats |
 | [Repository Organization](./docs/REPOSITORY-ORGANIZATION.md) | Repo layout, docs taxonomy, and cleanup backlog |
+| [Browser Use QA](./BROWSER_USE_QA.md) | Latest browser test matrix, findings, safety skips, and retest results |
 | [Data Maintenance](./docs/DATA-MAINTENANCE.md) | Admin backup, restore, cleanup |
 | [Voice API](./docs/README-VOICE-API.md) | Voice/listening implementation |
-| [Deployment Platforms](./docs/DEPLOYMENT-PLATFORMS.md) | Render, Netlify, Docker configs |
+| [Netlify + Supabase Deployment](./docs/NETLIFY-SUPABASE-DEPLOYMENT.md) | Current hosted production path |
+| [Deployment Platforms](./docs/DEPLOYMENT-PLATFORMS.md) | Deployment alternatives and legacy split-service notes |
 | [Project Review](./docs/PROJECT-REVIEW-2026-04-01.md) | April 2026 comprehensive review |
 | [AI Functions Review](./docs/AI-FUNCTIONS-REVIEW-2026-04-02.md) | AI audit and model migration |
 | [Documentation Hub](./docs/index.md) | Full docs index |
-| [UI Branding Refresh](./docs/UI-BRANDING-REFRESH-2026-04-23.md) | Current branded UI and screenshot refresh notes |
+| [UI Branding Refresh](./docs/UI-BRANDING-REFRESH-2026-04-23.md) | Current muted branded UI and screenshot refresh notes |
 
 ### Service READMEs
 

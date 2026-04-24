@@ -142,18 +142,19 @@ const SimpleChatWithAI = () => {
   };
 
   // Reusable styles
-  const inputStyles = "bg-[var(--color-bg-primary)] border border-[var(--color-border-default)] focus:ring-2 focus:ring-[var(--color-primary)]/50 focus:border-[var(--color-primary)] focus:outline-none";
-  const buttonPrimaryStyles = "px-4 py-2 rounded font-medium bg-[var(--color-primary)] text-white hover:bg-[var(--color-primary-light)] disabled:opacity-50 transition-colors";
-  const buttonSecondaryStyles = "px-3 py-1 rounded text-sm bg-[var(--color-bg-tertiary)] hover:bg-[var(--color-bg-tertiary)]/80 text-[var(--color-text-primary)] transition-colors";
+  const inputStyles = "bg-[var(--color-bg-sunken)]/45 border border-[var(--color-border-default)] focus:ring-2 focus:ring-[var(--color-border-focus)]/35 focus:border-[var(--color-border-focus)] focus:outline-none";
+  const buttonPrimaryStyles = "px-4 py-2 rounded border border-[var(--color-border-strong)] bg-[var(--color-bg-tertiary)] text-[var(--color-text-primary)] hover:bg-[var(--color-bg-elevated)] disabled:opacity-50 transition-colors";
+  const buttonSecondaryStyles = "px-3 py-1 rounded text-sm border border-[var(--color-border-default)] bg-[var(--color-bg-tertiary)]/55 hover:bg-[var(--color-bg-tertiary)] text-[var(--color-text-secondary)] hover:text-[var(--color-text-primary)] transition-colors";
+  const headerButtonStyles = "px-3 py-1 rounded border border-[var(--color-border-default)] bg-[var(--color-bg-tertiary)]/45 hover:bg-[var(--color-bg-tertiary)] text-[var(--color-text-secondary)] hover:text-[var(--color-text-primary)] flex items-center transition-colors";
 
   return (
     <div className="flex flex-col h-full bg-[var(--color-bg-primary)] text-[var(--color-text-primary)]">
       {/* Header */}
-      <div className="p-4 flex justify-between items-center bg-[var(--color-primary)] text-white">
+      <div className="p-4 flex justify-between items-center bg-[var(--color-bg-elevated)]/90 text-[var(--color-text-primary)] border-b border-[var(--color-border-default)] shadow-[var(--shadow-sm)]">
         <div className="flex items-center space-x-2">
           <button
             onClick={() => navigate('/dashboard')}
-            className="px-3 py-1 rounded bg-white/20 hover:bg-white/30 flex items-center transition-colors"
+            className={headerButtonStyles}
             aria-label="Back to Dashboard"
           >
             <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -171,7 +172,7 @@ const SimpleChatWithAI = () => {
             <>
               <button
                 onClick={() => setShowSearch(prevState => !prevState)}
-                className="px-3 py-1 rounded bg-white/20 hover:bg-white/30 flex items-center transition-colors"
+                className={headerButtonStyles}
               >
                 <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
@@ -180,7 +181,7 @@ const SimpleChatWithAI = () => {
               </button>
               <button
                 onClick={() => navigate('/chat/history')}
-                className="px-3 py-1 rounded bg-white/20 hover:bg-white/30 flex items-center transition-colors"
+                className={headerButtonStyles}
               >
                 <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
@@ -191,13 +192,13 @@ const SimpleChatWithAI = () => {
           )}
           <button
             onClick={toggleTheme}
-            className="px-3 py-1 rounded bg-white/20 hover:bg-white/30 transition-colors"
+            className={headerButtonStyles}
           >
             {isDark ? 'Light' : 'Dark'}
           </button>
           <button
             onClick={clearChat}
-            className="px-3 py-1 rounded bg-white/20 hover:bg-white/30 transition-colors"
+            className={headerButtonStyles}
           >
             Clear
           </button>
@@ -240,7 +241,7 @@ const SimpleChatWithAI = () => {
               >
                 <div className="flex justify-between mb-1">
                   <span className="text-sm font-medium text-[var(--color-text-primary)]">{result.date}</span>
-                  <span className="text-xs px-2 py-0.5 rounded-full bg-blue-500/10 text-blue-500">
+                  <span className="text-xs px-2 py-0.5 rounded-full border border-[var(--color-border-default)] bg-[var(--color-bg-tertiary)]/50 text-[var(--color-text-tertiary)]">
                     Score: {result.score.toFixed(2)}
                   </span>
                 </div>
@@ -260,9 +261,9 @@ const SimpleChatWithAI = () => {
               <div className="p-4 text-center">
                 <div className="inline-block">
                   <div className="flex space-x-2">
-                    <div className="w-2 h-2 bg-[var(--color-primary)] rounded-full animate-bounce"></div>
-                    <div className="w-2 h-2 bg-[var(--color-primary)] rounded-full animate-bounce delay-150"></div>
-                    <div className="w-2 h-2 bg-[var(--color-primary)] rounded-full animate-bounce delay-300"></div>
+                    <div className="w-2 h-2 bg-[var(--color-text-tertiary)] rounded-full animate-bounce"></div>
+                    <div className="w-2 h-2 bg-[var(--color-text-tertiary)] rounded-full animate-bounce delay-150"></div>
+                    <div className="w-2 h-2 bg-[var(--color-text-tertiary)] rounded-full animate-bounce delay-300"></div>
                   </div>
                 </div>
               </div>
@@ -295,9 +296,9 @@ const SimpleChatWithAI = () => {
           <div className="flex items-center mb-4">
             <div className="p-3 rounded-lg bg-[var(--color-bg-elevated)]">
               <div className="flex space-x-2">
-                <div className="w-2 h-2 bg-[var(--color-primary)] rounded-full animate-bounce"></div>
-                <div className="w-2 h-2 bg-[var(--color-primary)] rounded-full animate-bounce delay-150"></div>
-                <div className="w-2 h-2 bg-[var(--color-primary)] rounded-full animate-bounce delay-300"></div>
+                <div className="w-2 h-2 bg-[var(--color-text-tertiary)] rounded-full animate-bounce"></div>
+                <div className="w-2 h-2 bg-[var(--color-text-tertiary)] rounded-full animate-bounce delay-150"></div>
+                <div className="w-2 h-2 bg-[var(--color-text-tertiary)] rounded-full animate-bounce delay-300"></div>
               </div>
             </div>
           </div>
@@ -335,7 +336,7 @@ const SimpleChatWithAI = () => {
               <button
                 type="button"
                 onClick={handleFileUpload}
-                className="ml-2 px-3 py-1 rounded text-sm bg-emerald-600 hover:bg-emerald-500 text-white transition-colors"
+                className="ml-2 px-3 py-1 rounded text-sm border border-[var(--color-border-strong)] bg-[var(--color-bg-tertiary)] text-[var(--color-text-primary)] hover:bg-[var(--color-bg-elevated)] transition-colors"
                 disabled={isLoading || isUploading}
               >
                 {isUploading ? 'Uploading...' : 'Analyze'}

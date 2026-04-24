@@ -1,6 +1,7 @@
 import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
 import axios from 'axios';
 import { getApiUrl } from '../utils/apiUrl';
+import { getSupabaseClient, isHostedAuthConfigurationMissing, isSupabaseAuthEnabled } from '../services/supabase';
 
 // Define user type
 interface User {
@@ -61,6 +62,8 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   // In unit tests we want to exercise the real auth flow by default.
   // Local dev frequently sets VITE_DISABLE_AUTH=true, which would short-circuit tests.
   const disableAuth = import.meta.env.MODE !== 'test' && import.meta.env.VITE_DISABLE_AUTH === 'true';
+  const supabaseAuth = isSupabaseAuthEnabled();
+  const hostedAuthMissing = isHostedAuthConfigurationMissing();
 
   // Check if user is authenticated
   const isAuthenticated = !!user;
@@ -95,6 +98,38 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     email: import.meta.env.VITE_DEMO_EMAIL || 'admin@example.com',
     password: import.meta.env.VITE_DEMO_PASSWORD || 'admin123',
   });
+
+  const persistSupabaseSession = async () => {
+    const supabase = getSupabaseClient();
+    const { data, error: sessionError } = await supabase.auth.getSession();
+
+    if (sessionError) {
+      throw sessionError;
+    }
+
+    const accessToken = data.session?.access_token;
+    if (!accessToken) {
+      setUser(null);
+      localStorage.removeItem('auth_token');
+      localStorage.removeItem('refresh_token');
+      return;
+    }
+
+    localStorage.setItem('auth_token', accessToken);
+    if (data.session?.refresh_token) {
+      localStorage.setItem('refresh_token', data.session.refresh_token);
+    }
+
+    const response = await axios.get(`${getApiUrl()}/auth/me`, {
+      headers: {
+        Authorization: `Bearer ${accessToken}`,
+      },
+    });
+
+    if (response.data?.user) {
+      setUser(response.data.user);
+    }
+  };
 
   const enableLocalOnlyDevSession = () => {
     localStorage.setItem('auth_token', 'dev-auth-disabled');
@@ -151,6 +186,27 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
         return;
       }
 
+      if (hostedAuthMissing) {
+        localStorage.removeItem('auth_token');
+        localStorage.removeItem('refresh_token');
+        setUser(null);
+        setIsLoading(false);
+        return;
+      }
+
+      if (supabaseAuth) {
+        try {
+          await persistSupabaseSession();
+        } catch (err: any) {
+          localStorage.removeItem('auth_token');
+          localStorage.removeItem('refresh_token');
+          console.warn('[Auth] Could not restore Supabase session:', err?.message || err);
+        } finally {
+          setIsLoading(false);
+        }
+        return;
+      }
+
       try {
         // Check if we have a token
         const token = localStorage.getItem('auth_token');
@@ -193,7 +249,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     };
 
     loadUser();
-  }, [disableAuth]);
+  }, [disableAuth, hostedAuthMissing, supabaseAuth]);
 
   // Demo login function - uses actual API authentication with demo credentials
   // This ensures proper token validation and persistence across page refreshes
@@ -210,6 +266,10 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       return;
     }
 
+    if (hostedAuthMissing) {
+      throw new Error('Hosted authentication is not configured. Set VITE_SUPABASE_URL and VITE_SUPABASE_ANON_KEY in Netlify, then rebuild.');
+    }
+
     // Read demo credentials from environment variables (set at build time)
     // These should only be set in development environments
     // Defaults match seeded dev admin in src/db/seeds/01-initial-data.sql
@@ -222,13 +282,32 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   // Login function
   const login = async (email: string, password: string) => {
     try {
+      setIsLoading(true);
+      clearError();
+
       if (disableAuth) {
         enableLocalOnlyDevSession();
         return;
       }
 
-      setIsLoading(true);
-      clearError();
+      if (hostedAuthMissing) {
+        throw new Error('Hosted authentication is not configured. Set VITE_SUPABASE_URL and VITE_SUPABASE_ANON_KEY in Netlify, then rebuild.');
+      }
+
+      if (supabaseAuth) {
+        const supabase = getSupabaseClient();
+        const { error: loginError } = await supabase.auth.signInWithPassword({
+          email,
+          password,
+        });
+
+        if (loginError) {
+          throw loginError;
+        }
+
+        await persistSupabaseSession();
+        return;
+      }
 
       // SECURITY: Test credential patterns removed from production code
       // E2E tests should use proper mocking or test users instead of client-side bypasses
@@ -286,6 +365,28 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       setIsLoading(true);
       clearError();
 
+      if (hostedAuthMissing) {
+        throw new Error('Hosted authentication is not configured. Set VITE_SUPABASE_URL and VITE_SUPABASE_ANON_KEY in Netlify, then rebuild.');
+      }
+
+      if (supabaseAuth) {
+        const supabase = getSupabaseClient();
+        const { error: signUpError } = await supabase.auth.signUp({
+          email,
+          password,
+          options: {
+            data: { username },
+          },
+        });
+
+        if (signUpError) {
+          throw signUpError;
+        }
+
+        await persistSupabaseSession();
+        return;
+      }
+
       // Send register request
       const response = await axios.post(`${getApiUrl()}/auth/register`, {
         username,
@@ -331,6 +432,12 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       return;
     }
 
+    if (supabaseAuth) {
+      getSupabaseClient().auth.signOut().catch((err) => {
+        console.warn('[Auth] Supabase sign-out failed:', err);
+      });
+    }
+
     // Clear token from localStorage
     localStorage.removeItem('auth_token');
     localStorage.removeItem('refresh_token');
@@ -351,6 +458,23 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       const token = localStorage.getItem('auth_token');
       if (!token) {
         throw new Error('Not authenticated');
+      }
+
+      if (supabaseAuth) {
+        const response = await axios.put(
+          `${getApiUrl()}/auth/user`,
+          userData,
+          {
+            headers: {
+              Authorization: `Bearer ${token}`,
+            },
+          }
+        );
+
+        if (response.data && response.data.user) {
+          setUser(response.data.user);
+        }
+        return;
       }
 
       // Send update request

@@ -107,6 +107,10 @@ export const AnalysisProgressPanel: React.FC<AnalysisProgressPanelProps> = ({
     const totalSteps = 5; // Roughly: analyze, 3 tools, synthesis
     let completedSteps = 0;
 
+    if (currentStage === 'analyze') {
+      completedSteps = 0.5; // Show immediate progress while the first model call runs.
+    }
+
     if (currentStage === 'tools' || currentStage === 'synthesis' || currentStage === 'completed') {
       completedSteps += 1; // Initial analyze
     }

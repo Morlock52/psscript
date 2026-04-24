@@ -1,10 +1,11 @@
 # PSScript - Getting Started Guide
 
-This guide reflects the current checked-in local development setup as of April 12, 2026.
+This guide reflects the current checked-in local development setup as of April 24, 2026.
 
 ## Canonical local URLs
 
 - Frontend: `https://127.0.0.1:3090`
+- Auth-enabled QA frontend: `http://127.0.0.1:3191`
 - Backend API: `https://127.0.0.1:4000`
 - AI service: `http://127.0.0.1:8000`
 
@@ -23,6 +24,8 @@ That means:
 - older docs that reference hard-coded demo credentials are historical only
 
 If you need to validate real login behavior, run a separate frontend/backend pair with both auth-disable flags set to `false`.
+
+The latest Browser Use QA pass used `http://127.0.0.1:3191` and is recorded in `../BROWSER_USE_QA.md`.
 
 ## Prerequisites
 
@@ -73,9 +76,12 @@ PLAYWRIGHT_STACK_MODE=local npx playwright test tests/e2e/project-review-validat
 ## Canonical current docs
 
 - `../README.md`
+- `./CURRENT-STATUS-2026-04-24.md`
+- `../BROWSER_USE_QA.md`
 - `../src/backend/README.md`
 - `../src/frontend/README.md`
 - `../src/ai/README.md`
+- `./NETLIFY-SUPABASE-DEPLOYMENT.md`
 - `./DATA-MAINTENANCE.md`
 - `./README-VOICE-API.md`
 - `./AUTHENTICATION-IMPROVEMENTS.md`
