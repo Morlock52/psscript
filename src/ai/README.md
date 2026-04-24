@@ -2,6 +2,8 @@
 
 FastAPI-based AI service for PowerShell analysis, embeddings, LangGraph orchestration, and OpenAI-backed voice/listening workflows.
 
+Last reviewed for current documentation: April 23, 2026.
+
 ## Canonical local target
 
 - Base URL: `http://127.0.0.1:8000`
@@ -65,3 +67,5 @@ node ../../scripts/voice-tests-1-8.mjs --base-url https://127.0.0.1:4000 --insec
 
 Latest voice result on March 8, 2026:
 - `8/8` checks passed
+
+The April 23, 2026 documentation refresh did not rerun AI-service tests; it updated UI/docs screenshots and frontend validation only.

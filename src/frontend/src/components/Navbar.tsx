@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { useTheme } from '../contexts/ThemeContext';
 import { useAuth } from '../hooks/useAuth';
+import BrandMark from './BrandMark';
 
 // Define props for Navbar
 interface NavbarProps {
@@ -40,7 +41,7 @@ const Navbar: React.FC<NavbarProps> = ({ onMenuClick }) => {
   const getPageTitle = () => {
     const path = location.pathname;
 
-    if (path === '/') return 'Dashboard';
+    if (path === '/' || path === '/dashboard') return 'Dashboard';
     if (path === '/scripts') return 'Script Management';
     if (path.startsWith('/scripts/') && path.includes('/edit')) return 'Edit Script';
     if (path.startsWith('/scripts/') && path.includes('/analysis')) return 'Script Analysis';
@@ -58,24 +59,24 @@ const Navbar: React.FC<NavbarProps> = ({ onMenuClick }) => {
   // Common button styles - min 44px touch target for mobile accessibility
   const iconButtonStyles = `
     p-2.5 md:p-2 min-w-[44px] min-h-[44px] flex items-center justify-center
-    rounded-lg transition-all duration-200
+    rounded-xl transition-all duration-200
     text-[var(--color-text-secondary)]
     hover:text-[var(--color-text-primary)]
-    hover:bg-[var(--color-bg-tertiary)]
+    hover:bg-[var(--glass-bg)]
     active:scale-95
   `;
 
   // Dropdown styles
   const dropdownStyles = `
     absolute right-0 mt-2 rounded-xl shadow-lg
-    bg-[var(--color-bg-elevated)]
+    bg-[var(--color-bg-elevated)]/95
     border border-[var(--color-border-default)]
-    backdrop-blur-sm
+    backdrop-blur-xl
     animate-fade-in
   `;
 
   return (
-    <header className="px-4 py-3 bg-[var(--color-bg-primary)] border-b border-[var(--color-border-default)] transition-colors duration-300">
+    <header className="px-4 py-3 bg-[var(--color-bg-primary)]/88 border-b border-[var(--color-border-default)] transition-colors duration-300 backdrop-blur-xl">
       <div className="flex items-center justify-between">
         {/* Left side - Menu button and title */}
         <div className="flex items-center gap-3">
@@ -89,9 +90,13 @@ const Navbar: React.FC<NavbarProps> = ({ onMenuClick }) => {
             </svg>
           </button>
 
-          <h1 className="text-xl font-semibold bg-gradient-to-r from-[var(--color-primary)] to-[var(--color-accent)] bg-clip-text text-transparent">
-            {getPageTitle()}
-          </h1>
+          <BrandMark size="sm" className="hidden sm:inline-flex lg:hidden" />
+          <div>
+            <p className="text-[10px] uppercase tracking-[0.24em] text-[var(--color-text-tertiary)]">PSScript deck</p>
+            <h1 className="text-xl font-semibold bg-gradient-to-r from-[var(--color-primary)] via-[var(--color-info)] to-[var(--color-accent)] bg-clip-text text-transparent">
+              {getPageTitle()}
+            </h1>
+          </div>
         </div>
 
         {/* Right side - Actions */}
@@ -178,7 +183,7 @@ const Navbar: React.FC<NavbarProps> = ({ onMenuClick }) => {
                     className="w-9 h-9 rounded-full ring-2 ring-[var(--color-border-default)]"
                   />
                 ) : (
-                  <div className="w-9 h-9 rounded-full bg-gradient-to-br from-[var(--color-primary)] to-[var(--color-accent)] text-white flex items-center justify-center font-medium shadow-md">
+                  <div className="w-9 h-9 rounded-full bg-gradient-to-br from-[var(--color-primary)] via-[var(--color-info)] to-[var(--color-accent)] text-white flex items-center justify-center font-medium shadow-md">
                     {user?.username?.charAt(0).toUpperCase() || 'U'}
                   </div>
                 )}
@@ -186,7 +191,7 @@ const Navbar: React.FC<NavbarProps> = ({ onMenuClick }) => {
             ) : (
               <Link
                 to="/login"
-                className="px-4 py-2 rounded-lg text-sm font-medium bg-gradient-to-r from-[var(--color-primary)] to-[var(--color-accent)] text-white hover:opacity-90 transition-opacity shadow-md hover:shadow-lg"
+                className="px-4 py-2 rounded-xl text-sm font-medium bg-gradient-to-r from-[var(--color-primary)] to-[var(--color-accent)] text-white hover:opacity-90 transition-opacity shadow-md hover:shadow-lg"
               >
                 Sign In
               </Link>
@@ -197,7 +202,7 @@ const Navbar: React.FC<NavbarProps> = ({ onMenuClick }) => {
               <div className={`${dropdownStyles} w-56`}>
                 <div className="p-4 border-b border-[var(--color-border-default)]">
                   <div className="flex items-center gap-3">
-                    <div className="w-10 h-10 rounded-full bg-gradient-to-br from-[var(--color-primary)] to-[var(--color-accent)] text-white flex items-center justify-center font-medium">
+                    <div className="w-10 h-10 rounded-full bg-gradient-to-br from-[var(--color-primary)] via-[var(--color-info)] to-[var(--color-accent)] text-white flex items-center justify-center font-medium">
                       {user?.username?.charAt(0).toUpperCase() || 'U'}
                     </div>
                     <div className="flex-1 min-w-0">

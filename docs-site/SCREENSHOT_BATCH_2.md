@@ -1,6 +1,6 @@
-# Screenshot Batch 2 (Feb 2026)
+# Screenshot Batch 2 (Current through Apr 23, 2026)
 
-This batch captures the latest UI for new/updated features (Feb 2026) and is used to keep docs screenshots in sync with the current app output.
+This batch captures the latest UI for new/updated features and is used to keep docs screenshots in sync with the current app output.
 
 ## Captured
 
@@ -15,8 +15,8 @@ This batch captures the latest UI for new/updated features (Feb 2026) and is use
 
 ## Notes
 
-- Local dev stack ports (Feb 2026):
+- Current canonical local stack ports:
   - Frontend: `https://localhost:3090`
   - Backend API: `https://localhost:4000`
   - AI service: `http://localhost:8000`
-
+- The April 23, 2026 refresh was captured from the already-running local frontend on `http://127.0.0.1:3091` and copied into the same docs-site variant paths.

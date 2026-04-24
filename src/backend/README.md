@@ -2,6 +2,8 @@
 
 Express + TypeScript API for authentication, script management, analytics, admin maintenance workflows, documentation crawl storage, and AI-backed operations.
 
+Last reviewed for current documentation: April 23, 2026.
+
 ## Canonical local target
 
 - Base URL: `https://127.0.0.1:4000`
@@ -86,6 +88,8 @@ Latest validated results on March 6, 2026:
 - `npm run build`: passed
 - `npm test -- --runInBand`: `29` active tests passed, `64` skipped
 - `RUN_DB_TESTS=true npm test -- --runInBand`: `93` tests passed
+
+The April 23, 2026 documentation refresh did not rerun backend tests; it updated UI/docs screenshots and frontend validation only.
 
 Known non-blocking warnings:
 - `2` camelcase lint warnings in `src/routes/__tests__/admin-db.test.ts`

@@ -2,6 +2,8 @@
 
 End-to-end walkthrough of the PowerShell Script Manager. Includes flows, screenshots, labs, tables, sample actions, and operational checklists. Built for hands-on enablement and printable exports.
 
+Last refreshed: April 23, 2026, with current command-deck branding and screenshots.
+
 ## Table of Contents
 
 - [Program overview](#program-overview)
@@ -24,6 +26,7 @@ PSScript Manager is a full workflow platform for PowerShell scripts—intake, AI
 - AI-backed analysis with scores, recommendations, and remediation notes
 - Dual-mode discovery (keyword + vector search) plus documentation crawler
 - Analytics and audit trails for compliance and release readiness
+- A branded command-center UI for dashboard triage, uploads, AI analysis, settings, and data maintenance
 
 Management rollout details live in `../MANAGEMENT-PLAYBOOK.md`.
 
@@ -58,27 +61,28 @@ Management rollout details live in `../MANAGEMENT-PLAYBOOK.md`.
 
 ## Environment setup
 
-Recommended mock mode so every lab works offline:
+Recommended local stack:
 
 ```bash
-./start-all-mock.sh
+docker compose -f docker-compose.yml -f docker-compose.override.yml up -d --build
 ```
 
 Ports:
-- Frontend: http://localhost:3002
-- Backend API: http://localhost:4000/api
+- Frontend: https://127.0.0.1:3090
+- Backend API: https://127.0.0.1:4000/api
 - AI service: http://localhost:8000
 
 Verify:
-- `curl http://localhost:4000/health` → 200 OK
-- Open http://localhost:3002 and click **Use Default Login**
-- Confirm dashboard counters populate with mock data
+- `curl -k https://127.0.0.1:4000/health` returns 200 OK
+- Open `https://127.0.0.1:3090`
+- In default local auth-disabled mode, the UI auto-enters the app shell as `dev-admin`
+- Confirm the branded dashboard shell, sidebar logo, counters, and voice dock render
 
 ## Guided walkthrough
 
 Ship a vetted script in ~15 minutes:
-1. **Sign in** → use Default Login on the login screen.
-2. **Scan the dashboard** → note total scripts, AI analyses, and security score trend.
+1. **Open the app** → use the default local auth-disabled stack or sign in on an auth-enabled stack.
+2. **Scan the dashboard** → note total scripts, AI analyses, security score trend, Upload Script, and Ask AI actions.
 3. **Upload** → go to Upload, add `test-script.ps1`, tags, and category; note dedup hints.
 4. **Review detail** → open the new script, confirm metadata, owner, and activity feed.
 5. **Analyze** → open Analysis, read findings, and log remediation notes.
@@ -86,7 +90,7 @@ Ship a vetted script in ~15 minutes:
 7. **Consult docs** → open Documentation, search for a related cmdlet, and save an excerpt.
 8. **Chat** → ask the assistant “safest way to schedule this script weekly?” and record the answer.
 9. **Analytics** → confirm the run shows up in usage metrics and training exports.
-10. **Settings** → open Documentation & Training and verify the PDF/DOCX links load.
+10. **Settings** → open Script Categories and Data Maintenance to review category governance and admin DB tasks.
 
 ## Role-based paths
 
@@ -109,8 +113,8 @@ Ship a vetted script in ~15 minutes:
 ## Hands-on labs
 
 ### Lab 01: Sign in and orient
-1. Open the login screen and use Default Login.
-2. Review stats cards and activity feed on the dashboard.
+1. Open the app in default local mode or use a real login on an auth-enabled stack.
+2. Review the PSScript logo, command-deck sidebar, stats cards, and activity feed on the dashboard.
 3. Find Scripts, Documentation, Analytics in the sidebar.
 
 ![Login Screen](../screenshots/login.png)
@@ -143,9 +147,9 @@ Ship a vetted script in ~15 minutes:
 ![Sample Usage Metrics](../graphics/usage-metrics.svg)
 
 ### Lab 05: Settings and training resources
-1. Open Settings; review API usage and notifications.
-2. Locate Documentation & Training and open the Training Suite.
-3. Open the local PDF export at `http://localhost:4000/docs/exports/pdf/Training-Guide.pdf`.
+1. Open Settings; review Script Categories and Data Maintenance.
+2. Create, edit, search, refresh, and delete a category only in a safe test dataset.
+3. Review backup, restore, cleanup, sequence, cache, and integrity actions in Data Maintenance.
 
 ![Settings](../screenshots/settings.png)
 

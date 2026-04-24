@@ -424,21 +424,24 @@ When generating or modifying scripts:
   return (
     <div className="container mx-auto pb-8">
       {/* Header with back button */}
-      <div className="mb-6 flex justify-between items-center">
+      <div className="mb-6 flex flex-col gap-4 rounded-[2rem] border border-[var(--glass-border)] bg-[var(--glass-bg)] p-5 shadow-[var(--shadow-xl)] backdrop-blur-xl lg:flex-row lg:items-center lg:justify-between">
         <div>
-          <h1 className="text-2xl font-bold">AI Analysis: {script.title}</h1>
-          <p className="text-gray-400">Comprehensive analysis and improvement recommendations for your PowerShell script</p>
+          <p className="mb-2 text-xs font-semibold uppercase tracking-[0.26em] text-[var(--color-accent)]">Agentic script review</p>
+          <h1 className="text-3xl font-black tracking-tight bg-gradient-to-r from-[var(--color-text-primary)] via-[var(--color-primary)] to-[var(--color-accent)] bg-clip-text text-transparent">
+            AI Analysis: {script.title}
+          </h1>
+          <p className="mt-2 text-[var(--color-text-secondary)]">Comprehensive analysis and improvement recommendations for your PowerShell script</p>
         </div>
         <div className="flex space-x-2">
           <button
-            className="px-4 py-2 bg-gray-600 text-white rounded-lg hover:bg-gray-700"
+            className="px-4 py-2 bg-[var(--color-bg-tertiary)] text-[var(--color-text-primary)] rounded-xl hover:bg-[var(--glass-bg)]"
             onClick={() => navigate(`/scripts/${id}`)}
           >
             Back to Script
           </button>
           <button
-            className="px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 flex items-center space-x-2"
-            onClick={() => navigate('/')}
+            className="px-4 py-2 bg-[var(--color-primary)] text-[#04111f] rounded-xl hover:bg-[var(--color-primary-hover)] flex items-center space-x-2 font-semibold shadow-[var(--shadow-glow)]"
+            onClick={() => navigate('/dashboard')}
           >
             <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" />
@@ -449,40 +452,40 @@ When generating or modifying scripts:
       </div>
       
       {/* Tab Navigation */}
-      <div className="mb-6 border-b border-gray-600">
-        <nav className="flex space-x-4">
+      <div className="mb-6 overflow-x-auto rounded-2xl border border-[var(--color-border-default)] bg-[var(--color-bg-primary)]/70 p-1 backdrop-blur">
+        <nav className="flex min-w-max space-x-1">
           <button
-            className={`py-3 px-4 text-sm font-medium ${activeTab === 'overview' ? 'text-blue-400 border-b-2 border-blue-400' : 'text-gray-400 hover:text-white'}`}
+            className={`rounded-xl py-3 px-4 text-sm font-medium ${activeTab === 'overview' ? 'bg-[var(--color-primary)] text-[#04111f]' : 'text-[var(--color-text-secondary)] hover:text-[var(--color-text-primary)] hover:bg-[var(--glass-bg)]'}`}
             onClick={() => setActiveTab('overview')}
           >
             Overview
           </button>
           <button
-            className={`py-3 px-4 text-sm font-medium ${activeTab === 'security' ? 'text-blue-400 border-b-2 border-blue-400' : 'text-gray-400 hover:text-white'}`}
+            className={`rounded-xl py-3 px-4 text-sm font-medium ${activeTab === 'security' ? 'bg-[var(--color-primary)] text-[#04111f]' : 'text-[var(--color-text-secondary)] hover:text-[var(--color-text-primary)] hover:bg-[var(--glass-bg)]'}`}
             onClick={() => setActiveTab('security')}
           >
             Security
           </button>
           <button
-            className={`py-3 px-4 text-sm font-medium ${activeTab === 'quality' ? 'text-blue-400 border-b-2 border-blue-400' : 'text-gray-400 hover:text-white'}`}
+            className={`rounded-xl py-3 px-4 text-sm font-medium ${activeTab === 'quality' ? 'bg-[var(--color-primary)] text-[#04111f]' : 'text-[var(--color-text-secondary)] hover:text-[var(--color-text-primary)] hover:bg-[var(--glass-bg)]'}`}
             onClick={() => setActiveTab('quality')}
           >
             Code Quality
           </button>
           <button
-            className={`py-3 px-4 text-sm font-medium ${activeTab === 'performance' ? 'text-blue-400 border-b-2 border-blue-400' : 'text-gray-400 hover:text-white'}`}
+            className={`rounded-xl py-3 px-4 text-sm font-medium ${activeTab === 'performance' ? 'bg-[var(--color-primary)] text-[#04111f]' : 'text-[var(--color-text-secondary)] hover:text-[var(--color-text-primary)] hover:bg-[var(--glass-bg)]'}`}
             onClick={() => setActiveTab('performance')}
           >
             Performance
           </button>
           <button
-            className={`py-3 px-4 text-sm font-medium ${activeTab === 'parameters' ? 'text-blue-400 border-b-2 border-blue-400' : 'text-gray-400 hover:text-white'}`}
+            className={`rounded-xl py-3 px-4 text-sm font-medium ${activeTab === 'parameters' ? 'bg-[var(--color-primary)] text-[#04111f]' : 'text-[var(--color-text-secondary)] hover:text-[var(--color-text-primary)] hover:bg-[var(--glass-bg)]'}`}
             onClick={() => setActiveTab('parameters')}
           >
             Parameters
           </button>
           <button
-            className={`py-3 px-4 text-sm font-medium flex items-center ${activeTab === 'assistant' ? 'text-blue-400 border-b-2 border-blue-400' : 'text-gray-400 hover:text-white'}`}
+            className={`rounded-xl py-3 px-4 text-sm font-medium flex items-center ${activeTab === 'assistant' ? 'bg-[var(--color-primary)] text-[#04111f]' : 'text-[var(--color-text-secondary)] hover:text-[var(--color-text-primary)] hover:bg-[var(--glass-bg)]'}`}
             onClick={() => setActiveTab('assistant')}
           >
             <FaRobot className="mr-2" />
@@ -499,7 +502,8 @@ When generating or modifying scripts:
           {activeTab === 'overview' && (
             <>
               {/* LangGraph Analysis Button */}
-              <div className="bg-gradient-to-r from-indigo-900 to-purple-900 rounded-lg shadow mb-6 p-6 border border-indigo-700">
+              <div className="relative overflow-hidden rounded-[1.75rem] shadow-[var(--shadow-xl)] mb-6 p-6 border border-[var(--glass-border)] bg-[linear-gradient(135deg,rgba(37,99,235,0.26),rgba(34,197,94,0.14))]">
+                <div className="absolute right-0 top-0 h-32 w-32 rounded-full bg-[var(--color-warning)]/10 blur-2xl" />
                 <div className="flex items-center justify-between">
                   <div className="flex-1">
                     <h3 className="text-xl font-bold text-white mb-2 flex items-center">

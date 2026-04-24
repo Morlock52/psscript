@@ -92,15 +92,14 @@ test.describe('Settings Categories', () => {
     expect(scriptId).toBeTruthy();
 
     await page.getByRole('button', { name: /Refresh/i }).click();
-    await page.waitForTimeout(600);
 
     const row2 = list.locator(`[data-category-id="${categoryId}"]`).first();
+    await expect(row2.getByText('1', { exact: true })).toBeVisible({ timeout: 15000 });
     await row2.getByRole('button', { name: 'Delete' }).click();
 
     const confirmButton = page.getByRole('button', { name: /Uncategorize and delete/i });
-    if (await confirmButton.isVisible().catch(() => false)) {
-      await confirmButton.click();
-    }
+    await expect(confirmButton).toBeVisible({ timeout: 10000 });
+    await confirmButton.click();
 
     await expect(page.getByText(catName)).toHaveCount(0);
 

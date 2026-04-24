@@ -2,6 +2,8 @@
 
 Playwright coverage for the frontend shell, protected routes, settings flows, script management, health checks, AI analytics, and agent orchestration.
 
+Last reviewed for current documentation: April 23, 2026.
+
 ## Canonical local targets
 
 - Frontend: `https://127.0.0.1:3090`
@@ -68,6 +70,12 @@ using the same local ports and TLS certificates as the checked-in Docker setup.
 npx playwright test --project=chromium
 PLAYWRIGHT_STACK_MODE=local npx playwright test --project=chromium
 ```
+
+April 23, 2026 UI/docs refresh smoke coverage:
+
+- Playwright Chromium rendered `/dashboard` and `/scripts/14/analysis` against the running local frontend on `http://127.0.0.1:3091`.
+- Browser console/page error collection was clean for the branded dashboard, mobile dashboard, and script-analysis pass.
+- The script-analysis Dashboard button navigated to `/dashboard`, and the Dashboard nav link had `aria-current="page"`.
 
 ### Full matrix
 

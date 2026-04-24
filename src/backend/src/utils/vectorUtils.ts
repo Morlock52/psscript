@@ -11,6 +11,12 @@ const AI_SERVICE_URL = isDocker
   ? (process.env.AI_SERVICE_URL || 'http://ai-service:8000')
   : (process.env.AI_SERVICE_URL || 'http://localhost:8000');
 
+const isMissingVectorSchema = (error: unknown): boolean => {
+  const err = error as { parent?: { code?: string }; original?: { code?: string }; code?: string };
+  const code = err?.parent?.code || err?.original?.code || err?.code;
+  return code === '42703' || code === '42P01' || code === '42704';
+};
+
 /**
  * Generate embedding for text using the AI service
  * @param text - Text to generate embedding for
@@ -104,7 +110,7 @@ export const searchByVector = async (
 
     // Build WHERE clause using parameterized values for threshold
     // Note: vector comparison uses parameterized vectorString in replacements
-    let whereClause = `1 - (s.embedding <=> :vectorString::vector) > :threshold`;
+    let whereClause = `1 - (se.embedding <=> :vectorString::vector) > :threshold`;
     const replacements: any = {
       vectorString,
       threshold
@@ -169,9 +175,11 @@ export const searchByVector = async (
         s.updated_at as "updatedAt",
         s.file_path as "filePath",
         s.file_hash as "fileHash",
-        1 - (s.embedding <=> :vectorString::vector) as similarity
+        1 - (se.embedding <=> :vectorString::vector) as similarity
       FROM
         scripts s
+      JOIN
+        script_embeddings se ON se.script_id = s.id
       WHERE
         ${whereClause}
       ORDER BY
@@ -185,6 +193,10 @@ export const searchByVector = async (
     
     return results;
   } catch (error) {
+    if (isMissingVectorSchema(error)) {
+      logger.warn('Vector search schema is unavailable; returning no vector results');
+      return [];
+    }
     logger.error('Error searching by vector:', error);
     throw error;
   }
@@ -240,7 +252,7 @@ export const findSimilarScripts = async (
   try {
     // Get the script's embedding
     const result = await sequelize.query(`
-      SELECT embedding FROM scripts WHERE id = :scriptId;
+      SELECT embedding FROM script_embeddings WHERE script_id = :scriptId;
     `, {
       replacements: { scriptId },
       type: 'SELECT',
@@ -251,7 +263,7 @@ export const findSimilarScripts = async (
     const scriptResult = result[0] as any;
     
     if (!scriptResult || !scriptResult.embedding) {
-      throw new Error(`Script with ID ${scriptId} not found or has no embedding`);
+      return [];
     }
     
     // Convert embedding to array if it's not already
@@ -272,19 +284,21 @@ export const findSimilarScripts = async (
         s.is_public as "isPublic",
         s.created_at as "createdAt",
         s.updated_at as "updatedAt",
-        1 - (s.embedding <=> :embedding) as similarity
+        1 - (se.embedding <=> :embedding::vector) as similarity
       FROM 
         scripts s
+      JOIN
+        script_embeddings se ON se.script_id = s.id
       WHERE 
         s.id != :scriptId AND
-        1 - (s.embedding <=> :embedding) > :threshold
+        1 - (se.embedding <=> :embedding::vector) > :threshold
       ORDER BY 
         similarity DESC
       LIMIT :limit;
     `, {
       replacements: { 
         scriptId,
-        embedding: JSON.stringify(embedding),
+        embedding: `[${embedding.join(',')}]`,
         threshold,
         limit
       },
@@ -294,6 +308,10 @@ export const findSimilarScripts = async (
     
     return results;
   } catch (error) {
+    if (isMissingVectorSchema(error)) {
+      logger.warn(`Vector search schema is unavailable for script ${scriptId}; returning no similar scripts`);
+      return [];
+    }
     logger.error('Error finding similar scripts:', error);
     throw error;
   }

@@ -45,6 +45,7 @@ PSScript is a full-stack platform for teams that need to **store, search, analyz
 | **Analytics** | Usage metrics, AI cost tracking, security dashboards, and category distribution |
 | **Admin Tools** | Database backup/restore, test-data cleanup, sequence reseeding, cache management |
 | **Documentation Crawl** | Index and search external documentation within the app |
+| **Branded UI Shell** | PowerShell command-center visual system with PSScript logo, responsive dashboard, and branded analysis flows |
 
 ---
 
@@ -242,6 +243,15 @@ cd src/ai && pip install -r requirements.txt && python main.py
 
 The default local stack commonly runs with `DISABLE_AUTH=true` and `VITE_DISABLE_AUTH=true`, so the UI auto-enters the app shell as `dev-admin`. For a real login pass, run a separate frontend/backend pair with both flags set to `false`.
 
+### Current UI shell
+
+The April 23, 2026 UI refresh brands the product as a PowerShell command center:
+
+- the sidebar, top bar, loading screen, favicon, and PWA theme use the new PSScript mark
+- the dashboard leads with action-oriented Upload Script and Ask AI calls to action
+- script analysis uses the branded agentic review header, tab rail, and AI-agent analysis panel
+- the responsive layout was checked at desktop width and mobile width against the running local app
+
 ---
 
 ## Validation
@@ -264,17 +274,17 @@ npx playwright test --project=chromium
 cd src/backend && npx jest src/__tests__/cacheService.test.ts --forceExit
 ```
 
-### Latest Results (April 12, 2026)
+### Latest Results (April 23, 2026)
 
 | Suite | Result |
 |-------|--------|
-| TypeScript | **0 errors** |
-| ESLint | **0 errors** |
-| Backend targeted regression tests | **8/8 passed** |
-| Security middleware tests | **17/17 passed** |
-| Data maintenance verification | **passed** |
-| Playwright E2E | health `7/7`, script-management `6/6`, AI analytics `10/10`, review-validation `9/9`, categories `1/1` |
-| Auth-enabled browser pass | **passed** |
+| Frontend TypeScript | `./node_modules/.bin/tsc --noEmit --pretty false` passed |
+| UI browser smoke | Dashboard, mobile dashboard, and script analysis passed with no browser console/page errors |
+| Navigation smoke | Analysis Dashboard button routes to `/dashboard`; Dashboard nav gets `aria-current="page"` |
+| Screenshot refresh | Dashboard, scripts, upload, analysis, categories, data maintenance, analytics, and mobile dashboard refreshed |
+| ESLint | Targeted ESLint invocation hung with no output in this workspace and was killed; no lint result was claimed |
+
+Historical full-stack validation from April 12, 2026 remains documented in `docs/UPDATES.md`.
 
 ---
 
@@ -377,6 +387,7 @@ Full details: [PROJECT-REVIEW-2026-04-01.md](./docs/PROJECT-REVIEW-2026-04-01.md
 | [Project Review](./docs/PROJECT-REVIEW-2026-04-01.md) | April 2026 comprehensive review |
 | [AI Functions Review](./docs/AI-FUNCTIONS-REVIEW-2026-04-02.md) | AI audit and model migration |
 | [Documentation Hub](./docs/index.md) | Full docs index |
+| [UI Branding Refresh](./docs/UI-BRANDING-REFRESH-2026-04-23.md) | Current branded UI and screenshot refresh notes |
 
 ### Service READMEs
 
@@ -387,5 +398,5 @@ Full details: [PROJECT-REVIEW-2026-04-01.md](./docs/PROJECT-REVIEW-2026-04-01.md
 ---
 
 <p align="center">
-  <sub>Last updated: April 2, 2026</sub>
+  <sub>Last updated: April 23, 2026</sub>
 </p>

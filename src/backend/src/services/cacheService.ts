@@ -64,7 +64,8 @@ function memCleanup(): void {
   memEvict();
 }
 
-setInterval(memCleanup, CLEANUP_MS);
+const memCleanupInterval = setInterval(memCleanup, CLEANUP_MS);
+memCleanupInterval.unref();
 
 // ---------------------------------------------------------------------------
 // Redis connection (lazy, non-blocking)

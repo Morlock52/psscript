@@ -4,6 +4,19 @@ import axios, { AxiosRequestConfig, AxiosError } from "axios";
 import { getApiUrl, isLocalhost as checkIsLocalhost } from "../utils/apiUrl";
 import { extractApiError, ErrorCodes as _ErrorCodes } from "../utils/errorUtils";
 
+const createUploadError = (message: string, err: AxiosError, details?: Record<string, unknown>) => {
+  const uploadError = new Error(message) as Error & Record<string, unknown>;
+  uploadError.status = err.response?.status ?? (err as Record<string, unknown>).status;
+  uploadError.response = err.response ?? (err as Record<string, unknown>).response;
+  uploadError.code = err.code;
+
+  if (details) {
+    Object.assign(uploadError, details);
+  }
+
+  return uploadError;
+};
+
 // Determine if we're running in a development environment
 // This is evaluated at runtime in the browser
 const isDevelopment = import.meta.env.DEV ||
@@ -95,6 +108,14 @@ apiClient.interceptors.response.use(
     // Use centralized error extraction for consistent error handling
     // This ensures all errors have the same shape: { status, message, code, isNetworkError, ... }
     const apiError = extractApiError(error);
+    const responseData = error.response?.data;
+
+    if (responseData && typeof responseData === 'object') {
+      apiError.details = responseData as Record<string, unknown>;
+      if (typeof apiError.details.message === 'string') {
+        apiError.message = apiError.details.message;
+      }
+    }
 
     // Log in development mode
     if (isDevelopment) {
@@ -224,7 +245,7 @@ const scriptService = {
             method: err.config?.method
           }
         }, null, 2));
-        throw new Error('The upload request timed out. Please check your connection and try again with a smaller file or better connection.');
+        throw createUploadError('The upload request timed out. Please check your connection and try again with a smaller file or better connection.', err);
       }
       
       if (err.message && (
@@ -238,7 +259,7 @@ const scriptService = {
           message: err.message,
           name: err.name
         }, null, 2));
-        throw new Error('Network error detected. This could be due to server unavailability or connection problems. Please check your internet connection and try again.');
+        throw createUploadError('Network error detected. This could be due to server unavailability or connection problems. Please check your internet connection and try again.', err);
       }
       
       if (err.code === 'CORS_ERROR' || 
@@ -250,7 +271,15 @@ const scriptService = {
           message: err.message,
           headers: err.config?.headers
         }, null, 2));
-        throw new Error('Cross-Origin Resource Sharing (CORS) error. Please try again or contact support if the issue persists.');
+        throw createUploadError('Cross-Origin Resource Sharing (CORS) error. Please try again or contact support if the issue persists.', err);
+      }
+
+      const transformedDetails = (err as Record<string, unknown>).details as Record<string, unknown> | undefined;
+      if (typeof (err as Record<string, unknown>).status === 'number' && transformedDetails?.message) {
+        throw createUploadError(String(transformedDetails.message), err, {
+          existingScriptId: transformedDetails.existingScriptId,
+          error: transformedDetails.error
+        });
       }
       
       // Handle axios errors with response
@@ -261,43 +290,47 @@ const scriptService = {
         const responseData = data as any;
         
         if (status === 400 && responseData.error === 'file_read_error') {
-          throw new Error('Could not read the uploaded file. Please try again with a different file.');
+          throw createUploadError('Could not read the uploaded file. Please try again with a different file.', err);
         }
         
         if (status === 400 && responseData.error === 'invalid_content') {
-          throw new Error('The file does not appear to be a valid PowerShell script. Please check the file contents.');
+          throw createUploadError('The file does not appear to be a valid PowerShell script. Please check the file contents.', err);
         }
         
         if (status === 400 && responseData.error === 'too_many_tags') {
-          throw new Error('A maximum of 10 tags is allowed. Please reduce the number of tags.');
+          throw createUploadError('A maximum of 10 tags is allowed. Please reduce the number of tags.', err);
         }
         
         if (status === 413) {
-          throw new Error('The file is too large. Maximum file size is 10MB.');
+          throw createUploadError('The file is too large. Maximum file size is 10MB.', err);
         }
         
         if (status === 429) {
-          throw new Error('Too many upload attempts. Please wait a moment and try again.');
+          throw createUploadError('Too many upload attempts. Please wait a moment and try again.', err);
         }
         
         if (status >= 500) {
-          throw new Error('Server error. The upload service is currently unavailable. Please try again later.');
+          throw createUploadError('Server error. The upload service is currently unavailable. Please try again later.', err);
         }
         
         if (responseData && responseData.message) {
-          throw new Error(responseData.message);
+          throw createUploadError(responseData.message, err, {
+            existingScriptId: responseData.existingScriptId,
+            error: responseData.error
+          });
         }
       }
       
       // Handle request errors (no response received)
       if ((error as any).request) {
-        throw new Error('No response received from the server. Please check your connection and try again.');
+        throw createUploadError('No response received from the server. Please check your connection and try again.', err);
       }
       
       // Default error message
-      throw (error as any).message 
-        ? new Error((error as any).message) 
-        : new Error('An error occurred while uploading the script');
+      throw createUploadError(
+        (error as any).message || 'An error occurred while uploading the script',
+        err
+      );
     }
   },
   

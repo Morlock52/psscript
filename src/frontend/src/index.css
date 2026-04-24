@@ -13,9 +13,9 @@
   color-scheme: light dark;
 
   /* === Surface Colors === */
-  --color-bg-primary: #ffffff;
-  --color-bg-secondary: #f8fafc;
-  --color-bg-tertiary: #f1f5f9;
+  --color-bg-primary: #f7fbff;
+  --color-bg-secondary: #eef6ff;
+  --color-bg-tertiary: #e1edf8;
   --color-bg-elevated: #ffffff;
   --color-bg-sunken: #e2e8f0;
   --color-bg-overlay: rgba(15, 23, 42, 0.5);
@@ -34,14 +34,14 @@
   --color-border-focus: #3b82f6;
 
   /* === Brand Colors === */
-  --color-primary: #3b82f6;
-  --color-primary-hover: #2563eb;
+  --color-primary: #2563eb;
+  --color-primary-hover: #1d4ed8;
   --color-primary-light: #dbeafe;
-  --color-primary-dark: #1e40af;
+  --color-primary-dark: #1e3a8a;
 
-  --color-accent: #8b5cf6;
-  --color-accent-hover: #7c3aed;
-  --color-accent-light: #ede9fe;
+  --color-accent: #22c55e;
+  --color-accent-hover: #16a34a;
+  --color-accent-light: #dcfce7;
 
   /* === Status Colors === */
   --color-success: #10b981;
@@ -73,19 +73,19 @@
   --shadow-lg: 0 8px 16px rgba(0, 0, 0, 0.1), 0 4px 8px rgba(0, 0, 0, 0.06);
   --shadow-xl: 0 16px 32px rgba(0, 0, 0, 0.12), 0 8px 16px rgba(0, 0, 0, 0.08);
   --shadow-inner: inset 0 2px 4px rgba(0, 0, 0, 0.05);
-  --shadow-glow: 0 0 20px rgba(59, 130, 246, 0.3);
+  --shadow-glow: 0 0 24px rgba(56, 189, 248, 0.26), 0 0 44px rgba(34, 197, 94, 0.12);
 
   /* === Gradients === */
-  --gradient-primary: linear-gradient(135deg, #3b82f6 0%, #8b5cf6 100%);
-  --gradient-surface: linear-gradient(180deg, #ffffff 0%, #f8fafc 100%);
+  --gradient-primary: linear-gradient(135deg, #2563eb 0%, #38bdf8 55%, #22c55e 100%);
+  --gradient-surface: linear-gradient(180deg, #ffffff 0%, #eef6ff 100%);
   --gradient-shimmer: linear-gradient(90deg, transparent 0%, rgba(255,255,255,0.4) 50%, transparent 100%);
 
   /* === Blur & Glass === */
   --blur-sm: 4px;
   --blur-md: 8px;
   --blur-lg: 16px;
-  --glass-bg: rgba(255, 255, 255, 0.7);
-  --glass-border: rgba(255, 255, 255, 0.3);
+  --glass-bg: rgba(255, 255, 255, 0.72);
+  --glass-border: rgba(148, 163, 184, 0.32);
 
   /* === Spacing Scale === */
   --space-px: 1px;
@@ -120,11 +120,11 @@
   color-scheme: dark;
 
   /* === Surface Colors === */
-  --color-bg-primary: #0f172a;
-  --color-bg-secondary: #1e293b;
-  --color-bg-tertiary: #334155;
-  --color-bg-elevated: #1e293b;
-  --color-bg-sunken: #020617;
+  --color-bg-primary: #07111f;
+  --color-bg-secondary: #0d1b2f;
+  --color-bg-tertiary: #172941;
+  --color-bg-elevated: #102035;
+  --color-bg-sunken: #030712;
   --color-bg-overlay: rgba(0, 0, 0, 0.7);
 
   /* === Text Colors === */
@@ -135,20 +135,20 @@
   --color-text-inverse: #0f172a;
 
   /* === Border Colors === */
-  --color-border-default: #334155;
-  --color-border-subtle: #1e293b;
-  --color-border-strong: #475569;
-  --color-border-focus: #60a5fa;
+  --color-border-default: #1f3856;
+  --color-border-subtle: #102035;
+  --color-border-strong: #365675;
+  --color-border-focus: #38bdf8;
 
   /* === Brand Colors (adjusted for dark) === */
-  --color-primary: #60a5fa;
-  --color-primary-hover: #93c5fd;
-  --color-primary-light: #1e3a5f;
+  --color-primary: #38bdf8;
+  --color-primary-hover: #7dd3fc;
+  --color-primary-light: #0b3b5f;
   --color-primary-dark: #2563eb;
 
-  --color-accent: #a78bfa;
-  --color-accent-hover: #c4b5fd;
-  --color-accent-light: #2e1065;
+  --color-accent: #22c55e;
+  --color-accent-hover: #4ade80;
+  --color-accent-light: #052e1b;
 
   /* === Status Colors (adjusted for dark) === */
   --color-success: #34d399;
@@ -183,13 +183,13 @@
   --shadow-glow: 0 0 20px rgba(96, 165, 250, 0.4);
 
   /* === Gradients === */
-  --gradient-primary: linear-gradient(135deg, #60a5fa 0%, #a78bfa 100%);
-  --gradient-surface: linear-gradient(180deg, #1e293b 0%, #0f172a 100%);
+  --gradient-primary: linear-gradient(135deg, #38bdf8 0%, #2563eb 48%, #22c55e 100%);
+  --gradient-surface: linear-gradient(180deg, #102035 0%, #07111f 100%);
   --gradient-shimmer: linear-gradient(90deg, transparent 0%, rgba(255,255,255,0.1) 50%, transparent 100%);
 
   /* === Blur & Glass === */
-  --glass-bg: rgba(30, 41, 59, 0.8);
-  --glass-border: rgba(51, 65, 85, 0.5);
+  --glass-bg: rgba(16, 32, 53, 0.72);
+  --glass-border: rgba(125, 211, 252, 0.16);
 }
 
 /* ============================================
@@ -212,10 +212,10 @@ body {
     'Oxygen', 'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue',
     sans-serif;
   /* Fallback colors for browsers without CSS custom property support */
-  background-color: #0f172a;
+  background-color: #07111f;
   color: #f8fafc;
   /* CSS custom properties (will override fallbacks in supporting browsers) */
-  background-color: var(--color-bg-primary, #0f172a);
+  background-color: var(--color-bg-primary, #07111f);
   color: var(--color-text-primary, #f8fafc);
   transition: background-color var(--transition-normal, 250ms ease), color var(--transition-normal, 250ms ease);
   line-height: 1.6;
@@ -243,6 +243,74 @@ input, textarea, button, a {
 code {
   font-family: 'Fira Code', 'JetBrains Mono', source-code-pro, Menlo, Monaco,
     Consolas, 'Courier New', monospace;
+}
+
+.psscript-app-shell {
+  color: var(--color-text-primary);
+  background:
+    radial-gradient(circle at 18% 14%, rgba(56, 189, 248, 0.18), transparent 30rem),
+    radial-gradient(circle at 82% 18%, rgba(34, 197, 94, 0.12), transparent 28rem),
+    linear-gradient(135deg, var(--color-bg-sunken), var(--color-bg-primary) 42%, var(--color-bg-secondary));
+}
+
+.psscript-main {
+  background:
+    linear-gradient(90deg, rgba(56, 189, 248, 0.04) 1px, transparent 1px),
+    linear-gradient(180deg, rgba(56, 189, 248, 0.035) 1px, transparent 1px);
+  background-size: 44px 44px;
+}
+
+.brand-mark {
+  position: relative;
+  display: inline-flex;
+  flex: 0 0 auto;
+  filter: drop-shadow(0 12px 24px rgba(56, 189, 248, 0.22));
+}
+
+.brand-mark::after {
+  content: '';
+  position: absolute;
+  inset: -9%;
+  border-radius: 32%;
+  background: conic-gradient(from 180deg, rgba(56, 189, 248, 0), rgba(34, 197, 94, 0.24), rgba(250, 204, 21, 0.18), rgba(56, 189, 248, 0));
+  z-index: -1;
+  opacity: 0.75;
+  animation: brandPulse 4s ease-in-out infinite;
+}
+
+.brand-wordmark {
+  font-weight: 800;
+  letter-spacing: -0.04em;
+  line-height: 1;
+  font-size: 1.22rem;
+  background: linear-gradient(90deg, #7dd3fc, #38bdf8 44%, #4ade80 100%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+
+.brand-tagline {
+  margin-top: 0.2rem;
+  font-size: 0.68rem;
+  letter-spacing: 0.05em;
+  color: var(--color-text-tertiary);
+}
+
+@keyframes brandPulse {
+  0%, 100% {
+    transform: scale(0.96) rotate(0deg);
+    opacity: 0.45;
+  }
+  50% {
+    transform: scale(1.05) rotate(4deg);
+    opacity: 0.9;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .brand-mark::after {
+    animation: none;
+  }
 }
 
 /* ============================================

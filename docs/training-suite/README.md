@@ -2,6 +2,8 @@
 
 AI-powered PowerShell operations training, packaged for onboarding, compliance, and day-2 operations. Built in the style of polished GitHub READMEs (à la Supabase/PostHog) but tailored to this platform.
 
+Last refreshed: April 23, 2026, with the current PSScript command-deck UI screenshots.
+
 ## What you’ll learn (at a glance)
 
 | Capability | What it teaches | Key screens/assets |
@@ -20,6 +22,7 @@ AI-powered PowerShell operations training, packaged for onboarding, compliance, 
 - [x] Chat/agent experiences for “how to fix” and “explain this script” prompts
 - [x] Analytics dashboards for adoption, security posture, and training coverage
 - [x] Export kit (HTML, PDF, DOCX) plus Playwright screenshot automation
+- [x] Branded command-deck shell with PSScript logo, responsive dashboard, and agentic analysis screen
 
 ## Architecture and flows
 
