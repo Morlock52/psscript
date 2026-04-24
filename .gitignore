@@ -15,6 +15,7 @@ build/
 .env.development.local
 .env.test.local
 .env.production.local
+!.env.example
 
 # IDE and editor files
 .idea/
@@ -57,6 +58,7 @@ test-results/
 playwright-report/
 playwright-results.json
 blob-report/
+.playwright-cli/
 
 # Docker
 docker-volumes/
@@ -66,6 +68,7 @@ tmp/
 temp/
 .tmp/
 .tmp.driveupload/
+output/
 *.tmp
 *.bak
 *.swp
@@ -76,6 +79,9 @@ temp/
 *.db
 *.db-shm
 *.db-wal
+db-backups/*.json
+backups/*
+!backups/.gitkeep
 
 # Uploads directory
 uploads/
@@ -98,7 +104,6 @@ src/backend/logs/
 *.bundle.js
 
 # Misc
-.env.example
 .npmrc
 .yarnrc
 .pnp.*
@@ -137,3 +142,6 @@ __pycache__/
 *.egg-info/
 src/ai/voice_cache/
 src/ai/memory_storage/
+
+# Generated documentation exports. Keep source Markdown and screenshots in docs/.
+docs/exports/

@@ -1,0 +1,21 @@
+# Default ownership for review routing.
+* @Morlock52
+
+# Service areas
+/src/frontend/ @Morlock52
+/src/backend/ @Morlock52
+/src/ai/ @Morlock52
+/src/db/ @Morlock52
+/tests/ @Morlock52
+
+# Operations and deployment
+/.github/ @Morlock52
+/docker/ @Morlock52
+/deploy/ @Morlock52
+/scripts/ @Morlock52
+/docker-compose*.yml @Morlock52
+
+# Documentation and screenshots
+/README.md @Morlock52
+/docs/ @Morlock52
+/docs-site/ @Morlock52

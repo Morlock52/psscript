@@ -292,6 +292,11 @@ Historical full-stack validation from April 12, 2026 remains documented in `docs
 
 ```
 psscript/
+├── .github/                  # Workflows, issue templates, PR template, CODEOWNERS
+├── docs/                     # Active docs, screenshots, training, historical archive
+├── docs-site/                # Documentation site assets and screenshot variants
+├── docker/                   # Docker support services and backup tooling
+├── scripts/                  # Operational scripts and validation helpers
 ├── src/
 │   ├── backend/              # Express API (TypeScript)
 │   │   └── src/
@@ -310,11 +315,16 @@ psscript/
 │       ├── guardrails/       # 3-layer input/output validation
 │       ├── utils/            # Model router, token counter
 │       └── analysis/         # Script analyzer, embeddings
+│   ├── db/                   # PostgreSQL schema, seeds, and DB docs
+│   └── powershell/           # PowerShell integration assets
 ├── tests/e2e/                # Playwright E2E tests
-├── docs/                     # Project documentation
-├── scripts/                  # Operational scripts
+├── crawl4ai-vector-db/       # Support project for crawl/vector search workflows
+├── product-website/          # Product/marketing website assets
+├── output/                   # Generated local artifacts; ignored for new files
 └── docker-compose.yml        # Full stack orchestration
 ```
+
+For repository layout rules and cleanup backlog, see [Repository Organization](./docs/REPOSITORY-ORGANIZATION.md).
 
 ---
 
@@ -381,6 +391,7 @@ Full details: [PROJECT-REVIEW-2026-04-01.md](./docs/PROJECT-REVIEW-2026-04-01.md
 | Document | Purpose |
 |----------|---------|
 | [Getting Started](./docs/GETTING-STARTED.md) | Local bootstrap and first-run |
+| [Repository Organization](./docs/REPOSITORY-ORGANIZATION.md) | Repo layout, docs taxonomy, and cleanup backlog |
 | [Data Maintenance](./docs/DATA-MAINTENANCE.md) | Admin backup, restore, cleanup |
 | [Voice API](./docs/README-VOICE-API.md) | Voice/listening implementation |
 | [Deployment Platforms](./docs/DEPLOYMENT-PLATFORMS.md) | Render, Netlify, Docker configs |
@@ -388,6 +399,8 @@ Full details: [PROJECT-REVIEW-2026-04-01.md](./docs/PROJECT-REVIEW-2026-04-01.md
 | [AI Functions Review](./docs/AI-FUNCTIONS-REVIEW-2026-04-02.md) | AI audit and model migration |
 | [Documentation Hub](./docs/index.md) | Full docs index |
 | [UI Branding Refresh](./docs/UI-BRANDING-REFRESH-2026-04-23.md) | Current branded UI and screenshot refresh notes |
+| [Contributing](./CONTRIBUTING.md) | Branch, PR, validation, and documentation rules |
+| [Security Policy](./SECURITY.md) | Vulnerability reporting and sensitive data rules |
 
 ### Service READMEs
 
