@@ -226,6 +226,30 @@ router.get('/search', authenticateJWT, ScriptSearchController.searchScripts);
 
 /**
  * @swagger
+ * /api/scripts/clear-cache:
+ *   get:
+ *     summary: Clear scripts cache
+ *     description: Clears the in-memory cache for scripts to ensure fresh data
+ *     responses:
+ *       200:
+ *         description: Cache cleared successfully
+ */
+router.get('/clear-cache', authenticateJWT, requireAdmin, async (req, res) => {
+  try {
+    const { cache } = await import('../index');
+    const count = cache.clearPattern('scripts:');
+    res.status(200).json({
+      message: 'Scripts cache cleared successfully',
+      entriesRemoved: count
+    });
+  } catch (error) {
+    console.error('Error clearing scripts cache:', error);
+    res.status(500).json({ message: 'Failed to clear cache' });
+  }
+});
+
+/**
+ * @swagger
  * /api/scripts/{id}:
  *   get:
  *     summary: Get a script by ID
@@ -334,30 +358,6 @@ router.post('/', authenticateJWT, scriptValidation, ScriptCrudController.createS
  */
 // Use special CORS middleware and network error handling for upload endpoints
 router.post('/upload', uploadCorsMiddleware, authenticateJWT, handleNetworkErrors, handleUploadProgress, upload.single('script_file'), handleMulterError, ScriptExportController.uploadScript);
-
-/**
- * @swagger
- * /api/scripts/clear-cache:
- *   get:
- *     summary: Clear scripts cache
- *     description: Clears the in-memory cache for scripts to ensure fresh data
- *     responses:
- *       200:
- *         description: Cache cleared successfully
- */
-router.get('/clear-cache', authenticateJWT, requireAdmin, async (req, res) => {
-  try {
-    const { cache } = await import('../index');
-    const count = cache.clearPattern('scripts:');
-    res.status(200).json({ 
-      message: 'Scripts cache cleared successfully',
-      entriesRemoved: count
-    });
-  } catch (error) {
-    console.error('Error clearing scripts cache:', error);
-    res.status(500).json({ message: 'Failed to clear cache' });
-  }
-});
 
 /**
  * @swagger

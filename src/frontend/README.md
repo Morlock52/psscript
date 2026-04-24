@@ -2,8 +2,8 @@
 
 React + TypeScript + Vite UI for browsing scripts, running analyses, managing categories and settings, and working with AI- and voice-enabled features.
 
-![Settings screenshot](../../docs/screenshots/settings.png)
-![Scripts screenshot](../../docs/screenshots/scripts.png)
+![Dashboard screenshot](../../docs/screenshots/dashboard.png)
+![Analysis screenshot](../../docs/screenshots/analysis.png)
 
 ## Canonical local target
 
@@ -18,6 +18,7 @@ React + TypeScript + Vite UI for browsing scripts, running analyses, managing ca
 - Multipart script uploads now let the browser set the form boundary and route large single-file uploads to `/scripts/upload/large`.
 - The canonical screenshot set is captured from the same local runtime documented here.
 - The default local frontend mode commonly uses `VITE_DISABLE_AUTH=true`, so the app auto-signs in as `dev-admin`.
+- The current app shell uses the PSScript command-deck brand: a reusable SVG brand mark, dark PowerShell grid background, glass navigation, branded dashboard hero, and branded script-analysis header.
 
 ## Main areas
 
@@ -28,6 +29,19 @@ React + TypeScript + Vite UI for browsing scripts, running analyses, managing ca
 - Documentation crawl tooling
 - Settings pages for profile, appearance, security, notifications, categories, users, API keys, and data maintenance
 
+## Current branded screens
+
+The April 23, 2026 screenshot refresh covers:
+
+- `../../docs/screenshots/dashboard.png`
+- `../../docs/screenshots/dashboard-mobile.png`
+- `../../docs/screenshots/scripts.png`
+- `../../docs/screenshots/upload.png`
+- `../../docs/screenshots/analysis.png`
+- `../../docs/screenshots/settings-categories.png`
+- `../../docs/screenshots/data-maintenance.png`
+- `../../docs/screenshots/analytics.png`
+
 ## Browser validation coverage
 
 The main Playwright suites cover:
@@ -37,12 +51,11 @@ The main Playwright suites cover:
 - backend, AI, DB, and Redis health checks
 - AI analytics and agent orchestration routes
 
-Latest validated browser result on April 12, 2026:
-- `npx playwright test tests/e2e/health-checks.spec.ts --project=chromium`
-- `npx playwright test tests/e2e/script-management.spec.ts --project=chromium`
-- `npx playwright test tests/e2e/ai-analytics.spec.ts --project=chromium`
-- `npx playwright test tests/e2e/project-review-validation.spec.ts --project=chromium`
-- `24` passed, `0` failed across those suites, plus categories and data-maintenance flows validated separately
+Latest validated browser result on April 23, 2026:
+- Playwright Chromium smoke against `http://127.0.0.1:3091/dashboard` and `http://127.0.0.1:3091/scripts/14/analysis`
+- Dashboard, mobile dashboard, and analysis branding rendered with no browser console/page errors
+- Analysis Dashboard button navigated to `/dashboard`, and the Dashboard nav link had `aria-current="page"`
+- The broader April 12, 2026 Playwright suite results remain in `../../docs/UPDATES.md`
 
 ## Local development
 
@@ -68,6 +81,10 @@ npm run test:run
 Latest validated unit result on April 12, 2026:
 - frontend unit tests passed previously at `33/33`
 - current frontend validation focus was live browser coverage against the running stack
+
+Latest type-check result on April 23, 2026:
+- `./node_modules/.bin/tsc --noEmit --pretty false` passed
+- targeted ESLint hung with no output and was killed, so no current lint pass is claimed here
 
 ## Notes
 

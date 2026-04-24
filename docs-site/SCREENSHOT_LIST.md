@@ -2,6 +2,8 @@
 
 Canonical list of screenshots used in the documentation site.
 
+Last refreshed: April 23, 2026.
+
 All paths are relative to `docs-site/static/`.
 
 ## Settings
@@ -17,3 +19,9 @@ All paths are relative to `docs-site/static/`.
 
 - `images/screenshots/variants/dashboard-v1.png` (Dashboard overview)
 
+## Current Source Captures
+
+The April 23, 2026 docs-site variants were refreshed from the running local app and mirror:
+
+- `../../docs/screenshots/dashboard.png`
+- `../../docs/screenshots/settings-categories.png`

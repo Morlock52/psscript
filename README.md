@@ -45,6 +45,7 @@ PSScript is a full-stack platform for teams that need to **store, search, analyz
 | **Analytics** | Usage metrics, AI cost tracking, security dashboards, and category distribution |
 | **Admin Tools** | Database backup/restore, test-data cleanup, sequence reseeding, cache management |
 | **Documentation Crawl** | Index and search external documentation within the app |
+| **Branded UI Shell** | PowerShell command-center visual system with PSScript logo, responsive dashboard, and branded analysis flows |
 
 ---
 
@@ -158,6 +159,12 @@ Updated April 12, 2026. All deprecated models (gpt-4o, gpt-4o-mini, gpt-3.5-turb
 ## Screenshots
 
 <details>
+<summary><strong>Login</strong> — Auth-enabled sign-in and demo access</summary>
+
+![Login](./docs/screenshots/login.png)
+</details>
+
+<details>
 <summary><strong>Dashboard</strong> — Health, activity, and AI usage overview</summary>
 
 ![Dashboard](./docs/screenshots/dashboard.png)
@@ -170,6 +177,12 @@ Updated April 12, 2026. All deprecated models (gpt-4o, gpt-4o-mini, gpt-3.5-turb
 </details>
 
 <details>
+<summary><strong>Upload</strong> — Script intake with metadata and preview</summary>
+
+![Upload](./docs/screenshots/upload.png)
+</details>
+
+<details>
 <summary><strong>Script Analysis</strong> — AI-powered security and quality scoring</summary>
 
 ![Analysis](./docs/screenshots/analysis.png)
@@ -179,6 +192,12 @@ Updated April 12, 2026. All deprecated models (gpt-4o, gpt-4o-mini, gpt-3.5-turb
 <summary><strong>Script Detail</strong> — Version history and code view</summary>
 
 ![Script Detail](./docs/screenshots/script-detail.png)
+</details>
+
+<details>
+<summary><strong>Documentation</strong> — PowerShell docs explorer and crawl tools</summary>
+
+![Documentation](./docs/screenshots/documentation.png)
 </details>
 
 <details>
@@ -242,6 +261,15 @@ cd src/ai && pip install -r requirements.txt && python main.py
 
 The default local stack commonly runs with `DISABLE_AUTH=true` and `VITE_DISABLE_AUTH=true`, so the UI auto-enters the app shell as `dev-admin`. For a real login pass, run a separate frontend/backend pair with both flags set to `false`.
 
+### Current UI shell
+
+The April 23, 2026 UI refresh brands the product as a PowerShell command center:
+
+- the sidebar, top bar, loading screen, favicon, and PWA theme use the new PSScript mark
+- the dashboard leads with action-oriented Upload Script and Ask AI calls to action
+- script analysis uses the branded agentic review header, tab rail, and AI-agent analysis panel
+- the responsive layout was checked at desktop width and mobile width against the running local app
+
 ---
 
 ## Validation
@@ -264,17 +292,35 @@ npx playwright test --project=chromium
 cd src/backend && npx jest src/__tests__/cacheService.test.ts --forceExit
 ```
 
-### Latest Results (April 12, 2026)
+### Screenshot Refresh
+
+The app-shell screenshots are captured from the standard local frontend on `3090` with the backend running and at least one script with analysis data available. Because that local stack commonly runs with `VITE_DISABLE_AUTH=true`, capture `login.png` from a second auth-enabled frontend:
+
+```bash
+# terminal 1: app shell + backend
+npm run playwright:stack
+
+# terminal 2: login page
+cd src/frontend
+VITE_DISABLE_AUTH=false VITE_USE_MOCKS=true npm run dev -- --host 0.0.0.0 --port 3191
+
+# terminal 3: refresh docs/screenshots
+SCREENSHOT_BASE_URL=https://127.0.0.1:3090 \
+SCREENSHOT_LOGIN_URL=http://127.0.0.1:3191 \
+node scripts/capture-screenshots.js
+```
+
+### Latest Results (April 23, 2026)
 
 | Suite | Result |
 |-------|--------|
-| TypeScript | **0 errors** |
-| ESLint | **0 errors** |
-| Backend targeted regression tests | **8/8 passed** |
-| Security middleware tests | **17/17 passed** |
-| Data maintenance verification | **passed** |
-| Playwright E2E | health `7/7`, script-management `6/6`, AI analytics `10/10`, review-validation `9/9`, categories `1/1` |
-| Auth-enabled browser pass | **passed** |
+| Frontend TypeScript | `./node_modules/.bin/tsc --noEmit --pretty false` passed |
+| UI browser smoke | Dashboard, mobile dashboard, and script analysis passed with no browser console/page errors |
+| Navigation smoke | Analysis Dashboard button routes to `/dashboard`; Dashboard nav gets `aria-current="page"` |
+| Screenshot refresh | Login, dashboard, scripts, upload, script detail, analysis, documentation, chat, analytics, settings, and data maintenance refreshed |
+| ESLint | Targeted ESLint invocation hung with no output in this workspace and was killed; no lint result was claimed |
+
+Historical full-stack validation from April 12, 2026 remains documented in `docs/UPDATES.md`.
 
 ---
 
@@ -282,6 +328,11 @@ cd src/backend && npx jest src/__tests__/cacheService.test.ts --forceExit
 
 ```
 psscript/
+├── .github/                  # Workflows, issue templates, PR template, CODEOWNERS
+├── docs/                     # Active docs, screenshots, training, historical archive
+├── docs-site/                # Documentation site assets and screenshot variants
+├── docker/                   # Docker support services and backup tooling
+├── scripts/                  # Operational scripts and validation helpers
 ├── src/
 │   ├── backend/              # Express API (TypeScript)
 │   │   └── src/
@@ -300,11 +351,16 @@ psscript/
 │       ├── guardrails/       # 3-layer input/output validation
 │       ├── utils/            # Model router, token counter
 │       └── analysis/         # Script analyzer, embeddings
+│   ├── db/                   # PostgreSQL schema, seeds, and DB docs
+│   └── powershell/           # PowerShell integration assets
 ├── tests/e2e/                # Playwright E2E tests
-├── docs/                     # Project documentation
-├── scripts/                  # Operational scripts
+├── crawl4ai-vector-db/       # Support project for crawl/vector search workflows
+├── product-website/          # Product/marketing website assets
+├── output/                   # Generated local artifacts; ignored for new files
 └── docker-compose.yml        # Full stack orchestration
 ```
+
+For repository layout rules and cleanup backlog, see [Repository Organization](./docs/REPOSITORY-ORGANIZATION.md).
 
 ---
 
@@ -371,12 +427,16 @@ Full details: [PROJECT-REVIEW-2026-04-01.md](./docs/PROJECT-REVIEW-2026-04-01.md
 | Document | Purpose |
 |----------|---------|
 | [Getting Started](./docs/GETTING-STARTED.md) | Local bootstrap and first-run |
+| [Repository Organization](./docs/REPOSITORY-ORGANIZATION.md) | Repo layout, docs taxonomy, and cleanup backlog |
 | [Data Maintenance](./docs/DATA-MAINTENANCE.md) | Admin backup, restore, cleanup |
 | [Voice API](./docs/README-VOICE-API.md) | Voice/listening implementation |
 | [Deployment Platforms](./docs/DEPLOYMENT-PLATFORMS.md) | Render, Netlify, Docker configs |
 | [Project Review](./docs/PROJECT-REVIEW-2026-04-01.md) | April 2026 comprehensive review |
 | [AI Functions Review](./docs/AI-FUNCTIONS-REVIEW-2026-04-02.md) | AI audit and model migration |
 | [Documentation Hub](./docs/index.md) | Full docs index |
+| [UI Branding Refresh](./docs/UI-BRANDING-REFRESH-2026-04-23.md) | Current branded UI and screenshot refresh notes |
+| [Contributing](./CONTRIBUTING.md) | Branch, PR, validation, and documentation rules |
+| [Security Policy](./SECURITY.md) | Vulnerability reporting and sensitive data rules |
 
 ### Service READMEs
 
@@ -387,5 +447,5 @@ Full details: [PROJECT-REVIEW-2026-04-01.md](./docs/PROJECT-REVIEW-2026-04-01.md
 ---
 
 <p align="center">
-  <sub>Last updated: April 2, 2026</sub>
+  <sub>Last updated: April 23, 2026</sub>
 </p>

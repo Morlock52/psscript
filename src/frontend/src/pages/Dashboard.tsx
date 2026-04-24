@@ -119,15 +119,30 @@ const Dashboard: React.FC = () => {
   return (
     <div className="text-[var(--color-text-primary)]">
       {/* Welcome Section */}
-      <div className="mb-8">
-        <h1 className="text-3xl font-bold mb-2 bg-gradient-to-r from-[var(--color-primary)] to-[var(--color-accent)] bg-clip-text text-transparent">
-          {isAuthenticated
-            ? `Welcome back, ${user?.username || 'User'}!`
-            : 'Welcome to PSScript'}
-        </h1>
-        <p className="text-lg text-[var(--color-text-secondary)]">
-          AI-powered PowerShell script management and analysis platform
-        </p>
+      <div className="relative mb-8 overflow-hidden rounded-[2rem] border border-[var(--glass-border)] bg-[var(--glass-bg)] p-6 shadow-[var(--shadow-xl)] backdrop-blur-xl">
+        <div className="absolute -right-16 -top-20 h-52 w-52 rounded-full bg-[var(--color-primary)]/20 blur-3xl" />
+        <div className="absolute bottom-0 right-16 h-32 w-32 rounded-full bg-[var(--color-accent)]/15 blur-2xl" />
+        <div className="relative flex flex-col gap-5 lg:flex-row lg:items-end lg:justify-between">
+          <div>
+            <p className="mb-2 text-xs font-semibold uppercase tracking-[0.28em] text-[var(--color-accent)]">PowerShell command center</p>
+            <h1 className="text-3xl font-black tracking-tight md:text-5xl bg-gradient-to-r from-[var(--color-text-primary)] via-[var(--color-primary)] to-[var(--color-accent)] bg-clip-text text-transparent">
+              {isAuthenticated
+                ? `Welcome back, ${user?.username || 'User'}!`
+                : 'Welcome to PSScript'}
+            </h1>
+            <p className="mt-3 max-w-2xl text-lg text-[var(--color-text-secondary)]">
+              ScriptOps for upload, AI analysis, governance, and reusable PowerShell knowledge.
+            </p>
+          </div>
+          <div className="grid grid-cols-2 gap-2 text-xs sm:flex">
+            <Link to="/scripts/upload" className="rounded-2xl bg-[var(--color-primary)] px-4 py-3 font-semibold text-[#04111f] shadow-[var(--shadow-glow)] hover:translate-y-[-1px]">
+              Upload script
+            </Link>
+            <Link to="/chat" className="rounded-2xl border border-[var(--color-border-default)] bg-[var(--color-bg-primary)]/70 px-4 py-3 font-semibold text-[var(--color-text-primary)] hover:border-[var(--color-primary)]">
+              Ask AI
+            </Link>
+          </div>
+        </div>
       </div>
 
       {/* Stats Cards */}

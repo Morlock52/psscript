@@ -753,9 +753,13 @@ async function performAsyncAnalysis(
 ): Promise<void> {
   try {
     // Prepare analysis request with API key if provided
-    const analysisConfig: { headers: Record<string, string>; timeout: number } = {
+    const analysisConfig: { headers: Record<string, string>; timeout: number; params: Record<string, boolean> } = {
       headers: {},
-      timeout: TIMEOUTS.FULL_ANALYSIS
+      timeout: TIMEOUTS.EXTENDED,
+      params: {
+        include_command_details: true,
+        fetch_ms_docs: true
+      }
     };
 
     if (openaiApiKey) {
@@ -767,14 +771,12 @@ async function performAsyncAnalysis(
     // Set a timeout for the analysis request
     const analysisPromise = axios.post(`${AI_SERVICE_URL}/analyze`, {
       script_id: scriptId,
-      content: scriptContent,
-      include_command_details: true,
-      fetch_ms_docs: true
+      content: scriptContent
     }, analysisConfig);
 
     // Create a timeout promise
     const timeoutPromise = new Promise<never>((_, reject) => {
-      setTimeout(() => reject(new Error('Analysis request timed out after 30 seconds')), 30000);
+      setTimeout(() => reject(new Error('Analysis request timed out after 120 seconds')), TIMEOUTS.EXTENDED);
     });
 
     // Race the analysis against the timeout

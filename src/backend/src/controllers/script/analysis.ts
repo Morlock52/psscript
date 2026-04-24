@@ -190,9 +190,13 @@ export async function analyzeScript(
       // Get OpenAI API key from request headers if available
       const openaiApiKey = req.headers['x-openai-api-key'] as string;
 
-      const analysisConfig: { headers: Record<string, string>; timeout: number } = {
+      const analysisConfig: { headers: Record<string, string>; timeout: number; params: Record<string, boolean> } = {
         headers: {},
-        timeout: TIMEOUTS.STANDARD
+        timeout: TIMEOUTS.STANDARD,
+        params: {
+          include_command_details: true,
+          fetch_ms_docs: true
+        }
       };
 
       if (openaiApiKey) {
@@ -207,9 +211,7 @@ export async function analyzeScript(
         `${AI_SERVICE_URL}/analyze`,
         {
           script_id, // eslint-disable-line camelcase
-          content,
-          include_command_details: true,
-          fetch_ms_docs: true
+          content
         },
         analysisConfig
       );
@@ -299,9 +301,13 @@ export async function analyzeScriptAndSave(
       // Get OpenAI API key from request headers if available
       const openaiApiKey = req.headers['x-openai-api-key'] as string;
 
-      const analysisConfig: { headers: Record<string, string>; timeout: number } = {
+      const analysisConfig: { headers: Record<string, string>; timeout: number; params: Record<string, boolean> } = {
         headers: {},
-        timeout: TIMEOUTS.FULL_ANALYSIS
+        timeout: TIMEOUTS.EXTENDED,
+        params: {
+          include_command_details: true,
+          fetch_ms_docs: true
+        }
       };
 
       if (openaiApiKey) {
@@ -315,9 +321,8 @@ export async function analyzeScriptAndSave(
       const analysisResponse = await axios.post(
         `${AI_SERVICE_URL}/analyze`,
         {
-          content,
-          include_command_details: true,
-          fetch_ms_docs: true
+          script_id: id, // eslint-disable-line camelcase
+          content
         },
         analysisConfig
       );

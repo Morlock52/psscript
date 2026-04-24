@@ -1,5 +1,53 @@
 # Application Updates
 
+## 2026-04-23 GitHub README screenshot correction
+
+- Refreshed the canonical GitHub README screenshot set from the running local UI.
+- Captured `login.png` from an auth-enabled frontend on `3191` and app-shell pages from the auth-disabled local frontend on `3090` with the backend connected to script data.
+- Removed checked-in zero-byte duplicate screenshot files ending in ` (1).png`.
+- Tightened `scripts/capture-screenshots.js` so login redirects report the exact auth-enabled frontend requirement, and script detail/analysis captures fail when real content is unavailable instead of saving spinners.
+- Updated the root README screenshot section to include the complete current tour: login, dashboard, scripts, upload, script detail, analysis, documentation, chat, analytics, settings, and data maintenance.
+
+## 2026-04-23 UI branding, docs, and screenshot refresh
+
+### UI changes
+
+- Added a reusable PSScript SVG brand mark for the sidebar, mobile header, loading screen, and favicon.
+- Updated the app shell to a PowerShell command-deck theme with a dark grid background, glass panels, cyan/blue/green brand colors, and branded navigation states.
+- Updated the dashboard hero with Upload Script and Ask AI calls to action.
+- Updated the script-analysis screen with an agentic review header, branded tab rail, and refreshed AI-agent analysis panel.
+- Updated the PWA theme colors to match the new brand shell.
+
+### Documentation changes
+
+- Refreshed root README, frontend README, getting-started guide, training docs, docs-site screenshot indexes, and the current UI branding note.
+- Reviewed project README files for current-app claims. Active runtime READMEs were updated; unrelated vendored/archive README files were left unchanged.
+
+### Screenshots refreshed
+
+- `docs/screenshots/dashboard.png`
+- `docs/screenshots/dashboard-mobile.png`
+- `docs/screenshots/scripts.png`
+- `docs/screenshots/upload.png`
+- `docs/screenshots/analysis.png`
+- `docs/screenshots/settings-categories.png`
+- `docs/screenshots/data-maintenance.png`
+- `docs/screenshots/analytics.png`
+- `docs/screenshots/script-detail.png`
+- `docs/screenshots/chat.png`
+- `docs/screenshots/documentation.png`
+- `docs/screenshots/settings-profile.png`
+- `docs/screenshots/settings.png`
+- `docs-site/static/images/screenshots/variants/dashboard-v1.png`
+- `docs-site/static/images/screenshots/variants/settings-categories-v1.png`
+
+### Validated results
+
+- Frontend TypeScript: `./node_modules/.bin/tsc --noEmit --pretty false` passed.
+- Browser smoke: dashboard, mobile dashboard, and script analysis rendered with no browser console/page errors.
+- Navigation smoke: analysis Dashboard button routes to `/dashboard`, and Dashboard nav gets `aria-current="page"`.
+- Targeted ESLint hung with no output in this workspace and was killed; no current lint pass is claimed.
+
 ## 2026-04-12 Docs and screenshot refresh
 
 ### Engineering changes

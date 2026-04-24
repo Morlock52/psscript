@@ -1,6 +1,6 @@
 # PSScript - Getting Started Guide
 
-This guide reflects the current checked-in local development setup as of April 12, 2026.
+This guide reflects the current checked-in local development setup as of April 23, 2026.
 
 ## Canonical local URLs
 
@@ -23,6 +23,16 @@ That means:
 - older docs that reference hard-coded demo credentials are historical only
 
 If you need to validate real login behavior, run a separate frontend/backend pair with both auth-disable flags set to `false`.
+
+## Current UI behavior
+
+The current frontend shell uses the PSScript command-deck brand:
+
+- a PSScript SVG mark in the sidebar, mobile header, loading screen, and favicon
+- a dark PowerShell grid background with glass panels
+- a dashboard hero for upload, AI analysis, governance, and reusable PowerShell knowledge
+- a branded script-analysis header with agentic review tabs and AI-agent analysis controls
+- a persistent voice dock in the lower-right corner of app-shell pages
 
 ## Prerequisites
 
@@ -83,13 +93,26 @@ PLAYWRIGHT_STACK_MODE=local npx playwright test tests/e2e/project-review-validat
 
 ## Canonical screenshots
 
-Refresh the checked-in screenshots with:
+The refreshed screenshot set currently includes:
+
+- `../docs/screenshots/dashboard.png`
+- `../docs/screenshots/dashboard-mobile.png`
+- `../docs/screenshots/scripts.png`
+- `../docs/screenshots/upload.png`
+- `../docs/screenshots/analysis.png`
+- `../docs/screenshots/settings-categories.png`
+- `../docs/screenshots/data-maintenance.png`
+- `../docs/screenshots/analytics.png`
+
+Refresh the checked-in screenshots with the project screenshot script when using the canonical `3090` stack:
 
 ```bash
 SCREENSHOT_LOGIN_URL=https://127.0.0.1:3191 node scripts/capture-screenshots.js
 ```
 
 Use `3191` only when you have an auth-enabled frontend running there for the real login screen. The rest of the screenshot set can still come from the default local app on `3090`.
+
+For an already-running local dev frontend on a fallback port such as `3091`, use Playwright to capture the same routes and write to `docs/screenshots/`.
 
 ## Optional local Git auto-update
 
