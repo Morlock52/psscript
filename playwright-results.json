@@ -152,20 +152,20 @@
   },
   "suites": [
     {
-      "title": "project-review-validation.spec.ts",
-      "file": "project-review-validation.spec.ts",
+      "title": "authentication.spec.ts",
+      "file": "authentication.spec.ts",
       "column": 0,
       "line": 0,
       "specs": [],
       "suites": [
         {
-          "title": "Backend API Health",
-          "file": "project-review-validation.spec.ts",
-          "line": 28,
+          "title": "User Authentication",
+          "file": "authentication.spec.ts",
+          "line": 14,
           "column": 6,
           "specs": [
             {
-              "title": "Health endpoint returns OK with database and cache info",
+              "title": "Should display login page",
               "ok": true,
               "tags": [],
               "tests": [
@@ -180,12 +180,12 @@
                       "workerIndex": 0,
                       "parallelIndex": 0,
                       "status": "passed",
-                      "duration": 106,
+                      "duration": 2628,
                       "errors": [],
                       "stdout": [],
                       "stderr": [],
                       "retry": 0,
-                      "startTime": "2026-04-12T05:26:19.055Z",
+                      "startTime": "2026-04-24T14:14:13.521Z",
                       "annotations": [],
                       "attachments": []
                     }
@@ -193,97 +193,181 @@
                   "status": "expected"
                 }
               ],
-              "id": "8ada151d58a9b15a63e1-0b6ae2592cb116243743",
-              "file": "project-review-validation.spec.ts",
+              "id": "70f6afe7e350c931056e-d147d185e725d4c7b6bb",
+              "file": "authentication.spec.ts",
+              "line": 20,
+              "column": 7
+            },
+            {
+              "title": "Should show validation errors for invalid login",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 60000,
+                  "annotations": [
+                    {
+                      "type": "skip",
+                      "description": "Auth UI is disabled in this local-dev mode.",
+                      "location": {
+                        "file": "/Users/morlock/fun/02_PowerShell_Projects/psscript/tests/e2e/authentication.spec.ts",
+                        "line": 36,
+                        "column": 10
+                      }
+                    }
+                  ],
+                  "expectedStatus": "skipped",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "skipped",
+                      "duration": 1281,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-04-24T14:14:16.616Z",
+                      "annotations": [
+                        {
+                          "type": "skip",
+                          "description": "Auth UI is disabled in this local-dev mode.",
+                          "location": {
+                            "file": "/Users/morlock/fun/02_PowerShell_Projects/psscript/tests/e2e/authentication.spec.ts",
+                            "line": 36,
+                            "column": 10
+                          }
+                        }
+                      ],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "skipped"
+                }
+              ],
+              "id": "70f6afe7e350c931056e-289d08b735c6f4dfe022",
+              "file": "authentication.spec.ts",
               "line": 33,
               "column": 7
-            }
-          ]
-        },
-        {
-          "title": "Pagination Limit Guard",
-          "file": "project-review-validation.spec.ts",
-          "line": 43,
-          "column": 6,
-          "specs": [
+            },
             {
-              "title": "Script list respects max limit of 100",
+              "title": "Should navigate to registration page",
               "ok": true,
               "tags": [],
               "tests": [
                 {
                   "timeout": 60000,
-                  "annotations": [],
-                  "expectedStatus": "passed",
+                  "annotations": [
+                    {
+                      "type": "skip",
+                      "description": "Auth UI is disabled in this local-dev mode.",
+                      "location": {
+                        "file": "/Users/morlock/fun/02_PowerShell_Projects/psscript/tests/e2e/authentication.spec.ts",
+                        "line": 61,
+                        "column": 10
+                      }
+                    }
+                  ],
+                  "expectedStatus": "skipped",
                   "projectId": "chromium",
                   "projectName": "chromium",
                   "results": [
                     {
                       "workerIndex": 0,
                       "parallelIndex": 0,
-                      "status": "passed",
-                      "duration": 46,
+                      "status": "skipped",
+                      "duration": 1522,
                       "errors": [],
                       "stdout": [],
                       "stderr": [],
                       "retry": 0,
-                      "startTime": "2026-04-12T05:26:19.176Z",
-                      "annotations": [],
+                      "startTime": "2026-04-24T14:14:17.910Z",
+                      "annotations": [
+                        {
+                          "type": "skip",
+                          "description": "Auth UI is disabled in this local-dev mode.",
+                          "location": {
+                            "file": "/Users/morlock/fun/02_PowerShell_Projects/psscript/tests/e2e/authentication.spec.ts",
+                            "line": 61,
+                            "column": 10
+                          }
+                        }
+                      ],
                       "attachments": []
                     }
                   ],
-                  "status": "expected"
+                  "status": "skipped"
                 }
               ],
-              "id": "8ada151d58a9b15a63e1-5213495cec44676fdc56",
-              "file": "project-review-validation.spec.ts",
-              "line": 48,
+              "id": "70f6afe7e350c931056e-16f177d0d8da7dedbb9a",
+              "file": "authentication.spec.ts",
+              "line": 58,
               "column": 7
             },
             {
-              "title": "Negative page number defaults to page 1",
+              "title": "Session should persist across page reloads",
               "ok": true,
               "tags": [],
               "tests": [
                 {
                   "timeout": 60000,
-                  "annotations": [],
-                  "expectedStatus": "passed",
+                  "annotations": [
+                    {
+                      "type": "skip",
+                      "location": {
+                        "file": "/Users/morlock/fun/02_PowerShell_Projects/psscript/tests/e2e/authentication.spec.ts",
+                        "line": 82,
+                        "column": 12
+                      }
+                    }
+                  ],
+                  "expectedStatus": "skipped",
                   "projectId": "chromium",
                   "projectName": "chromium",
                   "results": [
                     {
                       "workerIndex": 0,
                       "parallelIndex": 0,
-                      "status": "passed",
-                      "duration": 27,
+                      "status": "skipped",
+                      "duration": 238,
                       "errors": [],
                       "stdout": [],
                       "stderr": [],
                       "retry": 0,
-                      "startTime": "2026-04-12T05:26:19.235Z",
-                      "annotations": [],
+                      "startTime": "2026-04-24T14:14:19.444Z",
+                      "annotations": [
+                        {
+                          "type": "skip",
+                          "location": {
+                            "file": "/Users/morlock/fun/02_PowerShell_Projects/psscript/tests/e2e/authentication.spec.ts",
+                            "line": 82,
+                            "column": 12
+                          }
+                        }
+                      ],
                       "attachments": []
                     }
                   ],
-                  "status": "expected"
+                  "status": "skipped"
                 }
               ],
-              "id": "8ada151d58a9b15a63e1-3bbcc93743d7467a559d",
-              "file": "project-review-validation.spec.ts",
-              "line": 63,
+              "id": "70f6afe7e350c931056e-223a8137d521b7f945a4",
+              "file": "authentication.spec.ts",
+              "line": 75,
               "column": 7
             }
           ]
         },
         {
-          "title": "Analytics Summary Endpoint",
-          "file": "project-review-validation.spec.ts",
-          "line": 69,
+          "title": "Protected Routes",
+          "file": "authentication.spec.ts",
+          "line": 116,
           "column": 6,
           "specs": [
             {
-              "title": "Analytics summary returns real data (not TODO stub)",
+              "title": "Should redirect unauthenticated users to login",
               "ok": true,
               "tags": [],
               "tests": [
@@ -298,12 +382,12 @@
                       "workerIndex": 0,
                       "parallelIndex": 0,
                       "status": "passed",
-                      "duration": 42,
+                      "duration": 1554,
                       "errors": [],
                       "stdout": [],
                       "stderr": [],
                       "retry": 0,
-                      "startTime": "2026-04-12T05:26:19.270Z",
+                      "startTime": "2026-04-24T14:14:19.696Z",
                       "annotations": [],
                       "attachments": []
                     }
@@ -311,55 +395,13 @@
                   "status": "expected"
                 }
               ],
-              "id": "8ada151d58a9b15a63e1-a51496d1803a75f51ed1",
-              "file": "project-review-validation.spec.ts",
-              "line": 74,
-              "column": 7
-            }
-          ]
-        },
-        {
-          "title": "API Response Consistency",
-          "file": "project-review-validation.spec.ts",
-          "line": 93,
-          "column": 6,
-          "specs": [
-            {
-              "title": "Script not found returns structured error",
-              "ok": true,
-              "tags": [],
-              "tests": [
-                {
-                  "timeout": 60000,
-                  "annotations": [],
-                  "expectedStatus": "passed",
-                  "projectId": "chromium",
-                  "projectName": "chromium",
-                  "results": [
-                    {
-                      "workerIndex": 0,
-                      "parallelIndex": 0,
-                      "status": "passed",
-                      "duration": 54,
-                      "errors": [],
-                      "stdout": [],
-                      "stderr": [],
-                      "retry": 0,
-                      "startTime": "2026-04-12T05:26:19.318Z",
-                      "annotations": [],
-                      "attachments": []
-                    }
-                  ],
-                  "status": "expected"
-                }
-              ],
-              "id": "8ada151d58a9b15a63e1-8ebeed7cd88d0e90f864",
-              "file": "project-review-validation.spec.ts",
-              "line": 98,
+              "id": "70f6afe7e350c931056e-59f66ce0af8836aae670",
+              "file": "authentication.spec.ts",
+              "line": 117,
               "column": 7
             },
             {
-              "title": "Invalid script create returns validation error",
+              "title": "Should allow access to public routes without auth",
               "ok": true,
               "tags": [],
               "tests": [
@@ -374,12 +416,12 @@
                       "workerIndex": 0,
                       "parallelIndex": 0,
                       "status": "passed",
-                      "duration": 25,
+                      "duration": 2976,
                       "errors": [],
                       "stdout": [],
                       "stderr": [],
                       "retry": 0,
-                      "startTime": "2026-04-12T05:26:19.378Z",
+                      "startTime": "2026-04-24T14:14:21.261Z",
                       "annotations": [],
                       "attachments": []
                     }
@@ -387,13 +429,64 @@
                   "status": "expected"
                 }
               ],
-              "id": "8ada151d58a9b15a63e1-2beb85c29c7ce90ce739",
-              "file": "project-review-validation.spec.ts",
-              "line": 112,
+              "id": "70f6afe7e350c931056e-80289448e9fa5471c123",
+              "file": "authentication.spec.ts",
+              "line": 129,
+              "column": 7
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "title": "health-checks.spec.ts",
+      "file": "health-checks.spec.ts",
+      "column": 0,
+      "line": 0,
+      "specs": [],
+      "suites": [
+        {
+          "title": "Service Health Checks",
+          "file": "health-checks.spec.ts",
+          "line": 8,
+          "column": 6,
+          "specs": [
+            {
+              "title": "Frontend should be accessible",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 60000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 1730,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-04-24T14:14:24.277Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "b4a52fa88be0db835759-03283121eca001b380ba",
+              "file": "health-checks.spec.ts",
+              "line": 9,
               "column": 7
             },
             {
-              "title": "Delete non-existent script returns structured 404",
+              "title": "Backend health endpoint should return OK",
               "ok": true,
               "tags": [],
               "tests": [
@@ -408,12 +501,12 @@
                       "workerIndex": 0,
                       "parallelIndex": 0,
                       "status": "passed",
-                      "duration": 12,
+                      "duration": 77,
                       "errors": [],
                       "stdout": [],
                       "stderr": [],
                       "retry": 0,
-                      "startTime": "2026-04-12T05:26:19.410Z",
+                      "startTime": "2026-04-24T14:14:26.015Z",
                       "annotations": [],
                       "attachments": []
                     }
@@ -421,21 +514,123 @@
                   "status": "expected"
                 }
               ],
-              "id": "8ada151d58a9b15a63e1-e0ef89c31a758077ac72",
-              "file": "project-review-validation.spec.ts",
-              "line": 127,
+              "id": "b4a52fa88be0db835759-02eccf8023b1f6218fe5",
+              "file": "health-checks.spec.ts",
+              "line": 27,
+              "column": 7
+            },
+            {
+              "title": "AI Service health endpoint should return OK",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 60000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 26,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-04-24T14:14:26.105Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "b4a52fa88be0db835759-a758339233d5e6dad9a0",
+              "file": "health-checks.spec.ts",
+              "line": 36,
+              "column": 7
+            },
+            {
+              "title": "Database connection should be healthy",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 60000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 19,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-04-24T14:14:26.149Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "b4a52fa88be0db835759-cb130ad3d1460c316f89",
+              "file": "health-checks.spec.ts",
+              "line": 45,
+              "column": 7
+            },
+            {
+              "title": "Redis connection should be healthy",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 60000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 20,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-04-24T14:14:26.179Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "b4a52fa88be0db835759-85fbc93009fc91c2d0b2",
+              "file": "health-checks.spec.ts",
+              "line": 54,
               "column": 7
             }
           ]
         },
         {
-          "title": "Assistants API Deprecation Headers",
-          "file": "project-review-validation.spec.ts",
-          "line": 139,
+          "title": "API Endpoints Availability",
+          "file": "health-checks.spec.ts",
+          "line": 64,
           "column": 6,
           "specs": [
             {
-              "title": "Assistants endpoints include Sunset header",
+              "title": "Analytics AI endpoints should be accessible",
               "ok": true,
               "tags": [],
               "tests": [
@@ -450,12 +645,12 @@
                       "workerIndex": 0,
                       "parallelIndex": 0,
                       "status": "passed",
-                      "duration": 16,
+                      "duration": 109,
                       "errors": [],
                       "stdout": [],
                       "stderr": [],
                       "retry": 0,
-                      "startTime": "2026-04-12T05:26:19.429Z",
+                      "startTime": "2026-04-24T14:14:26.210Z",
                       "annotations": [],
                       "attachments": []
                     }
@@ -463,21 +658,174 @@
                   "status": "expected"
                 }
               ],
-              "id": "8ada151d58a9b15a63e1-4bb216e24d41266bc0f7",
-              "file": "project-review-validation.spec.ts",
-              "line": 144,
+              "id": "b4a52fa88be0db835759-54b8e6d78deed0eefb8c",
+              "file": "health-checks.spec.ts",
+              "line": 65,
+              "column": 7
+            },
+            {
+              "title": "AI agent endpoints should be accessible",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 60000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 28,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-04-24T14:14:26.333Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "b4a52fa88be0db835759-f17d4ef5ec770cd43943",
+              "file": "health-checks.spec.ts",
+              "line": 75,
+              "column": 7
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "title": "script-management.spec.ts",
+      "file": "script-management.spec.ts",
+      "column": 0,
+      "line": 0,
+      "specs": [],
+      "suites": [
+        {
+          "title": "Script Upload",
+          "file": "script-management.spec.ts",
+          "line": 13,
+          "column": 6,
+          "specs": [
+            {
+              "title": "Should display upload button",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 60000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 2465,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-04-24T14:14:26.413Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "2df487bd62efc65b9103-0cf1fce92c761af42662",
+              "file": "script-management.spec.ts",
+              "line": 25,
+              "column": 7
+            },
+            {
+              "title": "Should allow file selection for upload",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 60000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 3319,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-04-24T14:14:28.898Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "2df487bd62efc65b9103-932f3c2a5f8c904e2cae",
+              "file": "script-management.spec.ts",
+              "line": 35,
+              "column": 7
+            },
+            {
+              "title": "Should validate file type on upload",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 60000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 2209,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-04-24T14:14:32.246Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "2df487bd62efc65b9103-fd738785910b7f060c05",
+              "file": "script-management.spec.ts",
+              "line": 91,
               "column": 7
             }
           ]
         },
         {
-          "title": "Cache Service",
-          "file": "project-review-validation.spec.ts",
-          "line": 163,
+          "title": "Script Analysis",
+          "file": "script-management.spec.ts",
+          "line": 128,
           "column": 6,
           "specs": [
             {
-              "title": "Cache stats endpoint returns backend type",
+              "title": "Should trigger AI analysis on uploaded script",
               "ok": true,
               "tags": [],
               "tests": [
@@ -492,12 +840,12 @@
                       "workerIndex": 0,
                       "parallelIndex": 0,
                       "status": "passed",
-                      "duration": 16,
+                      "duration": 3065,
                       "errors": [],
                       "stdout": [],
                       "stderr": [],
                       "retry": 0,
-                      "startTime": "2026-04-12T05:26:19.451Z",
+                      "startTime": "2026-04-24T14:14:34.466Z",
                       "annotations": [],
                       "attachments": []
                     }
@@ -505,9 +853,85 @@
                   "status": "expected"
                 }
               ],
-              "id": "8ada151d58a9b15a63e1-1ad53ebcf535553e983d",
-              "file": "project-review-validation.spec.ts",
-              "line": 168,
+              "id": "2df487bd62efc65b9103-252574be153a83bcea88",
+              "file": "script-management.spec.ts",
+              "line": 129,
+              "column": 7
+            }
+          ]
+        },
+        {
+          "title": "Script List View",
+          "file": "script-management.spec.ts",
+          "line": 188,
+          "column": 6,
+          "specs": [
+            {
+              "title": "Should display list of uploaded scripts",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 60000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 3126,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-04-24T14:14:37.545Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "2df487bd62efc65b9103-f1d88f43e3ff3bfcd098",
+              "file": "script-management.spec.ts",
+              "line": 189,
+              "column": 7
+            },
+            {
+              "title": "Should allow searching scripts",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 60000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 3694,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-04-24T14:14:40.683Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "2df487bd62efc65b9103-96b5e63527b2342ade92",
+              "file": "script-management.spec.ts",
+              "line": 203,
               "column": 7
             }
           ]
@@ -517,10 +941,10 @@
   ],
   "errors": [],
   "stats": {
-    "startTime": "2026-04-12T05:26:18.173Z",
-    "duration": 1313.7169999999996,
-    "expected": 9,
-    "skipped": 0,
+    "startTime": "2026-04-24T14:14:11.996Z",
+    "duration": 32699.819000000003,
+    "expected": 16,
+    "skipped": 3,
     "unexpected": 0,
     "flaky": 0
   }

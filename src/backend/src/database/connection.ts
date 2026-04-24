@@ -277,15 +277,21 @@ export async function ensureRuntimeCompatibility(sequelize: Sequelize): Promise<
   `);
 
   await sequelize.query(`
-    UPDATE users
-    SET locked_until = COALESCE(locked_until, lockout_until)
-    WHERE EXISTS (
-      SELECT 1
-      FROM information_schema.columns
-      WHERE table_schema = 'public'
-        AND table_name = 'users'
-        AND column_name = 'lockout_until'
-    );
+    DO $$
+    BEGIN
+      IF EXISTS (
+        SELECT 1
+        FROM information_schema.columns
+        WHERE table_schema = 'public'
+          AND table_name = 'users'
+          AND column_name = 'lockout_until'
+      ) THEN
+        EXECUTE '
+          UPDATE users
+          SET locked_until = COALESCE(locked_until, lockout_until)
+        ';
+      END IF;
+    END $$;
   `);
 
   await sequelize.query(`

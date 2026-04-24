@@ -145,15 +145,16 @@ const SimpleChatWithAI = () => {
   const inputStyles = "bg-[var(--color-bg-primary)] border border-[var(--color-border-default)] focus:ring-2 focus:ring-[var(--color-primary)]/50 focus:border-[var(--color-primary)] focus:outline-none";
   const buttonPrimaryStyles = "px-4 py-2 rounded font-medium bg-[var(--color-primary)] text-white hover:bg-[var(--color-primary-light)] disabled:opacity-50 transition-colors";
   const buttonSecondaryStyles = "px-3 py-1 rounded text-sm bg-[var(--color-bg-tertiary)] hover:bg-[var(--color-bg-tertiary)]/80 text-[var(--color-text-primary)] transition-colors";
+  const headerButtonStyles = "px-3 py-1 rounded border border-[var(--color-border-default)] bg-[var(--color-bg-tertiary)]/45 hover:bg-[var(--color-bg-tertiary)] text-[var(--color-text-secondary)] hover:text-[var(--color-text-primary)] flex items-center transition-colors";
 
   return (
     <div className="flex flex-col h-full bg-[var(--color-bg-primary)] text-[var(--color-text-primary)]">
       {/* Header */}
-      <div className="p-4 flex justify-between items-center bg-[var(--color-primary)] text-white">
+      <div className="p-4 flex justify-between items-center bg-[var(--color-bg-elevated)]/90 text-[var(--color-text-primary)] border-b border-[var(--color-border-default)] shadow-[var(--shadow-sm)]">
         <div className="flex items-center space-x-2">
           <button
             onClick={() => navigate('/dashboard')}
-            className="px-3 py-1 rounded bg-white/20 hover:bg-white/30 flex items-center transition-colors"
+            className={headerButtonStyles}
             aria-label="Back to Dashboard"
           >
             <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -171,7 +172,7 @@ const SimpleChatWithAI = () => {
             <>
               <button
                 onClick={() => setShowSearch(prevState => !prevState)}
-                className="px-3 py-1 rounded bg-white/20 hover:bg-white/30 flex items-center transition-colors"
+                className={headerButtonStyles}
               >
                 <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
@@ -180,7 +181,7 @@ const SimpleChatWithAI = () => {
               </button>
               <button
                 onClick={() => navigate('/chat/history')}
-                className="px-3 py-1 rounded bg-white/20 hover:bg-white/30 flex items-center transition-colors"
+                className={headerButtonStyles}
               >
                 <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
@@ -191,13 +192,13 @@ const SimpleChatWithAI = () => {
           )}
           <button
             onClick={toggleTheme}
-            className="px-3 py-1 rounded bg-white/20 hover:bg-white/30 transition-colors"
+            className={headerButtonStyles}
           >
             {isDark ? 'Light' : 'Dark'}
           </button>
           <button
             onClick={clearChat}
-            className="px-3 py-1 rounded bg-white/20 hover:bg-white/30 transition-colors"
+            className={headerButtonStyles}
           >
             Clear
           </button>
