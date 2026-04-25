@@ -1176,22 +1176,39 @@ async function createScript(userId: string, input: any) {
     });
   }
 
-  const result = await query(
-    `
-      INSERT INTO scripts (title, description, content, user_id, category_id, is_public, file_hash)
-      VALUES ($1, $2, $3, $4, $5, $6, $7)
-      RETURNING *
-    `,
-    [
-      input.title || 'Untitled Script',
-      input.description || 'No description provided',
-      content,
-      userId,
-      input.categoryId || null,
-      Boolean(input.isPublic),
-      fileHash,
-    ]
-  );
+  let result;
+  try {
+    result = await query(
+      `
+        INSERT INTO scripts (title, description, content, user_id, category_id, is_public, file_hash)
+        VALUES ($1, $2, $3, $4, $5, $6, $7)
+        RETURNING *
+      `,
+      [
+        input.title || 'Untitled Script',
+        input.description || 'No description provided',
+        content,
+        userId,
+        input.categoryId || null,
+        Boolean(input.isPublic),
+        fileHash,
+      ]
+    );
+  } catch (error) {
+    const err = error as Error & { code?: string };
+    if (err.code === '23505') {
+      const duplicate = await query(
+        `${scriptSelect} WHERE s.file_hash = $1 AND (s.user_id = $2 OR s.is_public = true) LIMIT 1`,
+        [fileHash, userId]
+      );
+      throw Object.assign(new Error('This script has already been uploaded.'), {
+        status: 409,
+        code: 'duplicate_script',
+        existingScriptId: duplicate.rows[0]?.id,
+      });
+    }
+    throw error;
+  }
 
   const script = result.rows[0];
   await query(
