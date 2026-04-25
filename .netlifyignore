@@ -1,7 +1,10 @@
 node_modules/
+src/frontend/node_modules/
+src/backend/node_modules/
+src/ai/venv/
+src/ai/__pycache__/
 .git/
-.netlify/functions/
-.netlify/plugins/
+.netlify/
 deploy-*.zip
 sora/
 test-results/
@@ -10,3 +13,4 @@ coverage/
 logs/
 uploads/
 src/backend/uploads/
+src/frontend/dist/
