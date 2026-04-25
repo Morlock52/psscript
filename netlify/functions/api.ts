@@ -43,17 +43,13 @@ const analysisJsonSchema = {
   additionalProperties: false,
   required: [
     'purpose',
-    'beginner_explanation',
-    'management_summary',
     'security_score',
     'quality_score',
     'risk_score',
     'suggestions',
-    'command_details',
     'security_issues',
     'best_practice_violations',
     'performance_insights',
-    'execution_summary',
   ],
   properties: {
     purpose: { type: 'string' },
@@ -170,6 +166,17 @@ function getRoute(req: Request): RouteParams {
   if (!path) path = '/';
   path = path.replace(/\/+$/, '') || '/';
   return { path, segments: path.split('/').filter(Boolean), url };
+}
+
+async function requireUserWithQueryToken(req: Request, route: RouteParams) {
+  const token = route.url.searchParams.get('token');
+  if (!token) {
+    return await requireUser(req);
+  }
+
+  const headers = new Headers(req.headers);
+  headers.set('authorization', `Bearer ${token}`);
+  return await requireUser(new Request(req, { headers }));
 }
 
 async function handleHealth(): Promise<Response> {
@@ -536,6 +543,10 @@ async function handleScriptById(req: Request, route: RouteParams): Promise<Respo
     return json(result.rows[0] ? toFrontendAnalysis(result.rows[0]) : null);
   }
 
+  if (route.segments[2] === 'analysis-stream') {
+    return await handleHostedAnalysisStream(req, route, id);
+  }
+
   if (route.segments[2] === 'similar') {
     if (req.method !== 'GET') return methodNotAllowed();
     return json({ similar_scripts: [] });
@@ -561,6 +572,70 @@ async function handleScriptById(req: Request, route: RouteParams): Promise<Respo
     const analysis = await analyzePowerShell(script.content, script.title);
     const saved = await saveAnalysis(id, analysis);
     return json({ success: true, analysis: toFrontendAnalysis(saved) });
+  }
+
+  if (route.segments[2] === 'analyze-langgraph') {
+    if (req.method !== 'POST') return methodNotAllowed();
+    const script = await fetchScriptForUser(id, user.id);
+    const startedAt = new Date().toISOString();
+    const workflowId = `hosted-${id}-${Date.now()}`;
+    const analysis = await analyzePowerShell(script.content, script.title);
+    const saved = await saveAnalysis(id, analysis);
+    const frontendAnalysis = toFrontendAnalysis(saved);
+    const completedAt = new Date().toISOString();
+    return json({
+      workflow_id: workflowId,
+      thread_id: workflowId,
+      status: 'completed',
+      current_stage: 'completed',
+      final_response: 'Hosted analysis completed successfully.',
+      analysis_results: {
+        analyze_powershell_script: JSON.stringify(frontendAnalysis),
+        security_scan: JSON.stringify({
+          security_score: frontendAnalysis.securityScore,
+          findings: frontendAnalysis.securityIssues || [],
+        }),
+        quality_analysis: JSON.stringify({
+          quality_score: frontendAnalysis.qualityScore,
+          suggestions: frontendAnalysis.suggestions || [],
+        }),
+        generate_optimizations: JSON.stringify(frontendAnalysis.performanceInsights || []),
+      },
+      security_findings: (frontendAnalysis.securityIssues || []).map((issue: string) => ({
+        category: 'security',
+        severity: frontendAnalysis.riskScore || 0,
+        pattern: issue,
+        description: issue,
+      })),
+      quality_metrics: {
+        quality_score: frontendAnalysis.qualityScore,
+        metrics: {
+          total_lines: script.content.split(/\r?\n/).length,
+          code_lines: script.content.split(/\r?\n/).filter(line => line.trim()).length,
+        },
+        issues: frontendAnalysis.bestPracticeViolations || [],
+        recommendations: frontendAnalysis.suggestions || [],
+      },
+      optimizations: (frontendAnalysis.performanceInsights || []).map((recommendation: string) => ({
+        category: 'performance',
+        priority: frontendAnalysis.riskScore > 6 ? 'high' : 'medium',
+        recommendation,
+        impact: 'Improves maintainability or runtime efficiency.',
+      })),
+      requires_human_review: false,
+      started_at: startedAt,
+      completed_at: completedAt,
+    });
+  }
+
+  if (route.segments[2] === 'export-analysis') {
+    if (req.method !== 'GET') return methodNotAllowed();
+    const script = await fetchScriptForUser(id, user.id);
+    const result = await query('SELECT * FROM script_analysis WHERE script_id = $1', [id]);
+    if (!result.rows[0]) {
+      return json({ success: false, error: 'analysis_not_found', message: 'Analysis not found for this script' }, { status: 404 });
+    }
+    return exportAnalysisMarkdown(script, toFrontendAnalysis(result.rows[0]));
   }
 
   if (req.method === 'GET') {
@@ -772,17 +847,30 @@ async function handleScriptUpload(req: Request): Promise<Response> {
   });
 
   let analysis: any = null;
+  let analysisError: string | null = null;
   if (form.get('analyze_with_ai') === 'true') {
-    analysis = toFrontendAnalysis(await saveAnalysis(Number(script.id), await analyzePowerShell(content, script.title)));
+    try {
+      analysis = toFrontendAnalysis(await saveAnalysis(Number(script.id), await analyzePowerShell(content, script.title)));
+    } catch (error) {
+      const err = error as Error;
+      analysisError = err.message || 'AI analysis failed after upload';
+      console.error('[netlify-api] upload analysis failed after script creation', {
+        scriptId: script.id,
+        message: analysisError,
+      });
+    }
   }
 
   return json({
     success: true,
     script,
     analysis,
+    analysisError,
     message: analysis
       ? 'Script uploaded and analyzed successfully'
-      : 'Script uploaded and saved successfully',
+      : analysisError
+        ? 'Script uploaded successfully, but AI analysis failed.'
+        : 'Script uploaded and saved successfully',
   }, { status: 201 });
 }
 
@@ -794,6 +882,96 @@ async function handleAdhocAnalysis(req: Request): Promise<Response> {
   if (!content.trim()) return json({ error: 'missing_content', message: 'Script content is required for analysis' }, { status: 400 });
   const analysis = await analyzePowerShell(content, body.title || 'Ad hoc script');
   return json({ success: true, analysis });
+}
+
+async function handleHostedAnalysisStream(req: Request, route: RouteParams, scriptId: number): Promise<Response> {
+  if (req.method !== 'GET') return methodNotAllowed();
+
+  const user = await requireUserWithQueryToken(req, route);
+  const script = await fetchScriptForUser(scriptId, user.id);
+  const startedAt = new Date().toISOString();
+  const workflowId = `hosted-${scriptId}-${Date.now()}`;
+  const encoder = new TextEncoder();
+
+  const stream = new ReadableStream<Uint8Array>({
+    async start(controller) {
+      const send = (event: Record<string, unknown>) => {
+        controller.enqueue(encoder.encode(`data: ${JSON.stringify(event)}\n\n`));
+      };
+
+      try {
+        send({
+          type: 'connected',
+          script_id: String(scriptId),
+          timestamp: new Date().toISOString(),
+          data: { workflow_id: workflowId, current_stage: 'analysis' },
+        });
+        send({
+          type: 'workflow_event',
+          script_id: String(scriptId),
+          timestamp: new Date().toISOString(),
+          message: 'Hosted analysis started',
+          data: { workflow_id: workflowId, node: 'analyze', current_stage: 'analysis' },
+        });
+        send({
+          type: 'tool_started',
+          script_id: String(scriptId),
+          timestamp: new Date().toISOString(),
+          message: 'Running hosted PowerShell analysis',
+          data: { workflow_id: workflowId, tool_name: 'analyze_powershell_script' },
+        });
+
+        const analysis = await analyzePowerShell(script.content, script.title);
+        const saved = await saveAnalysis(scriptId, analysis);
+        const frontendAnalysis = toFrontendAnalysis(saved);
+
+        send({
+          type: 'tool_completed',
+          script_id: String(scriptId),
+          timestamp: new Date().toISOString(),
+          message: 'Hosted PowerShell analysis completed',
+          data: {
+            workflow_id: workflowId,
+            tool_name: 'analyze_powershell_script',
+            result: frontendAnalysis,
+          },
+        });
+        send({
+          type: 'workflow_event',
+          script_id: String(scriptId),
+          timestamp: new Date().toISOString(),
+          message: 'Analysis complete',
+          data: {
+            workflow_id: workflowId,
+            node: 'complete',
+            current_stage: 'completed',
+            final_response: 'Hosted analysis completed successfully.',
+            started_at: startedAt,
+            completed_at: new Date().toISOString(),
+          },
+        });
+      } catch (error) {
+        const err = error as Error;
+        send({
+          type: 'error',
+          script_id: String(scriptId),
+          timestamp: new Date().toISOString(),
+          message: err.message || 'Hosted analysis failed',
+          data: { workflow_id: workflowId },
+        });
+      } finally {
+        controller.close();
+      }
+    },
+  });
+
+  return new Response(stream, {
+    headers: {
+      'Content-Type': 'text/event-stream',
+      'Cache-Control': 'no-cache, no-transform',
+      Connection: 'keep-alive',
+    },
+  });
 }
 
 async function handleChat(req: Request): Promise<Response> {
@@ -1076,8 +1254,16 @@ async function analyzePowerShell(content: string, title: string) {
   );
   return {
     purpose: parsed.purpose || 'PowerShell script analysis generated by hosted PSScript.',
-    beginner_explanation: parsed.beginner_explanation || parsed.beginnerExplanation || '',
-    management_summary: parsed.management_summary || parsed.managementSummary || '',
+    beginner_explanation:
+      parsed.beginner_explanation ||
+      parsed.beginnerExplanation ||
+      parsed.purpose ||
+      'This script automates one or more PowerShell tasks. Review the command breakdown below for the main steps.',
+    management_summary:
+      parsed.management_summary ||
+      parsed.managementSummary ||
+      parsed.purpose ||
+      'This script automates operational work in PowerShell and should be reviewed for security, reliability, and business impact before production use.',
     security_score: Number(parsed.security_score ?? parsed.securityScore ?? 7),
     quality_score: Number(parsed.quality_score ?? parsed.qualityScore ?? 7),
     risk_score: Number(parsed.risk_score ?? parsed.riskScore ?? 3),
@@ -1086,7 +1272,14 @@ async function analyzePowerShell(content: string, title: string) {
     security_issues: Array.isArray(parsed.security_issues) ? parsed.security_issues : [],
     best_practice_violations: Array.isArray(parsed.best_practice_violations) ? parsed.best_practice_violations : [],
     performance_insights: Array.isArray(parsed.performance_insights) ? parsed.performance_insights : [],
-    execution_summary: parsed.execution_summary && typeof parsed.execution_summary === 'object' ? parsed.execution_summary : {},
+    execution_summary: parsed.execution_summary && typeof parsed.execution_summary === 'object'
+      ? parsed.execution_summary
+      : {
+          what_it_does: parsed.purpose || 'Automates PowerShell tasks defined in the script.',
+          business_value: 'Reduces manual administration by packaging repeatable steps into a script.',
+          key_actions: [],
+          operational_risk: 'Review permissions, system impact, and target scope before running in production.',
+        },
   };
 }
 
@@ -1812,6 +2005,86 @@ function toFrontendDocumentationItem(row: any) {
     createdAt: row.created_at,
     updatedAt: row.updated_at,
   };
+}
+
+function exportAnalysisMarkdown(script: any, analysis: any): Response {
+  const lines = [
+    `# ${script.title} Analysis`,
+    '',
+    `Generated: ${new Date().toISOString()}`,
+    '',
+    '## Summary',
+    '',
+    analysis.purpose || 'No summary available.',
+    '',
+    '## Scores',
+    '',
+    `- Quality: ${analysis.qualityScore ?? analysis.codeQualityScore ?? 'N/A'}/10`,
+    `- Security: ${analysis.securityScore ?? 'N/A'}/10`,
+    `- Risk: ${analysis.riskScore ?? 'N/A'}/10`,
+    '',
+    '## Beginner Breakdown',
+    '',
+    analysis.beginnerExplanation || analysis.executionSummary?.beginner_explanation || 'No beginner breakdown available.',
+    '',
+    '## Management Summary',
+    '',
+    analysis.managementSummary || analysis.executionSummary?.management_summary || 'No management summary available.',
+    '',
+    '## What The Script Does',
+    '',
+    ...((analysis.executionSummary?.key_actions || []).length
+      ? analysis.executionSummary.key_actions.map((action: string) => `- ${action}`)
+      : ['- No key actions were provided.']),
+    '',
+    '## Suggestions',
+    '',
+    ...((analysis.suggestions || []).length
+      ? analysis.suggestions.map((item: string) => `- ${item}`)
+      : ['- No suggestions were provided.']),
+    '',
+    '## Security Issues',
+    '',
+    ...((analysis.securityIssues || analysis.security_issues || []).length
+      ? (analysis.securityIssues || analysis.security_issues).map((item: string) => `- ${item}`)
+      : ['- No security issues were identified.']),
+    '',
+    '## Best Practice Violations',
+    '',
+    ...((analysis.bestPracticeViolations || analysis.best_practice_violations || []).length
+      ? (analysis.bestPracticeViolations || analysis.best_practice_violations).map((item: string) => `- ${item}`)
+      : ['- No best practice violations were identified.']),
+    '',
+    '## Performance Insights',
+    '',
+    ...((analysis.performanceInsights || analysis.performance_insights || []).length
+      ? (analysis.performanceInsights || analysis.performance_insights).map((item: string) => `- ${item}`)
+      : ['- No performance insights were identified.']),
+    '',
+    '## Key Commands',
+    '',
+    ...((analysis.commandDetails || analysis.command_details || []).length
+      ? (analysis.commandDetails || analysis.command_details).flatMap((command: any) => [
+          `### ${command.name || 'Command'}`,
+          '',
+          command.description || command.purpose || 'No description provided.',
+          '',
+          `- Purpose: ${command.purpose || 'N/A'}`,
+          `- Beginner explanation: ${command.beginner_explanation || command.beginnerExplanation || 'N/A'}`,
+          `- Management impact: ${command.management_impact || command.managementImpact || 'N/A'}`,
+          `- Example: ${command.example || 'N/A'}`,
+          '',
+        ])
+      : ['No key command breakdown was provided.', '']),
+  ];
+
+  const fileName = `${String(script.title || 'script-analysis').replace(/[^a-z0-9-_]+/gi, '-').toLowerCase() || 'script-analysis'}.md`;
+  return new Response(lines.join('\n'), {
+    headers: {
+      'Content-Type': 'text/markdown; charset=utf-8',
+      'Content-Disposition': `attachment; filename="${fileName}"`,
+    },
+  });
 }
 
 function parseJsonObject(text: string): Record<string, any> {

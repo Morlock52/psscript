@@ -1,6 +1,6 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { useQuery } from '@tanstack/react-query';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { scriptService } from '../services/api';
 import ReactMarkdown from 'react-markdown';
 import { FaExclamationTriangle, FaCheckCircle, FaInfoCircle, FaLightbulb, FaChartLine, FaPaperPlane, FaRobot } from 'react-icons/fa';
@@ -19,6 +19,7 @@ interface Message {
 const ScriptAnalysis: React.FC = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
+  const queryClient = useQueryClient();
   const [activeTab, setActiveTab] = useState<string>('overview');
 
   // AI Assistant state
@@ -228,9 +229,8 @@ When generating or modifying scripts:
             case 'completed':
               setIsAnalyzing(false);
               setCurrentStage('completed');
-              // Refetch the analysis to get updated results
               if (id) {
-                scriptService.getScriptAnalysis(id).catch(console.error);
+                queryClient.invalidateQueries({ queryKey: ['scriptAnalysis', id] }).catch(console.error);
               }
               break;
 

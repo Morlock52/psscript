@@ -199,14 +199,6 @@ const scriptService = {
        });
         
        console.log('[UPLOAD DEBUG] Upload successful');
-        
-       // Force a refresh of the scripts cache
-       try {
-         await apiClient.get("/scripts/clear-cache");
-       } catch (cacheError) {
-         console.warn("Failed to clear scripts cache:", cacheError);
-       }
-        
        return response.data;
        
      } catch (error) {
