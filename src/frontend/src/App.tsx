@@ -134,7 +134,7 @@ const App: React.FC = () => {
               <Route path="/settings/security" element={<ProtectedRoute><SecuritySettings /></ProtectedRoute>} />
               <Route path="/settings/notifications" element={<ProtectedRoute><NotificationSettings /></ProtectedRoute>} />
               <Route path="/settings/api" element={<ProtectedRoute><ApiSettings /></ProtectedRoute>} />
-              <Route path="/settings/users" element={<ProtectedRoute><UserManagement /></ProtectedRoute>} />
+              <Route path="/settings/users" element={<ProtectedRoute requiredRole="admin"><UserManagement /></ProtectedRoute>} />
               <Route path="/settings/categories" element={<ProtectedRoute><CategoriesSettings /></ProtectedRoute>} />
               <Route path="/settings/data" element={<ProtectedRoute requiredRole="admin"><DataMaintenanceSettings /></ProtectedRoute>} />
 

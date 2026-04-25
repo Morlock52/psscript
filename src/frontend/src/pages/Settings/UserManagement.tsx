@@ -11,7 +11,7 @@ const selectStyles = "px-3 py-2 rounded-md bg-[var(--color-bg-primary)] border b
 const labelStyles = "block text-sm mb-2 text-[var(--color-text-secondary)]";
 
 interface User {
-  id: number;
+  id: string;
   username: string;
   email: string;
   role: string;
@@ -53,7 +53,8 @@ const UserManagement: React.FC = () => {
     setError(null);
     try {
       const response = await api.get('/users');
-      setUsers(response.data);
+      const data = response.data;
+      setUsers(Array.isArray(data) ? data : data.users || []);
     } catch (err) {
       console.error('Error fetching users:', err);
       setError(getErrorMessage(err, 'Failed to load users. Please try again later.'));

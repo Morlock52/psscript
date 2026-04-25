@@ -82,6 +82,8 @@ export default async function handleRequest(req: Request, context: Context): Pro
     if (route.path === '/auth/default-user') return await handleDefaultUser(req);
     if (route.path === '/auth/me') return await handleAuthMe(req);
     if (route.path === '/auth/user') return await handleAuthUser(req);
+    if (route.path === '/users') return await handleUsers(req);
+    if (route.segments[0] === 'users' && route.segments[1]) return await handleUserById(req, route);
     if (route.path === '/categories') return await handleCategories(req);
     if (route.path === '/tags') return await handleTags(req);
     if (route.path === '/scripts') return await handleScripts(req, route);
@@ -185,16 +187,7 @@ async function handleDefaultUser(req: Request): Promise<Response> {
 
   const email = getEnv('DEFAULT_ADMIN_EMAIL', 'admin@example.com');
   const password = getEnv('DEFAULT_ADMIN_PASSWORD', 'admin123');
-  const supabase = createClient(
-    requireEnv('SUPABASE_URL'),
-    requireEnv('SUPABASE_SERVICE_ROLE_KEY'),
-    {
-      auth: {
-        autoRefreshToken: false,
-        persistSession: false,
-      },
-    }
-  );
+  const supabase = getSupabaseAdminClient();
 
   const list = await supabase.auth.admin.listUsers({ page: 1, perPage: 1000 });
   if (list.error) {
@@ -241,6 +234,142 @@ async function handleDefaultUser(req: Request): Promise<Response> {
   );
 
   return json({ success: true, email });
+}
+
+async function handleUsers(req: Request): Promise<Response> {
+  await requireAdmin(req);
+  const supabase = getSupabaseAdminClient();
+
+  if (req.method === 'GET') {
+    const [profilesResult, authUsersResult] = await Promise.all([
+      query(
+        `
+          SELECT id, email, username, role, created_at, updated_at
+          FROM app_profiles
+          ORDER BY created_at DESC
+        `
+      ),
+      supabase.auth.admin.listUsers({ page: 1, perPage: 1000 }),
+    ]);
+
+    if (authUsersResult.error) {
+      throw Object.assign(new Error(authUsersResult.error.message), { status: 500, code: 'user_auth_lookup_failed' });
+    }
+
+    const authUsersById = new Map(authUsersResult.data.users.map(user => [user.id, user]));
+    return json(profilesResult.rows.map(profile => toFrontendManagedUser(profile, authUsersById.get(profile.id))));
+  }
+
+  if (req.method === 'POST') {
+    const body = await req.json().catch(() => ({}));
+    const email = normalizeRequiredString(body.email, 'Email');
+    const username = normalizeRequiredString(body.username, 'Username');
+    const password = normalizePassword(body.password);
+    const role = normalizeManagedRole(body.role);
+
+    const authResult = await supabase.auth.admin.createUser({
+      email,
+      password,
+      email_confirm: true,
+      user_metadata: { username, role },
+    });
+
+    if (authResult.error || !authResult.data.user) {
+      throw Object.assign(new Error(authResult.error?.message || 'Unable to create user'), { status: 400, code: 'user_create_failed' });
+    }
+
+    const result = await query(
+      `
+        INSERT INTO app_profiles (id, email, username, role)
+        VALUES ($1, $2, $3, $4)
+        ON CONFLICT (id) DO UPDATE
+        SET email = EXCLUDED.email,
+            username = EXCLUDED.username,
+            role = EXCLUDED.role,
+            updated_at = now()
+        RETURNING id, email, username, role, created_at, updated_at
+      `,
+      [authResult.data.user.id, email, username, role]
+    );
+
+    return json({ success: true, user: toFrontendManagedUser(result.rows[0], authResult.data.user) }, { status: 201 });
+  }
+
+  return methodNotAllowed();
+}
+
+async function handleUserById(req: Request, route: RouteParams): Promise<Response> {
+  const admin = await requireAdmin(req);
+  const id = route.segments[1];
+  if (!isUuid(id)) return json({ success: false, error: 'invalid_user_id', message: 'Invalid user id' }, { status: 400 });
+
+  const supabase = getSupabaseAdminClient();
+
+  if (route.segments[2] === 'reset-password') {
+    if (req.method !== 'POST') return methodNotAllowed();
+    const body = await req.json().catch(() => ({}));
+    const password = normalizePassword(body.password);
+    const authResult = await supabase.auth.admin.updateUserById(id, { password });
+    if (authResult.error) {
+      throw Object.assign(new Error(authResult.error.message), { status: 400, code: 'user_password_reset_failed' });
+    }
+    return json({ success: true });
+  }
+
+  if (req.method === 'PUT') {
+    const body = await req.json().catch(() => ({}));
+    const email = normalizeRequiredString(body.email, 'Email');
+    const username = normalizeRequiredString(body.username, 'Username');
+    let role = normalizeManagedRole(body.role);
+
+    if (admin.id === id && role !== 'admin') {
+      role = 'admin';
+    }
+
+    const authUpdate: Record<string, unknown> = {
+      email,
+      user_metadata: { username, role },
+    };
+    if (typeof body.password === 'string' && body.password.trim()) {
+      authUpdate.password = normalizePassword(body.password);
+    }
+
+    const authResult = await supabase.auth.admin.updateUserById(id, authUpdate as any);
+    if (authResult.error || !authResult.data.user) {
+      throw Object.assign(new Error(authResult.error?.message || 'Unable to update user'), { status: 400, code: 'user_update_failed' });
+    }
+
+    const result = await query(
+      `
+        UPDATE app_profiles
+        SET email = $2,
+            username = $3,
+            role = $4,
+            updated_at = now()
+        WHERE id = $1
+        RETURNING id, email, username, role, created_at, updated_at
+      `,
+      [id, email, username, role]
+    );
+    if (!result.rows[0]) return json({ success: false, error: 'user_not_found', message: 'User not found' }, { status: 404 });
+
+    return json({ success: true, user: toFrontendManagedUser(result.rows[0], authResult.data.user) });
+  }
+
+  if (req.method === 'DELETE') {
+    if (admin.id === id) {
+      return json({ success: false, error: 'cannot_delete_self', message: 'You cannot delete your own admin account' }, { status: 400 });
+    }
+
+    const authResult = await supabase.auth.admin.deleteUser(id);
+    if (authResult.error) {
+      throw Object.assign(new Error(authResult.error.message), { status: 400, code: 'user_delete_failed' });
+    }
+    await query('DELETE FROM app_profiles WHERE id = $1', [id]);
+    return json({ success: true, deleted: 1 });
+  }
+
+  return methodNotAllowed();
 }
 
 async function handleCategories(req: Request): Promise<Response> {
@@ -1139,6 +1268,43 @@ function normalizeAudioFormat(format: string, allowed: string[], fallback: strin
   return allowed.includes(normalized) ? normalized : fallback;
 }
 
+function getSupabaseAdminClient() {
+  return createClient(
+    requireEnv('SUPABASE_URL'),
+    requireEnv('SUPABASE_SERVICE_ROLE_KEY'),
+    {
+      auth: {
+        autoRefreshToken: false,
+        persistSession: false,
+      },
+    }
+  );
+}
+
+function normalizeRequiredString(value: unknown, label: string): string {
+  const normalized = typeof value === 'string' ? value.trim() : '';
+  if (!normalized) {
+    throw Object.assign(new Error(`${label} is required`), { status: 400, code: 'missing_required_field' });
+  }
+  return normalized;
+}
+
+function normalizePassword(value: unknown): string {
+  const password = normalizeRequiredString(value, 'Password');
+  if (password.length < 6) {
+    throw Object.assign(new Error('Password must be at least 6 characters'), { status: 400, code: 'password_too_short' });
+  }
+  return password;
+}
+
+function normalizeManagedRole(value: unknown): 'admin' | 'user' {
+  return value === 'admin' ? 'admin' : 'user';
+}
+
+function isUuid(value: string): boolean {
+  return /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(value);
+}
+
 function mimeTypeForAudioFormat(format: string): string {
   switch (format) {
     case 'wav':
@@ -1199,6 +1365,18 @@ function toFrontendUser(user: any) {
     jobTitle: user.job_title,
     company: user.company,
     bio: user.bio,
+  };
+}
+
+function toFrontendManagedUser(profile: any, authUser?: any) {
+  return {
+    id: profile.id,
+    username: profile.username || authUser?.user_metadata?.username || profile.email?.split('@')[0] || 'user',
+    email: profile.email || authUser?.email || '',
+    role: profile.role || 'user',
+    lastLoginAt: authUser?.last_sign_in_at || null,
+    createdAt: profile.created_at || authUser?.created_at || new Date().toISOString(),
+    updatedAt: profile.updated_at,
   };
 }
 
