@@ -43,23 +43,68 @@ const analysisJsonSchema = {
   additionalProperties: false,
   required: [
     'purpose',
+    'beginner_explanation',
+    'management_summary',
     'security_score',
     'quality_score',
     'risk_score',
     'suggestions',
+    'command_details',
     'security_issues',
     'best_practice_violations',
     'performance_insights',
+    'execution_summary',
   ],
   properties: {
     purpose: { type: 'string' },
+    beginner_explanation: { type: 'string' },
+    management_summary: { type: 'string' },
     security_score: { type: 'number', minimum: 0, maximum: 10 },
     quality_score: { type: 'number', minimum: 0, maximum: 10 },
     risk_score: { type: 'number', minimum: 0, maximum: 10 },
     suggestions: { type: 'array', items: { type: 'string' } },
+    command_details: {
+      type: 'array',
+      items: {
+        type: 'object',
+        additionalProperties: false,
+        required: ['name', 'description', 'purpose', 'beginner_explanation', 'management_impact', 'example', 'parameters'],
+        properties: {
+          name: { type: 'string' },
+          description: { type: 'string' },
+          purpose: { type: 'string' },
+          beginner_explanation: { type: 'string' },
+          management_impact: { type: 'string' },
+          example: { type: 'string' },
+          parameters: {
+            type: 'array',
+            items: {
+              type: 'object',
+              additionalProperties: false,
+              required: ['name', 'description'],
+              properties: {
+                name: { type: 'string' },
+                description: { type: 'string' },
+              },
+            },
+          },
+        },
+      },
+    },
     security_issues: { type: 'array', items: { type: 'string' } },
     best_practice_violations: { type: 'array', items: { type: 'string' } },
     performance_insights: { type: 'array', items: { type: 'string' } },
+    execution_summary: {
+      type: 'object',
+      additionalProperties: false,
+      required: ['what_it_does', 'business_value', 'key_actions', 'operational_risk'],
+      properties: {
+        what_it_does: { type: 'string' },
+        business_value: { type: 'string' },
+        key_actions: { type: 'array', items: { type: 'string' } },
+        operational_risk: { type: 'string' },
+      },
+    },
   },
 };
 
@@ -105,12 +150,13 @@ export default async function handleRequest(req: Request, context: Context): Pro
 
     return notFound(route.path);
   } catch (error) {
-    const err = error as Error & { status?: number; code?: string };
+    const err = error as Error & { status?: number; code?: string; existingScriptId?: number | string };
     console.error('[netlify-api]', context.requestId, err);
     return json({
       success: false,
       error: err.code || 'hosted_api_error',
       message: err.message || 'Hosted API error',
+      ...(err.existingScriptId ? { existingScriptId: err.existingScriptId } : {}),
       requestId: context.requestId,
     }, { status: err.status || 500 });
   }
@@ -725,7 +771,19 @@ async function handleScriptUpload(req: Request): Promise<Response> {
     tags: safeJsonArray(form.get('tags')),
   });
 
-  return json({ success: true, script, message: 'Script uploaded and saved successfully' }, { status: 201 });
+  let analysis: any = null;
+  if (form.get('analyze_with_ai') === 'true') {
+    analysis = toFrontendAnalysis(await saveAnalysis(Number(script.id), await analyzePowerShell(content, script.title)));
+  }
+
+  return json({
+    success: true,
+    script,
+    analysis,
+    message: analysis
+      ? 'Script uploaded and analyzed successfully'
+      : 'Script uploaded and saved successfully',
+  }, { status: 201 });
 }
 
 async function handleAdhocAnalysis(req: Request): Promise<Response> {
@@ -928,6 +986,18 @@ async function createScript(userId: string, input: any) {
   }
 
   const fileHash = await sha256(content);
+  const existing = await query(
+    `${scriptSelect} WHERE s.file_hash = $1 AND (s.user_id = $2 OR s.is_public = true) LIMIT 1`,
+    [fileHash, userId]
+  );
+  if (existing.rows[0]) {
+    throw Object.assign(new Error('This script has already been uploaded.'), {
+      status: 409,
+      code: 'duplicate_script',
+      existingScriptId: existing.rows[0].id,
+    });
+  }
+
   const result = await query(
     `
       INSERT INTO scripts (title, description, content, user_id, category_id, is_public, file_hash)
@@ -989,7 +1059,12 @@ async function analyzePowerShell(content: string, title: string) {
     [
       {
         role: 'system',
-        content: 'You are a senior PowerShell security reviewer. Return only the requested analysis fields for the supplied script.',
+        content: [
+          'You are a senior PowerShell security reviewer and PowerShell teacher.',
+          'Return only the requested analysis fields for the supplied script.',
+          'Explain the whole script for both beginners and management.',
+          'For command_details, include the key PowerShell commands that materially affect behavior, what each command does in plain English, and any important parameters used.',
+        ].join(' '),
       },
       {
         role: 'user',
@@ -1001,13 +1076,17 @@ async function analyzePowerShell(content: string, title: string) {
   );
   return {
     purpose: parsed.purpose || 'PowerShell script analysis generated by hosted PSScript.',
+    beginner_explanation: parsed.beginner_explanation || parsed.beginnerExplanation || '',
+    management_summary: parsed.management_summary || parsed.managementSummary || '',
     security_score: Number(parsed.security_score ?? parsed.securityScore ?? 7),
     quality_score: Number(parsed.quality_score ?? parsed.qualityScore ?? 7),
     risk_score: Number(parsed.risk_score ?? parsed.riskScore ?? 3),
     suggestions: Array.isArray(parsed.suggestions) ? parsed.suggestions : [],
+    command_details: Array.isArray(parsed.command_details) ? parsed.command_details : [],
     security_issues: Array.isArray(parsed.security_issues) ? parsed.security_issues : [],
     best_practice_violations: Array.isArray(parsed.best_practice_violations) ? parsed.best_practice_violations : [],
     performance_insights: Array.isArray(parsed.performance_insights) ? parsed.performance_insights : [],
+    execution_summary: parsed.execution_summary && typeof parsed.execution_summary === 'object' ? parsed.execution_summary : {},
   };
 }
 
@@ -1016,18 +1095,21 @@ async function saveAnalysis(scriptId: number, analysis: any) {
     `
       INSERT INTO script_analysis (
         script_id, purpose, security_score, quality_score, risk_score,
-        suggestions, security_issues, best_practice_violations, performance_insights
+        suggestions, command_details, security_issues, best_practice_violations,
+        performance_insights, execution_summary
       )
-      VALUES ($1, $2, $3, $4, $5, $6::jsonb, $7::jsonb, $8::jsonb, $9::jsonb)
+      VALUES ($1, $2, $3, $4, $5, $6::jsonb, $7::jsonb, $8::jsonb, $9::jsonb, $10::jsonb, $11::jsonb)
       ON CONFLICT (script_id) DO UPDATE
       SET purpose = EXCLUDED.purpose,
           security_score = EXCLUDED.security_score,
           quality_score = EXCLUDED.quality_score,
           risk_score = EXCLUDED.risk_score,
           suggestions = EXCLUDED.suggestions,
+          command_details = EXCLUDED.command_details,
           security_issues = EXCLUDED.security_issues,
           best_practice_violations = EXCLUDED.best_practice_violations,
           performance_insights = EXCLUDED.performance_insights,
+          execution_summary = EXCLUDED.execution_summary,
           updated_at = now()
       RETURNING *
     `,
@@ -1038,9 +1120,15 @@ async function saveAnalysis(scriptId: number, analysis: any) {
       analysis.quality_score,
       analysis.risk_score,
       JSON.stringify(analysis.suggestions || []),
+      JSON.stringify(analysis.command_details || []),
       JSON.stringify(analysis.security_issues || []),
       JSON.stringify(analysis.best_practice_violations || []),
       JSON.stringify(analysis.performance_insights || []),
+      JSON.stringify({
+        ...(analysis.execution_summary || {}),
+        beginner_explanation: analysis.beginner_explanation || '',
+        management_summary: analysis.management_summary || '',
+      }),
     ]
   );
   return result.rows[0];
@@ -1099,7 +1187,7 @@ async function completeJson(messages: ChatMessage[], schema: any, name: string):
         instructions,
         input,
         store: false,
-        max_output_tokens: Number(getEnv('OPENAI_ANALYSIS_MAX_OUTPUT_TOKENS', '1800')),
+        max_output_tokens: Number(getEnv('OPENAI_ANALYSIS_MAX_OUTPUT_TOKENS', '3000')),
         text: {
           format: {
             type: 'json_schema',
@@ -1684,20 +1772,29 @@ function toFrontendScript(row: any) {
 }
 
 function toFrontendAnalysis(row: any) {
+  const executionSummary = row.execution_summary || {};
   return {
     ...row,
     scriptId: row.script_id,
     securityScore: row.security_score,
     qualityScore: row.quality_score,
+    codeQualityScore: row.quality_score,
     riskScore: row.risk_score,
     parameterDocs: row.parameter_docs,
+    commandDetails: row.command_details,
+    msDocsReferences: row.ms_docs_references,
     securityIssues: row.security_issues,
+    securityConcerns: row.security_issues,
     bestPracticeViolations: row.best_practice_violations,
+    bestPractices: row.best_practice_violations,
     performanceInsights: row.performance_insights,
+    performanceSuggestions: row.performance_insights,
     potentialRisks: row.potential_risks,
     codeComplexityMetrics: row.code_complexity_metrics,
     compatibilityNotes: row.compatibility_notes,
-    executionSummary: row.execution_summary,
+    executionSummary,
+    beginnerExplanation: executionSummary.beginner_explanation || '',
+    managementSummary: executionSummary.management_summary || '',
     createdAt: row.created_at,
     updatedAt: row.updated_at,
   };

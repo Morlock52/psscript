@@ -55,7 +55,7 @@ const ScriptUpload: React.FC = () => {
         if (scriptId) {
           // Add a small delay to ensure the script is properly added to the mock data
           setTimeout(() => {
-            navigate(`/scripts/${scriptId}`);
+            navigate(data.analysis ? `/scripts/${scriptId}/analysis` : `/scripts/${scriptId}`);
           }, 300);
         } else {
           navigate('/scripts');
@@ -69,7 +69,8 @@ const ScriptUpload: React.FC = () => {
         const err = error as Record<string, unknown>;
         const status = err.status ?? (err.response as Record<string, unknown>)?.status;
         const responseData = (err.response as Record<string, unknown>)?.data as Record<string, unknown> | undefined;
-        const existingId = responseData?.existingScriptId ?? (err as Record<string, unknown>).existingScriptId;
+        const details = err.details as Record<string, unknown> | undefined;
+        const existingId = responseData?.existingScriptId ?? err.existingScriptId ?? details?.existingScriptId;
 
         if (status === 409 && existingId) {
           setFileError(`This script already exists (ID: ${existingId}). Redirecting...`);
