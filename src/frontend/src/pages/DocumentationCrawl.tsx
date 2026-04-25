@@ -104,85 +104,31 @@ const DocumentationCrawl: React.FC = () => {
       }
     });
 
-    // If AI mode is enabled, use the AI crawl endpoint
+    // If AI mode is enabled, use the hosted AI import endpoint.
     if (config.useAI) {
       try {
-        // Start async job (prevents long-request timeouts surfacing as "Network Error")
-        const jobId = await documentationApi.startCrawlWithAIJob({
+        const result = await documentationApi.crawlWithAI({
           url: config.url,
           maxPages: config.maxPages,
           depth: config.depth
         });
 
-        setActiveJobId(jobId);
+        setCrawlStatus({
+          status: result.status === 'completed' ? 'completed' : 'error',
+          message: result.message || (
+            result.status === 'completed'
+              ? `AI import complete! ${result.pagesProcessed} documents saved.`
+              : 'AI import failed'
+          ),
+          progress: {
+            pagesProcessed: result.pagesProcessed,
+            totalPages: result.totalPages || config.maxPages,
+            scriptsFound: result.scriptsFound
+          },
+          error: result.status === 'error' ? result.message : undefined
+        });
+        setActiveJobId(null);
         consecutivePollErrorsRef.current = 0;
-
-        const poll = async () => {
-          try {
-            const job = await documentationApi.getCrawlWithAIJobStatus(jobId);
-            consecutivePollErrorsRef.current = 0;
-
-            setCrawlStatus({
-              status:
-                job.status === 'completed' ? 'completed'
-                : job.status === 'error' ? 'error'
-                : job.status === 'canceled' ? 'error'
-                : 'crawling',
-              message:
-                job.status === 'completed'
-                  ? job.message || `AI import complete! ${job.result?.totalDocsSaved ?? job.progress.pagesProcessed} documents saved.`
-                  : job.status === 'error'
-                  ? job.message || 'AI import failed'
-                  : job.status === 'canceled'
-                  ? 'Import canceled.'
-                  : job.message || 'Import in progress…',
-              progress: {
-                pagesProcessed: job.progress.pagesProcessed,
-                totalPages: job.progress.totalPages || config.maxPages,
-                scriptsFound: job.progress.scriptsFound
-              },
-              error: job.status === 'error' ? (job.error || job.message) : undefined
-            });
-
-            if (job.status === 'completed' || job.status === 'error' || job.status === 'canceled') {
-              setActiveJobId(null);
-              pollTimerRef.current = null;
-              return;
-            }
-
-            pollTimerRef.current = window.setTimeout(poll, 1000);
-          } catch (err: any) {
-            // Polling is intentionally resilient. Cloudflare tunnels / local TLS can occasionally
-            // drop a request; failing hard on the first blip is a bad UX.
-            const nextCount = (consecutivePollErrorsRef.current || 0) + 1;
-            consecutivePollErrorsRef.current = nextCount;
-
-            // After a few consecutive failures, give up and surface the error.
-            if (nextCount >= 5) {
-              setCrawlStatus({
-                status: 'error',
-                message: 'AI import failed due to repeated network errors.',
-                error: formatRequestError(err)
-              });
-              setActiveJobId(null);
-              pollTimerRef.current = null;
-              return;
-            }
-
-            // Otherwise, keep polling with a small backoff and show a non-fatal message.
-            setCrawlStatus((prev) => ({
-              ...prev,
-              status: 'crawling',
-              message: `Temporary network issue while checking progress (retry ${nextCount}/5)…`,
-              error: formatRequestError(err)
-            }));
-
-            const backoffMs = Math.min(5000, 750 * nextCount);
-            pollTimerRef.current = window.setTimeout(poll, backoffMs);
-          }
-        };
-
-        pollTimerRef.current = window.setTimeout(poll, 250);
       } catch (error) {
         setCrawlStatus({
           status: 'error',

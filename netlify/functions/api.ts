@@ -550,6 +550,10 @@ async function handleScriptById(req: Request, route: RouteParams): Promise<Respo
 }
 
 async function handleDocumentation(req: Request, route: RouteParams): Promise<Response> {
+  if (route.path === '/documentation/crawl/ai' && req.method === 'POST') {
+    return await handleHostedDocumentationImport(req);
+  }
+
   if (route.path === '/documentation/search') {
     const search = `%${route.url.searchParams.get('query') || route.url.searchParams.get('q') || ''}%`;
     const result = await query(
@@ -625,7 +629,7 @@ async function handleDocumentation(req: Request, route: RouteParams): Promise<Re
     return json({
       success: false,
       error: 'hosted_crawl_unavailable',
-      message: 'Hosted documentation crawling is not available in the Netlify v1 API. Import documentation manually or use the bulk endpoint.',
+      message: 'Hosted background crawling is not available in the Netlify v1 API. Use AI import or the bulk endpoint.',
     }, { status: 501 });
   }
 
@@ -644,6 +648,54 @@ async function handleDocumentation(req: Request, route: RouteParams): Promise<Re
   }
 
   return notFound(route.path);
+}
+
+async function handleHostedDocumentationImport(req: Request): Promise<Response> {
+  await requireUser(req);
+  const body = await req.json().catch(() => ({}));
+  const startUrl = normalizePublicImportUrl(body.url);
+  const maxPages = Math.min(Math.max(Number(body.maxPages || 5), 1), 10);
+  const maxDepth = Math.min(Math.max(Number(body.depth || 1), 0), 2);
+  const pages = await collectDocumentationPages(startUrl, maxPages, maxDepth);
+
+  let imported = 0;
+  let errors = 0;
+  const data: Array<{ url: string; doc: any }> = [];
+
+  for (const page of pages) {
+    try {
+      const doc = await buildDocumentationItem(page);
+      if (!doc.content.trim()) {
+        errors += 1;
+        continue;
+      }
+
+      const result = await query(
+        `
+          INSERT INTO documentation_items (title, url, content, source, tags)
+          VALUES ($1, $2, $3, $4, $5)
+          RETURNING id, title, url, content, source, tags, created_at, updated_at
+        `,
+        [doc.title, doc.url, doc.content, doc.source, doc.tags]
+      );
+      imported += 1;
+      data.push({ url: doc.url, doc: toFrontendDocumentationItem(result.rows[0]) });
+    } catch (error) {
+      errors += 1;
+      console.warn('[netlify-api] hosted documentation import skipped page', page.url, error);
+    }
+  }
+
+  return json({
+    success: imported > 0,
+    total: pages.length,
+    imported,
+    errors,
+    message: imported > 0
+      ? `AI import complete. ${imported} documentation pages saved.`
+      : 'No importable documentation content was found.',
+    data,
+  }, { status: imported > 0 ? 200 : 422 });
 }
 
 async function handleScriptUpload(req: Request): Promise<Response> {
@@ -1152,6 +1204,238 @@ function normalizeChatMessages(rawMessages: unknown[]): ChatMessage[] {
     .slice(-50);
 }
 
+async function collectDocumentationPages(startUrl: URL, maxPages: number, maxDepth: number) {
+  const seen = new Set<string>();
+  const queue: Array<{ url: URL; depth: number }> = [{ url: startUrl, depth: 0 }];
+  const pages: Array<{ url: string; title: string; text: string; codeBlocks: string[] }> = [];
+
+  while (queue.length > 0 && pages.length < maxPages) {
+    const next = queue.shift();
+    if (!next) break;
+
+    const normalized = normalizeUrlForCrawl(next.url);
+    if (seen.has(normalized)) continue;
+    seen.add(normalized);
+
+    const response = await fetch(normalized, {
+      redirect: 'follow',
+      headers: {
+        Accept: 'text/html,application/xhtml+xml,text/plain;q=0.8',
+        'User-Agent': 'PSScript-Knowledge-Importer/1.0',
+      },
+      signal: AbortSignal.timeout(12000),
+    });
+
+    if (!response.ok) continue;
+    const contentType = response.headers.get('content-type') || '';
+    if (!contentType.includes('text/html') && !contentType.includes('text/plain')) continue;
+
+    const html = (await response.text()).slice(0, 750000);
+    const page = extractDocumentationPage(normalized, html);
+    if (page.text.length >= 200 || page.codeBlocks.length > 0) {
+      pages.push(page);
+    }
+
+    if (next.depth >= maxDepth || pages.length >= maxPages || !contentType.includes('text/html')) continue;
+
+    for (const link of extractSameSiteLinks(startUrl, normalized, html)) {
+      if (!seen.has(link) && queue.length < maxPages * 8) {
+        queue.push({ url: new URL(link), depth: next.depth + 1 });
+      }
+    }
+  }
+
+  return pages;
+}
+
+async function buildDocumentationItem(page: { url: string; title: string; text: string; codeBlocks: string[] }) {
+  const commands = extractPowerShellSignals(`${page.title}\n${page.text}\n${page.codeBlocks.join('\n')}`);
+  const aiSummary = await summarizeDocumentationPage(page, commands).catch(() => null);
+  const title = aiSummary?.title || page.title || titleFromUrl(page.url);
+  const summary = aiSummary?.summary || page.text.slice(0, 500);
+  const tags = Array.from(new Set([
+    'documentation',
+    'powershell',
+    ...commands.slice(0, 8).map(command => command.toLowerCase()),
+    ...(aiSummary?.tags || []),
+  ])).slice(0, 12);
+
+  return {
+    title: title.slice(0, 240),
+    url: page.url,
+    source: new URL(page.url).hostname,
+    tags,
+    content: [
+      `# ${title}`,
+      '',
+      summary,
+      '',
+      page.text.slice(0, 20000),
+      page.codeBlocks.length ? '\n## PowerShell snippets\n' : '',
+      ...page.codeBlocks.slice(0, 12).map(block => `\`\`\`powershell\n${block.slice(0, 4000)}\n\`\`\``),
+    ].filter(Boolean).join('\n').slice(0, 50000),
+  };
+}
+
+async function summarizeDocumentationPage(
+  page: { url: string; title: string; text: string; codeBlocks: string[] },
+  commands: string[]
+): Promise<{ title: string; summary: string; tags: string[] } | null> {
+  if (!getEnv('OPENAI_API_KEY') && !getEnv('ANTHROPIC_API_KEY')) return null;
+
+  const schema = {
+    type: 'object',
+    additionalProperties: false,
+    required: ['title', 'summary', 'tags'],
+    properties: {
+      title: { type: 'string' },
+      summary: { type: 'string' },
+      tags: { type: 'array', items: { type: 'string' } },
+    },
+  };
+
+  const parsed = await completeJson(
+    [
+      {
+        role: 'system',
+        content: 'Create concise knowledge-base metadata for a PowerShell documentation page. Return only the requested JSON fields.',
+      },
+      {
+        role: 'user',
+        content: [
+          `URL: ${page.url}`,
+          `Current title: ${page.title}`,
+          `Detected PowerShell terms: ${commands.join(', ') || 'none'}`,
+          '',
+          page.text.slice(0, 8000),
+          '',
+          page.codeBlocks.slice(0, 3).join('\n\n').slice(0, 4000),
+        ].join('\n'),
+      },
+    ],
+    schema,
+    'documentation_import_metadata'
+  );
+
+  return {
+    title: String(parsed.title || page.title || titleFromUrl(page.url)).trim(),
+    summary: String(parsed.summary || '').trim(),
+    tags: Array.isArray(parsed.tags)
+      ? parsed.tags.map((tag: unknown) => String(tag).trim().toLowerCase()).filter(Boolean).slice(0, 8)
+      : [],
+  };
+}
+
+function normalizePublicImportUrl(value: unknown): URL {
+  const raw = typeof value === 'string' ? value.trim() : '';
+  let url: URL;
+  try {
+    url = new URL(raw);
+  } catch {
+    throw Object.assign(new Error('A valid HTTP or HTTPS URL is required'), { status: 400, code: 'invalid_import_url' });
+  }
+
+  if (!['http:', 'https:'].includes(url.protocol)) {
+    throw Object.assign(new Error('Only HTTP and HTTPS URLs can be imported'), { status: 400, code: 'invalid_import_url' });
+  }
+
+  const hostname = url.hostname.toLowerCase();
+  if (
+    hostname === 'localhost' ||
+    hostname.endsWith('.localhost') ||
+    hostname === '127.0.0.1' ||
+    hostname === '0.0.0.0' ||
+    hostname === '::1' ||
+    hostname.startsWith('10.') ||
+    hostname.startsWith('192.168.') ||
+    /^172\.(1[6-9]|2\d|3[0-1])\./.test(hostname)
+  ) {
+    throw Object.assign(new Error('Private and localhost URLs cannot be imported'), { status: 400, code: 'private_import_url' });
+  }
+
+  url.hash = '';
+  return url;
+}
+
+function extractDocumentationPage(url: string, html: string) {
+  const codeBlocks = Array.from(html.matchAll(/<pre\b[^>]*>([\s\S]*?)<\/pre>/gi))
+    .map(match => htmlToText(match[1]))
+    .filter(block => /(?:\b[A-Z][a-z]+-[A-Z][A-Za-z]+\b|\$\w+|param\s*\()/i.test(block))
+    .slice(0, 20);
+
+  const titleMatch = html.match(/<title\b[^>]*>([\s\S]*?)<\/title>/i) || html.match(/<h1\b[^>]*>([\s\S]*?)<\/h1>/i);
+  const title = htmlToText(titleMatch?.[1] || titleFromUrl(url));
+  const mainMatch = html.match(/<main\b[^>]*>([\s\S]*?)<\/main>/i) || html.match(/<article\b[^>]*>([\s\S]*?)<\/article>/i);
+  const body = mainMatch?.[1] || html;
+  const text = htmlToText(
+    body
+      .replace(/<script\b[\s\S]*?<\/script>/gi, ' ')
+      .replace(/<style\b[\s\S]*?<\/style>/gi, ' ')
+      .replace(/<nav\b[\s\S]*?<\/nav>/gi, ' ')
+      .replace(/<footer\b[\s\S]*?<\/footer>/gi, ' ')
+  ).slice(0, 30000);
+
+  return { url, title, text, codeBlocks };
+}
+
+function extractSameSiteLinks(startUrl: URL, currentUrl: string, html: string): string[] {
+  const links = new Set<string>();
+  for (const match of html.matchAll(/<a\b[^>]*href=["']([^"']+)["']/gi)) {
+    const href = match[1];
+    if (!href || href.startsWith('#') || href.startsWith('mailto:') || href.startsWith('tel:')) continue;
+    try {
+      const url = new URL(href, currentUrl);
+      if (url.origin !== startUrl.origin) continue;
+      if (/\.(png|jpe?g|gif|svg|webp|pdf|zip|gz|mp4|mp3|css|js)$/i.test(url.pathname)) continue;
+      url.hash = '';
+      links.add(normalizeUrlForCrawl(url));
+    } catch {
+      // Ignore malformed links from upstream pages.
+    }
+  }
+  return [...links];
+}
+
+function normalizeUrlForCrawl(url: URL): string {
+  url.hash = '';
+  url.searchParams.sort();
+  return url.toString();
+}
+
+function htmlToText(value: string): string {
+  return value
+    .replace(/<br\s*\/?>/gi, '\n')
+    .replace(/<\/(p|div|li|h[1-6]|tr|pre|code)>/gi, '\n')
+    .replace(/<[^>]+>/g, ' ')
+    .replace(/&nbsp;/gi, ' ')
+    .replace(/&amp;/gi, '&')
+    .replace(/&lt;/gi, '<')
+    .replace(/&gt;/gi, '>')
+    .replace(/&quot;/gi, '"')
+    .replace(/&#39;/gi, "'")
+    .replace(/\s+\n/g, '\n')
+    .replace(/\n{3,}/g, '\n\n')
+    .replace(/[ \t]{2,}/g, ' ')
+    .trim();
+}
+
+function extractPowerShellSignals(text: string): string[] {
+  const commands = new Set<string>();
+  for (const match of text.matchAll(/\b[A-Z][a-z]+-[A-Z][A-Za-z0-9]+\b/g)) {
+    commands.add(match[0]);
+  }
+  return [...commands].slice(0, 20);
+}
+
+function titleFromUrl(value: string): string {
+  const url = new URL(value);
+  const segment = url.pathname.split('/').filter(Boolean).pop() || url.hostname;
+  return segment
+    .replace(/\.(html?|md)$/i, '')
+    .replace(/[-_]+/g, ' ')
+    .replace(/\b\w/g, char => char.toUpperCase());
+}
+
 async function generateEmbedding(text: string): Promise<number[]> {
   const openaiKey = getEnv('OPENAI_API_KEY');
   if (!openaiKey) return [];
@@ -1414,6 +1698,20 @@ function toFrontendAnalysis(row: any) {
     codeComplexityMetrics: row.code_complexity_metrics,
     compatibilityNotes: row.compatibility_notes,
     executionSummary: row.execution_summary,
+    createdAt: row.created_at,
+    updatedAt: row.updated_at,
+  };
+}
+
+function toFrontendDocumentationItem(row: any) {
+  return {
+    id: row.id,
+    title: row.title,
+    url: row.url,
+    content: row.content,
+    source: row.source,
+    tags: row.tags || [],
+    crawledAt: row.created_at,
     createdAt: row.created_at,
     updatedAt: row.updated_at,
   };

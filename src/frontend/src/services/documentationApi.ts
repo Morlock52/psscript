@@ -283,9 +283,9 @@ const documentationApi = {
 
       if (response.data.success) {
         return {
-          pagesProcessed: response.data.total,
+          pagesProcessed: response.data.imported ?? response.data.total,
           totalPages: response.data.total,
-          scriptsFound: response.data.data?.reduce((sum: number, d: any) => sum + (d.doc?.metadata?.scriptsFound || 0), 0) || 0,
+          scriptsFound: response.data.imported ?? 0,
           status: 'completed',
           message: response.data.message,
           data: response.data.data?.map((d: any) => d.doc) || []
@@ -294,12 +294,14 @@ const documentationApi = {
       throw new Error(response.data.error || 'AI crawl failed');
     } catch (error) {
       console.error('Error in AI crawl:', error);
+      const err = error as any;
+      const message = err?.response?.data?.message || err?.response?.data?.error || err?.message || 'AI crawl failed';
       return {
         pagesProcessed: 0,
         totalPages: 0,
         scriptsFound: 0,
         status: 'error',
-        message: error instanceof Error ? error.message : 'AI crawl failed'
+        message
       };
     }
   }
