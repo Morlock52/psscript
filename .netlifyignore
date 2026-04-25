@@ -1,0 +1,12 @@
+node_modules/
+.git/
+.netlify/functions/
+.netlify/plugins/
+deploy-*.zip
+sora/
+test-results/
+playwright-report/
+coverage/
+logs/
+uploads/
+src/backend/uploads/
