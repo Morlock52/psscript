@@ -1,8 +1,9 @@
 import type { Config, Context } from '@netlify/functions';
 import OpenAI, { toFile } from 'openai';
 import Anthropic from '@anthropic-ai/sdk';
+import { createClient } from '@supabase/supabase-js';
 import { query } from './_shared/db';
-import { getEnv } from './_shared/env';
+import { getEnv, requireEnv } from './_shared/env';
 import { requireAdmin, requireUser } from './_shared/auth';
 import { json, methodNotAllowed, notFound } from './_shared/http';
 
@@ -78,6 +79,7 @@ export default async function handleRequest(req: Request, context: Context): Pro
 
     if (route.path === '/health') return await handleHealth();
     if (route.segments[0] === 'voice') return await handleVoice(req, route);
+    if (route.path === '/auth/default-user') return await handleDefaultUser(req);
     if (route.path === '/auth/me') return await handleAuthMe(req);
     if (route.path === '/auth/user') return await handleAuthUser(req);
     if (route.path === '/categories') return await handleCategories(req);
@@ -176,6 +178,69 @@ async function handleAuthUser(req: Request): Promise<Response> {
     [user.id, body.username, body.firstName, body.lastName, body.jobTitle, body.company, body.bio]
   );
   return json({ success: true, user: toFrontendUser(result.rows[0]) });
+}
+
+async function handleDefaultUser(req: Request): Promise<Response> {
+  if (req.method !== 'POST') return methodNotAllowed();
+
+  const email = getEnv('DEFAULT_ADMIN_EMAIL', 'admin@example.com');
+  const password = getEnv('DEFAULT_ADMIN_PASSWORD', 'admin123');
+  const supabase = createClient(
+    requireEnv('SUPABASE_URL'),
+    requireEnv('SUPABASE_SERVICE_ROLE_KEY'),
+    {
+      auth: {
+        autoRefreshToken: false,
+        persistSession: false,
+      },
+    }
+  );
+
+  const list = await supabase.auth.admin.listUsers({ page: 1, perPage: 1000 });
+  if (list.error) {
+    throw Object.assign(new Error(list.error.message), { status: 500, code: 'default_user_lookup_failed' });
+  }
+
+  const existing = list.data.users.find((candidate) => candidate.email?.toLowerCase() === email.toLowerCase());
+  const metadata = { username: 'admin', role: 'admin' };
+  const authResult = existing
+    ? await supabase.auth.admin.updateUserById(existing.id, {
+        password,
+        email_confirm: true,
+        user_metadata: {
+          ...existing.user_metadata,
+          ...metadata,
+        },
+      })
+    : await supabase.auth.admin.createUser({
+        email,
+        password,
+        email_confirm: true,
+        user_metadata: metadata,
+      });
+
+  if (authResult.error || !authResult.data.user) {
+    throw Object.assign(
+      new Error(authResult.error?.message || 'Unable to create default user'),
+      { status: 500, code: 'default_user_upsert_failed' }
+    );
+  }
+
+  const user = authResult.data.user;
+  await query(
+    `
+      INSERT INTO app_profiles (id, email, username, role)
+      VALUES ($1, $2, $3, 'admin')
+      ON CONFLICT (id) DO UPDATE
+      SET email = EXCLUDED.email,
+          username = EXCLUDED.username,
+          role = 'admin',
+          updated_at = now()
+    `,
+    [user.id, email, 'admin']
+  );
+
+  return json({ success: true, email });
 }
 
 async function handleCategories(req: Request): Promise<Response> {
