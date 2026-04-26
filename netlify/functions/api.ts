@@ -21,6 +21,7 @@ const OPENAI_EMBEDDING_MODEL = 'text-embedding-3-small';
 const OPENAI_TTS_MODEL = 'gpt-4o-mini-tts';
 const OPENAI_STT_MODEL = 'gpt-4o-mini-transcribe';
 const ANTHROPIC_TEXT_MODEL = 'claude-sonnet-4-5-20250929';
+const UPLOAD_ANALYSIS_TIMEOUT_MS = 12000;
 
 const openAiVoices = [
   { id: 'marin', name: 'Marin', provider: 'openai' },
@@ -850,7 +851,11 @@ async function handleScriptUpload(req: Request): Promise<Response> {
   let analysisError: string | null = null;
   if (form.get('analyze_with_ai') === 'true') {
     try {
-      analysis = toFrontendAnalysis(await saveAnalysis(Number(script.id), await analyzePowerShell(content, script.title)));
+      analysis = toFrontendAnalysis(await withTimeout(
+        (async () => saveAnalysis(Number(script.id), await analyzePowerShell(content, script.title)))(),
+        UPLOAD_ANALYSIS_TIMEOUT_MS,
+        'AI analysis is taking longer than expected. The script was uploaded; run analysis from the script detail page.'
+      ));
     } catch (error) {
       const err = error as Error;
       analysisError = err.message || 'AI analysis failed after upload';
@@ -872,6 +877,19 @@ async function handleScriptUpload(req: Request): Promise<Response> {
         ? 'Script uploaded successfully, but AI analysis failed.'
         : 'Script uploaded and saved successfully',
   }, { status: 201 });
+}
+
+async function withTimeout<T>(promise: Promise<T>, timeoutMs: number, message: string): Promise<T> {
+  let timeout: ReturnType<typeof setTimeout> | undefined;
+  const timeoutPromise = new Promise<never>((_, reject) => {
+    timeout = setTimeout(() => reject(new Error(message)), timeoutMs);
+  });
+
+  try {
+    return await Promise.race([promise, timeoutPromise]);
+  } finally {
+    if (timeout) clearTimeout(timeout);
+  }
 }
 
 async function handleAdhocAnalysis(req: Request): Promise<Response> {
