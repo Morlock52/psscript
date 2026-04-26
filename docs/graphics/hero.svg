@@ -1,0 +1,89 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1600 680" role="img" aria-labelledby="title desc">
+  <title id="title">PSScript — PowerShell, audited.</title>
+  <desc id="desc">Editorial cover for the PSScript dossier: an operations console for security-graded PowerShell, versioned, semantically searchable, and gated behind hosted SSO with administrator approval. Built on Supabase and Netlify. April 2026 edition.</desc>
+
+  <defs>
+    <!-- Paper texture: faint horizontal hairlines for a printed-page feel -->
+    <pattern id="grain" width="6" height="6" patternUnits="userSpaceOnUse">
+      <rect width="6" height="6" fill="#F2EBDD"/>
+      <path d="M0 5.5 H6" stroke="#E5DBC6" stroke-width="0.4"/>
+    </pattern>
+    <!-- Soft vignette so the corners read as printed paper -->
+    <radialGradient id="vignette" cx="50%" cy="50%" r="70%">
+      <stop offset="60%" stop-color="#000" stop-opacity="0"/>
+      <stop offset="100%" stop-color="#3a2f1f" stop-opacity="0.10"/>
+    </radialGradient>
+
+    <style>
+      .serif    { font-family: 'Charter','Iowan Old Style','Source Serif Pro','Apple Garamond','Cambria',Georgia,serif; }
+      .mono     { font-family: 'JetBrains Mono','IBM Plex Mono',ui-monospace,SFMono-Regular,Menlo,Consolas,monospace; }
+      .ink      { fill: #0B0B0B; }
+      .mute     { fill: #6F6353; }
+      .ox       { fill: #7E1F1F; }
+      .brass    { fill: #B58A2E; }
+      .stroke-ink   { stroke: #0B0B0B; }
+      .stroke-mute  { stroke: #B6A98D; }
+      .stroke-ox    { stroke: #7E1F1F; }
+    </style>
+  </defs>
+
+  <!-- Paper -->
+  <rect width="1600" height="680" fill="url(#grain)"/>
+  <rect width="1600" height="680" fill="url(#vignette)"/>
+
+  <!-- Masthead double-rule (FT.com-style) -->
+  <rect x="0" y="0"  width="1600" height="10" class="ink" fill="#0B0B0B"/>
+  <rect x="0" y="18" width="1600" height="1.5" class="ink" fill="#0B0B0B"/>
+
+  <!-- Eyebrow / masthead metadata -->
+  <text x="64" y="62" class="mono ink" font-size="15" letter-spacing="3.6">DOSSIER&#160;&#160;Nº&#160;04·26</text>
+  <text x="800" y="62" class="mono mute" font-size="15" letter-spacing="3.6" text-anchor="middle">POWERSHELL · GOVERNANCE · AI REVIEW</text>
+  <text x="1536" y="62" class="mono ink" font-size="15" letter-spacing="3.6" text-anchor="end">APRIL · MMXXVI</text>
+
+  <!-- Hairline beneath masthead -->
+  <line x1="64" y1="92" x2="1536" y2="92" class="stroke-ink" stroke-width="0.8"/>
+
+  <!-- Section eyebrow -->
+  <text x="64" y="146" class="mono ox" font-size="13" letter-spacing="4">FOR · OPERATORS &#160;·&#160; SECURITY LEADS &#160;·&#160; DECISION MAKERS</text>
+
+  <!-- Display title — colossal serif lockup -->
+  <text x="60" y="334" class="serif ink" font-size="248" font-weight="600" letter-spacing="-6">PSScript<tspan class="ox" font-size="248">.</tspan></text>
+
+  <!-- Hairline + brass tick beneath the title -->
+  <line x1="64" y1="376" x2="180" y2="376" class="stroke-ox" stroke-width="3"/>
+  <line x1="190" y1="376" x2="780" y2="376" class="stroke-ink" stroke-width="0.8"/>
+
+  <!-- Italic deck -->
+  <text x="64" y="438" class="serif ink" font-size="40" font-style="italic" font-weight="400">PowerShell, audited.</text>
+
+  <!-- Body deck — set tight in serif, wraps as two lines -->
+  <text x="64" y="494" class="serif ink" font-size="22" font-weight="400">An operations console for security-graded PowerShell — versioned,</text>
+  <text x="64" y="524" class="serif ink" font-size="22" font-weight="400">semantically searchable, and gated behind hosted SSO with administrator</text>
+  <text x="64" y="554" class="serif ink" font-size="22" font-weight="400">approval. Shipped on Supabase and Netlify. <tspan class="mute">April 26, 2026 build verified.</tspan></text>
+
+  <!-- ── Right column: three pillars, vertical column of the dossier ───────── -->
+  <line x1="1060" y1="160" x2="1060" y2="600" class="stroke-ink" stroke-width="0.8"/>
+
+  <!-- Pillar 01 -->
+  <text x="1100" y="194" class="mono mute"  font-size="13" letter-spacing="3">Nº 01 / PILLAR</text>
+  <text x="1100" y="240" class="serif ink"  font-size="40" font-weight="600">Analyze.</text>
+  <text x="1100" y="270" class="serif mute" font-size="17">AI-graded security &amp; quality</text>
+  <text x="1100" y="290" class="serif mute" font-size="17">scoring with remediation notes.</text>
+
+  <!-- Pillar 02 -->
+  <text x="1100" y="334" class="mono mute"  font-size="13" letter-spacing="3">Nº 02 / PILLAR</text>
+  <text x="1100" y="380" class="serif ink"  font-size="40" font-weight="600">Search.</text>
+  <text x="1100" y="410" class="serif mute" font-size="17">Embedding-backed semantic</text>
+  <text x="1100" y="430" class="serif mute" font-size="17">retrieval over scripts &amp; docs.</text>
+
+  <!-- Pillar 03 -->
+  <text x="1100" y="474" class="mono mute"  font-size="13" letter-spacing="3">Nº 03 / PILLAR</text>
+  <text x="1100" y="520" class="serif ink"  font-size="40" font-weight="600">Govern.</text>
+  <text x="1100" y="550" class="serif mute" font-size="17">Approval-gated Google SSO,</text>
+  <text x="1100" y="570" class="serif mute" font-size="17">RLS, and admin audit trail.</text>
+
+  <!-- ── Footer rule + colophon strip ───────────────────────────────────────── -->
+  <line x1="64" y1="612" x2="1536" y2="612" class="stroke-ink" stroke-width="0.8"/>
+  <text x="64"   y="650" class="mono ink"  font-size="13" letter-spacing="2.6">STACK · REACT 18 · VITE · NETLIFY FUNCTIONS · SUPABASE POSTGRES · PGVECTOR · GPT-5.5 · CLAUDE SONNET 4.6</text>
+  <text x="1536" y="650" class="mono mute" font-size="13" letter-spacing="2.6" text-anchor="end">VERIFIED · 2026-04-26</text>
+</svg>

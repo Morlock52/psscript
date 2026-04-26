@@ -1,0 +1,134 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1600 760" role="img" aria-labelledby="atitle adesc">
+  <title id="atitle">PSScript architecture — edge, hosted, and data planes</title>
+  <desc id="adesc">Hand-drafted architecture diagram. The edge is the React UI; the hosted plane is Netlify Functions calling OpenAI and Anthropic; the data plane is Supabase Postgres with pgvector. A separate local dev plane below shows the Express API and FastAPI service.</desc>
+
+  <defs>
+    <pattern id="paper" width="6" height="6" patternUnits="userSpaceOnUse">
+      <rect width="6" height="6" fill="#F2EBDD"/>
+      <path d="M0 5.5 H6" stroke="#E5DBC6" stroke-width="0.4"/>
+    </pattern>
+
+    <marker id="arr" viewBox="0 0 12 10" refX="10" refY="5" markerWidth="11" markerHeight="9" orient="auto">
+      <path d="M0 0 L10 5 L0 10 z" fill="#0B0B0B"/>
+    </marker>
+    <marker id="arr-ox" viewBox="0 0 12 10" refX="10" refY="5" markerWidth="11" markerHeight="9" orient="auto">
+      <path d="M0 0 L10 5 L0 10 z" fill="#7E1F1F"/>
+    </marker>
+
+    <style>
+      .serif { font-family: 'Charter','Iowan Old Style','Source Serif Pro','Cambria',Georgia,serif; }
+      .mono  { font-family: 'JetBrains Mono','IBM Plex Mono',ui-monospace,Menlo,Consolas,monospace; }
+      .ink   { fill: #0B0B0B; }
+      .mute  { fill: #6F6353; }
+      .ox    { fill: #7E1F1F; }
+      .box   { fill: #F8F1E2; stroke: #0B0B0B; stroke-width: 1.2; }
+      .box-dim   { fill: #ECE3CD; stroke: #0B0B0B; stroke-width: 1.2; }
+      .box-accent{ fill: #F8F1E2; stroke: #7E1F1F; stroke-width: 1.6; }
+      .col-rule  { stroke: #0B0B0B; stroke-width: 0.6; }
+      .flow-line { stroke: #0B0B0B; stroke-width: 1.2; fill: none; }
+      .flow-line-ox { stroke: #7E1F1F; stroke-width: 1.4; fill: none; stroke-dasharray: 5 4; }
+    </style>
+  </defs>
+
+  <!-- Paper -->
+  <rect width="1600" height="760" fill="url(#paper)"/>
+
+  <!-- Top rule + caption -->
+  <rect x="0" y="0" width="1600" height="6" class="ink" fill="#0B0B0B"/>
+  <text x="64"   y="48" class="mono ink"  font-size="13" letter-spacing="3.4">FIG. 04 · ARCHITECTURE · HOSTED PLANE</text>
+  <text x="1536" y="48" class="mono mute" font-size="13" letter-spacing="3.4" text-anchor="end">SCALE 1 : 1 · NTS</text>
+  <line x1="64" y1="68" x2="1536" y2="68" class="ink" stroke="#0B0B0B" stroke-width="0.8"/>
+
+  <!-- Column headers -->
+  <text x="200"  y="116" class="mono ink"  font-size="14" letter-spacing="4">EDGE</text>
+  <text x="800"  y="116" class="mono ink"  font-size="14" letter-spacing="4" text-anchor="middle">HOSTED PLANE</text>
+  <text x="1400" y="116" class="mono ink"  font-size="14" letter-spacing="4" text-anchor="end">DATA PLANE</text>
+  <line x1="64"   y1="132" x2="380"  y2="132" class="col-rule"/>
+  <line x1="600"  y1="132" x2="1000" y2="132" class="col-rule"/>
+  <line x1="1220" y1="132" x2="1536" y2="132" class="col-rule"/>
+
+  <!-- ── EDGE column ───────────────────────────────────────────────────────── -->
+  <rect x="80" y="180" width="320" height="120" class="box"/>
+  <text x="100" y="214" class="mono mute"  font-size="11" letter-spacing="2.4">CLIENT</text>
+  <text x="100" y="252" class="serif ink"  font-size="26" font-weight="600">React 18 · Vite</text>
+  <text x="100" y="280" class="serif mute" font-size="15">Same-origin /api · Supabase JS</text>
+
+  <rect x="80" y="320" width="320" height="80" class="box-dim"/>
+  <text x="100" y="352" class="mono mute"  font-size="11" letter-spacing="2.4">IDENTITY</text>
+  <text x="100" y="382" class="serif ink"  font-size="20" font-weight="600">Supabase Auth · Google OAuth</text>
+
+  <!-- ── HOSTED column ──────────────────────────────────────────────────────── -->
+  <rect x="600" y="180" width="400" height="120" class="box-accent"/>
+  <text x="620" y="214" class="mono ox"    font-size="11" letter-spacing="2.4">NETLIFY FUNCTIONS · /api/*</text>
+  <text x="620" y="252" class="serif ink"  font-size="26" font-weight="600">Hosted API</text>
+  <text x="620" y="280" class="serif mute" font-size="15">Auth gate · profile gate · static analysis</text>
+
+  <rect x="600" y="320" width="190" height="100" class="box"/>
+  <text x="620" y="348" class="mono mute"  font-size="11" letter-spacing="2.4">PRIMARY</text>
+  <text x="620" y="378" class="serif ink"  font-size="19" font-weight="600">OpenAI</text>
+  <text x="620" y="402" class="serif mute" font-size="14">gpt-5.5 · 5.4-mini</text>
+
+  <rect x="810" y="320" width="190" height="100" class="box"/>
+  <text x="830" y="348" class="mono mute"  font-size="11" letter-spacing="2.4">FALLBACK</text>
+  <text x="830" y="378" class="serif ink"  font-size="19" font-weight="600">Anthropic</text>
+  <text x="830" y="402" class="serif mute" font-size="14">claude-sonnet-4-6</text>
+
+  <!-- Hosted column → arrows down to data plane explained below -->
+
+  <!-- ── DATA column ────────────────────────────────────────────────────────── -->
+  <rect x="1220" y="180" width="316" height="120" class="box"/>
+  <text x="1240" y="214" class="mono mute"  font-size="11" letter-spacing="2.4">POSTGRES</text>
+  <text x="1240" y="252" class="serif ink"  font-size="26" font-weight="600">Supabase</text>
+  <text x="1240" y="280" class="serif mute" font-size="15">RLS · app_profiles · scripts · analyses</text>
+
+  <rect x="1220" y="320" width="316" height="100" class="box-dim"/>
+  <text x="1240" y="348" class="mono mute"  font-size="11" letter-spacing="2.4">VECTOR</text>
+  <text x="1240" y="378" class="serif ink"  font-size="20" font-weight="600">pgvector(1536)</text>
+  <text x="1240" y="402" class="serif mute" font-size="14">text-embedding-3-small</text>
+
+  <!-- ── Flow arrows (left to right across the page) ──────────────────────── -->
+  <!-- Edge → Hosted -->
+  <path d="M400 240 H600" class="flow-line" marker-end="url(#arr)"/>
+  <text x="500" y="232" class="mono ink" font-size="12" letter-spacing="2" text-anchor="middle">FETCH /api · BEARER JWT</text>
+  <!-- Identity → Hosted (token validation) -->
+  <path d="M400 360 H600" class="flow-line" marker-end="url(#arr)"/>
+  <text x="500" y="352" class="mono ink" font-size="12" letter-spacing="2" text-anchor="middle">VALIDATE TOKEN</text>
+
+  <!-- Hosted → Data (read/write) -->
+  <path d="M1000 240 H1220" class="flow-line" marker-end="url(#arr)"/>
+  <text x="1110" y="232" class="mono ink" font-size="12" letter-spacing="2" text-anchor="middle">SQL · POOLER</text>
+  <!-- Hosted vector ↔ Data vector -->
+  <path d="M1000 370 H1220" class="flow-line" marker-end="url(#arr)"/>
+  <text x="1110" y="362" class="mono ink" font-size="12" letter-spacing="2" text-anchor="middle">EMBED · UPSERT</text>
+
+  <!-- Approval gate annotation, oxblood dashed -->
+  <path d="M260 400 V470 H770 V300" class="flow-line-ox" marker-end="url(#arr-ox)"/>
+  <text x="450" y="488" class="mono ox" font-size="12" letter-spacing="2.4">APPROVAL GATE · IS_ENABLED = TRUE</text>
+
+  <!-- ── Local dev plane (subdued, below a separator) ────────────────────── -->
+  <line x1="64" y1="540" x2="1536" y2="540" class="ink" stroke="#0B0B0B" stroke-width="0.6"/>
+  <text x="64"   y="572" class="mono mute" font-size="12" letter-spacing="3.4">LOCAL DEVELOPMENT PLANE · OPTIONAL</text>
+
+  <rect x="80"  y="600" width="320" height="100" class="box-dim"/>
+  <text x="100" y="630" class="mono mute"  font-size="11" letter-spacing="2.4">EXPRESS · SEQUELIZE</text>
+  <text x="100" y="664" class="serif ink"  font-size="22" font-weight="600">Local Backend API</text>
+  <text x="100" y="688" class="serif mute" font-size="14">CRUD · analytics · AI proxy</text>
+
+  <rect x="600" y="600" width="400" height="100" class="box-dim"/>
+  <text x="620" y="630" class="mono mute"  font-size="11" letter-spacing="2.4">FASTAPI · LANGGRAPH</text>
+  <text x="620" y="664" class="serif ink"  font-size="22" font-weight="600">Local AI Service</text>
+  <text x="620" y="688" class="serif mute" font-size="14">Agentic workflows · model router · voice</text>
+
+  <rect x="1220" y="600" width="316" height="100" class="box-dim"/>
+  <text x="1240" y="630" class="mono mute"  font-size="11" letter-spacing="2.4">SAME PG TARGET</text>
+  <text x="1240" y="664" class="serif ink"  font-size="22" font-weight="600">Supabase via DATABASE_URL</text>
+  <text x="1240" y="688" class="serif mute" font-size="14">No local Docker DB</text>
+
+  <path d="M400 650 H600"  class="flow-line" marker-end="url(#arr)"/>
+  <path d="M1000 650 H1220" class="flow-line" marker-end="url(#arr)"/>
+
+  <!-- Footer rule -->
+  <line x1="64" y1="730" x2="1536" y2="730" class="ink" stroke="#0B0B0B" stroke-width="0.6"/>
+  <text x="64"   y="750" class="mono mute" font-size="11" letter-spacing="2.6">SOURCE · netlify/functions/api.ts · src/backend · src/ai · supabase/migrations</text>
+  <text x="1536" y="750" class="mono mute" font-size="11" letter-spacing="2.6" text-anchor="end">REV · 2026-04-26</text>
+</svg>
