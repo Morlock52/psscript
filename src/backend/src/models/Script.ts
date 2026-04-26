@@ -4,13 +4,14 @@ import Category from './Category';
 import ScriptAnalysis from './ScriptAnalysis';
 import Tag from './Tag';
 import ScriptVersion from './ScriptVersion';
+import { getUserIdDataType, getUserTableName } from '../utils/databaseProfile';
 
 export default class Script extends Model {
   public id!: number;
   public title!: string;
   public description!: string;
   public content!: string;
-  public userId!: number;
+  public userId!: number | string;
   public categoryId!: number;
   public version!: number;
   public executionCount!: number;
@@ -44,10 +45,10 @@ export default class Script extends Model {
         allowNull: false
       },
       userId: {
-        type: DataTypes.INTEGER,
+        type: getUserIdDataType(),
         allowNull: false,
         references: {
-          model: 'users',
+          model: getUserTableName(),
           key: 'id'
         },
         field: 'user_id'
@@ -85,7 +86,7 @@ export default class Script extends Model {
       tableName: 'scripts',
       underscored: true,
       indexes: [
-        { unique: true, fields: ['file_hash'], name: 'idx_scripts_file_hash' },
+        { unique: true, fields: ['file_hash'], name: 'uq_scripts_file_hash' },
         { fields: ['is_public', 'user_id'], name: 'idx_scripts_visibility' },
         { fields: ['user_id'], name: 'idx_scripts_user' },
         { fields: ['category_id'], name: 'idx_scripts_category' }

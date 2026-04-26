@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <base href="file:///Users/morlock/fun/psscript/" />
+  <base href="file:///Users/morlock/fun/02_PowerShell_Projects/psscript/" />
   <title>Support</title>
   <style>
 :root {
@@ -277,7 +277,7 @@ body {
 <ul>
 <li>Backend logs: <code>src/backend/logs/</code></li>
 <li>AI service logs: <code>src/ai/logs/</code> (if configured)</li>
-<li>Docker logs: <code>docker-compose logs -f</code></li>
+<li>Netlify deploy logs: Netlify project deploy log for <code>psscript</code></li>
 </ul>
 <h3 id="common-recovery-actions">Common recovery actions</h3>
 <pre><code class="language-bash"># Restart all services
@@ -286,6 +286,60 @@ body {
 # Restart backend only
 ./restart-backend.sh
 </code></pre>
+<h3 id="data-maintenance-escalation">Data Maintenance Escalation</h3>
+<p>If maintenance actions fail:</p>
+<ol>
+<li>Save the exact API request/response payload for:</li>
+<li><code>POST /api/admin/db/backup</code></li>
+<li><code>POST /api/admin/db/restore</code></li>
+<li><code>POST /api/admin/db/clear-test-data</code></li>
+<li>Capture backup directory state:<ul>
+<li>run <code>ls -l $(echo $DB_BACKUP_DIR || echo /tmp/psscript-db-backups)</code></li>
+</ul>
+</li>
+<li>Collect recent server logs:<ul>
+<li><code>tail -n 200 src/backend/logs/backend.log</code></li>
+</ul>
+</li>
+<li>Open a support ticket with:<ul>
+<li>environment (<code>netlify</code> / hosted API / local),</li>
+<li>user role used,</li>
+<li>endpoint payload,</li>
+<li>and backup filename involved.</li>
+</ul>
+</li>
+<li>Include smoke-check output (<code>--smoke-only</code> / <code>--no-smoke</code>) or the <code>DB_STRESS_REPORT_FILE</code> artifact for endpoint-level diagnostics.</li>
+<li>If testing rollback behavior, include the <code>--restore-after-clear</code> mode output and note whether <code>restoredAfterClear.success</code> stayed true.</li>
+</ol>
+<h3 id="data-maintenance-stress-test-failures">Data Maintenance Stress Test Failures</h3>
+<p>If the stress test script fails:</p>
+<ol>
+<li>Save the generated report:</li>
+<li><code>export DB_STRESS_REPORT_FILE=/tmp/data-maintenance-stress.json</code></li>
+<li>rerun <code>npm run stress:data-maintenance</code></li>
+<li>or run <code>npm run verify:data-maintenance:e2e -- --base-url http://localhost:3001</code> for full startup + smoke+restore verification</li>
+<li>Attach API request log and the report file to the ticket.</li>
+<li>If failure occurred in GitHub Actions, include artifacts from <code>maintenance-smoke-logs</code>.</li>
+<li>If you see <code>Created backup was not listed by /api/admin/db/backups</code>, verify all maintenance requests hit the same backend instance and that <code>DB_BACKUP_DIR</code> is shared/persistent for that instance.</li>
+</ol>
+<h3 id="voice-api-tests-1-8-failures">Voice API Tests 1-8 Failures</h3>
+<p>If voice tests fail:</p>
+<ol>
+<li>Run the local report command:</li>
+<li><code>npm run test:voice:1-8:report</code></li>
+<li>Attach both artifacts to the support ticket:</li>
+<li><code>/tmp/voice-tests-1-8-latest.json</code></li>
+<li><code>docs/VOICE-TESTS-1-8-LATEST.md</code></li>
+<li>Include the backend and AI service logs around the failure window:</li>
+<li>backend and AI service deploy/runtime logs for the same timestamp window</li>
+<li>If authentication checks fail unexpectedly, include:</li>
+<li><code>AUTH_ENABLED</code>, <code>DISABLE_AUTH</code>, and route middleware config details.</li>
+<li>If invalid-key behavior fails (expected <code>401</code>), include:</li>
+<li>whether <code>x-openai-api-key</code> was provided,</li>
+<li>and whether the same text was used in previous synth requests.</li>
+<li>If telemetry checks fail, include output from:</li>
+<li><code>GET /api/analytics/ai/summary</code> before and after one synth+recognize call.</li>
+</ol>
 <h2 id="severity-guide">Severity guide</h2>
 <table>
 <thead>
@@ -326,7 +380,7 @@ body {
 <li><code>docs/training-suite/README.md</code></li>
 <li><code>docs/training-suite/TRAINING-GUIDE.md</code></li>
 </ul>
-    <div class="footer">Generated 2026-01-16 23:34 UTC</div>
+    <div class="footer">Generated 2026-04-26 20:29 UTC</div>
   </div>
 </body>
 </html>

@@ -14,7 +14,8 @@ const fs = require('fs');
 const dotenv = require('dotenv');
 
 // Load environment variables
-dotenv.config();
+const REPO_ROOT = path.resolve(__dirname, '..', '..');
+dotenv.config({ path: path.join(REPO_ROOT, '.env') });
 
 // Ensure logs directory exists
 const logsDir = path.join(__dirname, 'logs');
@@ -69,25 +70,25 @@ async function setupAndTest() {
   }
   
   // Step 2: Run migrations
-  const migrationResult = runCommand('node run-migration.js', 'Running Database Migrations');
+  const migrationResult = runCommand('node ../migrations/run-migration.js', 'Running Database Migrations');
   if (!migrationResult.success) {
     console.warn('Some migrations failed. Continuing with tests.');
   }
   
   // Step 3: Install pgvector
-  const pgvectorResult = runCommand('node check-pgvector.js', 'Setting up pgvector Extension');
+  const pgvectorResult = runCommand('node ../../tools/check-pgvector.js', 'Setting up pgvector Extension');
   if (!pgvectorResult.success) {
     console.warn('pgvector setup failed. Vector search may not be available.');
   }
   
   // Step 4: Test PostgreSQL connectivity
-  const pgTestResult = runCommand('cd src/backend && node test-db.js', 'Testing PostgreSQL Connectivity');
+  const pgTestResult = runCommand('cd ../../src/backend && node test-db.js', 'Testing PostgreSQL Connectivity');
   if (!pgTestResult.success) {
     console.error('PostgreSQL connectivity test failed.');
   }
   
   // Step 5: Test Redis/cache
-  const redisTestResult = runCommand('cd src/backend && node test-redis.js', 'Testing Redis/Cache Functionality');
+  const redisTestResult = runCommand('cd ../../src/backend && node test-redis.js', 'Testing Redis/Cache Functionality');
   if (!redisTestResult.success) {
     console.error('Redis/cache test failed.');
   }

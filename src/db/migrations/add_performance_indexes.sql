@@ -1,40 +1,68 @@
--- Migration: Add performance indexes
--- Purpose: Optimize database queries for authentication and common lookups
--- These indexes improve query performance without changing data structure
+-- Migration: Add performance indexes and remove duplicate indexes flagged by
+-- Supabase/Postgres advisors.
 
--- Index for user email lookups (login, registration duplicate check)
-CREATE INDEX IF NOT EXISTS idx_users_email ON users(email);
+-- Unique constraints already provide indexes for these lookups.
+DROP INDEX IF EXISTS idx_users_email;
+DROP INDEX IF EXISTS idx_users_username;
+DROP INDEX IF EXISTS idx_users_email_password;
+DROP INDEX IF EXISTS idx_script_analysis_script;
+DROP INDEX IF EXISTS idx_script_analysis_script_id;
+DROP INDEX IF EXISTS idx_documentation_url;
 
--- Index for user username lookups (profile pages, mentions)
-CREATE INDEX IF NOT EXISTS idx_users_username ON users(username);
+DO $$
+BEGIN
+  -- Indexes for common filters and security/account monitoring.
+  IF to_regclass('public.users') IS NOT NULL THEN
+    CREATE INDEX IF NOT EXISTS idx_users_role ON public.users(role);
+    CREATE INDEX IF NOT EXISTS idx_users_locked_until ON public.users(locked_until)
+      WHERE locked_until IS NOT NULL;
+    CREATE INDEX IF NOT EXISTS idx_users_login_attempts ON public.users(login_attempts)
+      WHERE login_attempts > 0;
+    CREATE INDEX IF NOT EXISTS idx_users_last_login ON public.users(last_login_at)
+      WHERE last_login_at IS NOT NULL;
+    CREATE INDEX IF NOT EXISTS idx_users_created_at ON public.users(created_at);
+    EXECUTE 'ANALYZE public.users';
+  END IF;
 
--- Index for user role (admin queries, permission checks)
-CREATE INDEX IF NOT EXISTS idx_users_role ON users(role);
+  -- Foreign key and common relationship indexes.
+  IF to_regclass('public.scripts') IS NOT NULL THEN
+    CREATE INDEX IF NOT EXISTS idx_scripts_category ON public.scripts(category_id);
+    CREATE INDEX IF NOT EXISTS idx_scripts_user ON public.scripts(user_id);
+    CREATE INDEX IF NOT EXISTS idx_scripts_visibility ON public.scripts(is_public, user_id);
+    EXECUTE 'ANALYZE public.scripts';
+  END IF;
 
--- Composite index for login: email + password_hash (covers common query pattern)
-CREATE INDEX IF NOT EXISTS idx_users_email_password ON users(email, password_hash);
+  IF to_regclass('public.script_versions') IS NOT NULL THEN
+    CREATE INDEX IF NOT EXISTS idx_script_versions_script ON public.script_versions(script_id);
+    CREATE INDEX IF NOT EXISTS idx_script_versions_user ON public.script_versions(user_id);
+    EXECUTE 'ANALYZE public.script_versions';
+  END IF;
 
--- Index for finding locked accounts (security monitoring)
-CREATE INDEX IF NOT EXISTS idx_users_locked_until ON users(locked_until) WHERE locked_until IS NOT NULL;
+  IF to_regclass('public.hosted_artifacts') IS NOT NULL THEN
+    CREATE INDEX IF NOT EXISTS idx_hosted_artifacts_user ON public.hosted_artifacts(user_id);
+  END IF;
 
--- Index for login attempts (security monitoring)
-CREATE INDEX IF NOT EXISTS idx_users_login_attempts ON users(login_attempts) WHERE login_attempts > 0;
+  IF to_regclass('public.script_tags') IS NOT NULL THEN
+    CREATE INDEX IF NOT EXISTS idx_script_tags_tag ON public.script_tags(tag_id);
+  END IF;
 
--- Index for last login (user activity reports)
-CREATE INDEX IF NOT EXISTS idx_users_last_login ON users(last_login_at) WHERE last_login_at IS NOT NULL;
+  IF to_regclass('public.comments') IS NOT NULL THEN
+    CREATE INDEX IF NOT EXISTS idx_comments_script ON public.comments(script_id);
+    CREATE INDEX IF NOT EXISTS idx_comments_user ON public.comments(user_id);
+    EXECUTE 'ANALYZE public.comments';
+  END IF;
 
--- Index for created_at (user registration reports, sorting)
-CREATE INDEX IF NOT EXISTS idx_users_created_at ON users(created_at);
+  IF to_regclass('public.execution_logs') IS NOT NULL THEN
+    CREATE INDEX IF NOT EXISTS idx_execution_logs_script ON public.execution_logs(script_id);
+    CREATE INDEX IF NOT EXISTS idx_execution_logs_user ON public.execution_logs(user_id);
+    CREATE INDEX IF NOT EXISTS idx_execution_logs_created_at ON public.execution_logs(created_at);
+  END IF;
 
--- Analyze tables to update statistics for query planner
-ANALYZE users;
-
--- Comments for documentation
-COMMENT ON INDEX idx_users_email IS 'Primary lookup index for email-based authentication';
-COMMENT ON INDEX idx_users_username IS 'Lookup index for username-based searches';
-COMMENT ON INDEX idx_users_role IS 'Filter index for role-based access queries';
-COMMENT ON INDEX idx_users_email_password IS 'Composite index for login query optimization';
-COMMENT ON INDEX idx_users_locked_until IS 'Partial index for locked account monitoring';
-COMMENT ON INDEX idx_users_login_attempts IS 'Partial index for failed login attempt monitoring';
-COMMENT ON INDEX idx_users_last_login IS 'Index for user activity tracking';
-COMMENT ON INDEX idx_users_created_at IS 'Index for user registration timeline queries';
+  IF to_regclass('public.ai_metrics') IS NOT NULL THEN
+    CREATE INDEX IF NOT EXISTS idx_ai_metrics_user_id ON public.ai_metrics(user_id);
+    CREATE INDEX IF NOT EXISTS idx_ai_metrics_endpoint ON public.ai_metrics(endpoint);
+    CREATE INDEX IF NOT EXISTS idx_ai_metrics_model ON public.ai_metrics(model);
+    CREATE INDEX IF NOT EXISTS idx_ai_metrics_created_at ON public.ai_metrics(created_at);
+    CREATE INDEX IF NOT EXISTS idx_ai_metrics_success ON public.ai_metrics(success);
+  END IF;
+END $$;

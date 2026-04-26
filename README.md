@@ -232,17 +232,26 @@ Updated April 12, 2026. All deprecated models (gpt-4o, gpt-4o-mini, gpt-3.5-turb
 
 - Node.js 18+
 - Python 3.10+
-- Docker Engine with `docker compose`
+- Netlify CLI, if you want to run the Netlify frontend locally
 
-### Full stack (Docker)
+### Netlify frontend
 
 ```bash
 npm run install:all
-python -m pip install -r src/ai/requirements.txt
-docker compose up -d --build
+cd src/frontend && npm run build
 ```
 
-Open `https://127.0.0.1:3090`
+The repository is linked to Netlify project `psscript` and builds from
+`src/frontend` using the root `netlify.toml`.
+
+Primary site: `http://psscript.netlify.app`
+
+Set these Netlify environment variables for production:
+
+```text
+VITE_API_URL=https://your-backend-domain/api
+VITE_DISABLE_AUTH=false
+```
 
 ### Individual services
 
@@ -260,6 +269,12 @@ cd src/ai && pip install -r requirements.txt && python main.py
 ### Local dev auth
 
 The default local stack commonly runs with `DISABLE_AUTH=true` and `VITE_DISABLE_AUTH=true`, so the UI auto-enters the app shell as `dev-admin`. For a real login pass, run a separate frontend/backend pair with both flags set to `false`.
+
+### Retired Docker files
+
+Docker is no longer the default runtime for this app. Former Compose files,
+Dockerfiles, Docker scripts, and Docker CI workflows are archived under
+`retired/docker/` for reference only.
 
 ### Current UI shell
 
@@ -329,7 +344,7 @@ psscript/
 ├── .github/                  # Workflows, issue templates, PR template
 ├── docs/                     # Active docs, screenshots, exports, archive
 ├── docs-site/                # Documentation site assets and screenshot variants
-├── docker/                   # Docker support services and backup tooling
+├── retired/docker/           # Archived Docker-era configs and scripts
 ├── scripts/                  # Operational scripts and validation helpers
 ├── src/
 │   ├── backend/              # Express API (TypeScript)
@@ -352,7 +367,7 @@ psscript/
 ├── tests/e2e/                # Playwright E2E tests
 ├── crawl4ai-vector-db/       # Support project for crawl/vector search workflows
 ├── product-website/          # Product/marketing website assets
-└── docker-compose.yml        # Full stack orchestration
+└── netlify.toml              # Netlify frontend build configuration
 ```
 
 ---
@@ -423,7 +438,7 @@ Full details: [PROJECT-REVIEW-2026-04-01.md](./docs/PROJECT-REVIEW-2026-04-01.md
 | [Repository Organization](./docs/REPOSITORY-ORGANIZATION.md) | Repo layout, docs taxonomy, and cleanup backlog |
 | [Data Maintenance](./docs/DATA-MAINTENANCE.md) | Admin backup, restore, cleanup |
 | [Voice API](./docs/README-VOICE-API.md) | Voice/listening implementation |
-| [Deployment Platforms](./docs/DEPLOYMENT-PLATFORMS.md) | Render, Netlify, Docker configs |
+| [Deployment Platforms](./docs/DEPLOYMENT-PLATFORMS.md) | Netlify frontend, hosted API/AI, Supabase Postgres |
 | [Project Review](./docs/PROJECT-REVIEW-2026-04-01.md) | April 2026 comprehensive review |
 | [AI Functions Review](./docs/AI-FUNCTIONS-REVIEW-2026-04-02.md) | AI audit and model migration |
 | [Documentation Hub](./docs/index.md) | Full docs index |

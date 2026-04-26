@@ -65,7 +65,7 @@ const upload = multer({
 // Queue item with userId for proper ownership tracking
 interface QueueItem {
   uploadId: string;
-  userId: number;
+  userId: number | string;
 }
 
 export class AsyncUploadController {

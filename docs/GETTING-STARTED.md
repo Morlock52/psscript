@@ -1,12 +1,18 @@
 # PSScript - Getting Started Guide
 
-This guide reflects the current checked-in local development setup as of April 12, 2026.
+This guide reflects the current checked-in Netlify and Supabase setup as of April 26, 2026.
 
 ## Canonical local URLs
 
 - Frontend: `https://127.0.0.1:3090`
 - Backend API: `https://127.0.0.1:4000`
 - AI service: `http://127.0.0.1:8000`
+
+## Production targets
+
+- Netlify frontend: `http://psscript.netlify.app`
+- Database: hosted Supabase Postgres via `DATABASE_URL`
+- Backend and AI service: hosted services configured through environment variables
 
 ## Current local auth behavior
 
@@ -28,29 +34,30 @@ If you need to validate real login behavior, run a separate frontend/backend pai
 
 - Node.js 18+
 - Python 3.10+
-- Docker Engine with `docker compose`
-- PostgreSQL 15+ with `pgvector`
-- Redis 7+
+- Netlify CLI for Netlify-compatible local builds
+- A hosted Supabase Postgres database URL in `DATABASE_URL`
+- Redis URL when running the backend with cache support
 
 ## Quick start
 
 ```bash
 npm run install:all
 python -m pip install -r src/ai/requirements.txt
-docker compose -f docker-compose.yml -f docker-compose.override.yml up -d --build
+cd src/frontend && npm run build
+npm run netlify:build
 ```
 
-Or start services individually:
+For full local app testing, start services individually against Supabase:
 
 ```bash
 # backend
-cd src/backend && npm install && npm run dev
+cd src/backend && DATABASE_URL="$DATABASE_URL" DB_PROFILE=supabase DB_SSL=true npm run dev
 
 # frontend
 cd src/frontend && npm install && npm run dev
 
 # ai service
-cd src/ai && python -m pip install -r requirements.txt && python main.py
+cd src/ai && DATABASE_URL="$DATABASE_URL" DB_SSL=true python main.py
 ```
 
 ## Recommended first validation steps
@@ -86,10 +93,14 @@ PLAYWRIGHT_STACK_MODE=local npx playwright test tests/e2e/project-review-validat
 Refresh the checked-in screenshots with:
 
 ```bash
-SCREENSHOT_LOGIN_URL=https://127.0.0.1:3191 node scripts/capture-screenshots.js
+SCREENSHOT_BASE_URL=https://127.0.0.1:3090 \
+SCREENSHOT_LOGIN_URL=http://127.0.0.1:3191 \
+node scripts/capture-screenshots.js
 ```
 
 Use `3191` only when you have an auth-enabled frontend running there for the real login screen. The rest of the screenshot set can still come from the default local app on `3090`.
+
+Docker-era setup files and docs are archived under `../retired/docker/` for reference only.
 
 ## Optional local Git auto-update
 

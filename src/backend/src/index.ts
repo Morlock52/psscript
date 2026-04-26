@@ -51,18 +51,16 @@ dotenv.config();
 const app = express();
 app.use(express.static(path.join(process.cwd(), 'src', 'backend', 'src', 'public')));
 
-// Serve documentation files - handle both Docker (mounted at /docs) and local development
-const isDocker = process.env.DOCKER_ENV === 'true' || existsSync('/docs/exports');
-const docsExportsDir = isDocker
-  ? '/docs/exports'
-  : path.resolve(__dirname, '../../../docs/exports');
-console.log(`Docs exports directory: ${docsExportsDir} (Docker: ${isDocker})`);
+// Serve generated documentation exports when present in local or hosted builds.
+const hostedDocsExportsDir = process.env.DOCS_EXPORTS_DIR;
+const docsExportsDir = hostedDocsExportsDir || path.resolve(__dirname, '../../../docs/exports');
+console.log(`Docs exports directory: ${docsExportsDir} (exists: ${existsSync(docsExportsDir)})`);
 app.use('/docs/exports', express.static(docsExportsDir));
 const port = process.env.PORT ? parseInt(process.env.PORT, 10) : 4000;
 const _isProduction = process.env.NODE_ENV === 'production';
 
 // Log startup details
-console.log(`Starting server: PORT=${port}, ENV=${process.env.NODE_ENV || 'development'}, DOCKER=${process.env.DOCKER_ENV || 'false'}`);
+console.log(`Starting server: PORT=${port}, ENV=${process.env.NODE_ENV || 'development'}`);
 
 import db from './database/connection';
 import { validateTlsConfiguration } from './utils/secureHttpClient';

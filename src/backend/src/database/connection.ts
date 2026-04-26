@@ -5,7 +5,7 @@
  * Features:
  * - Connection pooling
  * - Automatic reconnection with exponential backoff
- * - Environment detection (Docker vs local)
+ * - Hosted and local development connection modes
  * - Health checks and connection validation
  */
 
@@ -14,7 +14,11 @@ import winston from 'winston';
 import fs from 'fs';
 import path from 'path';
 import { EventEmitter } from 'events';
-import { IS_PRODUCTION, IS_DEVELOPMENT } from '../utils/envValidation';
+import {
+  IS_PRODUCTION,
+  IS_DEVELOPMENT,
+  databaseSslEnabled,
+} from '../utils/envValidation';
 
 // Configure logger
 const logger = winston.createLogger({
@@ -54,6 +58,30 @@ const POOL_MAX = 10;
 const POOL_MIN = 0;
 const POOL_ACQUIRE_TIMEOUT_MS = 30000;
 const POOL_IDLE_TIMEOUT_MS = 10000;
+
+function parseIntegerEnv(names: string[], fallback: number, minimum = 0): number {
+  const value = names.map((name) => process.env[name]).find(Boolean);
+
+  if (!value) {
+    return fallback;
+  }
+
+  const parsed = Number.parseInt(value, 10);
+  return Number.isFinite(parsed) && parsed >= minimum ? parsed : fallback;
+}
+
+function getConnectionTimeoutMs(): number {
+  return parseIntegerEnv(['DB_CONNECTION_TIMEOUT_MS'], CONNECTION_TIMEOUT_MS, 1);
+}
+
+function getPoolConfig() {
+  return {
+    max: parseIntegerEnv(['DB_POOL_MAX'], POOL_MAX, 1),
+    min: parseIntegerEnv(['DB_POOL_MIN'], POOL_MIN, 0),
+    acquire: parseIntegerEnv(['DB_POOL_ACQUIRE_MS', 'DB_POOL_ACQUIRE'], POOL_ACQUIRE_TIMEOUT_MS, 1),
+    idle: parseIntegerEnv(['DB_POOL_IDLE_MS', 'DB_POOL_IDLE'], POOL_IDLE_TIMEOUT_MS, 1),
+  };
+}
 
 // Error type definitions for better error handling
 enum ConnectionErrorType {
@@ -143,21 +171,20 @@ function getErrorType(error: any): ConnectionErrorType {
 }
 
 function getConnectionConfigInfo() {
+  const pool = getPoolConfig();
+  const connectionTimeout = getConnectionTimeoutMs();
+
   if (process.env.DATABASE_URL) {
     try {
       const dbUrl = new URL(process.env.DATABASE_URL);
       return {
         host: dbUrl.hostname || 'localhost',
-        port: parseInt(dbUrl.port || '5432', 10),
+        port: Number.parseInt(dbUrl.port || '5432', 10),
         database: dbUrl.pathname ? dbUrl.pathname.replace(/^\//, '') : 'psscript',
         username: dbUrl.username || 'postgres',
-        pool: {
-          max: process.env.DB_POOL_MAX ? parseInt(process.env.DB_POOL_MAX, 10) : POOL_MAX,
-          min: POOL_MIN,
-          acquire: POOL_ACQUIRE_TIMEOUT_MS,
-          idle: POOL_IDLE_TIMEOUT_MS
-        },
-        connectionTimeout: CONNECTION_TIMEOUT_MS,
+        ssl: databaseSslEnabled(process.env.DATABASE_URL),
+        pool,
+        connectionTimeout,
         maxRetries: MAX_CONNECTION_RETRIES,
         dialect: 'postgres' as const
       };
@@ -168,16 +195,12 @@ function getConnectionConfigInfo() {
 
   return {
     host: process.env.DB_HOST || 'localhost',
-    port: parseInt(process.env.DB_PORT || '5432', 10),
+    port: Number.parseInt(process.env.DB_PORT || '5432', 10),
     database: process.env.DB_NAME || 'psscript',
     username: process.env.DB_USER || 'postgres',
-    pool: {
-      max: process.env.DB_POOL_MAX ? parseInt(process.env.DB_POOL_MAX, 10) : POOL_MAX,
-      min: POOL_MIN,
-      acquire: POOL_ACQUIRE_TIMEOUT_MS,
-      idle: POOL_IDLE_TIMEOUT_MS
-    },
-    connectionTimeout: CONNECTION_TIMEOUT_MS,
+    ssl: databaseSslEnabled(),
+    pool,
+    connectionTimeout,
     maxRetries: MAX_CONNECTION_RETRIES,
     dialect: 'postgres' as const
   };
@@ -211,7 +234,7 @@ function updateConnectionStateFromError(error: any) {
   dbDiagnosticState.consecutiveFailures += 1;
   dbDiagnosticState.lastError = error instanceof Error ? error : new Error(String(error));
   dbDiagnosticState.errorStats[errorType] = (dbDiagnosticState.errorStats[errorType] || 0) + 1;
-  connectionEvents.emit('error', {
+  connectionEvents.emit('connectionError', {
     timestamp: now,
     type: errorType,
     message: dbDiagnosticState.lastError.message
@@ -270,7 +293,52 @@ async function markMigrationApplied(sequelize: Sequelize, name: string): Promise
   );
 }
 
-export async function ensureRuntimeCompatibility(sequelize: Sequelize): Promise<void> {
+async function publicTableExists(sequelize: Sequelize, tableName: string): Promise<boolean> {
+  const rows = await sequelize.query<{ exists: boolean }>(
+    `SELECT to_regclass(:qualifiedName) IS NOT NULL AS "exists"`,
+    {
+      replacements: { qualifiedName: `public.${tableName}` },
+      type: QueryTypes.SELECT
+    }
+  );
+
+  return Boolean(rows[0]?.exists);
+}
+
+async function hardenExtensionPlacement(sequelize: Sequelize): Promise<void> {
+  await sequelize.query(`
+    CREATE SCHEMA IF NOT EXISTS extensions;
+  `);
+
+  await sequelize.query(`
+    DO $$
+    BEGIN
+      IF EXISTS (SELECT 1 FROM pg_extension WHERE extname = 'vector') THEN
+        BEGIN
+          ALTER EXTENSION vector SET SCHEMA extensions;
+        EXCEPTION WHEN OTHERS THEN
+          RAISE NOTICE 'Skipping vector extension schema move: %', SQLERRM;
+        END;
+      END IF;
+
+      IF EXISTS (SELECT 1 FROM pg_extension WHERE extname = 'pgcrypto') THEN
+        BEGIN
+          ALTER EXTENSION pgcrypto SET SCHEMA extensions;
+        EXCEPTION WHEN OTHERS THEN
+          RAISE NOTICE 'Skipping pgcrypto extension schema move: %', SQLERRM;
+        END;
+      END IF;
+
+      BEGIN
+        EXECUTE format('ALTER DATABASE %I SET search_path = public, extensions', current_database());
+      EXCEPTION WHEN OTHERS THEN
+        RAISE NOTICE 'Skipping database search_path update: %', SQLERRM;
+      END;
+    END $$;
+  `);
+}
+
+async function ensureLegacyUsersCompatibility(sequelize: Sequelize): Promise<void> {
   await sequelize.query(`
     ALTER TABLE users
       ADD COLUMN IF NOT EXISTS locked_until TIMESTAMP WITH TIME ZONE;
@@ -300,36 +368,128 @@ export async function ensureRuntimeCompatibility(sequelize: Sequelize): Promise<
   `);
 
   await markMigrationApplied(sequelize, '20260412_fix_users_locked_until_column.sql');
+}
 
-  // Self-heal legacy local databases that predate newer migrations.
+async function ensureAiMetricsCompatibility(
+  sequelize: Sequelize,
+  hasUsersTable: boolean,
+  hasAppProfilesTable: boolean
+): Promise<void> {
+  const hasAiMetricsTable = await publicTableExists(sequelize, 'ai_metrics');
+
+  if (!hasAiMetricsTable) {
+    if (hasAppProfilesTable) {
+      await sequelize.query(`
+        CREATE TABLE IF NOT EXISTS ai_metrics (
+          id BIGSERIAL PRIMARY KEY,
+          user_id UUID REFERENCES app_profiles(id) ON DELETE SET NULL,
+          endpoint TEXT NOT NULL,
+          model TEXT NOT NULL,
+          prompt_tokens INTEGER NOT NULL DEFAULT 0,
+          completion_tokens INTEGER NOT NULL DEFAULT 0,
+          total_tokens INTEGER NOT NULL DEFAULT 0,
+          total_cost NUMERIC(10, 6) NOT NULL DEFAULT 0,
+          latency INTEGER NOT NULL DEFAULT 0,
+          success BOOLEAN NOT NULL DEFAULT true,
+          error_message TEXT,
+          request_payload JSONB,
+          response_payload JSONB,
+          created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
+        );
+      `);
+    } else if (hasUsersTable) {
+      await sequelize.query(`
+        CREATE TABLE IF NOT EXISTS ai_metrics (
+          id SERIAL PRIMARY KEY,
+          user_id INTEGER REFERENCES users(id) ON DELETE SET NULL,
+          endpoint VARCHAR(255) NOT NULL,
+          model VARCHAR(255) NOT NULL,
+          prompt_tokens INTEGER NOT NULL DEFAULT 0,
+          completion_tokens INTEGER NOT NULL DEFAULT 0,
+          total_tokens INTEGER NOT NULL DEFAULT 0,
+          total_cost DECIMAL(10, 6) NOT NULL DEFAULT 0,
+          latency INTEGER NOT NULL DEFAULT 0,
+          success BOOLEAN NOT NULL DEFAULT true,
+          error_message TEXT,
+          request_payload JSONB,
+          response_payload JSONB,
+          created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
+        );
+      `);
+    }
+  }
+
+  if (await publicTableExists(sequelize, 'ai_metrics')) {
+    await sequelize.query(`
+      CREATE INDEX IF NOT EXISTS idx_ai_metrics_user_id ON ai_metrics(user_id);
+      CREATE INDEX IF NOT EXISTS idx_ai_metrics_endpoint ON ai_metrics(endpoint);
+      CREATE INDEX IF NOT EXISTS idx_ai_metrics_model ON ai_metrics(model);
+      CREATE INDEX IF NOT EXISTS idx_ai_metrics_created_at ON ai_metrics(created_at);
+      CREATE INDEX IF NOT EXISTS idx_ai_metrics_success ON ai_metrics(success);
+    `);
+
+    await markMigrationApplied(sequelize, '20260412_create_ai_metrics_table.sql');
+  }
+}
+
+export async function ensureRuntimeCompatibility(sequelize: Sequelize): Promise<void> {
+  const hasUsersTable = await publicTableExists(sequelize, 'users');
+  const hasAppProfilesTable = await publicTableExists(sequelize, 'app_profiles');
+
+  await hardenExtensionPlacement(sequelize);
+
+  if (hasUsersTable) {
+    await ensureLegacyUsersCompatibility(sequelize);
+  }
+
+  await ensureAiMetricsCompatibility(sequelize, hasUsersTable, hasAppProfilesTable);
+
   await sequelize.query(`
-    CREATE TABLE IF NOT EXISTS ai_metrics (
-      id SERIAL PRIMARY KEY,
-      user_id INTEGER REFERENCES users(id) ON DELETE SET NULL,
-      endpoint VARCHAR(255) NOT NULL,
-      model VARCHAR(255) NOT NULL,
-      prompt_tokens INTEGER NOT NULL DEFAULT 0,
-      completion_tokens INTEGER NOT NULL DEFAULT 0,
-      total_tokens INTEGER NOT NULL DEFAULT 0,
-      total_cost DECIMAL(10, 6) NOT NULL DEFAULT 0,
-      latency INTEGER NOT NULL DEFAULT 0,
-      success BOOLEAN NOT NULL DEFAULT true,
-      error_message TEXT,
-      request_payload JSONB,
-      response_payload JSONB,
-      created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
-    );
+    DO $$
+    BEGIN
+      IF to_regclass('public.script_versions') IS NOT NULL THEN
+        CREATE INDEX IF NOT EXISTS idx_script_versions_user ON script_versions(user_id);
+      END IF;
+
+      IF to_regclass('public.hosted_artifacts') IS NOT NULL THEN
+        CREATE INDEX IF NOT EXISTS idx_hosted_artifacts_user ON hosted_artifacts(user_id);
+      END IF;
+
+      IF to_regclass('public.comments') IS NOT NULL THEN
+        CREATE INDEX IF NOT EXISTS idx_comments_script ON comments(script_id);
+        CREATE INDEX IF NOT EXISTS idx_comments_user ON comments(user_id);
+      END IF;
+
+      IF to_regclass('public.script_dependencies') IS NOT NULL THEN
+        CREATE INDEX IF NOT EXISTS idx_script_dependencies_child ON script_dependencies(child_script_id);
+      END IF;
+
+      IF to_regclass('public.script_tags') IS NOT NULL THEN
+        CREATE INDEX IF NOT EXISTS idx_script_tags_tag ON script_tags(tag_id);
+      END IF;
+
+      IF to_regclass('public.user_favorites') IS NOT NULL THEN
+        CREATE INDEX IF NOT EXISTS idx_user_favorites_script ON user_favorites(script_id);
+      END IF;
+
+      IF to_regclass('public.script_analysis_script_id_key') IS NOT NULL
+         AND to_regclass('public.idx_script_analysis_script') IS NOT NULL THEN
+        DROP INDEX public.idx_script_analysis_script;
+      END IF;
+
+      IF to_regprocedure('public.update_updated_at_column()') IS NOT NULL THEN
+        ALTER FUNCTION public.update_updated_at_column()
+          SET search_path = public, extensions, pg_catalog;
+      END IF;
+
+      IF to_regprocedure('public.update_chat_history_updated_at()') IS NOT NULL THEN
+        ALTER FUNCTION public.update_chat_history_updated_at()
+          SET search_path = public, extensions, pg_catalog;
+      END IF;
+    END $$;
   `);
 
-  await sequelize.query(`
-    CREATE INDEX IF NOT EXISTS idx_ai_metrics_user_id ON ai_metrics(user_id);
-    CREATE INDEX IF NOT EXISTS idx_ai_metrics_endpoint ON ai_metrics(endpoint);
-    CREATE INDEX IF NOT EXISTS idx_ai_metrics_model ON ai_metrics(model);
-    CREATE INDEX IF NOT EXISTS idx_ai_metrics_created_at ON ai_metrics(created_at);
-    CREATE INDEX IF NOT EXISTS idx_ai_metrics_success ON ai_metrics(success);
-  `);
-
-  await markMigrationApplied(sequelize, '20260412_create_ai_metrics_table.sql');
+  await markMigrationApplied(sequelize, '20260426_supabase_runtime_compatibility.sql');
 
   const scoreColumns = await sequelize.query<
     { column_name: string; data_type: string }
@@ -376,17 +536,21 @@ class Database {
    * - Production: Require SSL with certificate validation
    * - Development: SSL optional, can use self-signed certs
    */
-  private getSSLConfig(): object | undefined {
-    const useSSL = process.env.DB_SSL === 'true';
+  private getSSLConfig(databaseUrl?: string): object | undefined {
+    const useSSL = databaseSslEnabled(databaseUrl);
 
     if (!useSSL) {
       return undefined;
     }
 
+    const caPath = process.env.DB_SSL_CA_PATH;
+    const rejectUnauthorized = process.env.DB_SSL_REJECT_UNAUTHORIZED
+      ? process.env.DB_SSL_REJECT_UNAUTHORIZED !== 'false'
+      : !IS_DEVELOPMENT;
+
     // In production, ALWAYS validate SSL certificates
     // This prevents man-in-the-middle attacks
     if (IS_PRODUCTION) {
-      const caPath = process.env.DB_SSL_CA_PATH;
       return {
         require: true,
         rejectUnauthorized: true, // CRITICAL: Always verify certs in production
@@ -396,17 +560,21 @@ class Database {
 
     // In development, allow self-signed certificates with warning
     if (IS_DEVELOPMENT) {
-      logger.warn('⚠️  SSL certificate validation disabled in development mode');
+      if (!rejectUnauthorized) {
+        logger.warn('⚠️  SSL certificate validation disabled in development mode');
+      }
       return {
         require: true,
-        rejectUnauthorized: false // Only acceptable in development
+        rejectUnauthorized,
+        ca: caPath ? fs.readFileSync(caPath).toString() : undefined
       };
     }
 
     // Default: require validation
     return {
       require: true,
-      rejectUnauthorized: true
+      rejectUnauthorized,
+      ca: caPath ? fs.readFileSync(caPath).toString() : undefined
     };
   }
 
@@ -415,23 +583,22 @@ class Database {
    */
   private getConfig(): Options {
     const databaseUrl = process.env.DATABASE_URL;
-    const sslConfig = this.getSSLConfig();
+    const sslConfig = this.getSSLConfig(databaseUrl);
+    const pool = getPoolConfig();
+    const connectionTimeout = getConnectionTimeoutMs();
+    const dialectOptions = {
+      ssl: sslConfig,
+      connectTimeout: connectionTimeout,
+      application_name: process.env.DB_APPLICATION_NAME || 'psscript-api'
+    };
 
     // Use DATABASE_URL if available
     if (databaseUrl) {
       return {
         dialect: 'postgres',
         logging: (msg) => logger.debug(msg),
-        dialectOptions: {
-          ssl: sslConfig,
-          connectTimeout: CONNECTION_TIMEOUT_MS
-        },
-        pool: {
-          max: POOL_MAX,
-          min: POOL_MIN,
-          acquire: POOL_ACQUIRE_TIMEOUT_MS,
-          idle: POOL_IDLE_TIMEOUT_MS
-        },
+        dialectOptions,
+        pool,
         retry: {
           max: 3,
           match: [/Deadlock/i]
@@ -442,7 +609,7 @@ class Database {
     // Otherwise use individual connection parameters
     // Log connection details (password obfuscated for security)
     const host = process.env.DB_HOST || 'localhost';
-    const port = parseInt(process.env.DB_PORT || '5432');
+    const port = Number.parseInt(process.env.DB_PORT || '5432', 10);
     const database = process.env.DB_NAME || 'psscript';
     const username = process.env.DB_USER || 'postgres';
     const password = process.env.DB_PASSWORD || 'postgres';
@@ -460,16 +627,8 @@ class Database {
       password,
       dialect: 'postgres',
       logging: (msg) => logger.debug(msg),
-      dialectOptions: {
-        ssl: sslConfig,
-        connectTimeout: CONNECTION_TIMEOUT_MS
-      },
-      pool: {
-        max: POOL_MAX,
-        min: POOL_MIN,
-        acquire: POOL_ACQUIRE_TIMEOUT_MS,
-        idle: POOL_IDLE_TIMEOUT_MS
-      },
+      dialectOptions,
+      pool,
       retry: {
         max: 3,
         match: [/Deadlock/i]

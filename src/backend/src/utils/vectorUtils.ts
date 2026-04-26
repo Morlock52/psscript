@@ -5,11 +5,7 @@ import { sequelize } from '../database/connection';
 import logger from './logger';
 import axios from 'axios';
 
-// Determine AI service URL based on environment
-const isDocker = process.env.DOCKER_ENV === 'true';
-const AI_SERVICE_URL = isDocker 
-  ? (process.env.AI_SERVICE_URL || 'http://ai-service:8000')
-  : (process.env.AI_SERVICE_URL || 'http://localhost:8000');
+const AI_SERVICE_URL = process.env.AI_SERVICE_URL || 'http://localhost:8000';
 
 /**
  * Generate embedding for text using the AI service
@@ -104,7 +100,7 @@ export const searchByVector = async (
 
     // Build WHERE clause using parameterized values for threshold
     // Note: vector comparison uses parameterized vectorString in replacements
-    let whereClause = `1 - (s.embedding <=> :vectorString::vector) > :threshold`;
+    let whereClause = `1 - (se.embedding <=> :vectorString::vector) > :threshold`;
     const replacements: any = {
       vectorString,
       threshold
@@ -167,15 +163,16 @@ export const searchByVector = async (
         s.is_public as "isPublic",
         s.created_at as "createdAt",
         s.updated_at as "updatedAt",
-        s.file_path as "filePath",
         s.file_hash as "fileHash",
-        1 - (s.embedding <=> :vectorString::vector) as similarity
+        1 - (se.embedding <=> :vectorString::vector) as similarity
       FROM
         scripts s
+      JOIN
+        script_embeddings se ON se.script_id = s.id
       WHERE
         ${whereClause}
       ORDER BY
-        similarity DESC
+        se.embedding <=> :vectorString::vector
       LIMIT :limit;
     `, {
       replacements,
@@ -240,7 +237,7 @@ export const findSimilarScripts = async (
   try {
     // Get the script's embedding
     const result = await sequelize.query(`
-      SELECT embedding FROM scripts WHERE id = :scriptId;
+      SELECT embedding FROM script_embeddings WHERE script_id = :scriptId;
     `, {
       replacements: { scriptId },
       type: 'SELECT',
@@ -255,9 +252,9 @@ export const findSimilarScripts = async (
     }
     
     // Convert embedding to array if it's not already
-    const embedding = Array.isArray(scriptResult.embedding) 
-      ? scriptResult.embedding 
-      : JSON.parse(scriptResult.embedding);
+    const embedding = Array.isArray(scriptResult.embedding)
+      ? `[${scriptResult.embedding.join(',')}]`
+      : String(scriptResult.embedding);
     
     // Search for similar scripts
     const [results] = await sequelize.query(`
@@ -272,19 +269,21 @@ export const findSimilarScripts = async (
         s.is_public as "isPublic",
         s.created_at as "createdAt",
         s.updated_at as "updatedAt",
-        1 - (s.embedding <=> :embedding) as similarity
+        1 - (se.embedding <=> :embedding::vector) as similarity
       FROM 
         scripts s
+      JOIN
+        script_embeddings se ON se.script_id = s.id
       WHERE 
         s.id != :scriptId AND
-        1 - (s.embedding <=> :embedding) > :threshold
+        1 - (se.embedding <=> :embedding::vector) > :threshold
       ORDER BY 
-        similarity DESC
+        se.embedding <=> :embedding::vector
       LIMIT :limit;
     `, {
       replacements: { 
         scriptId,
-        embedding: JSON.stringify(embedding),
+        embedding,
         threshold,
         limit
       },

@@ -3,14 +3,12 @@ set -euo pipefail
 
 ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 LOG_DIR="$ROOT_DIR/output/playwright"
-MODE="${PLAYWRIGHT_STACK_MODE:-auto}"
-SERVICES=(postgres redis ai-service backend frontend)
+MODE="${PLAYWRIGHT_STACK_MODE:-local}"
 
 mkdir -p "$LOG_DIR"
 cd "$ROOT_DIR"
 
 PIDS=()
-DOCKER_STARTED=false
 
 log() {
   printf '[playwright-stack] %s\n' "$*"
@@ -58,68 +56,35 @@ wait_for_http() {
   return 1
 }
 
-docker_available() {
-  command_exists docker &&
-    docker compose version >/dev/null 2>&1 &&
-    docker info >/dev/null 2>&1
-}
-
-start_brew_service_if_needed() {
-  local service_name="$1"
-  local label="$2"
-
-  if brew services list | awk 'NR > 1 { print $1 " " $2 }' | grep -q "^${service_name} started$"; then
-    return 0
-  fi
-
-  log "starting $label via brew services"
-  brew services start "$service_name" >/dev/null
-}
-
-ensure_local_postgres() {
-  if command_exists pg_isready && pg_isready -h 127.0.0.1 -p 5432 -d psscript -U postgres >/dev/null 2>&1; then
-    return 0
-  fi
-
-  if command_exists brew; then
-    if brew services list | awk 'NR > 1 { print $1 }' | grep -qx 'postgresql@16'; then
-      start_brew_service_if_needed "postgresql@16" "PostgreSQL"
-    elif brew services list | awk 'NR > 1 { print $1 }' | grep -qx 'postgresql'; then
-      start_brew_service_if_needed "postgresql" "PostgreSQL"
-    fi
-  fi
-
-  if command_exists pg_isready && pg_isready -h 127.0.0.1 -p 5432 -d psscript -U postgres >/dev/null 2>&1; then
-    return 0
-  fi
-
-  log "local PostgreSQL is required for PLAYWRIGHT_STACK_MODE=local"
-  return 1
-}
-
-ensure_local_redis() {
-  if command_exists redis-cli && redis-cli -h 127.0.0.1 -p 6379 ping >/dev/null 2>&1; then
-    return 0
-  fi
-
-  if command_exists brew && brew services list | awk 'NR > 1 { print $1 }' | grep -qx 'redis'; then
-    start_brew_service_if_needed "redis" "Redis"
-  fi
-
-  if command_exists redis-cli && redis-cli -h 127.0.0.1 -p 6379 ping >/dev/null 2>&1; then
-    return 0
-  fi
-
-  log "local Redis is required for PLAYWRIGHT_STACK_MODE=local"
-  return 1
-}
-
 require_local_prereq() {
   local cmd="$1"
   local description="$2"
 
   if ! command_exists "$cmd"; then
     log "$description is required for PLAYWRIGHT_STACK_MODE=local"
+    exit 1
+  fi
+}
+
+load_root_env() {
+  if [[ -f "$ROOT_DIR/.env" ]]; then
+    set -a
+    # shellcheck disable=SC1091
+    source "$ROOT_DIR/.env"
+    set +a
+  fi
+}
+
+require_supabase_database_url() {
+  if [[ -z "${DATABASE_URL:-}" ]]; then
+    log "DATABASE_URL must be set for Playwright local mode; it should point at hosted Supabase Postgres"
+    exit 1
+  fi
+
+  if [[ "${DB_PROFILE:-}" != "supabase" &&
+        "$DATABASE_URL" != *".supabase.co"* &&
+        "$DATABASE_URL" != *".pooler.supabase.com"* ]]; then
+    log "DATABASE_URL does not look like a Supabase host; set DB_PROFILE=supabase to confirm this is intentional"
     exit 1
   fi
 }
@@ -148,27 +113,14 @@ cleanup() {
     fi
   done
 
-  if [[ "$DOCKER_STARTED" == true ]]; then
-    docker compose stop "${SERVICES[@]}" >/dev/null 2>&1 || true
-  fi
-}
-
-start_docker_stack() {
-  if ! docker_available; then
-    log "docker mode requested but Docker Engine is not available"
-    exit 1
-  fi
-
-  DOCKER_STARTED=true
-  exec docker compose up --build "${SERVICES[@]}"
 }
 
 start_local_stack() {
+  load_root_env
   require_local_prereq python "python"
   require_local_prereq npm "npm"
   require_local_prereq curl "curl"
-  ensure_local_postgres
-  ensure_local_redis
+  require_supabase_database_url
 
   local ai_log="$LOG_DIR/ai-service.log"
   local backend_log="$LOG_DIR/backend.log"
@@ -182,12 +134,10 @@ start_local_stack() {
       env \
       OPENAI_API_KEY="${OPENAI_API_KEY:-}" \
       ANTHROPIC_API_KEY="${ANTHROPIC_API_KEY:-}" \
-      DB_HOST=127.0.0.1 \
-      DB_PORT=5432 \
-      DB_NAME=psscript \
-      DB_USER=postgres \
-      DB_PASSWORD=postgres \
-      REDIS_URL=redis://127.0.0.1:6379 \
+      DATABASE_URL="$DATABASE_URL" \
+      DB_PROFILE="${DB_PROFILE:-supabase}" \
+      DB_SSL="${DB_SSL:-true}" \
+      REDIS_URL="${REDIS_URL:-}" \
       python -m uvicorn main:app --host 0.0.0.0 --port 8000
   fi
 
@@ -204,12 +154,10 @@ start_local_stack() {
       DISABLE_AUTH=true \
       RELAX_RATE_LIMITS=true \
       RATE_LIMIT_MULTIPLIER=20 \
-      DB_HOST=127.0.0.1 \
-      DB_PORT=5432 \
-      DB_NAME=psscript \
-      DB_USER=postgres \
-      DB_PASSWORD=postgres \
-      REDIS_URL=redis://127.0.0.1:6379 \
+      DATABASE_URL="$DATABASE_URL" \
+      DB_PROFILE="${DB_PROFILE:-supabase}" \
+      DB_SSL="${DB_SSL:-true}" \
+      REDIS_URL="${REDIS_URL:-}" \
       AI_SERVICE_URL=http://127.0.0.1:8000 \
       JWT_SECRET=development_jwt_secret_key_change_in_production \
       TLS_CERT="$ROOT_DIR/certs/backend.crt" \
@@ -250,19 +198,15 @@ start_local_stack() {
 trap cleanup EXIT INT TERM
 
 case "$MODE" in
-  docker)
-    start_docker_stack
-    ;;
   local)
     start_local_stack
     ;;
   auto)
-    if docker_available; then
-      start_docker_stack
-    else
-      log "Docker is unavailable; falling back to local services"
-      start_local_stack
-    fi
+    start_local_stack
+    ;;
+  docker)
+    log "docker mode has been retired; use PLAYWRIGHT_STACK_MODE=local with DATABASE_URL pointing at Supabase"
+    exit 1
     ;;
   *)
     log "unsupported PLAYWRIGHT_STACK_MODE: $MODE"

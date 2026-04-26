@@ -10,10 +10,7 @@ import logger from '../utils/logger';
 const router = express.Router();
 router.use(corsMiddleware);
 
-const isDocker = process.env.DOCKER_ENV === 'true';
-const AI_SERVICE_URL = isDocker
-  ? (process.env.AI_SERVICE_URL || 'http://ai-service:8000')
-  : (process.env.AI_SERVICE_URL || 'http://localhost:8000');
+const AI_SERVICE_URL = process.env.AI_SERVICE_URL || 'http://localhost:8000';
 const AI_REQUEST_TIMEOUT_MS = Number(process.env.AI_REQUEST_TIMEOUT_MS || 15000);
 const AI_ANALYSIS_TIMEOUT_MS = Number(process.env.AI_ANALYSIS_TIMEOUT_MS || 90000);
 

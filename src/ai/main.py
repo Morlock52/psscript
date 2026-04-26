@@ -13,6 +13,7 @@ import logging
 from typing import Dict, List, Literal, Optional, Any
 from contextlib import asynccontextmanager
 from pathlib import Path
+from urllib.parse import parse_qsl, urlencode, urlparse, urlunparse
 
 # Load environment variables from root .env file
 from dotenv import load_dotenv
@@ -157,6 +158,10 @@ db_pool: Optional[AsyncConnectionPool] = None
 
 def get_db_conninfo() -> str:
     """Build database connection string."""
+    database_url = get_database_url()
+    if database_url:
+        return database_url
+
     return (
         f"host={os.getenv('DB_HOST', 'localhost')} "
         f"dbname={os.getenv('DB_NAME', 'psscript')} "
@@ -164,6 +169,27 @@ def get_db_conninfo() -> str:
         f"password={os.getenv('DB_PASSWORD', 'postgres')} "
         f"port={os.getenv('DB_PORT', '5432')}"
     )
+
+
+def get_database_url() -> Optional[str]:
+    """Return DATABASE_URL with SSL enabled for hosted Supabase connections."""
+    database_url = os.getenv("DATABASE_URL")
+    if not database_url:
+        return None
+
+    parsed = urlparse(database_url)
+    params = dict(parse_qsl(parsed.query, keep_blank_values=True))
+    host = parsed.hostname or ""
+    needs_ssl = (
+        os.getenv("DB_SSL", "").lower() == "true"
+        or host.endswith(".supabase.co")
+        or host.endswith(".pooler.supabase.com")
+    )
+
+    if needs_ssl and "sslmode" not in params:
+        params["sslmode"] = "require"
+
+    return urlunparse(parsed._replace(query=urlencode(params)))
 
 
 @asynccontextmanager
@@ -329,14 +355,19 @@ async def get_db_connection_async():
 def get_db_connection_sync():
     """Create and return a synchronous database connection (psycopg2 fallback)."""
     try:
+        database_url = get_database_url()
+        if database_url:
+            conn = psycopg2.connect(database_url, cursor_factory=RealDictCursor)
+            return conn
+
         conn = psycopg2.connect(
             host=os.getenv("DB_HOST", "localhost"),
             database=os.getenv("DB_NAME", "psscript"),
             user=os.getenv("DB_USER", "postgres"),
             password=os.getenv("DB_PASSWORD", "postgres"),
-            port=os.getenv("DB_PORT", "5432")
+            port=os.getenv("DB_PORT", "5432"),
+            cursor_factory=RealDictCursor
         )
-        conn.cursor_factory = RealDictCursor
         return conn
     except Exception as e:
         logger.error(f"Database connection error: {e}")

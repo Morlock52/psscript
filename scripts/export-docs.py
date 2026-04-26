@@ -232,7 +232,6 @@ DOCS_DEFAULT = [
   ("README.md", "README"),
   ("docs/index.md", "Documentation-Hub"),
   ("docs/GETTING-STARTED.md", "Getting-Started"),
-  ("DOCKER-QUICKSTART.md", "Docker-Quickstart"),
   ("docs/README-VECTOR-SEARCH.md", "Vector-Search"),
   ("docs/README-VOICE-API.md", "Voice-API"),
   ("docs/LOGIN-CREDENTIALS.md", "Login-Credentials"),
@@ -257,11 +256,6 @@ COVER_PAGES = {
   "Getting-Started": {
     "title": "Getting Started",
     "subtitle": "Setup steps and first-run workflow",
-    "meta": "PSScript Manager Docs",
-  },
-  "Docker-Quickstart": {
-    "title": "Docker Quickstart",
-    "subtitle": "Infrastructure setup and service validation",
     "meta": "PSScript Manager Docs",
   },
   "Vector-Search": {

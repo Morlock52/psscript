@@ -81,9 +81,8 @@ export default defineConfig({
     },
   ],
 
-  // Start the full Docker-backed app stack when it is not already running.
-  // This keeps the checked-in suites runnable from a fresh clone instead of
-  // depending on manual prestart steps.
+  // Start the local app stack when it is not already running.
+  // The backend and AI service use the hosted Supabase database configured by DATABASE_URL.
   webServer: {
     command: 'npm run playwright:stack',
     url: 'https://127.0.0.1:3090',

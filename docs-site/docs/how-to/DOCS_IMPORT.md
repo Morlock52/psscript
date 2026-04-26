@@ -9,13 +9,15 @@ The Documentation Import screen crawls a source URL, extracts PowerShell-related
 
 ## Where to find it
 
-- `https://localhost:3090/documentation/crawl`
+- `http://psscript.netlify.app/documentation/crawl`
 
-Local ports (Feb 2026):
+Local development ports:
 
 - Frontend: `https://localhost:3090`
 - Backend API: `https://localhost:4000`
 - AI service: `http://localhost:8000`
+
+Local and preview builds use the same hosted Supabase database profile.
 
 ## Progress + cancel (AI crawl jobs)
 
@@ -36,4 +38,3 @@ For quick validation runs:
 - Set **Link Depth** to `0`
 
 This keeps the crawl small and makes it easier to verify the end-to-end flow.
-

@@ -3,7 +3,14 @@
 -- with vector support for semantic search
 
 -- Enable pgvector extension if not already enabled
-CREATE EXTENSION IF NOT EXISTS vector;
+CREATE SCHEMA IF NOT EXISTS extensions;
+CREATE EXTENSION IF NOT EXISTS vector WITH SCHEMA extensions;
+ALTER EXTENSION vector SET SCHEMA extensions;
+SET search_path = public, extensions;
+DO $$
+BEGIN
+    EXECUTE format('ALTER DATABASE %I SET search_path = public, extensions', current_database());
+END $$;
 
 -- Create chat_history table
 CREATE TABLE IF NOT EXISTS chat_history (
@@ -17,12 +24,13 @@ CREATE TABLE IF NOT EXISTS chat_history (
 );
 
 -- Create indexes
-CREATE INDEX idx_chat_history_user_id ON chat_history(user_id);
-CREATE INDEX idx_chat_history_created_at ON chat_history(created_at);
+CREATE INDEX IF NOT EXISTS idx_chat_history_user_id ON chat_history(user_id);
+CREATE INDEX IF NOT EXISTS idx_chat_history_created_at ON chat_history(created_at);
 
 -- Add vector index for embedding search
 -- This will enable fast similarity search
-CREATE INDEX chat_history_embedding_idx ON chat_history USING ivfflat (embedding vector_cosine_ops) WITH (lists = 100);
+DROP INDEX IF EXISTS chat_history_embedding_idx;
+CREATE INDEX chat_history_embedding_idx ON chat_history USING hnsw (embedding vector_cosine_ops);
 
 -- Comment on table and columns
 COMMENT ON TABLE chat_history IS 'Stores chat conversations between users and AI';
@@ -38,10 +46,13 @@ BEGIN
     NEW.updated_at = CURRENT_TIMESTAMP;
     RETURN NEW;
 END;
-$$ LANGUAGE plpgsql;
+$$ LANGUAGE plpgsql
+SET search_path = public, extensions, pg_catalog;
 
 -- Trigger to automatically update updated_at
-CREATE TRIGGER trigger_update_chat_history_updated_at
+DROP TRIGGER IF EXISTS update_chat_history_updated_at ON chat_history;
+DROP TRIGGER IF EXISTS trigger_update_chat_history_updated_at ON chat_history;
+CREATE TRIGGER update_chat_history_updated_at
     BEFORE UPDATE ON chat_history
     FOR EACH ROW
     EXECUTE FUNCTION update_chat_history_updated_at();

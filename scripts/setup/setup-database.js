@@ -2,7 +2,7 @@
  * Database Schema Initializer
  * 
  * This script initializes the database with the base schema.
- * It runs the setup-db.sql file directly to create all tables.
+ * It runs the canonical src/db/schema.sql file directly to create all tables.
  */
 
 const fs = require('fs');
@@ -11,7 +11,8 @@ const { execSync } = require('child_process');
 const dotenv = require('dotenv');
 
 // Load environment variables
-dotenv.config();
+const REPO_ROOT = path.resolve(__dirname, '..', '..');
+dotenv.config({ path: path.join(REPO_ROOT, '.env') });
 
 // Database connection parameters
 const DB_HOST = process.env.DB_HOST || 'localhost';
@@ -21,7 +22,7 @@ const DB_USER = process.env.DB_USER || 'postgres';
 const DB_PASSWORD = process.env.DB_PASSWORD || 'postgres';
 
 // SQL file path
-const SQL_FILE = path.join(__dirname, 'setup-db.sql');
+const SQL_FILE = path.join(REPO_ROOT, 'src', 'db', 'schema.sql');
 
 /**
  * Initialize database schema using psql

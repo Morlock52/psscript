@@ -16,13 +16,15 @@ Admins can manage script categories directly in the app:
 
 Open:
 
-- `https://localhost:3090/settings/categories`
+- `http://psscript.netlify.app/settings/categories`
 
-Local ports (Feb 2026):
+Local development ports:
 
 - Frontend: `https://localhost:3090`
 - Backend API: `https://localhost:4000`
 - AI service: `http://localhost:8000`
+
+Local and preview builds use the same hosted Supabase database profile.
 
 ## Notes
 

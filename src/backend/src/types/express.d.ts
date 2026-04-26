@@ -15,7 +15,7 @@ declare global {
     interface Request {
       cache?: CacheInterface;
       user?: {
-        id: number;
+        id: number | string;
         username: string;
         email: string;
         role: string;

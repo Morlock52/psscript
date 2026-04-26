@@ -24,8 +24,41 @@ const _MIN_SECRET_ENTROPY_BITS = 128; // Reserved for future entropy validation
 const REQUIRED_VARS = {
   database: ['DB_HOST', 'DB_PORT', 'DB_NAME', 'DB_USER', 'DB_PASSWORD'],
   auth: ['JWT_SECRET', 'REFRESH_TOKEN_SECRET'],
-  production: ['DB_SSL', 'BCRYPT_ROUNDS'],
+  production: ['BCRYPT_ROUNDS'],
 };
+
+/**
+ * Supabase and other managed Postgres providers commonly encode SSL in DATABASE_URL.
+ */
+export function databaseUrlRequestsSSL(databaseUrl = process.env.DATABASE_URL): boolean {
+  if (!databaseUrl) {
+    return false;
+  }
+
+  try {
+    const url = new URL(databaseUrl);
+    const sslMode = url.searchParams.get('sslmode')?.toLowerCase();
+    const ssl = url.searchParams.get('ssl')?.toLowerCase();
+    const host = url.hostname.toLowerCase();
+    const requiresSsl = sslMode
+      ? ['require', 'verify-ca', 'verify-full'].includes(sslMode)
+      : false;
+
+    return (
+      requiresSsl ||
+      ssl === 'true' ||
+      ssl === '1' ||
+      host.endsWith('.supabase.co') ||
+      host.endsWith('.pooler.supabase.com')
+    );
+  } catch (_error) {
+    return false;
+  }
+}
+
+export function databaseSslEnabled(databaseUrl = process.env.DATABASE_URL): boolean {
+  return process.env.DB_SSL === 'true' || databaseUrlRequestsSSL(databaseUrl);
+}
 
 /**
  * Obfuscate sensitive values for logging
@@ -105,13 +138,21 @@ export function validateEnvironment(): ValidationResult {
 
   console.log('\n🔐 Validating environment configuration...\n');
 
-  // Check database variables
-  for (const varName of REQUIRED_VARS.database) {
-    if (!process.env[varName]) {
-      if (IS_PRODUCTION) {
-        errors.push(`Missing required database variable: ${varName}`);
-      } else {
-        warnings.push(`Missing database variable: ${varName} (using default)`);
+  // Check database variables. DATABASE_URL is preferred for hosted Postgres/Supabase.
+  if (process.env.DATABASE_URL) {
+    try {
+      new URL(process.env.DATABASE_URL);
+    } catch (_error) {
+      errors.push('DATABASE_URL is not a valid URL');
+    }
+  } else {
+    for (const varName of REQUIRED_VARS.database) {
+      if (!process.env[varName]) {
+        if (IS_PRODUCTION) {
+          errors.push(`Missing required database variable: ${varName}`);
+        } else {
+          warnings.push(`Missing database variable: ${varName} (using default)`);
+        }
       }
     }
   }
@@ -143,9 +184,9 @@ export function validateEnvironment(): ValidationResult {
 
   // Production-specific checks
   if (IS_PRODUCTION) {
-    // Require SSL
-    if (process.env.DB_SSL !== 'true') {
-      errors.push('DB_SSL must be "true" in production for secure database connections');
+    // Require SSL. DATABASE_URL?sslmode=require is accepted for Supabase pooler URLs.
+    if (!databaseSslEnabled()) {
+      errors.push('DB_SSL must be "true" or DATABASE_URL must request SSL in production');
     }
 
     // Check bcrypt rounds
@@ -247,7 +288,7 @@ export function getAuthConfig() {
  * Get database configuration
  */
 export function getDbConfig() {
-  const useSSL = process.env.DB_SSL === 'true';
+  const useSSL = databaseSslEnabled();
 
   return {
     host: process.env.DB_HOST || 'localhost',
@@ -269,6 +310,8 @@ export default {
   obfuscateSecret,
   obfuscateEmail,
   generateSecureSecret,
+  databaseUrlRequestsSSL,
+  databaseSslEnabled,
   IS_PRODUCTION,
   IS_DEVELOPMENT,
   IS_TEST,

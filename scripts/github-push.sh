@@ -36,8 +36,8 @@ git add .
 
 # Commit changes
 echo "Committing changes..."
-read -p "Enter commit message (default: 'Initial commit with Docker setup'): " COMMIT_MSG
-COMMIT_MSG=${COMMIT_MSG:-"Initial commit with Docker setup"}
+read -p "Enter commit message (default: 'Initial commit'): " COMMIT_MSG
+COMMIT_MSG=${COMMIT_MSG:-"Initial commit"}
 git commit -m "$COMMIT_MSG"
 
 # Push to GitHub

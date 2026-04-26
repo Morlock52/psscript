@@ -5,6 +5,11 @@
 -- Add locked_until column if it doesn't exist
 DO $$
 BEGIN
+    IF to_regclass('public.users') IS NULL THEN
+        RAISE NOTICE 'Skipping local users lockout migration because public.users does not exist';
+        RETURN;
+    END IF;
+
     IF NOT EXISTS (
         SELECT 1 FROM information_schema.columns
         WHERE table_name = 'users' AND column_name = 'locked_until'
@@ -16,9 +21,12 @@ BEGIN
     END IF;
 END $$;
 
--- Add login_attempts column if it doesn't exist (in case it's missing)
 DO $$
 BEGIN
+    IF to_regclass('public.users') IS NULL THEN
+        RETURN;
+    END IF;
+
     IF NOT EXISTS (
         SELECT 1 FROM information_schema.columns
         WHERE table_name = 'users' AND column_name = 'login_attempts'
@@ -30,11 +38,15 @@ BEGIN
     END IF;
 END $$;
 
--- Create index on locked_until for efficient lockout checks
-CREATE INDEX IF NOT EXISTS idx_users_locked_until ON users(locked_until) WHERE locked_until IS NOT NULL;
+DO $$
+BEGIN
+    IF to_regclass('public.users') IS NULL THEN
+        RETURN;
+    END IF;
 
--- Create index on login_attempts for monitoring
-CREATE INDEX IF NOT EXISTS idx_users_login_attempts ON users(login_attempts) WHERE login_attempts > 0;
+    CREATE INDEX IF NOT EXISTS idx_users_locked_until ON public.users(locked_until) WHERE locked_until IS NOT NULL;
+    CREATE INDEX IF NOT EXISTS idx_users_login_attempts ON public.users(login_attempts) WHERE login_attempts > 0;
 
-COMMENT ON COLUMN users.locked_until IS 'Timestamp until which the account is locked due to failed login attempts';
-COMMENT ON COLUMN users.login_attempts IS 'Number of consecutive failed login attempts';
+    COMMENT ON COLUMN public.users.locked_until IS 'Timestamp until which the account is locked due to failed login attempts';
+    COMMENT ON COLUMN public.users.login_attempts IS 'Number of consecutive failed login attempts';
+END $$;

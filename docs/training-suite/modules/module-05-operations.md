@@ -10,7 +10,7 @@
 
 1. Open Analytics and review cost and usage metrics.
 2. Review recent activity for script changes.
-3. Confirm environment health via `docker-manage.sh health` or log checks.
+3. Confirm environment health via Netlify deploy status, backend/AI health endpoints, and log checks.
 
 ## Operations visuals
 

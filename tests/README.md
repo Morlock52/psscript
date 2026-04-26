@@ -8,7 +8,7 @@ Playwright coverage for the frontend shell, protected routes, settings flows, sc
 - Backend: `https://127.0.0.1:4000`
 - AI service: `http://127.0.0.1:8000`
 
-These values match `playwright.config.ts`, `docker-compose*.yml`, and the frontend runtime URL detection.
+These values match `playwright.config.ts` and the frontend runtime URL detection.
 
 ## Primary configs
 
@@ -30,37 +30,33 @@ Treat `output/playwright/local.config.cjs` as a local artifact, not the canonica
 
 ## Prerequisites
 
-Playwright now self-bootstraps the app stack through `webServer`.
-By default, `npx playwright test` uses `PLAYWRIGHT_STACK_MODE=auto`:
-
-- prefers the checked-in Docker stack when Docker Engine is available
-- falls back to the local dev stack when Docker is unavailable
-- reuses any stack that is already listening on the expected ports
+Playwright self-bootstraps the local app stack through `webServer`.
+By default, `npx playwright test` uses `PLAYWRIGHT_STACK_MODE=local` and reuses any stack that is already listening on the expected ports.
 
 From a fresh clone, Playwright will start or reuse:
 
 - frontend at `https://127.0.0.1:3090`
 - backend at `https://127.0.0.1:4000`
 - AI service at `http://127.0.0.1:8000`
-- postgres and redis dependencies
+- Supabase Postgres through `DATABASE_URL`
 
-Default requirements for `auto` mode:
+Default requirements:
 
-- Docker Engine and `docker compose`, or
-- a local PostgreSQL + Redis + Python + Node toolchain with the repo dependencies already installed
+- `DATABASE_URL` pointing at the hosted Supabase database
+- Python + Node toolchains with repo dependencies already installed
+- `REDIS_URL` when cache-backed backend flows are under test
 
 Mode overrides:
 
-- `PLAYWRIGHT_STACK_MODE=docker npx playwright test`
 - `PLAYWRIGHT_STACK_MODE=local npx playwright test`
 
-The local fallback starts:
+The local stack starts:
 
 - FastAPI AI service from `src/ai`
 - Express backend from `src/backend`
 - Vite frontend from `src/frontend`
 
-using the same local ports and TLS certificates as the checked-in Docker setup.
+using the same local ports and TLS certificates as the checked-in app setup.
 
 ### Chromium smoke
 

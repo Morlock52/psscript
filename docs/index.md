@@ -1,6 +1,6 @@
 # PSScript Documentation Hub
 
-_Last updated: April 2, 2026_
+_Last updated: April 26, 2026_
 
 This index points to the active documentation set for the current validated repo state.
 
@@ -13,7 +13,7 @@ This index points to the active documentation set for the current validated repo
 | [DATA-MAINTENANCE.md](./DATA-MAINTENANCE.md) | Admin backup, restore, and cleanup operations |
 | [README-VOICE-API.md](./README-VOICE-API.md) | Voice/listening implementation and API behavior |
 | [AUTHENTICATION-IMPROVEMENTS.md](./AUTHENTICATION-IMPROVEMENTS.md) | Auth model and local auth-disabled behavior |
-| [DEPLOYMENT-PLATFORMS.md](./DEPLOYMENT-PLATFORMS.md) | Render, Netlify, and Docker deployment |
+| [DEPLOYMENT-PLATFORMS.md](./DEPLOYMENT-PLATFORMS.md) | Netlify frontend, hosted API/AI services, and Supabase Postgres deployment |
 
 ## Service READMEs
 

@@ -94,7 +94,7 @@ This procedure applies to:
 **Immediate Containment (S1/S2):**
 ```bash
 # 1. Isolate affected services
-docker-compose stop <affected-service>
+# Disable or roll back the affected hosted service/deploy
 
 # 2. Revoke compromised credentials
 # Rotate API keys, tokens, passwords immediately
@@ -103,7 +103,7 @@ docker-compose stop <affected-service>
 # Update firewall/WAF rules
 
 # 4. Preserve evidence
-docker logs <container> > incident-logs-$(date +%Y%m%d-%H%M%S).txt
+# Export hosted runtime logs for the incident window
 ```
 
 **Short-term Containment:**
@@ -257,21 +257,15 @@ docker logs <container> > incident-logs-$(date +%Y%m%d-%H%M%S).txt
 ### 8.1 Detection Tools
 - GitHub Actions security scanning (Trivy, TruffleHog)
 - Application logs (`/logs/` directory)
-- Docker container health checks
+- Netlify deploy status, backend health endpoints, and AI service health endpoints
 
 ### 8.2 Response Tools
 ```bash
-# View container logs
-docker-compose logs --tail=1000 <service>
-
-# Check for suspicious processes
-docker exec <container> ps aux
-
-# Network connections
-docker exec <container> netstat -tuln
+# View hosted service logs for the incident window
+# Use Netlify deploy logs plus backend/AI provider runtime logs
 
 # Database audit
-psql -h localhost -U postgres -d psscript -c "SELECT * FROM pg_stat_activity"
+psql "$DATABASE_URL" -c "SELECT * FROM pg_stat_activity"
 ```
 
 ### 8.3 Documentation

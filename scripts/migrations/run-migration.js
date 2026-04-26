@@ -10,31 +10,64 @@ const path = require('path');
 const { Pool } = require('pg');
 const dotenv = require('dotenv');
 
-// Load environment variables
-dotenv.config();
+const REPO_ROOT = path.resolve(__dirname, '..', '..');
+
+// Load environment variables from the repository root, regardless of cwd.
+dotenv.config({ path: path.join(REPO_ROOT, '.env') });
 
 // Database connection parameters
+const MIGRATION_DATABASE_URL =
+  process.env.MIGRATION_DATABASE_URL ||
+  process.env.DB_MIGRATION_DATABASE_URL ||
+  process.env.DATABASE_URL;
 const DB_HOST = process.env.DB_HOST || 'localhost';
 const DB_PORT = parseInt(process.env.DB_PORT || '5432');
 const DB_NAME = process.env.DB_NAME || 'psscript';
 const DB_USER = process.env.DB_USER || 'postgres';
 const DB_PASSWORD = process.env.DB_PASSWORD || 'postgres';
-const DB_SSL = process.env.DB_SSL === 'true';
+function databaseUrlRequestsSSL(databaseUrl) {
+  if (!databaseUrl) {
+    return false;
+  }
+
+  try {
+    const url = new URL(databaseUrl);
+    const sslMode = url.searchParams.get('sslmode')?.toLowerCase();
+    const host = url.hostname.toLowerCase();
+    return (
+      ['require', 'verify-ca', 'verify-full'].includes(sslMode) ||
+      host.endsWith('.supabase.co') ||
+      host.endsWith('.pooler.supabase.com')
+    );
+  } catch (_error) {
+    return false;
+  }
+}
+
+const DB_SSL = process.env.MIGRATION_DB_SSL
+  ? process.env.MIGRATION_DB_SSL === 'true'
+  : Boolean(MIGRATION_DATABASE_URL && (process.env.DB_SSL === 'true' || databaseUrlRequestsSSL(MIGRATION_DATABASE_URL)));
 
 // Create a connection pool
 const pool = new Pool({
-  host: DB_HOST,
-  port: DB_PORT,
-  database: DB_NAME,
-  user: DB_USER,
-  password: DB_PASSWORD,
+  ...(MIGRATION_DATABASE_URL
+    ? { connectionString: MIGRATION_DATABASE_URL }
+    : {
+        host: DB_HOST,
+        port: DB_PORT,
+        database: DB_NAME,
+        user: DB_USER,
+        password: DB_PASSWORD,
+      }),
   ssl: DB_SSL ? { rejectUnauthorized: false } : undefined,
   max: 5, // Maximum number of clients
   idleTimeoutMillis: 30000 // Close idle clients after 30 seconds
 });
 
 // Migration directory path
-const MIGRATIONS_DIR = path.join(__dirname, 'src', 'db', 'migrations');
+const MIGRATIONS_DIR = process.env.DB_MIGRATIONS_DIR
+  ? path.resolve(REPO_ROOT, process.env.DB_MIGRATIONS_DIR)
+  : path.join(REPO_ROOT, 'src', 'db', 'migrations');
 
 // Ensure migrations directory exists
 if (!fs.existsSync(MIGRATIONS_DIR)) {
@@ -84,9 +117,15 @@ async function getAppliedMigrations() {
  * Get sorted list of migration files
  */
 function getMigrationFiles() {
+  const requestedFiles = (process.env.DB_MIGRATION_FILES || '')
+    .split(',')
+    .map(file => file.trim())
+    .filter(Boolean);
+
   // Get all .sql files from migrations directory
   const files = fs.readdirSync(MIGRATIONS_DIR)
     .filter(file => file.endsWith('.sql'))
+    .filter(file => requestedFiles.length === 0 || requestedFiles.includes(file))
     .sort((a, b) => {
       // Sort numerically if files start with numbers (e.g., 01_, 02_, etc.)
       const numA = parseInt(a.match(/^(\d+)_/) ? a.match(/^(\d+)_/)[1] : '0');
@@ -102,6 +141,19 @@ function getMigrationFiles() {
     });
   
   return files;
+}
+
+function describeConnection() {
+  if (MIGRATION_DATABASE_URL) {
+    try {
+      const url = new URL(MIGRATION_DATABASE_URL);
+      return `${url.pathname.replace(/^\//, '') || 'postgres'} at ${url.hostname}:${url.port || 5432}`;
+    } catch (_error) {
+      return 'DATABASE_URL';
+    }
+  }
+
+  return `${DB_NAME} at ${DB_HOST}:${DB_PORT}`;
 }
 
 /**
@@ -148,7 +200,7 @@ async function applyMigration(fileName) {
 async function runMigrations() {
   try {
     console.log('Starting database migration...');
-    console.log(`Database: ${DB_NAME} at ${DB_HOST}:${DB_PORT}`);
+    console.log(`Database: ${describeConnection()}`);
     
     // Ensure migrations table exists
     await ensureMigrationsTable();

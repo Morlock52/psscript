@@ -1,6 +1,6 @@
 #!/bin/bash
 
-# Make scripts executable
-chmod +x docker-start.sh
+# Make local helper scripts executable
+chmod +x scripts/playwright-stack.sh
 
 echo "Scripts are now executable."

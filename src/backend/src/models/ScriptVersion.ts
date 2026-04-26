@@ -1,6 +1,7 @@
 import { Model, DataTypes, Sequelize } from 'sequelize';
 import Script from './Script';
 import User from './User';
+import { getUserIdDataType, getUserTableName } from '../utils/databaseProfile';
 
 export default class ScriptVersion extends Model {
   public id!: number;
@@ -8,7 +9,7 @@ export default class ScriptVersion extends Model {
   public version!: number;
   public content!: string;
   public changelog!: string | null;
-  public userId!: number;
+  public userId!: number | string;
 
   public readonly createdAt!: Date;
 
@@ -47,10 +48,10 @@ export default class ScriptVersion extends Model {
         field: 'commit_message'
       },
       userId: {
-        type: DataTypes.INTEGER,
-        allowNull: false,
+        type: getUserIdDataType(),
+        allowNull: true,
         references: {
-          model: 'users',
+          model: getUserTableName(),
           key: 'id'
         },
         field: 'user_id'

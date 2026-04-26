@@ -34,7 +34,7 @@ const TEST_TIMEOUT = 30000;
 const PERFORMANCE_THRESHOLD_MS = 100;
 
 // These tests require a live Postgres+pgvector instance with the expected schema.
-// Keep them opt-in so `npm test` stays deterministic for contributors/CI that don't run Docker.
+// Keep them opt-in so `npm test` stays deterministic for contributors/CI without database credentials.
 const RUN_DB_TESTS = process.env.RUN_DB_TESTS === 'true';
 
 // Test data

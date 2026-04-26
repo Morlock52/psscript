@@ -80,7 +80,8 @@ BEGIN
     GET DIAGNOSTICS deleted_count = ROW_COUNT;
     RETURN deleted_count;
 END;
-$$ LANGUAGE plpgsql;
+$$ LANGUAGE plpgsql
+SET search_path = public, pg_catalog;
 
 -- Add a function to clean up old tool execution results
 CREATE OR REPLACE FUNCTION cleanup_old_tool_results(days_to_keep INTEGER)
@@ -94,7 +95,8 @@ BEGIN
     GET DIAGNOSTICS deleted_count = ROW_COUNT;
     RETURN deleted_count;
 END;
-$$ LANGUAGE plpgsql;
+$$ LANGUAGE plpgsql
+SET search_path = public, pg_catalog;
 
 -- Add a function to get the most recent conversation for a given agent type
 CREATE OR REPLACE FUNCTION get_recent_conversations(agent_type_param VARCHAR, limit_param INTEGER)
@@ -116,4 +118,5 @@ BEGIN
     ORDER BY ch.created_at DESC
     LIMIT limit_param;
 END;
-$$ LANGUAGE plpgsql;
+$$ LANGUAGE plpgsql
+SET search_path = public, pg_catalog;

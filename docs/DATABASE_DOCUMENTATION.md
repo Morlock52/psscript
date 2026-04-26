@@ -96,22 +96,21 @@ PSScript uses a PostgreSQL database with Redis caching layer, managed through Se
 ### Environment Variables
 
 ```bash
-# PostgreSQL
-DB_HOST=localhost          # Database host (use 'postgres' in Docker)
-DB_PORT=5432              # Database port (DO NOT CHANGE)
-DB_NAME=psscript          # Database name
-DB_USER=postgres          # Database user
-DB_PASSWORD=postgres      # Database password
-DB_SSL=false              # Enable SSL (true in production)
+# Supabase Postgres
+DATABASE_URL=postgresql://user:password@host:port/database
+DB_PROFILE=supabase
+DB_SSL=true               # Required for hosted Supabase connections
 DB_SSL_CA_PATH=           # Path to SSL CA certificate
 
-# Alternative: Single connection URL
-DATABASE_URL=postgresql://user:password@host:port/database
+# Local fallback when DATABASE_URL is intentionally not used
+DB_HOST=localhost
+DB_PORT=5432
+DB_NAME=psscript
+DB_USER=postgres
+DB_PASSWORD=postgres
 
 # Redis
-REDIS_HOST=localhost      # Redis host (use 'redis' in Docker)
-REDIS_PORT=6379          # Redis port (DO NOT CHANGE)
-REDIS_URL=redis://localhost:6379
+REDIS_URL=redis://...
 ```
 
 ### Connection Pool Settings
@@ -641,14 +640,13 @@ const valid = await bcrypt.compare(password, hash);
 
 ## Appendix: Quick Reference
 
-### Start Database Services
+### Configure Database Services
 
 ```bash
-# Docker Compose (recommended)
-docker-compose up postgres redis
-
-# Check service health
-docker-compose ps
+# Hosted Supabase Postgres is the canonical database.
+export DATABASE_URL="postgresql://..."
+export DB_PROFILE=supabase
+export DB_SSL=true
 ```
 
 ### Verify Connection

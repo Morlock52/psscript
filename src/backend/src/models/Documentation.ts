@@ -116,7 +116,6 @@ export default class Documentation extends Model {
       tableName: 'documentation',
       underscored: true,
       indexes: [
-        { fields: ['url'], unique: true },
         { fields: ['source'] },
         { fields: ['content_type'] },
         { fields: ['crawled_at'] },

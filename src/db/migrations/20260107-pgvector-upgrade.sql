@@ -1,150 +1,151 @@
--- Migration: Upgrade to pgvector 0.8.0 with HNSW indexing
--- File: src/db/migrations/20260107-pgvector-upgrade.sql
--- Date: 2026-01-07
--- Description: Upgrade pgvector extension and add HNSW indexes for 9x faster queries
+-- Migration: Make pgvector search safer and faster without destructive extension drops.
+-- Original risk fixed: DROP EXTENSION ... CASCADE can drop vector columns and data.
 
-BEGIN;
+CREATE SCHEMA IF NOT EXISTS extensions;
+CREATE EXTENSION IF NOT EXISTS vector WITH SCHEMA extensions;
+ALTER EXTENSION vector SET SCHEMA extensions;
+SET search_path = public, extensions;
+DO $$
+BEGIN
+    EXECUTE format('ALTER DATABASE %I SET search_path = public, extensions', current_database());
+END $$;
 
--- 1. Upgrade extension to 0.8.0
-DROP EXTENSION IF EXISTS vector CASCADE;
-CREATE EXTENSION vector WITH VERSION '0.8.0';
+-- Keep the existing table and data. Add metadata columns used by newer code paths.
+ALTER TABLE script_embeddings
+    ADD COLUMN IF NOT EXISTS embedding_type VARCHAR(50) NOT NULL DEFAULT 'openai',
+    ADD COLUMN IF NOT EXISTS model_version VARCHAR(50) NOT NULL DEFAULT 'text-embedding-3-small';
 
--- 2. Recreate embeddings table with optimized structure
-CREATE TABLE script_embeddings_new (
-    id SERIAL PRIMARY KEY,
-    script_id INTEGER NOT NULL REFERENCES scripts(id) ON DELETE CASCADE,
-    embedding vector(1536) NOT NULL,
-    model_version VARCHAR(50) DEFAULT 'text-embedding-3-small',
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-);
+UPDATE script_embeddings
+SET embedding_type = COALESCE(embedding_type, 'openai'),
+    model_version = COALESCE(model_version, 'text-embedding-3-small');
 
--- 3. Copy data from old table
-INSERT INTO script_embeddings_new (id, script_id, embedding, created_at, updated_at)
-SELECT id, script_id, embedding, created_at, updated_at
-FROM script_embeddings;
+DELETE FROM script_embeddings
+WHERE script_id IS NULL;
 
--- 4. Drop old table and rename
-DROP TABLE script_embeddings CASCADE;
-ALTER TABLE script_embeddings_new RENAME TO script_embeddings;
+DO $$
+BEGIN
+    IF NOT EXISTS (
+        SELECT 1
+        FROM pg_constraint
+        WHERE conname = 'script_embeddings_script_id_key'
+          AND conrelid = 'script_embeddings'::regclass
+    ) THEN
+        ALTER TABLE script_embeddings
+            ADD CONSTRAINT script_embeddings_script_id_key UNIQUE (script_id);
+    END IF;
 
--- 5. Create HNSW index for 9x faster queries
--- m = 16: Number of connections per layer (balance between recall and speed)
--- ef_construction = 64: Construction time parameter (higher = better recall, slower build)
-CREATE INDEX idx_script_embeddings_hnsw ON script_embeddings
+    IF NOT EXISTS (SELECT 1 FROM script_embeddings WHERE embedding IS NULL) THEN
+        ALTER TABLE script_embeddings ALTER COLUMN embedding SET NOT NULL;
+    END IF;
+END $$;
+
+-- Supabase's current vector guidance recommends HNSW over IVFFlat for most cases.
+DROP INDEX IF EXISTS script_embeddings_idx;
+CREATE INDEX IF NOT EXISTS idx_script_embeddings_hnsw
+ON script_embeddings
 USING hnsw (embedding vector_cosine_ops)
 WITH (
     m = 16,
     ef_construction = 64
 );
 
--- 6. Add GIN index for hybrid search (script_id lookups)
-CREATE INDEX idx_script_embeddings_script_id ON script_embeddings(script_id);
-
--- 7. Configure table parameters for optimal performance
 ALTER TABLE script_embeddings SET (
-    hnsw.relaxed_order = 'true',  -- Better recall/latency tradeoff
-    autovacuum_vacuum_scale_factor = 0.01,  -- More frequent vacuuming for better index performance
-    autovacuum_analyze_scale_factor = 0.01  -- Keep statistics fresh
+    autovacuum_vacuum_scale_factor = 0.01,
+    autovacuum_analyze_scale_factor = 0.01
 );
 
--- 8. Create performance monitoring view
-CREATE OR REPLACE VIEW vector_search_performance AS
-SELECT
-    query,
-    calls,
-    mean_exec_time,
-    max_exec_time,
-    stddev_exec_time,
-    rows
-FROM pg_stat_statements
-WHERE query LIKE '%<->%'
-ORDER BY mean_exec_time DESC;
+DO $$
+BEGIN
+    IF EXISTS (SELECT 1 FROM pg_extension WHERE extname = 'pg_stat_statements') THEN
+        EXECUTE $view$
+            CREATE OR REPLACE VIEW vector_search_performance AS
+            SELECT
+                query,
+                calls,
+                mean_exec_time,
+                max_exec_time,
+                stddev_exec_time,
+                rows
+            FROM pg_stat_statements
+            WHERE query LIKE '%<->%' OR query LIKE '%<=>%'
+            ORDER BY mean_exec_time DESC
+        $view$;
+    ELSE
+        DROP VIEW IF EXISTS vector_search_performance;
+    END IF;
+END $$;
 
--- 9. Create helper function for similarity search with threshold
 CREATE OR REPLACE FUNCTION search_similar_scripts(
     query_embedding vector(1536),
-    match_threshold float DEFAULT 0.7,
+    match_threshold double precision DEFAULT 0.7,
     match_count int DEFAULT 10
 )
 RETURNS TABLE (
     script_id int,
-    similarity float,
+    similarity double precision,
     title text,
     description text
 )
-LANGUAGE plpgsql STABLE
+LANGUAGE sql
+STABLE
+SET search_path = public, extensions, pg_catalog
 AS $$
-BEGIN
-    RETURN QUERY
     SELECT
         s.id,
-        1 - (se.embedding <=> query_embedding) as similarity,
-        s.title,
+        1 - (se.embedding <=> query_embedding) AS similarity,
+        s.title::text,
         s.description
     FROM script_embeddings se
     JOIN scripts s ON s.id = se.script_id
     WHERE 1 - (se.embedding <=> query_embedding) > match_threshold
     ORDER BY se.embedding <=> query_embedding
     LIMIT match_count;
-END;
 $$;
 
--- 10. Create function for batch similarity search
 CREATE OR REPLACE FUNCTION batch_search_similar_scripts(
     query_embeddings vector(1536)[],
-    match_threshold float DEFAULT 0.7,
+    match_threshold double precision DEFAULT 0.7,
     match_count int DEFAULT 10
 )
 RETURNS TABLE (
     query_index int,
     script_id int,
-    similarity float,
+    similarity double precision,
     title text
 )
-LANGUAGE plpgsql STABLE
+LANGUAGE sql
+STABLE
+SET search_path = public, extensions, pg_catalog
 AS $$
-DECLARE
-    i int;
-    query_emb vector(1536);
-BEGIN
-    FOR i IN 1..array_length(query_embeddings, 1) LOOP
-        query_emb := query_embeddings[i];
-        RETURN QUERY
+    SELECT
+        q.query_index::int,
+        matches.script_id,
+        matches.similarity,
+        matches.title
+    FROM unnest(query_embeddings) WITH ORDINALITY AS q(query_embedding, query_index)
+    CROSS JOIN LATERAL (
         SELECT
-            i as query_index,
-            s.id,
-            1 - (se.embedding <=> query_emb) as similarity,
-            s.title
+            s.id AS script_id,
+            1 - (se.embedding <=> q.query_embedding) AS similarity,
+            s.title::text AS title
         FROM script_embeddings se
         JOIN scripts s ON s.id = se.script_id
-        WHERE 1 - (se.embedding <=> query_emb) > match_threshold
-        ORDER BY se.embedding <=> query_emb
-        LIMIT match_count;
-    END LOOP;
-END;
+        WHERE 1 - (se.embedding <=> q.query_embedding) > match_threshold
+        ORDER BY se.embedding <=> q.query_embedding
+        LIMIT match_count
+    ) AS matches;
 $$;
 
--- 11. Add indexes for common query patterns
-CREATE INDEX idx_scripts_category_user ON scripts(category_id, user_id);
-CREATE INDEX idx_scripts_created_at ON scripts(created_at DESC);
-CREATE INDEX idx_script_analysis_script_id ON script_analysis(script_id);
+CREATE INDEX IF NOT EXISTS idx_scripts_category_user ON scripts(category_id, user_id);
+CREATE INDEX IF NOT EXISTS idx_scripts_created_at ON scripts(created_at DESC);
 
--- 12. Update sequence to match current max ID
-SELECT setval('script_embeddings_id_seq', (SELECT MAX(id) FROM script_embeddings));
+DROP INDEX IF EXISTS idx_script_analysis_script_id;
+DROP INDEX IF EXISTS idx_script_analysis_script;
 
-COMMIT;
+SELECT setval(
+    'script_embeddings_id_seq',
+    COALESCE((SELECT MAX(id) FROM script_embeddings), 1),
+    (SELECT MAX(id) IS NOT NULL FROM script_embeddings)
+);
 
--- Post-migration verification
 ANALYZE script_embeddings;
-
--- Test query performance (run this manually after migration)
--- EXPLAIN ANALYZE
--- SELECT * FROM search_similar_scripts(
---     (SELECT embedding FROM script_embeddings LIMIT 1),
---     0.7,
---     10
--- );
-
--- Expected performance improvement: ~9x faster queries vs previous version
--- Monitor with: SELECT * FROM vector_search_performance;

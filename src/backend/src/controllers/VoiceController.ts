@@ -6,9 +6,7 @@ import { AIMetric } from '../middleware/aiAnalytics';
 /**
  * Shared helper for AI service communication.
  */
-const AI_SERVICE_URL = process.env.DOCKER_ENV === 'true'
-  ? (process.env.AI_SERVICE_URL || 'http://ai-service:8000')
-  : (process.env.AI_SERVICE_URL || 'http://localhost:8000');
+const AI_SERVICE_URL = process.env.AI_SERVICE_URL || 'http://localhost:8000';
 const MAX_VOICE_TEXT_CHARS = Number(process.env.MAX_VOICE_TEXT_CHARS || 4096);
 const MAX_AUDIO_DATA_B64_CHARS = Number(process.env.MAX_AUDIO_DATA_B64_CHARS || 16_000_000);
 const ALLOWED_OUTPUT_FORMATS = new Set(['mp3', 'wav', 'ogg', 'flac', 'm4a', 'opus', 'pcm']);

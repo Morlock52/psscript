@@ -42,6 +42,18 @@ import type {
   AIAnalysisResponse
 } from './types';
 
+const isValidUserIdFilter = (value: string): boolean => {
+  return /^\d+$/.test(value) || /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(value);
+};
+
+const normalizeUserIdFilter = (value?: string): number | string | undefined => {
+  if (!value) {
+    return undefined;
+  }
+
+  return /^\d+$/.test(value) ? parseInt(value, 10) : value;
+};
+
 /**
  * Run AI analysis with retry and exponential backoff.
  * Fire-and-forget: call with `void runAnalysisWithRetry(...)`.
@@ -130,17 +142,17 @@ export async function getScripts(
     const { page, limit, offset } = parsePaginationParams(req.query as Record<string, unknown>);
     const categoryId = req.query.categoryId as string | undefined;
     const userId = req.query.userId as string | undefined;
-    const requestedUserId = userId ? parseInt(userId, 10) : undefined;
+    const requestedUserId = normalizeUserIdFilter(userId);
     const isAdmin = req.user?.role === 'admin';
     const viewerId = req.user?.id;
     const sortField = getDbSortField(req.query.sort as string || 'updatedAt');
     const order = (req.query.order as string) || 'DESC';
 
-    if (userId && (Number.isNaN(requestedUserId) || !Number.isInteger(requestedUserId))) {
+    if (userId && !isValidUserIdFilter(userId)) {
       return apiErrors.badRequest(res, 'Invalid userId filter');
     }
 
-    if (userId && !isAdmin && requestedUserId !== viewerId) {
+    if (userId && !isAdmin && String(requestedUserId) !== String(viewerId)) {
       return apiErrors.forbidden(res, 'Cannot query scripts for another user');
     }
 
@@ -239,7 +251,7 @@ export async function getScript(
       return apiErrors.notFound(res, 'Script not found');
     }
 
-    if (!isAdmin && !script.isPublic && script.userId !== viewerId) {
+    if (!isAdmin && !script.isPublic && String(script.userId) !== String(viewerId)) {
       return apiErrors.forbidden(res, 'Insufficient permissions to view this script');
     }
 

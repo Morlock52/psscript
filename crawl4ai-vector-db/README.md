@@ -77,42 +77,6 @@ npm run setup
 npm run init-db
 ```
 
-### Option 2: Docker Installation
-
-1. Clone the repository:
-
-```bash
-git clone https://github.com/yourusername/crawl4ai-vector-db.git
-cd crawl4ai-vector-db
-```
-
-2. Create a `.env` file based on `.env.example`:
-
-```bash
-cp .env.example .env
-```
-
-3. Edit the `.env` file and set your API keys:
-
-```
-OPENAI_API_KEY=your-openai-api-key
-# Or use HuggingFace
-# EMBEDDING_PROVIDER=huggingface
-# HUGGINGFACE_API_KEY=your-huggingface-api-key
-```
-
-4. Start the application with Docker Compose:
-
-```bash
-# Production mode
-npm run docker-start
-
-# Development mode with hot reloading
-npm run docker-dev
-```
-
-This will start both the application and a PostgreSQL database with pgvector extension installed. The development mode mounts your local files into the container for hot reloading.
-
 ## CLI Usage
 
 ### Crawl a website

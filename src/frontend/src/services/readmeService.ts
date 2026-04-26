@@ -38,16 +38,16 @@ A comprehensive platform for managing, analyzing, and executing PowerShell scrip
 
 ## 📋 Prerequisites
 
-- **Docker & Docker Compose**: v20.10+ and Compose v2.0+
-- **Node.js**: v16.0+ (v18+ recommended) with npm v7.0+
-- **Python**: 3.9+ with pip and venv
+- **Node.js**: v18+ with npm v7.0+
+- **Python**: 3.10+ with pip and venv
+- **Netlify CLI**: for Netlify-compatible frontend builds and local previews
 - **API Keys**: OpenAI or compatible LLM provider API key
-- **Database**: PostgreSQL 14+ with pgvector extension installed
+- **Database**: Hosted Supabase Postgres with pgvector enabled and \`DATABASE_URL\` configured
 - **System Resources**: At least 5GB free disk space, 4GB RAM, and 2 CPU cores
 
 ## 🛠️ Installation
 
-### Option 1: Docker Deployment (Recommended)
+### Option 1: Netlify Frontend Build
 
 1. **Clone the repository**:
    \`\`\`bash
@@ -62,24 +62,25 @@ A comprehensive platform for managing, analyzing, and executing PowerShell scrip
    # Edit .env and set these required variables:
    # - OPENAI_API_KEY or ANTHROPIC_API_KEY
    # - JWT_SECRET (use: openssl rand -hex 32)
-   # - POSTGRES_PASSWORD (strong database password)
+   # - DATABASE_URL (hosted Supabase Postgres)
+   # - DB_PROFILE=supabase
+   # - DB_SSL=true
    \`\`\`
 
-3. **Start the application stack**:
+3. **Build the Netlify frontend**:
    \`\`\`bash
-   docker compose --env-file .env up -d --build
-   
-   # Verify all services are running
-   docker compose ps
+   npm run install:all
+   cd src/frontend && npm run build
+   cd ../..
+   npm run netlify:build
    \`\`\`
 
 4. **Access the application**:
-   - Frontend UI: [https://localhost:3090](https://localhost:3090)
-   - Backend API: [https://localhost:4000](https://localhost:4000)
-   - API Documentation: [https://localhost:4000/api-docs](https://localhost:4000/api-docs)
-   - AI Service: [http://localhost:8000](http://localhost:8000)
-   - pgAdmin: [http://localhost:5050](http://localhost:5050)
-   - Redis Commander: [http://localhost:8082](http://localhost:8082)
+   - Netlify UI: [http://psscript.netlify.app](http://psscript.netlify.app)
+   - Local frontend preview: [https://localhost:3090](https://localhost:3090)
+   - Local backend API: [https://localhost:4000](https://localhost:4000)
+   - Local API Documentation: [https://localhost:4000/api-docs](https://localhost:4000/api-docs)
+   - Local AI Service: [http://localhost:8000](http://localhost:8000)
 
    Local auth note:
    - The checked-in local frontend commonly runs with \`VITE_DISABLE_AUTH=true\` and auto-signs in as \`dev-admin\`.
@@ -93,9 +94,11 @@ A comprehensive platform for managing, analyzing, and executing PowerShell scrip
    cd psscript
    \`\`\`
 
-2. **Start the PostgreSQL and Redis services**:
+2. **Confirm Supabase database settings**:
    \`\`\`bash
-   docker compose up -d postgres redis
+   export DATABASE_URL="postgresql://..."
+   export DB_PROFILE=supabase
+   export DB_SSL=true
    \`\`\`
 
 3. **Start the frontend development server**:
@@ -109,7 +112,7 @@ A comprehensive platform for managing, analyzing, and executing PowerShell scrip
 4. **Start the backend API server**:
    \`\`\`bash
    cd src/backend
-   npm run dev
+   DATABASE_URL="$DATABASE_URL" DB_PROFILE=supabase DB_SSL=true npm run dev
    
    # The API will be available at https://localhost:4000
    \`\`\`
@@ -118,7 +121,7 @@ A comprehensive platform for managing, analyzing, and executing PowerShell scrip
    \`\`\`bash
    cd src/ai
    source venv/bin/activate  # On Windows: .\\venv\\Scripts\\activate
-   python -m uvicorn main:app --reload
+   DATABASE_URL="$DATABASE_URL" DB_SSL=true python -m uvicorn main:app --reload
    
    # The AI service will be available at http://localhost:8000
    \`\`\`
@@ -127,7 +130,7 @@ A comprehensive platform for managing, analyzing, and executing PowerShell scrip
 
 \`\`\`
 psscript/
-├── docker-compose.yml           # Container orchestration config
+├── netlify.toml                 # Netlify frontend build config
 ├── .env.example                 # Environment variable template
 ├── setup.sh                     # Automated setup script
 ├── docs/                        # Documentation files
@@ -170,6 +173,7 @@ psscript/
 │   └── powershell/              # PowerShell modules
 │       ├── modules/             # Custom PowerShell modules
 │       └── integrations/        # Integration scripts
+├── retired/docker/              # Archived Docker-era config and docs
 └── tests/                       # End-to-end and integration tests
 \`\`\`
 
@@ -354,12 +358,10 @@ The application is configured using environment variables:
 |----------|-------------|---------|----------|
 | \`NODE_ENV\` | Environment (development/production) | development | No |
 | \`PORT\` | Backend API port | 4001 | No |
-| \`DB_HOST\` | PostgreSQL database host | postgres | No |
-| \`DB_PORT\` | PostgreSQL database port | 5432 | No |
-| \`DB_NAME\` | PostgreSQL database name | psscript | No |
-| \`DB_USER\` | PostgreSQL username | postgres | No |
-| \`DB_PASSWORD\` | PostgreSQL password | | Yes |
-| \`REDIS_URL\` | Redis connection URL | redis://redis:6379 | No |
+| \`DATABASE_URL\` | Hosted Supabase Postgres connection URL | | Yes |
+| \`DB_PROFILE\` | Database profile for Supabase-compatible schema behavior | supabase | Yes |
+| \`DB_SSL\` | Require SSL for hosted database connections | true | Yes |
+| \`REDIS_URL\` | Managed Redis connection URL | | No |
 | \`JWT_SECRET\` | Secret for JWT tokens | | Yes |
 | \`JWT_EXPIRY\` | JWT token expiration time | 1h | No |
 | \`JWT_REFRESH_EXPIRY\` | JWT refresh token expiration | 7d | No |
@@ -367,9 +369,10 @@ The application is configured using environment variables:
 | \`ANTHROPIC_API_KEY\` | Anthropic API key | | No* |
 | \`MISTRAL_API_KEY\` | Mistral API key | | No* |
 | \`AI_MODEL\` | Default AI model | gpt-4.1 | No |
-| \`AI_SERVICE_URL\` | URL for the AI service | http://ai-service:8000 | No |
+| \`AI_SERVICE_URL\` | URL for the AI service | http://localhost:8000 | No |
 | \`LOG_LEVEL\` | Logging level | info | No |
 | \`CORS_ORIGIN\` | CORS allowed origins | https://localhost:3090 | No |
+| \`VITE_API_URL\` | Frontend API target for Netlify builds | | Yes |
 
 *At least one of the AI provider API keys is required.
 
@@ -410,9 +413,9 @@ The application implements comprehensive security measures:
 ERROR: connection to database failed: could not connect to server: Connection refused
 \`\`\`
 **Solution**: 
-- Verify PostgreSQL is running: \`docker-compose ps postgres\`
-- Check database credentials in .env file
-- Ensure database port is not blocked by firewall
+- Verify \`DATABASE_URL\` points at the hosted Supabase project
+- Confirm \`DB_PROFILE=supabase\` and \`DB_SSL=true\`
+- Check Supabase project networking and password credentials
 
 #### AI Analysis Not Working
 \`\`\`
@@ -434,11 +437,11 @@ ERROR: Script execution timed out after 60 seconds
 
 ### Development Mode Utilities
 
-#### Switching Between Mock and Production Database
+#### Switching Between Mock and Production Data
 - Enable this feature in Application Settings (Settings > Application Settings > Database Toggle Button)
 - Once enabled, a floating toggle button appears at the bottom-right corner
 - Mock data is useful for UI development without API dependencies
-- Green indicator shows production database, yellow shows mock data
+- Green indicator shows live hosted data, yellow shows mock data
 
 #### Viewing README Documentation
 - Access the formatted project documentation via Settings > Application Information > View README Documentation
@@ -454,7 +457,7 @@ ERROR: Script execution timed out after 60 seconds
 
 ### Scaling Recommendations
 - Horizontal scaling: Add multiple API nodes behind a load balancer
-- Vertical scaling: Increase resources for PostgreSQL (particularly important for vector operations)
+- Vertical scaling: Increase Supabase database resources for vector-heavy operations
 - Consider read replicas for database in high-read environments
 
 ## 📄 License

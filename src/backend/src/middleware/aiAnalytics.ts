@@ -9,6 +9,7 @@
 import { Request, Response, NextFunction } from 'express';
 import { Sequelize, DataTypes, Model, Op } from 'sequelize';
 import logger from '../utils/logger';
+import { getUserIdDataType, getUserTableName } from '../utils/databaseProfile';
 
 /**
  * AI Metrics Model
@@ -16,7 +17,7 @@ import logger from '../utils/logger';
  */
 export interface AIMetricAttributes {
   id?: number;
-  userId?: number;
+  userId?: number | string;
   endpoint: string;
   model: string;
   promptTokens: number;
@@ -33,7 +34,7 @@ export interface AIMetricAttributes {
 
 export class AIMetric extends Model<AIMetricAttributes> implements AIMetricAttributes {
   public id!: number;
-  public userId?: number;
+  public userId?: number | string;
   public endpoint!: string;
   public model!: string;
   public promptTokens!: number;
@@ -60,10 +61,10 @@ export function initAIMetricsModel(sequelize: Sequelize): void {
         primaryKey: true,
       },
       userId: {
-        type: DataTypes.INTEGER,
+        type: getUserIdDataType(),
         allowNull: true,
         references: {
-          model: 'users',
+          model: getUserTableName(),
           key: 'id',
         },
       },
@@ -285,7 +286,7 @@ export class AIAnalyticsMiddleware {
   static async getAnalytics(
     startDate: Date,
     endDate: Date,
-    userId?: number
+    userId?: number | string
   ): Promise<any> {
     const sequelize = AIMetric.sequelize;
     if (!sequelize) {

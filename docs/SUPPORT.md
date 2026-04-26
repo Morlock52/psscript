@@ -38,7 +38,7 @@ This guide defines how to get help, how issues are triaged, and what operational
 
 - Backend logs: `src/backend/logs/`
 - AI service logs: `src/ai/logs/` (if configured)
-- Docker logs: `docker-compose logs -f`
+- Netlify deploy logs: Netlify project deploy log for `psscript`
 
 ### Common recovery actions
 
@@ -63,7 +63,7 @@ If maintenance actions fail:
 3. Collect recent server logs:
     - `tail -n 200 src/backend/logs/backend.log`
 4. Open a support ticket with:
-    - environment (`docker` / local),
+    - environment (`netlify` / hosted API / local),
     - user role used,
     - endpoint payload,
     - and backup filename involved.
@@ -92,7 +92,7 @@ If voice tests fail:
    - `/tmp/voice-tests-1-8-latest.json`
    - `docs/VOICE-TESTS-1-8-LATEST.md`
 3. Include the backend and AI service logs around the failure window:
-   - `docker compose logs --tail=300 backend ai-service`
+   - backend and AI service deploy/runtime logs for the same timestamp window
 4. If authentication checks fail unexpectedly, include:
    - `AUTH_ENABLED`, `DISABLE_AUTH`, and route middleware config details.
 5. If invalid-key behavior fails (expected `401`), include:

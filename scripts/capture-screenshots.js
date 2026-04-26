@@ -1,8 +1,9 @@
 /**
- * Capture the canonical documentation screenshots from the current local UI.
+ * Capture the canonical documentation screenshots from the configured UI target.
  *
  * Defaults:
  * - App shell screenshots come from the standard local stack on 3090.
+ * - Set SCREENSHOT_BASE_URL=http://psscript.netlify.app to refresh from Netlify.
  * - Login screenshot can come from a separate auth-enabled frontend via SCREENSHOT_LOGIN_URL.
  */
 const fs = require('fs');

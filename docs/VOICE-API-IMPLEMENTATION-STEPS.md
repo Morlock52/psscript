@@ -15,6 +15,6 @@ The voice system has already been implemented and validated.
 ## Canonical Execution Path
 
 1. Configure `OPENAI_API_KEY` for AI service.
-2. Start stack (`docker compose up -d`).
+2. Start the hosted/local backend and AI services with `DATABASE_URL` pointing at Supabase.
 3. Run validation (`npm run test:voice:1-8:report`).
 4. Review artifacts and support runbook (`docs/SUPPORT.md`).

@@ -1,6 +1,7 @@
 import { Model, DataTypes, Sequelize } from 'sequelize';
 import User from './User';
 import Script from './Script';
+import { getUserIdDataType, getUserTableName } from '../utils/databaseProfile';
 
 /**
  * UserFavorite model - Junction table for user favorite scripts
@@ -8,7 +9,7 @@ import Script from './Script';
  * Composite primary key: (user_id, script_id)
  */
 export default class UserFavorite extends Model {
-  public userId!: number;
+  public userId!: number | string;
   public scriptId!: number;
 
   public readonly createdAt!: Date;
@@ -20,12 +21,12 @@ export default class UserFavorite extends Model {
   static initialize(sequelize: Sequelize) {
     UserFavorite.init({
       userId: {
-        type: DataTypes.INTEGER,
+        type: getUserIdDataType(),
         primaryKey: true,
         allowNull: false,
         field: 'user_id',
         references: {
-          model: 'users',
+          model: getUserTableName(),
           key: 'id'
         }
       },

@@ -4,44 +4,43 @@ PostgreSQL + `pgvector` storage for scripts, analysis artifacts, embeddings, use
 
 ## Current setup
 
-- engine: PostgreSQL 15+
+- engine: hosted Supabase Postgres
 - vector extension: `pgvector`
-- default local port: `5432`
-- default database: `psscript`
+- connection: `DATABASE_URL` with SSL enabled
+- profile: `DB_PROFILE=supabase`
 
 ## Main schema areas
 
 - `scripts`, `script_versions`, `script_analysis`, `script_embeddings`
-- `users`, `user_favorites`
+- `app_profiles`
 - `categories`, `tags`, `script_tags`
-- `documentation`
+- `documentation_items`
 - `chat_history`
-- `execution_logs`
 - `ai_metrics`
 
-## Bootstrap paths
+## Supabase Postgres notes
 
-Docker bootstrap mounts:
-- `src/db/00-init-pgvector.sh`
-- `src/db/schema.sql`
-- `src/db/seeds/01-initial-data.sql`
+This app uses Supabase as hosted Postgres. Runtime database code detects the
+Supabase profile and maps user-owned records to `app_profiles(id uuid)`.
 
-## Local development
-
-The easiest path is the repo-level Docker stack:
+For Supabase, prefer the connection pooler URL and require SSL:
 
 ```bash
-docker compose -f docker-compose.yml -f docker-compose.override.yml up -d postgres redis
+DATABASE_URL='postgres://postgres.[project-ref]:[password]@aws-0-[region].pooler.supabase.com:6543/postgres?sslmode=require'
+DB_POOL_MAX=5
+DB_POOL_MIN=0
+DB_SSL=true
 ```
 
-Default connection values:
+RLS is enabled on public tables. Public lookup tables have read policies, and
+user/script-owned tables use ownership policies keyed by `auth.uid()`.
 
-```text
-host=127.0.0.1
-port=5432
-dbname=psscript
-user=postgres
-password=postgres
+Database changes should stay in SQL migrations under `src/db/migrations`. Apply
+targeted migrations through the repo migration runner with the Supabase
+`DATABASE_URL`:
+
+```bash
+DB_MIGRATION_FILES=20260426_supabase_advisor_fixes.sql node scripts/migrations/run-migration.js
 ```
 
 ## Related docs

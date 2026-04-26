@@ -4,6 +4,7 @@ import crypto from 'crypto';
 import { User } from '../models';
 import logger from '../utils/logger';
 import { getAuthConfig, IS_PRODUCTION } from '../utils/envValidation';
+import { isSupabaseDatabase } from '../utils/databaseProfile';
 
 // Request type extensions are in src/types/express.d.ts
 
@@ -25,6 +26,50 @@ const getClientIp = (req: Request): string => {
   );
 };
 
+let disabledAuthUser: Express.Request['user'] | null = null;
+
+async function getDisabledAuthUser(): Promise<Express.Request['user']> {
+  if (disabledAuthUser) {
+    return disabledAuthUser;
+  }
+
+  const configuredId = process.env.DEV_USER_ID || process.env.SUPABASE_DEV_USER_ID;
+  if (configuredId) {
+    disabledAuthUser = {
+      id: configuredId,
+      username: process.env.DEV_USERNAME || 'dev',
+      email: process.env.DEV_USER_EMAIL || 'dev@local',
+      role: process.env.DEV_USER_ROLE || 'admin'
+    };
+    return disabledAuthUser;
+  }
+
+  if (isSupabaseDatabase()) {
+    const profile = await User.findOne({
+      attributes: ['id', 'username', 'email', 'role'],
+      order: [['createdAt', 'ASC']]
+    });
+
+    if (profile) {
+      disabledAuthUser = {
+        id: profile.id,
+        username: profile.username,
+        email: profile.email,
+        role: profile.role
+      };
+      return disabledAuthUser;
+    }
+  }
+
+  disabledAuthUser = {
+    id: 1,
+    username: 'dev',
+    email: 'dev@local',
+    role: 'admin'
+  };
+  return disabledAuthUser;
+}
+
 /**
  * Middleware to authenticate JWT tokens
  * Adds the user information to the request object if authenticated
@@ -33,12 +78,7 @@ export const authenticateJWT = async (req: Request, res: Response, next: NextFun
   // Local/dev convenience: allow running with auth disabled.
   // This is intentionally gated behind an env var and should not be enabled in production.
   if (process.env.DISABLE_AUTH === 'true') {
-    req.user = {
-      id: 1,
-      username: 'dev',
-      email: 'dev@local',
-      role: 'admin'
-    };
+    req.user = await getDisabledAuthUser();
     return next();
   }
 

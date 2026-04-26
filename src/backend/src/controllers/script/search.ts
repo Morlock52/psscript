@@ -164,7 +164,7 @@ export async function findSimilarScripts(
         success: false
       });
     }
-    if (!isAdmin && !script.isPublic && script.userId !== viewerId) {
+    if (!isAdmin && !script.isPublic && String(script.userId) !== String(viewerId)) {
       return res.status(403).json({
         message: 'Forbidden: insufficient permissions to view similar scripts',
         success: false
@@ -174,8 +174,8 @@ export async function findSimilarScripts(
     // Use the vector search utility to find similar scripts
     try {
       const similarScripts = await findSimilarScriptsByVector(scriptId, limit, threshold);
-      const visibleScripts = similarScripts.filter((s: { isPublic?: boolean; userId?: number | null }) => (
-        isAdmin || !!s.isPublic || (typeof viewerId === 'number' && s.userId === viewerId)
+      const visibleScripts = similarScripts.filter((s: { isPublic?: boolean; userId?: number | string | null }) => (
+        isAdmin || !!s.isPublic || (viewerId != null && String(s.userId) === String(viewerId))
       ));
 
       // Format the response

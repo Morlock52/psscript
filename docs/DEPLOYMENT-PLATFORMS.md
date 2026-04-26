@@ -1,15 +1,16 @@
 # Deployment Platforms
 
-This is the current deployment plan for running PSScript without the local-only issues that come from `127.0.0.1`, self-signed TLS, and dev-mode auth shortcuts.
+This is the current deployment plan for running PSScript without local Docker.
+Docker-era files are archived in `/retired/docker` for reference only.
 
 ## Recommended topology
 
 Use this layout:
 
 1. Netlify for the frontend SPA
-2. Render or Railway for the backend API
-3. Render or Railway for the AI service
-4. Managed PostgreSQL
+2. Hosted backend API
+3. Hosted AI service
+4. Supabase Postgres
 5. Managed Redis / Key Value
 
 This matches the actual codebase structure:
@@ -46,11 +47,9 @@ This matches the actual codebase structure:
 | `FRONTEND_URL` | yes | Public frontend origin for CSRF/CORS |
 | `JWT_SECRET` | yes | JWT signing secret |
 | `DISABLE_AUTH` | yes | Must be `false` in production |
-| `DB_HOST` | yes | Postgres host |
-| `DB_PORT` | yes | Postgres port |
-| `DB_NAME` | yes | Postgres database |
-| `DB_USER` | yes | Postgres user |
-| `DB_PASSWORD` | yes | Postgres password |
+| `DATABASE_URL` | yes | Supabase Postgres pooler URL |
+| `DB_SSL` | yes | Use `true` |
+| `DB_PROFILE` | yes | Use `supabase` |
 | `REDIS_URL` | yes | Redis / Key Value connection string |
 | `AI_SERVICE_URL` | yes | Internal AI service URL |
 | `OPENAI_API_KEY` | yes | Used by backend-side OpenAI paths |
@@ -62,11 +61,9 @@ This matches the actual codebase structure:
 | `PORT` | yes | Bind port from host platform |
 | `OPENAI_API_KEY` | yes | Primary OpenAI access |
 | `ANTHROPIC_API_KEY` | no | Optional secondary provider |
-| `DB_HOST` | yes | Postgres host |
-| `DB_PORT` | yes | Postgres port |
-| `DB_NAME` | yes | Postgres database |
-| `DB_USER` | yes | Postgres user |
-| `DB_PASSWORD` | yes | Postgres password |
+| `DATABASE_URL` | yes | Supabase Postgres pooler URL |
+| `DB_SSL` | yes | Use `true` |
+| `DB_PROFILE` | yes | Use `supabase` |
 | `CORS_ORIGINS` | yes | Public frontend origins allowed to call AI routes through the backend |
 
 ## Pre-deploy checklist
@@ -77,7 +74,7 @@ This matches the actual codebase structure:
 4. Set `FRONTEND_URL` to the real frontend origin
 5. Set `CORS_ORIGINS` on the AI service to the real frontend origin list
 6. Set `OPENAI_API_KEY` on backend and AI
-7. Provision Postgres and Redis before deploying the backend
+7. Provision Supabase Postgres and managed Redis before deploying the backend
 8. Deploy the AI service before the backend, or deploy both together with the backend pointed at the AI service URL
 
 ## Netlify
@@ -88,6 +85,12 @@ The repo already includes:
 
 It builds the frontend from `/src/frontend` and publishes the Vite `dist` output with SPA fallback routing.
 
+Linked Netlify project:
+
+- project: `psscript`
+- primary site: `http://psscript.netlify.app`
+- project URL: `https://app.netlify.com/projects/psscript`
+
 ### Netlify variables
 
 Set these in Netlify:
@@ -95,90 +98,19 @@ Set these in Netlify:
 - `VITE_API_URL=https://your-backend-domain/api`
 - `VITE_DISABLE_AUTH=false`
 
-## Render
+## Backend And AI Hosting
 
-Official references used here:
+The frontend is Netlify-first. The backend API and AI service should run as
+hosted Node/Python services with managed Supabase Postgres and managed Redis.
 
-- [Blueprint YAML reference](https://render.com/docs/blueprint-spec)
-- [Blueprints / infrastructure as code](https://render.com/docs/infrastructure-as-code)
-- [Monorepo support](https://render.com/docs/monorepo-support)
-- [Docker on Render](https://render.com/docs/docker)
+Do not use Docker as the default deployment path. Historical Docker files were
+moved to `/retired/docker` and should only be used for reference or recovery.
 
-This repo now includes:
+Backend and AI hosts must expose stable HTTPS URLs. After those URLs exist, set:
 
-- `/render.yaml`
-- `/deploy/docker/backend.Dockerfile`
-- `/deploy/docker/ai.Dockerfile`
-- `/deploy/docker/frontend.Dockerfile`
-
-### Render plan
-
-The blueprint provisions:
-
-1. Render Postgres
-2. Render Key Value
-3. AI web service
-4. Backend web service
-
-Values still marked `sync: false` must be set in Render after the first sync:
-
-- `OPENAI_API_KEY`
-- `ANTHROPIC_API_KEY` if used
-- `FRONTEND_URL`
-- `CORS_ORIGINS`
-
-### Render sequence
-
-1. Create a new Blueprint from this repo
-2. Let Render create Postgres and Key Value
-3. Set the missing secret/env values
-4. Deploy AI
-5. Deploy backend
-6. Point Netlify `VITE_API_URL` at the backend public URL
-
-## Railway
-
-Official references used here:
-
-- [Deploying a monorepo](https://docs.railway.com/guides/monorepo)
-- [Dockerfiles](https://docs.railway.com/deploy/dockerfiles)
-- [Build configuration](https://docs.railway.com/builds/build-configuration)
-- [Services](https://docs.railway.com/guides/services)
-
-Railway monorepos are easier to keep stable here by deploying each service with a dedicated Dockerfile path instead of relying on auto-detection from subdirectories.
-
-Use the Dockerfiles in:
-
-- `/deploy/docker/frontend.Dockerfile`
-- `/deploy/docker/backend.Dockerfile`
-- `/deploy/docker/ai.Dockerfile`
-
-### Railway service setup
-
-Create these Railway services:
-
-1. `psscript-frontend`
-2. `psscript-backend`
-3. `psscript-ai`
-4. PostgreSQL service
-5. Redis service
-
-For each app service:
-
-1. Connect the GitHub repo
-2. Keep the source at repo root `/`
-3. In the Railway service settings, point the service at one of these Dockerfiles:
-   - `/deploy/docker/frontend.Dockerfile`
-   - `/deploy/docker/backend.Dockerfile`
-   - `/deploy/docker/ai.Dockerfile`
-4. Set the runtime env variables from the tables above
-5. Generate a public domain for frontend and backend
-
-### Railway notes
-
-- The frontend Docker image serves the built SPA with nginx and SPA fallback routing.
-- The backend and AI images bind to `0.0.0.0` and use runtime `PORT`.
-- Keep `VITE_DISABLE_AUTH=false` and `DISABLE_AUTH=false` in production Railway services.
+- Netlify `VITE_API_URL` to the backend API URL ending in `/api`
+- Backend `AI_SERVICE_URL` to the hosted AI service URL
+- Backend and AI `DATABASE_URL` to the Supabase pooler URL
 
 ## Post-deploy smoke checks
 

@@ -1,7 +1,7 @@
 import { Request, Response } from 'express';
 import axios from 'axios';
 import logger from '../utils/logger';
-import { ChatHistory } from '../models';
+import { ChatHistory, sequelize } from '../models';
 import { Op } from 'sequelize';
 import { cache } from '../services/cacheService';
 import { anthropic, inferProvider, MODELS, openai } from '../services/openaiClient';
@@ -41,10 +41,7 @@ export class ChatController {
   
   constructor() {
     // Get AI service URL from environment variables or use default
-    const isDocker = process.env.DOCKER_ENV === 'true';
-    this.aiServiceUrl = isDocker 
-      ? (process.env.AI_SERVICE_URL || 'http://ai-service:8000') 
-      : (process.env.AI_SERVICE_URL || 'http://localhost:8000');
+    this.aiServiceUrl = process.env.AI_SERVICE_URL || 'http://localhost:8000';
     logger.info(`ChatController initialized with AI service URL: ${this.aiServiceUrl}`);
   }
 
@@ -578,7 +575,7 @@ export class ChatController {
    * @param messages Chat messages
    * @param response AI response
    */
-  private async storeChatHistory(userId: number, messages: any[], response: string): Promise<void> {
+  private async storeChatHistory(userId: number | string, messages: any[], response: string): Promise<void> {
     try {
       // Generate a unique ID for this chat session for logging purposes
       const chatId = Math.random().toString(36).substring(2, 10);
@@ -620,7 +617,16 @@ export class ChatController {
             // Generate embedding for the response text (for semantic search)
             const embedding = await this.generateEmbedding(response);
             if (embedding && embedding.length > 0) {
-              await chatHistory.update({ embedding });
+              const vectorString = `[${embedding.join(',')}]`;
+              await sequelize.query(
+                'UPDATE chat_history SET embedding = :embedding::vector WHERE id = :id',
+                {
+                  replacements: {
+                    embedding: vectorString,
+                    id: chatHistory.id
+                  }
+                }
+              );
               logger.debug(`Added embedding to chat history (ID: ${chatId})`);
             }
           } catch (embeddingError) {

@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <base href="file:///Users/morlock/fun/psscript/" />
+  <base href="file:///Users/morlock/fun/02_PowerShell_Projects/psscript/" />
   <title>Documentation-Hub</title>
   <style>
 :root {
@@ -199,77 +199,131 @@ body {
   </section>
   
     <h1 id="psscript-documentation-hub">PSScript Documentation Hub</h1>
-<p><img alt="PSScript Banner" src="docs/graphics/banner.svg" /></p>
-<p>Welcome to the documentation hub for PSScript Manager. Use this page to navigate onboarding, deployment, and feature documentation.</p>
-<h2 id="quick-links">Quick links</h2>
-<ul>
-<li>Getting started: <code>GETTING-STARTED.md</code></li>
-<li>Docker setup: <code>../DOCKER-QUICKSTART.md</code></li>
-<li>Management playbook: <code>MANAGEMENT-PLAYBOOK.md</code></li>
-<li>Training suite: <code>training-suite/README.md</code></li>
-<li>Training guide: <code>training-suite/TRAINING-GUIDE.md</code></li>
-<li>Support: <code>SUPPORT.md</code></li>
-</ul>
-<h2 id="platform-overview">Platform overview</h2>
-<p><img alt="Architecture Diagram" src="docs/graphics/architecture.svg" /></p>
-<h2 id="documentation-map">Documentation map</h2>
+<p><em>Last updated: April 26, 2026</em></p>
+<p>This index points to the active documentation set for the current validated repo state.</p>
+<h2 id="start-here">Start Here</h2>
 <table>
 <thead>
 <tr>
-<th>Area</th>
-<th>Description</th>
-<th>Link</th>
+<th>Document</th>
+<th>Purpose</th>
 </tr>
 </thead>
 <tbody>
 <tr>
-<td>Onboarding</td>
-<td>Setup, accounts, first run</td>
-<td><code>GETTING-STARTED.md</code></td>
+<td><a href="../README.md">../README.md</a></td>
+<td>Repo overview, architecture, AI models, validation</td>
 </tr>
 <tr>
-<td>Docker</td>
-<td>Infrastructure setup</td>
-<td><code>../DOCKER-QUICKSTART.md</code></td>
+<td><a href="./GETTING-STARTED.md">GETTING-STARTED.md</a></td>
+<td>Local bootstrap and first-run steps</td>
 </tr>
 <tr>
-<td>Vector search</td>
-<td>pgvector and embeddings</td>
-<td><code>README-VECTOR-SEARCH.md</code></td>
+<td><a href="./DATA-MAINTENANCE.md">DATA-MAINTENANCE.md</a></td>
+<td>Admin backup, restore, and cleanup operations</td>
 </tr>
 <tr>
-<td>Voice API</td>
-<td>Voice features</td>
-<td><code>README-VOICE-API.md</code></td>
+<td><a href="./README-VOICE-API.md">README-VOICE-API.md</a></td>
+<td>Voice/listening implementation and API behavior</td>
 </tr>
 <tr>
-<td>Management</td>
-<td>Rollout plan and KPIs</td>
-<td><code>MANAGEMENT-PLAYBOOK.md</code></td>
+<td><a href="./AUTHENTICATION-IMPROVEMENTS.md">AUTHENTICATION-IMPROVEMENTS.md</a></td>
+<td>Auth model and local auth-disabled behavior</td>
 </tr>
 <tr>
-<td>Training</td>
-<td>Modules and labs</td>
-<td><code>training-suite/README.md</code></td>
-</tr>
-<tr>
-<td>Support</td>
-<td>Triage and operations</td>
-<td><code>SUPPORT.md</code></td>
-</tr>
-<tr>
-<td>Reference sources</td>
-<td>Style inspirations</td>
-<td><code>REFERENCE-SOURCES.md</code></td>
+<td><a href="./DEPLOYMENT-PLATFORMS.md">DEPLOYMENT-PLATFORMS.md</a></td>
+<td>Netlify frontend, hosted API/AI services, and Supabase Postgres deployment</td>
 </tr>
 </tbody>
 </table>
-<h2 id="exported-formats">Exported formats</h2>
-<p>Run <code>scripts/export-docs.sh --all</code> to generate HTML, PDF, and DOCX exports in <code>docs/exports/</code>.</p>
-<p>With the backend running, exports are available at http://localhost:4000/docs/exports/.</p>
-<h2 id="ui-snapshot">UI snapshot</h2>
-<p><img alt="Dashboard" src="docs/screenshots/dashboard.png" /></p>
-    <div class="footer">Generated 2026-01-16 23:34 UTC</div>
+<h2 id="service-readmes">Service READMEs</h2>
+<table>
+<thead>
+<tr>
+<th>Document</th>
+<th>Purpose</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><a href="../src/backend/README.md">../src/backend/README.md</a></td>
+<td>Backend routes, middleware, validation</td>
+</tr>
+<tr>
+<td><a href="../src/frontend/README.md">../src/frontend/README.md</a></td>
+<td>Frontend components, pages, state</td>
+</tr>
+<tr>
+<td><a href="../src/ai/README.md">../src/ai/README.md</a></td>
+<td>AI service, LangGraph, models, guardrails</td>
+</tr>
+</tbody>
+</table>
+<h2 id="april-2026-reviews">April 2026 Reviews</h2>
+<table>
+<thead>
+<tr>
+<th>Document</th>
+<th>Purpose</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><a href="./PROJECT-REVIEW-2026-04-01.md">PROJECT-REVIEW-2026-04-01.md</a></td>
+<td>Comprehensive project review: 22 fixes across DB, API, architecture</td>
+</tr>
+<tr>
+<td><a href="./AI-FUNCTIONS-REVIEW-2026-04-02.md">AI-FUNCTIONS-REVIEW-2026-04-02.md</a></td>
+<td>AI functions audit: model migration, SDK updates, shared client</td>
+</tr>
+</tbody>
+</table>
+<h2 id="operational-references">Operational References</h2>
+<table>
+<thead>
+<tr>
+<th>Document</th>
+<th>Purpose</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><a href="./LOGIN-CREDENTIALS.md">LOGIN-CREDENTIALS.md</a></td>
+<td>Local auth-mode guidance</td>
+</tr>
+<tr>
+<td><a href="./MANAGEMENT-PLAYBOOK.md">MANAGEMENT-PLAYBOOK.md</a></td>
+<td>Operator runbook</td>
+</tr>
+<tr>
+<td><a href="./SUPPORT.md">SUPPORT.md</a></td>
+<td>Support and escalation info</td>
+</tr>
+<tr>
+<td><a href="./UPDATES.md">UPDATES.md</a></td>
+<td>Engineering changes and validation history</td>
+</tr>
+</tbody>
+</table>
+<h2 id="validation-artifacts">Validation Artifacts</h2>
+<table>
+<thead>
+<tr>
+<th>Document</th>
+<th>Purpose</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><a href="./VOICE-TESTS-1-8-LATEST.md">VOICE-TESTS-1-8-LATEST.md</a></td>
+<td>Latest voice test report</td>
+</tr>
+</tbody>
+</table>
+<h2 id="historical-docs">Historical Docs</h2>
+<p>Many files in this folder are historical reports or duplicated workspace artifacts (filenames with <code>(1)</code>).
+Treat those as archive material unless linked from this page or the root README.</p>
+    <div class="footer">Generated 2026-04-26 20:29 UTC</div>
   </div>
 </body>
 </html>

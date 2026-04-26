@@ -52,7 +52,6 @@ services:
       # Mount TLS certificates for mTLS origin protection
       - ./certs:/certs:ro
     depends_on:
-      - postgres
       - redis
       - ai-service
     environment:
@@ -63,11 +62,10 @@ services:
       # Allow stress/E2E without constant 429s in dev.
       - RELAX_RATE_LIMITS=true
       - RATE_LIMIT_MULTIPLIER=20
-      - DB_HOST=postgres
-      - DB_PORT=5432
-      - DB_NAME=psscript
-      - DB_USER=postgres
-      - DB_PASSWORD=postgres
+      - DATABASE_URL=${DATABASE_URL:?Set DATABASE_URL to your Supabase Postgres connection string}
+      - DB_SSL=${DB_SSL:-true}
+      - DB_PROFILE=${DB_PROFILE:-supabase}
+      - DEV_USER_ID=${DEV_USER_ID:-}
       - REDIS_URL=redis://redis:6379
       - AI_SERVICE_URL=http://ai-service:8000
       - JWT_SECRET=development_jwt_secret_key_change_in_production
@@ -85,16 +83,12 @@ services:
       - "8000:8000"
     volumes:
       - ./src/ai:/app
-    depends_on:
-      - postgres
     environment:
       - OPENAI_API_KEY=${OPENAI_API_KEY:-}
       - ANTHROPIC_API_KEY=${ANTHROPIC_API_KEY:-}
-      - DB_HOST=postgres
-      - DB_PORT=5432
-      - DB_NAME=psscript
-      - DB_USER=postgres
-      - DB_PASSWORD=postgres
+      - DATABASE_URL=${DATABASE_URL:?Set DATABASE_URL to your Supabase Postgres connection string}
+      - DB_SSL=${DB_SSL:-true}
+      - DB_PROFILE=${DB_PROFILE:-supabase}
     restart: unless-stopped
 
   # PostgreSQL with pgvector extension

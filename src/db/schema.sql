@@ -1,5 +1,11 @@
 -- Enable pgvector extension
-CREATE EXTENSION IF NOT EXISTS vector;
+CREATE SCHEMA IF NOT EXISTS extensions;
+CREATE EXTENSION IF NOT EXISTS vector WITH SCHEMA extensions;
+SET search_path = public, extensions;
+DO $$
+BEGIN
+    EXECUTE format('ALTER DATABASE %I SET search_path = public, extensions', current_database());
+END $$;
 
 -- Reset the public schema if exists
 DO $$ 
@@ -26,10 +32,7 @@ CREATE TABLE users (
 );
 
 -- User security indexes
-CREATE INDEX idx_users_email ON users(email);
-CREATE INDEX idx_users_username ON users(username);
 CREATE INDEX idx_users_role ON users(role);
-CREATE INDEX idx_users_email_password ON users(email, password_hash);
 CREATE INDEX idx_users_locked_until ON users(locked_until) WHERE locked_until IS NOT NULL;
 CREATE INDEX idx_users_login_attempts ON users(login_attempts) WHERE login_attempts > 0;
 CREATE INDEX idx_users_last_login ON users(last_login_at) WHERE last_login_at IS NOT NULL;
@@ -70,12 +73,12 @@ CREATE TABLE scripts (
     execution_count INTEGER NOT NULL DEFAULT 0,
     average_execution_time FLOAT,
     last_executed_at TIMESTAMP WITH TIME ZONE,
-    file_hash VARCHAR(255)
+    file_hash VARCHAR(64)
 );
 
 -- File hash index for deduplication
-CREATE INDEX idx_scripts_file_hash ON scripts(file_hash);
-COMMENT ON COLUMN scripts.file_hash IS 'MD5 hash of script content for deduplication';
+CREATE UNIQUE INDEX uq_scripts_file_hash ON scripts(file_hash) WHERE file_hash IS NOT NULL;
+COMMENT ON COLUMN scripts.file_hash IS 'SHA-256 hash of script content for deduplication';
 
 -- Script versions table
 CREATE TABLE script_versions (
@@ -152,8 +155,10 @@ CREATE TABLE ai_metrics (
 -- Vector embeddings table
 CREATE TABLE script_embeddings (
     id SERIAL PRIMARY KEY,
-    script_id INTEGER REFERENCES scripts(id) UNIQUE,
-    embedding vector(1536),  -- OpenAI embedding size
+    script_id INTEGER NOT NULL REFERENCES scripts(id) ON DELETE CASCADE UNIQUE,
+    embedding vector(1536) NOT NULL,  -- OpenAI embedding size
+    embedding_type VARCHAR(50) NOT NULL DEFAULT 'openai',
+    model_version VARCHAR(50) NOT NULL DEFAULT 'text-embedding-3-small',
     created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
 );
@@ -221,8 +226,9 @@ CREATE INDEX idx_chat_history_created_at ON chat_history(created_at);
 -- Create indexes
 CREATE INDEX idx_scripts_category ON scripts(category_id);
 CREATE INDEX idx_scripts_user ON scripts(user_id);
+CREATE INDEX idx_scripts_visibility ON scripts(is_public, user_id);
 CREATE INDEX idx_script_versions_script ON script_versions(script_id);
-CREATE INDEX idx_script_analysis_script ON script_analysis(script_id);
+CREATE INDEX idx_script_versions_user ON script_versions(user_id);
 CREATE INDEX idx_ai_metrics_user_id ON ai_metrics(user_id);
 CREATE INDEX idx_ai_metrics_endpoint ON ai_metrics(endpoint);
 CREATE INDEX idx_ai_metrics_model ON ai_metrics(model);
@@ -231,10 +237,15 @@ CREATE INDEX idx_ai_metrics_success ON ai_metrics(success);
 CREATE INDEX idx_execution_logs_script ON execution_logs(script_id);
 CREATE INDEX idx_execution_logs_user ON execution_logs(user_id);
 CREATE INDEX idx_execution_logs_created_at ON execution_logs(created_at);
+CREATE INDEX idx_comments_script ON comments(script_id);
+CREATE INDEX idx_comments_user ON comments(user_id);
+CREATE INDEX idx_script_dependencies_child ON script_dependencies(child_script_id);
+CREATE INDEX idx_script_tags_tag ON script_tags(tag_id);
+CREATE INDEX idx_user_favorites_script ON user_favorites(script_id);
 
 -- Create vector indexes for similarity search
-CREATE INDEX script_embeddings_idx ON script_embeddings USING ivfflat (embedding vector_cosine_ops) WITH (lists = 100);
-CREATE INDEX chat_history_embedding_idx ON chat_history USING ivfflat (embedding vector_cosine_ops) WITH (lists = 100);
+CREATE INDEX idx_script_embeddings_hnsw ON script_embeddings USING hnsw (embedding vector_cosine_ops) WITH (m = 16, ef_construction = 64);
+CREATE INDEX chat_history_embedding_idx ON chat_history USING hnsw (embedding vector_cosine_ops);
 
 -- Updated_at trigger function (reusable)
 CREATE OR REPLACE FUNCTION update_updated_at_column()
@@ -243,7 +254,8 @@ BEGIN
     NEW.updated_at = CURRENT_TIMESTAMP;
     RETURN NEW;
 END;
-$$ LANGUAGE plpgsql;
+$$ LANGUAGE plpgsql
+SET search_path = public, extensions, pg_catalog;
 
 -- Apply updated_at triggers
 CREATE TRIGGER update_users_updated_at BEFORE UPDATE ON users FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();

@@ -2,6 +2,7 @@ import { Model, DataTypes, Sequelize } from 'sequelize';
 import bcrypt from 'bcrypt';
 import logger from '../utils/logger';
 import { getAuthConfig } from '../utils/envValidation';
+import { getUserIdDataType, getUserTableName, isSupabaseDatabase } from '../utils/databaseProfile';
 
 // Get bcrypt rounds from environment config (default 12 per OWASP recommendations)
 const getBcryptRounds = (): number => {
@@ -15,7 +16,7 @@ const getBcryptRounds = (): number => {
 };
 
 export default class User extends Model {
-  public id!: number;
+  public id!: number | string;
   public username!: string;
   public email!: string;
   public password!: string;
@@ -203,10 +204,11 @@ export default class User extends Model {
   }
 
   static initialize(sequelize: Sequelize) {
-    User.init({
+    const useSupabaseProfiles = isSupabaseDatabase();
+    const attributes: any = {
       id: {
-        type: DataTypes.INTEGER,
-        autoIncrement: true,
+        type: getUserIdDataType(),
+        autoIncrement: !useSupabaseProfiles,
         primaryKey: true
       },
       username: {
@@ -222,94 +224,101 @@ export default class User extends Model {
           isEmail: true
         }
       },
-      password: {
-        type: DataTypes.STRING(255),
-        allowNull: false,
-        field: 'password_hash'
-      },
       role: {
         type: DataTypes.STRING(20),
         defaultValue: 'user'
-      },
-      lastLoginAt: {
+      }
+    };
+
+    if (!useSupabaseProfiles) {
+      attributes.password = {
+        type: DataTypes.STRING(255),
+        allowNull: false,
+        field: 'password_hash'
+      };
+      attributes.lastLoginAt = {
         type: DataTypes.DATE,
         allowNull: true,
         field: 'last_login_at'
-      },
-      loginAttempts: {
+      };
+      attributes.loginAttempts = {
         type: DataTypes.INTEGER,
         allowNull: true,
         defaultValue: 0,
         field: 'login_attempts'
-      },
-      lockedUntil: {
+      };
+      attributes.lockedUntil = {
         type: DataTypes.DATE,
         allowNull: true,
         field: 'locked_until'
-      }
-    }, { 
-      sequelize,
-      tableName: 'users',
-      underscored: true,
-      hooks: {
-        beforeCreate: async (user: User) => {
+      };
+    }
+
+    const hooks = useSupabaseProfiles ? {} : {
+      beforeCreate: async (user: User) => {
+        try {
+          const rounds = getBcryptRounds();
+          const salt = await bcrypt.genSalt(rounds);
+          user.password = await bcrypt.hash(user.password, salt);
+          logger.debug('User password hashed for new user', {
+            username: user.username,
+            email: user.email,
+            bcryptRounds: rounds
+          });
+        } catch (error) {
+          logger.error('Error hashing password during user creation:', {
+            username: user.username,
+            email: user.email,
+            error: error instanceof Error ? error.message : 'Unknown error'
+          });
+          throw error;
+        }
+      },
+      beforeUpdate: async (user: User) => {
+        if (user.changed('password')) {
           try {
             const rounds = getBcryptRounds();
             const salt = await bcrypt.genSalt(rounds);
             user.password = await bcrypt.hash(user.password, salt);
-            logger.debug('User password hashed for new user', {
-              username: user.username,
-              email: user.email,
-              bcryptRounds: rounds
+            logger.debug('User password updated and hashed', {
+              userId: user.id,
+              username: user.username
             });
           } catch (error) {
-            logger.error('Error hashing password during user creation:', {
+            logger.error('Error hashing password during user update:', {
+              userId: user.id,
               username: user.username,
-              email: user.email,
               error: error instanceof Error ? error.message : 'Unknown error'
             });
             throw error;
           }
-        },
-        beforeUpdate: async (user: User) => {
-          if (user.changed('password')) {
-            try {
-              const rounds = getBcryptRounds();
-              const salt = await bcrypt.genSalt(rounds);
-              user.password = await bcrypt.hash(user.password, salt);
-              logger.debug('User password updated and hashed', {
-                userId: user.id,
-                username: user.username
-              });
-            } catch (error) {
-              logger.error('Error hashing password during user update:', {
-                userId: user.id,
-                username: user.username,
-                error: error instanceof Error ? error.message : 'Unknown error'
-              });
-              throw error;
-            }
-          }
-        },
-        afterCreate: (user: User) => {
-          logger.info('New user created', {
+        }
+      },
+      afterCreate: (user: User) => {
+        logger.info('New user created', {
+          userId: user.id,
+          username: user.username,
+          email: user.email,
+          role: user.role
+        });
+      },
+      afterUpdate: (user: User) => {
+        const changedFields = user.changed();
+        if (changedFields && changedFields.length > 0) {
+          logger.info('User updated', {
             userId: user.id,
             username: user.username,
-            email: user.email,
-            role: user.role
+            changedFields: changedFields.filter(field => field !== 'password')
           });
-        },
-        afterUpdate: (user: User) => {
-          const changedFields = user.changed();
-          if (changedFields && changedFields.length > 0) {
-            logger.info('User updated', {
-              userId: user.id,
-              username: user.username,
-              changedFields: changedFields.filter(field => field !== 'password')
-            });
-          }
         }
       }
+    };
+
+    User.init(attributes, { 
+      sequelize,
+      tableName: getUserTableName(),
+      underscored: true,
+      hooks
     });
   }
 }

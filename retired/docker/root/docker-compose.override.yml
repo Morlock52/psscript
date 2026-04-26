@@ -18,11 +18,10 @@ services:
       # Allow stress/E2E without constant 429s in dev.
       RELAX_RATE_LIMITS: "true"
       RATE_LIMIT_MULTIPLIER: "20"
-      DB_HOST: postgres
-      DB_PORT: "5432"
-      DB_NAME: psscript
-      DB_USER: postgres
-      DB_PASSWORD: postgres
+      DATABASE_URL: ${DATABASE_URL:?Set DATABASE_URL to your Supabase Postgres connection string}
+      DB_SSL: ${DB_SSL:-true}
+      DB_PROFILE: ${DB_PROFILE:-supabase}
+      DEV_USER_ID: ${DEV_USER_ID:-}
       REDIS_URL: redis://redis:6379
       AI_SERVICE_URL: http://ai-service:8000
       JWT_SECRET: development_jwt_secret_key_change_in_production
@@ -71,6 +70,9 @@ services:
       FLASK_DEBUG: 1
       OPENAI_API_KEY: ${OPENAI_API_KEY:-}
       ANTHROPIC_API_KEY: ${ANTHROPIC_API_KEY:-}
+      DATABASE_URL: ${DATABASE_URL:?Set DATABASE_URL to your Supabase Postgres connection string}
+      DB_SSL: ${DB_SSL:-true}
+      DB_PROFILE: ${DB_PROFILE:-supabase}
     command: uvicorn main:app --host=0.0.0.0 --port=8000 --reload
     ports:
       - "8000:8000"

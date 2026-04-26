@@ -1,9 +1,10 @@
 import { Model, DataTypes, Sequelize } from 'sequelize';
 import User from './User';
+import { getUserIdDataType, getUserTableName } from '../utils/databaseProfile';
 
 export default class ChatHistory extends Model {
   public id!: number;
-  public userId!: number;
+  public userId!: number | string;
   public messages!: object[];
   public response!: string;
   public embedding?: number[] | null;
@@ -22,10 +23,10 @@ export default class ChatHistory extends Model {
         primaryKey: true,
       },
       userId: {
-        type: DataTypes.INTEGER,
+        type: getUserIdDataType(),
         allowNull: false,
         references: {
-          model: 'users',
+          model: getUserTableName(),
           key: 'id',
         },
         onDelete: 'CASCADE',
@@ -50,11 +51,11 @@ export default class ChatHistory extends Model {
       timestamps: true,
       indexes: [
         {
-          name: 'chat_history_user_id_idx',
+          name: 'idx_chat_history_user_id',
           fields: ['user_id'],
         },
         {
-          name: 'chat_history_created_at_idx',
+          name: 'idx_chat_history_created_at',
           fields: ['created_at'],
         },
       ],

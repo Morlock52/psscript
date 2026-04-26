@@ -27,8 +27,6 @@
     "setup": "node bin/setup.js",
     "make-executable": "bash bin/make-executable.sh",
     "make-shell-executable": "bash bin/make-shell-executable.sh",
-    "docker-start": "bash bin/docker-start.sh",
-    "docker-dev": "bash bin/docker-dev.sh",
     "setup-all": "bash bin/setup-all.sh",
     "start-prod": "bash bin/start.sh",
     "start-dev": "bash bin/dev.sh",

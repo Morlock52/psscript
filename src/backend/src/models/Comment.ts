@@ -1,6 +1,7 @@
 import { Model, DataTypes, Sequelize } from 'sequelize';
 import User from './User';
 import Script from './Script';
+import { getUserIdDataType, getUserTableName } from '../utils/databaseProfile';
 
 /**
  * Comment model - Represents user comments on scripts
@@ -9,7 +10,7 @@ import Script from './Script';
 export default class Comment extends Model {
   public id!: number;
   public scriptId!: number;
-  public userId!: number;
+  public userId!: number | string;
   public content!: string;
 
   public readonly createdAt!: Date;
@@ -37,11 +38,11 @@ export default class Comment extends Model {
         onDelete: 'CASCADE'
       },
       userId: {
-        type: DataTypes.INTEGER,
+        type: getUserIdDataType(),
         allowNull: true,
         field: 'user_id',
         references: {
-          model: 'users',
+          model: getUserTableName(),
           key: 'id'
         }
       },

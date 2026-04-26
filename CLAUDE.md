@@ -1,6 +1,6 @@
 # CLAUDE.md
 
-PowerShell script analysis platform with agentic AI. Four services: backend (TypeScript/Express), frontend (React/Vite), AI service (Python/FastAPI), PostgreSQL + Redis.
+PowerShell script analysis platform with agentic AI. Current deployment uses a Netlify frontend, hosted backend/AI services, Supabase Postgres, and managed Redis/cache where configured.
 
 ## Immutable Rules
 - **Never change ports** - resolve conflicts by freeing ports, not renumbering
@@ -12,11 +12,11 @@ PowerShell script analysis platform with agentic AI. Four services: backend (Typ
 ## Port Assignments (FIXED)
 | Service    | Port | Command                                  |
 |------------|------|------------------------------------------|
-| Frontend   | 3000 | `cd src/frontend && npm run dev`         |
+| Frontend   | 3090 | `cd src/frontend && npm run dev`         |
 | Backend    | 4000 | `cd src/backend && npm run dev`          |
 | AI Service | 8000 | `cd src/ai && python main.py`            |
-| PostgreSQL | 5432 | via docker-compose                       |
-| Redis      | 6379 | via docker-compose                       |
+| PostgreSQL | n/a  | Supabase via `DATABASE_URL`              |
+| Redis      | n/a  | `REDIS_URL` when cache support is enabled |
 
 **Port conflicts:** `./scripts/ensure-ports.sh status` | `kill-frontend` | `kill-backend`
 
@@ -24,11 +24,11 @@ PowerShell script analysis platform with agentic AI. Four services: backend (Typ
 
 ## Commands
 
-### Docker (Full Stack)
+### Local And Netlify
 | Command | Purpose | When to Use |
 |---------|---------|-------------|
-| `docker-compose up` | Start all services | Full system needed, first-time setup |
-| `docker-compose down` | Stop all services | Clean shutdown, free all ports |
+| `npm run netlify:build` | Validate Netlify build settings | Before deployment |
+| `npm run playwright:stack` | Start local app services against Supabase | Browser/E2E validation |
 | `./start-all-agentic.sh` | Start agentic system | AI workflow development |
 
 ### Backend (`src/backend/`)
@@ -65,15 +65,15 @@ PowerShell script analysis platform with agentic AI. Four services: backend (Typ
 ┌─────────────────┐     ┌─────────────────┐     ┌─────────────────┐
 │    Frontend     │────▶│     Backend     │────▶│   AI Service    │
 │   React/Vite    │     │ Express/Node.js │     │ Python/FastAPI  │
-│    Port 3000    │     │    Port 4000    │     │    Port 8000    │
+│    Port 3090    │     │    Port 4000    │     │    Port 8000    │
 └─────────────────┘     └────────┬────────┘     └─────────────────┘
                                  │
                     ┌────────────┴────────────┐
                     ▼                         ▼
            ┌───────────────┐         ┌───────────────┐
            │  PostgreSQL   │         │     Redis     │
-           │   Port 5432   │         │   Port 6379   │
-           │  (persistent) │         │    (cache)    │
+           │  Supabase URL │         │   REDIS_URL   │
+           │  (hosted DB)  │         │    (cache)    │
            └───────────────┘         └───────────────┘
 ```
 
@@ -270,17 +270,16 @@ User Request
 
 ### Recovery Playbook
 ```bash
-# Nuclear option: full reset
-docker-compose down
+# Full local reset
 ./scripts/ensure-ports.sh status    # Verify all clear
-docker-compose up                   # Fresh start
+npm run playwright:stack            # Fresh local stack against Supabase
 ```
 
 ### Log Locations
 - **Backend:** stdout when running `npm run dev`
 - **Frontend:** Browser console + stdout from `npm run dev`
 - **AI Service:** stdout from `python main.py`
-- **Docker:** `docker-compose logs [service]`
+- **Netlify:** project deploy logs for frontend builds
 
 ---
 
@@ -288,8 +287,8 @@ docker-compose up                   # Fresh start
 
 | Task | Commands/Files |
 |------|----------------|
-| **Start everything** | `docker-compose up` |
-| **Stop everything** | `docker-compose down` |
+| **Start everything locally** | `npm run playwright:stack` |
+| **Stop everything locally** | Stop the local process group or free ports with `./scripts/ensure-ports.sh` |
 | **Port conflicts** | `./scripts/ensure-ports.sh status`, `kill-frontend`, `kill-backend` |
 | **Tunnel access** | `./scripts/start-frontend-prod.sh` (production build required) |
 | **Backend dev** | `cd src/backend && npm run dev` |
@@ -317,7 +316,8 @@ psscript/
 │   ├── frontend/         # React/Vite UI (port 3000)
 │   └── ai/               # Python/FastAPI (port 8000)
 ├── scripts/              # Operational scripts (ensure-ports.sh, etc.)
-├── docker-compose.yml    # Full stack orchestration
+├── netlify.toml          # Netlify frontend build config
+├── retired/docker/       # Archived Docker-era config and docs
 ├── docs/                 # Additional documentation
 └── tests/                # Test suites
 ```

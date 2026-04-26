@@ -25,10 +25,7 @@ import type {
 export * from './types';
 
 // Environment configuration
-export const isDocker: boolean = process.env.DOCKER_ENV === 'true';
-export const AI_SERVICE_URL: string = isDocker
-  ? (process.env.AI_SERVICE_URL || 'http://ai-service:8000')
-  : (process.env.AI_SERVICE_URL || 'http://localhost:8000');
+export const AI_SERVICE_URL: string = process.env.AI_SERVICE_URL || 'http://localhost:8000';
 
 /**
  * Timeout constants for API requests (in milliseconds)
@@ -318,12 +315,12 @@ export const fetchScriptAnalysesBatch = async (
  * Check if user is authorized to modify a script
  */
 export const isAuthorizedForScript = (
-  script: { userId: number },
+  script: { userId: number | string },
   req: AuthenticatedRequest
 ): boolean => {
   const userId = req.user?.id;
   const isAdmin = req.user?.role === 'admin';
-  return script.userId === userId || isAdmin;
+  return String(script.userId) === String(userId) || isAdmin;
 };
 
 /**

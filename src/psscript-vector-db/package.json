@@ -12,8 +12,6 @@
     "test:crawl4ai": "node bin/test-crawl4ai.js",
     "migrate": "node db/run-migration.js",
     "crawl": "node bin/crawl4ai-integration.js",
-    "docker:start": "./docker-start.sh",
-    "docker:stop": "docker-compose down",
     "setup": "./setup-and-push.sh"
   },
   "keywords": [

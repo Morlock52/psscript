@@ -25,9 +25,11 @@ const log = {
   error: (msg) => console.log(`\x1b[31m${msg}\x1b[0m`)
 };
 
-// Detect environment (Docker vs local)
-const isDocker = process.env.DOCKER_ENV === 'true';
 const isProduction = process.env.NODE_ENV === 'production';
+const isSupabase = process.env.DB_PROFILE === 'supabase' ||
+  Boolean(process.env.SUPABASE_URL) ||
+  (process.env.DATABASE_URL || '').includes('.supabase.co') ||
+  (process.env.DATABASE_URL || '').includes('.pooler.supabase.com');
 
 // Enhanced connection pooling settings
 const DEFAULT_POOL_CONFIG = {
@@ -53,7 +55,7 @@ let connectionAttempts = 0;
 
 // Database connection options with best practices
 const getConnectionOptions = (host, logging = false, additionalOptions = {}) => ({
-  host,
+  ...(host ? { host } : {}),
   port: parseInt(process.env.DB_PORT || '5432'),
   dialect: 'postgres',
   logging: logging ? console.log : false,
@@ -74,8 +76,8 @@ const getConnectionOptions = (host, logging = false, additionalOptions = {}) => 
     // Identify connection in pg_stat_activity
     application_name: 'psscript_app',
     
-    // SSL options for production environments
-    ...(isProduction && {
+    // SSL options for hosted production/Supabase environments
+    ...((isProduction || isSupabase || process.env.DB_SSL === 'true') && {
       ssl: {
         require: true,
         rejectUnauthorized: false // Set to true in strict environments with proper certificates
@@ -102,7 +104,7 @@ const getConnectionOptions = (host, logging = false, additionalOptions = {}) => 
 // Duplicate declarations removed as they are already declared above
 
 /**
- * Get a database connection that works in both Docker and local environments
+ * Get a database connection that works with hosted Supabase and local environments
  * with enhanced reliability and connection pooling
  * @param {Object} options Additional Sequelize options
  * @returns {Promise<Sequelize>} A configured Sequelize instance
@@ -128,76 +130,47 @@ async function getConnection(options = {}) {
 
   connectionAttempts++;
   
-  const db = process.env.DB_NAME || 'psscript';
-  const user = process.env.DB_USER || 'postgres';
-  const password = process.env.DB_PASSWORD || 'postgres';
-  
   // Log connection attempt
   log.info(`Attempting database connection (attempt ${connectionAttempts}/${MAX_CONNECTION_ATTEMPTS})...`);
-  
-  // Try Docker container first if we're in Docker environment
-  if (isDocker) {
+
+  if (process.env.DATABASE_URL) {
     try {
-      const dockerHost = process.env.DB_HOST || 'postgres';
-      
-      // Test port connectivity first
-      await testPortConnectivity(dockerHost, parseInt(process.env.DB_PORT || '5432'));
-      
-      // Create Sequelize instance
       const sequelize = new Sequelize(
-        db, user, password, 
-        getConnectionOptions(dockerHost, options.logging, options)
+        process.env.DATABASE_URL,
+        getConnectionOptions(null, options.logging, options)
       );
       
       await sequelize.authenticate();
-      log.success(`Connected to database in Docker container at ${dockerHost}`);
+      log.success('Connected to database using DATABASE_URL');
       
       connectionCache = sequelize;
       connectionAttempts = 0;
       return sequelize;
     } catch (err) {
-      log.warn(`Docker connection failed: ${err.message}`);
-      log.info('Falling back to localhost connection...');
+      log.error(`DATABASE_URL connection failed: ${err.message}`);
     }
   }
+
+  const db = process.env.DB_NAME || 'psscript';
+  const user = process.env.DB_USER || 'postgres';
+  const password = process.env.DB_PASSWORD || 'postgres';
+  const host = process.env.DB_HOST || 'localhost';
   
-  // Try localhost connection
+  // Try explicit host/local connection when DATABASE_URL is not configured.
   try {
     const sequelize = new Sequelize(
       db, user, password, 
-      getConnectionOptions('localhost', options.logging, options)
+      getConnectionOptions(host, options.logging, options)
     );
     
     await sequelize.authenticate();
-    log.success('Connected to database at localhost');
+    log.success(`Connected to database at ${host}`);
     
     connectionCache = sequelize;
     connectionAttempts = 0;
     return sequelize;
   } catch (err) {
-    // If localhost fails and we didn't try Docker yet, try Docker as fallback
-    if (!isDocker) {
-      try {
-        log.info('Localhost connection failed, trying postgres container...');
-        
-        const sequelize = new Sequelize(
-          db, user, password, 
-          getConnectionOptions('postgres', options.logging, options)
-        );
-        
-        await sequelize.authenticate();
-        log.success('Connected to database in Docker container');
-        
-        connectionCache = sequelize;
-        connectionAttempts = 0;
-        return sequelize;
-      } catch (dockerErr) {
-        log.error(`Docker fallback connection also failed: ${dockerErr.message}`);
-      }
-    }
-    
-    // Both approaches failed
-    log.error(`All database connection attempts failed: ${err.message}`);
+    log.error(`Database connection attempt failed: ${err.message}`);
     
     if (connectionAttempts < MAX_CONNECTION_ATTEMPTS) {
       log.info(`Retrying connection (attempt ${connectionAttempts}/${MAX_CONNECTION_ATTEMPTS})...`);

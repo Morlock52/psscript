@@ -28,11 +28,8 @@ export function getApiUrl(): string {
     return 'http://localhost:4000/api';
   }
 
-  // Always use same-origin /api path. This works in all environments:
-  // - Docker dev: Vite proxy forwards /api → https://backend:4000 (secure:false)
-  // - Production: server.js proxy forwards /api → https://localhost:4000
-  // - Tunnel: Cloudflare config routes /api/* → backend service
-  // This avoids cross-origin HTTPS issues with self-signed certs.
+  // Always use same-origin /api path for local dev proxying.
+  // Netlify production should set VITE_API_URL to the hosted backend API.
   _cachedApiUrl = '/api';
 
   console.log('[apiUrl] Runtime API URL:', _cachedApiUrl, '(same-origin proxy)');

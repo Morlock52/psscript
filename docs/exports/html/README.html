@@ -552,14 +552,19 @@ body {
 <ul>
 <li>Node.js 18+</li>
 <li>Python 3.10+</li>
-<li>Docker Engine with <code>docker compose</code></li>
+<li>Netlify CLI, if you want to run the Netlify frontend locally</li>
 </ul>
-<h3 id="full-stack-docker">Full stack (Docker)</h3>
+<h3 id="netlify-frontend">Netlify frontend</h3>
 <pre><code class="language-bash">npm run install:all
-python -m pip install -r src/ai/requirements.txt
-docker compose up -d --build
+cd src/frontend &amp;&amp; npm run build
 </code></pre>
-<p>Open <code>https://127.0.0.1:3090</code></p>
+<p>The repository is linked to Netlify project <code>psscript</code> and builds from
+<code>src/frontend</code> using the root <code>netlify.toml</code>.</p>
+<p>Primary site: <code>http://psscript.netlify.app</code></p>
+<p>Set these Netlify environment variables for production:</p>
+<pre><code class="language-text">VITE_API_URL=https://your-backend-domain/api
+VITE_DISABLE_AUTH=false
+</code></pre>
 <h3 id="individual-services">Individual services</h3>
 <pre><code class="language-bash"># Backend (port 4000)
 cd src/backend &amp;&amp; npm install &amp;&amp; npm run dev
@@ -572,6 +577,10 @@ cd src/ai &amp;&amp; pip install -r requirements.txt &amp;&amp; python main.py
 </code></pre>
 <h3 id="local-dev-auth">Local dev auth</h3>
 <p>The default local stack commonly runs with <code>DISABLE_AUTH=true</code> and <code>VITE_DISABLE_AUTH=true</code>, so the UI auto-enters the app shell as <code>dev-admin</code>. For a real login pass, run a separate frontend/backend pair with both flags set to <code>false</code>.</p>
+<h3 id="retired-docker-files">Retired Docker files</h3>
+<p>Docker is no longer the default runtime for this app. Former Compose files,
+Dockerfiles, Docker scripts, and Docker CI workflows are archived under
+<code>retired/docker/</code> for reference only.</p>
 <h3 id="current-ui-shell">Current UI shell</h3>
 <p>The current running UI is a dark PSScript application shell:</p>
 <ul>
@@ -649,7 +658,7 @@ node scripts/capture-screenshots.js
 ├── .github/                  # Workflows, issue templates, PR template
 ├── docs/                     # Active docs, screenshots, exports, archive
 ├── docs-site/                # Documentation site assets and screenshot variants
-├── docker/                   # Docker support services and backup tooling
+├── retired/docker/           # Archived Docker-era configs and scripts
 ├── scripts/                  # Operational scripts and validation helpers
 ├── src/
 │   ├── backend/              # Express API (TypeScript)
@@ -672,7 +681,7 @@ node scripts/capture-screenshots.js
 ├── tests/e2e/                # Playwright E2E tests
 ├── crawl4ai-vector-db/       # Support project for crawl/vector search workflows
 ├── product-website/          # Product/marketing website assets
-└── docker-compose.yml        # Full stack orchestration
+└── netlify.toml              # Netlify frontend build configuration
 </code></pre>
 <hr />
 <h2 id="engineering-notes">Engineering Notes</h2>
@@ -758,7 +767,7 @@ Full details: [PROJECT-REVIEW-2026-04-01.md](./docs/PROJECT-REVIEW-2026-04-01.md
 </tr>
 <tr>
 <td><a href="./docs/DEPLOYMENT-PLATFORMS.md">Deployment Platforms</a></td>
-<td>Render, Netlify, Docker configs</td>
+<td>Netlify frontend, hosted API/AI, Supabase Postgres</td>
 </tr>
 <tr>
 <td><a href="./docs/PROJECT-REVIEW-2026-04-01.md">Project Review</a></td>
@@ -788,7 +797,7 @@ Full details: [PROJECT-REVIEW-2026-04-01.md](./docs/PROJECT-REVIEW-2026-04-01.md
 <p align="center">
   <sub>Last updated: April 24, 2026</sub>
 </p>
-    <div class="footer">Generated 2026-04-24 01:59 UTC</div>
+    <div class="footer">Generated 2026-04-26 20:29 UTC</div>
   </div>
 </body>
 </html>
