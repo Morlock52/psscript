@@ -1,4 +1,5 @@
 import React from 'react';
+import BrandMark from './BrandMark';
 
 // Define props for LoadingScreen
 interface LoadingScreenProps {
@@ -12,13 +13,10 @@ const LoadingScreen: React.FC<LoadingScreenProps> = ({
     <div
       className="fixed inset-0 flex flex-col items-center justify-center bg-[var(--color-bg-primary)] text-[var(--color-text-primary)]"
     >
-      {/* Logo */}
       <div className="mb-8">
-        <div className="text-4xl font-bold text-[var(--color-primary)]">
-          PSScript
-        </div>
-        <div className="text-sm mt-1 text-[var(--color-text-secondary)]">
-          AI-Powered PowerShell Script Management
+        <BrandMark size="lg" />
+        <div className="mt-3 text-center text-sm text-[var(--color-text-secondary)]">
+          AI-powered PowerShell command center
         </div>
       </div>
 

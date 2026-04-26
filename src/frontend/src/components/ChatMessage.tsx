@@ -51,7 +51,7 @@ const ChatMessage: React.FC<ChatMessageProps> = ({ message, onSaveScript }) => {
           <span className="text-[var(--color-text-secondary)]">{isPs ? 'PowerShell' : language}</span>
           <div className="flex space-x-2">
             {showCopySuccess && (
-              <span className="text-xs text-emerald-500">
+              <span className="text-xs text-[var(--color-text-tertiary)]">
                 Copied!
               </span>
             )}
@@ -64,7 +64,7 @@ const ChatMessage: React.FC<ChatMessageProps> = ({ message, onSaveScript }) => {
             {onSaveScript && isPs && (
               <button
                 onClick={onSaveScript}
-                className="px-2 py-1 rounded text-xs bg-blue-600 hover:bg-blue-500 text-white transition-colors"
+                className="px-2 py-1 rounded text-xs border border-[var(--color-border-default)] bg-[var(--color-bg-tertiary)]/60 hover:bg-[var(--color-bg-tertiary)] text-[var(--color-text-secondary)] transition-colors"
               >
                 Save as Script
               </button>
@@ -192,8 +192,8 @@ const ChatMessage: React.FC<ChatMessageProps> = ({ message, onSaveScript }) => {
       <div
         className={`max-w-3xl rounded-lg p-3 ${
           message.role === 'user'
-            ? 'bg-[var(--color-primary)] text-white'
-            : 'bg-[var(--color-bg-elevated)] text-[var(--color-text-primary)] border border-[var(--color-border-default)]'
+            ? 'bg-[var(--color-bg-tertiary)]/70 text-[var(--color-text-primary)] border border-[var(--color-border-strong)]'
+            : 'bg-[var(--color-bg-elevated)]/85 text-[var(--color-text-primary)] border border-[var(--color-border-default)]'
         }`}
       >
         {message.role === 'user' ? (
@@ -208,7 +208,7 @@ const ChatMessage: React.FC<ChatMessageProps> = ({ message, onSaveScript }) => {
               <div className="mt-4 flex justify-end">
                 <button
                   onClick={onSaveScript}
-                  className="px-3 py-1 rounded text-sm bg-blue-600 hover:bg-blue-500 text-white transition-colors"
+                  className="px-3 py-1 rounded text-sm border border-[var(--color-border-default)] bg-[var(--color-bg-tertiary)]/60 hover:bg-[var(--color-bg-tertiary)] text-[var(--color-text-secondary)] transition-colors"
                 >
                   Save as Script
                 </button>
@@ -220,7 +220,7 @@ const ChatMessage: React.FC<ChatMessageProps> = ({ message, onSaveScript }) => {
         {message.timestamp && (
           <div className={`text-xs mt-2 text-right ${
             message.role === 'user'
-              ? 'text-white/70'
+              ? 'text-[var(--color-text-tertiary)]'
               : 'text-[var(--color-text-tertiary)]'
           }`}>
             {new Date(message.timestamp).toLocaleTimeString()}

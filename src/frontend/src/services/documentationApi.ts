@@ -3,6 +3,11 @@ import { getApiUrl } from '../utils/apiUrl';
 
 // API URL is now computed at runtime via getApiUrl() to support tunnels/proxies
 
+const getAuthHeaders = (): Record<string, string> => {
+  const token = localStorage.getItem('auth_token');
+  return token ? { Authorization: `Bearer ${token}` } : {};
+};
+
 // Types for documentation API
 export interface DocItem {
   id: number;
@@ -202,7 +207,7 @@ const documentationApi = {
         depth: config.depth,
         includeExternalLinks: config.includeExternalLinks,
         fileTypes: config.fileTypes
-      });
+      }, { headers: getAuthHeaders() });
 
       if (response.data.success) {
         return {
@@ -230,7 +235,7 @@ const documentationApi = {
   // Create or update documentation
   upsert: async (doc: Partial<DocItem>): Promise<DocItem | null> => {
     try {
-      const response = await axios.post(`${getApiUrl()}/documentation`, doc);
+      const response = await axios.post(`${getApiUrl()}/documentation`, doc, { headers: getAuthHeaders() });
       if (response.data.success) {
         return response.data.data;
       }
@@ -244,7 +249,7 @@ const documentationApi = {
   // Bulk import documentation
   bulkImport: async (documents: Partial<DocItem>[]): Promise<{ imported: number; errors: number }> => {
     try {
-      const response = await axios.post(`${getApiUrl()}/documentation/bulk`, { documents });
+      const response = await axios.post(`${getApiUrl()}/documentation/bulk`, { documents }, { headers: getAuthHeaders() });
       if (response.data.success) {
         return {
           imported: response.data.imported,
@@ -261,7 +266,7 @@ const documentationApi = {
   // Delete documentation
   delete: async (id: number): Promise<boolean> => {
     try {
-      const response = await axios.delete(`${getApiUrl()}/documentation/${id}`);
+      const response = await axios.delete(`${getApiUrl()}/documentation/${id}`, { headers: getAuthHeaders() });
       return response.data.success;
     } catch (error) {
       console.error('Error deleting documentation:', error);
@@ -277,15 +282,16 @@ const documentationApi = {
         maxPages: config.maxPages,
         depth: config.depth
       }, {
+        headers: getAuthHeaders(),
         // Crawls can take several minutes depending on maxPages/depth and upstream site speed.
         timeout: 10 * 60 * 1000
       });
 
       if (response.data.success) {
         return {
-          pagesProcessed: response.data.total,
+          pagesProcessed: response.data.imported ?? response.data.total,
           totalPages: response.data.total,
-          scriptsFound: response.data.data?.reduce((sum: number, d: any) => sum + (d.doc?.metadata?.scriptsFound || 0), 0) || 0,
+          scriptsFound: response.data.imported ?? 0,
           status: 'completed',
           message: response.data.message,
           data: response.data.data?.map((d: any) => d.doc) || []
@@ -294,12 +300,14 @@ const documentationApi = {
       throw new Error(response.data.error || 'AI crawl failed');
     } catch (error) {
       console.error('Error in AI crawl:', error);
+      const err = error as any;
+      const message = err?.response?.data?.message || err?.response?.data?.error || err?.message || 'AI crawl failed';
       return {
         pagesProcessed: 0,
         totalPages: 0,
         scriptsFound: 0,
         status: 'error',
-        message: error instanceof Error ? error.message : 'AI crawl failed'
+        message
       };
     }
   }
@@ -307,7 +315,7 @@ const documentationApi = {
 
   // Async AI crawl jobs (progress + cancel)
   startCrawlWithAIJob: async (config: { url: string; maxPages: number; depth: number }): Promise<string> => {
-    const response = await axios.post(`${getApiUrl()}/documentation/crawl/ai/jobs`, config);
+    const response = await axios.post(`${getApiUrl()}/documentation/crawl/ai/jobs`, config, { headers: getAuthHeaders() });
     if (!response.data.success) throw new Error(response.data.error || 'Failed to start crawl job');
     return response.data.data.jobId as string;
   },
@@ -319,7 +327,7 @@ const documentationApi = {
   },
 
   cancelCrawlWithAIJob: async (jobId: string): Promise<CrawlJobState> => {
-    const response = await axios.post(`${getApiUrl()}/documentation/crawl/ai/jobs/${encodeURIComponent(jobId)}/cancel`);
+    const response = await axios.post(`${getApiUrl()}/documentation/crawl/ai/jobs/${encodeURIComponent(jobId)}/cancel`, undefined, { headers: getAuthHeaders() });
     if (!response.data.success) throw new Error(response.data.error || 'Failed to cancel crawl');
     return response.data.data as CrawlJobState;
   },

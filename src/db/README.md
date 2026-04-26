@@ -4,43 +4,49 @@ PostgreSQL + `pgvector` storage for scripts, analysis artifacts, embeddings, use
 
 ## Current setup
 
-- engine: hosted Supabase Postgres
+- engine: PostgreSQL 15+
 - vector extension: `pgvector`
-- connection: `DATABASE_URL` with SSL enabled
-- profile: `DB_PROFILE=supabase`
+- default local port: `5432`
+- default database: `psscript`
 
 ## Main schema areas
 
 - `scripts`, `script_versions`, `script_analysis`, `script_embeddings`
-- `app_profiles`
+- `users`, `user_favorites`
 - `categories`, `tags`, `script_tags`
-- `documentation_items`
+- `documentation` for crawled/imported PowerShell docs, source/tag filtering, extracted commands/modules/functions, and metadata
 - `chat_history`
+- `execution_logs`
 - `ai_metrics`
 
-## Supabase Postgres notes
+## Bootstrap paths
 
-This app uses Supabase as hosted Postgres. Runtime database code detects the
-Supabase profile and maps user-owned records to `app_profiles(id uuid)`.
+Docker bootstrap mounts:
+- `src/db/00-init-pgvector.sh`
+- `src/db/schema.sql`
+- `src/db/seeds/01-initial-data.sql`
 
-For Supabase, prefer the connection pooler URL and require SSL:
+Current explicit migration:
+- `src/db/migrations/20260424_create_documentation_table.sql`
+
+The documentation migration was added after Browser Use found 500s from missing `documentation` storage on 2026-04-24.
+
+## Local development
+
+The easiest path is the repo-level Docker stack:
 
 ```bash
-DATABASE_URL='postgres://postgres.[project-ref]:[password]@aws-0-[region].pooler.supabase.com:6543/postgres?sslmode=require'
-DB_POOL_MAX=5
-DB_POOL_MIN=0
-DB_SSL=true
+docker compose -f docker-compose.yml -f docker-compose.override.yml up -d postgres redis
 ```
 
-RLS is enabled on public tables. Public lookup tables have read policies, and
-user/script-owned tables use ownership policies keyed by `auth.uid()`.
+Default connection values:
 
-Database changes should stay in SQL migrations under `src/db/migrations`. Apply
-targeted migrations through the repo migration runner with the Supabase
-`DATABASE_URL`:
-
-```bash
-DB_MIGRATION_FILES=20260426_supabase_advisor_fixes.sql node scripts/migrations/run-migration.js
+```text
+host=127.0.0.1
+port=5432
+dbname=psscript
+user=postgres
+password=postgres
 ```
 
 ## Related docs

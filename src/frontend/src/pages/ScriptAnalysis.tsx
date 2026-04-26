@@ -1,6 +1,6 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { useQuery } from '@tanstack/react-query';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { scriptService } from '../services/api';
 import ReactMarkdown from 'react-markdown';
 import { FaExclamationTriangle, FaCheckCircle, FaInfoCircle, FaLightbulb, FaChartLine, FaPaperPlane, FaRobot } from 'react-icons/fa';
@@ -19,6 +19,7 @@ interface Message {
 const ScriptAnalysis: React.FC = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
+  const queryClient = useQueryClient();
   const [activeTab, setActiveTab] = useState<string>('overview');
 
   // AI Assistant state
@@ -228,9 +229,8 @@ When generating or modifying scripts:
             case 'completed':
               setIsAnalyzing(false);
               setCurrentStage('completed');
-              // Refetch the analysis to get updated results
               if (id) {
-                scriptService.getScriptAnalysis(id).catch(console.error);
+                queryClient.invalidateQueries({ queryKey: ['scriptAnalysis', id] }).catch(console.error);
               }
               break;
 
@@ -633,6 +633,49 @@ When generating or modifying scripts:
                 </div>
                 <div className="p-6">
                   <p className="text-gray-300 mb-6">{analysis.purpose}</p>
+
+                  {(analysis.beginnerExplanation || analysis.executionSummary?.beginner_explanation || analysis.executionSummary?.what_it_does) && (
+                    <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 mb-8">
+                      <div className="bg-slate-900/70 border border-slate-700 rounded-lg p-4">
+                        <h3 className="text-sm uppercase tracking-wide text-blue-300 font-semibold mb-2">
+                          Beginner Breakdown
+                        </h3>
+                        <p className="text-gray-300">
+                          {analysis.beginnerExplanation || analysis.executionSummary?.beginner_explanation || analysis.executionSummary?.what_it_does}
+                        </p>
+                      </div>
+
+                      <div className="bg-slate-900/70 border border-slate-700 rounded-lg p-4">
+                        <h3 className="text-sm uppercase tracking-wide text-emerald-300 font-semibold mb-2">
+                          Management Summary
+                        </h3>
+                        <p className="text-gray-300">
+                          {analysis.managementSummary || analysis.executionSummary?.management_summary || analysis.executionSummary?.business_value || 'No management summary was provided.'}
+                        </p>
+                        {analysis.executionSummary?.operational_risk && (
+                          <p className="text-gray-400 text-sm mt-3">
+                            <span className="text-yellow-300 font-medium">Operational risk:</span> {analysis.executionSummary.operational_risk}
+                          </p>
+                        )}
+                      </div>
+                    </div>
+                  )}
+
+                  {analysis.executionSummary?.key_actions?.length > 0 && (
+                    <div className="bg-gray-800 border border-gray-700 rounded-lg p-4 mb-8">
+                      <h3 className="text-sm uppercase tracking-wide text-gray-300 font-semibold mb-3">
+                        What The Script Does
+                      </h3>
+                      <ul className="space-y-2">
+                        {analysis.executionSummary.key_actions.map((action: string, index: number) => (
+                          <li key={index} className="text-gray-300 flex">
+                            <span className="text-blue-400 mr-2">•</span>
+                            <span>{action}</span>
+                          </li>
+                        ))}
+                      </ul>
+                    </div>
+                  )}
                 
                 <div className="grid grid-cols-4 gap-4 mb-8">
                   {renderScoreIndicator(analysis.codeQualityScore, 'Quality')}
@@ -742,11 +785,24 @@ When generating or modifying scripts:
                             <h4 className="text-blue-400 font-medium mb-3">{command.name}</h4>
                             <div className="space-y-3">
                               <p className="text-gray-300">{command.description}</p>
+                              {(command.beginner_explanation || command.beginnerExplanation) && (
+                                <div className="bg-gray-900 bg-opacity-50 p-3 rounded-lg">
+                                  <h5 className="text-sm text-emerald-300 font-semibold mb-2">Beginner Explanation</h5>
+                                  <p className="text-gray-300">{command.beginner_explanation || command.beginnerExplanation}</p>
+                                </div>
+                              )}
                               
                               <div className="bg-gray-900 bg-opacity-50 p-3 rounded-lg">
                                 <h5 className="text-sm text-blue-300 font-semibold mb-2">Purpose</h5>
                                 <p className="text-gray-300">{command.purpose}</p>
                               </div>
+
+                              {(command.management_impact || command.managementImpact) && (
+                                <div className="bg-gray-900 bg-opacity-50 p-3 rounded-lg">
+                                  <h5 className="text-sm text-yellow-300 font-semibold mb-2">Management Impact</h5>
+                                  <p className="text-gray-300">{command.management_impact || command.managementImpact}</p>
+                                </div>
+                              )}
                               
                               {command.parameters && command.parameters.length > 0 && (
                                 <div className="bg-gray-900 bg-opacity-50 p-3 rounded-lg">

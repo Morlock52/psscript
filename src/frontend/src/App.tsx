@@ -80,7 +80,7 @@ const AppLayout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   }
 
   return (
-    <div className="flex h-screen bg-gray-100 dark:bg-gray-900">
+    <div className="flex h-screen bg-[var(--color-bg-secondary)] text-[var(--color-text-primary)]">
       <Sidebar isOpen={sidebarOpen} onClose={() => setSidebarOpen(false)} />
       <div className="flex flex-col flex-1 overflow-hidden">
         <Navbar onMenuClick={() => setSidebarOpen(true)} />
@@ -110,9 +110,9 @@ const App: React.FC = () => {
               {/* Script Management */}
               <Route path="/scripts" element={<ProtectedRoute><ScriptManagement /></ProtectedRoute>} />
               <Route path="/scripts/upload" element={<ProtectedRoute><ScriptUpload /></ProtectedRoute>} />
-              <Route path="/scripts/:id" element={<ScriptDetail />} />
+              <Route path="/scripts/:id" element={<ProtectedRoute><ScriptDetail /></ProtectedRoute>} />
               <Route path="/scripts/:id/edit" element={<ProtectedRoute><ScriptEditor /></ProtectedRoute>} />
-              <Route path="/scripts/:id/analysis" element={<ScriptAnalysis />} />
+              <Route path="/scripts/:id/analysis" element={<ProtectedRoute><ScriptAnalysis /></ProtectedRoute>} />
 
               {/* AI Features */}
               <Route path="/chat" element={<SimpleChatWithAI />} />
@@ -134,7 +134,7 @@ const App: React.FC = () => {
               <Route path="/settings/security" element={<ProtectedRoute><SecuritySettings /></ProtectedRoute>} />
               <Route path="/settings/notifications" element={<ProtectedRoute><NotificationSettings /></ProtectedRoute>} />
               <Route path="/settings/api" element={<ProtectedRoute><ApiSettings /></ProtectedRoute>} />
-              <Route path="/settings/users" element={<ProtectedRoute><UserManagement /></ProtectedRoute>} />
+              <Route path="/settings/users" element={<ProtectedRoute requiredRole="admin"><UserManagement /></ProtectedRoute>} />
               <Route path="/settings/categories" element={<ProtectedRoute><CategoriesSettings /></ProtectedRoute>} />
               <Route path="/settings/data" element={<ProtectedRoute requiredRole="admin"><DataMaintenanceSettings /></ProtectedRoute>} />
 

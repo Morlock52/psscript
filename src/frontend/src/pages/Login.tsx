@@ -1,6 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
+import BrandMark from '../components/BrandMark';
+import { isHostedAuthConfigurationMissing } from '../services/supabase';
 
 interface ErrorDetails {
   code: string;
@@ -9,10 +11,10 @@ interface ErrorDetails {
 }
 
 // Reusable style constants for theme-aware styling
-const inputStyles = "w-full px-3 py-2 rounded-md focus:outline-none focus:ring-2 focus:ring-[var(--color-primary)] bg-[var(--color-bg-primary)] border border-[var(--color-border-default)] text-[var(--color-text-primary)]";
+const inputStyles = "w-full px-4 py-3 rounded-xl focus:outline-none focus:ring-2 focus:ring-[var(--color-primary)] bg-[var(--color-bg-primary)] border border-[var(--color-border-default)] text-[var(--color-text-primary)]";
 const labelStyles = "block text-sm font-medium mb-2 text-[var(--color-text-secondary)]";
 const linkStyles = "text-[var(--color-primary)] hover:text-[var(--color-primary-light)]";
-const buttonPrimaryStyles = "w-full bg-[var(--color-primary)] hover:bg-[var(--color-primary-dark)] text-white font-medium py-2 px-4 rounded-md focus:outline-none focus:ring-2 focus:ring-[var(--color-primary)] focus:ring-offset-2 focus:ring-offset-[var(--color-bg-elevated)] disabled:opacity-50 disabled:cursor-not-allowed";
+const buttonPrimaryStyles = "w-full bg-[var(--gradient-primary)] hover:opacity-95 text-slate-950 font-bold py-3 px-4 rounded-xl focus:outline-none focus:ring-2 focus:ring-[var(--color-primary)] focus:ring-offset-2 focus:ring-offset-[var(--color-bg-elevated)] disabled:opacity-50 disabled:cursor-not-allowed shadow-[var(--shadow-glow)]";
 
 const Login: React.FC = () => {
   const [email, setEmail] = useState('');
@@ -24,6 +26,7 @@ const Login: React.FC = () => {
   const navigate = useNavigate();
   const location = useLocation();
   const disableAuth = import.meta.env.MODE !== 'test' && import.meta.env.VITE_DISABLE_AUTH === 'true';
+  const hostedAuthMissing = isHostedAuthConfigurationMissing();
 
   // Clear form error when inputs change
   useEffect(() => {
@@ -108,15 +111,31 @@ const Login: React.FC = () => {
   };
 
   return (
-    <div className="flex items-center justify-center min-h-screen px-4 bg-[var(--color-bg-secondary)]">
-      <div className="w-full max-w-md">
-        <div className="text-center mb-10">
-          <h1 className="text-3xl font-bold text-[var(--color-text-primary)]">PSScript</h1>
-          <p className="mt-2 text-[var(--color-text-secondary)]">PowerShell Script Management</p>
+    <div className="relative flex min-h-screen items-center justify-center overflow-hidden px-4 bg-[var(--gradient-surface)]">
+      <div className="absolute -left-24 top-12 h-72 w-72 rounded-full bg-[var(--color-primary)]/20 blur-3xl" />
+      <div className="absolute -right-20 bottom-10 h-80 w-80 rounded-full bg-[var(--color-accent)]/20 blur-3xl" />
+      <div className="relative w-full max-w-md">
+        <div className="mb-10 text-center">
+          <BrandMark size="lg" className="justify-center" />
+          <p className="mt-4 text-[var(--color-text-secondary)]">
+            Secure PowerShell intelligence for teams that move fast.
+          </p>
         </div>
 
-        <div className="rounded-lg shadow-[var(--shadow-xl)] p-8 bg-[var(--color-bg-elevated)] border border-[var(--color-border-default)]">
-          <h2 className="text-2xl font-bold mb-6 text-[var(--color-text-primary)]">Login</h2>
+        <div className="rounded-3xl shadow-[var(--shadow-xl)] p-8 bg-[var(--color-bg-elevated)]/92 border border-[var(--color-border-default)] backdrop-blur-xl">
+          <div className="mb-6">
+            <p className="text-xs font-bold uppercase tracking-[0.24em] text-[var(--color-primary)]">Command center</p>
+            <h2 className="mt-2 text-2xl font-black text-[var(--color-text-primary)]">Sign in to PSScript</h2>
+          </div>
+
+          {hostedAuthMissing && (
+            <div className="mb-4 rounded-2xl border border-amber-400/30 bg-amber-400/10 px-4 py-3 text-sm text-amber-100">
+              <p className="font-bold text-amber-200">Hosted auth is not configured.</p>
+              <p className="mt-1 text-amber-100/90">
+                Set `VITE_SUPABASE_URL` and `VITE_SUPABASE_ANON_KEY` in Netlify build environment variables, then rebuild this deploy.
+              </p>
+            </div>
+          )}
 
           {/* Enhanced error display */}
           {(error || formError || errorDetails) && (
@@ -207,7 +226,7 @@ const Login: React.FC = () => {
 
             <button
               type="submit"
-              disabled={isLoading}
+              disabled={isLoading || hostedAuthMissing}
               className={buttonPrimaryStyles}
             >
               {isLoading ? (
@@ -233,10 +252,10 @@ const Login: React.FC = () => {
             </p>
           </div>
 
-          <div className="mt-6 p-4 rounded-lg border bg-[var(--color-bg-tertiary)] border-[var(--color-border-default)]">
-            <h3 className="text-sm font-medium mb-2 text-[var(--color-primary)]">Quick Access</h3>
+          <div className="mt-6 p-4 rounded-2xl border bg-[var(--color-bg-tertiary)] border-[var(--color-border-default)]">
+            <h3 className="text-sm font-bold mb-2 text-[var(--color-primary)]">Quick Access</h3>
             <p className="text-xs mb-3 text-[var(--color-text-secondary)]">
-              Click below to sign in with the demo admin account for testing purposes.
+              Preview the enterprise dashboard with a seeded demo admin session.
             </p>
             <button
               onClick={async () => {
@@ -248,8 +267,8 @@ const Login: React.FC = () => {
                   setFormError(err.message || 'Demo login failed. Please ensure the backend is running.');
                 }
               }}
-              className="w-full bg-green-600 hover:bg-green-700 text-white font-medium py-2 px-4 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2 focus:ring-offset-[var(--color-bg-elevated)] disabled:opacity-50 disabled:cursor-not-allowed"
-              disabled={isLoading}
+              className="w-full bg-[var(--color-bg-primary)] hover:bg-[var(--color-primary-light)] text-[var(--color-text-primary)] font-bold py-3 px-4 rounded-xl border border-[var(--color-border-default)] focus:outline-none focus:ring-2 focus:ring-[var(--color-primary)] focus:ring-offset-2 focus:ring-offset-[var(--color-bg-elevated)] disabled:opacity-50 disabled:cursor-not-allowed"
+              disabled={isLoading || hostedAuthMissing}
             >
               {isLoading ? 'Signing in...' : 'Use Default Login'}
             </button>

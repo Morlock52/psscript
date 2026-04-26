@@ -171,15 +171,17 @@ export function extractApiError(error: unknown, fallbackMessage = 'An unexpected
     : typeof (err.response as Record<string, unknown>)?.status === 'number'
       ? (err.response as Record<string, unknown>).status as number
       : undefined;
+  const responseData = (err.response as Record<string, unknown> | undefined)?.data as Record<string, unknown> | undefined;
 
   return {
+    ...err,
     status,
     message,
     code: errorCode,
     isNetworkError: errorCode === ErrorCodes.NETWORK_ERROR,
     isTimeout: errorCode === ErrorCodes.TIMEOUT,
     isAuthError: errorCode === ErrorCodes.AUTH_REQUIRED || errorCode === ErrorCodes.AUTH_EXPIRED,
-    details: err.details as Record<string, unknown> | undefined,
+    details: (err.details || responseData) as Record<string, unknown> | undefined,
   };
 }
 

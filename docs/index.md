@@ -1,6 +1,6 @@
 # PSScript Documentation Hub
 
-_Last updated: April 26, 2026_
+_Last updated: April 24, 2026_
 
 This index points to the active documentation set for the current validated repo state.
 
@@ -9,11 +9,14 @@ This index points to the active documentation set for the current validated repo
 | Document | Purpose |
 |----------|---------|
 | [../README.md](../README.md) | Repo overview, architecture, AI models, validation |
+| [CURRENT-STATUS-2026-04-24.md](./CURRENT-STATUS-2026-04-24.md) | Current runtime, QA, deployment, and known caveats |
 | [GETTING-STARTED.md](./GETTING-STARTED.md) | Local bootstrap and first-run steps |
+| [REPOSITORY-ORGANIZATION.md](./REPOSITORY-ORGANIZATION.md) | Active paths, docs taxonomy, and cleanup backlog |
 | [DATA-MAINTENANCE.md](./DATA-MAINTENANCE.md) | Admin backup, restore, and cleanup operations |
 | [README-VOICE-API.md](./README-VOICE-API.md) | Voice/listening implementation and API behavior |
 | [AUTHENTICATION-IMPROVEMENTS.md](./AUTHENTICATION-IMPROVEMENTS.md) | Auth model and local auth-disabled behavior |
-| [DEPLOYMENT-PLATFORMS.md](./DEPLOYMENT-PLATFORMS.md) | Netlify frontend, hosted API/AI services, and Supabase Postgres deployment |
+| [NETLIFY-SUPABASE-DEPLOYMENT.md](./NETLIFY-SUPABASE-DEPLOYMENT.md) | Current hosted Netlify + Supabase deployment path |
+| [DEPLOYMENT-PLATFORMS.md](./DEPLOYMENT-PLATFORMS.md) | Deployment alternatives and legacy split-service notes |
 
 ## Service READMEs
 
@@ -27,6 +30,9 @@ This index points to the active documentation set for the current validated repo
 
 | Document | Purpose |
 |----------|---------|
+| [../BROWSER_USE_QA.md](../BROWSER_USE_QA.md) | Latest Browser Use QA matrix and retest results |
+| [../QA_AI_APP_ISSUES.md](../QA_AI_APP_ISSUES.md) | AI/auth/hosted issue log and fixes |
+| [UI-BRANDING-REFRESH-2026-04-23.md](./UI-BRANDING-REFRESH-2026-04-23.md) | Current muted PSScript UI brand status |
 | [PROJECT-REVIEW-2026-04-01.md](./PROJECT-REVIEW-2026-04-01.md) | Comprehensive project review: 22 fixes across DB, API, architecture |
 | [AI-FUNCTIONS-REVIEW-2026-04-02.md](./AI-FUNCTIONS-REVIEW-2026-04-02.md) | AI functions audit: model migration, SDK updates, shared client |
 
@@ -43,6 +49,7 @@ This index points to the active documentation set for the current validated repo
 
 | Document | Purpose |
 |----------|---------|
+| [../BROWSER_USE_QA.md](../BROWSER_USE_QA.md) | Browser Use test matrix, pass/fail results, safety skips, and retest notes |
 | [VOICE-TESTS-1-8-LATEST.md](./VOICE-TESTS-1-8-LATEST.md) | Latest voice test report |
 
 ## Historical Docs

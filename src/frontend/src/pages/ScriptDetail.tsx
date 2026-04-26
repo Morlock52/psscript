@@ -5,6 +5,7 @@ import { scriptService } from '../services/api';
 import ScriptDownloadButton from '../components/ScriptDownloadButton';
 import FullScreenEditor from '../components/FullScreenEditor';
 import toast from 'react-hot-toast';
+import { isHostedStaticAnalysisOnly } from '../services/supabase';
 
 const ScriptDetail: React.FC = () => {
   const { id } = useParams<{ id: string }>();
@@ -12,6 +13,7 @@ const ScriptDetail: React.FC = () => {
   const [parameters, setParameters] = useState<Record<string, string>>({});
   const [isEditorOpen, setIsEditorOpen] = useState(false);
   const [isAnalyzing, setIsAnalyzing] = useState(false);
+  const hostedStaticOnly = isHostedStaticAnalysisOnly();
 
   const { data: script, isLoading, error, refetch } = useQuery({
     queryKey: ['script', id],
@@ -209,7 +211,7 @@ const ScriptDetail: React.FC = () => {
           </div>
 
           {/* Parameters Section */}
-          {analysis?.parameters && Object.keys(analysis.parameters).length > 0 && (
+          {!hostedStaticOnly && analysis?.parameters && Object.keys(analysis.parameters).length > 0 && (
             <div className={`${cardStyles} mb-6`}>
               <div className={cardHeaderStyles}>
                 <h2 className="text-lg font-medium text-[var(--color-text-primary)]">Execute Script</h2>
@@ -244,6 +246,19 @@ const ScriptDetail: React.FC = () => {
                     {executeMutation.isPending ? 'Executing...' : 'Execute Script'}
                   </button>
                 </div>
+              </div>
+            </div>
+          )}
+
+          {hostedStaticOnly && analysis?.parameters && Object.keys(analysis.parameters).length > 0 && (
+            <div className={`${cardStyles} mb-6`}>
+              <div className={cardHeaderStyles}>
+                <h2 className="text-lg font-medium text-[var(--color-text-primary)]">Execution Disabled</h2>
+              </div>
+              <div className="p-4">
+                <p className="text-sm text-[var(--color-text-secondary)]">
+                  Hosted PSScript supports static analysis only. Download the script to run it in your own PowerShell environment.
+                </p>
               </div>
             </div>
           )}

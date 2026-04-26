@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { useTheme } from '../contexts/ThemeContext';
 import { useAuth } from '../hooks/useAuth';
+import BrandMark from './BrandMark';
 
 // Define props for Navbar
 interface NavbarProps {
@@ -89,7 +90,10 @@ const Navbar: React.FC<NavbarProps> = ({ onMenuClick }) => {
             </svg>
           </button>
 
-          <h1 className="text-xl font-semibold bg-gradient-to-r from-[var(--color-primary)] to-[var(--color-accent)] bg-clip-text text-transparent">
+          <div className="hidden sm:block">
+            <BrandMark size="sm" />
+          </div>
+          <h1 className="text-lg font-bold text-[var(--color-text-primary)] sm:pl-3 sm:border-l sm:border-[var(--color-border-default)]">
             {getPageTitle()}
           </h1>
         </div>
@@ -155,7 +159,7 @@ const Navbar: React.FC<NavbarProps> = ({ onMenuClick }) => {
                   </div>
                 </div>
                 <div className="p-2 border-t border-[var(--color-border-default)]">
-                  <button className="w-full p-2 text-xs text-center rounded-lg text-[var(--color-primary)] hover:bg-[var(--color-bg-tertiary)] transition-colors">
+                  <button className="w-full p-2 text-xs text-center rounded-lg text-[var(--color-text-secondary)] hover:bg-[var(--color-bg-tertiary)] transition-colors">
                     View all notifications
                   </button>
                 </div>
@@ -178,7 +182,7 @@ const Navbar: React.FC<NavbarProps> = ({ onMenuClick }) => {
                     className="w-9 h-9 rounded-full ring-2 ring-[var(--color-border-default)]"
                   />
                 ) : (
-                  <div className="w-9 h-9 rounded-full bg-gradient-to-br from-[var(--color-primary)] to-[var(--color-accent)] text-white flex items-center justify-center font-medium shadow-md">
+                  <div className="w-9 h-9 rounded-full border border-[var(--color-border-strong)] bg-[var(--color-bg-tertiary)] text-[var(--color-text-primary)] flex items-center justify-center font-bold shadow-sm">
                     {user?.username?.charAt(0).toUpperCase() || 'U'}
                   </div>
                 )}
@@ -186,7 +190,7 @@ const Navbar: React.FC<NavbarProps> = ({ onMenuClick }) => {
             ) : (
               <Link
                 to="/login"
-                className="px-4 py-2 rounded-lg text-sm font-medium bg-gradient-to-r from-[var(--color-primary)] to-[var(--color-accent)] text-white hover:opacity-90 transition-opacity shadow-md hover:shadow-lg"
+                className="px-4 py-2 rounded-lg border border-[var(--color-border-strong)] text-sm font-medium bg-[var(--color-bg-tertiary)] text-[var(--color-text-primary)] hover:bg-[var(--color-bg-elevated)] transition-colors shadow-sm"
               >
                 Sign In
               </Link>
@@ -197,7 +201,7 @@ const Navbar: React.FC<NavbarProps> = ({ onMenuClick }) => {
               <div className={`${dropdownStyles} w-56`}>
                 <div className="p-4 border-b border-[var(--color-border-default)]">
                   <div className="flex items-center gap-3">
-                    <div className="w-10 h-10 rounded-full bg-gradient-to-br from-[var(--color-primary)] to-[var(--color-accent)] text-white flex items-center justify-center font-medium">
+                    <div className="w-10 h-10 rounded-full border border-[var(--color-border-strong)] bg-[var(--color-bg-tertiary)] text-[var(--color-text-primary)] flex items-center justify-center font-bold">
                       {user?.username?.charAt(0).toUpperCase() || 'U'}
                     </div>
                     <div className="flex-1 min-w-0">

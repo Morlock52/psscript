@@ -67,41 +67,39 @@ const StatCard: React.FC<StatCardProps> = ({
     }
   };
 
-  // Get color based on icon type
   const getIconColor = () => {
     switch (icon) {
       case 'script':
-        return 'text-blue-500';
+        return 'text-[var(--color-primary)]';
       case 'category':
-        return 'text-violet-500';
+        return 'text-[var(--color-accent)]';
       case 'security':
-        return 'text-emerald-500';
+        return 'text-[var(--color-success)]';
       case 'analysis':
-        return 'text-orange-500';
+        return 'text-[var(--color-info)]';
       case 'user':
-        return 'text-indigo-500';
+        return 'text-[var(--color-primary)]';
       case 'execution':
-        return 'text-amber-500';
+        return 'text-[var(--color-warning)]';
       default:
         return 'text-[var(--color-text-tertiary)]';
     }
   };
 
-  // Get background color based on icon type - using transparent overlays that work in both modes
   const getIconBgColor = () => {
     switch (icon) {
       case 'script':
-        return 'bg-blue-500/10';
+        return 'bg-[var(--color-primary-light)]';
       case 'category':
-        return 'bg-violet-500/10';
+        return 'bg-[var(--color-accent-light)]';
       case 'security':
-        return 'bg-emerald-500/10';
+        return 'bg-[var(--color-success-light)]';
       case 'analysis':
-        return 'bg-orange-500/10';
+        return 'bg-[var(--color-info-light)]';
       case 'user':
-        return 'bg-indigo-500/10';
+        return 'bg-[var(--color-primary-light)]';
       case 'execution':
-        return 'bg-amber-500/10';
+        return 'bg-[var(--color-warning-light)]';
       default:
         return 'bg-[var(--color-bg-tertiary)]';
     }
@@ -110,7 +108,7 @@ const StatCard: React.FC<StatCardProps> = ({
   // Get change indicator color
   const getChangeColor = () => {
     if (!change) return 'text-[var(--color-text-tertiary)]';
-    return change > 0 ? 'text-emerald-500' : 'text-red-500';
+    return change > 0 ? 'text-[var(--color-success)]' : 'text-[var(--color-error)]';
   };
 
   // Get change indicator icon
@@ -128,10 +126,10 @@ const StatCard: React.FC<StatCardProps> = ({
   };
 
   return (
-    <div className="p-6 rounded-xl shadow-[var(--shadow-md)] bg-[var(--color-bg-elevated)] border border-[var(--color-border-default)] transition-colors duration-300">
+    <div className="p-6 rounded-2xl shadow-[var(--shadow-md)] bg-[var(--color-bg-elevated)] border border-[var(--color-border-default)] transition-all duration-300 hover:-translate-y-0.5 hover:shadow-[var(--shadow-lg)]">
       <div className="flex items-center justify-between mb-4">
         <div className="flex items-center">
-          <div className={`p-3 rounded-full ${getIconBgColor()}`}>
+          <div className={`p-3 rounded-2xl ${getIconBgColor()}`}>
             <div className={getIconColor()}>{getIcon()}</div>
           </div>
           <h3 className="ml-3 text-lg font-medium text-[var(--color-text-secondary)]">{title}</h3>

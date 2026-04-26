@@ -22,6 +22,7 @@ export interface VoiceSynthesisResponse {
 
 export interface VoiceRecognitionResponse {
   text?: string | null;
+  segments?: unknown[];
   confidence?: number;
   language?: string;
   duration?: number;

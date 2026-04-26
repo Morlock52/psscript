@@ -199,19 +199,18 @@ const scriptService = {
        });
         
        console.log('[UPLOAD DEBUG] Upload successful');
-        
-       // Force a refresh of the scripts cache
-       try {
-         await apiClient.get("/scripts/clear-cache");
-       } catch (cacheError) {
-         console.warn("Failed to clear scripts cache:", cacheError);
-       }
-        
        return response.data;
        
      } catch (error) {
-      const err = error as AxiosError;
+      const err = error as AxiosError & { status?: number; details?: Record<string, unknown>; existingScriptId?: string | number };
       console.error("[UPLOAD DEBUG] Final error uploading script:", err);
+
+      if (err.status === 409) {
+        throw Object.assign(new Error(err.message || 'This script already exists.'), {
+          status: 409,
+          existingScriptId: err.existingScriptId || err.details?.existingScriptId,
+        });
+      }
       
       // Enhanced error handling with more detailed messages
       if (err.code === 'ECONNABORTED') {
