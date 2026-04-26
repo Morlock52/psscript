@@ -9,6 +9,7 @@ const outputDir = path.join(sourceDir, 'readme');
 
 const screenshots = [
   ['login.png', 'Login'],
+  ['pending-approval.png', 'Pending Approval'],
   ['dashboard.png', 'Dashboard'],
   ['scripts.png', 'Script Library'],
   ['upload.png', 'Upload Flow'],

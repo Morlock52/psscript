@@ -1,29 +1,26 @@
 <p align="center">
-  <a href="./docs/screenshots/dashboard.png">
-    <img src="./docs/screenshots/readme/dashboard.png" alt="PSScript dashboard showing script totals, security score, AI analysis metrics, and recent activity" width="980" />
+  <a href="./docs/graphics/banner.png">
+    <img src="./docs/graphics/banner.png" alt="PSScript banner showing script library, AI review, Supabase, and Netlify hosted flow" width="980" />
   </a>
-</p>
-
-<p align="center">
-  <sub>Dashboard preview from the validated local app shell. Click the image to open the source capture.</sub>
 </p>
 
 <h1 align="center">PSScript</h1>
 
 <p align="center">
-  <strong>PowerShell Script Management with Agentic AI Analysis</strong>
+  <strong>PowerShell script management, AI analysis, semantic search, and governed hosted access.</strong>
 </p>
 
 <p align="center">
-  <strong>Current status:</strong> Browser Use RUN3 passed on April 24, 2026 · Netlify/Supabase hosted path documented · latest app-shell screenshots refreshed
+  <strong>Current status:</strong> April 26, 2026 build verified · hosted Netlify/Supabase path active · Google OAuth approval gate implemented · Docker runtime retired
 </p>
 
 <p align="center">
   <a href="#quick-start">Quick Start</a> &bull;
   <a href="#features">Features</a> &bull;
   <a href="#architecture">Architecture</a> &bull;
-  <a href="#ai-models">AI Models</a> &bull;
+  <a href="#hosted-auth">Hosted Auth</a> &bull;
   <a href="#screenshots">Screenshots</a> &bull;
+  <a href="#validation">Validation</a> &bull;
   <a href="#documentation">Docs</a>
 </p>
 
@@ -31,153 +28,133 @@
 
 ## Overview
 
-PSScript is a full-stack platform for teams that need to **store, search, analyze, and operate on PowerShell scripts** from one interface. It combines script management with agentic AI workflows, semantic search, voice interactions, and enterprise-grade security analysis.
+PSScript is a full-stack workspace for teams that need to store, search, review, and govern PowerShell scripts. The app combines a React operations UI, script versioning, SHA-256 deduplication, AI-assisted security analysis, semantic search with pgvector, voice features, and admin controls.
 
-### How it works
+The current production direction is **Netlify + Supabase**:
 
-1. Upload or create a PowerShell script in the React frontend
-2. The Express API validates, persists with version history in PostgreSQL, and deduplicates via SHA-256 hashing
-3. The AI service runs multi-step analysis through GPT-4.1 and LangGraph workflows with security scoring, code quality metrics, and optimization recommendations
-4. Results surface in the UI alongside semantic search, documentation, analytics, and admin tooling
-5. A voice dock enables speech-to-text dictation and text-to-speech playback across the app
+- Netlify serves the Vite frontend and same-origin `/api/*` Functions.
+- Supabase Auth owns hosted user identity.
+- Supabase Postgres stores app data, profiles, scripts, analysis, embeddings, and metrics.
+- Google OAuth users get a local `app_profiles` account on first login, but remain disabled until an enabled admin approves them.
+
+Local development now points at Supabase Postgres through `DATABASE_URL`. Docker assets were retired to [`retired/docker/`](./retired/docker/README.md) and are kept only for reference.
 
 ---
 
 ## Features
 
-| Area | User Outcome | Current Evidence |
+| Area | What It Does | Current State |
 | --- | --- | --- |
-| **Script Workspace** | Upload, browse, version, filter, search, inspect, and export PowerShell scripts. | Browser Use RUN3 passed `/scripts`, `/scripts/upload`, and `/scripts/1/analysis`. |
-| **AI Analysis** | Security scoring, quality review, remediation guidance, and recommendations. | Script analysis route and AI chat both passed in RUN3. |
-| **Agentic Workflows** | Multi-step analysis, orchestration, and assistant flows for complex script work. | `/ai/assistant` and `/ai/agents` screenshots and RUN3 tests passed. |
-| **Semantic Search** | Similarity search through pgvector-backed embeddings. | Local schema includes script embeddings; hosted Supabase schema uses `vector(1536)`. |
-| **Voice Copilot** | Dictation and speech playback from a docked OpenAI Audio UI. | Voice dock opened in RUN3; microphone permission intentionally skipped. |
-| **Documentation Explorer** | Crawl, store, filter, and search PowerShell documentation. | Missing `documentation` table was fixed and docs routes now pass. |
-| **Operations + Analytics** | Dashboard metrics, usage reporting, backups, restore, cleanup, and settings. | Dashboard, analytics, settings, and data maintenance screenshots refreshed. |
-| **Hosted Deployment** | Netlify SPA/functions plus Supabase Auth/Postgres for production v1. | `netlify.toml`, `netlify/functions/api.ts`, and Supabase migration are checked in. |
+| **Script Workspace** | Upload, browse, version, filter, inspect, and export PowerShell scripts. | Active in the React app and hosted API surface. |
+| **AI Analysis** | Produces security score, quality score, beginner explanation, management summary, and remediation guidance. | OpenAI primary path with Anthropic fallback configuration. |
+| **Agentic Workflows** | Supports multi-step assistant and orchestration workflows for script review. | Local AI service uses FastAPI and LangGraph. |
+| **Semantic Search** | Stores embeddings for script/document search with pgvector. | Hosted Supabase schema uses `vector(1536)`. |
+| **Voice Copilot** | Speech-to-text and text-to-speech support for hands-free interaction. | OpenAI Audio models configured. |
+| **Hosted Auth** | Supabase password login plus Google OAuth with admin approval. | Implemented on April 26, 2026. |
+| **Admin Operations** | User management, enabled/pending status, categories, settings, and data maintenance. | User Management now exposes the approval checkbox. |
+| **Deployment** | Netlify Functions + Supabase Postgres/Auth for hosted v1. | Current active deployment path. |
 
 ---
 
 ## Architecture
 
-The local stack runs as a traditional full-stack app. The hosted v1 path keeps the Vite UI on Netlify, moves same-origin API routes into Netlify Functions, and uses Supabase for Auth/Postgres. GitHub renders Mermaid diagrams directly in Markdown, so the diagrams below stay source-controlled and maintainable.
-
-```mermaid
-flowchart LR
-    User["PowerShell user"] --> UI["React + Vite app<br/>local 3090 / hosted Netlify"]
-
-    subgraph Local["Local full stack"]
-        UI --> API["Express API<br/>4000"]
-        API --> DB[("PostgreSQL 15<br/>pgvector")]
-        API --> Redis[("Redis 7<br/>cache")]
-        API --> AI["FastAPI AI service<br/>8000"]
-        AI --> Graph["LangGraph workflows<br/>guardrails"]
-    end
-
-    subgraph Hosted["Hosted v1 target"]
-        UI --> Fn["Netlify Functions<br/>same-origin /api/*"]
-        Fn --> SupaAuth["Supabase Auth"]
-        Fn --> SupaDB[("Supabase Postgres<br/>pgvector")]
-        Fn --> StaticOnly["Static analysis only<br/>no remote script execution"]
-    end
-
-    Graph --> OpenAI["OpenAI<br/>Responses + Audio + Embeddings"]
-    Graph --> Anthropic["Anthropic<br/>Messages fallback"]
-    Fn --> OpenAI
-    Fn --> Anthropic
-
-    classDef ui fill:#15314d,stroke:#80bdb0,color:#f8fafc
-    classDef data fill:#243b30,stroke:#72a98f,color:#f8fafc
-    classDef ai fill:#2d3558,stroke:#8aa4d6,color:#f8fafc
-    classDef host fill:#3b2f1f,stroke:#d6a95c,color:#fff8e6
-    class UI ui
-    class DB,Redis,SupaDB data
-    class AI,Graph,OpenAI,Anthropic ai
-    class Fn,SupaAuth,StaticOnly host
-```
-
-### Service Map
+<p align="center">
+  <a href="./docs/graphics/architecture.png">
+    <img src="./docs/graphics/architecture.png" alt="Current PSScript architecture showing React UI, local Express API, Netlify Functions, FastAPI AI service, and Supabase platform" width="980" />
+  </a>
+</p>
 
 | Runtime | Component | Stack | Current Role |
 | --- | --- | --- | --- |
-| **Local** | Frontend on `3090` | React 18, TypeScript, Vite, TailwindCSS | Primary app shell, screenshots, and local UI flows. |
-| **Local** | Backend on `4000` | Express, TypeScript, Sequelize | Auth, script APIs, analytics, docs, voice proxy, and AI orchestration. |
-| **Local** | AI service on `8000` | FastAPI, LangGraph, Python | Model routing, guardrails, script analysis, and voice helpers. |
-| **Local** | PostgreSQL + Redis | PostgreSQL 15 + pgvector, Redis 7 | Persistent data, vectors, cache, sessions, analytics. |
-| **Hosted** | Netlify | Vite SPA + Functions | Static app hosting and same-origin `/api/*` route surface. |
-| **Hosted** | Supabase | Auth, Postgres, Storage-ready | Hosted identity and durable app data for production v1. |
+| **Frontend** | React app | React 18, Vite, TypeScript, TailwindCSS | Main app shell, hosted OAuth callback, dashboard, scripts, AI pages, and settings. |
+| **Hosted API** | Netlify Functions | TypeScript, `@netlify/functions`, `pg`, OpenAI/Anthropic SDKs | Same-origin `/api/*`, Supabase Auth token validation, profile gate, hosted static analysis. |
+| **Hosted Data** | Supabase | Auth, Postgres, pgvector | Durable identity and app data for hosted v1. |
+| **Local API** | Express backend | Node, Express, Sequelize | Local development API, script CRUD, analytics, and AI orchestration proxy. |
+| **Local AI** | FastAPI service | Python, LangGraph, OpenAI, Anthropic | Agentic workflows, guardrails, model routing, voice helpers. |
 
 ### Request Flow
 
-```mermaid
-sequenceDiagram
-    participant User
-    participant UI as React UI
-    participant API as API layer
-    participant DB as Postgres/pgvector
-    participant AI as AI workflow
-    participant OpenAI
-    participant Claude as Anthropic
+<p align="center">
+  <a href="./docs/graphics/request-flow.png">
+    <img src="./docs/graphics/request-flow.png" alt="PSScript request flow from upload through API guardrails, Postgres pgvector, AI providers, and persisted results" width="980" />
+  </a>
+</p>
 
-    User->>UI: Upload or ask about a script
-    UI->>API: Same-origin /api request
-    API->>API: Validate auth, payload, file hash
-    API->>DB: Store script, metadata, docs, chat, metrics
-    API->>AI: Start analysis or chat workflow
-    AI->>OpenAI: Primary model call
-    AI->>Claude: Optional fallback/provider switch
-    AI-->>API: Structured result or chat answer
-    API->>DB: Persist analysis, history, metrics
-    API-->>UI: Render score, answer, docs, or dashboard update
-```
+1. A user uploads or creates a PowerShell script.
+2. The API validates auth, payload shape, permissions, and duplicate file hashes.
+3. Script metadata, versions, analysis, metrics, and embeddings persist to Postgres.
+4. AI providers return structured review output.
+5. The UI renders scores, explanations, remediation guidance, search results, and analytics.
+
+---
+
+## Hosted Auth
+
+<p align="center">
+  <a href="./docs/graphics/google-oauth-approval-flow.png">
+    <img src="./docs/graphics/google-oauth-approval-flow.png" alt="Google OAuth approval flow showing Supabase sign-in, profile upsert, disabled default, and admin enablement" width="980" />
+  </a>
+</p>
+
+Hosted auth is intentionally gated:
+
+- Password login and Google OAuth use Supabase Auth in the browser.
+- The Netlify API validates bearer tokens against Supabase Auth.
+- `/api/auth/me` creates or updates the matching local `app_profiles` row.
+- New Google profiles default to `is_enabled = false`, except the `DEFAULT_ADMIN_EMAIL`.
+- Disabled users can see `/pending-approval`, but protected app APIs return `403 account_pending_approval`.
+- Admins enable users from Settings > User Management with the Enabled checkbox.
+- The backend prevents disabling your own admin account and prevents removing the last enabled admin.
+- RLS defense-in-depth checks enabled profiles for direct table access.
+
+Supabase dashboard setup is still required for Google OAuth credentials and redirect allow-list entries. See [Netlify + Supabase Deployment](./docs/NETLIFY-SUPABASE-DEPLOYMENT.md).
 
 ---
 
 ## AI Models
 
-Updated April 26, 2026 from official OpenAI and Anthropic model docs plus checked-in runtime defaults. Deprecated `gpt-4o`, `gpt-4o-mini`, `gpt-5.4`, and legacy Claude IDs are mapped to current configured models in the app settings layer.
+This table reflects the **configured defaults in this repo** as of April 26, 2026. Provider model availability can vary by account and date, so production deploys should keep model IDs overrideable through environment variables.
 
-| Capability | Primary Model(s) | Fallback / Variant | Repo Evidence |
+| Capability | Configured Default | Fallback / Variant | Repo Evidence |
 | --- | --- | --- | --- |
-| **Code + PowerShell generation** | `gpt-4.1` | `gpt-5.4-mini` for faster work | `src/backend/src/services/openaiClient.ts`, `src/ai/utils/model_router.py` |
-| **Flagship multi-step work** | `gpt-5.5` | `claude-opus-4-7` | Backend model constants and AI router |
-| **Low-cost quick tasks** | `gpt-5.4-mini` | `gpt-5.4-nano` | Backend and frontend settings |
-| **Reasoning** | `o3` | `o4-mini` for lightweight reasoning | Backend model constants and AI router |
-| **Anthropic provider** | `claude-sonnet-4-6` | `claude-opus-4-7`, `claude-haiku-4-5-20251001` | Backend constants and frontend settings |
-| **Local embeddings** | `text-embedding-3-large` | Hosted Supabase path uses `text-embedding-3-small` for `vector(1536)` | Backend constants and Netlify/Supabase docs |
-| **Text-to-speech** | `gpt-4o-mini-tts` | Voice selection in app settings | `src/ai/voice_service.py` |
-| **Speech-to-text** | `gpt-4o-mini-transcribe` | `gpt-4o-transcribe-diarize` for speaker segments | `src/ai/voice_service.py` |
+| **Hosted text/chat** | `gpt-5.5` | `claude-sonnet-4-6` | `netlify/functions/api.ts` |
+| **Hosted structured analysis** | `gpt-5.4-mini` | Anthropic text fallback with JSON parsing | `netlify/functions/api.ts` |
+| **Hosted embeddings** | `text-embedding-3-small` | 1536 dimensions for Supabase `vector(1536)` | `netlify/functions/api.ts`, Supabase migrations |
+| **Voice TTS** | `gpt-4o-mini-tts` | voice setting defaults to `marin` | `netlify/functions/api.ts` |
+| **Voice STT** | `gpt-4o-mini-transcribe` | `gpt-4o-transcribe-diarize` | `netlify/functions/api.ts` |
+| **Local AI service** | Router-controlled OpenAI/Anthropic models | Configurable in `src/ai/config.py` and router utilities | `src/ai/` |
 
-### SDK Versions
+References checked while refreshing this README:
 
-| Package | Version in Repo | Used By |
-| --- | --- | --- |
-| `openai` | `^6.34.0` root / `^6.33.0` backend | Netlify functions, backend AI routes |
-| `@anthropic-ai/sdk` | `^0.82.0` root/backend | Claude fallback/provider routes |
-| `@supabase/supabase-js` | `^2.89.0` root/frontend | Hosted Supabase Auth/browser client |
-| `@netlify/functions` | `^4.2.5` | Hosted API functions |
-| `openai` | `>=2.30.0` Python | FastAPI AI and voice service |
-| `anthropic` | `>=0.40.0` Python | FastAPI Claude provider |
-| `langgraph` | `>=0.2.0` Python | Agentic workflows |
-| `langchain` | `>=0.3.0` Python | AI workflow integrations |
-
-> **Note:** The OpenAI Assistants API sunsets on August 26, 2026. The checked-in `/api/assistants` routes already return `Deprecation`, `Sunset`, and successor `Link` headers, and the migration target is the Responses API.
+- OpenAI model docs: https://platform.openai.com/docs/models
+- Anthropic model docs: https://docs.anthropic.com/en/docs/about-claude/models
+- Supabase Google Auth: https://supabase.com/docs/guides/auth/social-login/auth-google
+- Netlify Functions docs: https://docs.netlify.com/functions/overview/
 
 ---
 
 ## Screenshots
 
-The app-shell images below were regenerated from the running local frontend on `https://127.0.0.1:3090` on April 24, 2026. The login image is preserved from the auth-enabled capture path because the default local stack redirects `/login` when dev auth is enabled. README previews are framed derivatives stored in `docs/screenshots/readme/`; click any preview to open the full source capture.
+Screenshots below are current README assets as of April 26, 2026. Login and pending approval were recaptured from the current hosted-auth frontend build. The other app-shell captures remain current April 26 app captures and were reframed for GitHub display with the updated README image pipeline. Click a preview to open the full source image.
 
 <table>
   <tr>
     <td width="50%" valign="top">
       <a href="./docs/screenshots/login.png">
-        <img src="./docs/screenshots/readme/login.png" alt="PSScript login screen with auth-enabled demo access" width="440" />
+        <img src="./docs/screenshots/readme/login.png" alt="PSScript login screen with password login, Google OAuth, and default login access" width="440" />
       </a>
       <br />
-      <sub><strong>Login.</strong> Auth-enabled sign-in and demo access.</sub>
+      <sub><strong>Login.</strong> Hosted auth login with Google OAuth.</sub>
     </td>
+    <td width="50%" valign="top">
+      <a href="./docs/screenshots/pending-approval.png">
+        <img src="./docs/screenshots/readme/pending-approval.png" alt="PSScript pending approval page shown to disabled Google OAuth users" width="440" />
+      </a>
+      <br />
+      <sub><strong>Pending Approval.</strong> First-login Google users wait for admin enablement.</sub>
+    </td>
+  </tr>
+  <tr>
     <td width="50%" valign="top">
       <a href="./docs/screenshots/dashboard.png">
         <img src="./docs/screenshots/readme/dashboard.png" alt="PSScript dashboard with health, activity, and AI usage overview" width="440" />
@@ -185,8 +162,6 @@ The app-shell images below were regenerated from the running local frontend on `
       <br />
       <sub><strong>Dashboard.</strong> Health, activity, and AI usage overview.</sub>
     </td>
-  </tr>
-  <tr>
     <td width="50%" valign="top">
       <a href="./docs/screenshots/scripts.png">
         <img src="./docs/screenshots/readme/scripts.png" alt="PSScript script library with browse, filter, and analyze controls" width="440" />
@@ -194,6 +169,8 @@ The app-shell images below were regenerated from the running local frontend on `
       <br />
       <sub><strong>Scripts.</strong> Upload, browse, filter, and analyze scripts.</sub>
     </td>
+  </tr>
+  <tr>
     <td width="50%" valign="top">
       <a href="./docs/screenshots/upload.png">
         <img src="./docs/screenshots/readme/upload.png" alt="PSScript upload flow with script metadata and preview" width="440" />
@@ -201,8 +178,6 @@ The app-shell images below were regenerated from the running local frontend on `
       <br />
       <sub><strong>Upload.</strong> Script intake with metadata and preview.</sub>
     </td>
-  </tr>
-  <tr>
     <td width="50%" valign="top">
       <a href="./docs/screenshots/analysis.png">
         <img src="./docs/screenshots/readme/analysis.png" alt="PSScript AI analysis page with security and quality scoring" width="440" />
@@ -210,6 +185,8 @@ The app-shell images below were regenerated from the running local frontend on `
       <br />
       <sub><strong>Script Analysis.</strong> AI-powered security and quality scoring.</sub>
     </td>
+  </tr>
+  <tr>
     <td width="50%" valign="top">
       <a href="./docs/screenshots/script-detail.png">
         <img src="./docs/screenshots/readme/script-detail.png" alt="PSScript script detail page with version history and code view" width="440" />
@@ -217,8 +194,6 @@ The app-shell images below were regenerated from the running local frontend on `
       <br />
       <sub><strong>Script Detail.</strong> Version history and code view.</sub>
     </td>
-  </tr>
-  <tr>
     <td width="50%" valign="top">
       <a href="./docs/screenshots/documentation.png">
         <img src="./docs/screenshots/readme/documentation.png" alt="PSScript documentation explorer with PowerShell docs search and crawl tools" width="440" />
@@ -226,6 +201,8 @@ The app-shell images below were regenerated from the running local frontend on `
       <br />
       <sub><strong>Documentation.</strong> PowerShell docs explorer and crawl tools.</sub>
     </td>
+  </tr>
+  <tr>
     <td width="50%" valign="top">
       <a href="./docs/screenshots/chat.png">
         <img src="./docs/screenshots/readme/chat.png" alt="PSScript AI chat assistant for PowerShell questions" width="440" />
@@ -233,8 +210,6 @@ The app-shell images below were regenerated from the running local frontend on `
       <br />
       <sub><strong>Chat with AI.</strong> Conversational PowerShell assistant.</sub>
     </td>
-  </tr>
-  <tr>
     <td width="50%" valign="top">
       <a href="./docs/screenshots/agentic-assistant.png">
         <img src="./docs/screenshots/readme/agentic-assistant.png" alt="PSScript agentic assistant workspace" width="440" />
@@ -242,6 +217,8 @@ The app-shell images below were regenerated from the running local frontend on `
       <br />
       <sub><strong>Agentic Assistant.</strong> Multi-step AI assistant workspace.</sub>
     </td>
+  </tr>
+  <tr>
     <td width="50%" valign="top">
       <a href="./docs/screenshots/agent-orchestration.png">
         <img src="./docs/screenshots/readme/agent-orchestration.png" alt="PSScript agent orchestration workflow controls" width="440" />
@@ -249,8 +226,6 @@ The app-shell images below were regenerated from the running local frontend on `
       <br />
       <sub><strong>Agent Orchestration.</strong> Workflow and orchestration controls.</sub>
     </td>
-  </tr>
-  <tr>
     <td width="50%" valign="top">
       <a href="./docs/screenshots/analytics.png">
         <img src="./docs/screenshots/readme/analytics.png" alt="PSScript analytics page with usage metrics and reports" width="440" />
@@ -258,21 +233,14 @@ The app-shell images below were regenerated from the running local frontend on `
       <br />
       <sub><strong>Analytics.</strong> Usage metrics and reporting.</sub>
     </td>
+  </tr>
+  <tr>
     <td width="50%" valign="top">
       <a href="./docs/screenshots/ui-components.png">
         <img src="./docs/screenshots/readme/ui-components.png" alt="PSScript UI component gallery showing current muted styling" width="440" />
       </a>
       <br />
-      <sub><strong>UI Components.</strong> Current muted button, shell, and component styling.</sub>
-    </td>
-  </tr>
-  <tr>
-    <td width="50%" valign="top">
-      <a href="./docs/screenshots/settings.png">
-        <img src="./docs/screenshots/readme/settings.png" alt="PSScript settings page with application configuration overview" width="440" />
-      </a>
-      <br />
-      <sub><strong>Settings.</strong> Application configuration overview.</sub>
+      <sub><strong>UI Components.</strong> Current button, shell, and component styling.</sub>
     </td>
     <td width="50%" valign="top">
       <a href="./docs/screenshots/settings-profile.png">
@@ -299,134 +267,153 @@ The app-shell images below were regenerated from the running local frontend on `
 
 ### Prerequisites
 
-- Node.js 18+
+- Node.js 20+ recommended
 - Python 3.10+
-- Docker Engine with `docker compose`
+- Supabase project with the hosted migrations applied
+- Supabase pooler `DATABASE_URL`
+- OpenAI and/or Anthropic provider keys for AI features
 
-### Full stack (Docker)
+### Install
 
 ```bash
-npm run install:all
+npm install
+npm install --prefix src/frontend
+npm install --prefix src/backend
 python -m pip install -r src/ai/requirements.txt
-docker compose up -d --build
 ```
 
-Open `https://127.0.0.1:3090`
+### Environment
 
-### Individual services
+Set these in `.env` for local development and in Netlify for hosted deploys:
 
 ```bash
-# Backend (port 4000)
-cd src/backend && npm install && npm run dev
-
-# Frontend (port 3090)
-cd src/frontend && npm install && npm run dev
-
-# AI Service (port 8000)
-cd src/ai && pip install -r requirements.txt && python main.py
+DATABASE_URL=postgresql://...supabase pooler URL...
+DB_PROFILE=supabase
+DB_SSL=true
+DB_SSL_REJECT_UNAUTHORIZED=true
+SUPABASE_URL=https://your-project.supabase.co
+SUPABASE_ANON_KEY=...
+SUPABASE_SERVICE_ROLE_KEY=...
+DEFAULT_ADMIN_EMAIL=admin@example.com
+VITE_SUPABASE_URL=https://your-project.supabase.co
+VITE_SUPABASE_ANON_KEY=...
+VITE_HOSTED_STATIC_ANALYSIS_ONLY=true
 ```
 
-### Local dev auth
+Apply Supabase migrations in filename order:
 
-The default local stack commonly runs with `DISABLE_AUTH=true` and `VITE_DISABLE_AUTH=true`, so the UI auto-enters the app shell as `dev-admin`. For a real login pass, run a separate frontend/backend pair with both flags set to `false`.
+```bash
+supabase/migrations/20260424_hosted_schema.sql
+supabase/migrations/20260425_scripts_file_hash_uniqueness.sql
+supabase/migrations/20260425_user_management_schema_fixes.sql
+supabase/migrations/20260426_supabase_advisor_fixes.sql
+supabase/migrations/20260426_z_google_oauth_approval_gate.sql
+```
 
-### Current UI shell
+### Run Local Services
 
-The current running UI is a dark PSScript application shell:
+```bash
+# AI service, optional unless testing local AI workflows
+cd src/ai
+python -m uvicorn main:app --host 0.0.0.0 --port 8000
 
-- the sidebar and top bar provide navigation across Dashboard, Script Management, AI Assistant, Documentation, UI Components, and Settings
-- the dashboard shows script totals, categories, security metrics, activity, and trends from the backend
-- script detail and analysis pages show real script content and saved AI-analysis data
-- the checked-in screenshots are captured from the running app with backend data, not mock image placeholders
+# Backend API
+cd src/backend
+npm run dev
+
+# Frontend
+cd src/frontend
+npm run dev
+```
+
+Open `https://127.0.0.1:3090` when TLS cert env vars are set, or the Vite URL printed by the frontend dev server.
+
+### Hosted Mode
+
+```bash
+npm run build:netlify
+netlify dev
+```
+
+Use Netlify environment variables for Supabase keys, database URL, and AI provider keys. Do not expose `SUPABASE_SERVICE_ROLE_KEY`, `DATABASE_URL`, or provider API keys to the browser.
 
 ---
 
 ## Validation
 
+Recent verification from this working tree:
+
 ```bash
-# Backend
-cd src/backend
-npm run typecheck          # TypeScript: 0 errors
-npm run lint               # ESLint: 0 errors
-npm test -- --runInBand    # Unit tests
-
-# Frontend
+# Frontend focused auth tests
 cd src/frontend
-npm run lint && npm run build
+npm run test:run -- --pool=threads --maxWorkers=1 src/pages/__tests__/Login.test.tsx src/contexts/__tests__/AuthContext.test.tsx
 
-# E2E
-npx playwright test --project=chromium
+# Frontend production build
+cd src/frontend
+npm run build
 
-# Cache stress test
-cd src/backend && npx jest src/__tests__/cacheService.test.ts --forceExit
+# Netlify function TypeScript check
+npx tsc --noEmit --target ES2020 --module commonjs --moduleResolution node --esModuleInterop --skipLibCheck --types node \
+  netlify/functions/api.ts \
+  netlify/functions/_shared/auth.ts \
+  netlify/functions/_shared/db.ts \
+  netlify/functions/_shared/env.ts \
+  netlify/functions/_shared/http.ts
 ```
+
+Latest results:
+
+| Check | Result |
+| --- | --- |
+| Focused frontend auth tests | 10 tests passed |
+| Frontend production build | Passed, `src/frontend/dist` regenerated |
+| Netlify function TypeScript check | Passed |
+| README image framing | Regenerated with `npm run screenshots:readme` |
+| Login/pending screenshots | Recaptured from current frontend build on April 26, 2026 |
 
 ### Screenshot Refresh
 
-The app-shell screenshots are captured from the standard local frontend on `3090` with the backend running and at least one script with analysis data available. Because that local stack commonly runs with `VITE_DISABLE_AUTH=true`, capture `login.png` from a second auth-enabled frontend:
-
 ```bash
-# terminal 1: app shell + backend
-npm run playwright:stack
-
-# terminal 2: login page
-cd src/frontend
-VITE_DISABLE_AUTH=false VITE_USE_MOCKS=true npm run dev -- --host 0.0.0.0 --port 3191
-
-# terminal 3: refresh docs/screenshots
+# Capture app screenshots from a running app target
 SCREENSHOT_BASE_URL=https://127.0.0.1:3090 \
 SCREENSHOT_LOGIN_URL=http://127.0.0.1:3191 \
 node scripts/capture-screenshots.js
 
-# refresh framed README previews
+# Generate README frames
 npm run screenshots:readme
+
+# Regenerate README graphics
+node scripts/generate-readme-graphics.mjs
 ```
 
-### Latest Results (April 24, 2026)
+The login and pending approval screenshots can be captured from a hosted-auth frontend with:
 
-| Check | Current Result | Evidence |
-| --- | --- | --- |
-| **Browser Use RUN3** | Passed health, auth/session, shell, navigation, analytics, scripts, AI chat, chat controls, Voice Copilot, agent pages, documentation, UI components, settings, 404, and console health. | [BROWSER_USE_QA.md](./BROWSER_USE_QA.md) |
-| **README screenshots** | Refreshed app-shell screenshots from `https://127.0.0.1:3090`; preserved login screenshot from auth-enabled capture; generated framed GitHub previews. | `docs/screenshots/*.png`, `docs/screenshots/readme/*.png` |
-| **Documentation API** | Fixed missing `documentation` table and retested documentation pages. | `src/db/migrations/20260424_create_documentation_table.sql` |
-| **Muted UI brand** | Chat/header/button/Voice Copilot/navbar colors muted and validated in browser. | [UI Branding Refresh](./docs/UI-BRANDING-REFRESH-2026-04-23.md) |
-| **Hosted path** | Netlify Functions + Supabase schema documented for production v1. | [Netlify + Supabase Deployment](./docs/NETLIFY-SUPABASE-DEPLOYMENT.md) |
-
-Current QA details are recorded in [BROWSER_USE_QA.md](./BROWSER_USE_QA.md). Destructive or permission-gated actions were intentionally skipped during automated browser testing.
+```bash
+cd src/frontend
+VITE_DISABLE_AUTH=false \
+VITE_SUPABASE_URL=https://your-project.supabase.co \
+VITE_SUPABASE_ANON_KEY=... \
+npm run dev -- --host 127.0.0.1 --port 3191
+```
 
 ---
 
 ## Project Structure
 
-```
+```text
 psscript/
-├── .github/                  # Workflows, issue templates, PR template
-├── docs/                     # Active docs, screenshots, exports, archive
-├── docs-site/                # Documentation site assets and screenshot variants
-├── docker/                   # Docker support services and backup tooling
-├── scripts/                  # Operational scripts and validation helpers
+├── docs/                     # Current documentation, graphics, screenshots, exports, archive
+├── docs/graphics/            # README diagrams and presentation graphics
+├── docs/screenshots/         # Source screenshots and framed README previews
+├── netlify/functions/        # Hosted same-origin API functions
+├── scripts/                  # Operational, validation, screenshot, and image-generation helpers
 ├── src/
-│   ├── backend/              # Express API (TypeScript)
-│   │   └── src/
-│   │       ├── controllers/  # Route handlers (modular script CRUD)
-│   │       ├── services/     # Cache, OpenAI client, agentic tools
-│   │       ├── models/       # Sequelize models (14 tables)
-│   │       ├── middleware/    # Auth, security, rate limiting
-│   │       └── routes/       # API route definitions
-│   ├── frontend/             # React UI (Vite + TypeScript)
-│   │   └── src/
-│   │       ├── pages/        # Dashboard, Scripts, Chat, Analytics
-│   │       ├── components/   # Reusable UI components
-│   │       └── services/     # API client, voice, settings
-│   └── ai/                   # Python AI service (FastAPI)
-│       ├── agents/           # LangGraph, Anthropic, multi-agent
-│       ├── guardrails/       # 3-layer input/output validation
-│       ├── utils/            # Model router, token counter
-│       └── analysis/         # Script analyzer, embeddings
+│   ├── backend/              # Local Express API
+│   ├── frontend/             # React + Vite UI
+│   └── ai/                   # FastAPI/LangGraph AI service
+├── supabase/migrations/      # Hosted Supabase schema and RLS migrations
 ├── tests/e2e/                # Playwright E2E tests
-├── crawl4ai-vector-db/       # Support project for crawl/vector search workflows
-├── product-website/          # Product/marketing website assets
-└── docker-compose.yml        # Full stack orchestration
+└── retired/docker/           # Historical Docker runtime assets, no longer active
 ```
 
 ---
@@ -434,57 +421,29 @@ psscript/
 ## Engineering Notes
 
 <details>
-<summary><strong>April 2026 Project Review</strong> — 22 issues fixed, AI models updated</summary>
+<summary><strong>Hosted Google OAuth Approval Gate</strong></summary>
 
-### Database & Models (9 fixes)
-- Added missing `ExecutionLog.output` column
-- Fixed `Script.fileHash` from STRING(32) to STRING(64) for SHA-256
-- Refactored ChatHistory to consistent class pattern
-- Added CASCADE on ScriptAnalysis foreign key
-- Fixed ScriptVersion timestamp mismatch
-- Standardized FK naming across models
-- Added missing indexes (file_hash, visibility compound)
-- Updated embedding model default
-- Increased password hash field for argon2id compatibility
-
-### API & Backend (13 fixes)
-- Removed `@ts-nocheck` from 7 files with proper type declarations
-- Fixed default port mismatch (4001 -> 4000)
-- Transaction isolation: SERIALIZABLE -> READ COMMITTED
-- Added pagination limit guard (max 100)
-- Implemented analytics summary endpoint (was TODO stub)
-- Made AI analysis non-blocking with retry (exponential backoff)
-- Fixed unhandledRejection handler
-- Added express-validator to script routes
-- Created standardized API response envelope helpers
-- Replaced console.warn with Winston in security middleware
-
-### Architecture (3 fixes)
-- Extracted 350-line inline cache to standalone `cacheService.ts`
-- Added Redis integration with in-memory fallback via ioredis
-- Resolved circular dependency (eliminated runtime `require()`)
-
-### AI Updates
-- Replaced all deprecated/stale defaults: gpt-4o -> gpt-4.1, gpt-4o-mini -> gpt-5.4-mini, gpt-5.4 -> gpt-5.5
-- Added GPT-5.5 as flagship model, o4-mini for lightweight reasoning
-- Updated SDKs: OpenAI Node 6.33.0, Python 2.30.0, LangGraph 1.1.0, LangChain 1.0
-- Created shared OpenAI client singleton (replaces 3 separate instances)
-- Added Assistants API sunset warning headers
-
-Full details: [PROJECT-REVIEW-2026-04-01.md](./docs/PROJECT-REVIEW-2026-04-01.md) | [AI-FUNCTIONS-REVIEW-2026-04-02.md](./docs/AI-FUNCTIONS-REVIEW-2026-04-02.md)
+- `app_profiles.is_enabled` gates hosted app access.
+- Google-created profiles default to disabled.
+- `/auth/me` may return disabled profile status so the pending page can render.
+- All protected hosted APIs require an enabled profile.
+- Admin user management can enable pending profiles.
+- The backend blocks self-disable and last-enabled-admin removal.
+- Supabase RLS policies now check `current_app_profile_is_enabled()` for direct table access.
 </details>
 
 <details>
-<summary><strong>Key technical decisions</strong></summary>
+<summary><strong>Local vs Hosted Auth</strong></summary>
 
-- JWT auth with refresh token rotation, bcrypt (12 rounds), account lockout
-- Script uploads deduplicated via SHA-256 file hashing
-- AI analysis runs as fire-and-forget with 2-retry exponential backoff
-- Cache: Redis primary (via ioredis) with automatic in-memory fallback
-- Structured API responses: `{ success: true, data }` / `{ success: false, error: { code, message } }`
-- Multi-model routing: task complexity determines model selection (nano -> mini -> standard -> flagship)
-- 3-layer AI guardrails: input validation, context construction, output validation
-- Voice pipeline: `gpt-4o-mini-transcribe` -> `gpt-5.4-mini` reasoning -> `gpt-4o-mini-tts`
+- Hosted mode uses Supabase Auth sessions and Netlify Functions.
+- Local Express auth still exists for local/non-hosted flows.
+- The current requested Google OAuth work intentionally targets hosted Supabase only.
+</details>
+
+<details>
+<summary><strong>Retired Docker Runtime</strong></summary>
+
+Docker configuration was retired from the active root project and moved under `retired/docker/`. Current local validation should use Supabase Postgres through `DATABASE_URL`; do not reintroduce local Docker databases for the hosted path.
 </details>
 
 ---
@@ -492,28 +451,20 @@ Full details: [PROJECT-REVIEW-2026-04-01.md](./docs/PROJECT-REVIEW-2026-04-01.md
 ## Documentation
 
 | Document | Purpose |
-|----------|---------|
-| [Getting Started](./docs/GETTING-STARTED.md) | Local bootstrap and first-run |
-| [Current Status](./docs/CURRENT-STATUS-2026-04-24.md) | Current runtime, QA, deployment, and known caveats |
-| [Repository Organization](./docs/REPOSITORY-ORGANIZATION.md) | Repo layout, docs taxonomy, and cleanup backlog |
-| [Browser Use QA](./BROWSER_USE_QA.md) | Latest browser test matrix, findings, safety skips, and retest results |
-| [Data Maintenance](./docs/DATA-MAINTENANCE.md) | Admin backup, restore, cleanup |
+| --- | --- |
+| [Getting Started](./docs/GETTING-STARTED.md) | Local bootstrap and first-run notes |
+| [Netlify + Supabase Deployment](./docs/NETLIFY-SUPABASE-DEPLOYMENT.md) | Current hosted production path, env vars, and Google OAuth setup |
+| [Repository Organization](./docs/REPOSITORY-ORGANIZATION.md) | Repo layout, docs taxonomy, and cleanup notes |
+| [Browser Use QA](./BROWSER_USE_QA.md) | Browser test matrix and validation history |
+| [Data Maintenance](./docs/DATA-MAINTENANCE.md) | Admin backup, restore, and cleanup |
 | [Voice API](./docs/README-VOICE-API.md) | Voice/listening implementation |
-| [Netlify + Supabase Deployment](./docs/NETLIFY-SUPABASE-DEPLOYMENT.md) | Current hosted production path |
 | [Deployment Platforms](./docs/DEPLOYMENT-PLATFORMS.md) | Deployment alternatives and legacy split-service notes |
 | [Project Review](./docs/PROJECT-REVIEW-2026-04-01.md) | April 2026 comprehensive review |
-| [AI Functions Review](./docs/AI-FUNCTIONS-REVIEW-2026-04-02.md) | AI audit and model migration |
+| [AI Functions Review](./docs/AI-FUNCTIONS-REVIEW-2026-04-02.md) | AI audit and model migration notes |
 | [Documentation Hub](./docs/index.md) | Full docs index |
-| [UI Branding Refresh](./docs/UI-BRANDING-REFRESH-2026-04-23.md) | Current muted branded UI and screenshot refresh notes |
-
-### Service READMEs
-
-- [Backend](./src/backend/README.md) — Routes, validation, middleware
-- [Frontend](./src/frontend/README.md) — Components, pages, state
-- [AI Service](./src/ai/README.md) — Models, agents, guardrails
 
 ---
 
 <p align="center">
-  <sub>Last updated: April 24, 2026</sub>
+  <sub>Last updated: April 26, 2026</sub>
 </p>
