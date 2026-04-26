@@ -1,6 +1,7 @@
 # AI Functions Review & Upgrade Plan
 
 **Date:** April 2, 2026
+**Current model refresh:** April 26, 2026
 **Scope:** All AI functions, models, SDKs, and integrations across backend, Python AI service, and frontend
 **Goal:** Update to latest OpenAI models, frameworks, and best practices
 
@@ -66,7 +67,7 @@ Replace all deprecated model references:
 | Deprecated | Replacement | Reason |
 |-----------|-------------|--------|
 | `gpt-4o` | `gpt-4.1` | gpt-4o retired Feb 2026; gpt-4.1 is better for code |
-| `gpt-4o-mini` | `gpt-4.1-mini` | gpt-4o-mini retired; 4.1-mini is the replacement |
+| `gpt-4o-mini` | `gpt-5.4-mini` | gpt-4o-mini retired; 5.4-mini is the current fast hosted replacement |
 | `gpt-4` | `gpt-4.1` | gpt-4 long deprecated |
 | `gpt-4-turbo` | `gpt-4.1` | gpt-4-turbo deprecated |
 | `o3-mini` | `o4-mini` | o4-mini is the current lightweight reasoning model |
@@ -88,10 +89,10 @@ langchain-openai>=1.0.0
 langchain-community>=1.0.0
 ```
 
-### 3. Add GPT-5.4 as Flagship Model
+### 3. Add GPT-5.5 as Flagship Model
 
-The `gpt-5.4` model family is now available:
-- `gpt-5.4` - Flagship, best overall quality
+The current GPT family is now:
+- `gpt-5.5` - Flagship, best overall quality
 - `gpt-5.4-mini` - Balanced speed/quality
 - `gpt-5.4-nano` - Fastest, cheapest
 
@@ -99,9 +100,9 @@ Recommended config update:
 ```python
 default_model = "gpt-4.1"        # Best for code (keep - 1M context)
 reasoning_model = "o3"           # Keep for reasoning
-fast_model = "gpt-4.1-mini"     # Replace gpt-4o-mini
+fast_model = "gpt-5.4-mini"     # Replace gpt-4o-mini
 fallback_model = "gpt-4.1"      # Replace gpt-4o
-flagship_model = "gpt-5.4"      # NEW - for complex multi-step tasks
+flagship_model = "gpt-5.5"      # NEW - for complex multi-step tasks
 ```
 
 ### 4. Create Shared OpenAI Client (Backend)
@@ -174,7 +175,7 @@ The Assistants API sunsets **August 26, 2026**. Plan:
 
 ## Research Sources (April 2026)
 
-- OpenAI Models Documentation: gpt-5.4, gpt-4.1, o3, o4-mini are current production models
+- OpenAI Models Documentation: gpt-5.5, gpt-5.4-mini/nano, gpt-4.1, o3, o4-mini are current production models
 - GPT-4o retired from API Feb 16, 2026
 - Assistants API sunset: August 26, 2026 (migrate to Responses API)
 - OpenAI Node SDK: 6.33.0, Python SDK: 2.30.0
@@ -191,7 +192,7 @@ All changes implemented and verified on April 2, 2026.
 | Task | Status |
 |------|--------|
 | Replace deprecated models (gpt-4o, gpt-4o-mini, o3-mini, gpt-4) | DONE |
-| Add gpt-5.4 flagship model | DONE |
+| Add gpt-5.5 flagship model | DONE |
 | Update Node.js openai SDK to ^6.33.0 | DONE |
 | Update Python openai SDK to >=2.30.0 | DONE |
 | Update LangGraph to >=1.1.0 | DONE |

@@ -90,7 +90,7 @@ try:
         print("✅ Token counter has all required methods")
         
         # Check pricing for valid models
-        valid_models = ['gpt-4.1', 'gpt-4.1-mini', 'text-embedding-3-large']
+        valid_models = ['gpt-5.5', 'gpt-5.4-mini', 'gpt-4.1', 'text-embedding-3-large']
         all_models_present = all(model in PRICING for model in valid_models)
         
         if all_models_present:
@@ -194,7 +194,7 @@ try:
         print(f"✅ default_model: {default_model}")
         
         # Verify it's a valid model
-        if default_model in ['gpt-4.1', 'gpt-4.1-mini', 'gpt-5.4', 'gpt-5.4-mini', 'o3', 'o4-mini']:
+        if default_model in ['gpt-4.1', 'gpt-5.5', 'gpt-5.4-mini', 'gpt-5.4-nano', 'o3', 'o4-mini']:
             print("   ✅ Valid model specified")
         else:
             print(f"   ⚠️  Unusual model: {default_model}")
@@ -203,7 +203,7 @@ try:
         reasoning_model = config.agent.reasoning_model
         print(f"✅ reasoning_model: {reasoning_model}")
         
-        if reasoning_model in ['o3', 'o4-mini', 'gpt-4.1', 'gpt-5.4']:
+        if reasoning_model in ['o3', 'o4-mini', 'gpt-4.1', 'gpt-5.5']:
             print("   ✅ Valid model specified")
     
     if hasattr(config.agent, 'embedding_model'):

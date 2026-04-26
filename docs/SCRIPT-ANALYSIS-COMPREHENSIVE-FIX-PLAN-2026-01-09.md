@@ -1105,7 +1105,7 @@ This comprehensive plan transforms Script Analysis from a basic chatbot into a *
 
 ---
 
-**Document prepared by**: Claude (claude-sonnet-4-5)
+**Document prepared by**: Claude (model note refreshed April 26, 2026: current Sonnet is `claude-sonnet-4-6`)
 **Date**: January 9, 2026
 **Version**: 1.0
 **Next Review**: After Phase 3 completion (Day 6)

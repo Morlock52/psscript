@@ -12,6 +12,7 @@
     "netlify:dev": "netlify dev",
     "netlify:build": "netlify build",
     "playwright:stack": "bash ./scripts/playwright-stack.sh",
+    "screenshots:readme": "node scripts/frame-readme-screenshots.mjs",
     "install:all": "npm install && cd src/frontend && npm install && cd ../backend && npm install",
     "stress:data-maintenance": "node scripts/db-maintenance-stress-test.mjs",
     "stress:data-maintenance:smoke": "node scripts/db-maintenance-stress-test.mjs --smoke-only",
@@ -34,7 +35,8 @@
     "@netlify/functions": "^4.2.5",
     "@playwright/test": "^1.57.0",
     "concurrently": "^8.2.0",
-    "netlify-cli": "^25.6.0"
+    "netlify-cli": "^25.6.0",
+    "sharp": "^0.34.5"
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^0.82.0",

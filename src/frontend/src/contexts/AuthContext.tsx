@@ -4,11 +4,15 @@ import { getApiUrl } from '../utils/apiUrl';
 import { getSupabaseClient, isHostedAuthConfigurationMissing, isSupabaseAuthEnabled } from '../services/supabase';
 
 // Define user type
-interface User {
+export interface User {
   id: string;
   username: string;
   email: string;
   role: string;
+  isEnabled?: boolean;
+  authProvider?: string;
+  approvedAt?: string | null;
+  approvedBy?: string | null;
   created_at: string;
   avatar_url?: string;
   firstName?: string;
@@ -24,6 +28,8 @@ interface AuthContextType {
   isAuthenticated: boolean;
   isLoading: boolean;
   login: (email: string, password: string) => Promise<void>;
+  loginWithGoogle: (nextPath?: string) => Promise<void>;
+  completeOAuthLogin: () => Promise<User | null>;
   defaultLogin: () => Promise<void>;
   register: (username: string, email: string, password: string) => Promise<void>;
   logout: () => void;
@@ -38,6 +44,8 @@ const AuthContext = createContext<AuthContextType>({
   isAuthenticated: false,
   isLoading: true,
   login: async () => {},
+  loginWithGoogle: async () => {},
+  completeOAuthLogin: async () => null,
   defaultLogin: async () => {},
   register: async () => {},
   logout: () => {},
@@ -99,7 +107,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     password: import.meta.env.VITE_DEMO_PASSWORD || 'admin123',
   });
 
-  const persistSupabaseSession = async () => {
+  const persistSupabaseSession = async (): Promise<User | null> => {
     const supabase = getSupabaseClient();
     const { data, error: sessionError } = await supabase.auth.getSession();
 
@@ -112,7 +120,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       setUser(null);
       localStorage.removeItem('auth_token');
       localStorage.removeItem('refresh_token');
-      return;
+      return null;
     }
 
     localStorage.setItem('auth_token', accessToken);
@@ -128,7 +136,10 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
 
     if (response.data?.user) {
       setUser(response.data.user);
+      return response.data.user;
     }
+
+    return null;
   };
 
   const enableLocalOnlyDevSession = () => {
@@ -281,6 +292,64 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     }
 
     await login(demoEmail, demoPassword);
+  };
+
+  const loginWithGoogle = async (nextPath = '/') => {
+    try {
+      setIsLoading(true);
+      clearError();
+
+      if (hostedAuthMissing) {
+        throw new Error('Hosted authentication is not configured. Set VITE_SUPABASE_URL and VITE_SUPABASE_ANON_KEY in Netlify, then rebuild.');
+      }
+
+      if (!supabaseAuth) {
+        throw new Error('Google sign-in is available only in hosted Supabase mode.');
+      }
+
+      const safeNextPath = nextPath.startsWith('/') ? nextPath : '/';
+      sessionStorage.setItem('oauth_next_path', safeNextPath);
+
+      const { error: oauthError } = await getSupabaseClient().auth.signInWithOAuth({
+        provider: 'google',
+        options: {
+          redirectTo: `${window.location.origin}/auth/callback`,
+        },
+      });
+
+      if (oauthError) {
+        throw oauthError;
+      }
+    } catch (err: any) {
+      const errorMessage = err.message || 'Google sign-in failed';
+      setError(errorMessage);
+      throw new Error(errorMessage);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const completeOAuthLogin = async (): Promise<User | null> => {
+    try {
+      setIsLoading(true);
+      clearError();
+
+      if (!supabaseAuth) {
+        throw new Error('Hosted Supabase authentication is not configured.');
+      }
+
+      const user = await persistSupabaseSession();
+      if (user) return user;
+
+      await new Promise(resolve => setTimeout(resolve, 250));
+      return await persistSupabaseSession();
+    } catch (err: any) {
+      const errorMessage = err.response?.data?.message || err.message || 'Unable to complete sign-in';
+      setError(errorMessage);
+      throw new Error(errorMessage);
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   // Login function
@@ -516,6 +585,8 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
         isAuthenticated,
         isLoading,
         login,
+        loginWithGoogle,
+        completeOAuthLogin,
         defaultLogin,
         register,
         logout,

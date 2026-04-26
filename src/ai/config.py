@@ -38,17 +38,17 @@ class RateLimits(BaseModel):
     google_search_rpm: int = Field(30, description="Google Search requests per minute")
 
 class AgentConfig(BaseModel):
-    """Agent configuration - Updated 2 April 2026.
+    """Agent configuration - Updated 26 April 2026.
 
     OpenAI models (gpt-4o/gpt-4o-mini deprecated Feb 2026):
     - gpt-4.1: Best for code generation (1M context, 54.6% SWE-bench)
-    - gpt-5.4: Flagship model for complex multi-step tasks
+    - gpt-5.5: Flagship model for complex multi-step tasks
     - o3/o4-mini: Reasoning models for complex analysis
-    - gpt-4.1-mini/nano: Fast/cheap options
+    - gpt-5.4-mini/nano: Fast/cheap options
 
-    Anthropic Claude 4.6 models (February 2026):
+    Anthropic Claude models (April 2026):
     - claude-sonnet-4-6: Balanced speed/quality, 1M context
-    - claude-opus-4-6: Most capable, complex reasoning, 1M context
+    - claude-opus-4-7: Most capable, complex reasoning, 1M context
     - claude-haiku-4-5: Fast and cost-effective
 
     References:
@@ -59,18 +59,18 @@ class AgentConfig(BaseModel):
     max_steps: int = Field(15, description="Maximum steps for agent workflows")
     memory_size: int = Field(20, description="Number of messages to keep in memory")
 
-    # Updated models for 2 April 2026 - Optimized for PowerShell
+    # Updated models for 26 April 2026 - Optimized for PowerShell
     # gpt-4o and gpt-4o-mini deprecated Feb 2026; replaced with gpt-4.1 family
     default_model: str = Field("gpt-4.1", description="Default model - best for code generation (1M context)")
     powershell_model: str = Field("gpt-4.1", description="PowerShell script generation model")
     reasoning_model: str = Field("o3", description="OpenAI o3 reasoning model for complex analysis")
-    fast_model: str = Field("gpt-4.1-mini", description="Fast model for quick tasks (replaces gpt-4o-mini)")
+    fast_model: str = Field("gpt-5.4-mini", description="Fast current model for quick tasks")
     fallback_model: str = Field("gpt-4.1", description="Fallback model if primary unavailable")
-    flagship_model: str = Field("gpt-5.4", description="Flagship model for complex multi-step tasks")
+    flagship_model: str = Field("gpt-5.5", description="Flagship model for complex multi-step tasks")
 
-    # Anthropic Claude 4.6 models - Updated April 2026
-    claude_model: str = Field("claude-sonnet-4-6-20260217", description="Claude Sonnet 4.6 - best balance of speed and quality")
-    claude_reasoning_model: str = Field("claude-opus-4-6-20260205", description="Claude Opus 4.6 - most capable, complex reasoning")
+    # Anthropic Claude models - Updated April 2026
+    claude_model: str = Field("claude-sonnet-4-6", description="Claude Sonnet 4.6 - best balance of speed and quality")
+    claude_reasoning_model: str = Field("claude-opus-4-7", description="Claude Opus 4.7 - most capable, complex reasoning")
     claude_fast_model: str = Field("claude-haiku-4-5-20251001", description="Claude Haiku 4.5 - fast and cost-effective")
 
     # Provider priority - which AI provider to try first
@@ -187,7 +187,7 @@ def load_config() -> Config:
     if not hasattr(config.agent, 'powershell_model') or not config.agent.powershell_model:
         config.agent.powershell_model = "gpt-4.1"  # Best for PowerShell
     if not hasattr(config.agent, 'fast_model') or not config.agent.fast_model:
-        config.agent.fast_model = "gpt-4.1-mini"  # Fast model for quick tasks
+        config.agent.fast_model = "gpt-5.4-mini"  # Fast model for quick tasks
     if not hasattr(config.agent, 'fallback_model') or not config.agent.fallback_model:
         config.agent.fallback_model = "gpt-4.1"  # Fallback if primary unavailable
     if not hasattr(config.agent, 'embedding_model') or not config.agent.embedding_model:

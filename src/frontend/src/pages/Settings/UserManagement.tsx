@@ -15,6 +15,10 @@ interface User {
   username: string;
   email: string;
   role: string;
+  isEnabled?: boolean;
+  authProvider?: string;
+  approvedAt?: string | null;
+  approvedBy?: string | null;
   lastLoginAt: string | null;
   createdAt: string;
 }
@@ -40,7 +44,8 @@ const UserManagement: React.FC = () => {
     username: '',
     email: '',
     password: '',
-    role: 'user'
+    role: 'user',
+    isEnabled: true
   });
   const [formError, setFormError] = useState<string | null>(null);
 
@@ -100,7 +105,7 @@ const UserManagement: React.FC = () => {
 
   // Modal handlers
   const openCreateModal = () => {
-    setFormData({ username: '', email: '', password: '', role: 'user' });
+    setFormData({ username: '', email: '', password: '', role: 'user', isEnabled: true });
     setFormError(null);
     setShowCreateModal(true);
   };
@@ -111,7 +116,8 @@ const UserManagement: React.FC = () => {
       username: user.username,
       email: user.email,
       password: '',
-      role: user.role
+      role: user.role,
+      isEnabled: user.isEnabled !== false
     });
     setFormError(null);
     setShowEditModal(true);
@@ -161,7 +167,8 @@ const UserManagement: React.FC = () => {
       const updateData: any = {
         username: formData.username,
         email: formData.email,
-        role: formData.role
+        role: formData.role,
+        isEnabled: formData.isEnabled
       };
       if (formData.password.trim()) {
         updateData.password = formData.password;
@@ -212,6 +219,24 @@ const UserManagement: React.FC = () => {
     }
   };
 
+  const handleToggleUserEnabled = async (targetUser: User, isEnabled: boolean) => {
+    try {
+      await api.put(`/users/${targetUser.id}`, {
+        username: targetUser.username,
+        email: targetUser.email,
+        role: targetUser.role,
+        isEnabled
+      });
+      setUsers(prevUsers => prevUsers.map(existing =>
+        existing.id === targetUser.id ? { ...existing, isEnabled } : existing
+      ));
+      setSuccess(isEnabled ? 'User enabled successfully' : 'User disabled successfully');
+      setTimeout(() => setSuccess(null), 3000);
+    } catch (err) {
+      setError(getErrorMessage(err, isEnabled ? 'Failed to enable user' : 'Failed to disable user'));
+    }
+  };
+
   const getRoleBadgeStyles = (role: string) => {
     if (role === 'admin') {
       return 'bg-red-500/10 text-red-400 border border-red-500/30';
@@ -219,9 +244,20 @@ const UserManagement: React.FC = () => {
     return 'bg-blue-500/10 text-blue-400 border border-blue-500/30';
   };
 
+  const getStatusBadgeStyles = (isEnabled: boolean) => {
+    return isEnabled
+      ? 'bg-green-500/10 text-green-400 border border-green-500/30'
+      : 'bg-amber-500/10 text-amber-300 border border-amber-500/30';
+  };
+
+  const formatProvider = (provider?: string) => {
+    return provider === 'google' ? 'Google' : 'Password';
+  };
+
   // Stats
   const adminCount = users.filter(u => u.role === 'admin').length;
   const _userCount = users.filter(u => u.role === 'user').length;
+  const pendingCount = users.filter(u => u.isEnabled === false).length;
   const recentLogins = users.filter(u => {
     if (!u.lastLoginAt) return false;
     const lastLogin = new Date(u.lastLoginAt);
@@ -273,7 +309,7 @@ const UserManagement: React.FC = () => {
       </div>
 
       {/* Stats Cards */}
-      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-6">
+      <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4 mb-6">
         <div className={cardStyles}>
           <div className="flex items-center gap-3">
             <div className="w-10 h-10 rounded-xl bg-blue-500/10 flex items-center justify-center">
@@ -312,6 +348,20 @@ const UserManagement: React.FC = () => {
             <div>
               <p className="text-2xl font-bold text-[var(--color-text-primary)]">{recentLogins}</p>
               <p className="text-sm text-[var(--color-text-secondary)]">Active Today</p>
+            </div>
+          </div>
+        </div>
+
+        <div className={cardStyles}>
+          <div className="flex items-center gap-3">
+            <div className="w-10 h-10 rounded-xl bg-amber-500/10 flex items-center justify-center">
+              <svg className="w-5 h-5 text-amber-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+              </svg>
+            </div>
+            <div>
+              <p className="text-2xl font-bold text-[var(--color-text-primary)]">{pendingCount}</p>
+              <p className="text-sm text-[var(--color-text-secondary)]">Pending Approval</p>
             </div>
           </div>
         </div>
@@ -422,8 +472,8 @@ const UserManagement: React.FC = () => {
                 key={user.id}
                 className="py-4 first:pt-0 last:pb-0 hover:bg-[var(--color-bg-primary)] -mx-6 px-6 transition group"
               >
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-4">
+                <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
+                  <div className="flex min-w-0 items-center gap-4">
                     {/* Avatar */}
                     <div className={`w-12 h-12 rounded-xl flex items-center justify-center text-white font-bold text-lg shadow-lg transition-transform hover:scale-105 ${
                       user.role === 'admin'
@@ -434,8 +484,8 @@ const UserManagement: React.FC = () => {
                     </div>
 
                     {/* User Info */}
-                    <div>
-                      <div className="flex items-center gap-2">
+                    <div className="min-w-0">
+                      <div className="flex flex-wrap items-center gap-2">
                         <h3 className="text-lg font-semibold text-[var(--color-text-primary)]">
                           {user.username}
                         </h3>
@@ -452,8 +502,14 @@ const UserManagement: React.FC = () => {
                           )}
                           {user.role.charAt(0).toUpperCase() + user.role.slice(1)}
                         </span>
+                        <span className={`px-2.5 py-0.5 text-xs font-semibold rounded-full ${getStatusBadgeStyles(user.isEnabled !== false)}`}>
+                          {user.isEnabled === false ? 'Pending' : 'Enabled'}
+                        </span>
+                        <span className="px-2.5 py-0.5 text-xs font-semibold rounded-full border border-[var(--color-border-default)] bg-[var(--color-bg-primary)] text-[var(--color-text-secondary)]">
+                          {formatProvider(user.authProvider)}
+                        </span>
                       </div>
-                      <p className="text-[var(--color-text-secondary)] text-sm flex items-center gap-1 mt-0.5">
+                      <p className="text-[var(--color-text-secondary)] text-sm flex items-center gap-1 mt-0.5 break-all">
                         <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
                         </svg>
@@ -463,7 +519,18 @@ const UserManagement: React.FC = () => {
                   </div>
 
                   {/* Meta & Actions */}
-                  <div className="flex items-center gap-6">
+                  <div className="flex flex-wrap items-center gap-4 lg:gap-6">
+                    <label className="hidden sm:flex items-center gap-2 text-sm text-[var(--color-text-secondary)]">
+                      <input
+                        type="checkbox"
+                        checked={user.isEnabled !== false}
+                        disabled={String(currentUser?.id) === String(user.id)}
+                        onChange={(event) => handleToggleUserEnabled(user, event.target.checked)}
+                        className="h-4 w-4 rounded border-[var(--color-border-default)] bg-[var(--color-bg-primary)] text-[var(--color-primary)] focus:ring-[var(--color-primary)] disabled:cursor-not-allowed disabled:opacity-50"
+                      />
+                      Enabled
+                    </label>
+
                     {/* Last Login */}
                     <div className="text-right hidden sm:block">
                       <p className="text-xs text-[var(--color-text-tertiary)] uppercase tracking-wide">Last Login</p>
@@ -672,6 +739,20 @@ const UserManagement: React.FC = () => {
                   <p className="text-yellow-400 text-xs mt-1">You cannot change your own role</p>
                 )}
               </div>
+
+              <label className="flex items-center justify-between gap-4 rounded-xl border border-[var(--color-border-default)] bg-[var(--color-bg-primary)] px-4 py-3">
+                <span>
+                  <span className="block text-sm font-medium text-[var(--color-text-primary)]">Enabled</span>
+                  <span className="block text-xs text-[var(--color-text-tertiary)]">Disabled users can sign in only to see pending approval.</span>
+                </span>
+                <input
+                  type="checkbox"
+                  checked={formData.isEnabled}
+                  disabled={String(currentUser?.id) === String(selectedUser.id)}
+                  onChange={(e) => setFormData({...formData, isEnabled: e.target.checked})}
+                  className="h-5 w-5 rounded border-[var(--color-border-default)] bg-[var(--color-bg-primary)] text-[var(--color-primary)] focus:ring-[var(--color-primary)] disabled:cursor-not-allowed disabled:opacity-50"
+                />
+              </label>
             </div>
 
             <div className="flex justify-end gap-3 mt-6 pt-4 border-t border-[var(--color-border-default)]">

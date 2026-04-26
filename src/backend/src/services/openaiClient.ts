@@ -40,18 +40,18 @@ export const anthropic = anthropicClient;
 
 /**
  * Default model constants — centralized so changes propagate everywhere.
- * Updated 2 April 2026: Claude 4.6 models, gpt-4o/gpt-4o-mini deprecated Feb 2026.
+ * Updated 26 April 2026: GPT-5.5 flagship, GPT-5.4 mini/nano, Claude Opus 4.7 and Sonnet 4.6.
  */
 export const MODELS = {
   // OpenAI models
   /** Best for code generation — 1M token context */
   CODE: process.env.OPENAI_SCRIPT_MODEL || 'gpt-4.1',
   /** Flagship model for complex multi-step tasks */
-  FLAGSHIP: 'gpt-5.4',
+  FLAGSHIP: 'gpt-5.5',
   /** Fast model for simple tasks */
-  FAST: 'gpt-4.1-mini',
+  FAST: 'gpt-5.4-mini',
   /** Nano model — cheapest option */
-  NANO: 'gpt-4.1-nano',
+  NANO: 'gpt-5.4-nano',
   /** Reasoning model for complex analysis */
   REASONING: 'o3',
   /** Lightweight reasoning */
@@ -63,11 +63,11 @@ export const MODELS = {
   /** STT model */
   STT: 'gpt-4o-mini-transcribe',
 
-  // Anthropic Claude 4.6 models (February 2026)
+  // Anthropic Claude models (April 2026)
   /** Claude Sonnet 4.6 — best balance of speed and quality */
-  CLAUDE_SONNET: 'claude-sonnet-4-6-20260217',
-  /** Claude Opus 4.6 — most capable, complex reasoning */
-  CLAUDE_OPUS: 'claude-opus-4-6-20260205',
+  CLAUDE_SONNET: 'claude-sonnet-4-6',
+  /** Claude Opus 4.7 — most capable, complex reasoning */
+  CLAUDE_OPUS: 'claude-opus-4-7',
   /** Claude Haiku 4.5 — fast and cost-effective */
   CLAUDE_HAIKU: 'claude-haiku-4-5-20251001',
 } as const;

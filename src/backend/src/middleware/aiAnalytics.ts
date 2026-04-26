@@ -76,7 +76,7 @@ export function initAIMetricsModel(sequelize: Sequelize): void {
       model: {
         type: DataTypes.STRING,
         allowNull: false,
-        comment: 'AI model used (e.g., gpt-4.1, gpt-5.4, o4-mini)',
+        comment: 'AI model used (e.g., gpt-4.1, gpt-5.5, o4-mini)',
       },
       promptTokens: {
         type: DataTypes.INTEGER,
@@ -167,17 +167,17 @@ export function initAIMetricsModel(sequelize: Sequelize): void {
 
 /**
  * Calculate cost based on model and token usage
- * Pricing as of April 12, 2026
+ * Pricing as of April 26, 2026
  */
 export function calculateCost(
   model: string,
   promptTokens: number,
   completionTokens: number
 ): number {
-  // Prices per 1M tokens (April 12, 2026)
+  // Prices per 1M tokens (April 26, 2026)
   const pricing: Record<string, { prompt: number; completion: number }> = {
     // OpenAI models
-    'gpt-5.4': { prompt: 2.50, completion: 15.00 },
+    'gpt-5.5': { prompt: 5.00, completion: 30.00 },
     'gpt-5.4-mini': { prompt: 0.75, completion: 4.50 },
     'gpt-5.4-nano': { prompt: 0.20, completion: 1.25 },
     'gpt-4.1': { prompt: 2.00, completion: 8.00 },
@@ -189,8 +189,8 @@ export function calculateCost(
     'text-embedding-3-small': { prompt: 0.02, completion: 0 },
     'text-embedding-3-large': { prompt: 0.13, completion: 0 },
     // Anthropic Claude models
-    'claude-opus-4-6-20260205': { prompt: 5.00, completion: 25.00 },
-    'claude-sonnet-4-6-20260217': { prompt: 3.00, completion: 15.00 },
+    'claude-opus-4-7': { prompt: 5.00, completion: 25.00 },
+    'claude-sonnet-4-6': { prompt: 3.00, completion: 15.00 },
     'claude-haiku-4-5-20251001': { prompt: 1.00, completion: 5.00 },
   };
 

@@ -1,0 +1,14 @@
+[     739ms] [INFO] %cDownload the React DevTools for a better development experience: https://reactjs.org/link/react-devtools font-weight:bold @ http://127.0.0.1:3091/node_modules/.vite/deps/chunk-TC4NNJLY.js?v=3f7308a3:21579
+[     854ms] [LOG] Initializing settings - mock data functionality has been removed @ http://127.0.0.1:3091/src/services/settings.ts:121
+[    1036ms] [LOG] [apiUrl] Runtime API URL: /api (same-origin proxy) @ http://127.0.0.1:3091/src/utils/apiUrl.ts:30
+[    1452ms] [ERROR] Failed to load resource: the server responded with a status of 401 (Unauthorized) @ http://127.0.0.1:3091/api/auth/login:0
+[    1455ms] [WARNING] [Auth] Dev auth bootstrap failed, falling back to local-only session: AxiosError @ http://127.0.0.1:3091/src/contexts/AuthContext.tsx:88
+[    1460ms] [ERROR] Failed to load resource: the server responded with a status of 401 (Unauthorized) @ http://127.0.0.1:3091/api/auth/login:0
+[    1460ms] [WARNING] [Auth] Dev auth bootstrap failed, falling back to local-only session: AxiosError @ http://127.0.0.1:3091/src/contexts/AuthContext.tsx:88
+[    2093ms] [LOG] [api.ts] Request: GET /api/admin/db/backups  @ http://127.0.0.1:3091/src/services/api.ts:32
+[    2093ms] [LOG] [api.ts] Request: GET /api/admin/db/backups  @ http://127.0.0.1:3091/src/services/api.ts:32
+[   73980ms] [INFO] %cDownload the React DevTools for a better development experience: https://reactjs.org/link/react-devtools font-weight:bold @ http://127.0.0.1:3091/node_modules/.vite/deps/chunk-TC4NNJLY.js?v=3f7308a3:21579
+[   74265ms] [LOG] Initializing settings - mock data functionality has been removed @ http://127.0.0.1:3091/src/services/settings.ts:121
+[   75461ms] [LOG] [apiUrl] Runtime API URL: /api (same-origin proxy) @ http://127.0.0.1:3091/src/utils/apiUrl.ts:30
+[   75461ms] [LOG] [api.ts] Request: GET /api/admin/db/backups  @ http://127.0.0.1:3091/src/services/api.ts:32
+[   75461ms] [LOG] [api.ts] Request: GET /api/admin/db/backups  @ http://127.0.0.1:3091/src/services/api.ts:32

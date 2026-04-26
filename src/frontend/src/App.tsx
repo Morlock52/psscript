@@ -8,6 +8,8 @@ import { useAuth } from './hooks/useAuth';
 // because import() doesn't send the Access session cookie.
 // TODO: Re-enable lazy loading once Cloudflare Access bypass for /assets/* is confirmed working.
 import Login from './pages/Login';
+import AuthCallback from './pages/AuthCallback';
+import PendingApproval from './pages/PendingApproval';
 import Register from './pages/Register';
 import Navbar from './components/Navbar';
 import Sidebar from './components/Sidebar';
@@ -64,6 +66,10 @@ const Home: React.FC = () => {
     return <LoadingScreen />;
   }
 
+  if (user?.isEnabled === false) {
+    return <Navigate to="/pending-approval" replace />;
+  }
+
   return user ? <Dashboard /> : <Navigate to="/login" replace />;
 };
 
@@ -71,12 +77,17 @@ const Home: React.FC = () => {
 const AppLayout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const location = useLocation();
+  const { user, isLoading } = useAuth();
 
   // Don't show sidebar/navbar on auth pages
-  const isAuthPage = location.pathname === '/login' || location.pathname === '/register';
+  const isAuthPage = location.pathname === '/login' || location.pathname === '/register' || location.pathname === '/auth/callback' || location.pathname === '/pending-approval';
 
   if (isAuthPage) {
     return <>{children}</>;
+  }
+
+  if (!isLoading && user?.isEnabled === false) {
+    return <Navigate to="/pending-approval" replace />;
   }
 
   return (
@@ -103,6 +114,8 @@ const App: React.FC = () => {
             <Routes>
               <Route path="/" element={<Home />} />
               <Route path="/login" element={<Login />} />
+              <Route path="/auth/callback" element={<AuthCallback />} />
+              <Route path="/pending-approval" element={<PendingApproval />} />
               <Route path="/register" element={<Register />} />
               <Route path="/dashboard" element={<ProtectedRoute><Dashboard /></ProtectedRoute>} />
               <Route path="/analytics" element={<ProtectedRoute><Analytics /></ProtectedRoute>} />

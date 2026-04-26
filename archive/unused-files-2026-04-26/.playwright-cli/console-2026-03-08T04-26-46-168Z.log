@@ -1,0 +1,36 @@
+[    7968ms] [ERROR] [api.ts] API Error: {code: NETWORK_ERROR, status: undefined, message: Network Error, isNetworkError: true} @ https://127.0.0.1:3090/src/services/api.ts:73
+[    7969ms] [ERROR] Error fetching scripts: {status: undefined, message: Network Error, code: NETWORK_ERROR, isNetworkError: true, isTimeout: false} @ https://127.0.0.1:3090/src/services/api.ts:92
+[    7969ms] [ERROR] Failed to load resource: net::ERR_CERT_AUTHORITY_INVALID @ https://127.0.0.1:4000/api/scripts?sort=created_at&order=desc&limit=8:0
+[    7969ms] [ERROR] [api.ts] API Error: {code: NETWORK_ERROR, status: undefined, message: Network Error, isNetworkError: true} @ https://127.0.0.1:3090/src/services/api.ts:73
+[    7969ms] [ERROR] Error fetching categories: {status: undefined, message: Network Error, code: NETWORK_ERROR, isNetworkError: true, isTimeout: false} @ https://127.0.0.1:3090/src/services/api.ts:427
+[    7969ms] [ERROR] Failed to load resource: net::ERR_CERT_AUTHORITY_INVALID @ https://127.0.0.1:4000/api/categories:0
+[    7969ms] [ERROR] [api.ts] API Error: {code: NETWORK_ERROR, status: undefined, message: Network Error, isNetworkError: true} @ https://127.0.0.1:3090/src/services/api.ts:73
+[    7969ms] [ERROR] Error fetching usage stats: {status: undefined, message: Network Error, code: NETWORK_ERROR, isNetworkError: true, isTimeout: false} @ https://127.0.0.1:3090/src/services/api.ts:482
+[    7969ms] [ERROR] Failed to load resource: net::ERR_CERT_AUTHORITY_INVALID @ https://127.0.0.1:4000/api/analytics/usage:0
+[    7970ms] [ERROR] [api.ts] API Error: {code: NETWORK_ERROR, status: undefined, message: Network Error, isNetworkError: true} @ https://127.0.0.1:3090/src/services/api.ts:73
+[    7970ms] [ERROR] Error fetching security metrics: {status: undefined, message: Network Error, code: NETWORK_ERROR, isNetworkError: true, isTimeout: false} @ https://127.0.0.1:3090/src/services/api.ts:531
+[    7970ms] [ERROR] Failed to load resource: net::ERR_CERT_AUTHORITY_INVALID @ https://127.0.0.1:4000/api/analytics/security:0
+[    7970ms] [ERROR] [api.ts] API Error: {code: NETWORK_ERROR, status: undefined, message: Network Error, isNetworkError: true} @ https://127.0.0.1:3090/src/services/api.ts:73
+[    7970ms] [ERROR] Error fetching usage stats: {status: undefined, message: Network Error, code: NETWORK_ERROR, isNetworkError: true, isTimeout: false} @ https://127.0.0.1:3090/src/services/api.ts:482
+[    7970ms] [ERROR] Failed to load resource: net::ERR_CERT_AUTHORITY_INVALID @ https://127.0.0.1:4000/api/analytics/usage:0
+[    8000ms] [ERROR] [api.ts] API Error: {code: NETWORK_ERROR, status: undefined, message: Network Error, isNetworkError: true} @ https://127.0.0.1:3090/src/services/api.ts:73
+[    8000ms] [ERROR] Error fetching security metrics: {status: undefined, message: Network Error, code: NETWORK_ERROR, isNetworkError: true, isTimeout: false} @ https://127.0.0.1:3090/src/services/api.ts:531
+[    8001ms] [ERROR] Failed to load resource: net::ERR_CERT_AUTHORITY_INVALID @ https://127.0.0.1:4000/api/analytics/security:0
+[    8013ms] [ERROR] [api.ts] API Error: {code: NETWORK_ERROR, status: undefined, message: Network Error, isNetworkError: true} @ https://127.0.0.1:3090/src/services/api.ts:73
+[    8013ms] [ERROR] Error fetching scripts: {status: undefined, message: Network Error, code: NETWORK_ERROR, isNetworkError: true, isTimeout: false} @ https://127.0.0.1:3090/src/services/api.ts:92
+[    8014ms] [ERROR] Failed to load resource: net::ERR_CERT_AUTHORITY_INVALID @ https://127.0.0.1:4000/api/scripts?sort=created_at&order=desc&limit=5:0
+[    8026ms] [ERROR] [api.ts] API Error: {code: NETWORK_ERROR, status: undefined, message: Network Error, isNetworkError: true} @ https://127.0.0.1:3090/src/services/api.ts:73
+[    8026ms] [ERROR] Error fetching scripts: {status: undefined, message: Network Error, code: NETWORK_ERROR, isNetworkError: true, isTimeout: false} @ https://127.0.0.1:3090/src/services/api.ts:92
+[    8027ms] [ERROR] Failed to load resource: net::ERR_CERT_AUTHORITY_INVALID @ https://127.0.0.1:4000/api/scripts?sort=views&order=desc&limit=5:0
+[    8086ms] [ERROR] [api.ts] API Error: {code: NETWORK_ERROR, status: undefined, message: Network Error, isNetworkError: true} @ https://127.0.0.1:3090/src/services/api.ts:73
+[    8086ms] [ERROR] Error fetching categories: {status: undefined, message: Network Error, code: NETWORK_ERROR, isNetworkError: true, isTimeout: false} @ https://127.0.0.1:3090/src/services/api.ts:427
+[    8086ms] [ERROR] Failed to load resource: net::ERR_CERT_AUTHORITY_INVALID @ https://127.0.0.1:4000/api/categories:0
+[   40091ms] [ERROR] [api.ts] API Error: {code: NETWORK_ERROR, status: undefined, message: Network Error, isNetworkError: true} @ https://127.0.0.1:3090/src/services/api.ts:73
+[   40092ms] [ERROR] Error fetching users: {status: undefined, message: Network Error, code: NETWORK_ERROR, isNetworkError: true, isTimeout: false} @ https://127.0.0.1:3090/src/pages/Settings/UserManagement.tsx:45
+[   40092ms] [ERROR] Failed to load resource: net::ERR_CERT_AUTHORITY_INVALID @ https://127.0.0.1:4000/api/users:0
+[   40095ms] [ERROR] [api.ts] API Error: {code: NETWORK_ERROR, status: undefined, message: Network Error, isNetworkError: true} @ https://127.0.0.1:3090/src/services/api.ts:73
+[   40095ms] [ERROR] Error fetching users: {status: undefined, message: Network Error, code: NETWORK_ERROR, isNetworkError: true, isTimeout: false} @ https://127.0.0.1:3090/src/pages/Settings/UserManagement.tsx:45
+[   40095ms] [ERROR] Failed to load resource: net::ERR_CERT_AUTHORITY_INVALID @ https://127.0.0.1:4000/api/users:0
+[  126284ms] [ERROR] [api.ts] API Error: {code: NETWORK_ERROR, status: undefined, message: Network Error, isNetworkError: true} @ https://127.0.0.1:3090/src/services/api.ts:73
+[  126284ms] [ERROR] Error fetching scripts: {status: undefined, message: Network Error, code: NETWORK_ERROR, isNetworkError: true, isTimeout: false} @ https://127.0.0.1:3090/src/services/api.ts:92
+[  126284ms] [ERROR] Failed to load resource: net::ERR_CERT_AUTHORITY_INVALID @ https://127.0.0.1:4000/api/scripts:0

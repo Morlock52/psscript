@@ -2,7 +2,8 @@ import React, { useState, useEffect } from 'react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 import BrandMark from '../components/BrandMark';
-import { isHostedAuthConfigurationMissing } from '../services/supabase';
+import { FcGoogle } from 'react-icons/fc';
+import { isHostedAuthConfigurationMissing, isSupabaseAuthEnabled } from '../services/supabase';
 
 interface ErrorDetails {
   code: string;
@@ -22,11 +23,12 @@ const Login: React.FC = () => {
   const [formError, setFormError] = useState('');
   const [errorDetails, setErrorDetails] = useState<ErrorDetails | null>(null);
 
-  const { login, defaultLogin, error, isLoading } = useAuth();
+  const { login, loginWithGoogle, defaultLogin, error, isLoading } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
   const disableAuth = import.meta.env.MODE !== 'test' && import.meta.env.VITE_DISABLE_AUTH === 'true';
   const hostedAuthMissing = isHostedAuthConfigurationMissing();
+  const supabaseAuth = isSupabaseAuthEnabled();
 
   // Clear form error when inputs change
   useEffect(() => {
@@ -91,6 +93,16 @@ const Login: React.FC = () => {
         // Handle simple Error objects (e.g., from demo auth)
         setFormError(err instanceof Error ? err.message : 'Login failed. Please try again.');
       }
+    }
+  };
+
+  const handleGoogleLogin = async () => {
+    setErrorDetails(null);
+    setFormError('');
+    try {
+      await loginWithGoogle(from);
+    } catch (err: any) {
+      setFormError(err instanceof Error ? err.message : 'Google sign-in failed. Please try again.');
     }
   };
 
@@ -242,6 +254,28 @@ const Login: React.FC = () => {
               )}
             </button>
           </form>
+
+          {supabaseAuth && (
+            <div className="mt-5">
+              <div className="relative my-5">
+                <div className="absolute inset-0 flex items-center">
+                  <span className="w-full border-t border-[var(--color-border-default)]" />
+                </div>
+                <div className="relative flex justify-center text-xs uppercase">
+                  <span className="bg-[var(--color-bg-elevated)] px-2 text-[var(--color-text-tertiary)]">or</span>
+                </div>
+              </div>
+              <button
+                type="button"
+                onClick={handleGoogleLogin}
+                disabled={isLoading || hostedAuthMissing}
+                className="flex w-full items-center justify-center gap-3 rounded-xl border border-[var(--color-border-default)] bg-[var(--color-bg-primary)] px-4 py-3 font-bold text-[var(--color-text-primary)] transition hover:bg-[var(--color-bg-tertiary)] focus:outline-none focus:ring-2 focus:ring-[var(--color-primary)] focus:ring-offset-2 focus:ring-offset-[var(--color-bg-elevated)] disabled:cursor-not-allowed disabled:opacity-50"
+              >
+                <FcGoogle className="h-5 w-5" aria-hidden="true" />
+                Continue with Google
+              </button>
+            </div>
+          )}
 
           <div className="mt-6 text-center">
             <p className="text-[var(--color-text-secondary)]">

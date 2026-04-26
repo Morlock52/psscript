@@ -318,10 +318,10 @@ if api_key:
 else:
     print("No OpenAI API key configured")
 
-# Updated logging for January 2026
+# Updated logging for April 2026
 print(f"Mock mode enabled: {MOCK_MODE}")
 print(f"Default agent: {config.agent.default_agent}")
-print(f"Default model: {config.agent.default_model} (January 2026)")
+print(f"Default model: {config.agent.default_model} (April 26, 2026)")
 print("Token tracking: Enabled")
 print(f"Vector operations enabled: {hasattr(config, 'vector_db_enabled') and config.vector_db_enabled}")
 
@@ -521,9 +521,10 @@ class ChatRequest(BaseModel):
         if v is None:
             return v
         allowed = {
-            "gpt-4.1", "gpt-4.1-mini", "gpt-4.1-nano", "gpt-5.4",
+            "gpt-4.1", "gpt-4.1-mini", "gpt-4.1-nano",
+            "gpt-5.5", "gpt-5.4-mini", "gpt-5.4-nano",
             "o3", "o3-pro", "o4-mini",
-            "claude-sonnet-4-6-20260217", "claude-opus-4-6-20260205",
+            "claude-sonnet-4-6", "claude-opus-4-7",
             "claude-haiku-4-5-20251001",
         }
         if v not in allowed:

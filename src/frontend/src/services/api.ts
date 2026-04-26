@@ -91,6 +91,15 @@ apiClient.interceptors.response.use(
         window.location.href = "/login";
       }
     }
+
+    if (
+      error.response?.status === 403 &&
+      (error.response.data as any)?.error === 'account_pending_approval' &&
+      typeof window !== 'undefined' &&
+      window.location.pathname !== '/pending-approval'
+    ) {
+      window.location.href = '/pending-approval';
+    }
     
     // Use centralized error extraction for consistent error handling
     // This ensures all errors have the same shape: { status, message, code, isNetworkError, ... }

@@ -1,0 +1,16 @@
+[     376ms] [INFO] %cDownload the React DevTools for a better development experience: https://reactjs.org/link/react-devtools font-weight:bold @ http://127.0.0.1:3091/node_modules/.vite/deps/chunk-TC4NNJLY.js?v=3f7308a3:21579
+[     435ms] [LOG] Initializing settings - mock data functionality has been removed @ http://127.0.0.1:3091/src/services/settings.ts:121
+[     558ms] [LOG] [apiUrl] Runtime API URL: /api (same-origin proxy) @ http://127.0.0.1:3091/src/utils/apiUrl.ts:30
+[     902ms] [ERROR] Failed to load resource: the server responded with a status of 401 (Unauthorized) @ http://127.0.0.1:3091/api/auth/login:0
+[     903ms] [WARNING] [Auth] Dev auth bootstrap failed, falling back to local-only session: AxiosError @ http://127.0.0.1:3091/src/contexts/AuthContext.tsx:88
+[     904ms] [ERROR] Failed to load resource: the server responded with a status of 401 (Unauthorized) @ http://127.0.0.1:3091/api/auth/login:0
+[     905ms] [WARNING] [Auth] Dev auth bootstrap failed, falling back to local-only session: AxiosError @ http://127.0.0.1:3091/src/contexts/AuthContext.tsx:88
+[    1565ms] [LOG] [api.ts] Request: GET /api/analytics/usage  @ http://127.0.0.1:3091/src/services/api.ts:32
+[    1565ms] [LOG] [api.ts] Request: GET /api/analytics/security  @ http://127.0.0.1:3091/src/services/api.ts:32
+[    1565ms] [LOG] [api.ts] Request: GET /api/analytics/categories  @ http://127.0.0.1:3091/src/services/api.ts:32
+[   96079ms] [INFO] %cDownload the React DevTools for a better development experience: https://reactjs.org/link/react-devtools font-weight:bold @ http://127.0.0.1:3091/node_modules/.vite/deps/chunk-TC4NNJLY.js?v=3f7308a3:21579
+[   96362ms] [LOG] Initializing settings - mock data functionality has been removed @ http://127.0.0.1:3091/src/services/settings.ts:121
+[   97551ms] [LOG] [apiUrl] Runtime API URL: /api (same-origin proxy) @ http://127.0.0.1:3091/src/utils/apiUrl.ts:30
+[   97551ms] [LOG] [api.ts] Request: GET /api/analytics/usage  @ http://127.0.0.1:3091/src/services/api.ts:32
+[   97551ms] [LOG] [api.ts] Request: GET /api/analytics/security  @ http://127.0.0.1:3091/src/services/api.ts:32
+[   97551ms] [LOG] [api.ts] Request: GET /api/analytics/categories  @ http://127.0.0.1:3091/src/services/api.ts:32

@@ -12,22 +12,22 @@ from pathlib import Path
 
 logger = logging.getLogger("token_counter")
 
-# AI Model Pricing as of 2 April 2026 (per 1M tokens)
+# AI Model Pricing as of 26 April 2026 (per 1M tokens)
 # gpt-4o, gpt-4o-mini deprecated Feb 2026
 PRICING = {
     # === OpenAI Models ===
-    # GPT-5.4 Series (Flagship) - March 2026
-    "gpt-5.4": {
-        "input": 2.50,
-        "output": 15.0,
+    # GPT-5.5 / GPT-5.4 Series
+    "gpt-5.5": {
+        "input": 5.00,
+        "output": 30.00,
     },
     "gpt-5.4-mini": {
-        "input": 1.00,
-        "output": 4.00,
+        "input": 0.75,
+        "output": 4.50,
     },
     "gpt-5.4-nano": {
-        "input": 0.25,
-        "output": 1.00,
+        "input": 0.20,
+        "output": 1.25,
     },
     # GPT-4.1 Series (Code Specialist) - still current
     "gpt-4.1": {
@@ -66,16 +66,15 @@ PRICING = {
     },
 
     # === Anthropic Claude Models ===
-    # Claude 4.6 (February 2026)
-    "claude-opus-4-6-20260205": {
+    # Claude 4.7 / 4.6 / 4.5
+    "claude-opus-4-7": {
         "input": 5.00,
         "output": 25.00,
     },
-    "claude-sonnet-4-6-20260217": {
+    "claude-sonnet-4-6": {
         "input": 3.00,
         "output": 15.00,
     },
-    # Claude 4.5 (October 2025)
     "claude-haiku-4-5-20251001": {
         "input": 1.00,
         "output": 5.00,

@@ -1,0 +1,410 @@
+// Mock chat service
+export const chatService = {
+  // Send a chat message to the AI with mock response
+  sendMessage: async (messages: any[]) => {
+    console.log('Using mock chat service');
+    
+    // Get the last user message
+    const lastUserMessage = messages.filter(m => m.role === 'user').pop()?.content || '';
+    
+    // Generate a mock response based on the user's message
+    let response = '';
+    
+    if (lastUserMessage.toLowerCase().includes('hello') || lastUserMessage.toLowerCase().includes('hi')) {
+      response = "Hello! I'm your PowerShell AI assistant. How can I help you today?";
+    } 
+    else if (lastUserMessage.toLowerCase().includes('help')) {
+      response = "I can help you with PowerShell scripting tasks. For example, I can help you write scripts, explain PowerShell concepts, or troubleshoot issues. What specific help do you need?";
+    }
+    else if (lastUserMessage.toLowerCase().includes('powershell')) {
+      response = "PowerShell is a powerful scripting language and shell framework from Microsoft. It provides full access to COM, WMI, and .NET. What would you like to know about PowerShell?";
+    }
+    else if (lastUserMessage.toLowerCase().includes('script')) {
+      response = "I can help you write PowerShell scripts. What kind of script are you looking to create? I can provide examples and explanations for various scripting tasks.";
+    }
+    else {
+      response = "I understand you're asking about PowerShell. Could you provide more details about what you'd like to know or what you're trying to accomplish?";
+    }
+    
+    // Simulate network delay
+    await new Promise(resolve => setTimeout(resolve, 1000));
+    
+    return { response };
+  },
+  
+  // Mock chat history methods
+  getChatHistory: async () => {
+    return { 
+      history: [
+        { role: 'assistant', content: 'Welcome to PowerShell AI Assistant! I can help you with PowerShell scripting tasks. What would you like help with today?', timestamp: new Date() }
+      ] 
+    };
+  },
+  
+  saveChatHistory: async () => {
+    return { success: true };
+  },
+  
+  clearChatHistory: async () => {
+    return { success: true };
+  },
+  
+  searchChatHistory: async () => {
+    return [];
+  },
+  
+  getChatCategories: async () => {
+    return ['General', 'Scripting', 'Troubleshooting'];
+  },
+  
+  setChatCategory: async () => {
+    return { success: true };
+  },
+  
+  deleteChatSession: async () => {
+    return { success: true };
+  }
+};
+
+// Mock script service
+export const scriptService = {
+  getScripts: async () => {
+    return { 
+      scripts: [
+        {
+          id: '1',
+          title: 'Get-SystemInfo',
+          category: { name: 'System Administration' },
+          user: { username: 'admin' },
+          analysis: { code_quality_score: 8.5 },
+          updatedAt: new Date().toISOString()
+        },
+        {
+          id: '2',
+          title: 'Backup-UserFiles',
+          category: { name: 'Backup & Recovery' },
+          user: { username: 'admin' },
+          analysis: { code_quality_score: 7.2 },
+          updatedAt: new Date().toISOString()
+        },
+        {
+          id: '3',
+          title: 'Install-RequiredModules',
+          category: { name: 'Installation' },
+          user: { username: 'admin' },
+          analysis: { code_quality_score: 6.8 },
+          updatedAt: new Date().toISOString()
+        }
+      ], 
+      total: 3 
+    };
+  },
+  
+  getScript: async () => {
+    return {
+      id: '1',
+      title: 'Get-SystemInfo',
+      content: 'function Get-SystemInfo { Get-ComputerInfo }',
+      category: { name: 'System Administration' },
+      user: { username: 'admin' },
+      analysis: { code_quality_score: 8.5 },
+      updatedAt: new Date().toISOString()
+    };
+  },
+  
+  uploadScript: async () => {
+    return { success: true, id: '4' };
+  },
+  
+  updateScript: async () => {
+    return { success: true };
+  },
+  
+  deleteScript: async () => {
+    return { success: true };
+  },
+  
+  getScriptAnalysis: async () => {
+    return {
+      code_quality_score: 8.5,
+      security_score: 7.0,
+      performance_score: 9.0,
+      suggestions: [
+        'Consider adding error handling',
+        'Add parameter validation',
+        'Include help documentation'
+      ]
+    };
+  },
+  
+  executeScript: async () => {
+    return { output: 'Script executed successfully', exitCode: 0 };
+  },
+  
+  getSimilarScripts: async () => {
+    return { similar_scripts: [] };
+  },
+  
+  searchScripts: async () => {
+    return { scripts: [], total: 0 };
+  },
+  
+  analyzeScript: async () => {
+    return {
+      code_quality_score: 8.5,
+      security_score: 7.0,
+      performance_score: 9.0,
+      suggestions: [
+        'Consider adding error handling',
+        'Add parameter validation',
+        'Include help documentation'
+      ]
+    };
+  },
+  
+  getScriptVersions: async () => {
+    return { versions: [] };
+  },
+  
+  bulkUpdateScripts: async () => {
+    return { success: true };
+  },
+  
+  bulkDeleteScripts: async () => {
+    return { success: true };
+  },
+  
+  deleteScripts: async () => {
+    return { success: true };
+  },
+  
+  applyAiSuggestions: async () => {
+    return { success: true };
+  }
+};
+
+// Mock category service
+export const categoryService = {
+  getCategories: async () => {
+    return { 
+      categories: [
+        { id: '1', name: 'System Administration' },
+        { id: '2', name: 'Backup & Recovery' },
+        { id: '3', name: 'Installation' },
+        { id: '4', name: 'Networking' },
+        { id: '5', name: 'Security' }
+      ] 
+    };
+  }
+};
+
+// Mock tag service
+export const tagService = {
+  getTags: async () => {
+    return { 
+      tags: [
+        { id: '1', name: 'automation' },
+        { id: '2', name: 'security' },
+        { id: '3', name: 'backup' },
+        { id: '4', name: 'network' },
+        { id: '5', name: 'system' }
+      ] 
+    };
+  },
+  
+  createTag: async (name: string) => {
+    return { id: '6', name };
+  }
+};
+
+// Mock analytics service
+export const analyticsService = {
+  getUsageStats: async () => {
+    return {
+      totalScripts: 25,
+      executionsToday: 12,
+      userScripts: 8,
+      averageQuality: 7.5,
+      executionsLastWeek: 87,
+      activeUsers: 5,
+      totalExecutions: 342,
+      recentActivity: [],
+      scriptsTrend: {
+        value: 15,
+        isPositive: true
+      },
+      executionsTrend: {
+        value: 8,
+        isPositive: true
+      }
+    };
+  },
+  
+  getSecurityMetrics: async () => {
+    return {
+      highSecurityCount: 10,
+      highSecurityPercentage: 40,
+      mediumSecurityCount: 12,
+      mediumSecurityPercentage: 48,
+      lowSecurityCount: 3,
+      lowSecurityPercentage: 12,
+      commonIssues: []
+    };
+  },
+  
+  getCategoryDistribution: async () => {
+    return {
+      categories: [
+        { name: 'System Administration', count: 10 },
+        { name: 'Backup & Recovery', count: 5 },
+        { name: 'Installation', count: 3 },
+        { name: 'Networking', count: 4 },
+        { name: 'Security', count: 3 }
+      ]
+    };
+  },
+  
+  getAIInsights: async () => {
+    return {
+      insights: [
+        {
+          id: '1',
+          title: 'Add error handling to scripts',
+          description: 'Several scripts are missing proper error handling which could lead to unexpected behavior.',
+          category: 'best-practice',
+          priority: 'medium',
+          scripts: [
+            { id: '1', title: 'Get-SystemInfo' },
+            { id: '3', title: 'Install-RequiredModules' }
+          ]
+        },
+        {
+          id: '2',
+          title: 'Security vulnerability in credential handling',
+          description: 'Some scripts store credentials in plain text which is a security risk.',
+          category: 'security',
+          priority: 'high',
+          scripts: [
+            { id: '2', title: 'Backup-UserFiles' }
+          ]
+        },
+        {
+          id: '3',
+          title: 'Performance optimization opportunity',
+          description: 'Using parallel processing could improve script performance by up to 40%.',
+          category: 'performance',
+          priority: 'low',
+          scripts: [
+            { id: '1', title: 'Get-SystemInfo' }
+          ]
+        }
+      ]
+    };
+  },
+  
+  getChartData: async ({ timeRange = 'week' }) => {
+    // Generate mock data based on time range
+    const generateMockData = (range: string, dataPoints: number) => {
+      const data = [];
+      const now = new Date();
+      
+      for (let i = 0; i < dataPoints; i++) {
+        const date = new Date(now);
+        
+        switch (range) {
+          case 'day':
+            date.setHours(now.getHours() - i);
+            break;
+          case 'week':
+            date.setDate(now.getDate() - i);
+            break;
+          case 'month':
+            date.setDate(now.getDate() - i * 2);
+            break;
+          case 'year':
+            date.setMonth(now.getMonth() - i);
+            break;
+        }
+        
+        data.push({
+          name: range === 'day' 
+            ? date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+            : date.toLocaleDateString([], { month: 'short', day: 'numeric' }),
+          uploads: Math.floor(Math.random() * 5),
+          executions: Math.floor(Math.random() * 15 + 5),
+          timestamp: date.toISOString()
+        });
+      }
+      
+      return data.reverse();
+    };
+    
+    // Generate quality data
+    const generateQualityData = (range: string, dataPoints: number) => {
+      const data = [];
+      const now = new Date();
+      
+      for (let i = 0; i < dataPoints; i++) {
+        const date = new Date(now);
+        
+        switch (range) {
+          case 'day':
+            date.setHours(now.getHours() - i);
+            break;
+          case 'week':
+            date.setDate(now.getDate() - i);
+            break;
+          case 'month':
+            date.setDate(now.getDate() - i * 2);
+            break;
+          case 'year':
+            date.setMonth(now.getMonth() - i);
+            break;
+        }
+        
+        data.push({
+          name: range === 'day' 
+            ? date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+            : date.toLocaleDateString([], { month: 'short', day: 'numeric' }),
+          average: (6 + Math.random() * 2).toFixed(1),
+          yourScripts: (5 + Math.random() * 4).toFixed(1),
+          timestamp: date.toISOString()
+        });
+      }
+      
+      return data.reverse();
+    };
+    
+    // Generate category data
+    const categoryData = [
+      { name: 'System Administration', value: 10 },
+      { name: 'Backup & Recovery', value: 5 },
+      { name: 'Installation', value: 3 },
+      { name: 'Networking', value: 4 },
+      { name: 'Security', value: 3 }
+    ];
+    
+    // Determine number of data points based on time range
+    let dataPoints = 7;
+    switch (timeRange) {
+      case 'day':
+        dataPoints = 24;
+        break;
+      case 'week':
+        dataPoints = 7;
+        break;
+      case 'month':
+        dataPoints = 15;
+        break;
+      case 'year':
+        dataPoints = 12;
+        break;
+    }
+    
+    return {
+      activityData: generateMockData(timeRange, dataPoints),
+      qualityData: generateQualityData(timeRange, dataPoints),
+      categoryData
+    };
+  }
+};

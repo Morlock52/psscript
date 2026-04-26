@@ -1,5 +1,11 @@
 <p align="center">
-  <img src="./docs/screenshots/dashboard.png" alt="PSScript Dashboard" width="800" />
+  <a href="./docs/screenshots/dashboard.png">
+    <img src="./docs/screenshots/readme/dashboard.png" alt="PSScript dashboard showing script totals, security score, AI analysis metrics, and recent activity" width="980" />
+  </a>
+</p>
+
+<p align="center">
+  <sub>Dashboard preview from the validated local app shell. Click the image to open the source capture.</sub>
 </p>
 
 <h1 align="center">PSScript</h1>
@@ -129,15 +135,15 @@ sequenceDiagram
 
 ## AI Models
 
-Updated April 24, 2026 from checked-in model constants and settings. Deprecated `gpt-4o`, `gpt-4o-mini`, and legacy Claude 3 IDs are mapped to current configured models in the app settings layer.
+Updated April 26, 2026 from official OpenAI and Anthropic model docs plus checked-in runtime defaults. Deprecated `gpt-4o`, `gpt-4o-mini`, `gpt-5.4`, and legacy Claude IDs are mapped to current configured models in the app settings layer.
 
 | Capability | Primary Model(s) | Fallback / Variant | Repo Evidence |
 | --- | --- | --- | --- |
-| **Code + PowerShell generation** | `gpt-4.1` | `gpt-4.1-mini` for faster work | `src/backend/src/services/openaiClient.ts`, `src/ai/utils/model_router.py` |
-| **Flagship multi-step work** | `gpt-5.4` | `claude-opus-4-6-20260205` | Backend model constants and AI router |
-| **Low-cost quick tasks** | `gpt-4.1-mini` | `gpt-4.1-nano` | Backend and frontend settings |
+| **Code + PowerShell generation** | `gpt-4.1` | `gpt-5.4-mini` for faster work | `src/backend/src/services/openaiClient.ts`, `src/ai/utils/model_router.py` |
+| **Flagship multi-step work** | `gpt-5.5` | `claude-opus-4-7` | Backend model constants and AI router |
+| **Low-cost quick tasks** | `gpt-5.4-mini` | `gpt-5.4-nano` | Backend and frontend settings |
 | **Reasoning** | `o3` | `o4-mini` for lightweight reasoning | Backend model constants and AI router |
-| **Anthropic provider** | `claude-sonnet-4-6-20260217` | `claude-opus-4-6-20260205`, `claude-haiku-4-5-20251001` | Backend constants and frontend settings |
+| **Anthropic provider** | `claude-sonnet-4-6` | `claude-opus-4-7`, `claude-haiku-4-5-20251001` | Backend constants and frontend settings |
 | **Local embeddings** | `text-embedding-3-large` | Hosted Supabase path uses `text-embedding-3-small` for `vector(1536)` | Backend constants and Netlify/Supabase docs |
 | **Text-to-speech** | `gpt-4o-mini-tts` | Voice selection in app settings | `src/ai/voice_service.py` |
 | **Speech-to-text** | `gpt-4o-mini-transcribe` | `gpt-4o-transcribe-diarize` for speaker segments | `src/ai/voice_service.py` |
@@ -161,97 +167,131 @@ Updated April 24, 2026 from checked-in model constants and settings. Deprecated 
 
 ## Screenshots
 
-The app-shell images below were regenerated from the running local frontend on `https://127.0.0.1:3090` on April 24, 2026. The login image is preserved from the auth-enabled capture path because the default local stack redirects `/login` when dev auth is enabled.
+The app-shell images below were regenerated from the running local frontend on `https://127.0.0.1:3090` on April 24, 2026. The login image is preserved from the auth-enabled capture path because the default local stack redirects `/login` when dev auth is enabled. README previews are framed derivatives stored in `docs/screenshots/readme/`; click any preview to open the full source capture.
 
-<details>
-<summary><strong>Login</strong> — Auth-enabled sign-in and demo access</summary>
-
-![Login](./docs/screenshots/login.png)
-</details>
-
-<details>
-<summary><strong>Dashboard</strong> — Health, activity, and AI usage overview</summary>
-
-![Dashboard](./docs/screenshots/dashboard.png)
-</details>
-
-<details>
-<summary><strong>Scripts</strong> — Upload, browse, filter, and analyze</summary>
-
-![Scripts](./docs/screenshots/scripts.png)
-</details>
-
-<details>
-<summary><strong>Upload</strong> — Script intake with metadata and preview</summary>
-
-![Upload](./docs/screenshots/upload.png)
-</details>
-
-<details>
-<summary><strong>Script Analysis</strong> — AI-powered security and quality scoring</summary>
-
-![Analysis](./docs/screenshots/analysis.png)
-</details>
-
-<details>
-<summary><strong>Script Detail</strong> — Version history and code view</summary>
-
-![Script Detail](./docs/screenshots/script-detail.png)
-</details>
-
-<details>
-<summary><strong>Documentation</strong> — PowerShell docs explorer and crawl tools</summary>
-
-![Documentation](./docs/screenshots/documentation.png)
-</details>
-
-<details>
-<summary><strong>Chat with AI</strong> — Conversational PowerShell assistant</summary>
-
-![Chat](./docs/screenshots/chat.png)
-</details>
-
-<details>
-<summary><strong>Analytics</strong> — Usage metrics and reporting</summary>
-
-![Analytics](./docs/screenshots/analytics.png)
-</details>
-
-<details>
-<summary><strong>Agentic Assistant</strong> — Multi-step AI assistant workspace</summary>
-
-![Agentic Assistant](./docs/screenshots/agentic-assistant.png)
-</details>
-
-<details>
-<summary><strong>Agent Orchestration</strong> — Agent workflow and orchestration controls</summary>
-
-![Agent Orchestration](./docs/screenshots/agent-orchestration.png)
-</details>
-
-<details>
-<summary><strong>UI Components</strong> — Current muted button, shell, and component styling</summary>
-
-![UI Components](./docs/screenshots/ui-components.png)
-</details>
-
-<details>
-<summary><strong>Settings</strong> — Application configuration overview</summary>
-
-![Settings](./docs/screenshots/settings.png)
-</details>
-
-<details>
-<summary><strong>Settings Profile</strong> — Profile and account configuration</summary>
-
-![Settings](./docs/screenshots/settings-profile.png)
-</details>
-
-<details>
-<summary><strong>Data Maintenance</strong> — Admin backup, restore, cleanup</summary>
-
-![Data Maintenance](./docs/screenshots/data-maintenance.png)
-</details>
+<table>
+  <tr>
+    <td width="50%" valign="top">
+      <a href="./docs/screenshots/login.png">
+        <img src="./docs/screenshots/readme/login.png" alt="PSScript login screen with auth-enabled demo access" width="440" />
+      </a>
+      <br />
+      <sub><strong>Login.</strong> Auth-enabled sign-in and demo access.</sub>
+    </td>
+    <td width="50%" valign="top">
+      <a href="./docs/screenshots/dashboard.png">
+        <img src="./docs/screenshots/readme/dashboard.png" alt="PSScript dashboard with health, activity, and AI usage overview" width="440" />
+      </a>
+      <br />
+      <sub><strong>Dashboard.</strong> Health, activity, and AI usage overview.</sub>
+    </td>
+  </tr>
+  <tr>
+    <td width="50%" valign="top">
+      <a href="./docs/screenshots/scripts.png">
+        <img src="./docs/screenshots/readme/scripts.png" alt="PSScript script library with browse, filter, and analyze controls" width="440" />
+      </a>
+      <br />
+      <sub><strong>Scripts.</strong> Upload, browse, filter, and analyze scripts.</sub>
+    </td>
+    <td width="50%" valign="top">
+      <a href="./docs/screenshots/upload.png">
+        <img src="./docs/screenshots/readme/upload.png" alt="PSScript upload flow with script metadata and preview" width="440" />
+      </a>
+      <br />
+      <sub><strong>Upload.</strong> Script intake with metadata and preview.</sub>
+    </td>
+  </tr>
+  <tr>
+    <td width="50%" valign="top">
+      <a href="./docs/screenshots/analysis.png">
+        <img src="./docs/screenshots/readme/analysis.png" alt="PSScript AI analysis page with security and quality scoring" width="440" />
+      </a>
+      <br />
+      <sub><strong>Script Analysis.</strong> AI-powered security and quality scoring.</sub>
+    </td>
+    <td width="50%" valign="top">
+      <a href="./docs/screenshots/script-detail.png">
+        <img src="./docs/screenshots/readme/script-detail.png" alt="PSScript script detail page with version history and code view" width="440" />
+      </a>
+      <br />
+      <sub><strong>Script Detail.</strong> Version history and code view.</sub>
+    </td>
+  </tr>
+  <tr>
+    <td width="50%" valign="top">
+      <a href="./docs/screenshots/documentation.png">
+        <img src="./docs/screenshots/readme/documentation.png" alt="PSScript documentation explorer with PowerShell docs search and crawl tools" width="440" />
+      </a>
+      <br />
+      <sub><strong>Documentation.</strong> PowerShell docs explorer and crawl tools.</sub>
+    </td>
+    <td width="50%" valign="top">
+      <a href="./docs/screenshots/chat.png">
+        <img src="./docs/screenshots/readme/chat.png" alt="PSScript AI chat assistant for PowerShell questions" width="440" />
+      </a>
+      <br />
+      <sub><strong>Chat with AI.</strong> Conversational PowerShell assistant.</sub>
+    </td>
+  </tr>
+  <tr>
+    <td width="50%" valign="top">
+      <a href="./docs/screenshots/agentic-assistant.png">
+        <img src="./docs/screenshots/readme/agentic-assistant.png" alt="PSScript agentic assistant workspace" width="440" />
+      </a>
+      <br />
+      <sub><strong>Agentic Assistant.</strong> Multi-step AI assistant workspace.</sub>
+    </td>
+    <td width="50%" valign="top">
+      <a href="./docs/screenshots/agent-orchestration.png">
+        <img src="./docs/screenshots/readme/agent-orchestration.png" alt="PSScript agent orchestration workflow controls" width="440" />
+      </a>
+      <br />
+      <sub><strong>Agent Orchestration.</strong> Workflow and orchestration controls.</sub>
+    </td>
+  </tr>
+  <tr>
+    <td width="50%" valign="top">
+      <a href="./docs/screenshots/analytics.png">
+        <img src="./docs/screenshots/readme/analytics.png" alt="PSScript analytics page with usage metrics and reports" width="440" />
+      </a>
+      <br />
+      <sub><strong>Analytics.</strong> Usage metrics and reporting.</sub>
+    </td>
+    <td width="50%" valign="top">
+      <a href="./docs/screenshots/ui-components.png">
+        <img src="./docs/screenshots/readme/ui-components.png" alt="PSScript UI component gallery showing current muted styling" width="440" />
+      </a>
+      <br />
+      <sub><strong>UI Components.</strong> Current muted button, shell, and component styling.</sub>
+    </td>
+  </tr>
+  <tr>
+    <td width="50%" valign="top">
+      <a href="./docs/screenshots/settings.png">
+        <img src="./docs/screenshots/readme/settings.png" alt="PSScript settings page with application configuration overview" width="440" />
+      </a>
+      <br />
+      <sub><strong>Settings.</strong> Application configuration overview.</sub>
+    </td>
+    <td width="50%" valign="top">
+      <a href="./docs/screenshots/settings-profile.png">
+        <img src="./docs/screenshots/readme/settings-profile.png" alt="PSScript settings profile page with account configuration" width="440" />
+      </a>
+      <br />
+      <sub><strong>Settings Profile.</strong> Profile and account configuration.</sub>
+    </td>
+  </tr>
+  <tr>
+    <td colspan="2" valign="top">
+      <a href="./docs/screenshots/data-maintenance.png">
+        <img src="./docs/screenshots/readme/data-maintenance.png" alt="PSScript data maintenance admin page for backup restore and cleanup" width="880" />
+      </a>
+      <br />
+      <sub><strong>Data Maintenance.</strong> Admin backup, restore, and cleanup.</sub>
+    </td>
+  </tr>
+</table>
 
 ---
 
@@ -337,6 +377,9 @@ VITE_DISABLE_AUTH=false VITE_USE_MOCKS=true npm run dev -- --host 0.0.0.0 --port
 SCREENSHOT_BASE_URL=https://127.0.0.1:3090 \
 SCREENSHOT_LOGIN_URL=http://127.0.0.1:3191 \
 node scripts/capture-screenshots.js
+
+# refresh framed README previews
+npm run screenshots:readme
 ```
 
 ### Latest Results (April 24, 2026)
@@ -344,7 +387,7 @@ node scripts/capture-screenshots.js
 | Check | Current Result | Evidence |
 | --- | --- | --- |
 | **Browser Use RUN3** | Passed health, auth/session, shell, navigation, analytics, scripts, AI chat, chat controls, Voice Copilot, agent pages, documentation, UI components, settings, 404, and console health. | [BROWSER_USE_QA.md](./BROWSER_USE_QA.md) |
-| **README screenshots** | Refreshed app-shell screenshots from `https://127.0.0.1:3090`; preserved login screenshot from auth-enabled capture. | `docs/screenshots/*.png` |
+| **README screenshots** | Refreshed app-shell screenshots from `https://127.0.0.1:3090`; preserved login screenshot from auth-enabled capture; generated framed GitHub previews. | `docs/screenshots/*.png`, `docs/screenshots/readme/*.png` |
 | **Documentation API** | Fixed missing `documentation` table and retested documentation pages. | `src/db/migrations/20260424_create_documentation_table.sql` |
 | **Muted UI brand** | Chat/header/button/Voice Copilot/navbar colors muted and validated in browser. | [UI Branding Refresh](./docs/UI-BRANDING-REFRESH-2026-04-23.md) |
 | **Hosted path** | Netlify Functions + Supabase schema documented for production v1. | [Netlify + Supabase Deployment](./docs/NETLIFY-SUPABASE-DEPLOYMENT.md) |
@@ -422,8 +465,8 @@ psscript/
 - Resolved circular dependency (eliminated runtime `require()`)
 
 ### AI Updates
-- Replaced all deprecated models: gpt-4o -> gpt-4.1, gpt-4o-mini -> gpt-4.1-mini
-- Added GPT-5.4 as flagship model, o4-mini for lightweight reasoning
+- Replaced all deprecated/stale defaults: gpt-4o -> gpt-4.1, gpt-4o-mini -> gpt-5.4-mini, gpt-5.4 -> gpt-5.5
+- Added GPT-5.5 as flagship model, o4-mini for lightweight reasoning
 - Updated SDKs: OpenAI Node 6.33.0, Python 2.30.0, LangGraph 1.1.0, LangChain 1.0
 - Created shared OpenAI client singleton (replaces 3 separate instances)
 - Added Assistants API sunset warning headers
@@ -441,7 +484,7 @@ Full details: [PROJECT-REVIEW-2026-04-01.md](./docs/PROJECT-REVIEW-2026-04-01.md
 - Structured API responses: `{ success: true, data }` / `{ success: false, error: { code, message } }`
 - Multi-model routing: task complexity determines model selection (nano -> mini -> standard -> flagship)
 - 3-layer AI guardrails: input validation, context construction, output validation
-- Voice pipeline: `gpt-4o-mini-transcribe` -> `gpt-4.1` reasoning -> `gpt-4o-mini-tts`
+- Voice pipeline: `gpt-4o-mini-transcribe` -> `gpt-5.4-mini` reasoning -> `gpt-4o-mini-tts`
 </details>
 
 ---

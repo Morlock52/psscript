@@ -368,7 +368,8 @@ The application is configured using environment variables:
 | \`OPENAI_API_KEY\` | OpenAI API key | | Yes* |
 | \`ANTHROPIC_API_KEY\` | Anthropic API key | | No* |
 | \`MISTRAL_API_KEY\` | Mistral API key | | No* |
-| \`AI_MODEL\` | Default AI model | gpt-4.1 | No |
+| \`OPENAI_MODEL\` | Default OpenAI text model | gpt-5.5 | No |
+| \`OPENAI_ANALYSIS_MODEL\` | Default hosted analysis model | gpt-5.4-mini | No |
 | \`AI_SERVICE_URL\` | URL for the AI service | http://localhost:8000 | No |
 | \`LOG_LEVEL\` | Logging level | info | No |
 | \`CORS_ORIGIN\` | CORS allowed origins | https://localhost:3090 | No |

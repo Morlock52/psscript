@@ -1,6 +1,10 @@
 import { calculateCost } from '../aiAnalytics';
 
 describe('ai analytics cost calculation', () => {
+  it('uses the current gpt-5.5 pricing', () => {
+    expect(calculateCost('gpt-5.5', 1_000_000, 1_000_000)).toBe(35);
+  });
+
   it('uses the current gpt-5.4-mini pricing', () => {
     expect(calculateCost('gpt-5.4-mini', 1_000_000, 1_000_000)).toBe(5.25);
   });

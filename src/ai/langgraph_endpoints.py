@@ -296,10 +296,11 @@ async def orchestrator_info():
         ],
         "supported_models": [
             "gpt-4.1",       # Best for code generation (1M context)
-            "gpt-5.4",       # Flagship model for complex tasks
+            "gpt-5.5",       # Flagship model for complex tasks
+            "gpt-5.4-mini",  # Fast current model for quick tasks
+            "gpt-5.4-nano",  # Lowest-cost current OpenAI model
             "o3",            # Reasoning model for complex analysis
-            "o4-mini",       # Lightweight reasoning model
-            "gpt-4.1-mini"   # Fast model for quick tasks
+            "o4-mini"        # Lightweight reasoning model
         ],
         "features": {
             "checkpointing": {

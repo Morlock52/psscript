@@ -6,7 +6,7 @@ FastAPI-based AI service for PowerShell analysis, embeddings, LangGraph orchestr
 
 - Base URL: `http://127.0.0.1:8000`
 - Backend peer: `https://127.0.0.1:4000`
-- Validation date: March 8, 2026
+- Validation date: April 26, 2026
 
 ## Current responsibilities
 
@@ -18,9 +18,11 @@ FastAPI-based AI service for PowerShell analysis, embeddings, LangGraph orchestr
 
 ## Current OpenAI defaults
 
-These defaults were rechecked against official OpenAI docs on March 6, 2026.
+These defaults were rechecked against official OpenAI docs on April 26, 2026.
 
-- General reasoning and analysis: `gpt-4.1`
+- General chat/default hosted text: `gpt-5.5`
+- Fast hosted analysis: `gpt-5.4-mini`
+- PowerShell/code specialist fallback: `gpt-4.1`
 - TTS: `gpt-4o-mini-tts`
 - STT: `gpt-4o-mini-transcribe`
 - Diarization: `gpt-4o-transcribe-diarize`
@@ -37,7 +39,7 @@ Official references:
 - Missing OpenAI configuration now fails explicitly instead of inventing synthetic analysis or chat results.
 - LangGraph tool execution uses the real script-analysis path.
 - Voice routes support OpenAI-based synthesis and recognition with advanced request options already wired through the service.
-- The recommended chained path is `gpt-4o-mini-transcribe -> gpt-4.1 -> gpt-4o-mini-tts`.
+- The recommended chained path is `gpt-4o-mini-transcribe -> gpt-5.4-mini -> gpt-4o-mini-tts`.
 - Silent audio is detected before transcription so silence returns empty text instead of fabricated words.
 - Unknown voice service selections now fail explicitly instead of degrading to mock audio behavior.
 

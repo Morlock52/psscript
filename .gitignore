@@ -140,3 +140,9 @@ __pycache__/
 *.egg-info/
 src/ai/voice_cache/
 src/ai/memory_storage/
+
+# Explicit cleanup archives are source-controlled, even when they preserve
+# old generated filenames such as *.log, *.bak, or build/ paths.
+!archive/
+!archive/unused-files-2026-04-26/
+!archive/unused-files-2026-04-26/**

@@ -71,8 +71,8 @@ npx playwright test tests/e2e/project-review-validation.spec.ts --project=chromi
 | Purpose | Model |
 |---------|-------|
 | Code generation | `gpt-4.1` |
-| Flagship | `gpt-5.4` |
-| Fast | `gpt-4.1-mini` |
+| Flagship | `gpt-5.5` |
+| Fast | `gpt-5.4-mini` |
 | Reasoning | `o3` / `o4-mini` |
 | Embeddings | `text-embedding-3-large` |
 | TTS | `gpt-4o-mini-tts` |

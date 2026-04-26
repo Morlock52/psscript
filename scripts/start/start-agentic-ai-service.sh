@@ -9,7 +9,7 @@ else
     echo "No .env file found, using default environment variables"
     # Default environment variables
     export OPENAI_API_KEY="your-api-key-here"
-    export OPENAI_MODEL="gpt-4"
+    export OPENAI_MODEL="gpt-5.4-mini"
     export AGENT_TYPE="auto"  # auto, langchain, autogpt, hybrid, langgraph, pyg
     export ENABLE_AGENTIC_CAPABILITIES="true"
     export ENABLE_TOOL_USE="true"

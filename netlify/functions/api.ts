@@ -4,7 +4,7 @@ import Anthropic from '@anthropic-ai/sdk';
 import { createClient } from '@supabase/supabase-js';
 import { query } from './_shared/db';
 import { getEnv, requireEnv } from './_shared/env';
-import { requireAdmin, requireUser } from './_shared/auth';
+import { requireAdmin, requireUser, requireUserAllowingDisabled } from './_shared/auth';
 import { json, methodNotAllowed, notFound } from './_shared/http';
 
 export const config: Config = {
@@ -15,12 +15,12 @@ type RouteParams = { path: string; segments: string[]; url: URL };
 type RequestContext = Pick<Context, 'requestId'>;
 type ChatMessage = { role: 'system' | 'user' | 'assistant'; content: string };
 
-const OPENAI_TEXT_MODEL = 'gpt-5.4-mini';
+const OPENAI_TEXT_MODEL = 'gpt-5.5';
 const OPENAI_ANALYSIS_MODEL = 'gpt-5.4-mini';
 const OPENAI_EMBEDDING_MODEL = 'text-embedding-3-small';
 const OPENAI_TTS_MODEL = 'gpt-4o-mini-tts';
 const OPENAI_STT_MODEL = 'gpt-4o-mini-transcribe';
-const ANTHROPIC_TEXT_MODEL = 'claude-sonnet-4-5-20250929';
+const ANTHROPIC_TEXT_MODEL = 'claude-sonnet-4-6';
 const SCRIPT_EMBEDDING_TIMEOUT_MS = 3000;
 const UPLOAD_ANALYSIS_TIMEOUT_MS = 12000;
 
@@ -211,7 +211,7 @@ async function handleHealth(): Promise<Response> {
 }
 
 async function handleAuthMe(req: Request): Promise<Response> {
-  const user = await requireUser(req);
+  const user = await requireUserAllowingDisabled(req);
   return json({ success: true, user: toFrontendUser(user) });
 }
 
@@ -277,12 +277,15 @@ async function handleDefaultUser(req: Request): Promise<Response> {
   const user = authResult.data.user;
   await query(
     `
-      INSERT INTO app_profiles (id, email, username, role)
-      VALUES ($1, $2, $3, 'admin')
+      INSERT INTO app_profiles (id, email, username, role, is_enabled, auth_provider, approved_at)
+      VALUES ($1, $2, $3, 'admin', true, 'password', now())
       ON CONFLICT (id) DO UPDATE
       SET email = EXCLUDED.email,
           username = EXCLUDED.username,
           role = 'admin',
+          is_enabled = true,
+          auth_provider = COALESCE(NULLIF(app_profiles.auth_provider, ''), 'password'),
+          approved_at = COALESCE(app_profiles.approved_at, now()),
           updated_at = now()
     `,
     [user.id, email, 'admin']
@@ -292,14 +295,14 @@ async function handleDefaultUser(req: Request): Promise<Response> {
 }
 
 async function handleUsers(req: Request): Promise<Response> {
-  await requireAdmin(req);
+  const admin = await requireAdmin(req);
   const supabase = getSupabaseAdminClient();
 
   if (req.method === 'GET') {
     const [profilesResult, authUsersResult] = await Promise.all([
       query(
         `
-          SELECT id, email, username, role, created_at, updated_at
+          SELECT id, email, username, role, is_enabled, auth_provider, approved_at, approved_by, created_at, updated_at
           FROM app_profiles
           ORDER BY created_at DESC
         `
@@ -335,16 +338,20 @@ async function handleUsers(req: Request): Promise<Response> {
 
     const result = await query(
       `
-        INSERT INTO app_profiles (id, email, username, role)
-        VALUES ($1, $2, $3, $4)
+        INSERT INTO app_profiles (id, email, username, role, is_enabled, auth_provider, approved_at, approved_by)
+        VALUES ($1, $2, $3, $4, true, 'password', now(), $5)
         ON CONFLICT (id) DO UPDATE
         SET email = EXCLUDED.email,
             username = EXCLUDED.username,
             role = EXCLUDED.role,
+            is_enabled = true,
+            auth_provider = COALESCE(NULLIF(app_profiles.auth_provider, ''), 'password'),
+            approved_at = COALESCE(app_profiles.approved_at, now()),
+            approved_by = COALESCE(app_profiles.approved_by, EXCLUDED.approved_by),
             updated_at = now()
-        RETURNING id, email, username, role, created_at, updated_at
+        RETURNING id, email, username, role, is_enabled, auth_provider, approved_at, approved_by, created_at, updated_at
       `,
-      [authResult.data.user.id, email, username, role]
+      [authResult.data.user.id, email, username, role, admin.id]
     );
 
     return json({ success: true, user: toFrontendManagedUser(result.rows[0], authResult.data.user) }, { status: 201 });
@@ -376,10 +383,21 @@ async function handleUserById(req: Request, route: RouteParams): Promise<Respons
     const email = normalizeRequiredString(body.email, 'Email');
     const username = normalizeRequiredString(body.username, 'Username');
     let role = normalizeManagedRole(body.role);
+    const isEnabled = typeof body.isEnabled === 'boolean'
+      ? body.isEnabled
+      : typeof body.is_enabled === 'boolean'
+        ? body.is_enabled
+        : undefined;
+
+    if (admin.id === id && isEnabled === false) {
+      return json({ success: false, error: 'cannot_disable_self', message: 'You cannot disable your own admin account' }, { status: 400 });
+    }
 
     if (admin.id === id && role !== 'admin') {
       role = 'admin';
     }
+
+    await assertCanChangeAdminAccess(id, role, isEnabled);
 
     const authUpdate: Record<string, unknown> = {
       email,
@@ -400,11 +418,20 @@ async function handleUserById(req: Request, route: RouteParams): Promise<Respons
         SET email = $2,
             username = $3,
             role = $4,
+            is_enabled = COALESCE($5, is_enabled),
+            approved_at = CASE
+              WHEN COALESCE($5, is_enabled) = true AND approved_at IS NULL THEN now()
+              ELSE approved_at
+            END,
+            approved_by = CASE
+              WHEN COALESCE($5, is_enabled) = true AND approved_by IS NULL THEN $6
+              ELSE approved_by
+            END,
             updated_at = now()
         WHERE id = $1
-        RETURNING id, email, username, role, created_at, updated_at
+        RETURNING id, email, username, role, is_enabled, auth_provider, approved_at, approved_by, created_at, updated_at
       `,
-      [id, email, username, role]
+      [id, email, username, role, isEnabled, admin.id]
     );
     if (!result.rows[0]) return json({ success: false, error: 'user_not_found', message: 'User not found' }, { status: 404 });
 
@@ -415,6 +442,8 @@ async function handleUserById(req: Request, route: RouteParams): Promise<Respons
     if (admin.id === id) {
       return json({ success: false, error: 'cannot_delete_self', message: 'You cannot delete your own admin account' }, { status: 400 });
     }
+
+    await assertCanDeleteUser(id);
 
     const authResult = await supabase.auth.admin.deleteUser(id);
     if (authResult.error) {
@@ -1979,6 +2008,52 @@ function normalizeManagedRole(value: unknown): 'admin' | 'user' {
   return value === 'admin' ? 'admin' : 'user';
 }
 
+async function assertCanChangeAdminAccess(
+  id: string,
+  nextRole: 'admin' | 'user',
+  nextIsEnabled?: boolean
+): Promise<void> {
+  const targetResult = await query<{ role: string; is_enabled: boolean }>(
+    'SELECT role, is_enabled FROM app_profiles WHERE id = $1',
+    [id]
+  );
+  const target = targetResult.rows[0];
+  if (!target) return;
+
+  const willBeEnabled = nextIsEnabled ?? target.is_enabled !== false;
+  const removesEnabledAdmin = target.role === 'admin' && target.is_enabled !== false && (nextRole !== 'admin' || !willBeEnabled);
+  if (!removesEnabledAdmin) return;
+
+  const adminCount = await query<{ count: string }>(
+    "SELECT COUNT(*)::text AS count FROM app_profiles WHERE role = 'admin' AND is_enabled = true"
+  );
+  if (Number(adminCount.rows[0]?.count || 0) <= 1) {
+    throw Object.assign(new Error('At least one enabled admin account is required'), {
+      status: 400,
+      code: 'last_enabled_admin_required',
+    });
+  }
+}
+
+async function assertCanDeleteUser(id: string): Promise<void> {
+  const targetResult = await query<{ role: string; is_enabled: boolean }>(
+    'SELECT role, is_enabled FROM app_profiles WHERE id = $1',
+    [id]
+  );
+  const target = targetResult.rows[0];
+  if (target?.role !== 'admin' || target.is_enabled === false) return;
+
+  const adminCount = await query<{ count: string }>(
+    "SELECT COUNT(*)::text AS count FROM app_profiles WHERE role = 'admin' AND is_enabled = true"
+  );
+  if (Number(adminCount.rows[0]?.count || 0) <= 1) {
+    throw Object.assign(new Error('At least one enabled admin account is required'), {
+      status: 400,
+      code: 'last_enabled_admin_required',
+    });
+  }
+}
+
 function isUuid(value: string): boolean {
   return /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(value);
 }
@@ -2037,6 +2112,10 @@ function toFrontendUser(user: any) {
     username: user.username,
     email: user.email,
     role: user.role,
+    isEnabled: user.is_enabled !== false,
+    authProvider: user.auth_provider || 'password',
+    approvedAt: user.approved_at || null,
+    approvedBy: user.approved_by || null,
     created_at: user.created_at || new Date().toISOString(),
     firstName: user.first_name,
     lastName: user.last_name,
@@ -2052,6 +2131,10 @@ function toFrontendManagedUser(profile: any, authUser?: any) {
     username: profile.username || authUser?.user_metadata?.username || profile.email?.split('@')[0] || 'user',
     email: profile.email || authUser?.email || '',
     role: profile.role || 'user',
+    isEnabled: profile.is_enabled !== false,
+    authProvider: profile.auth_provider || authUser?.app_metadata?.provider || 'password',
+    approvedAt: profile.approved_at || null,
+    approvedBy: profile.approved_by || null,
     lastLoginAt: authUser?.last_sign_in_at || null,
     createdAt: profile.created_at || authUser?.created_at || new Date().toISOString(),
     updatedAt: profile.updated_at,

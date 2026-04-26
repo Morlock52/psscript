@@ -32,6 +32,10 @@ const ProtectedRoute: React.FC<ProtectedRouteProps> = ({
     return <Navigate to="/login" replace />;
   }
 
+  if (user.isEnabled === false) {
+    return <Navigate to="/pending-approval" replace />;
+  }
+
   // If role is required and user doesn't have it, show unauthorized
   if (requiredRole && user.role !== requiredRole) {
     return (

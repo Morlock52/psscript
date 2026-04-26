@@ -1,5 +1,5 @@
 """
-Anthropic Claude Agent Implementation - Updated April 2026 (Claude 4.6)
+Anthropic Claude Agent Implementation - Updated April 2026 (Claude Sonnet 4.6 / Opus 4.7)
 
 This module implements AI capabilities using Anthropic's Claude models,
 providing an alternative to OpenAI for script analysis, generation, and chat.
@@ -85,14 +85,14 @@ Provide only the script code in a markdown code block."""
     def __init__(
         self,
         api_key: Optional[str] = None,
-        model: str = "claude-sonnet-4-6-20260217"
+        model: str = "claude-sonnet-4-6"
     ):
         """
         Initialize the Anthropic agent.
 
         Args:
             api_key: Anthropic API key (optional, uses env var if not provided)
-            model: Claude model to use (default: claude-sonnet-4-6-20260217)
+            model: Claude model to use (default: claude-sonnet-4-6)
         """
         if not ANTHROPIC_AVAILABLE:
             raise ImportError(
@@ -411,7 +411,7 @@ def create_anthropic_agent(
         logger.warning("Cannot create Anthropic agent: no API key")
         return None
 
-    model = model or "claude-sonnet-4-6-20260217"
+    model = model or "claude-sonnet-4-6"
 
     try:
         return AnthropicAgent(api_key=api_key, model=model)

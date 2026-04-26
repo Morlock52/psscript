@@ -1,0 +1,10 @@
+[     287ms] [INFO] %cDownload the React DevTools for a better development experience: https://reactjs.org/link/react-devtools font-weight:bold @ http://127.0.0.1:3091/node_modules/.vite/deps/chunk-TC4NNJLY.js?v=3f7308a3:21579
+[     357ms] [LOG] Initializing settings - mock data functionality has been removed @ http://127.0.0.1:3091/src/services/settings.ts:121
+[     483ms] [LOG] [apiUrl] Runtime API URL: /api (same-origin proxy) @ http://127.0.0.1:3091/src/utils/apiUrl.ts:30
+[     614ms] [ERROR] Failed to load resource: the server responded with a status of 500 (Internal Server Error) @ http://127.0.0.1:3091/api/auth/login:0
+[     614ms] [WARNING] [Auth] Dev auth bootstrap failed, falling back to local-only session: AxiosError @ http://127.0.0.1:3091/src/contexts/AuthContext.tsx:88
+[     616ms] [ERROR] Failed to load resource: the server responded with a status of 500 (Internal Server Error) @ http://127.0.0.1:3091/api/auth/login:0
+[     617ms] [WARNING] [Auth] Dev auth bootstrap failed, falling back to local-only session: AxiosError @ http://127.0.0.1:3091/src/contexts/AuthContext.tsx:88
+[    1494ms] [LOG] [api.ts] Request: GET /api/analytics/usage  @ http://127.0.0.1:3091/src/services/api.ts:32
+[    1494ms] [LOG] [api.ts] Request: GET /api/analytics/security  @ http://127.0.0.1:3091/src/services/api.ts:32
+[    1494ms] [LOG] [api.ts] Request: GET /api/analytics/categories  @ http://127.0.0.1:3091/src/services/api.ts:32

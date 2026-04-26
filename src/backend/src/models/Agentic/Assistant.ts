@@ -4,8 +4,9 @@ import { v4 as uuidv4 } from 'uuid';
  * Available model options for assistants
  */
 export type AssistantModel =
-  | 'gpt-5.4'
+  | 'gpt-5.5'
   | 'gpt-5.4-mini'
+  | 'gpt-5.4-nano'
   | 'gpt-4.1'
   | 'gpt-4.1-mini'
   | 'gpt-4.1-nano'

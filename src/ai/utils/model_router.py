@@ -1,14 +1,14 @@
 """
-Multi-Model Router - January 2026
+Multi-Model Router - April 26, 2026
 
 Intelligently routes requests to the most appropriate AI model
 based on task complexity, cost optimization, and performance needs.
 
 Routing Strategy:
-- Simple queries → Fast model (gpt-4.1-mini)
+- Simple queries → Fast model (gpt-5.4-mini)
 - Code generation → Code-specialized model (gpt-4.1)
 - Complex reasoning → Reasoning model (o4-mini or o3)
-- Complex multi-step → Flagship model (gpt-5.4)
+- Complex multi-step → Flagship model (gpt-5.5)
 
 Supports:
 - Automatic complexity detection
@@ -82,20 +82,39 @@ class ModelRouter:
         print(f"Using {decision.model_name}: {decision.reason}")
     """
 
-    # Model configurations (2 April 2026 pricing)
-    # gpt-4o and gpt-4o-mini deprecated Feb 2026; replaced with gpt-4.1 family
-    # Claude 4.6 models added February 2026
+    # Model configurations (26 April 2026 pricing)
+    # gpt-4o and gpt-4o-mini deprecated Feb 2026; replaced with current GPT families
     MODELS = {
         # --- OpenAI Models ---
-        "gpt-4.1-mini": ModelConfig(
-            name="GPT-4.1 Mini",
-            model_id="gpt-4.1-mini",
-            max_tokens=1000000,
-            cost_per_1k_input=0.0004,
-            cost_per_1k_output=0.0016,
-            avg_latency_ms=400,
-            strengths=["fast", "cheap", "1M context", "good for simple tasks"],
+        "gpt-5.5": ModelConfig(
+            name="GPT-5.5 (Flagship)",
+            model_id="gpt-5.5",
+            max_tokens=400000,
+            cost_per_1k_input=0.005,
+            cost_per_1k_output=0.03,
+            avg_latency_ms=2200,
+            strengths=["best overall quality", "complex reasoning", "multi-step tasks"],
+            weaknesses=["highest OpenAI cost", "slower"]
+        ),
+        "gpt-5.4-mini": ModelConfig(
+            name="GPT-5.4 Mini",
+            model_id="gpt-5.4-mini",
+            max_tokens=400000,
+            cost_per_1k_input=0.00075,
+            cost_per_1k_output=0.0045,
+            avg_latency_ms=450,
+            strengths=["fast", "current mini", "good for simple tasks", "cost-effective"],
             weaknesses=["less accurate on expert-level tasks"]
+        ),
+        "gpt-5.4-nano": ModelConfig(
+            name="GPT-5.4 Nano",
+            model_id="gpt-5.4-nano",
+            max_tokens=400000,
+            cost_per_1k_input=0.0002,
+            cost_per_1k_output=0.00125,
+            avg_latency_ms=300,
+            strengths=["cheapest current OpenAI model", "fast", "simple classification"],
+            weaknesses=["not ideal for complex code or reasoning"]
         ),
         "gpt-4.1": ModelConfig(
             name="GPT-4.1 (Code Specialist)",
@@ -107,15 +126,25 @@ class ModelRouter:
             strengths=["code generation", "1M context", "instruction following", "technical accuracy"],
             weaknesses=["higher cost than mini"]
         ),
-        "gpt-5.4": ModelConfig(
-            name="GPT-5.4 (Flagship)",
-            model_id="gpt-5.4",
-            max_tokens=128000,
-            cost_per_1k_input=0.0025,
-            cost_per_1k_output=0.015,
-            avg_latency_ms=2000,
-            strengths=["best overall quality", "complex reasoning", "multi-step tasks"],
-            weaknesses=["most expensive OpenAI model", "slower"]
+        "gpt-4.1-mini": ModelConfig(
+            name="GPT-4.1 Mini",
+            model_id="gpt-4.1-mini",
+            max_tokens=1000000,
+            cost_per_1k_input=0.0004,
+            cost_per_1k_output=0.0016,
+            avg_latency_ms=400,
+            strengths=["fast", "1M context", "good for simple code tasks"],
+            weaknesses=["older mini option than GPT-5.4 Mini"]
+        ),
+        "gpt-4.1-nano": ModelConfig(
+            name="GPT-4.1 Nano",
+            model_id="gpt-4.1-nano",
+            max_tokens=1000000,
+            cost_per_1k_input=0.0001,
+            cost_per_1k_output=0.0004,
+            avg_latency_ms=250,
+            strengths=["cheap", "1M context", "simple tasks"],
+            weaknesses=["older nano option than GPT-5.4 Nano"]
         ),
         "o4-mini": ModelConfig(
             name="O4 Mini (Reasoning)",
@@ -128,9 +157,9 @@ class ModelRouter:
             weaknesses=["slower", "verbose"]
         ),
         # --- Anthropic Claude Models ---
-        "claude-sonnet-4-6-20260217": ModelConfig(
+        "claude-sonnet-4-6": ModelConfig(
             name="Claude Sonnet 4.6 (Balanced)",
-            model_id="claude-sonnet-4-6-20260217",
+            model_id="claude-sonnet-4-6",
             max_tokens=1000000,
             cost_per_1k_input=0.003,
             cost_per_1k_output=0.015,
@@ -138,9 +167,9 @@ class ModelRouter:
             strengths=["balanced speed/quality", "1M context", "strong code understanding", "adaptive thinking"],
             weaknesses=["higher cost than Haiku"]
         ),
-        "claude-opus-4-6-20260205": ModelConfig(
-            name="Claude Opus 4.6 (Most Capable)",
-            model_id="claude-opus-4-6-20260205",
+        "claude-opus-4-7": ModelConfig(
+            name="Claude Opus 4.7 (Most Capable)",
+            model_id="claude-opus-4-7",
             max_tokens=1000000,
             cost_per_1k_input=0.005,
             cost_per_1k_output=0.025,
@@ -200,10 +229,13 @@ class ModelRouter:
 
     # Mapping from OpenAI model tiers to Claude equivalents
     CLAUDE_EQUIVALENTS = {
-        "gpt-4.1": "claude-sonnet-4-6-20260217",
+        "gpt-4.1": "claude-sonnet-4-6",
         "gpt-4.1-mini": "claude-haiku-4-5-20251001",
-        "gpt-5.4": "claude-opus-4-6-20260205",
-        "o4-mini": "claude-sonnet-4-6-20260217",
+        "gpt-4.1-nano": "claude-haiku-4-5-20251001",
+        "gpt-5.4-mini": "claude-haiku-4-5-20251001",
+        "gpt-5.4-nano": "claude-haiku-4-5-20251001",
+        "gpt-5.5": "claude-opus-4-7",
+        "o4-mini": "claude-sonnet-4-6",
     }
 
     def __init__(self, default_model: str = "gpt-4.1", cost_sensitive: bool = False):
@@ -359,7 +391,7 @@ class ModelRouter:
                 model = self.MODELS["gpt-4.1"]
                 reason = "Complex code generation requires GPT-4.1 for best practices"
             elif self.cost_sensitive:
-                model = self.MODELS["gpt-4.1-mini"]
+                model = self.MODELS["gpt-5.4-mini"]
                 reason = "Simple code generation, using cost-effective model"
             else:
                 model = self.MODELS["gpt-4.1"]
@@ -379,11 +411,11 @@ class ModelRouter:
 
         elif task_type == TaskType.EXPLANATION:
             if complexity == TaskComplexity.SIMPLE and self.cost_sensitive:
-                model = self.MODELS["gpt-4.1-mini"]
+                model = self.MODELS["gpt-5.4-mini"]
                 reason = "Simple explanation, using fast model"
             else:
-                model = self.MODELS["gpt-5.4"]
-                reason = "Explanations benefit from GPT-5.4's clarity"
+                model = self.MODELS["gpt-5.5"]
+                reason = "Explanations benefit from GPT-5.5's clarity"
 
         elif task_type == TaskType.ARCHITECTURE:
             model = self.MODELS["o4-mini"]
@@ -395,11 +427,11 @@ class ModelRouter:
 
         else:  # General chat
             if complexity == TaskComplexity.SIMPLE and self.cost_sensitive:
-                model = self.MODELS["gpt-4.1-mini"]
+                model = self.MODELS["gpt-5.4-mini"]
                 reason = "Simple chat query, using fast model"
             elif complexity >= TaskComplexity.COMPLEX:
-                model = self.MODELS["gpt-5.4"]
-                reason = "Complex query benefits from GPT-5.4"
+                model = self.MODELS["gpt-5.5"]
+                reason = "Complex query benefits from GPT-5.5"
             else:
                 model = self.MODELS.get(self.default_model, self.MODELS["gpt-4.1"])
                 reason = f"Using default model for moderate complexity"
@@ -418,10 +450,10 @@ class ModelRouter:
         # Determine alternative
         alternative = None
         if self.infer_provider(model.model_id) == "openai":
-            if model.model_id != "gpt-4.1-mini" and self.cost_sensitive:
-                alternative = "gpt-4.1-mini"
-            elif model.model_id == "gpt-4.1-mini" and complexity >= TaskComplexity.MODERATE:
-                alternative = "gpt-5.4"
+            if model.model_id != "gpt-5.4-mini" and self.cost_sensitive:
+                alternative = "gpt-5.4-mini"
+            elif model.model_id == "gpt-5.4-mini" and complexity >= TaskComplexity.MODERATE:
+                alternative = "gpt-5.5"
         else:
             # Offer OpenAI alternative when using Claude
             equiv = {v: k for k, v in self.CLAUDE_EQUIVALENTS.items()}
