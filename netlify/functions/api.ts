@@ -21,6 +21,7 @@ const OPENAI_EMBEDDING_MODEL = 'text-embedding-3-small';
 const OPENAI_TTS_MODEL = 'gpt-4o-mini-tts';
 const OPENAI_STT_MODEL = 'gpt-4o-mini-transcribe';
 const ANTHROPIC_TEXT_MODEL = 'claude-sonnet-4-5-20250929';
+const SCRIPT_EMBEDDING_TIMEOUT_MS = 3000;
 const UPLOAD_ANALYSIS_TIMEOUT_MS = 12000;
 
 const openAiVoices = [
@@ -1247,7 +1248,15 @@ async function createScript(userId: string, input: any) {
     );
   }
 
-  await saveScriptEmbedding(script.id, [script.title, script.description, content].join('\n\n'));
+  try {
+    await withTimeout(
+      saveScriptEmbedding(script.id, [script.title, script.description, content].join('\n\n')),
+      SCRIPT_EMBEDDING_TIMEOUT_MS,
+      'Script embedding generation timed out'
+    );
+  } catch (error) {
+    console.warn('[netlify-api] script embedding skipped after upload', error);
+  }
 
   return toFrontendScript(script);
 }
