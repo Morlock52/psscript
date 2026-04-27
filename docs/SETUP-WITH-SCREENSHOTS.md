@@ -78,14 +78,17 @@ The approval gate depends on `app_profiles.is_enabled`. New Google OAuth users a
 Configure Google OAuth in both Google Cloud and Supabase:
 
 1. In Google Cloud, create an OAuth web client.
-2. Add redirect URLs:
+2. In the Google OAuth client, add the Supabase Auth callback as the authorized redirect URI:
+   - `https://YOUR_PROJECT_REF.supabase.co/auth/v1/callback`
+3. In Supabase, enable Google under Auth Providers.
+4. Paste the Google client ID and secret into Supabase.
+5. In Supabase Auth URL configuration, add the hosted and local app callback URLs:
    - `https://YOUR_NETLIFY_SITE/auth/callback`
    - `http://localhost:3090/auth/callback`
    - `https://127.0.0.1:3090/auth/callback`
-3. In Supabase, enable Google under Auth Providers.
-4. Paste the Google client ID and secret into Supabase.
-5. In Supabase Auth URL configuration, add the hosted and local callback URLs.
 6. Set `DEFAULT_ADMIN_EMAIL` to the first administrator's email.
+
+Google's redirect URI points to Supabase Auth. Supabase's redirect allow-list points to this app's `/auth/callback` route.
 
 Flow:
 

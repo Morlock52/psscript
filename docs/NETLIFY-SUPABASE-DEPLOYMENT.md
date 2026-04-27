@@ -27,10 +27,15 @@ Last reviewed: 2026-04-26.
 3. Confirm the `vector` extension is enabled.
 4. Create users through Supabase Auth or the app's admin User Management page.
 5. Set `DEFAULT_ADMIN_EMAIL` in Netlify for the first admin profile bootstrap.
-6. Enable Google in Supabase Auth Providers using the Google OAuth client credentials from Google Cloud.
-7. Add these redirect URLs to Supabase Auth URL configuration and the Google OAuth client:
+6. In Google Cloud, create an OAuth web client.
+7. In that Google OAuth client, add the Supabase Auth callback as the authorized redirect URI:
+   - `https://YOUR_PROJECT_REF.supabase.co/auth/v1/callback`
+8. In Supabase Auth Providers, enable Google and paste the Google client ID and client secret.
+9. In Supabase Auth URL configuration, set the production site URL and add app callback URLs to the redirect allow-list:
    - `https://YOUR_NETLIFY_SITE/auth/callback`
    - `http://localhost:3090/auth/callback` for local hosted-mode testing when needed.
+
+The distinction matters: Google redirects back to Supabase Auth, then Supabase redirects to the app callback supplied by `signInWithOAuth({ options: { redirectTo } })`.
 
 ## Google OAuth Approval Flow
 
@@ -91,6 +96,8 @@ Reference docs reviewed:
 - OpenAI audio and speech: https://developers.openai.com/api/docs/guides/audio
 - Anthropic Messages API: https://platform.claude.com/docs/en/build-with-claude/working-with-messages
 - Supabase Google Auth: https://supabase.com/docs/guides/auth/social-login/auth-google
+- Supabase Auth redirect URLs: https://supabase.com/docs/guides/auth/redirect-urls
+- Google OAuth clients: https://support.google.com/cloud/answer/15549257
 
 ## Netlify Build
 

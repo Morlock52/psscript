@@ -136,7 +136,7 @@ Here's how the door actually works:
 - The backend will not let you disable your own admin account, and it will not let you remove the last enabled admin. We checked, you'll get an error and a polite explanation.
 - Underneath, Supabase **Row Level Security** policies check `current_app_profile_is_enabled()` — so even if an attacker bypassed the API somehow, the database itself wouldn't return rows to a disabled identity.
 
-> **Heads up:** Google OAuth credentials and your redirect allow-list still need to be configured on the Supabase side. The full setup is in [Netlify + Supabase Deployment](./docs/NETLIFY-SUPABASE-DEPLOYMENT.md).
+> **Heads up:** Google OAuth credentials and the Supabase redirect allow-list still need to be configured outside this repo. Google Cloud should redirect to Supabase Auth (`/auth/v1/callback`); Supabase should redirect back to this app (`/auth/callback`). The full setup is in [Netlify + Supabase Deployment](./docs/NETLIFY-SUPABASE-DEPLOYMENT.md).
 
 ---
 
