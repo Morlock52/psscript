@@ -1,0 +1,169 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1600 760" role="img" aria-labelledby="ctit cdes">
+  <title id="ctit">PSScript capabilities — bento grid</title>
+  <desc id="cdes">A modular bento grid of PSScript capabilities: Script Workspace, AI Analysis, Semantic Search, Hosted Auth, Voice Copilot, Agentic Workflows, Admin Operations, Hosted Deployment.</desc>
+
+  <defs>
+    <pattern id="dots-c" width="32" height="32" patternUnits="userSpaceOnUse">
+      <circle cx="1" cy="1" r="0.6" fill="#FFFFFF" fill-opacity="0.05"/>
+    </pattern>
+    <pattern id="scan-c" width="3" height="3" patternUnits="userSpaceOnUse">
+      <rect width="3" height="1" fill="#FFFFFF" fill-opacity="0.02"/>
+    </pattern>
+
+    <radialGradient id="hero-tile-glow" cx="0" cy="0" r="1" gradientUnits="userSpaceOnUse"
+                    gradientTransform="translate(120 120) scale(420)">
+      <stop offset="0"   stop-color="#00E5FF" stop-opacity="0.18"/>
+      <stop offset="0.7" stop-color="#00E5FF" stop-opacity="0.02"/>
+      <stop offset="1"   stop-color="#00E5FF" stop-opacity="0"/>
+    </radialGradient>
+    <radialGradient id="violet-tile-glow" cx="0" cy="0" r="1" gradientUnits="userSpaceOnUse"
+                    gradientTransform="translate(180 50) scale(420)">
+      <stop offset="0"   stop-color="#A78BFA" stop-opacity="0.22"/>
+      <stop offset="0.7" stop-color="#A78BFA" stop-opacity="0.03"/>
+      <stop offset="1"   stop-color="#A78BFA" stop-opacity="0"/>
+    </radialGradient>
+
+    <filter id="cglow-c" x="-30%" y="-30%" width="160%" height="160%">
+      <feGaussianBlur stdDeviation="2"/>
+    </filter>
+
+    <linearGradient id="hairline" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0" stop-color="#00E5FF"/>
+      <stop offset="1" stop-color="#A78BFA"/>
+    </linearGradient>
+
+    <style>
+      .mono { font-family: 'Geist Mono','JetBrains Mono','IBM Plex Mono',ui-monospace,Menlo,Consolas,monospace; }
+      .sans { font-family: 'Geist','Söhne','Aeonik','Helvetica Neue',-apple-system,BlinkMacSystemFont,system-ui,sans-serif; }
+      .ink-100 { fill: #F5F7FA; }
+      .ink-300 { fill: #B8C4D6; }
+      .ink-500 { fill: #6E7A8F; }
+      .cyan    { fill: #00E5FF; }
+      .violet  { fill: #A78BFA; }
+      .green   { fill: #00FF94; }
+    </style>
+  </defs>
+
+  <!-- Canvas -->
+  <rect width="1600" height="760" fill="#05050B"/>
+  <rect width="1600" height="760" fill="url(#dots-c)"/>
+  <rect width="1600" height="760" fill="url(#scan-c)"/>
+
+  <!-- Top tick + masthead -->
+  <rect x="0" y="0" width="180" height="2" fill="#00E5FF"/>
+  <line x1="0" y1="2" x2="1600" y2="2" stroke="#1E2535" stroke-width="1"/>
+  <text x="64"   y="46" class="mono cyan" font-size="13" letter-spacing="4">// FIG · 03 · CAPABILITY SURFACE · 8 MODULES</text>
+  <text x="1536" y="46" class="mono ink-500" font-size="13" letter-spacing="4" text-anchor="end">SHIPPING · 2026.04.26</text>
+  <line x1="64" y1="76" x2="1536" y2="76" stroke="#1E2535" stroke-width="0.6"/>
+
+  <!-- ── ROW 1 ────────────────────────────────────────────────────────────── -->
+
+  <!-- Tile A: Script Workspace (HERO, 440 wide, larger) -->
+  <g transform="translate(64 110)">
+    <rect width="448" height="290" rx="16" fill="#080B14" stroke="#1E2535"/>
+    <rect width="448" height="290" rx="16" fill="url(#hero-tile-glow)"/>
+    <rect width="448" height="290" rx="16" fill="none" stroke="#00E5FF" stroke-opacity="0.55" stroke-width="1.2"/>
+    <text x="24" y="36" class="mono cyan" font-size="11" letter-spacing="3">[ Nº 01 / 08 ]</text>
+    <text x="406" y="36" class="mono green" font-size="11" letter-spacing="3" text-anchor="end">● SHIPPING</text>
+    <text x="24" y="116" class="sans ink-100" font-size="44" font-weight="700" letter-spacing="-1">Script</text>
+    <text x="24" y="166" class="sans ink-100" font-size="44" font-weight="700" letter-spacing="-1">Workspace.</text>
+    <text x="24" y="218" class="sans ink-300" font-size="17">Upload, browse, version, filter, inspect, and</text>
+    <text x="24" y="240" class="sans ink-300" font-size="17">export PowerShell assets from one console.</text>
+    <text x="24" y="270" class="mono ink-500" font-size="11" letter-spacing="3">SHA-256 dedup · auto-versioned</text>
+  </g>
+
+  <!-- Tile B: AI Analysis -->
+  <g transform="translate(528 110)">
+    <rect width="304" height="290" rx="16" fill="#080B14" stroke="#1E2535"/>
+    <rect width="304" height="290" rx="16" fill="none" stroke="#00E5FF" stroke-opacity="0.4" stroke-width="1"/>
+    <text x="24" y="36" class="mono cyan" font-size="11" letter-spacing="3">[ Nº 02 / 08 ]</text>
+    <text x="262" y="36" class="mono green" font-size="11" letter-spacing="3" text-anchor="end">● LIVE</text>
+    <text x="24" y="118" class="sans ink-100" font-size="36" font-weight="700" letter-spacing="-0.8">AI</text>
+    <text x="24" y="160" class="sans ink-100" font-size="36" font-weight="700" letter-spacing="-0.8">Analysis.</text>
+    <text x="24" y="208" class="sans ink-300" font-size="15">Security &amp; quality scores,</text>
+    <text x="24" y="228" class="sans ink-300" font-size="15">remediation, beginner notes.</text>
+    <text x="24" y="270" class="mono ink-500" font-size="11" letter-spacing="3">gpt-5.4-mini → sonnet-4-6</text>
+  </g>
+
+  <!-- Tile C: Semantic Search -->
+  <g transform="translate(848 110)">
+    <rect width="304" height="290" rx="16" fill="#080B14" stroke="#1E2535"/>
+    <rect width="304" height="290" rx="16" fill="none" stroke="#00E5FF" stroke-opacity="0.4" stroke-width="1"/>
+    <text x="24" y="36" class="mono cyan" font-size="11" letter-spacing="3">[ Nº 03 / 08 ]</text>
+    <text x="262" y="36" class="mono green" font-size="11" letter-spacing="3" text-anchor="end">● LIVE</text>
+    <text x="24" y="118" class="sans ink-100" font-size="36" font-weight="700" letter-spacing="-0.8">Semantic</text>
+    <text x="24" y="160" class="sans ink-100" font-size="36" font-weight="700" letter-spacing="-0.8">Search.</text>
+    <text x="24" y="208" class="sans ink-300" font-size="15">Embedding-backed retrieval</text>
+    <text x="24" y="228" class="sans ink-300" font-size="15">over scripts &amp; documentation.</text>
+    <text x="24" y="270" class="mono ink-500" font-size="11" letter-spacing="3">pgvector(1536)</text>
+  </g>
+
+  <!-- Tile D: Hosted Auth (violet — moat) -->
+  <g transform="translate(1168 110)">
+    <rect width="368" height="290" rx="16" fill="#080B14" stroke="#1E2535"/>
+    <rect width="368" height="290" rx="16" fill="url(#violet-tile-glow)"/>
+    <rect width="368" height="290" rx="16" fill="none" stroke="#A78BFA" stroke-opacity="0.65" stroke-width="1.4"/>
+    <text x="24" y="36" class="mono violet" font-size="11" letter-spacing="3">[ Nº 04 / 08 · MOAT ]</text>
+    <text x="326" y="36" class="mono green" font-size="11" letter-spacing="3" text-anchor="end">● SHIPPED 04·26</text>
+    <text x="24" y="118" class="sans ink-100" font-size="40" font-weight="700" letter-spacing="-0.8">Approval-gated</text>
+    <text x="24" y="160" class="sans ink-100" font-size="40" font-weight="700" letter-spacing="-0.8">SSO.</text>
+    <text x="24" y="208" class="sans ink-300" font-size="16">Google OAuth lands disabled.</text>
+    <text x="24" y="230" class="sans ink-300" font-size="16">Admin must explicitly enable.</text>
+    <text x="24" y="270" class="mono ink-500" font-size="11" letter-spacing="3">SUPABASE AUTH · RLS · AUDITED</text>
+  </g>
+
+  <!-- ── ROW 2 ────────────────────────────────────────────────────────────── -->
+
+  <!-- Tile E: Voice Copilot -->
+  <g transform="translate(64 416)">
+    <rect width="304" height="244" rx="16" fill="#080B14" stroke="#1E2535"/>
+    <rect width="304" height="244" rx="16" fill="none" stroke="#00E5FF" stroke-opacity="0.4" stroke-width="1"/>
+    <text x="24" y="36" class="mono cyan" font-size="11" letter-spacing="3">[ Nº 05 / 08 ]</text>
+    <text x="262" y="36" class="mono green" font-size="11" letter-spacing="3" text-anchor="end">● LIVE</text>
+    <text x="24" y="118" class="sans ink-100" font-size="32" font-weight="700" letter-spacing="-0.6">Voice Copilot.</text>
+    <text x="24" y="166" class="sans ink-300" font-size="15">Hands-free interaction via</text>
+    <text x="24" y="186" class="sans ink-300" font-size="15">OpenAI STT &amp; TTS.</text>
+    <text x="24" y="222" class="mono ink-500" font-size="11" letter-spacing="3">gpt-4o-mini-tts · transcribe</text>
+  </g>
+
+  <!-- Tile F: Agentic Workflows -->
+  <g transform="translate(384 416)">
+    <rect width="304" height="244" rx="16" fill="#080B14" stroke="#1E2535"/>
+    <rect width="304" height="244" rx="16" fill="none" stroke="#00E5FF" stroke-opacity="0.4" stroke-width="1"/>
+    <text x="24" y="36" class="mono cyan" font-size="11" letter-spacing="3">[ Nº 06 / 08 ]</text>
+    <text x="262" y="36" class="mono green" font-size="11" letter-spacing="3" text-anchor="end">● LOCAL</text>
+    <text x="24" y="118" class="sans ink-100" font-size="32" font-weight="700" letter-spacing="-0.6">Agentic</text>
+    <text x="24" y="156" class="sans ink-100" font-size="32" font-weight="700" letter-spacing="-0.6">Workflows.</text>
+    <text x="24" y="200" class="sans ink-300" font-size="15">Multi-step review · routing.</text>
+    <text x="24" y="222" class="mono ink-500" font-size="11" letter-spacing="3">FASTAPI · LANGGRAPH</text>
+  </g>
+
+  <!-- Tile G: Admin Operations (wider) -->
+  <g transform="translate(704 416)">
+    <rect width="448" height="244" rx="16" fill="#080B14" stroke="#1E2535"/>
+    <rect width="448" height="244" rx="16" fill="none" stroke="#00E5FF" stroke-opacity="0.4" stroke-width="1"/>
+    <text x="24" y="36" class="mono cyan" font-size="11" letter-spacing="3">[ Nº 07 / 08 ]</text>
+    <text x="406" y="36" class="mono green" font-size="11" letter-spacing="3" text-anchor="end">● LIVE</text>
+    <text x="24" y="118" class="sans ink-100" font-size="32" font-weight="700" letter-spacing="-0.6">Admin Operations.</text>
+    <text x="24" y="166" class="sans ink-300" font-size="15">User management, enable/pending status, categories,</text>
+    <text x="24" y="186" class="sans ink-300" font-size="15">settings, data maintenance — backup &amp; restore included.</text>
+    <text x="24" y="222" class="mono ink-500" font-size="11" letter-spacing="3">SELF-DISABLE BLOCKED · LAST-ADMIN PROTECTED</text>
+  </g>
+
+  <!-- Tile H: Hosted Deployment -->
+  <g transform="translate(1168 416)">
+    <rect width="368" height="244" rx="16" fill="#080B14" stroke="#1E2535"/>
+    <rect width="368" height="244" rx="16" fill="none" stroke="#00E5FF" stroke-opacity="0.4" stroke-width="1"/>
+    <text x="24" y="36" class="mono cyan" font-size="11" letter-spacing="3">[ Nº 08 / 08 ]</text>
+    <text x="326" y="36" class="mono green" font-size="11" letter-spacing="3" text-anchor="end">● ACTIVE</text>
+    <text x="24" y="118" class="sans ink-100" font-size="32" font-weight="700" letter-spacing="-0.6">Hosted</text>
+    <text x="24" y="156" class="sans ink-100" font-size="32" font-weight="700" letter-spacing="-0.6">Deployment.</text>
+    <text x="24" y="200" class="sans ink-300" font-size="15">Netlify Functions + Supabase.</text>
+    <text x="24" y="222" class="mono ink-500" font-size="11" letter-spacing="3">DOCKER RETIRED · 04·26</text>
+  </g>
+
+  <!-- Footer rule + caption -->
+  <line x1="64" y1="700" x2="1536" y2="700" stroke="#1E2535" stroke-width="0.6"/>
+  <text x="64"   y="730" class="mono ink-500" font-size="11" letter-spacing="3">8 MODULES · 1 WORKSPACE · CYAN = STANDARD · VIOLET = MOAT</text>
+  <text x="1536" y="730" class="mono ink-500" font-size="11" letter-spacing="3" text-anchor="end">VERIFIED · 2026-04-26</text>
+</svg>

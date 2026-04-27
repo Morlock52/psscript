@@ -1,69 +1,44 @@
 <!--
-  README · Editorial dossier · April 2026
-  -----------------------------------------------------------------
-  Aesthetic: cream paper, ink black, oxblood accent. Heavy serif
-  display, monospace marginalia, hairline rules. Numbered sections
-  like a quarterly briefing. Designed for operators, security
-  leads, and decision-makers — not for landing-page tourists.
-  -----------------------------------------------------------------
+  README · Futurist console · April 2026
+  -------------------------------------------------------------------
+  Aesthetic: dark void canvas, electric cyan + violet accents, mono
+  display lockup, bracket-and-slash motifs, bento grid composition.
+  Inspired by the convergent design language of Vercel, Linear,
+  xAI and Cursor — the 2026 stack-front.
+  -------------------------------------------------------------------
 -->
 
 <p align="center">
-  <a href="./docs/graphics/hero.svg">
-    <img src="./docs/graphics/hero.svg" alt="PSScript — PowerShell, audited. Editorial cover, April 2026 dossier." width="100%" />
+  <a href="./docs/graphics/hero-future.svg">
+    <img src="./docs/graphics/hero-future.svg" alt="PSScript — PowerShell Governance for the AI Era. Hosted, governed, audited. April 26, 2026 build verified." width="100%" />
   </a>
 </p>
 
-<!-- ── DATELINE STRIP ─────────────────────────────────────────────────── -->
-
-<table align="center" width="100%">
-  <tr>
-    <td align="center" width="20%">
-      <sub><code>STATUS</code></sub><br/>
-      <strong>Build verified</strong><br/>
-      <sub>2026 · 04 · 26</sub>
-    </td>
-    <td align="center" width="20%">
-      <sub><code>RUNTIME</code></sub><br/>
-      <strong>Hosted</strong><br/>
-      <sub>Netlify · Supabase</sub>
-    </td>
-    <td align="center" width="20%">
-      <sub><code>IDENTITY</code></sub><br/>
-      <strong>Approval-gated SSO</strong><br/>
-      <sub>Google OAuth · admin enable</sub>
-    </td>
-    <td align="center" width="20%">
-      <sub><code>INTELLIGENCE</code></sub><br/>
-      <strong>OpenAI &middot; Anthropic</strong><br/>
-      <sub>gpt-5.5 · sonnet-4-6</sub>
-    </td>
-    <td align="center" width="20%">
-      <sub><code>RETRIEVAL</code></sub><br/>
-      <strong>pgvector(1536)</strong><br/>
-      <sub>text-embedding-3-small</sub>
-    </td>
-  </tr>
-</table>
+<p align="center">
+  <a href="#-the-brief">Brief</a> &nbsp;·&nbsp;
+  <a href="#-the-wedge">Wedge</a> &nbsp;·&nbsp;
+  <a href="#-the-surface">Surface</a> &nbsp;·&nbsp;
+  <a href="#-the-architecture">Architecture</a> &nbsp;·&nbsp;
+  <a href="#-the-approval-gate">Approval Gate</a> &nbsp;·&nbsp;
+  <a href="#-the-stack--models">Stack &amp; Models</a> &nbsp;·&nbsp;
+  <a href="#-in-practice">In Practice</a> &nbsp;·&nbsp;
+  <a href="#-operate-it">Operate It</a> &nbsp;·&nbsp;
+  <a href="#-validation">Validation</a> &nbsp;·&nbsp;
+  <a href="#-reading-list">Reading List</a>
+</p>
 
 <p align="center">
-  <sub>
-    <code>Nº 01</code> <a href="#nº-01--the-brief">Brief</a> &nbsp;·&nbsp;
-    <code>Nº 02</code> <a href="#nº-02--the-wedge">Wedge</a> &nbsp;·&nbsp;
-    <code>Nº 03</code> <a href="#nº-03--the-surface">Surface</a> &nbsp;·&nbsp;
-    <code>Nº 04</code> <a href="#nº-04--the-architecture">Architecture</a> &nbsp;·&nbsp;
-    <code>Nº 05</code> <a href="#nº-05--the-approval-gate">Approval Gate</a> &nbsp;·&nbsp;
-    <code>Nº 06</code> <a href="#nº-06--the-stack--models">Stack &amp; Models</a> &nbsp;·&nbsp;
-    <code>Nº 07</code> <a href="#nº-07--in-practice">In Practice</a> &nbsp;·&nbsp;
-    <code>Nº 08</code> <a href="#nº-08--operate-it">Operate It</a> &nbsp;·&nbsp;
-    <code>Nº 09</code> <a href="#nº-09--validation">Validation</a> &nbsp;·&nbsp;
-    <code>Nº 10</code> <a href="#nº-10--reading-list">Reading List</a>
-  </sub>
+  <img src="https://img.shields.io/badge/build-2026.04.26-00E5FF?style=flat-square&labelColor=05050B" alt="build 2026.04.26" />
+  <img src="https://img.shields.io/badge/runtime-Netlify_+_Supabase-F5F7FA?style=flat-square&labelColor=05050B" alt="runtime Netlify + Supabase" />
+  <img src="https://img.shields.io/badge/auth-OAuth_+_admin_gate-A78BFA?style=flat-square&labelColor=05050B" alt="auth OAuth + admin gate" />
+  <img src="https://img.shields.io/badge/intelligence-gpt--5.5_·_sonnet--4--6-00E5FF?style=flat-square&labelColor=05050B" alt="gpt-5.5 + sonnet-4-6" />
+  <img src="https://img.shields.io/badge/retrieval-pgvector(1536)-00FF94?style=flat-square&labelColor=05050B" alt="pgvector(1536)" />
+  <img src="https://img.shields.io/badge/status-operational-00FF94?style=flat-square&labelColor=05050B" alt="operational" />
 </p>
 
 ---
 
-## Nº 01 — The Brief
+## `[01]` &nbsp;The Brief
 
 > **PowerShell is the unsupervised mezzanine of enterprise IT.** It runs identity, mail flow, endpoints, cloud — and almost no organization can tell you who wrote which script, when, against which environment, with which permissions. PSScript is the operations console for that mezzanine.
 
@@ -75,105 +50,65 @@ The current production direction is **Netlify + Supabase, hosted-first**. Local 
 
 ---
 
-## Nº 02 — The Wedge
+## `[02]` &nbsp;The Wedge
 
-|  | Before PSScript | With PSScript |
+|  | **`// before`** &nbsp; PowerShell estate today | **`// after`** &nbsp; PSScript |
 | :--- | :--- | :--- |
-| **Storage** | Share drive, OneDrive, three forks of the same `cleanup.ps1` | Single workspace, SHA-256 dedup, automatic versioning |
-| **Review** | Ad-hoc skim by whoever has time | LLM-graded security & quality scores with remediation guidance |
-| **Discovery** | `Ctrl-F` across folders, hope someone remembers | Embedding-backed semantic search across scripts and docs |
-| **Access** | Whoever has the link | Approval-gated Google SSO, RLS-enforced, self-disable blocked |
-| **Audit** | "Who changed this?" — silence | Profiles, version history, admin actions, query metrics |
-| **Onboarding** | Slack the senior engineer | Beginner explanation, management summary, AI chat for context |
+| **Storage**    | Share drive, OneDrive, three forks of the same `cleanup.ps1` | Single workspace · SHA-256 dedup · automatic versioning |
+| **Review**     | Ad-hoc skim by whoever has time                              | LLM-graded security &amp; quality scores · remediation guidance |
+| **Discovery**  | `Ctrl-F` across folders, hope someone remembers              | Embedding-backed semantic search across scripts and docs |
+| **Access**     | Whoever has the link                                          | Approval-gated Google SSO · RLS-enforced · self-disable blocked |
+| **Audit**      | "Who changed this?" — silence                                | Profiles, version history, admin actions, query metrics |
+| **Onboarding** | Slack the senior engineer                                     | Beginner explanation · management summary · AI chat for context |
 
-The wedge isn't another script editor. It's the **governance surface** that finally makes a PowerShell estate inspectable without slowing the people who write the scripts.
-
----
-
-## Nº 03 — The Surface
-
-<table>
-  <tr>
-    <th align="left" width="22%"><code>CAPABILITY</code></th>
-    <th align="left" width="58%">PROMISE</th>
-    <th align="left" width="20%">STATUS</th>
-  </tr>
-  <tr>
-    <td><strong>Script Workspace</strong></td>
-    <td>Upload, browse, version, filter, inspect, and export PowerShell assets from one console.</td>
-    <td><sub><code>● SHIPPING</code></sub></td>
-  </tr>
-  <tr>
-    <td><strong>AI Analysis</strong></td>
-    <td>Security score, quality score, beginner explanation, management summary, remediation notes.</td>
-    <td><sub><code>● SHIPPING</code></sub></td>
-  </tr>
-  <tr>
-    <td><strong>Agentic Workflows</strong></td>
-    <td>Multi-step assistant and orchestration for deeper review, powered by FastAPI + LangGraph.</td>
-    <td><sub><code>● SHIPPING (LOCAL)</code></sub></td>
-  </tr>
-  <tr>
-    <td><strong>Semantic Search</strong></td>
-    <td>Embedding-backed retrieval over scripts &amp; documentation via Supabase <code>vector(1536)</code>.</td>
-    <td><sub><code>● SHIPPING</code></sub></td>
-  </tr>
-  <tr>
-    <td><strong>Voice Copilot</strong></td>
-    <td>Hands-free interaction via OpenAI speech-to-text and text-to-speech.</td>
-    <td><sub><code>● SHIPPING</code></sub></td>
-  </tr>
-  <tr>
-    <td><strong>Hosted Auth</strong></td>
-    <td>Supabase password &amp; Google OAuth, with first-login profiles disabled until an admin approves.</td>
-    <td><sub><code>● SHIPPING (2026-04-26)</code></sub></td>
-  </tr>
-  <tr>
-    <td><strong>Admin Operations</strong></td>
-    <td>User management, enable/pending status, categories, settings, data maintenance.</td>
-    <td><sub><code>● SHIPPING</code></sub></td>
-  </tr>
-  <tr>
-    <td><strong>Deployment</strong></td>
-    <td>Netlify Functions + Supabase Postgres &amp; Auth — the hosted-first path.</td>
-    <td><sub><code>● ACTIVE</code></sub></td>
-  </tr>
-</table>
+> The wedge isn't another script editor. It's the **governance surface** that finally makes a PowerShell estate inspectable without slowing the people who write the scripts.
 
 ---
 
-## Nº 04 — The Architecture
+## `[03]` &nbsp;The Surface
 
 <p align="center">
-  <a href="./docs/graphics/architecture-editorial.svg">
-    <img src="./docs/graphics/architecture-editorial.svg" alt="PSScript architecture — edge plane (React UI), hosted plane (Netlify Functions calling OpenAI/Anthropic), data plane (Supabase Postgres + pgvector), and an optional local development plane." width="100%" />
+  <a href="./docs/graphics/capabilities-bento.svg">
+    <img src="./docs/graphics/capabilities-bento.svg" alt="Bento grid of PSScript capabilities — Script Workspace, AI Analysis, Semantic Search, Approval-gated SSO (moat), Voice Copilot, Agentic Workflows, Admin Operations, Hosted Deployment." width="100%" />
+  </a>
+</p>
+
+<sub>Cyan tiles ship as standard. The violet tile is the moat — first-login Google identities arrive disabled and require an administrator to enable.</sub>
+
+---
+
+## `[04]` &nbsp;The Architecture
+
+<p align="center">
+  <a href="./docs/graphics/architecture-future.svg">
+    <img src="./docs/graphics/architecture-future.svg" alt="Three-plane architecture — edge React UI, hosted Netlify Functions calling OpenAI primary and Anthropic fallback, data plane Supabase Postgres with pgvector. Approval gate cross-cuts the hosted plane in violet. Local development plane below." width="100%" />
   </a>
 </p>
 
 | Plane | Component | Stack | Role |
 | :--- | :--- | :--- | :--- |
-| **Edge** | React app | React 18 · Vite · TypeScript · Tailwind | App shell, OAuth callback, dashboard, scripts, AI pages, settings |
-| **Hosted** | Netlify Functions | TypeScript · `@netlify/functions` · `pg` · OpenAI/Anthropic SDKs | Same-origin `/api/*`, Supabase token validation, profile gate, hosted analysis |
-| **Data** | Supabase | Auth · Postgres · pgvector | Durable identity and app data for hosted v1 |
-| **Local Dev** | Express backend | Node · Express · Sequelize | Local development API, CRUD, analytics, AI proxy |
-| **Local Dev** | FastAPI service | Python · LangGraph · OpenAI · Anthropic | Agentic workflows, guardrails, model routing, voice helpers |
+| **Edge**       | React app          | React 18 · Vite · TypeScript · Tailwind                            | App shell, OAuth callback, dashboard, scripts, AI pages, settings           |
+| **Hosted**     | Netlify Functions  | TypeScript · `@netlify/functions` · `pg` · OpenAI / Anthropic SDKs | Same-origin `/api/*`, Supabase token validation, profile gate, analysis     |
+| **Data**       | Supabase           | Auth · Postgres · pgvector                                         | Durable identity and app data for hosted v1                                 |
+| **Local Dev**  | Express backend    | Node · Express · Sequelize                                         | Local development API, CRUD, analytics, AI proxy                            |
+| **Local Dev**  | FastAPI service    | Python · LangGraph · OpenAI · Anthropic                            | Agentic workflows, guardrails, model routing, voice helpers                 |
 
 ### Request Flow
 
-```
-upload  ─►  auth gate  ─►  payload &  ─►  Postgres &     ─►  AI provider  ─►  rendered scores,
-            (Supabase     dedup check     pgvector              (primary →        explanations,
-            JWT + profile  (SHA-256)      (scripts,             fallback)         remediation,
-            enabled?)                     analyses,                                search results
-                                          embeddings,
-                                          metrics)
+```text
+upload  ─►  auth gate          ─►  payload &     ─►  Postgres &      ─►  AI provider     ─►  rendered scores,
+            (Supabase JWT +        dedup check       pgvector            (primary →            explanations,
+             profile enabled?)     (SHA-256)         (scripts,           fallback)             remediation,
+                                                     analyses,                                  search results
+                                                     embeddings,
+                                                     metrics)
 ```
 
 A user uploads a script. The hosted API validates auth, payload shape, permissions, and duplicate file hashes. Script metadata, versions, analyses, metrics, and embeddings persist to Postgres. AI providers return structured review output. The UI renders scores, explanations, remediation guidance, search results, and analytics.
 
 ---
 
-## Nº 05 — The Approval Gate
+## `[05]` &nbsp;The Approval Gate
 
 <p align="center">
   <a href="./docs/graphics/google-oauth-approval-flow.svg">
@@ -181,11 +116,11 @@ A user uploads a script. The hosted API validates auth, payload shape, permissio
   </a>
 </p>
 
-> **The default for a brand-new identity is *disabled*.** That is the entire point. Anyone the world over can complete a Google OAuth handshake; that does not entitle them to see your script estate.
+> **`// MOAT`** &nbsp; The default for a brand-new identity is *disabled*. That is the entire point. Anyone the world over can complete a Google OAuth handshake; that does not entitle them to see your script estate.
 
 The hosted auth path is intentionally gated, in layers:
 
-- Password login and Google OAuth use Supabase Auth in the browser.
+- Password login and Google OAuth use **Supabase Auth** in the browser.
 - The Netlify API validates bearer tokens against Supabase Auth on every request.
 - `/api/auth/me` creates or updates the matching local `app_profiles` row.
 - New Google profiles default to `is_enabled = false`, except `DEFAULT_ADMIN_EMAIL`.
@@ -198,18 +133,18 @@ Supabase dashboard setup is still required for Google OAuth credentials and redi
 
 ---
 
-## Nº 06 — The Stack &amp; Models
+## `[06]` &nbsp;The Stack &amp; Models
 
 The defaults below reflect the **configured state of this repo as of April 26, 2026**. Provider model availability shifts by account and date, so production deploys keep model IDs overrideable through environment variables.
 
 | Capability | Configured Default | Fallback / Variant | Repo Evidence |
 | :--- | :--- | :--- | :--- |
-| **Hosted text / chat** | `gpt-5.5` | `claude-sonnet-4-6` | `netlify/functions/api.ts` |
-| **Hosted structured analysis** | `gpt-5.4-mini` | Anthropic text fallback with JSON parsing | `netlify/functions/api.ts` |
-| **Hosted embeddings** | `text-embedding-3-small` | 1536-dim, matches Supabase `vector(1536)` | `netlify/functions/api.ts`, Supabase migrations |
-| **Voice TTS** | `gpt-4o-mini-tts` | voice setting defaults to `marin` | `netlify/functions/api.ts` |
-| **Voice STT** | `gpt-4o-mini-transcribe` | `gpt-4o-transcribe-diarize` | `netlify/functions/api.ts` |
-| **Local AI service** | Router-controlled OpenAI / Anthropic | Configurable in `src/ai/config.py` | `src/ai/` |
+| **Hosted text / chat**         | `gpt-5.5`                   | `claude-sonnet-4-6`                          | `netlify/functions/api.ts`                  |
+| **Hosted structured analysis** | `gpt-5.4-mini`              | Anthropic text fallback with JSON parsing    | `netlify/functions/api.ts`                  |
+| **Hosted embeddings**          | `text-embedding-3-small`    | 1536-dim, matches Supabase `vector(1536)`    | `netlify/functions/api.ts`, migrations      |
+| **Voice TTS**                  | `gpt-4o-mini-tts`           | voice setting defaults to `marin`            | `netlify/functions/api.ts`                  |
+| **Voice STT**                  | `gpt-4o-mini-transcribe`    | `gpt-4o-transcribe-diarize`                  | `netlify/functions/api.ts`                  |
+| **Local AI service**           | Router-controlled OpenAI / Anthropic | Configurable in `src/ai/config.py`  | `src/ai/`                                   |
 
 References checked while preparing this dossier:
 
@@ -220,9 +155,9 @@ References checked while preparing this dossier:
 
 ---
 
-## Nº 07 — In Practice
+## `[07]` &nbsp;In Practice
 
-A curated four-up of the product surface — login, the workspace it protects, the analysis that justifies the approval gate, and the admin control that operates it. The full capture set is collapsed below.
+A curated four-up of the product surface — the door, the workspace it protects, the analysis that justifies the gate, and the admin control that operates it. Full capture set collapsed below.
 
 <table>
   <tr>
@@ -231,14 +166,14 @@ A curated four-up of the product surface — login, the workspace it protects, t
         <img src="./docs/screenshots/readme/login.png" alt="PSScript login screen with password login and Google OAuth" width="100%" />
       </a>
       <br/>
-      <sub><code>FIG. A</code> &nbsp; <strong>Login.</strong> Hosted auth — password and Google OAuth.</sub>
+      <sub><code>// FIG · A</code> &nbsp; <strong>Login.</strong> Hosted auth — password and Google OAuth.</sub>
     </td>
     <td width="50%" valign="top">
       <a href="./docs/screenshots/scripts.png">
         <img src="./docs/screenshots/readme/scripts.png" alt="PSScript script library with browse, filter, and analyze controls" width="100%" />
       </a>
       <br/>
-      <sub><code>FIG. B</code> &nbsp; <strong>Workspace.</strong> Browse, filter, and analyze the estate.</sub>
+      <sub><code>// FIG · B</code> &nbsp; <strong>Workspace.</strong> Browse, filter, and analyze the estate.</sub>
     </td>
   </tr>
   <tr>
@@ -247,14 +182,14 @@ A curated four-up of the product surface — login, the workspace it protects, t
         <img src="./docs/screenshots/readme/analysis.png" alt="PSScript AI analysis page with security and quality scoring" width="100%" />
       </a>
       <br/>
-      <sub><code>FIG. C</code> &nbsp; <strong>Analysis.</strong> Security + quality scoring with remediation.</sub>
+      <sub><code>// FIG · C</code> &nbsp; <strong>Analysis.</strong> Security + quality scoring with remediation.</sub>
     </td>
     <td width="50%" valign="top">
       <a href="./docs/screenshots/data-maintenance.png">
         <img src="./docs/screenshots/readme/data-maintenance.png" alt="PSScript data maintenance admin page for backup, restore, and cleanup" width="100%" />
       </a>
       <br/>
-      <sub><code>FIG. D</code> &nbsp; <strong>Admin.</strong> Backup, restore, cleanup, and approval.</sub>
+      <sub><code>// FIG · D</code> &nbsp; <strong>Admin.</strong> Backup, restore, cleanup, and approval.</sub>
     </td>
   </tr>
 </table>
@@ -326,16 +261,16 @@ A curated four-up of the product surface — login, the workspace it protects, t
 
 ---
 
-## Nº 08 — Operate It
+## `[08]` &nbsp;Operate It
 
-### Prerequisites
+### `> prerequisites`
 
 - **Node.js** 20+ &middot; **Python** 3.10+
 - **Supabase project** with the hosted migrations applied
 - **Supabase pooler** `DATABASE_URL`
 - **OpenAI** and / or **Anthropic** provider keys
 
-### Install
+### `> install`
 
 ```bash
 npm install
@@ -344,7 +279,7 @@ npm install --prefix src/backend
 python -m pip install -r src/ai/requirements.txt
 ```
 
-### Environment
+### `> environment`
 
 Set in `.env` for local development and in **Netlify** for hosted deploys:
 
@@ -362,7 +297,7 @@ VITE_SUPABASE_ANON_KEY=...
 VITE_HOSTED_STATIC_ANALYSIS_ONLY=true
 ```
 
-> **Never expose** `SUPABASE_SERVICE_ROLE_KEY`, `DATABASE_URL`, or provider API keys to the browser. Hosted secrets live in Netlify environment variables; local secrets live in `.env` and never in source.
+> **`// SECURITY`** &nbsp; Never expose `SUPABASE_SERVICE_ROLE_KEY`, `DATABASE_URL`, or provider API keys to the browser. Hosted secrets live in Netlify environment variables; local secrets live in `.env` and never in source.
 
 Apply Supabase migrations in filename order:
 
@@ -374,7 +309,7 @@ supabase/migrations/20260426_supabase_advisor_fixes.sql
 supabase/migrations/20260426_z_google_oauth_approval_gate.sql
 ```
 
-### Run Local Services
+### `> run local services`
 
 ```bash
 # AI service — optional unless testing local AI workflows
@@ -392,7 +327,7 @@ npm run dev
 
 Open `https://127.0.0.1:3090` when TLS cert env vars are set, or the Vite URL printed by the frontend dev server.
 
-### Hosted Mode
+### `> hosted mode`
 
 ```bash
 npm run build:netlify
@@ -401,7 +336,7 @@ netlify dev
 
 ---
 
-## Nº 09 — Validation
+## `[09]` &nbsp;Validation
 
 Recent verification from this working tree:
 
@@ -428,14 +363,14 @@ npx tsc --noEmit --target ES2020 --module commonjs \
 
 | Check | Result |
 | :--- | :--- |
-| Focused frontend auth tests | <code>● 10 / 10 passed</code> |
-| Frontend production build | <code>● passed</code> &middot; <code>src/frontend/dist</code> regenerated |
-| Netlify function TypeScript check | <code>● passed</code> |
-| README image framing | <code>● regenerated</code> via `npm run screenshots:readme` |
-| Login / pending screenshots | <code>● recaptured</code> from current frontend build, 2026-04-26 |
+| Focused frontend auth tests        | <code>● 10 / 10 passed</code> |
+| Frontend production build          | <code>● passed</code> · `src/frontend/dist` regenerated |
+| Netlify function TypeScript check  | <code>● passed</code> |
+| README image framing               | <code>● regenerated</code> via `npm run screenshots:readme` |
+| Login / pending screenshots        | <code>● recaptured</code> from current frontend build, 2026-04-26 |
 
 <details>
-<summary><strong>Screenshot refresh</strong></summary>
+<summary><strong><code>&gt; screenshot refresh</code></strong></summary>
 
 ```bash
 # Capture app screenshots from a running app target
@@ -464,27 +399,27 @@ npm run dev -- --host 127.0.0.1 --port 3191
 
 ---
 
-## Nº 10 — Reading List
+## `[10]` &nbsp;Reading List
 
 | Document | Purpose |
 | :--- | :--- |
-| [Getting Started](./docs/GETTING-STARTED.md) | Local bootstrap and first-run notes |
-| [Netlify + Supabase Deployment](./docs/NETLIFY-SUPABASE-DEPLOYMENT.md) | Hosted production path, env vars, Google OAuth setup |
-| [Repository Organization](./docs/REPOSITORY-ORGANIZATION.md) | Repo layout, docs taxonomy, cleanup notes |
-| [Browser Use QA](./BROWSER_USE_QA.md) | Browser test matrix and validation history |
-| [Data Maintenance](./docs/DATA-MAINTENANCE.md) | Admin backup, restore, cleanup |
-| [Voice API](./docs/README-VOICE-API.md) | Voice / listening implementation |
-| [Deployment Platforms](./docs/DEPLOYMENT-PLATFORMS.md) | Deployment alternatives and legacy split-service notes |
-| [Project Review · 2026-04-01](./docs/PROJECT-REVIEW-2026-04-01.md) | April 2026 comprehensive review |
-| [AI Functions Review · 2026-04-02](./docs/AI-FUNCTIONS-REVIEW-2026-04-02.md) | AI audit and model migration notes |
-| [Documentation Hub](./docs/index.md) | Full docs index |
+| [Getting Started](./docs/GETTING-STARTED.md)                                 | Local bootstrap and first-run notes                                          |
+| [Netlify + Supabase Deployment](./docs/NETLIFY-SUPABASE-DEPLOYMENT.md)       | Hosted production path, env vars, Google OAuth setup                         |
+| [Repository Organization](./docs/REPOSITORY-ORGANIZATION.md)                 | Repo layout, docs taxonomy, cleanup notes                                    |
+| [Browser Use QA](./BROWSER_USE_QA.md)                                        | Browser test matrix and validation history                                   |
+| [Data Maintenance](./docs/DATA-MAINTENANCE.md)                               | Admin backup, restore, cleanup                                               |
+| [Voice API](./docs/README-VOICE-API.md)                                      | Voice / listening implementation                                             |
+| [Deployment Platforms](./docs/DEPLOYMENT-PLATFORMS.md)                       | Deployment alternatives and legacy split-service notes                       |
+| [Project Review · 2026-04-01](./docs/PROJECT-REVIEW-2026-04-01.md)           | April 2026 comprehensive review                                              |
+| [AI Functions Review · 2026-04-02](./docs/AI-FUNCTIONS-REVIEW-2026-04-02.md) | AI audit and model migration notes                                           |
+| [Documentation Hub](./docs/index.md)                                         | Full docs index                                                              |
 
 ---
 
 ### Engineering Notes
 
 <details>
-<summary><strong>Hosted Google OAuth approval gate</strong></summary>
+<summary><strong><code>&gt; hosted Google OAuth approval gate</code></strong></summary>
 
 - `app_profiles.is_enabled` gates hosted app access.
 - Google-created profiles default to disabled.
@@ -497,7 +432,7 @@ npm run dev -- --host 127.0.0.1 --port 3191
 </details>
 
 <details>
-<summary><strong>Local vs hosted auth</strong></summary>
+<summary><strong><code>&gt; local vs hosted auth</code></strong></summary>
 
 - Hosted mode uses Supabase Auth sessions and Netlify Functions.
 - Local Express auth still exists for local / non-hosted flows.
@@ -506,14 +441,14 @@ npm run dev -- --host 127.0.0.1 --port 3191
 </details>
 
 <details>
-<summary><strong>Retired Docker runtime</strong></summary>
+<summary><strong><code>&gt; retired Docker runtime</code></strong></summary>
 
 Docker configuration was retired from the active root project and moved under `retired/docker/`. Local validation should use Supabase Postgres through `DATABASE_URL`; do not reintroduce local Docker databases for the hosted path.
 
 </details>
 
 <details>
-<summary><strong>Project structure</strong></summary>
+<summary><strong><code>&gt; project structure</code></strong></summary>
 
 ```text
 psscript/
@@ -539,13 +474,13 @@ psscript/
 
 <p align="center">
   <sub>
-    <code>COLOPHON</code> &nbsp;·&nbsp;
-    Display set in a serif stack (Charter, Iowan Old Style, Source Serif).
-    Marginalia in a monospace stack (JetBrains Mono, IBM Plex Mono).
-    Palette: ink black <code>#0B0B0B</code>, paper cream <code>#F2EBDD</code>, oxblood <code>#7E1F1F</code>.
+    <code>// COLOPHON</code> &nbsp;·&nbsp;
+    Display set in a mono stack — <code>Geist Mono</code>, <code>JetBrains Mono</code>, <code>IBM Plex Mono</code>.
+    Body in a sans stack — <code>Geist</code>, <code>Söhne</code>, <code>Aeonik</code>.
+    Palette: void <code>#05050B</code>, ink <code>#F5F7FA</code>, cyan <code>#00E5FF</code>, violet <code>#A78BFA</code>, signal <code>#00FF94</code>.
   </sub>
 </p>
 
 <p align="center">
-  <sub>Verified 2026-04-26 &nbsp;·&nbsp; Hosted on Netlify &nbsp;·&nbsp; Data on Supabase &nbsp;·&nbsp; Audited by GPT-5.5 with Sonnet 4.6 fallback</sub>
+  <sub><code>[ EOF ]</code> &nbsp; verified 2026-04-26 &nbsp;·&nbsp; hosted on Netlify &nbsp;·&nbsp; data on Supabase &nbsp;·&nbsp; audited by gpt-5.5 with sonnet-4-6 fallback</sub>
 </p>

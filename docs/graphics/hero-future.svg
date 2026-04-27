@@ -1,0 +1,156 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1600 760" role="img" aria-labelledby="ftitle fdesc">
+  <title id="ftitle">PSScript — PowerShell Governance for the AI Era.</title>
+  <desc id="fdesc">Dark hero. Mono lockup PSSCRIPT with cyan cursor and holographic underline. Bento KPI tiles for hosted runtime, intelligence, auth, and retrieval. Built April 26, 2026.</desc>
+
+  <defs>
+    <!-- Dot grid (very faint) -->
+    <pattern id="dots" width="32" height="32" patternUnits="userSpaceOnUse">
+      <circle cx="1" cy="1" r="0.7" fill="#FFFFFF" fill-opacity="0.06"/>
+    </pattern>
+    <!-- Scanline overlay (CRT feel) -->
+    <pattern id="scan" width="3" height="3" patternUnits="userSpaceOnUse">
+      <rect width="3" height="1" fill="#FFFFFF" fill-opacity="0.025"/>
+    </pattern>
+
+    <!-- Atmospheric glows -->
+    <radialGradient id="glow-cyan" cx="0" cy="0" r="1" gradientUnits="userSpaceOnUse"
+                    gradientTransform="translate(120 60) scale(720)">
+      <stop offset="0"   stop-color="#00E5FF" stop-opacity="0.32"/>
+      <stop offset="0.45" stop-color="#00E5FF" stop-opacity="0.06"/>
+      <stop offset="1"   stop-color="#00E5FF" stop-opacity="0"/>
+    </radialGradient>
+    <radialGradient id="glow-violet" cx="0" cy="0" r="1" gradientUnits="userSpaceOnUse"
+                    gradientTransform="translate(1480 720) scale(820)">
+      <stop offset="0"   stop-color="#7C3AED" stop-opacity="0.32"/>
+      <stop offset="0.5" stop-color="#7C3AED" stop-opacity="0.05"/>
+      <stop offset="1"   stop-color="#7C3AED" stop-opacity="0"/>
+    </radialGradient>
+
+    <!-- Holographic gradient (accent rule under title) -->
+    <linearGradient id="holo" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0"    stop-color="#00E5FF"/>
+      <stop offset="0.45" stop-color="#7C3AED"/>
+      <stop offset="0.75" stop-color="#FF2DAA"/>
+      <stop offset="1"    stop-color="#00E5FF"/>
+    </linearGradient>
+    <linearGradient id="holo-text" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#FFFFFF"/>
+      <stop offset="1" stop-color="#B8C4D6"/>
+    </linearGradient>
+
+    <!-- Outer glow filter -->
+    <filter id="cyan-glow" x="-30%" y="-30%" width="160%" height="160%">
+      <feGaussianBlur in="SourceGraphic" stdDeviation="3.5" result="b"/>
+      <feMerge>
+        <feMergeNode in="b"/>
+        <feMergeNode in="SourceGraphic"/>
+      </feMerge>
+    </filter>
+    <filter id="soft-glow" x="-50%" y="-50%" width="200%" height="200%">
+      <feGaussianBlur in="SourceGraphic" stdDeviation="6" result="b"/>
+      <feMerge>
+        <feMergeNode in="b"/>
+        <feMergeNode in="SourceGraphic"/>
+      </feMerge>
+    </filter>
+
+    <style>
+      .mono  { font-family: 'Geist Mono','JetBrains Mono','IBM Plex Mono',ui-monospace,SFMono-Regular,Menlo,Consolas,monospace; }
+      .sans  { font-family: 'Geist','Söhne','Aeonik','Suisse Int','Helvetica Neue',-apple-system,BlinkMacSystemFont,system-ui,sans-serif; }
+      .ink-100 { fill: #F5F7FA; }
+      .ink-300 { fill: #B8C4D6; }
+      .ink-500 { fill: #6E7A8F; }
+      .cyan    { fill: #00E5FF; }
+      .violet  { fill: #A78BFA; }
+      .green   { fill: #00FF94; }
+      .stroke-cyan   { stroke: #00E5FF; }
+      .stroke-violet { stroke: #A78BFA; }
+      .stroke-mute   { stroke: #1E2535; }
+    </style>
+  </defs>
+
+  <!-- ── Canvas ────────────────────────────────────────────────────────────── -->
+  <rect width="1600" height="760" fill="#05050B"/>
+  <rect width="1600" height="760" fill="url(#glow-cyan)"/>
+  <rect width="1600" height="760" fill="url(#glow-violet)"/>
+  <rect width="1600" height="760" fill="url(#dots)"/>
+  <rect width="1600" height="760" fill="url(#scan)"/>
+
+  <!-- Top cyan tick + hairline -->
+  <rect x="0" y="0" width="220" height="2" fill="#00E5FF"/>
+  <line x1="0" y1="2" x2="1600" y2="2" stroke="#1E2535" stroke-width="1"/>
+
+  <!-- Masthead row -->
+  <text x="64" y="46" class="mono cyan" font-size="13" letter-spacing="4">[ BUILD · 04·26·MMXXVI ]</text>
+  <text x="800" y="46" class="mono ink-500" font-size="13" letter-spacing="4" text-anchor="middle">HOSTED · GOVERNED · AUDITED</text>
+  <g transform="translate(1430 40)">
+    <circle cx="0" cy="0" r="5" fill="#00FF94" filter="url(#soft-glow)"/>
+    <circle cx="0" cy="0" r="3.2" fill="#00FF94"/>
+    <text x="14" y="5" class="mono ink-100" font-size="13" letter-spacing="4">OPERATIONAL</text>
+  </g>
+
+  <line x1="64" y1="80" x2="1536" y2="80" class="stroke-mute" stroke-width="0.8"/>
+
+  <!-- Section eyebrow -->
+  <text x="64" y="138" class="mono violet" font-size="13" letter-spacing="4">// FOR · OPERATORS · SECURITY LEADS · DECISION MAKERS</text>
+
+  <!-- ── Display lockup: PSSCRIPT▮ ─────────────────────────────────────────── -->
+  <text x="60" y="320" class="mono ink-100" font-size="220" font-weight="700" letter-spacing="-8" fill="url(#holo-text)">PSSCRIPT</text>
+  <!-- Glowing cursor -->
+  <rect x="1130" y="170" width="32" height="160" fill="#00E5FF" filter="url(#cyan-glow)"/>
+
+  <!-- Holographic underline -->
+  <rect x="60" y="346" width="600" height="4" fill="url(#holo)" filter="url(#cyan-glow)"/>
+  <rect x="60" y="346" width="600" height="2" fill="url(#holo)"/>
+
+  <!-- Subtitle (sans, white) -->
+  <text x="60" y="416" class="sans ink-100" font-size="40" font-weight="600" letter-spacing="-1.2">PowerShell Governance for the AI Era.</text>
+
+  <!-- Body deck (sans, gray) -->
+  <text x="60" y="466" class="sans ink-300" font-size="20" font-weight="400">An operations console for security-graded PowerShell — versioned, semantically searchable,</text>
+  <text x="60" y="494" class="sans ink-300" font-size="20" font-weight="400">and gated behind hosted SSO with administrator approval. Shipped on Supabase and Netlify.</text>
+
+  <!-- ── Bento KPI strip (bottom) ──────────────────────────────────────────── -->
+  <!-- Tile 01 -->
+  <g transform="translate(60 568)">
+    <rect width="350" height="148" rx="14" fill="#0A0E1A" stroke="#1E2535" stroke-width="1"/>
+    <rect width="350" height="148" rx="14" fill="none" class="stroke-cyan" stroke-width="1" opacity="0.55"/>
+    <text x="22" y="34" class="mono cyan" font-size="11" letter-spacing="3">[01] / HOSTED</text>
+    <text x="22" y="84" class="sans ink-100" font-size="32" font-weight="600">Netlify</text>
+    <text x="22" y="118" class="sans ink-300" font-size="17">+ Supabase</text>
+    <circle cx="328" cy="22" r="2.5" class="cyan" fill="#00E5FF"/>
+  </g>
+
+  <!-- Tile 02 -->
+  <g transform="translate(434 568)">
+    <rect width="350" height="148" rx="14" fill="#0A0E1A" stroke="#1E2535" stroke-width="1"/>
+    <rect width="350" height="148" rx="14" fill="none" class="stroke-cyan" stroke-width="1" opacity="0.55"/>
+    <text x="22" y="34" class="mono cyan" font-size="11" letter-spacing="3">[02] / INTELLIGENCE</text>
+    <text x="22" y="84" class="sans ink-100" font-size="32" font-weight="600">gpt-5.5</text>
+    <text x="22" y="118" class="sans ink-300" font-size="17">+ claude-sonnet-4-6</text>
+    <circle cx="328" cy="22" r="2.5" fill="#00E5FF"/>
+  </g>
+
+  <!-- Tile 03 (violet accent for variety) -->
+  <g transform="translate(808 568)">
+    <rect width="350" height="148" rx="14" fill="#0A0E1A" stroke="#1E2535" stroke-width="1"/>
+    <rect width="350" height="148" rx="14" fill="none" class="stroke-violet" stroke-width="1" opacity="0.6"/>
+    <text x="22" y="34" class="mono violet" font-size="11" letter-spacing="3">[03] / AUTH · MOAT</text>
+    <text x="22" y="84" class="sans ink-100" font-size="32" font-weight="600">OAuth</text>
+    <text x="22" y="118" class="sans ink-300" font-size="17">+ admin approval gate</text>
+    <circle cx="328" cy="22" r="2.5" fill="#A78BFA"/>
+  </g>
+
+  <!-- Tile 04 -->
+  <g transform="translate(1182 568)">
+    <rect width="358" height="148" rx="14" fill="#0A0E1A" stroke="#1E2535" stroke-width="1"/>
+    <rect width="358" height="148" rx="14" fill="none" class="stroke-cyan" stroke-width="1" opacity="0.55"/>
+    <text x="22" y="34" class="mono cyan" font-size="11" letter-spacing="3">[04] / RETRIEVAL</text>
+    <text x="22" y="84" class="sans ink-100" font-size="32" font-weight="600">pgvector</text>
+    <text x="22" y="118" class="sans ink-300" font-size="17">vector(1536) · embed-3</text>
+    <circle cx="336" cy="22" r="2.5" fill="#00E5FF"/>
+  </g>
+
+  <!-- Bottom rule + footer mono metadata -->
+  <line x1="60" y1="744" x2="1540" y2="744" class="stroke-mute" stroke-width="0.6"/>
+</svg>
