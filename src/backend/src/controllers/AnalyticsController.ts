@@ -16,6 +16,27 @@ function toNumber(value: string | number | null | undefined): number {
   return Number.parseFloat(value || '0');
 }
 
+async function getTotalUsers(): Promise<number> {
+  const profileSource = await selectRows<{ table_name: 'users' | 'app_profiles' | null }>(`
+    SELECT
+      CASE
+        WHEN to_regclass('public.users') IS NOT NULL THEN 'users'
+        WHEN to_regclass('public.app_profiles') IS NOT NULL THEN 'app_profiles'
+        ELSE NULL
+      END AS table_name
+  `);
+
+  if (!profileSource[0]?.table_name) {
+    return 0;
+  }
+
+  const totalUsers = await selectRows<{ count: string | number }>(`
+    SELECT COUNT(*) as count FROM ${profileSource[0].table_name}
+  `);
+
+  return toNumber(totalUsers[0]?.count);
+}
+
 export default class AnalyticsController {
   /**
    * Get security metrics for scripts
@@ -132,10 +153,7 @@ export default class AnalyticsController {
         ? Math.round(((currentCount - previousCount) / previousCount) * 100)
         : 0;
 
-      // Get total users
-      const totalUsers = await selectRows<{ count: string | number }>(`
-        SELECT COUNT(*) as count FROM users
-      `);
+      const totalUsers = await getTotalUsers();
 
       // Get total analyses (count of scripts with analysis results)
       const totalAnalyses = await selectRows<{ count: string | number }>(`
@@ -178,7 +196,7 @@ export default class AnalyticsController {
       res.status(200).json({
         totalScripts: toNumber(totalScripts[0]?.count),
         scriptsChange: scriptsChange,
-        totalUsers: toNumber(totalUsers[0]?.count),
+        totalUsers,
         totalAnalyses: toNumber(totalAnalyses[0]?.count),
         analysesChange: analysesChange,
         scriptsByDate: scriptsByDate

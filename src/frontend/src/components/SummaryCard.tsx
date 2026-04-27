@@ -15,6 +15,9 @@ import React from 'react';
 interface DocMetadata {
   aiInsights?: string[];
   codeExample?: string;
+  keyFindings?: string[];
+  riskNotes?: string[];
+  recommendedActions?: string[];
   scriptsFound?: number;
   qualityScore?: number;
   relevanceScore?: number;
@@ -239,6 +242,8 @@ function getQualityIndicator(doc: SummaryCardDoc): { level: 'high' | 'medium' | 
   if (doc.summary && doc.summary.length > 100) score += 2;
   if (doc.extractedCommands && doc.extractedCommands.length > 0) score += 2;
   if (doc.metadata?.aiInsights && doc.metadata.aiInsights.length > 0) score += 2;
+  if (doc.metadata?.keyFindings && doc.metadata.keyFindings.length > 0) score += 2;
+  if (doc.metadata?.recommendedActions && doc.metadata.recommendedActions.length > 0) score += 1;
   if (doc.metadata?.codeExample) score += 1;
   if (doc.tags && doc.tags.length > 2) score += 1;
   if (doc.extractedFunctions && doc.extractedFunctions.length > 0) score += 2;
@@ -362,6 +367,45 @@ const SummaryCard: React.FC<SummaryCardProps> = ({ doc, onClick, onDelete }) => 
                 </li>
               ))}
             </ul>
+          </div>
+        )}
+
+        {/* Report Findings Section */}
+        {doc.metadata?.keyFindings && doc.metadata.keyFindings.length > 0 && (
+          <div className="mb-4">
+            <div className="flex items-center gap-1.5 mb-2">
+              <svg className="w-4 h-4 text-sky-400" fill="currentColor" viewBox="0 0 20 20">
+                <path fillRule="evenodd" d="M4 3a2 2 0 00-2 2v10a2 2 0 002 2h12a2 2 0 002-2V7.414A2 2 0 0017.414 6L15 3.586A2 2 0 0013.586 3H4zm2 4a1 1 0 000 2h8a1 1 0 100-2H6zm0 3a1 1 0 100 2h8a1 1 0 100-2H6zm0 3a1 1 0 100 2h5a1 1 0 100-2H6z" clipRule="evenodd"/>
+              </svg>
+              <span className="text-xs font-semibold text-sky-400 uppercase tracking-wider">
+                Report Finding
+              </span>
+            </div>
+            <p className="text-sm text-gray-300 leading-relaxed line-clamp-2">
+              {doc.metadata.keyFindings[0]}
+            </p>
+          </div>
+        )}
+
+        {doc.metadata?.recommendedActions && doc.metadata.recommendedActions.length > 0 && (
+          <div className="mb-4 rounded-lg border border-blue-800/30 bg-blue-950/20 px-3 py-2">
+            <span className="block text-xs font-semibold text-blue-300 uppercase tracking-wider mb-1">
+              Next Action
+            </span>
+            <p className="text-sm text-blue-100/90 line-clamp-2">
+              {doc.metadata.recommendedActions[0]}
+            </p>
+          </div>
+        )}
+
+        {doc.metadata?.riskNotes && doc.metadata.riskNotes.length > 0 && (
+          <div className="mb-4 rounded-lg border border-red-800/30 bg-red-950/20 px-3 py-2">
+            <span className="block text-xs font-semibold text-red-300 uppercase tracking-wider mb-1">
+              Risk Note
+            </span>
+            <p className="text-sm text-red-100/90 line-clamp-2">
+              {doc.metadata.riskNotes[0]}
+            </p>
           </div>
         )}
 

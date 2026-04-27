@@ -7,6 +7,14 @@ import aiService from '../utils/aiService';
 import * as cheerio from 'cheerio';
 import crypto from 'crypto';
 import { docCrawlJobService, type DocCrawlJobProgress } from '../services/DocCrawlJobService';
+import {
+  buildDocumentationAnalysisPrompt,
+  extractPowerShellCommands,
+  extractPowerShellModules,
+  extractPowerShellScriptsFromHtml,
+  parseDocumentationAnalysisResponse,
+  type DocumentationAnalysisResult,
+} from '../services/documentationAnalysis';
 
 /**
  * Documentation Controller
@@ -513,49 +521,15 @@ export class DocumentationController {
         }
       };
 
-      const extractScripts = (html: string): string[] => {
-        const $ = cheerio.load(html);
-        const scripts: string[] = [];
-
-        $('pre code, code, .code-block, .powershell, [class*="language-powershell"], [class*="lang-ps"]').each((_, elem) => {
-          const code = $(elem).text().trim();
-          if (
-            code &&
-            (code.includes('Get-') ||
-              code.includes('Set-') ||
-              code.includes('New-') ||
-              code.includes('Remove-') ||
-              code.includes('$') ||
-              code.includes('param(') ||
-              code.includes('function ') ||
-              code.includes('Write-Host') ||
-              code.includes('Write-Output') ||
-              code.includes('ForEach-Object') ||
-              code.includes('Where-Object') ||
-              code.match(/\|\s*(Select|Where|ForEach|Sort|Group)/))
-          ) {
-            if (code.length > 20 && code.length < 10000) scripts.push(code);
-          }
-        });
-
-        return scripts;
-      };
+      const extractScripts = extractPowerShellScriptsFromHtml;
 
       const generateAITitleAndSummary = async (
         content: string,
         pageUrl: string,
         scripts: string[] = []
-      ): Promise<{ title: string; summary: string; category: string; aiInsights: string[]; codeExample: string }> => {
+      ): Promise<DocumentationAnalysisResult> => {
         try {
-          const scriptExamples = scripts.slice(0, 2).map((script, i) => {
-            const snippet =
-              script.length > 300
-                ? script.substring(0, script.indexOf('\n', 250) > 0 ? script.indexOf('\n', 250) : 300) + '...'
-                : script;
-            return `Script ${i + 1}:\n\`\`\`powershell\n${snippet}\n\`\`\``;
-          }).join('\n\n');
-
-          const prompt = `Analyze this PowerShell documentation and create a comprehensive summary card.\n\n**Generate:**\n1. title (max 60 chars)\n2. summary (max 150 chars)\n3. aiInsights (3-4 bullet strings)\n4. codeExample (max 100 chars)\n5. category (one of the predefined categories)\n\n**Page Content:**\n${content.substring(0, 2500)}\n\n${scripts.length > 0 ? `**PowerShell Code Found:**\n${scriptExamples}` : ''}\n\n**Respond ONLY with valid JSON.**`;
+          const prompt = buildDocumentationAnalysisPrompt(content, pageUrl, scripts);
 
           const AI_SERVICE_URL = process.env.AI_SERVICE_URL || 'http://ai-service:8000';
           // Force a non-coordinator path in the AI service for this deterministic task.
@@ -570,28 +544,13 @@ export class DocumentationController {
           );
 
           if (chatResponse.data?.response) {
-            let responseText = chatResponse.data.response;
-            if (responseText.startsWith('"') && responseText.endsWith('"')) responseText = responseText.slice(1, -1);
-            const jsonMatch = responseText.match(/\{[\s\S]*\}/);
-            if (jsonMatch) {
-              const parsed = JSON.parse(jsonMatch[0]);
-              return {
-                title: parsed.title || 'Untitled Document',
-                summary: parsed.summary || '',
-                category: parsed.category || 'General',
-                aiInsights: Array.isArray(parsed.aiInsights) ? parsed.aiInsights : [],
-                codeExample: parsed.codeExample || '',
-              };
-            }
+            return parseDocumentationAnalysisResponse(chatResponse.data.response, content, pageUrl);
           }
         } catch (error) {
           console.error('AI title/summary generation failed:', (error as any)?.message || error);
         }
 
-        // Fallback
-        const urlParts = pageUrl.split('/').filter(Boolean);
-        const fallbackTitle = (urlParts[urlParts.length - 1] || 'Documentation Page').replace(/[-_]/g, ' ').slice(0, 60);
-        return { title: fallbackTitle, summary: content.substring(0, 200), category: 'General', aiInsights: [], codeExample: '' };
+        return parseDocumentationAnalysisResponse('', content, pageUrl);
       };
 
       const analyzeScripts = async (scripts: string[]): Promise<{ name: string; description: string; code: string }[]> => {
@@ -643,14 +602,20 @@ export class DocumentationController {
 
         const extractedScripts = extractScripts(pageData.html);
         pushProgressFromDocs(`Analyzing page with AI: ${pageUrl}`, crawledDocs, Math.min(crawledDocs.length + 1, maxPages));
-        const { title, summary, category, aiInsights, codeExample } = await generateAITitleAndSummary(textContent, pageUrl, extractedScripts);
+        const {
+          title,
+          summary,
+          category,
+          aiInsights,
+          codeExample,
+          keyFindings,
+          riskNotes,
+          recommendedActions,
+        } = await generateAITitleAndSummary(textContent, pageUrl, extractedScripts);
         const analyzedScripts = extractedScripts.length > 0 ? await analyzeScripts(extractedScripts) : [];
 
-        const commandPattern = /\b(Get|Set|New|Remove|Start|Stop|Add|Clear|Copy|Move|Rename|Test|Import|Export|Invoke|Register|Unregister|Update|Write|Read)-[A-Z][a-zA-Z]+\b/g;
-        const extractedCommands = [...new Set(textContent.match(commandPattern) || [])];
-
-        const modulePattern = /\b(Microsoft\.[A-Z][a-zA-Z.]+|PSReadLine|Pester|PSScriptAnalyzer|Az\.[A-Z][a-zA-Z]+)\b/g;
-        const extractedModules = [...new Set(textContent.match(modulePattern) || [])];
+        const extractedCommands = extractPowerShellCommands(textContent);
+        const extractedModules = extractPowerShellModules(textContent);
 
         let source = 'Web';
         if (pageUrl.includes('microsoft.com')) source = 'Microsoft Learn';
@@ -710,6 +675,9 @@ export class DocumentationController {
             crawledDepth: currentDepth,
             aiInsights,
             codeExample,
+            keyFindings,
+            riskNotes,
+            recommendedActions,
           },
           crawledAt: new Date().toISOString(),
         };
@@ -837,81 +805,12 @@ export class DocumentationController {
       };
 
       // Helper to extract PowerShell scripts from HTML
-      const extractScripts = (html: string): string[] => {
-        const $ = cheerio.load(html);
-        const scripts: string[] = [];
-
-        // Look for code blocks with PowerShell content
-        $('pre code, code, .code-block, .powershell, [class*="language-powershell"], [class*="lang-ps"]').each((_, elem) => {
-          const code = $(elem).text().trim();
-          // Check if it looks like PowerShell (contains common cmdlets or PS syntax)
-          if (code && (
-            code.includes('Get-') ||
-            code.includes('Set-') ||
-            code.includes('New-') ||
-            code.includes('Remove-') ||
-            code.includes('$') ||
-            code.includes('param(') ||
-            code.includes('function ') ||
-            code.includes('Write-Host') ||
-            code.includes('Write-Output') ||
-            code.includes('ForEach-Object') ||
-            code.includes('Where-Object') ||
-            code.match(/\|\s*(Select|Where|ForEach|Sort|Group)/)
-          )) {
-            if (code.length > 20 && code.length < 10000) {
-              scripts.push(code);
-            }
-          }
-        });
-
-        return scripts;
-      };
+      const extractScripts = extractPowerShellScriptsFromHtml;
 
       // Helper to use AI for title and summary generation
-      const generateAITitleAndSummary = async (content: string, pageUrl: string, scripts: string[] = []): Promise<{ title: string; summary: string; category: string; aiInsights: string[]; codeExample: string }> => {
+      const generateAITitleAndSummary = async (content: string, pageUrl: string, scripts: string[] = []): Promise<DocumentationAnalysisResult> => {
         try {
-          // Build script examples section for the prompt
-          const scriptExamples = scripts.slice(0, 2).map((script, i) => {
-            // Get a meaningful snippet of each script (first 300 chars or up to a logical break)
-            const snippet = script.length > 300
-              ? script.substring(0, script.indexOf('\n', 250) > 0 ? script.indexOf('\n', 250) : 300) + '...'
-              : script;
-            return `Script ${i + 1}:\n\`\`\`powershell\n${snippet}\n\`\`\``;
-          }).join('\n\n');
-
-          // Use AI to analyze the content with enhanced prompt
-          const prompt = `Analyze this PowerShell documentation and create a comprehensive summary card.
-
-**Generate:**
-1. **title** (max 60 chars): Clear, descriptive title for the content
-2. **summary** (max 150 chars): One-line overview of what this covers
-3. **aiInsights** (array of 3-4 strings): Key learning points as bullet items, each 50-80 chars. Focus on:
-   - Main cmdlets or functions covered
-   - Key use cases or scenarios
-   - Important parameters or options
-   - Best practices mentioned
-4. **codeExample** (max 100 chars): One short PowerShell example from the page, or empty if none
-5. **category**: One of: Process Management, File System, Service Management, Network, Security, Module Management, Data Conversion, Pipeline, Output, Web Requests, Active Directory, Azure, AWS, General
-
-**Page Content:**
-${content.substring(0, 2500)}
-
-${scripts.length > 0 ? `**PowerShell Code Found:**\n${scriptExamples}` : ''}
-
-**Respond ONLY with valid JSON:**
-{
-  "title": "Getting Started with Get-Process",
-  "summary": "Learn to monitor and manage Windows processes using PowerShell cmdlets.",
-  "aiInsights": [
-    "Use Get-Process to list all running processes",
-    "Filter by name with -Name parameter",
-    "Pipe to Stop-Process for termination",
-    "Check CPU usage with CPU property"
-  ],
-  "codeExample": "Get-Process | Where-Object {$_.CPU -gt 100}",
-  "category": "Process Management"
-}`;
+          const prompt = buildDocumentationAnalysisPrompt(content, pageUrl, scripts);
 
           // Call AI service chat endpoint directly
           const AI_SERVICE_URL = process.env.AI_SERVICE_URL || 'http://ai-service:8000';
@@ -921,100 +820,17 @@ ${scripts.length > 0 ? `**PowerShell Code Found:**\n${scriptExamples}` : ''}
 
           if (chatResponse.data?.response) {
             try {
-              // Clean up the response - remove quotes if wrapped
-              let responseText = chatResponse.data.response;
-              if (responseText.startsWith('"') && responseText.endsWith('"')) {
-                responseText = responseText.slice(1, -1);
-              }
-
-              // Try to parse JSON from the response
-              const jsonMatch = responseText.match(/\{[\s\S]*\}/);
-              if (jsonMatch) {
-                const parsed = JSON.parse(jsonMatch[0]);
-                return {
-                  title: parsed.title || 'Untitled Document',
-                  summary: parsed.summary || '',
-                  category: parsed.category || 'General',
-                  aiInsights: Array.isArray(parsed.aiInsights) ? parsed.aiInsights : [],
-                  codeExample: parsed.codeExample || ''
-                };
-              }
+              return parseDocumentationAnalysisResponse(chatResponse.data.response, content, pageUrl);
             } catch (_parseError) {
               console.log('JSON parse failed, using text response');
-              // If JSON parsing fails, extract from text
-              return {
-                title: content.substring(0, 60).replace(/\n/g, ' ').trim() || 'Untitled Document',
-                summary: chatResponse.data.response.substring(0, 200),
-                category: 'General',
-                aiInsights: [],
-                codeExample: ''
-              };
+              return parseDocumentationAnalysisResponse('', content, pageUrl);
             }
           }
         } catch (error) {
           console.error('AI title/summary generation failed:', (error as any)?.message || error);
         }
 
-        // Fallback: Smart title extraction from URL and content
-        const urlParts = pageUrl.split('/').filter(Boolean);
-        let fallbackTitle = urlParts[urlParts.length - 1]?.replace(/-/g, ' ').replace(/_/g, ' ') || '';
-
-        // Try to extract title from content (look for heading patterns)
-        const headingMatch = content.match(/^#\s+(.+)|^(.+?)\n=+|<h1[^>]*>([^<]+)/m);
-        if (headingMatch) {
-          fallbackTitle = (headingMatch[1] || headingMatch[2] || headingMatch[3]).trim();
-        }
-
-        // Clean up title
-        fallbackTitle = fallbackTitle
-          .replace(/\s+/g, ' ')
-          .replace(/[|•·]/g, ' - ')
-          .trim()
-          .substring(0, 60);
-
-        if (!fallbackTitle || fallbackTitle.length < 3) {
-          fallbackTitle = 'Documentation Page';
-        }
-
-        // Title case the fallback
-        fallbackTitle = fallbackTitle
-          .split(' ')
-          .map(word => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
-          .join(' ');
-
-        // Try to detect category from content keywords
-        let category = 'General';
-        const lowerContent = content.toLowerCase();
-        if (lowerContent.includes('get-process') || lowerContent.includes('process management')) category = 'Process Management';
-        else if (lowerContent.includes('file system') || lowerContent.includes('get-childitem')) category = 'File System';
-        else if (lowerContent.includes('service') || lowerContent.includes('get-service')) category = 'Service Management';
-        else if (lowerContent.includes('network') || lowerContent.includes('test-connection')) category = 'Network';
-        else if (lowerContent.includes('security') || lowerContent.includes('execution policy')) category = 'Security';
-        else if (lowerContent.includes('module') || lowerContent.includes('import-module')) category = 'Module Management';
-        else if (lowerContent.includes('json') || lowerContent.includes('convert')) category = 'Data Conversion';
-        else if (lowerContent.includes('pipeline') || lowerContent.includes('foreach-object')) category = 'Pipeline';
-
-        // Generate smart summary from first meaningful paragraph
-        let summary = content
-          .replace(/Table of contents.*?Focus mode/gi, '')
-          .replace(/Exit editor mode.*?Ask Learn/gi, '')
-          .replace(/\s+/g, ' ')
-          .trim()
-          .substring(0, 250);
-
-        // Try to get first complete sentence
-        const sentenceEnd = summary.search(/[.!?]\s/);
-        if (sentenceEnd > 50) {
-          summary = summary.substring(0, sentenceEnd + 1);
-        }
-
-        return {
-          title: fallbackTitle,
-          summary: summary || 'PowerShell documentation page.',
-          category,
-          aiInsights: [],
-          codeExample: ''
-        };
+        return parseDocumentationAnalysisResponse('', content, pageUrl);
       };
 
       // Helper to analyze extracted scripts with AI
@@ -1084,18 +900,23 @@ ${scripts.length > 0 ? `**PowerShell Code Found:**\n${scriptExamples}` : ''}
         const extractedScripts = extractScripts(pageData.html);
 
         // Generate AI title and summary - now passes scripts for better summaries with examples
-        const { title, summary, category, aiInsights, codeExample } = await generateAITitleAndSummary(textContent, pageUrl, extractedScripts);
+        const {
+          title,
+          summary,
+          category,
+          aiInsights,
+          codeExample,
+          keyFindings,
+          riskNotes,
+          recommendedActions,
+        } = await generateAITitleAndSummary(textContent, pageUrl, extractedScripts);
         const analyzedScripts = extractedScripts.length > 0
           ? await analyzeScripts(extractedScripts)
           : [];
 
         // Extract commands mentioned in the content
-        const commandPattern = /\b(Get|Set|New|Remove|Start|Stop|Add|Clear|Copy|Move|Rename|Test|Import|Export|Invoke|Register|Unregister|Update|Write|Read)-[A-Z][a-zA-Z]+\b/g;
-        const extractedCommands = [...new Set(textContent.match(commandPattern) || [])];
-
-        // Extract module names
-        const modulePattern = /\b(Microsoft\.[A-Z][a-zA-Z.]+|PSReadLine|Pester|PSScriptAnalyzer|Az\.[A-Z][a-zA-Z]+)\b/g;
-        const extractedModules = [...new Set(textContent.match(modulePattern) || [])];
+        const extractedCommands = extractPowerShellCommands(textContent);
+        const extractedModules = extractPowerShellModules(textContent);
 
         // Determine source from URL
         let source = 'Web';
@@ -1169,7 +990,10 @@ ${scripts.length > 0 ? `**PowerShell Code Found:**\n${scriptExamples}` : ''}
             crawledDepth: currentDepth,
             // AI-generated insights for card display
             aiInsights: aiInsights,  // Array of key learning points
-            codeExample: codeExample  // Short code snippet
+            codeExample: codeExample,  // Short code snippet
+            keyFindings,
+            riskNotes,
+            recommendedActions,
           },
           crawledAt: new Date().toISOString()
         };

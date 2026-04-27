@@ -733,6 +733,54 @@ const Documentation: React.FC = () => {
                 </div>
               )}
 
+              {(selectedDoc.metadata as any)?.keyFindings && (selectedDoc.metadata as any).keyFindings.length > 0 && (
+                <div className="bg-gradient-to-r from-sky-900/20 to-blue-900/20 rounded-xl p-5 border border-sky-500/20">
+                  <h3 className="text-sm font-semibold text-sky-400 uppercase tracking-wider mb-3">
+                    Findings Summary
+                  </h3>
+                  <ul className="space-y-2">
+                    {((selectedDoc.metadata as any).keyFindings as string[]).map((finding, idx) => (
+                      <li key={idx} className="flex items-start text-gray-300">
+                        <span className="text-sky-400 mr-3 mt-1">{idx + 1}.</span>
+                        <span className="leading-relaxed">{finding}</span>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              )}
+
+              {(selectedDoc.metadata as any)?.riskNotes && (selectedDoc.metadata as any).riskNotes.length > 0 && (
+                <div className="bg-gradient-to-r from-red-900/20 to-rose-900/20 rounded-xl p-5 border border-red-500/20">
+                  <h3 className="text-sm font-semibold text-red-400 uppercase tracking-wider mb-3">
+                    Risk Notes
+                  </h3>
+                  <ul className="space-y-2">
+                    {((selectedDoc.metadata as any).riskNotes as string[]).map((risk, idx) => (
+                      <li key={idx} className="flex items-start text-gray-300">
+                        <span className="text-red-400 mr-3 mt-1">!</span>
+                        <span className="leading-relaxed">{risk}</span>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              )}
+
+              {(selectedDoc.metadata as any)?.recommendedActions && (selectedDoc.metadata as any).recommendedActions.length > 0 && (
+                <div className="bg-gradient-to-r from-blue-900/20 to-indigo-900/20 rounded-xl p-5 border border-blue-500/20">
+                  <h3 className="text-sm font-semibold text-blue-400 uppercase tracking-wider mb-3">
+                    Recommended Actions
+                  </h3>
+                  <ul className="space-y-2">
+                    {((selectedDoc.metadata as any).recommendedActions as string[]).map((action, idx) => (
+                      <li key={idx} className="flex items-start text-gray-300">
+                        <span className="text-blue-400 mr-3 mt-1">{idx + 1}.</span>
+                        <span className="leading-relaxed">{action}</span>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              )}
+
               {/* Tags Section */}
               {selectedDoc.tags && selectedDoc.tags.length > 0 && (
                 <div>

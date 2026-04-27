@@ -294,7 +294,7 @@ A small four-up — the door, the workspace it protects, the analysis that justi
 
 ## Run it yourself.
 
-If you want to bring this up locally or push it to your own Netlify + Supabase, here's the short version. The long version is in [Getting Started](./docs/GETTING-STARTED.md) and [Netlify + Supabase Deployment](./docs/NETLIFY-SUPABASE-DEPLOYMENT.md).
+If you want to bring this up locally or push it to your own Netlify + Supabase, here's the short version. The long version is in [Setup Guide With Screenshots](./docs/SETUP-WITH-SCREENSHOTS.md), [Getting Started](./docs/GETTING-STARTED.md), and [Netlify + Supabase Deployment](./docs/NETLIFY-SUPABASE-DEPLOYMENT.md).
 
 ### You'll need
 
@@ -477,6 +477,7 @@ Not in the hosted path, no. Non-admin users can upload, view, search, and run AI
 | Document | What's in it |
 | :--- | :--- |
 | [Getting Started](./docs/GETTING-STARTED.md)                                 | Local bootstrap and first-run notes                                          |
+| [Setup Guide With Screenshots](./docs/SETUP-WITH-SCREENSHOTS.md)             | Full component setup — Supabase, Netlify, local services, screenshots, validation |
 | [Netlify + Supabase Deployment](./docs/NETLIFY-SUPABASE-DEPLOYMENT.md)       | The real hosted path — env vars, Google OAuth, redirect setup                |
 | [Repository Organization](./docs/REPOSITORY-ORGANIZATION.md)                 | Repo layout and docs taxonomy                                                |
 | [Browser Use QA](./BROWSER_USE_QA.md)                                        | Browser test matrix and validation history                                   |

@@ -117,7 +117,18 @@ cleanup() {
 
 start_local_stack() {
   load_root_env
-  require_local_prereq python "python"
+  local python_cmd="${PYTHON:-}"
+  if [[ -z "$python_cmd" ]]; then
+    if command_exists python; then
+      python_cmd="python"
+    elif command_exists python3; then
+      python_cmd="python3"
+    else
+      log "python or python3 is required for PLAYWRIGHT_STACK_MODE=local"
+      exit 1
+    fi
+  fi
+
   require_local_prereq npm "npm"
   require_local_prereq curl "curl"
   require_supabase_database_url
@@ -138,7 +149,7 @@ start_local_stack() {
       DB_PROFILE="${DB_PROFILE:-supabase}" \
       DB_SSL="${DB_SSL:-true}" \
       REDIS_URL="${REDIS_URL:-}" \
-      python -m uvicorn main:app --host 0.0.0.0 --port 8000
+      "$python_cmd" -m uvicorn main:app --host 0.0.0.0 --port 8000
   fi
 
   wait_for_http "http://127.0.0.1:8000/health" "AI service"

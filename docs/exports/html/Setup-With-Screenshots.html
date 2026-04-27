@@ -1,0 +1,741 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <base href="file:///Users/morlock/fun/02_PowerShell_Projects/psscript/" />
+  <title>Setup-With-Screenshots</title>
+  <style>
+:root {
+  color-scheme: light;
+}
+body {
+  font-family: "Segoe UI", "Helvetica Neue", Arial, sans-serif;
+  margin: 0;
+  padding: 0;
+  background: #f4f7fb;
+  color: #0f172a;
+}
+.markdown-body {
+  max-width: 980px;
+  margin: 0 auto;
+  padding: 36px 42px 64px;
+  line-height: 1.65;
+  background: #ffffff;
+  box-shadow: 0 24px 70px rgba(15, 23, 42, 0.08);
+}
+.markdown-body h1 {
+  font-size: 34px;
+  line-height: 1.12;
+  margin-bottom: 12px;
+  color: #07111f;
+  border-bottom: 3px solid #0ea5e9;
+  padding-bottom: 12px;
+  page-break-before: always;
+  page-break-after: avoid;
+  break-before: page;
+  break-after: avoid;
+}
+.markdown-body h1:first-of-type {
+  page-break-before: avoid;
+  break-before: avoid;
+}
+.markdown-body h2 {
+  font-size: 23px;
+  line-height: 1.2;
+  margin-top: 34px;
+  color: #102a43;
+  border-bottom: 1px solid #d7e2ee;
+  padding-bottom: 8px;
+  page-break-after: avoid;
+  break-after: avoid;
+}
+.markdown-body h3 {
+  font-size: 18px;
+  margin-top: 20px;
+  color: #1e3a5f;
+  page-break-after: avoid;
+  break-after: avoid;
+}
+.markdown-body h4, .markdown-body h5, .markdown-body h6 {
+  page-break-after: avoid;
+  break-after: avoid;
+}
+.markdown-body table {
+  width: 100%;
+  border-collapse: collapse;
+  margin: 18px 0 24px;
+  font-size: 13px;
+  page-break-inside: avoid;
+  break-inside: avoid;
+  box-shadow: 0 1px 0 #e2e8f0;
+}
+.markdown-body th,
+.markdown-body td {
+  border: 1px solid #e2e8f0;
+  padding: 9px 11px;
+  text-align: left;
+  vertical-align: top;
+}
+.markdown-body th {
+  background: #eef6ff;
+  color: #0f3157;
+  font-weight: 700;
+}
+.markdown-body tr:nth-child(even) td {
+  background: #fbfdff;
+}
+.markdown-body tr {
+  page-break-inside: avoid;
+  break-inside: avoid;
+}
+.markdown-body code {
+  background: #f1f5f9;
+  padding: 2px 4px;
+  border-radius: 4px;
+  font-family: "SFMono-Regular", Menlo, Consolas, monospace;
+  font-size: 0.92em;
+}
+.markdown-body pre {
+  background: #111827;
+  color: #e5eef8;
+  padding: 16px;
+  border-radius: 10px;
+  overflow-x: auto;
+  border: 1px solid #243244;
+  page-break-inside: avoid;
+  break-inside: avoid;
+}
+.markdown-body pre code {
+  background: transparent;
+  color: inherit;
+}
+.markdown-body blockquote {
+  border-left: 5px solid #0ea5e9;
+  margin: 18px 0;
+  padding: 12px 18px;
+  background: #eff8ff;
+  color: #18324f;
+  border-radius: 0 10px 10px 0;
+}
+.markdown-body img {
+  max-width: 100%;
+  height: auto;
+  display: block;
+  margin: 16px 0;
+  border-radius: 10px;
+  box-shadow: 0 8px 20px rgba(15, 23, 42, 0.12);
+  page-break-inside: avoid;
+  break-inside: avoid;
+}
+.markdown-body figure {
+  page-break-inside: avoid;
+  break-inside: avoid;
+  margin: 16px 0;
+}
+.markdown-body a {
+  color: #2563eb;
+  text-decoration: none;
+}
+.markdown-body a:hover {
+  text-decoration: underline;
+}
+.cover {
+  min-height: 760px;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+  padding: 72px 60px 64px;
+  background:
+    linear-gradient(135deg, rgba(9, 30, 66, 0.96) 0%, rgba(12, 74, 110, 0.94) 54%, rgba(20, 83, 45, 0.9) 100%),
+    radial-gradient(circle at 18% 18%, rgba(14, 165, 233, 0.25), transparent 36%);
+  color: #f8fafc;
+  border-radius: 0;
+  margin: -36px -42px 40px;
+  position: relative;
+  overflow: hidden;
+}
+.cover::before {
+  content: "PSScript";
+  position: absolute;
+  top: 46px;
+  left: 60px;
+  font-size: 12px;
+  font-weight: 800;
+  letter-spacing: 0.24em;
+  text-transform: uppercase;
+  color: rgba(226, 246, 255, 0.82);
+}
+.cover::after {
+  content: "";
+  position: absolute;
+  right: -120px;
+  top: -120px;
+  width: 360px;
+  height: 360px;
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  transform: rotate(28deg);
+}
+.markdown-body .cover-title {
+  font-size: 48px;
+  line-height: 1.04;
+  font-weight: 800;
+  color: #f8fafc;
+  border-bottom: 3px solid #38bdf8;
+  margin: 0 0 16px;
+  max-width: 720px;
+}
+.cover-subtitle {
+  font-size: 20px;
+  line-height: 1.42;
+  color: #dbeafe;
+  margin: 0 0 22px;
+  max-width: 720px;
+}
+.cover-meta {
+  display: inline-block;
+  width: fit-content;
+  font-size: 13px;
+  color: #e0f2fe;
+  background: rgba(255, 255, 255, 0.12);
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  border-radius: 999px;
+  padding: 7px 13px;
+}
+.page-break {
+  page-break-after: always;
+  break-after: page;
+}
+.footer {
+  margin-top: 40px;
+  font-size: 12px;
+  color: #64748b;
+  border-top: 1px solid #e2e8f0;
+  padding-top: 14px;
+}
+/* Print and PDF-specific styles */
+@page {
+  size: A4;
+  margin: 18mm 16mm 20mm;
+}
+@media print {
+  body {
+    background: #ffffff;
+  }
+  .markdown-body {
+    max-width: none;
+    margin: 0;
+    padding: 0;
+    box-shadow: none;
+  }
+  .cover {
+    margin: 0 0 28px;
+  }
+  .markdown-body {
+    orphans: 3;
+    widows: 3;
+  }
+  .markdown-body p {
+    orphans: 3;
+    widows: 3;
+  }
+  .markdown-body li {
+    page-break-inside: avoid;
+    break-inside: avoid;
+  }
+  .markdown-body ul, .markdown-body ol {
+    page-break-before: avoid;
+    break-before: avoid;
+  }
+  .markdown-body blockquote {
+    page-break-inside: avoid;
+    break-inside: avoid;
+  }
+  /* Keep section content together */
+  .markdown-body h2 + *, .markdown-body h3 + * {
+    page-break-before: avoid;
+    break-before: avoid;
+  }
+}
+</style>
+</head>
+<body>
+  <div class="markdown-body">
+    
+    <h1 id="psscript-setup-guide-with-screenshots">PSScript Setup Guide With Screenshots</h1>
+<p><em>Last updated: April 27, 2026</em></p>
+<p>This guide shows how to set up every active component in the current PSScript application:</p>
+<ul>
+<li>React/Vite frontend</li>
+<li>Express backend API</li>
+<li>FastAPI AI service</li>
+<li>Supabase Auth, Postgres, storage, <code>pgvector</code>, and approval-gated Google OAuth</li>
+<li>Netlify hosted deployment</li>
+<li>local validation, screenshots, and PDF documentation export</li>
+</ul>
+<p>Docker is retired from the active setup. Historical Docker files are preserved under <code>retired/docker/</code>, but new development and validation should use the local services below with a hosted Supabase database.</p>
+<p><img alt="Dashboard screenshot" src="docs/screenshots/readme/dashboard.png" /></p>
+<h2 id="1-runtime-map">1. Runtime Map</h2>
+<table>
+<thead>
+<tr>
+<th>Component</th>
+<th>Active role</th>
+<th>Local URL</th>
+<th>Hosted role</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Frontend</td>
+<td>React app, OAuth callback, script/documentation UI</td>
+<td><code>https://127.0.0.1:3090</code></td>
+<td>Netlify static site</td>
+</tr>
+<tr>
+<td>Backend API</td>
+<td>local development API, validation, AI/document routes</td>
+<td><code>https://127.0.0.1:4000</code></td>
+<td>Netlify Functions provide hosted <code>/api/*</code></td>
+</tr>
+<tr>
+<td>AI service</td>
+<td>local LangGraph/voice/agent workflows</td>
+<td><code>http://127.0.0.1:8000</code></td>
+<td>optional local-only service</td>
+</tr>
+<tr>
+<td>Supabase</td>
+<td>Auth, Postgres, RLS, <code>pgvector</code>, approval gate</td>
+<td>hosted Supabase project</td>
+<td>hosted Supabase project</td>
+</tr>
+<tr>
+<td>Netlify</td>
+<td>production frontend and Functions runtime</td>
+<td>optional <code>netlify dev</code></td>
+<td>production deploy</td>
+</tr>
+</tbody>
+</table>
+<p><img alt="Architecture graphic" src="docs/graphics/architecture-aurora.svg" /></p>
+<h2 id="2-prerequisites">2. Prerequisites</h2>
+<p>Install these locally:</p>
+<ul>
+<li>Node.js 20+</li>
+<li>npm 10+</li>
+<li>Python 3.10+</li>
+<li>Netlify CLI if deploying hosted: <code>npm install -g netlify-cli</code></li>
+<li>Supabase project access</li>
+<li>OpenAI API key, Anthropic API key, or both</li>
+</ul>
+<p>Install project dependencies:</p>
+<pre><code class="language-bash">npm install
+npm install --prefix src/frontend
+npm install --prefix src/backend
+python3 -m pip install -r src/ai/requirements.txt
+</code></pre>
+<p>If your shell exposes <code>python</code> instead of <code>python3</code>, use <code>python</code>. The Playwright stack script accepts either.</p>
+<h2 id="3-supabase-setup">3. Supabase Setup</h2>
+<p>Create a Supabase project, then apply the migrations in filename order:</p>
+<pre><code class="language-text">supabase/migrations/20260424_hosted_schema.sql
+supabase/migrations/20260425_scripts_file_hash_uniqueness.sql
+supabase/migrations/20260425_user_management_schema_fixes.sql
+supabase/migrations/20260426_supabase_advisor_fixes.sql
+supabase/migrations/20260426_z_google_oauth_approval_gate.sql
+</code></pre>
+<p>After migration, confirm:</p>
+<ul>
+<li>the <code>vector</code> extension exists</li>
+<li><code>app_profiles</code> exists</li>
+<li><code>scripts</code>, <code>script_analysis</code>, <code>script_embeddings</code>, <code>documentation_items</code>, and <code>ai_metrics</code> exist</li>
+<li>RLS policies are enabled for hosted tables</li>
+<li><code>current_app_profile_is_enabled()</code> exists</li>
+</ul>
+<p>The approval gate depends on <code>app_profiles.is_enabled</code>. New Google OAuth users are inserted disabled, then an admin enables them in User Management.</p>
+<p><img alt="Pending approval screenshot" src="docs/screenshots/readme/pending-approval.png" /></p>
+<h2 id="4-google-oauth-approval-gate">4. Google OAuth Approval Gate</h2>
+<p>Configure Google OAuth in both Google Cloud and Supabase:</p>
+<ol>
+<li>In Google Cloud, create an OAuth web client.</li>
+<li>Add redirect URLs:</li>
+<li><code>https://YOUR_NETLIFY_SITE/auth/callback</code></li>
+<li><code>http://localhost:3090/auth/callback</code></li>
+<li><code>https://127.0.0.1:3090/auth/callback</code></li>
+<li>In Supabase, enable Google under Auth Providers.</li>
+<li>Paste the Google client ID and secret into Supabase.</li>
+<li>In Supabase Auth URL configuration, add the hosted and local callback URLs.</li>
+<li>Set <code>DEFAULT_ADMIN_EMAIL</code> to the first administrator's email.</li>
+</ol>
+<p>Flow:</p>
+<ol>
+<li>User signs in with Google.</li>
+<li>Supabase creates or resolves the Auth user.</li>
+<li><code>/api/auth/me</code> creates or updates the matching <code>app_profiles</code> row.</li>
+<li>New users default to <code>is_enabled = false</code>.</li>
+<li>Disabled users see Pending Approval and protected API calls return <code>403 account_pending_approval</code>.</li>
+<li>An enabled admin opens Settings -&gt; User Management and enables the user.</li>
+</ol>
+<p><img alt="Login screenshot" src="docs/screenshots/readme/login.png" /></p>
+<h2 id="5-environment-variables">5. Environment Variables</h2>
+<p>Create <code>.env</code> at the repo root for local development:</p>
+<pre><code class="language-bash">DATABASE_URL=postgresql://...supabase-pooler-url...
+DB_PROFILE=supabase
+DB_SSL=true
+DB_SSL_REJECT_UNAUTHORIZED=true
+
+SUPABASE_URL=https://your-project.supabase.co
+SUPABASE_ANON_KEY=...
+SUPABASE_SERVICE_ROLE_KEY=...
+DEFAULT_ADMIN_EMAIL=admin@example.com
+
+OPENAI_API_KEY=...
+OPENAI_MODEL=gpt-5.5
+OPENAI_ANALYSIS_MODEL=gpt-5.4-mini
+OPENAI_EMBEDDING_MODEL=text-embedding-3-small
+OPENAI_MAX_OUTPUT_TOKENS=1600
+OPENAI_ANALYSIS_MAX_OUTPUT_TOKENS=1800
+
+ANTHROPIC_API_KEY=...
+ANTHROPIC_MODEL=claude-sonnet-4-6
+ANTHROPIC_MAX_TOKENS=1600
+
+VOICE_TTS_MODEL=gpt-4o-mini-tts
+VOICE_TTS_VOICE=marin
+VOICE_STT_MODEL=gpt-4o-mini-transcribe
+VOICE_STT_DIARIZE_MODEL=gpt-4o-transcribe-diarize
+VOICE_MAX_BASE64_CHARS=16000000
+
+VITE_SUPABASE_URL=https://your-project.supabase.co
+VITE_SUPABASE_ANON_KEY=...
+VITE_HOSTED_STATIC_ANALYSIS_ONLY=true
+</code></pre>
+<p>Keep these server-side only:</p>
+<ul>
+<li><code>DATABASE_URL</code></li>
+<li><code>SUPABASE_SERVICE_ROLE_KEY</code></li>
+<li><code>OPENAI_API_KEY</code></li>
+<li><code>ANTHROPIC_API_KEY</code></li>
+</ul>
+<p>Only <code>VITE_*</code> values are meant for the browser.</p>
+<h2 id="6-start-all-local-components">6. Start All Local Components</h2>
+<p>The recommended local path is Playwright's stack launcher. It reads <code>.env</code>, starts missing services, and checks health:</p>
+<pre><code class="language-bash">npx playwright test tests/e2e/project-review-validation.spec.ts --project=chromium
+</code></pre>
+<p>For manual startup, use three terminals:</p>
+<pre><code class="language-bash"># Terminal 1: AI service
+cd src/ai
+python3 -m uvicorn main:app --host 0.0.0.0 --port 8000
+</code></pre>
+<pre><code class="language-bash"># Terminal 2: backend API
+cd src/backend
+npm run dev
+</code></pre>
+<pre><code class="language-bash"># Terminal 3: frontend
+cd src/frontend
+npm run dev -- --host 0.0.0.0 --port 3090
+</code></pre>
+<p>Open:</p>
+<pre><code class="language-text">https://127.0.0.1:3090
+</code></pre>
+<p>The default local Playwright/development mode can run with auth disabled for fast validation. Hosted-mode testing should run with Supabase Auth enabled.</p>
+<h2 id="7-component-checks">7. Component Checks</h2>
+<p>Run these checks after startup:</p>
+<pre><code class="language-bash">curl -sk https://127.0.0.1:4000/api/health
+curl -s http://127.0.0.1:8000/health
+</code></pre>
+<p>Expected backend health includes database and cache status. Expected AI health includes a <code>status</code> field.</p>
+<p>Then run builds and tests:</p>
+<pre><code class="language-bash">cd src/backend
+npm run build
+npm test -- --runInBand --forceExit
+</code></pre>
+<pre><code class="language-bash">cd src/frontend
+npm run build
+</code></pre>
+<pre><code class="language-bash">cd /Users/morlock/fun/02_PowerShell_Projects/psscript
+npx playwright test --project=chromium
+</code></pre>
+<p>The latest full Chromium validation on April 27, 2026 passed with 37 passed and 3 intentionally skipped tests.</p>
+<h2 id="8-upload-and-ai-analysis-smoke-test">8. Upload And AI Analysis Smoke Test</h2>
+<p>Use the Script Management page to confirm the AI analysis path:</p>
+<ol>
+<li>Open Script Management.</li>
+<li>Upload or paste a <code>.ps1</code> script.</li>
+<li>Confirm the script appears in the list.</li>
+<li>Open the script detail page.</li>
+<li>Confirm the AI-generated summary, security score, quality score, and remediation content are populated.</li>
+</ol>
+<p><img alt="Script workspace screenshot" src="docs/screenshots/readme/scripts.png" /></p>
+<p><img alt="Analysis screenshot" src="docs/screenshots/readme/analysis.png" /></p>
+<p>The current document-analysis flow also stores richer report metadata:</p>
+<ul>
+<li><code>keyFindings</code></li>
+<li><code>riskNotes</code></li>
+<li><code>recommendedActions</code></li>
+<li>extracted PowerShell commands</li>
+<li>extracted PowerShell modules</li>
+<li>code examples when present</li>
+</ul>
+<h2 id="9-documentation-ai-scanning">9. Documentation AI Scanning</h2>
+<p>Use the Documentation page to crawl and analyze PowerShell documentation:</p>
+<ol>
+<li>Open Documentation.</li>
+<li>Start a crawl or load existing documentation items.</li>
+<li>Open a documentation item.</li>
+<li>Confirm Key Insights, Findings Summary, Risk Notes, and Recommended Actions render in the detail modal.</li>
+</ol>
+<p><img alt="Documentation screenshot" src="docs/screenshots/readme/documentation.png" /></p>
+<p>The backend prompt asks the model for an audit-ready JSON response. If the model returns invalid JSON, the parser falls back to a deterministic local summary so the UI still renders useful output.</p>
+<h2 id="10-admin-and-data-maintenance">10. Admin And Data Maintenance</h2>
+<p>Open Settings for admin workflows:</p>
+<ul>
+<li>Profile and account settings</li>
+<li>User Management approval gate</li>
+<li>Categories</li>
+<li>Data Maintenance backup/restore/cleanup</li>
+<li>API settings</li>
+</ul>
+<p><img alt="Settings screenshot" src="docs/screenshots/readme/settings.png" /></p>
+<p><img alt="Data maintenance screenshot" src="docs/screenshots/readme/data-maintenance.png" /></p>
+<p>Admin safety rules:</p>
+<ul>
+<li>disabled users cannot access protected APIs</li>
+<li>admins cannot disable themselves</li>
+<li>the app prevents removal of the last enabled admin</li>
+<li>hosted RLS policies enforce enabled-profile checks at the database layer</li>
+</ul>
+<h2 id="11-feature-surface-after-setup">11. Feature Surface After Setup</h2>
+<p>After the infrastructure is healthy, verify the main application modules:</p>
+<table>
+<thead>
+<tr>
+<th>Module</th>
+<th>What to verify</th>
+<th>Screenshot</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Dashboard</td>
+<td>recent scripts, metrics, and navigation load without console errors</td>
+<td><code>docs/screenshots/readme/dashboard.png</code></td>
+</tr>
+<tr>
+<td>Script upload</td>
+<td><code>.ps1</code> selection, validation, upload, and analysis trigger</td>
+<td><code>docs/screenshots/readme/upload.png</code></td>
+</tr>
+<tr>
+<td>Script detail</td>
+<td>source view, metadata, AI summary, scores, and remediation</td>
+<td><code>docs/screenshots/readme/script-detail.png</code></td>
+</tr>
+<tr>
+<td>Documentation</td>
+<td>crawled documentation, AI insights, findings, risks, actions</td>
+<td><code>docs/screenshots/readme/documentation.png</code></td>
+</tr>
+<tr>
+<td>Chat assistant</td>
+<td>model-backed chat route and response rendering</td>
+<td><code>docs/screenshots/readme/chat.png</code></td>
+</tr>
+<tr>
+<td>Agentic assistant</td>
+<td>local multi-step agent UI and orchestration status</td>
+<td><code>docs/screenshots/readme/agentic-assistant.png</code></td>
+</tr>
+<tr>
+<td>Analytics</td>
+<td>cost, token, usage, and model-performance cards</td>
+<td><code>docs/screenshots/readme/analytics.png</code></td>
+</tr>
+<tr>
+<td>UI components</td>
+<td>shared component library and visual regression surface</td>
+<td><code>docs/screenshots/readme/ui-components.png</code></td>
+</tr>
+</tbody>
+</table>
+<p><img alt="Upload screenshot" src="docs/screenshots/readme/upload.png" /></p>
+<p><img alt="Chat screenshot" src="docs/screenshots/readme/chat.png" /></p>
+<p><img alt="Analytics screenshot" src="docs/screenshots/readme/analytics.png" /></p>
+<p><img alt="Agentic assistant screenshot" src="docs/screenshots/readme/agentic-assistant.png" /></p>
+<h2 id="12-hosted-netlify-deployment">12. Hosted Netlify Deployment</h2>
+<p>Set the same server-side environment variables in Netlify, plus the browser variables:</p>
+<pre><code class="language-text">DATABASE_URL
+DB_SSL
+DB_SSL_REJECT_UNAUTHORIZED
+SUPABASE_URL
+SUPABASE_ANON_KEY
+SUPABASE_SERVICE_ROLE_KEY
+DEFAULT_ADMIN_EMAIL
+OPENAI_API_KEY
+OPENAI_MODEL
+OPENAI_ANALYSIS_MODEL
+OPENAI_EMBEDDING_MODEL
+ANTHROPIC_API_KEY
+ANTHROPIC_MODEL
+VOICE_TTS_MODEL
+VOICE_STT_MODEL
+VITE_SUPABASE_URL
+VITE_SUPABASE_ANON_KEY
+VITE_HOSTED_STATIC_ANALYSIS_ONLY
+</code></pre>
+<p>Build command:</p>
+<pre><code class="language-bash">npm run build:netlify
+</code></pre>
+<p>Netlify serves:</p>
+<ul>
+<li>frontend from <code>src/frontend/dist</code></li>
+<li>API from <code>netlify/functions/api.ts</code></li>
+<li>same-origin API routes under <code>/api/*</code></li>
+</ul>
+<p>After deploy, validate:</p>
+<pre><code class="language-bash">curl https://YOUR_NETLIFY_SITE/api/health
+</code></pre>
+<p>Then verify in the browser:</p>
+<ul>
+<li>login renders</li>
+<li>Google OAuth callback returns to the app</li>
+<li>first admin is enabled</li>
+<li>new Google user lands on Pending Approval</li>
+<li>enabled users can upload scripts</li>
+<li>AI analysis returns structured output</li>
+<li>documentation analysis renders findings and recommendations</li>
+</ul>
+<h2 id="13-screenshots">13. Screenshots</h2>
+<p>Refresh screenshots from a running local app:</p>
+<pre><code class="language-bash">SCREENSHOT_BASE_URL=https://127.0.0.1:3090 \
+SCREENSHOT_LOGIN_URL=https://127.0.0.1:3090 \
+node scripts/capture-screenshots.js
+</code></pre>
+<p>Generate README-framed screenshots:</p>
+<pre><code class="language-bash">npm run screenshots:readme
+</code></pre>
+<p>Important screenshot files:</p>
+<table>
+<thead>
+<tr>
+<th>Screenshot</th>
+<th>File</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Login</td>
+<td><code>docs/screenshots/readme/login.png</code></td>
+</tr>
+<tr>
+<td>Pending approval</td>
+<td><code>docs/screenshots/readme/pending-approval.png</code></td>
+</tr>
+<tr>
+<td>Dashboard</td>
+<td><code>docs/screenshots/readme/dashboard.png</code></td>
+</tr>
+<tr>
+<td>Scripts</td>
+<td><code>docs/screenshots/readme/scripts.png</code></td>
+</tr>
+<tr>
+<td>Script analysis</td>
+<td><code>docs/screenshots/readme/analysis.png</code></td>
+</tr>
+<tr>
+<td>Upload</td>
+<td><code>docs/screenshots/readme/upload.png</code></td>
+</tr>
+<tr>
+<td>Documentation</td>
+<td><code>docs/screenshots/readme/documentation.png</code></td>
+</tr>
+<tr>
+<td>Chat</td>
+<td><code>docs/screenshots/readme/chat.png</code></td>
+</tr>
+<tr>
+<td>Analytics</td>
+<td><code>docs/screenshots/readme/analytics.png</code></td>
+</tr>
+<tr>
+<td>Agentic assistant</td>
+<td><code>docs/screenshots/readme/agentic-assistant.png</code></td>
+</tr>
+<tr>
+<td>Settings</td>
+<td><code>docs/screenshots/readme/settings.png</code></td>
+</tr>
+<tr>
+<td>Data maintenance</td>
+<td><code>docs/screenshots/readme/data-maintenance.png</code></td>
+</tr>
+</tbody>
+</table>
+<h2 id="14-pdf-report-export">14. PDF Report Export</h2>
+<p>Generate HTML and PDF documentation exports:</p>
+<pre><code class="language-bash">.venv/bin/python scripts/export-docs.py
+node scripts/export-docs.mjs README.html
+</code></pre>
+<p>Generated outputs:</p>
+<ul>
+<li><code>docs/exports/html/</code></li>
+<li><code>docs/exports/pdf/README.pdf</code></li>
+</ul>
+<p>The PDF template uses print-aware CSS, A4 sizing, code/table styling, a cover page, headers, and page numbers.</p>
+<h2 id="15-troubleshooting">15. Troubleshooting</h2>
+<table>
+<thead>
+<tr>
+<th>Symptom</th>
+<th>Likely cause</th>
+<th>Fix</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>relation "users" does not exist</code></td>
+<td>code or old service is pointed at hosted Supabase but assumes legacy local schema</td>
+<td>use current code; hosted schema uses <code>app_profiles</code></td>
+</tr>
+<tr>
+<td>Browser <code>/api/*</code> returns proxy <code>ECONNREFUSED</code></td>
+<td>retired Docker frontend is still running on <code>3090</code></td>
+<td>stop old Docker frontend/backend and run the local stack</td>
+</tr>
+<tr>
+<td><code>python is required</code></td>
+<td>machine only exposes <code>python3</code></td>
+<td>current <code>scripts/playwright-stack.sh</code> accepts <code>python3</code>; pull latest or set <code>PYTHON=python3</code></td>
+</tr>
+<tr>
+<td>Google sign-in works but user cannot enter app</td>
+<td>approval gate is working</td>
+<td>enable the user in Settings -&gt; User Management</td>
+</tr>
+<tr>
+<td><code>/api/health</code> is degraded on Netlify</td>
+<td>missing Supabase or provider env vars</td>
+<td>add Netlify env vars and redeploy</td>
+</tr>
+<tr>
+<td>AI analysis is empty</td>
+<td>missing provider key or model failure</td>
+<td>check <code>OPENAI_API_KEY</code>, <code>OPENAI_ANALYSIS_MODEL</code>, <code>ANTHROPIC_API_KEY</code>, and backend logs</td>
+</tr>
+</tbody>
+</table>
+<h2 id="16-reference-docs">16. Reference Docs</h2>
+<ul>
+<li><a href="../README.md">Root README</a></li>
+<li><a href="./GETTING-STARTED.md">Getting Started</a></li>
+<li><a href="./NETLIFY-SUPABASE-DEPLOYMENT.md">Netlify + Supabase Deployment</a></li>
+<li><a href="./DATA-MAINTENANCE.md">Data Maintenance</a></li>
+<li><a href="./README-VOICE-API.md">Voice API</a></li>
+<li><a href="./MANAGEMENT-PLAYBOOK.md">Management Playbook</a></li>
+</ul>
+    <div class="footer">Generated 2026-04-27 08:51 UTC</div>
+  </div>
+</body>
+</html>

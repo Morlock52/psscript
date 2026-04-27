@@ -82,13 +82,51 @@ router.get('/summary', async (req, res) => {
       { type: QueryTypes.SELECT }
     ) as any[];
 
-    const [userStats] = await sequelize.query(
+    const [profileSource] = await sequelize.query(
       `SELECT
-        COUNT(*)::int AS total_users,
-        COUNT(CASE WHEN last_login_at > NOW() - INTERVAL '30 days' THEN 1 END)::int AS active_users_30d
-      FROM users`,
+        CASE
+          WHEN to_regclass('public.users') IS NOT NULL THEN 'users'
+          WHEN to_regclass('public.app_profiles') IS NOT NULL THEN 'app_profiles'
+          ELSE NULL
+        END AS table_name`,
       { type: QueryTypes.SELECT }
     ) as any[];
+
+    let userStats = { total_users: 0, active_users_30d: 0 };
+    if (profileSource?.table_name === 'users') {
+      [userStats] = await sequelize.query(
+        `SELECT
+          COUNT(*)::int AS total_users,
+          COUNT(CASE WHEN last_login_at > NOW() - INTERVAL '30 days' THEN 1 END)::int AS active_users_30d
+        FROM users`,
+        { type: QueryTypes.SELECT }
+      ) as any[];
+    } else if (profileSource?.table_name === 'app_profiles') {
+      const [profileColumns] = await sequelize.query(
+        `SELECT
+          EXISTS (
+            SELECT 1
+            FROM information_schema.columns
+            WHERE table_schema = 'public'
+              AND table_name = 'app_profiles'
+              AND column_name = 'is_enabled'
+          ) AS has_is_enabled`,
+        { type: QueryTypes.SELECT }
+      ) as any[];
+
+      [userStats] = await sequelize.query(
+        profileColumns?.has_is_enabled
+          ? `SELECT
+              COUNT(*)::int AS total_users,
+              COUNT(CASE WHEN is_enabled = true THEN 1 END)::int AS active_users_30d
+            FROM app_profiles`
+          : `SELECT
+              COUNT(*)::int AS total_users,
+              COUNT(*)::int AS active_users_30d
+            FROM app_profiles`,
+        { type: QueryTypes.SELECT }
+      ) as any[];
+    }
 
     res.json({
       success: true,

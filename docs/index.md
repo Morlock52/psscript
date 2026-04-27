@@ -1,6 +1,6 @@
 # PSScript Documentation Hub
 
-_Last updated: April 24, 2026_
+_Last updated: April 27, 2026_
 
 This index points to the active documentation set for the current validated repo state.
 
@@ -11,6 +11,7 @@ This index points to the active documentation set for the current validated repo
 | [../README.md](../README.md) | Repo overview, architecture, AI models, validation |
 | [CURRENT-STATUS-2026-04-24.md](./CURRENT-STATUS-2026-04-24.md) | Current runtime, QA, deployment, and known caveats |
 | [GETTING-STARTED.md](./GETTING-STARTED.md) | Local bootstrap and first-run steps |
+| [SETUP-WITH-SCREENSHOTS.md](./SETUP-WITH-SCREENSHOTS.md) | Full component setup with screenshots, Supabase, Netlify, AI services, validation, and PDF export |
 | [REPOSITORY-ORGANIZATION.md](./REPOSITORY-ORGANIZATION.md) | Active paths, docs taxonomy, and cleanup backlog |
 | [DATA-MAINTENANCE.md](./DATA-MAINTENANCE.md) | Admin backup, restore, and cleanup operations |
 | [README-VOICE-API.md](./README-VOICE-API.md) | Voice/listening implementation and API behavior |

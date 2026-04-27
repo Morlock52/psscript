@@ -36,7 +36,11 @@ const run = async () => {
       path: pdfPath,
       format: 'A4',
       printBackground: true,
-      margin: { top: '20mm', bottom: '20mm', left: '18mm', right: '18mm' }
+      preferCSSPageSize: true,
+      displayHeaderFooter: true,
+      headerTemplate: '<div style="font-family: Segoe UI, Arial, sans-serif; font-size: 8px; color: #64748b; width: 100%; padding: 0 16mm;">PSScript analysis report</div>',
+      footerTemplate: '<div style="font-family: Segoe UI, Arial, sans-serif; font-size: 8px; color: #64748b; width: 100%; padding: 0 16mm; display: flex; justify-content: space-between;"><span></span><span>Page <span class="pageNumber"></span> of <span class="totalPages"></span></span></div>',
+      margin: { top: '18mm', bottom: '20mm', left: '16mm', right: '16mm' }
     });
 
     console.log(`Exported ${pdfPath}`);
