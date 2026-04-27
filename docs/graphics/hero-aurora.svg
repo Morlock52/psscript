@@ -1,0 +1,151 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1600 820" role="img" aria-labelledby="ahtit ahdes">
+  <title id="ahtit">PSScript — PowerShell, finally explained.</title>
+  <desc id="ahdes">A warm, futurist hero. Deep navy canvas with a soft aurora orb (teal, violet, peach), grain texture, and a serif display lockup PSScript followed by the tagline PowerShell, finally explained. A friendly four-line "what's inside" panel sits to the right.</desc>
+
+  <defs>
+    <!-- Aurora orb (top-right) -->
+    <radialGradient id="aurora-1" cx="0" cy="0" r="1" gradientUnits="userSpaceOnUse"
+                    gradientTransform="translate(1280 -120) rotate(28) scale(900 700)">
+      <stop offset="0"    stop-color="#5EEAD4" stop-opacity="0.55"/>
+      <stop offset="0.30" stop-color="#67E8F9" stop-opacity="0.30"/>
+      <stop offset="0.55" stop-color="#C4B5FD" stop-opacity="0.30"/>
+      <stop offset="0.85" stop-color="#FCA5A5" stop-opacity="0.18"/>
+      <stop offset="1"    stop-color="#FCA5A5" stop-opacity="0"/>
+    </radialGradient>
+    <!-- Aurora orb (bottom-left, smaller, cooler) -->
+    <radialGradient id="aurora-2" cx="0" cy="0" r="1" gradientUnits="userSpaceOnUse"
+                    gradientTransform="translate(0 880) rotate(-30) scale(900 600)">
+      <stop offset="0"    stop-color="#C4B5FD" stop-opacity="0.40"/>
+      <stop offset="0.45" stop-color="#5EEAD4" stop-opacity="0.20"/>
+      <stop offset="1"    stop-color="#5EEAD4" stop-opacity="0"/>
+    </radialGradient>
+
+    <!-- Grain (organic noise, replaces scanlines) -->
+    <filter id="grain" x="0%" y="0%" width="100%" height="100%">
+      <feTurbulence type="fractalNoise" baseFrequency="0.9" numOctaves="2" seed="7"/>
+      <feColorMatrix values="0 0 0 0 1
+                              0 0 0 0 1
+                              0 0 0 0 1
+                              0 0 0 0.07 0"/>
+    </filter>
+
+    <!-- Soft glow -->
+    <filter id="soft" x="-50%" y="-50%" width="200%" height="200%">
+      <feGaussianBlur stdDeviation="4"/>
+    </filter>
+
+    <!-- Aurora text gradient for the period accent -->
+    <linearGradient id="period" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0"   stop-color="#5EEAD4"/>
+      <stop offset="0.5" stop-color="#C4B5FD"/>
+      <stop offset="1"   stop-color="#FCA5A5"/>
+    </linearGradient>
+
+    <!-- Hand-drawn underline path will be a slight wavy quadratic -->
+    <linearGradient id="underline" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0"    stop-color="#5EEAD4" stop-opacity="0"/>
+      <stop offset="0.10" stop-color="#5EEAD4" stop-opacity="0.95"/>
+      <stop offset="0.50" stop-color="#C4B5FD" stop-opacity="0.95"/>
+      <stop offset="0.90" stop-color="#FCA5A5" stop-opacity="0.95"/>
+      <stop offset="1"    stop-color="#FCA5A5" stop-opacity="0"/>
+    </linearGradient>
+
+    <style>
+      .display { font-family: 'GT Sectra Display','Tiempos Headline','Söhne Breit','Garamond Premier Pro','Apple Garamond','Charter','Cambria',Georgia,serif; }
+      .body    { font-family: 'Söhne','Geist','Aeonik','Nunito Sans','Helvetica Neue',-apple-system,BlinkMacSystemFont,system-ui,sans-serif; }
+      .mono    { font-family: 'Berkeley Mono','Geist Mono','JetBrains Mono','IBM Plex Mono',ui-monospace,SFMono-Regular,Menlo,Consolas,monospace; }
+      .ivory   { fill: #F5F1E8; }
+      .ivory-2 { fill: #D8D3C2; }
+      .mute    { fill: #8FA0BD; }
+      .teal    { fill: #5EEAD4; }
+      .violet  { fill: #C4B5FD; }
+      .peach   { fill: #FCA5A5; }
+      .amber   { fill: #F59E0B; }
+      .green   { fill: #6EE7B7; }
+    </style>
+  </defs>
+
+  <!-- Canvas: deep navy + aurora orbs + grain overlay -->
+  <rect width="1600" height="820" fill="#0E1525"/>
+  <rect width="1600" height="820" fill="url(#aurora-1)"/>
+  <rect width="1600" height="820" fill="url(#aurora-2)"/>
+  <rect width="1600" height="820" filter="url(#grain)" opacity="0.85"/>
+
+  <!-- Top peach tick + hairline (warmer than the cyan version) -->
+  <rect x="0" y="0" width="240" height="2" fill="#FCA5A5"/>
+  <line x1="0" y1="2" x2="1600" y2="2" stroke="#26324A" stroke-width="1"/>
+
+  <!-- Masthead row — friendly, not formal -->
+  <text x="64" y="46" class="mono ivory-2" font-size="13" letter-spacing="3">welcome to —</text>
+  <g transform="translate(1380 40)">
+    <circle cx="0" cy="0" r="5" fill="#6EE7B7" filter="url(#soft)"/>
+    <circle cx="0" cy="0" r="3" fill="#6EE7B7"/>
+    <text x="14" y="5" class="mono ivory" font-size="13" letter-spacing="3">live · april 27, 2026</text>
+  </g>
+  <line x1="64" y1="80" x2="1536" y2="80" stroke="#26324A" stroke-width="0.8"/>
+
+  <!-- Eyebrow / category -->
+  <text x="64" y="138" class="mono peach" font-size="13" letter-spacing="4">A QUIET CONSOLE FOR A LOUD CORNER OF YOUR INFRASTRUCTURE</text>
+
+  <!-- ── DISPLAY: serif "PSScript" with aurora period ─────────────────────── -->
+  <text x="58" y="350" class="display ivory" font-size="240" font-weight="500" letter-spacing="-6">
+    PSScript<tspan fill="url(#period)" font-weight="700">.</tspan>
+  </text>
+
+  <!-- Hand-drawn-feeling underline (slight wave) -->
+  <path d="M62 388 Q 220 380 380 388 T 700 386"
+        stroke="url(#underline)" stroke-width="3.5" fill="none" stroke-linecap="round"/>
+
+  <!-- Big tagline (serif italic) -->
+  <text x="60" y="464" class="display ivory" font-size="44" font-weight="400" font-style="italic" letter-spacing="-0.6">
+    PowerShell, finally explained.
+  </text>
+
+  <!-- Friendly body deck (sans, ivory-2, three-line) -->
+  <text x="60" y="528" class="body ivory-2" font-size="20" font-weight="400">Hi — we built this so the scripts running your company don't stay invisible.</text>
+  <text x="60" y="556" class="body ivory-2" font-size="20" font-weight="400">Upload them, let an AI grade them, search them in plain English,</text>
+  <text x="60" y="584" class="body ivory-2" font-size="20" font-weight="400">and only let approved teammates in.</text>
+
+  <!-- Quiet metadata strip below body, mono ivory-2 -->
+  <text x="60" y="638" class="mono mute" font-size="13" letter-spacing="3">hosted on netlify · data on supabase · audited by gpt-5.5 + sonnet-4-6</text>
+
+  <!-- ── RIGHT-SIDE PANEL: "what's inside" friendly list ──────────────────── -->
+  <g transform="translate(960 152)">
+    <!-- Soft panel frame (no harsh borders) -->
+    <rect x="0" y="0" width="576" height="520" rx="22" fill="#11192C" fill-opacity="0.55" stroke="#2A3553" stroke-width="1"/>
+    <text x="32" y="48" class="mono peach" font-size="13" letter-spacing="3">WHAT'S INSIDE</text>
+
+    <!-- Item 1 -->
+    <g transform="translate(32 92)">
+      <text x="0" y="6" class="display ivory" font-size="20" font-weight="500">01</text>
+      <text x="60" y="6" class="display ivory" font-size="26" font-weight="500">A workspace for every script.</text>
+      <text x="60" y="38" class="body ivory-2" font-size="16">Upload once — we deduplicate, version, and keep history.</text>
+    </g>
+
+    <!-- Item 2 -->
+    <g transform="translate(32 200)">
+      <text x="0" y="6" class="display ivory" font-size="20" font-weight="500">02</text>
+      <text x="60" y="6" class="display ivory" font-size="26" font-weight="500">An AI that actually explains itself.</text>
+      <text x="60" y="38" class="body ivory-2" font-size="16">Security score, quality score, and a plain-English summary.</text>
+    </g>
+
+    <!-- Item 3 -->
+    <g transform="translate(32 308)">
+      <text x="0" y="6" class="display ivory" font-size="20" font-weight="500">03</text>
+      <text x="60" y="6" class="display ivory" font-size="26" font-weight="500">Search by what you mean.</text>
+      <text x="60" y="38" class="body ivory-2" font-size="16">Embedding-backed retrieval — type a question, find the script.</text>
+    </g>
+
+    <!-- Item 4 (the moat — peach accent) -->
+    <g transform="translate(32 416)">
+      <text x="0" y="6" class="display peach" font-size="20" font-weight="500">04</text>
+      <text x="60" y="6" class="display ivory" font-size="26" font-weight="500">A door <tspan fill="#FCA5A5" font-style="italic">you</tspan> control.</text>
+      <text x="60" y="38" class="body ivory-2" font-size="16">Google sign-in lands disabled. An admin enables. End of story.</text>
+    </g>
+  </g>
+
+  <!-- Footer rule -->
+  <line x1="60" y1="772" x2="1540" y2="772" stroke="#26324A" stroke-width="0.6"/>
+  <text x="60"   y="800" class="mono mute" font-size="12" letter-spacing="3">a quieter way to run powershell · open the readme below</text>
+  <text x="1540" y="800" class="mono mute" font-size="12" letter-spacing="3" text-anchor="end">verified · 2026·04·27</text>
+</svg>

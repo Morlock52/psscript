@@ -1,0 +1,175 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1600 800" role="img" aria-labelledby="aatit aades">
+  <title id="aatit">How PSScript is wired — three planes, one approval gate.</title>
+  <desc id="aades">A warm aurora architecture diagram. The edge is your browser running React. The hosted plane is Netlify Functions calling OpenAI primary and Anthropic fallback. The data plane is Supabase Postgres with pgvector. The approval gate cross-cuts the hosted plane in peach. A subdued local development plane sits below.</desc>
+
+  <defs>
+    <radialGradient id="aa-aurora" cx="50%" cy="0%" r="80%">
+      <stop offset="0"   stop-color="#1B2745" stop-opacity="0.7"/>
+      <stop offset="1"   stop-color="#0E1525" stop-opacity="0"/>
+    </radialGradient>
+    <radialGradient id="aa-glow-1" cx="0" cy="0" r="1" gradientUnits="userSpaceOnUse"
+                    gradientTransform="translate(800 100) scale(900 600)">
+      <stop offset="0"   stop-color="#5EEAD4" stop-opacity="0.18"/>
+      <stop offset="0.6" stop-color="#C4B5FD" stop-opacity="0.05"/>
+      <stop offset="1"   stop-color="#C4B5FD" stop-opacity="0"/>
+    </radialGradient>
+
+    <filter id="aa-grain" x="0%" y="0%" width="100%" height="100%">
+      <feTurbulence type="fractalNoise" baseFrequency="0.9" numOctaves="2" seed="17"/>
+      <feColorMatrix values="0 0 0 0 1
+                              0 0 0 0 1
+                              0 0 0 0 1
+                              0 0 0 0.06 0"/>
+    </filter>
+    <filter id="aa-soft" x="-50%" y="-50%" width="200%" height="200%">
+      <feGaussianBlur stdDeviation="6"/>
+    </filter>
+
+    <linearGradient id="aa-flow" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0" stop-color="#5EEAD4"/>
+      <stop offset="1" stop-color="#C4B5FD"/>
+    </linearGradient>
+
+    <marker id="aa-arr" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="9" markerHeight="9" orient="auto">
+      <path d="M0 0 L10 5 L0 10 Z" fill="#C4B5FD"/>
+    </marker>
+    <marker id="aa-arr-peach" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="9" markerHeight="9" orient="auto">
+      <path d="M0 0 L10 5 L0 10 Z" fill="#FCA5A5"/>
+    </marker>
+
+    <style>
+      .display { font-family: 'GT Sectra Display','Tiempos Headline','Söhne Breit','Charter','Cambria',Georgia,serif; }
+      .body    { font-family: 'Söhne','Geist','Aeonik','Helvetica Neue',-apple-system,BlinkMacSystemFont,system-ui,sans-serif; }
+      .mono    { font-family: 'Berkeley Mono','Geist Mono','JetBrains Mono','IBM Plex Mono',ui-monospace,Menlo,Consolas,monospace; }
+      .ivory   { fill: #F5F1E8; }
+      .ivory-2 { fill: #D8D3C2; }
+      .mute    { fill: #8FA0BD; }
+      .teal    { fill: #5EEAD4; }
+      .violet  { fill: #C4B5FD; }
+      .peach   { fill: #FCA5A5; }
+      .green   { fill: #6EE7B7; }
+      .node      { fill: #11192C; stroke: #26324A; stroke-width: 1; }
+      .node-key  { fill: #11192C; stroke: #5EEAD4; stroke-width: 1.4; }
+      .node-moat { fill: #11192C; stroke: #FCA5A5; stroke-width: 1.6; }
+      .col-rule  { stroke: #26324A; stroke-width: 0.7; }
+      .flow      { stroke: url(#aa-flow); stroke-width: 1.6; fill: none; opacity: 0.85; }
+      .flow-moat { stroke: #FCA5A5; stroke-width: 1.8; fill: none; stroke-dasharray: 6 4; }
+    </style>
+  </defs>
+
+  <!-- Canvas -->
+  <rect width="1600" height="800" fill="#0E1525"/>
+  <rect width="1600" height="800" fill="url(#aa-aurora)"/>
+  <rect width="1600" height="800" fill="url(#aa-glow-1)"/>
+  <rect width="1600" height="800" filter="url(#aa-grain)" opacity="0.85"/>
+
+  <!-- Top tick + masthead -->
+  <rect x="0" y="0" width="200" height="2" fill="#FCA5A5"/>
+  <line x1="0" y1="2" x2="1600" y2="2" stroke="#26324A" stroke-width="1"/>
+  <text x="64" y="46" class="mono peach" font-size="13" letter-spacing="3">HOW IT'S WIRED — THREE PLANES, ONE GATE</text>
+  <text x="1536" y="46" class="mono mute" font-size="13" letter-spacing="3" text-anchor="end">rev · 2026·04·27</text>
+  <line x1="64" y1="78" x2="1536" y2="78" stroke="#26324A" stroke-width="0.6"/>
+
+  <!-- Column headers -->
+  <text x="200"  y="124" class="mono ivory" font-size="14" letter-spacing="4">your browser</text>
+  <text x="800"  y="124" class="mono ivory" font-size="14" letter-spacing="4" text-anchor="middle">the hosted middle</text>
+  <text x="1400" y="124" class="mono ivory" font-size="14" letter-spacing="4" text-anchor="end">where data lives</text>
+  <line x1="64"   y1="142" x2="380"  y2="142" class="col-rule"/>
+  <line x1="600"  y1="142" x2="1000" y2="142" class="col-rule"/>
+  <line x1="1220" y1="142" x2="1536" y2="142" class="col-rule"/>
+
+  <!-- ── EDGE column ───────────────────────────────────────────────────────── -->
+  <g>
+    <rect x="80" y="186" width="320" height="124" rx="14" class="node-key" filter="url(#aa-soft)" opacity="0.25"/>
+    <rect x="80" y="186" width="320" height="124" rx="14" class="node-key"/>
+    <text x="100" y="222" class="mono teal" font-size="11" letter-spacing="3">THE APP</text>
+    <text x="100" y="262" class="display ivory" font-size="26" font-weight="600">React 18 · Vite</text>
+    <text x="100" y="290" class="body ivory-2" font-size="14">Same-origin /api · Supabase JS</text>
+  </g>
+  <g>
+    <rect x="80" y="334" width="320" height="92" rx="14" class="node"/>
+    <text x="100" y="364" class="mono mute" font-size="11" letter-spacing="3">SIGN IN</text>
+    <text x="100" y="398" class="display ivory" font-size="20" font-weight="600">Supabase Auth · Google OAuth</text>
+  </g>
+
+  <!-- ── HOSTED column (key) ───────────────────────────────────────────────── -->
+  <g>
+    <rect x="600" y="186" width="400" height="124" rx="14" class="node-key" filter="url(#aa-soft)" opacity="0.32"/>
+    <rect x="600" y="186" width="400" height="124" rx="14" class="node-key"/>
+    <text x="620" y="222" class="mono teal" font-size="11" letter-spacing="3">NETLIFY FUNCTIONS · /api/*</text>
+    <text x="620" y="262" class="display ivory" font-size="26" font-weight="600">The hosted API</text>
+    <text x="620" y="290" class="body ivory-2" font-size="14">Reads your token. Checks the gate. Talks to the brains.</text>
+  </g>
+  <g>
+    <rect x="600" y="334" width="190" height="100" rx="12" class="node"/>
+    <text x="620" y="362" class="mono mute" font-size="10" letter-spacing="3">PRIMARY</text>
+    <text x="620" y="392" class="display ivory" font-size="19" font-weight="600">OpenAI</text>
+    <text x="620" y="416" class="body ivory-2" font-size="13">gpt-5.5 · 5.4-mini</text>
+  </g>
+  <g>
+    <rect x="810" y="334" width="190" height="100" rx="12" class="node"/>
+    <text x="830" y="362" class="mono mute" font-size="10" letter-spacing="3">FALLBACK</text>
+    <text x="830" y="392" class="display ivory" font-size="19" font-weight="600">Anthropic</text>
+    <text x="830" y="416" class="body ivory-2" font-size="13">claude-sonnet-4-6</text>
+  </g>
+
+  <!-- ── DATA column ───────────────────────────────────────────────────────── -->
+  <g>
+    <rect x="1220" y="186" width="316" height="124" rx="14" class="node-key" filter="url(#aa-soft)" opacity="0.25"/>
+    <rect x="1220" y="186" width="316" height="124" rx="14" class="node-key"/>
+    <text x="1240" y="222" class="mono teal" font-size="11" letter-spacing="3">THE TRUTH</text>
+    <text x="1240" y="262" class="display ivory" font-size="26" font-weight="600">Supabase · Postgres</text>
+    <text x="1240" y="290" class="body ivory-2" font-size="14">RLS · profiles · scripts · analyses</text>
+  </g>
+  <g>
+    <rect x="1220" y="334" width="316" height="100" rx="12" class="node"/>
+    <text x="1240" y="362" class="mono mute" font-size="10" letter-spacing="3">SEARCH MEMORY</text>
+    <text x="1240" y="392" class="display ivory" font-size="20" font-weight="600">pgvector(1536)</text>
+    <text x="1240" y="416" class="body ivory-2" font-size="13">text-embedding-3-small</text>
+  </g>
+
+  <!-- Flow arrows (aurora gradient) -->
+  <path d="M400 248 H600" class="flow" marker-end="url(#aa-arr)"/>
+  <text x="500" y="238" class="mono violet" font-size="11" letter-spacing="2" text-anchor="middle">/api · bearer JWT</text>
+
+  <path d="M400 380 H600" class="flow" marker-end="url(#aa-arr)"/>
+  <text x="500" y="370" class="mono violet" font-size="11" letter-spacing="2" text-anchor="middle">validate token</text>
+
+  <path d="M1000 248 H1220" class="flow" marker-end="url(#aa-arr)"/>
+  <text x="1110" y="238" class="mono violet" font-size="11" letter-spacing="2" text-anchor="middle">SQL · pooler</text>
+
+  <path d="M1000 384 H1220" class="flow" marker-end="url(#aa-arr)"/>
+  <text x="1110" y="374" class="mono violet" font-size="11" letter-spacing="2" text-anchor="middle">embed · upsert</text>
+
+  <!-- Approval gate cross-cut, peach dashed -->
+  <path d="M260 426 V490 H770 V310" class="flow-moat" marker-end="url(#aa-arr-peach)"/>
+  <text x="450" y="510" class="mono peach" font-size="11" letter-spacing="3">★ approval gate · is_enabled = true</text>
+
+  <!-- ── Local dev plane ───────────────────────────────────────────────────── -->
+  <line x1="64" y1="558" x2="1536" y2="558" stroke="#26324A" stroke-width="0.6"/>
+  <text x="64" y="592" class="mono mute" font-size="12" letter-spacing="3">if you're working on this locally · optional plane</text>
+
+  <g opacity="0.85">
+    <rect x="80"   y="620" width="320" height="100" rx="12" fill="#11192C" stroke="#26324A"/>
+    <text x="100"  y="650" class="mono mute" font-size="10" letter-spacing="3">EXPRESS · SEQUELIZE</text>
+    <text x="100"  y="684" class="display ivory" font-size="20" font-weight="600">Local backend</text>
+    <text x="100"  y="706" class="body ivory-2" font-size="13">CRUD · analytics · AI proxy</text>
+
+    <rect x="600"  y="620" width="400" height="100" rx="12" fill="#11192C" stroke="#26324A"/>
+    <text x="620"  y="650" class="mono mute" font-size="10" letter-spacing="3">FASTAPI · LANGGRAPH</text>
+    <text x="620"  y="684" class="display ivory" font-size="20" font-weight="600">Local AI service</text>
+    <text x="620"  y="706" class="body ivory-2" font-size="13">Agent workflows · model router · voice helpers</text>
+
+    <rect x="1220" y="620" width="316" height="100" rx="12" fill="#11192C" stroke="#26324A"/>
+    <text x="1240" y="650" class="mono mute" font-size="10" letter-spacing="3">SAME PG TARGET</text>
+    <text x="1240" y="684" class="display ivory" font-size="20" font-weight="600">Supabase via DATABASE_URL</text>
+    <text x="1240" y="706" class="body ivory-2" font-size="13">No local Docker DB</text>
+  </g>
+  <path d="M400 670 H600"  class="flow" marker-end="url(#aa-arr)" opacity="0.55"/>
+  <path d="M1000 670 H1220" class="flow" marker-end="url(#aa-arr)" opacity="0.55"/>
+
+  <!-- Footer -->
+  <line x1="64" y1="772" x2="1536" y2="772" stroke="#26324A" stroke-width="0.6"/>
+  <text x="64"   y="792" class="mono mute" font-size="11" letter-spacing="3">source · netlify/functions/api.ts · src/backend · src/ai · supabase/migrations</text>
+  <text x="1536" y="792" class="mono mute" font-size="11" letter-spacing="3" text-anchor="end">verified · 2026-04-27</text>
+</svg>

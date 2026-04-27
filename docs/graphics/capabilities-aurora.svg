@@ -1,0 +1,176 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1600 760" role="img" aria-labelledby="catit cades">
+  <title id="catit">What's inside PSScript — eight modules, one workspace.</title>
+  <desc id="cades">A bento grid of capabilities rendered in a warm aurora palette. Script Workspace, AI Analysis, Semantic Search, Approval-gated SSO (the moat, in peach), Voice Copilot, Agentic Workflows, Admin Operations, Hosted Deployment.</desc>
+
+  <defs>
+    <radialGradient id="ca-aurora-1" cx="0" cy="0" r="1" gradientUnits="userSpaceOnUse"
+                    gradientTransform="translate(120 -50) rotate(35) scale(700)">
+      <stop offset="0"   stop-color="#5EEAD4" stop-opacity="0.22"/>
+      <stop offset="0.6" stop-color="#5EEAD4" stop-opacity="0.04"/>
+      <stop offset="1"   stop-color="#5EEAD4" stop-opacity="0"/>
+    </radialGradient>
+    <radialGradient id="ca-aurora-2" cx="0" cy="0" r="1" gradientUnits="userSpaceOnUse"
+                    gradientTransform="translate(1500 800) rotate(220) scale(800)">
+      <stop offset="0"   stop-color="#FCA5A5" stop-opacity="0.22"/>
+      <stop offset="0.6" stop-color="#C4B5FD" stop-opacity="0.06"/>
+      <stop offset="1"   stop-color="#C4B5FD" stop-opacity="0"/>
+    </radialGradient>
+
+    <filter id="ca-grain" x="0%" y="0%" width="100%" height="100%">
+      <feTurbulence type="fractalNoise" baseFrequency="0.9" numOctaves="2" seed="13"/>
+      <feColorMatrix values="0 0 0 0 1
+                              0 0 0 0 1
+                              0 0 0 0 1
+                              0 0 0 0.06 0"/>
+    </filter>
+
+    <radialGradient id="hero-tile-orb" cx="0" cy="0" r="1" gradientUnits="userSpaceOnUse"
+                    gradientTransform="translate(120 80) scale(420)">
+      <stop offset="0"   stop-color="#5EEAD4" stop-opacity="0.18"/>
+      <stop offset="0.7" stop-color="#5EEAD4" stop-opacity="0.02"/>
+      <stop offset="1"   stop-color="#5EEAD4" stop-opacity="0"/>
+    </radialGradient>
+    <radialGradient id="moat-tile-orb" cx="0" cy="0" r="1" gradientUnits="userSpaceOnUse"
+                    gradientTransform="translate(180 60) scale(420)">
+      <stop offset="0"   stop-color="#FCA5A5" stop-opacity="0.22"/>
+      <stop offset="0.7" stop-color="#C4B5FD" stop-opacity="0.04"/>
+      <stop offset="1"   stop-color="#C4B5FD" stop-opacity="0"/>
+    </radialGradient>
+
+    <style>
+      .display { font-family: 'GT Sectra Display','Tiempos Headline','Söhne Breit','Garamond Premier Pro','Charter','Cambria',Georgia,serif; }
+      .body    { font-family: 'Söhne','Geist','Aeonik','Nunito Sans','Helvetica Neue',-apple-system,BlinkMacSystemFont,system-ui,sans-serif; }
+      .mono    { font-family: 'Berkeley Mono','Geist Mono','JetBrains Mono','IBM Plex Mono',ui-monospace,Menlo,Consolas,monospace; }
+      .ivory   { fill: #F5F1E8; }
+      .ivory-2 { fill: #D8D3C2; }
+      .mute    { fill: #8FA0BD; }
+      .teal    { fill: #5EEAD4; }
+      .violet  { fill: #C4B5FD; }
+      .peach   { fill: #FCA5A5; }
+      .green   { fill: #6EE7B7; }
+    </style>
+  </defs>
+
+  <rect width="1600" height="760" fill="#0E1525"/>
+  <rect width="1600" height="760" fill="url(#ca-aurora-1)"/>
+  <rect width="1600" height="760" fill="url(#ca-aurora-2)"/>
+  <rect width="1600" height="760" filter="url(#ca-grain)" opacity="0.85"/>
+
+  <!-- Top tick + masthead -->
+  <rect x="0" y="0" width="200" height="2" fill="#FCA5A5"/>
+  <line x1="0" y1="2" x2="1600" y2="2" stroke="#26324A" stroke-width="1"/>
+  <text x="64" y="46" class="mono peach" font-size="13" letter-spacing="3">EIGHT MODULES, ONE WORKSPACE</text>
+  <text x="1536" y="46" class="mono mute" font-size="13" letter-spacing="3" text-anchor="end">cyan = standard · peach = the moat</text>
+  <line x1="64" y1="78" x2="1536" y2="78" stroke="#26324A" stroke-width="0.6"/>
+
+  <!-- ── ROW 1 ─────────────────────────────────────────────────────────────── -->
+
+  <!-- Tile A: Script Workspace (HERO, larger) -->
+  <g transform="translate(64 110)">
+    <rect width="448" height="290" rx="18" fill="#11192C" stroke="#26324A" stroke-width="1"/>
+    <rect width="448" height="290" rx="18" fill="url(#hero-tile-orb)"/>
+    <rect width="448" height="290" rx="18" fill="none" stroke="#5EEAD4" stroke-opacity="0.45" stroke-width="1.4"/>
+    <text x="24" y="36" class="mono teal" font-size="11" letter-spacing="3">01 OF 08</text>
+    <text x="406" y="36" class="mono green" font-size="11" letter-spacing="3" text-anchor="end">● shipping</text>
+    <text x="24" y="120" class="display ivory" font-size="44" font-weight="600" letter-spacing="-0.8">A workspace</text>
+    <text x="24" y="166" class="display ivory" font-size="44" font-weight="600" letter-spacing="-0.8">for every script.</text>
+    <text x="24" y="212" class="body ivory-2" font-size="16">Upload once — we hash, dedupe, and</text>
+    <text x="24" y="232" class="body ivory-2" font-size="16">version everything quietly in the background.</text>
+    <text x="24" y="268" class="mono mute" font-size="11" letter-spacing="3">SHA-256 dedup · auto-versioned · history kept</text>
+  </g>
+
+  <!-- Tile B: AI Analysis -->
+  <g transform="translate(528 110)">
+    <rect width="304" height="290" rx="18" fill="#11192C" stroke="#26324A" stroke-width="1"/>
+    <rect width="304" height="290" rx="18" fill="none" stroke="#5EEAD4" stroke-opacity="0.32" stroke-width="1"/>
+    <text x="24" y="36" class="mono teal" font-size="11" letter-spacing="3">02 OF 08</text>
+    <text x="262" y="36" class="mono green" font-size="11" letter-spacing="3" text-anchor="end">● live</text>
+    <text x="24" y="120" class="display ivory" font-size="34" font-weight="600" letter-spacing="-0.6">An AI that</text>
+    <text x="24" y="158" class="display ivory" font-size="34" font-weight="600" letter-spacing="-0.6">explains itself.</text>
+    <text x="24" y="208" class="body ivory-2" font-size="15">Security &amp; quality scores,</text>
+    <text x="24" y="226" class="body ivory-2" font-size="15">remediation, beginner notes.</text>
+    <text x="24" y="270" class="mono mute" font-size="11" letter-spacing="3">gpt-5.4-mini → sonnet-4-6</text>
+  </g>
+
+  <!-- Tile C: Semantic Search -->
+  <g transform="translate(848 110)">
+    <rect width="304" height="290" rx="18" fill="#11192C" stroke="#26324A" stroke-width="1"/>
+    <rect width="304" height="290" rx="18" fill="none" stroke="#5EEAD4" stroke-opacity="0.32" stroke-width="1"/>
+    <text x="24" y="36" class="mono teal" font-size="11" letter-spacing="3">03 OF 08</text>
+    <text x="262" y="36" class="mono green" font-size="11" letter-spacing="3" text-anchor="end">● live</text>
+    <text x="24" y="120" class="display ivory" font-size="34" font-weight="600" letter-spacing="-0.6">Search by</text>
+    <text x="24" y="158" class="display ivory" font-size="34" font-weight="600" letter-spacing="-0.6">what you mean.</text>
+    <text x="24" y="208" class="body ivory-2" font-size="15">Embedding-backed retrieval</text>
+    <text x="24" y="226" class="body ivory-2" font-size="15">over scripts and docs.</text>
+    <text x="24" y="270" class="mono mute" font-size="11" letter-spacing="3">pgvector(1536) · embed-3</text>
+  </g>
+
+  <!-- Tile D: Hosted Auth (the moat — peach + violet aurora) -->
+  <g transform="translate(1168 110)">
+    <rect width="368" height="290" rx="18" fill="#11192C" stroke="#26324A" stroke-width="1"/>
+    <rect width="368" height="290" rx="18" fill="url(#moat-tile-orb)"/>
+    <rect width="368" height="290" rx="18" fill="none" stroke="#FCA5A5" stroke-opacity="0.6" stroke-width="1.6"/>
+    <text x="24" y="36" class="mono peach" font-size="11" letter-spacing="3">04 OF 08 · the moat</text>
+    <text x="326" y="36" class="mono green" font-size="11" letter-spacing="3" text-anchor="end">● live · 04·26</text>
+    <text x="24" y="120" class="display ivory" font-size="38" font-weight="600" letter-spacing="-0.6">A door <tspan fill="#FCA5A5" font-style="italic">you</tspan></text>
+    <text x="24" y="162" class="display ivory" font-size="38" font-weight="600" letter-spacing="-0.6">control.</text>
+    <text x="24" y="210" class="body ivory-2" font-size="15">Google sign-in lands disabled.</text>
+    <text x="24" y="228" class="body ivory-2" font-size="15">An admin enables. End of story.</text>
+    <text x="24" y="270" class="mono mute" font-size="11" letter-spacing="3">supabase auth · RLS · audited</text>
+  </g>
+
+  <!-- ── ROW 2 ─────────────────────────────────────────────────────────────── -->
+
+  <!-- Tile E: Voice -->
+  <g transform="translate(64 416)">
+    <rect width="304" height="244" rx="18" fill="#11192C" stroke="#26324A" stroke-width="1"/>
+    <rect width="304" height="244" rx="18" fill="none" stroke="#5EEAD4" stroke-opacity="0.32" stroke-width="1"/>
+    <text x="24" y="36" class="mono teal" font-size="11" letter-spacing="3">05 OF 08</text>
+    <text x="262" y="36" class="mono green" font-size="11" letter-spacing="3" text-anchor="end">● live</text>
+    <text x="24" y="118" class="display ivory" font-size="32" font-weight="600" letter-spacing="-0.4">Hands-free,</text>
+    <text x="24" y="152" class="display ivory" font-size="32" font-weight="600" letter-spacing="-0.4">if you want.</text>
+    <text x="24" y="196" class="body ivory-2" font-size="14">Voice in. Voice out.</text>
+    <text x="24" y="222" class="mono mute" font-size="11" letter-spacing="3">gpt-4o-mini-tts · transcribe</text>
+  </g>
+
+  <!-- Tile F: Agentic -->
+  <g transform="translate(384 416)">
+    <rect width="304" height="244" rx="18" fill="#11192C" stroke="#26324A" stroke-width="1"/>
+    <rect width="304" height="244" rx="18" fill="none" stroke="#5EEAD4" stroke-opacity="0.32" stroke-width="1"/>
+    <text x="24" y="36" class="mono teal" font-size="11" letter-spacing="3">06 OF 08</text>
+    <text x="262" y="36" class="mono green" font-size="11" letter-spacing="3" text-anchor="end">● local</text>
+    <text x="24" y="118" class="display ivory" font-size="32" font-weight="600" letter-spacing="-0.4">Multi-step</text>
+    <text x="24" y="152" class="display ivory" font-size="32" font-weight="600" letter-spacing="-0.4">review.</text>
+    <text x="24" y="196" class="body ivory-2" font-size="14">An agent that thinks twice.</text>
+    <text x="24" y="222" class="mono mute" font-size="11" letter-spacing="3">fastapi · langgraph</text>
+  </g>
+
+  <!-- Tile G: Admin (wider) -->
+  <g transform="translate(704 416)">
+    <rect width="448" height="244" rx="18" fill="#11192C" stroke="#26324A" stroke-width="1"/>
+    <rect width="448" height="244" rx="18" fill="none" stroke="#5EEAD4" stroke-opacity="0.32" stroke-width="1"/>
+    <text x="24" y="36" class="mono teal" font-size="11" letter-spacing="3">07 OF 08</text>
+    <text x="406" y="36" class="mono green" font-size="11" letter-spacing="3" text-anchor="end">● live</text>
+    <text x="24" y="118" class="display ivory" font-size="32" font-weight="600" letter-spacing="-0.4">Admin tools that don't</text>
+    <text x="24" y="152" class="display ivory" font-size="32" font-weight="600" letter-spacing="-0.4">hide the gun-buttons.</text>
+    <text x="24" y="196" class="body ivory-2" font-size="14">Enable, disable, back up, restore — with safety rails.</text>
+    <text x="24" y="222" class="mono mute" font-size="11" letter-spacing="3">self-disable blocked · last admin protected</text>
+  </g>
+
+  <!-- Tile H: Hosted Deployment -->
+  <g transform="translate(1168 416)">
+    <rect width="368" height="244" rx="18" fill="#11192C" stroke="#26324A" stroke-width="1"/>
+    <rect width="368" height="244" rx="18" fill="none" stroke="#5EEAD4" stroke-opacity="0.32" stroke-width="1"/>
+    <text x="24" y="36" class="mono teal" font-size="11" letter-spacing="3">08 OF 08</text>
+    <text x="326" y="36" class="mono green" font-size="11" letter-spacing="3" text-anchor="end">● active</text>
+    <text x="24" y="118" class="display ivory" font-size="32" font-weight="600" letter-spacing="-0.4">Hosted on rails</text>
+    <text x="24" y="152" class="display ivory" font-size="32" font-weight="600" letter-spacing="-0.4">we trust.</text>
+    <text x="24" y="196" class="body ivory-2" font-size="14">Netlify Functions + Supabase.</text>
+    <text x="24" y="222" class="mono mute" font-size="11" letter-spacing="3">docker retired · 2026-04-26</text>
+  </g>
+
+  <!-- Footer -->
+  <line x1="64" y1="700" x2="1536" y2="700" stroke="#26324A" stroke-width="0.6"/>
+  <text x="64"   y="730" class="mono mute" font-size="11" letter-spacing="3">all eight ship today · the moat shipped april 26</text>
+  <text x="1536" y="730" class="mono mute" font-size="11" letter-spacing="3" text-anchor="end">verified · 2026·04·27</text>
+</svg>
