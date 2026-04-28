@@ -1,4 +1,4 @@
-import { describe, it, expect, beforeAll, beforeEach, afterEach } from 'vitest';
+import { describe, it, expect, beforeAll, beforeEach, afterEach, afterAll } from 'vitest';
 import fs from 'node:fs';
 import path from 'node:path';
 
@@ -70,5 +70,59 @@ describe('design tokens', () => {
       const computed = hexToRgbString(raw);
       expect(computed).toBe(expected);
     });
+  });
+});
+
+/*
+ * Font-family tokens are declared on :root (= <html>). jsdom does not
+ * propagate :root custom properties to descendants through
+ * getPropertyValue, so we read from document.documentElement directly.
+ */
+describe('typography tokens', () => {
+  it('--font-sans declares Mona Sans Variable as the primary family', () => {
+    const value = getComputedStyle(document.documentElement).getPropertyValue('--font-sans').trim();
+    expect(value.toLowerCase()).toContain('mona sans variable');
+  });
+
+  it('--font-mono declares JetBrains Mono Variable as the primary family', () => {
+    const value = getComputedStyle(document.documentElement).getPropertyValue('--font-mono').trim();
+    expect(value.toLowerCase()).toContain('jetbrains mono variable');
+  });
+
+  it('--font-display declares DM Serif Display as the primary family', () => {
+    const value = getComputedStyle(document.documentElement).getPropertyValue('--font-display').trim();
+    expect(value.toLowerCase()).toContain('dm serif display');
+  });
+});
+
+/*
+ * Cascade regression: index.css used to declare body { font-family: 'Space
+ * Grotesk', ... } AFTER the tokens.css import, silently overriding the new
+ * --font-sans body rule. This test injects both stylesheets in their
+ * production order and verifies the typed body rule resolves to our token,
+ * not the legacy literal.
+ */
+describe('typography cascade integration', () => {
+  let indexStyle: HTMLStyleElement;
+
+  beforeAll(() => {
+    const indexPath = path.resolve(__dirname, '../../../index.css');
+    let css = fs.readFileSync(indexPath, 'utf8');
+    css = css.replace(/@tailwind[^;]+;\s*/g, '');
+    css = css.replace(/@import\s+'[^']+';\s*/g, '');
+    indexStyle = document.createElement('style');
+    indexStyle.id = 'index-css-under-test';
+    indexStyle.textContent = css;
+    document.head.appendChild(indexStyle);
+  });
+
+  afterAll(() => {
+    indexStyle?.remove();
+  });
+
+  it('body.font-family resolves to var(--font-sans), not a stale literal', () => {
+    const family = getComputedStyle(document.body).fontFamily;
+    expect(family).toContain('var(--font-sans)');
+    expect(family).not.toContain('Space Grotesk');
   });
 });
