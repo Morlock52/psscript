@@ -1,0 +1,105 @@
+/* ============================================================
+   PSScript design tokens — single source of truth.
+   Spec: docs/superpowers/specs/2026-04-28-frontend-modernization-design.md
+   ============================================================ */
+
+[data-surface="brand"] {
+  --surface-base:    #0E1525;
+  --surface-raised:  #131C30;
+  --surface-overlay: #1A2440;
+  --surface-glass:   rgba(20, 28, 50, 0.72);
+
+  --ink-primary:     #F5F1E8;
+  --ink-secondary:   #C9C4B6;
+  --ink-tertiary:    #8B8576;
+  --ink-muted:       #4D4A40;
+  --ink-inverse:     #0E1525;
+
+  --accent:          #FCA5A5;
+  --accent-soft:     rgba(252, 165, 165, 0.16);
+  --cool:            #5EEAD4;
+  --warm:            #FCA5A5;
+  --violet:          #C4B5FD;
+
+  --signal-success:  #5EEAD4;
+  --signal-warning:  #F5C97A;
+  --signal-danger:   #F87B7B;
+  --signal-info:     #C4B5FD;
+
+  --ring-focus:      #FCA5A5;
+  --shadow-near:     0 1px 2px rgba(0, 0, 0, 0.40), 0 2px 8px rgba(0, 0, 0, 0.32);
+  --shadow-far:      0 8px 24px rgba(0, 0, 0, 0.48), 0 24px 64px rgba(0, 0, 0, 0.36);
+  --shadow-glow:     0 0 80px rgba(252, 165, 165, 0.18),
+                     0 0 160px rgba(94, 234, 212, 0.10);
+
+  --blur-glass:      12px;
+  --radius-sm:       4px;
+  --radius-md:       8px;
+  --radius-lg:       14px;
+  --radius-xl:       20px;
+}
+
+[data-surface="operator"] {
+  --surface-base:    #0E1116;
+  --surface-raised:  #171B22;
+  --surface-overlay: #1F242D;
+  --surface-glass:   rgba(23, 27, 34, 0.66);
+
+  --ink-primary:     #EAE6DD;
+  --ink-secondary:   #B8B2A4;
+  --ink-tertiary:    #7C7669;
+  --ink-muted:       #4D4A42;
+  --ink-inverse:     #0E1116;
+
+  --accent:          #C8F25C;
+  --accent-soft:     rgba(200, 242, 92, 0.14);
+  --cool:            #5EEAD4;
+  --warm:            #FCA5A5;
+  --violet:          #C4B5FD;
+
+  --signal-success:  #5EEAD4;
+  --signal-warning:  #F5C97A;
+  --signal-danger:   #F5A8A8;
+  --signal-info:     #8FB4D9;
+
+  --ring-focus:      #C8F25C;
+  --shadow-near:     0 1px 2px rgba(0, 0, 0, 0.40), 0 2px 8px rgba(0, 0, 0, 0.28);
+  --shadow-far:      0 8px 24px rgba(0, 0, 0, 0.50), 0 24px 64px rgba(0, 0, 0, 0.34);
+  --shadow-glow:     0 0 200px rgba(94, 234, 212, 0.04),
+                     0 0 360px rgba(196, 181, 253, 0.04);
+
+  --blur-glass:      12px;
+  --radius-sm:       4px;
+  --radius-md:       8px;
+  --radius-lg:       14px;
+  --radius-xl:       20px;
+}
+
+[data-surface="operator"][data-theme="light"] {
+  --surface-base:    #FBF8F1;
+  --surface-raised:  #FFFFFF;
+  --surface-overlay: #FFFFFF;
+  --surface-glass:   rgba(255, 255, 255, 0.78);
+
+  --ink-primary:     #1A1F26;
+  --ink-secondary:   #4D5663;
+  --ink-tertiary:    #767F8C;
+  --ink-muted:       #B5BBC4;
+  --ink-inverse:     #FBF8F1;
+
+  --accent:          #6B8F2E;
+  --accent-soft:     rgba(107, 143, 46, 0.10);
+  --cool:            #1F8B7A;
+  --warm:            #C8623F;
+  --violet:          #6B5DD3;
+
+  --signal-success:  #1F8B7A;
+  --signal-warning:  #B57B14;
+  --signal-danger:   #C04646;
+  --signal-info:     #335E8C;
+
+  --ring-focus:      #6B8F2E;
+  --shadow-near:     0 1px 2px rgba(0, 0, 0, 0.06), 0 2px 8px rgba(0, 0, 0, 0.04);
+  --shadow-far:      0 8px 24px rgba(0, 0, 0, 0.10), 0 24px 64px rgba(0, 0, 0, 0.06);
+  --shadow-glow:     none;
+}
