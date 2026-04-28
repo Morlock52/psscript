@@ -286,11 +286,6 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     // Defaults match seeded dev admin in src/db/seeds/01-initial-data.sql
     const { email: demoEmail, password: demoPassword } = getDevCredentials();
 
-    // If these defaults don't work, the caller will show the error and the user can use regular login.
-    if (supabaseAuth) {
-      await axios.post(`${getApiUrl()}/auth/default-user`);
-    }
-
     await login(demoEmail, demoPassword);
   };
 

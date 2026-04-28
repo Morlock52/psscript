@@ -1,25 +1,13 @@
 // Script to check if pgvector extension is installed and install it if needed
 const { Client } = require('pg');
 const dotenv = require('dotenv');
+const { pgConnectionConfig } = require('../scripts/lib/hosted-supabase-db');
 
 // Load environment variables
 dotenv.config();
 
-// Database connection parameters
-const DB_HOST = process.env.DB_HOST || 'localhost';
-const DB_PORT = parseInt(process.env.DB_PORT || '5432');
-const DB_NAME = process.env.DB_NAME || 'psscript';
-const DB_USER = process.env.DB_USER || 'postgres';
-const DB_PASSWORD = process.env.DB_PASSWORD || 'postgres';
-
 async function checkAndInstallPgVector() {
-  const client = new Client({
-    host: DB_HOST,
-    port: DB_PORT,
-    database: DB_NAME,
-    user: DB_USER,
-    password: DB_PASSWORD
-  });
+  const client = new Client(pgConnectionConfig());
 
   try {
     console.log('Connecting to PostgreSQL database...');

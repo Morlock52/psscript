@@ -14,12 +14,8 @@ const dotenv = require('dotenv');
 const REPO_ROOT = path.resolve(__dirname, '..', '..');
 dotenv.config({ path: path.join(REPO_ROOT, '.env') });
 
-// Database connection parameters
-const DB_HOST = process.env.DB_HOST || 'localhost';
-const DB_PORT = parseInt(process.env.DB_PORT || '5432');
-const DB_NAME = process.env.DB_NAME || 'psscript';
-const DB_USER = process.env.DB_USER || 'postgres';
-const DB_PASSWORD = process.env.DB_PASSWORD || 'postgres';
+console.error('This legacy local database initializer is disabled. Use hosted Supabase migrations through DATABASE_URL.');
+process.exit(1);
 
 // SQL file path
 const SQL_FILE = path.join(REPO_ROOT, 'src', 'db', 'schema.sql');

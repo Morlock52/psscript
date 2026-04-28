@@ -7,7 +7,7 @@
  */
 
 import { Request, Response, NextFunction } from 'express';
-import { Sequelize, DataTypes, Model, Op } from 'sequelize';
+import { Sequelize, DataTypes, Model, Op, QueryTypes } from 'sequelize';
 import logger from '../utils/logger';
 import { getUserIdDataType, getUserTableName } from '../utils/databaseProfile';
 
@@ -304,82 +304,115 @@ export class AIAnalyticsMiddleware {
       whereClause.userId = userId;
     }
 
-    const [totalStats, byModel, byEndpoint, costTrend] = await Promise.all([
-      // Total statistics
-      AIMetric.findOne({
-        attributes: [
-          [sequelize.fn('COUNT', sequelize.col('id')), 'totalRequests'],
-          [sequelize.fn('SUM', sequelize.col('total_tokens')), 'totalTokens'],
-          [sequelize.fn('SUM', sequelize.col('total_cost')), 'totalCost'],
-          [sequelize.fn('AVG', sequelize.col('latency')), 'avgLatency'],
-          [
-            sequelize.literal(
-              'PERCENTILE_CONT(0.95) WITHIN GROUP (ORDER BY latency)'
-            ),
-            'p95Latency',
-          ],
-          [
-            sequelize.literal(
-              'AVG(CASE WHEN success = true THEN 1 ELSE 0 END)'
-            ),
-            'successRate',
-          ],
-        ],
-        where: whereClause,
-        raw: true,
-      }),
+    const dateFilter = userId
+      ? 'created_at >= :startDate AND created_at <= :endDate AND user_id = :userId'
+      : 'created_at >= :startDate AND created_at <= :endDate';
+    const replacements = { startDate, endDate, userId };
 
-      // By model
-      AIMetric.findAll({
-        attributes: [
-          'model',
-          [sequelize.fn('COUNT', sequelize.col('id')), 'requests'],
-          [sequelize.fn('SUM', sequelize.col('total_tokens')), 'totalTokens'],
-          [sequelize.fn('SUM', sequelize.col('total_cost')), 'totalCost'],
-          [sequelize.fn('AVG', sequelize.col('latency')), 'avgLatency'],
-        ],
-        where: whereClause,
-        group: ['model'],
-        order: [[sequelize.fn('SUM', sequelize.col('total_cost')), 'DESC']],
-        raw: true,
-      }),
-
-      // By endpoint
-      AIMetric.findAll({
-        attributes: [
-          'endpoint',
-          [sequelize.fn('COUNT', sequelize.col('id')), 'requests'],
-          [sequelize.fn('SUM', sequelize.col('total_cost')), 'totalCost'],
-          [sequelize.fn('AVG', sequelize.col('latency')), 'avgLatency'],
-        ],
-        where: whereClause,
-        group: ['endpoint'],
-        order: [[sequelize.fn('COUNT', sequelize.col('id')), 'DESC']],
-        limit: 10,
-        raw: true,
-      }),
-
-      // Cost trend (daily)
-      AIMetric.findAll({
-        attributes: [
-          [
-            sequelize.fn('DATE', sequelize.col('created_at')),
-            'date',
-          ],
-          [sequelize.fn('SUM', sequelize.col('total_cost')), 'cost'],
-          [sequelize.fn('COUNT', sequelize.col('id')), 'requests'],
-        ],
-        where: whereClause,
-        group: [sequelize.fn('DATE', sequelize.col('created_at'))],
-        order: [[sequelize.fn('DATE', sequelize.col('created_at')), 'ASC']],
-        raw: true,
-      }),
+    const [summaryRows, byModel, byEndpoint, byProvider, costTrend] = await Promise.all([
+      sequelize.query(
+        `
+          SELECT
+            COUNT(*)::int AS "totalRequests",
+            COUNT(*) FILTER (WHERE success = true)::int AS "successfulRequests",
+            COUNT(*) FILTER (WHERE success = false)::int AS "failedRequests",
+            COALESCE(SUM(prompt_tokens), 0)::int AS "promptTokens",
+            COALESCE(SUM(completion_tokens), 0)::int AS "completionTokens",
+            COALESCE(SUM(total_tokens), 0)::int AS "totalTokens",
+            COALESCE(SUM(total_cost), 0)::float AS "totalCost",
+            COALESCE(AVG(total_cost), 0)::float AS "avgCostPerRequest",
+            COALESCE(AVG(latency), 0)::float AS "avgLatency",
+            COALESCE(PERCENTILE_CONT(0.95) WITHIN GROUP (ORDER BY latency), 0)::float AS "p95Latency",
+            COALESCE(AVG(CASE WHEN success = true THEN 1 ELSE 0 END), 0)::float AS "successRate",
+            COALESCE(AVG(CASE WHEN success = false THEN 1 ELSE 0 END), 0)::float AS "errorRate"
+          FROM ai_metrics
+          WHERE ${dateFilter}
+        `,
+        { replacements, type: QueryTypes.SELECT }
+      ),
+      sequelize.query(
+        `
+          SELECT
+            model,
+            COALESCE(request_payload->>'provider', 'unknown') AS provider,
+            COUNT(*)::int AS requests,
+            COUNT(*) FILTER (WHERE success = false)::int AS failures,
+            COALESCE(SUM(prompt_tokens), 0)::int AS "promptTokens",
+            COALESCE(SUM(completion_tokens), 0)::int AS "completionTokens",
+            COALESCE(SUM(total_tokens), 0)::int AS "totalTokens",
+            COALESCE(SUM(total_cost), 0)::float AS "totalCost",
+            COALESCE(AVG(latency), 0)::float AS "avgLatency",
+            COALESCE(PERCENTILE_CONT(0.95) WITHIN GROUP (ORDER BY latency), 0)::float AS "p95Latency",
+            COALESCE(AVG(CASE WHEN success = true THEN 1 ELSE 0 END), 0)::float AS "successRate"
+          FROM ai_metrics
+          WHERE ${dateFilter}
+          GROUP BY model, COALESCE(request_payload->>'provider', 'unknown')
+          ORDER BY COALESCE(SUM(total_cost), 0) DESC
+        `,
+        { replacements, type: QueryTypes.SELECT }
+      ),
+      sequelize.query(
+        `
+          SELECT
+            endpoint,
+            COUNT(*)::int AS requests,
+            COUNT(*) FILTER (WHERE success = false)::int AS failures,
+            COALESCE(SUM(prompt_tokens), 0)::int AS "promptTokens",
+            COALESCE(SUM(completion_tokens), 0)::int AS "completionTokens",
+            COALESCE(SUM(total_tokens), 0)::int AS "totalTokens",
+            COALESCE(SUM(total_cost), 0)::float AS "totalCost",
+            COALESCE(AVG(latency), 0)::float AS "avgLatency",
+            COALESCE(PERCENTILE_CONT(0.95) WITHIN GROUP (ORDER BY latency), 0)::float AS "p95Latency",
+            COALESCE(AVG(CASE WHEN success = true THEN 1 ELSE 0 END), 0)::float AS "successRate"
+          FROM ai_metrics
+          WHERE ${dateFilter}
+          GROUP BY endpoint
+          ORDER BY COUNT(*) DESC
+          LIMIT 10
+        `,
+        { replacements, type: QueryTypes.SELECT }
+      ),
+      sequelize.query(
+        `
+          SELECT
+            COALESCE(request_payload->>'provider', 'unknown') AS provider,
+            COUNT(*)::int AS requests,
+            COUNT(*) FILTER (WHERE success = false)::int AS failures,
+            COALESCE(SUM(prompt_tokens), 0)::int AS "promptTokens",
+            COALESCE(SUM(completion_tokens), 0)::int AS "completionTokens",
+            COALESCE(SUM(total_tokens), 0)::int AS "totalTokens",
+            COALESCE(SUM(total_cost), 0)::float AS "totalCost",
+            COALESCE(AVG(latency), 0)::float AS "avgLatency",
+            COALESCE(AVG(CASE WHEN success = true THEN 1 ELSE 0 END), 0)::float AS "successRate"
+          FROM ai_metrics
+          WHERE ${dateFilter}
+          GROUP BY COALESCE(request_payload->>'provider', 'unknown')
+          ORDER BY requests DESC
+        `,
+        { replacements, type: QueryTypes.SELECT }
+      ),
+      sequelize.query(
+        `
+          SELECT
+            DATE(created_at)::text AS date,
+            COALESCE(SUM(total_cost), 0)::float AS cost,
+            COALESCE(SUM(total_tokens), 0)::int AS tokens,
+            COUNT(*)::int AS requests,
+            COUNT(*) FILTER (WHERE success = false)::int AS failures
+          FROM ai_metrics
+          WHERE ${dateFilter}
+          GROUP BY DATE(created_at)
+          ORDER BY DATE(created_at) ASC
+        `,
+        { replacements, type: QueryTypes.SELECT }
+      ),
     ]);
 
     return {
-      summary: totalStats,
+      summary: summaryRows[0],
       byModel,
       byEndpoint,
+      byProvider,
       costTrend,
       dateRange: {
         start: startDate,

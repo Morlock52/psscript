@@ -2,23 +2,25 @@
 
 # Script to run the categories migration
 
-# Set database connection parameters
-DB_HOST=${DB_HOST:-localhost}
-DB_PORT=${DB_PORT:-5432}
-DB_NAME=${DB_NAME:-psscript}
-DB_USER=${DB_USER:-postgres}
-DB_PASSWORD=${DB_PASSWORD:-postgres}
+if [ -z "$DATABASE_URL" ]; then
+  echo "DATABASE_URL must point at hosted Supabase Postgres."
+  exit 1
+fi
+
+case "$DATABASE_URL" in
+  *".supabase.co"*|*".supabase.com"*) ;;
+  *)
+    echo "Refusing to run against a local or non-Supabase database."
+    exit 1
+    ;;
+esac
 
 # Display connection info
-echo "Running categories migration with the following settings:"
-echo "- Host: $DB_HOST"
-echo "- Port: $DB_PORT"
-echo "- Database: $DB_NAME"
-echo "- User: $DB_USER"
+echo "Running categories migration against hosted Supabase DATABASE_URL"
 
 # Run the migration
 echo "Running migration..."
-PGPASSWORD=$DB_PASSWORD psql -h $DB_HOST -p $DB_PORT -U $DB_USER -d $DB_NAME -f src/db/migrations/update_categories.sql
+psql "$DATABASE_URL" -f src/db/migrations/update_categories.sql
 
 # Check if the migration was successful
 if [ $? -eq 0 ]; then
@@ -26,11 +28,11 @@ if [ $? -eq 0 ]; then
   
   # Count the number of categories
   echo "Verifying categories..."
-  PGPASSWORD=$DB_PASSWORD psql -h $DB_HOST -p $DB_PORT -U $DB_USER -d $DB_NAME -c "SELECT COUNT(*) FROM categories;"
+  psql "$DATABASE_URL" -c "SELECT COUNT(*) FROM categories;"
   
   # List the categories
   echo "Categories in the database:"
-  PGPASSWORD=$DB_PASSWORD psql -h $DB_HOST -p $DB_PORT -U $DB_USER -d $DB_NAME -c "SELECT id, name FROM categories ORDER BY id;"
+  psql "$DATABASE_URL" -c "SELECT id, name FROM categories ORDER BY id;"
 else
   echo "Migration failed!"
 fi

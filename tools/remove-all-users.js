@@ -2,18 +2,11 @@
  * Script to remove all users from the database
  */
 const { Pool } = require('pg');
-
-// Database connection parameters (same as in setup-local-db.js)
-const dbConfig = {
-  host: 'localhost',
-  port: 5432,
-  database: 'psscript',
-  user: 'postgres',
-  password: 'postgres'
-};
+const { pgConnectionConfig } = require('../scripts/lib/hosted-supabase-db');
+require('dotenv').config();
 
 // Create connection pool
-const pool = new Pool(dbConfig);
+const pool = new Pool(pgConnectionConfig());
 
 async function removeAllUsers() {
   console.log('Starting user removal process...');

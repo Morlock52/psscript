@@ -1,6 +1,6 @@
 # PSScript Documentation Hub
 
-_Last updated: April 27, 2026_
+_Last updated: April 28, 2026_
 
 This index points to the active documentation set for the current validated repo state.
 
@@ -18,6 +18,8 @@ This index points to the active documentation set for the current validated repo
 | [AUTHENTICATION-IMPROVEMENTS.md](./AUTHENTICATION-IMPROVEMENTS.md) | Auth model and local auth-disabled behavior |
 | [NETLIFY-SUPABASE-DEPLOYMENT.md](./NETLIFY-SUPABASE-DEPLOYMENT.md) | Current hosted Netlify + Supabase deployment path |
 | [DEPLOYMENT-PLATFORMS.md](./DEPLOYMENT-PLATFORMS.md) | Deployment alternatives and legacy split-service notes |
+| [PROJECT-PERFORMANCE-TEST-DESIGN-2026-04-27.md](./PROJECT-PERFORMANCE-TEST-DESIGN-2026-04-27.md) | Current project performance and test design |
+| [PROJECT-TEST-RESULTS-2026-04-28.md](./PROJECT-TEST-RESULTS-2026-04-28.md) | Latest Netlify/Supabase smoke, e2e, UI, and performance results |
 
 ## Service READMEs
 
@@ -57,3 +59,5 @@ This index points to the active documentation set for the current validated repo
 
 Many files in this folder are historical reports or duplicated workspace artifacts (filenames with ` (1)`).
 Treat those as archive material unless linked from this page or the root README.
+
+Previous-run markdown reports that predate the hosted Netlify/Supabase validation were moved to [archive/previous-run-reports-2026-04-28](./archive/previous-run-reports-2026-04-28/).

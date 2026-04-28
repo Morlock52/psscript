@@ -162,13 +162,7 @@ def get_db_conninfo() -> str:
     if database_url:
         return database_url
 
-    return (
-        f"host={os.getenv('DB_HOST', 'localhost')} "
-        f"dbname={os.getenv('DB_NAME', 'psscript')} "
-        f"user={os.getenv('DB_USER', 'postgres')} "
-        f"password={os.getenv('DB_PASSWORD', 'postgres')} "
-        f"port={os.getenv('DB_PORT', '5432')}"
-    )
+    raise RuntimeError("DATABASE_URL must point at hosted Supabase Postgres.")
 
 
 def get_database_url() -> Optional[str]:
@@ -180,6 +174,9 @@ def get_database_url() -> Optional[str]:
     parsed = urlparse(database_url)
     params = dict(parse_qsl(parsed.query, keep_blank_values=True))
     host = parsed.hostname or ""
+    if not (host.endswith(".supabase.co") or host.endswith(".supabase.com")):
+        raise RuntimeError("DATABASE_URL must point at hosted Supabase Postgres.")
+
     needs_ssl = (
         os.getenv("DB_SSL", "").lower() == "true"
         or host.endswith(".supabase.co")
@@ -360,15 +357,7 @@ def get_db_connection_sync():
             conn = psycopg2.connect(database_url, cursor_factory=RealDictCursor)
             return conn
 
-        conn = psycopg2.connect(
-            host=os.getenv("DB_HOST", "localhost"),
-            database=os.getenv("DB_NAME", "psscript"),
-            user=os.getenv("DB_USER", "postgres"),
-            password=os.getenv("DB_PASSWORD", "postgres"),
-            port=os.getenv("DB_PORT", "5432"),
-            cursor_factory=RealDictCursor
-        )
-        return conn
+        raise RuntimeError("DATABASE_URL must point at hosted Supabase Postgres.")
     except Exception as e:
         logger.error(f"Database connection error: {e}")
         return None

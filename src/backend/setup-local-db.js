@@ -2,6 +2,9 @@
  * Local database setup script
  * This script creates necessary tables and inserts seed data for local development
  */
+console.error('This legacy local database setup script is disabled. Use hosted Supabase migrations through DATABASE_URL.');
+process.exit(1);
+
 const { Pool } = require('pg');
 const fs = require('fs');
 const path = require('path');

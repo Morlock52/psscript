@@ -2,12 +2,22 @@
 
 # Script to run the migration to add updated_at column to categories table
 
-# Skip PostgreSQL check since pg_isready is not available
-echo "Skipping PostgreSQL check..."
+if [ -z "$DATABASE_URL" ]; then
+  echo "DATABASE_URL must point at hosted Supabase Postgres."
+  exit 1
+fi
+
+case "$DATABASE_URL" in
+  *".supabase.co"*|*".supabase.com"*) ;;
+  *)
+    echo "Refusing to run against a local or non-Supabase database."
+    exit 1
+    ;;
+esac
 
 # Run the migration
 echo "Running migration to add updated_at column to categories table..."
-PGPASSWORD=postgres psql -h localhost -p 5432 -U postgres -d psscript -f src/db/migrations/add_updated_at_to_categories.sql
+psql "$DATABASE_URL" -f src/db/migrations/add_updated_at_to_categories.sql
 
 if [ $? -eq 0 ]; then
   echo "Migration completed successfully."

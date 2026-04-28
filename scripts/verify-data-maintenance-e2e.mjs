@@ -152,7 +152,11 @@ async function main() {
   const skipBuild = hasFlag('no-build');
   const reuseBackend = hasFlag('reuse-backend');
   const insecureTls = hasFlag('insecure-tls');
-  const databaseUrl = process.env.DATABASE_URL || 'postgres://postgres:postgres@127.0.0.1:5432/psscript';
+  const databaseUrl = process.env.DATABASE_URL;
+
+  if (!databaseUrl || !/\.supabase\.(co|com)(?::|\/|$)/.test(new URL(databaseUrl).hostname)) {
+    throw new Error('DATABASE_URL must point at hosted Supabase Postgres for maintenance E2E verification.');
+  }
 
   if (insecureTls) {
     process.env.NODE_TLS_REJECT_UNAUTHORIZED = '0';
@@ -192,11 +196,7 @@ async function main() {
           PORT: String(port),
           DB_BACKUP_DIR: backupDir,
           DATABASE_URL: databaseUrl,
-          DB_HOST: '127.0.0.1',
-          DB_PORT: '5432',
-          DB_NAME: 'psscript',
-          DB_USER: 'postgres',
-          DB_PASSWORD: 'postgres'
+          DB_PROFILE: 'supabase'
         },
         stdio: ['ignore', 'pipe', 'pipe']
       });

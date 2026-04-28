@@ -22,7 +22,7 @@ const _MIN_SECRET_ENTROPY_BITS = 128; // Reserved for future entropy validation
  * Required environment variables by category
  */
 const REQUIRED_VARS = {
-  database: ['DB_HOST', 'DB_PORT', 'DB_NAME', 'DB_USER', 'DB_PASSWORD'],
+  database: ['DATABASE_URL'],
   auth: ['JWT_SECRET', 'REFRESH_TOKEN_SECRET'],
   production: ['BCRYPT_ROUNDS'],
 };
@@ -289,13 +289,31 @@ export function getAuthConfig() {
  */
 export function getDbConfig() {
   const useSSL = databaseSslEnabled();
+  const databaseUrl = process.env.DATABASE_URL;
+
+  if (databaseUrl) {
+    try {
+      const parsed = new URL(databaseUrl);
+      return {
+        host: parsed.hostname,
+        port: parseInt(parsed.port || '5432'),
+        database: parsed.pathname ? parsed.pathname.replace(/^\//, '') : 'postgres',
+        username: parsed.username || 'postgres',
+        password: parsed.password || '',
+        ssl: true,
+        rejectUnauthorized: IS_PRODUCTION ? true : false,
+      };
+    } catch (_error) {
+      // Fall through to validation error surface below.
+    }
+  }
 
   return {
-    host: process.env.DB_HOST || 'localhost',
-    port: parseInt(process.env.DB_PORT || '5432'),
-    database: process.env.DB_NAME || 'psscript',
-    username: process.env.DB_USER || 'postgres',
-    password: process.env.DB_PASSWORD || 'postgres',
+    host: 'DATABASE_URL required',
+    port: 5432,
+    database: 'postgres',
+    username: 'postgres',
+    password: '',
     ssl: useSSL,
     // In production, require certificate validation
     rejectUnauthorized: IS_PRODUCTION ? true : false,

@@ -1,26 +1,15 @@
 const bcrypt = require('bcrypt');
 const { Sequelize, DataTypes } = require('sequelize');
+const { sequelizeConnection } = require('../scripts/lib/hosted-supabase-db');
 require('dotenv').config();
-
-const DB_HOST = process.env.DB_HOST || 'localhost';
-const DB_PORT = parseInt(process.env.DB_PORT || '5432');
-const DB_NAME = process.env.DB_NAME || 'psscript';
-const DB_USER = process.env.DB_USER || 'postgres';
-const DB_PASSWORD = process.env.DB_PASSWORD || 'postgres';
-const DB_SSL = process.env.DB_SSL === 'true';
 
 // Override via environment when you need a specific account.
 const ADMIN_USERNAME = process.env.ADMIN_USERNAME || 'admin';
 const ADMIN_EMAIL = process.env.ADMIN_EMAIL || 'admin@example.com';
 const ADMIN_PASSWORD = process.env.ADMIN_PASSWORD || 'admin123';
 
-const sequelize = new Sequelize(DB_NAME, DB_USER, DB_PASSWORD, {
-  host: DB_HOST,
-  port: DB_PORT,
-  dialect: 'postgres',
-  logging: console.log,
-  ssl: DB_SSL ? { rejectUnauthorized: false } : undefined,
-});
+const { databaseUrl, options } = sequelizeConnection(process.env.DATABASE_URL, console.log);
+const sequelize = new Sequelize(databaseUrl, options);
 
 const User = sequelize.define('User', {
   id: {

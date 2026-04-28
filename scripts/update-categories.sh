@@ -2,6 +2,19 @@
 
 # Script to update the categories in the database with optimized categories for PowerShell scripts
 
+if [ -z "$DATABASE_URL" ]; then
+  echo "DATABASE_URL must point at hosted Supabase Postgres."
+  exit 1
+fi
+
+case "$DATABASE_URL" in
+  *".supabase.co"*|*".supabase.com"*) ;;
+  *)
+    echo "Refusing to run against a local or non-Supabase database."
+    exit 1
+    ;;
+esac
+
 # Set the API URL
 API_URL="http://localhost:4001/api"
 
@@ -20,22 +33,13 @@ CATEGORIES=(
   ["Utilities & Helpers"]="General-purpose utility scripts, helper functions, and reusable modules for various administrative tasks."
 )
 
-# Check if PostgreSQL is running
-echo "Checking if PostgreSQL is running..."
-pg_isready -h localhost -p 5432 -U postgres
-
-if [ $? -ne 0 ]; then
-  echo "PostgreSQL is not running. Please start PostgreSQL and try again."
-  exit 1
-fi
-
 # Clear existing categories
 echo "Clearing existing categories..."
-PGPASSWORD=postgres psql -h localhost -p 5432 -U postgres -d psscript -c "TRUNCATE categories CASCADE;"
+psql "$DATABASE_URL" -c "TRUNCATE categories CASCADE;"
 
 # Reset the sequence
 echo "Resetting category ID sequence..."
-PGPASSWORD=postgres psql -h localhost -p 5432 -U postgres -d psscript -c "ALTER SEQUENCE categories_id_seq RESTART WITH 1;"
+psql "$DATABASE_URL" -c "ALTER SEQUENCE categories_id_seq RESTART WITH 1;"
 
 # Insert new categories
 echo "Inserting new categories..."
@@ -45,7 +49,7 @@ for CATEGORY in "${!CATEGORIES[@]}"; do
   echo "Creating category: $CATEGORY"
   
   # Insert directly into the database
-  PGPASSWORD=postgres psql -h localhost -p 5432 -U postgres -d psscript -c "
+  psql "$DATABASE_URL" -c "
     INSERT INTO categories (name, description, created_at, updated_at) 
     VALUES ('$CATEGORY', '$DESCRIPTION', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP);
   "

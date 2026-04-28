@@ -280,8 +280,13 @@ async function handleAuthUser(req: Request): Promise<Response> {
 async function handleDefaultUser(req: Request): Promise<Response> {
   if (req.method !== 'POST') return methodNotAllowed();
 
-  const email = getEnv('DEFAULT_ADMIN_EMAIL', 'admin@example.com');
-  const password = getEnv('DEFAULT_ADMIN_PASSWORD', 'admin123');
+  const bootstrapToken = getEnv('DEFAULT_ADMIN_BOOTSTRAP_TOKEN');
+  if (!bootstrapToken || req.headers.get('x-bootstrap-token') !== bootstrapToken) {
+    throw Object.assign(new Error('Admin bootstrap token required'), { status: 401, code: 'bootstrap_token_required' });
+  }
+
+  const email = requireEnv('DEFAULT_ADMIN_EMAIL');
+  const password = requireEnv('DEFAULT_ADMIN_PASSWORD');
   const supabase = getSupabaseAdminClient();
 
   const list = await supabase.auth.admin.listUsers({ page: 1, perPage: 1000 });
@@ -1902,10 +1907,10 @@ async function recordAiMetric(context: AiMetricContext | undefined, details: AiM
     const usage = details.usage || zeroAiUsage();
     await query(
       `
-        INSERT INTO ai_metrics (
-          user_id, endpoint, model, prompt_tokens, completion_tokens, total_tokens,
-          total_cost, latency, success, error_message, request_payload, response_payload
-        )
+      INSERT INTO ai_metrics (
+        user_id, endpoint, model, prompt_tokens, completion_tokens, total_tokens,
+        total_cost, latency, success, error_message, request_payload, response_payload
+      )
         VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11::jsonb, $12::jsonb)
       `,
       [
@@ -1919,8 +1924,17 @@ async function recordAiMetric(context: AiMetricContext | undefined, details: AiM
         details.latency,
         details.success,
         details.errorMessage || null,
-        JSON.stringify({ provider: details.provider }),
-        JSON.stringify({ hasUsage: usage.totalTokens > 0 }),
+        JSON.stringify({
+          provider: details.provider,
+          usageSource: usage.totalTokens > 0 ? 'provider_reported' : 'unavailable',
+        }),
+        JSON.stringify({
+          hasUsage: usage.totalTokens > 0,
+          promptTokens: usage.promptTokens,
+          completionTokens: usage.completionTokens,
+          totalTokens: usage.totalTokens,
+          estimatedCost: calculateAiCost(details.model, usage.promptTokens, usage.completionTokens),
+        }),
       ]
     );
   } catch (error) {
@@ -1962,16 +1976,22 @@ async function getHostedAiAnalytics(userId: string, startDate: Date, endDate: Da
   if (!(await aiMetricsTableExists())) return emptyAiAnalytics(startDate, endDate);
 
   try {
-    const [summary, byModel, byEndpoint, costTrend] = await Promise.all([
+    const [summary, byModel, byEndpoint, byProvider, costTrend] = await Promise.all([
       query(
         `
           SELECT
             COUNT(*)::int AS "totalRequests",
+            COUNT(*) FILTER (WHERE success = true)::int AS "successfulRequests",
+            COUNT(*) FILTER (WHERE success = false)::int AS "failedRequests",
+            COALESCE(SUM(prompt_tokens), 0)::int AS "promptTokens",
+            COALESCE(SUM(completion_tokens), 0)::int AS "completionTokens",
             COALESCE(SUM(total_tokens), 0)::int AS "totalTokens",
             COALESCE(SUM(total_cost), 0)::float AS "totalCost",
+            COALESCE(AVG(total_cost), 0)::float AS "avgCostPerRequest",
             COALESCE(AVG(latency), 0)::float AS "avgLatency",
             COALESCE(PERCENTILE_CONT(0.95) WITHIN GROUP (ORDER BY latency), 0)::float AS "p95Latency",
-            COALESCE(AVG(CASE WHEN success = true THEN 1 ELSE 0 END), 0)::float AS "successRate"
+            COALESCE(AVG(CASE WHEN success = true THEN 1 ELSE 0 END), 0)::float AS "successRate",
+            COALESCE(AVG(CASE WHEN success = false THEN 1 ELSE 0 END), 0)::float AS "errorRate"
           FROM ai_metrics
           WHERE created_at >= $1 AND created_at <= $2 AND (user_id = $3 OR user_id IS NULL)
         `,
@@ -1981,13 +2001,19 @@ async function getHostedAiAnalytics(userId: string, startDate: Date, endDate: Da
         `
           SELECT
             model,
+            COALESCE(request_payload->>'provider', 'unknown') AS provider,
             COUNT(*)::int AS requests,
+            COUNT(*) FILTER (WHERE success = false)::int AS failures,
+            COALESCE(SUM(prompt_tokens), 0)::int AS "promptTokens",
+            COALESCE(SUM(completion_tokens), 0)::int AS "completionTokens",
             COALESCE(SUM(total_tokens), 0)::int AS "totalTokens",
             COALESCE(SUM(total_cost), 0)::float AS "totalCost",
-            COALESCE(AVG(latency), 0)::float AS "avgLatency"
+            COALESCE(AVG(latency), 0)::float AS "avgLatency",
+            COALESCE(PERCENTILE_CONT(0.95) WITHIN GROUP (ORDER BY latency), 0)::float AS "p95Latency",
+            COALESCE(AVG(CASE WHEN success = true THEN 1 ELSE 0 END), 0)::float AS "successRate"
           FROM ai_metrics
           WHERE created_at >= $1 AND created_at <= $2 AND (user_id = $3 OR user_id IS NULL)
-          GROUP BY model
+          GROUP BY model, COALESCE(request_payload->>'provider', 'unknown')
           ORDER BY COALESCE(SUM(total_cost), 0) DESC
         `,
         [startDate.toISOString(), endDate.toISOString(), userId]
@@ -1997,8 +2023,14 @@ async function getHostedAiAnalytics(userId: string, startDate: Date, endDate: Da
           SELECT
             endpoint,
             COUNT(*)::int AS requests,
+            COUNT(*) FILTER (WHERE success = false)::int AS failures,
+            COALESCE(SUM(prompt_tokens), 0)::int AS "promptTokens",
+            COALESCE(SUM(completion_tokens), 0)::int AS "completionTokens",
+            COALESCE(SUM(total_tokens), 0)::int AS "totalTokens",
             COALESCE(SUM(total_cost), 0)::float AS "totalCost",
-            COALESCE(AVG(latency), 0)::float AS "avgLatency"
+            COALESCE(AVG(latency), 0)::float AS "avgLatency",
+            COALESCE(PERCENTILE_CONT(0.95) WITHIN GROUP (ORDER BY latency), 0)::float AS "p95Latency",
+            COALESCE(AVG(CASE WHEN success = true THEN 1 ELSE 0 END), 0)::float AS "successRate"
           FROM ai_metrics
           WHERE created_at >= $1 AND created_at <= $2 AND (user_id = $3 OR user_id IS NULL)
           GROUP BY endpoint
@@ -2010,9 +2042,30 @@ async function getHostedAiAnalytics(userId: string, startDate: Date, endDate: Da
       query(
         `
           SELECT
+            COALESCE(request_payload->>'provider', 'unknown') AS provider,
+            COUNT(*)::int AS requests,
+            COUNT(*) FILTER (WHERE success = false)::int AS failures,
+            COALESCE(SUM(prompt_tokens), 0)::int AS "promptTokens",
+            COALESCE(SUM(completion_tokens), 0)::int AS "completionTokens",
+            COALESCE(SUM(total_tokens), 0)::int AS "totalTokens",
+            COALESCE(SUM(total_cost), 0)::float AS "totalCost",
+            COALESCE(AVG(latency), 0)::float AS "avgLatency",
+            COALESCE(AVG(CASE WHEN success = true THEN 1 ELSE 0 END), 0)::float AS "successRate"
+          FROM ai_metrics
+          WHERE created_at >= $1 AND created_at <= $2 AND (user_id = $3 OR user_id IS NULL)
+          GROUP BY COALESCE(request_payload->>'provider', 'unknown')
+          ORDER BY requests DESC
+        `,
+        [startDate.toISOString(), endDate.toISOString(), userId]
+      ),
+      query(
+        `
+          SELECT
             DATE(created_at)::text AS date,
             COALESCE(SUM(total_cost), 0)::float AS cost,
-            COUNT(*)::int AS requests
+            COALESCE(SUM(total_tokens), 0)::int AS tokens,
+            COUNT(*)::int AS requests,
+            COUNT(*) FILTER (WHERE success = false)::int AS failures
           FROM ai_metrics
           WHERE created_at >= $1 AND created_at <= $2 AND (user_id = $3 OR user_id IS NULL)
           GROUP BY DATE(created_at)
@@ -2026,6 +2079,7 @@ async function getHostedAiAnalytics(userId: string, startDate: Date, endDate: Da
       summary: summary.rows[0] || emptyAiAnalytics(startDate, endDate).summary,
       byModel: byModel.rows,
       byEndpoint: byEndpoint.rows,
+      byProvider: byProvider.rows,
       costTrend: costTrend.rows,
       dateRange: {
         start: startDate.toISOString(),

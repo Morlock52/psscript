@@ -5,7 +5,7 @@
  * Features:
  * - Connection pooling
  * - Automatic reconnection with exponential backoff
- * - Hosted and local development connection modes
+ * - Hosted Supabase connection mode
  * - Health checks and connection validation
  */
 
@@ -81,6 +81,20 @@ function getPoolConfig() {
     acquire: parseIntegerEnv(['DB_POOL_ACQUIRE_MS', 'DB_POOL_ACQUIRE'], POOL_ACQUIRE_TIMEOUT_MS, 1),
     idle: parseIntegerEnv(['DB_POOL_IDLE_MS', 'DB_POOL_IDLE'], POOL_IDLE_TIMEOUT_MS, 1),
   };
+}
+
+function isHostedSupabaseDatabaseUrl(databaseUrl: string | undefined): boolean {
+  if (!databaseUrl) {
+    return false;
+  }
+
+  try {
+    const url = new URL(databaseUrl);
+    const host = url.hostname.toLowerCase();
+    return host.endsWith('.supabase.co') || host.endsWith('.supabase.com');
+  } catch (_error) {
+    return false;
+  }
 }
 
 // Error type definitions for better error handling
@@ -173,16 +187,17 @@ function getErrorType(error: any): ConnectionErrorType {
 function getConnectionConfigInfo() {
   const pool = getPoolConfig();
   const connectionTimeout = getConnectionTimeoutMs();
+  const databaseUrl = process.env.DATABASE_URL;
 
-  if (process.env.DATABASE_URL) {
+  if (databaseUrl) {
     try {
-      const dbUrl = new URL(process.env.DATABASE_URL);
+      const dbUrl = new URL(databaseUrl);
       return {
-        host: dbUrl.hostname || 'localhost',
+        host: dbUrl.hostname,
         port: Number.parseInt(dbUrl.port || '5432', 10),
         database: dbUrl.pathname ? dbUrl.pathname.replace(/^\//, '') : 'psscript',
         username: dbUrl.username || 'postgres',
-        ssl: databaseSslEnabled(process.env.DATABASE_URL),
+        ssl: databaseSslEnabled(databaseUrl),
         pool,
         connectionTimeout,
         maxRetries: MAX_CONNECTION_RETRIES,
@@ -194,11 +209,11 @@ function getConnectionConfigInfo() {
   }
 
   return {
-    host: process.env.DB_HOST || 'localhost',
-    port: Number.parseInt(process.env.DB_PORT || '5432', 10),
-    database: process.env.DB_NAME || 'psscript',
-    username: process.env.DB_USER || 'postgres',
-    ssl: databaseSslEnabled(),
+    host: 'DATABASE_URL required',
+    port: 5432,
+    database: 'postgres',
+    username: 'postgres',
+    ssl: true,
     pool,
     connectionTimeout,
     maxRetries: MAX_CONNECTION_RETRIES,
@@ -583,6 +598,10 @@ class Database {
    */
   private getConfig(): Options {
     const databaseUrl = process.env.DATABASE_URL;
+    if (!isHostedSupabaseDatabaseUrl(databaseUrl)) {
+      throw new Error('DATABASE_URL must point at hosted Supabase Postgres.');
+    }
+
     const sslConfig = this.getSSLConfig(databaseUrl);
     const pool = getPoolConfig();
     const connectionTimeout = getConnectionTimeoutMs();
@@ -592,39 +611,7 @@ class Database {
       application_name: process.env.DB_APPLICATION_NAME || 'psscript-api'
     };
 
-    // Use DATABASE_URL if available
-    if (databaseUrl) {
-      return {
-        dialect: 'postgres',
-        logging: (msg) => logger.debug(msg),
-        dialectOptions,
-        pool,
-        retry: {
-          max: 3,
-          match: [/Deadlock/i]
-        }
-      };
-    }
-
-    // Otherwise use individual connection parameters
-    // Log connection details (password obfuscated for security)
-    const host = process.env.DB_HOST || 'localhost';
-    const port = Number.parseInt(process.env.DB_PORT || '5432', 10);
-    const database = process.env.DB_NAME || 'psscript';
-    const username = process.env.DB_USER || 'postgres';
-    const password = process.env.DB_PASSWORD || 'postgres';
-
-    logger.info(`Database config: ${username}@${host}:${port}/${database}`);
-    if (IS_DEVELOPMENT && password === 'postgres') {
-      logger.warn('⚠️  Using default database password in development');
-    }
-
     return {
-      host,
-      port,
-      database,
-      username,
-      password,
       dialect: 'postgres',
       logging: (msg) => logger.debug(msg),
       dialectOptions,
@@ -640,13 +627,8 @@ class Database {
     const databaseUrl = process.env.DATABASE_URL;
     const config = this.getConfig();
     
-    if (databaseUrl) {
-      this.sequelize = new Sequelize(databaseUrl, config);
-      logger.info('Initialized Sequelize connection using DATABASE_URL');
-    } else {
-      this.sequelize = new Sequelize(config);
-      logger.info('Initialized Sequelize connection using individual connection parameters');
-    }
+    this.sequelize = new Sequelize(databaseUrl as string, config);
+    logger.info('Initialized Sequelize connection using hosted Supabase DATABASE_URL');
     
     // Set connection status flag
     this.connected = false;

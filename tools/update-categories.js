@@ -1,18 +1,10 @@
 // Script to update categories in the database
 const { Sequelize } = require('sequelize');
 const dotenv = require('dotenv');
-const fs = require('fs');
-const path = require('path');
+const { sequelizeConnection } = require('../scripts/lib/hosted-supabase-db');
 
 // Load environment variables
 dotenv.config();
-
-// Database connection parameters
-const DB_HOST = process.env.DB_HOST || 'localhost';
-const DB_PORT = parseInt(process.env.DB_PORT || '5432');
-const DB_NAME = process.env.DB_NAME || 'psscript';
-const DB_USER = process.env.DB_USER || 'postgres';
-const DB_PASSWORD = process.env.DB_PASSWORD || 'postgres';
 
 // Categories to ensure exist
 const recommendedCategories = [
@@ -59,12 +51,8 @@ const recommendedCategories = [
 ];
 
 // Initialize Sequelize
-const sequelize = new Sequelize(DB_NAME, DB_USER, DB_PASSWORD, {
-  host: DB_HOST,
-  port: DB_PORT,
-  dialect: 'postgres',
-  logging: console.log
-});
+const { databaseUrl, options } = sequelizeConnection(process.env.DATABASE_URL, console.log);
+const sequelize = new Sequelize(databaseUrl, options);
 
 async function updateCategories() {
   try {

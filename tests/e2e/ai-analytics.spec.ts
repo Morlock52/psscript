@@ -27,6 +27,11 @@ test.describe('AI Analytics API', () => {
       if (data.summary) {
         expect(data.summary).toHaveProperty('totalCost');
         expect(data.summary).toHaveProperty('totalTokens');
+        expect(data.summary).toHaveProperty('promptTokens');
+        expect(data.summary).toHaveProperty('completionTokens');
+        expect(data.summary).toHaveProperty('failedRequests');
+        expect(data.summary).toHaveProperty('p95Latency');
+        expect(data.summary).toHaveProperty('successRate');
         // Backend uses totalRequests naming.
         expect(data.summary).toHaveProperty('totalRequests');
       }
@@ -73,6 +78,7 @@ test.describe('AI Analytics API', () => {
       expect(data).toHaveProperty('summary');
       expect(data).toHaveProperty('byModel');
       expect(data).toHaveProperty('byEndpoint');
+      expect(data).toHaveProperty('byProvider');
       expect(data).toHaveProperty('costTrend');
     }
   });
@@ -163,9 +169,8 @@ test.describe('AI Analytics Dashboard', () => {
     const costElements = page.getByText(/cost|spend|budget|\$/);
 
     // Should find cost-related content (if logged in)
-    // This test allows for auth requirements
     const elementCount = await costElements.count();
-    expect(elementCount >= 0).toBeTruthy();
+    expect(elementCount).toBeGreaterThan(0);
   });
 
   test('Should display token usage metrics', async ({ page }, testInfo) => {
@@ -173,13 +178,13 @@ test.describe('AI Analytics Dashboard', () => {
     await loginIfNeeded(page, testInfo);
 
     await page.goto('/analytics');
+    await expect(page.getByRole('heading', { name: /analytics dashboard/i })).toBeVisible({ timeout: 15000 });
 
     // Look for token-related elements
     const tokenElements = page.getByText(/token|usage|consumption/i);
 
     // Should find token-related content
-    const elementCount = await tokenElements.count();
-    expect(elementCount >= 0).toBeTruthy();
+    await expect(tokenElements.first()).toBeVisible({ timeout: 10000 });
   });
 
   test('Should display model performance metrics', async ({ page, browserName }, testInfo) => {
@@ -207,7 +212,7 @@ test.describe('AI Analytics Dashboard', () => {
 
     // Should find performance-related content
     const elementCount = await performanceElements.count();
-    expect(elementCount >= 0).toBeTruthy();
+    expect(elementCount).toBeGreaterThan(0);
   });
 });
 
@@ -228,9 +233,7 @@ test.describe('Budget Alert System', () => {
         const alertElement = page.locator('[role="alert"]')
           .or(page.getByText(/warning|alert|budget|threshold/i));
 
-        // Alerts might be displayed
-        const hasAlerts = await alertElement.count() > 0;
-        expect(hasAlerts || true).toBeTruthy(); // Allow for no alerts
+        await expect(alertElement.first()).toBeVisible({ timeout: 10000 });
       }
     }
   });

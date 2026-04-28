@@ -9,6 +9,10 @@ const fs = require('fs');
 const path = require('path');
 const { Pool } = require('pg');
 const dotenv = require('dotenv');
+const {
+  assertHostedSupabaseDatabaseUrl,
+  databaseUrlRequestsSSL,
+} = require('../lib/hosted-supabase-db');
 
 const REPO_ROOT = path.resolve(__dirname, '..', '..');
 
@@ -20,45 +24,15 @@ const MIGRATION_DATABASE_URL =
   process.env.MIGRATION_DATABASE_URL ||
   process.env.DB_MIGRATION_DATABASE_URL ||
   process.env.DATABASE_URL;
-const DB_HOST = process.env.DB_HOST || 'localhost';
-const DB_PORT = parseInt(process.env.DB_PORT || '5432');
-const DB_NAME = process.env.DB_NAME || 'psscript';
-const DB_USER = process.env.DB_USER || 'postgres';
-const DB_PASSWORD = process.env.DB_PASSWORD || 'postgres';
-function databaseUrlRequestsSSL(databaseUrl) {
-  if (!databaseUrl) {
-    return false;
-  }
-
-  try {
-    const url = new URL(databaseUrl);
-    const sslMode = url.searchParams.get('sslmode')?.toLowerCase();
-    const host = url.hostname.toLowerCase();
-    return (
-      ['require', 'verify-ca', 'verify-full'].includes(sslMode) ||
-      host.endsWith('.supabase.co') ||
-      host.endsWith('.pooler.supabase.com')
-    );
-  } catch (_error) {
-    return false;
-  }
-}
-
 const DB_SSL = process.env.MIGRATION_DB_SSL
   ? process.env.MIGRATION_DB_SSL === 'true'
   : Boolean(MIGRATION_DATABASE_URL && (process.env.DB_SSL === 'true' || databaseUrlRequestsSSL(MIGRATION_DATABASE_URL)));
 
+assertHostedSupabaseDatabaseUrl(MIGRATION_DATABASE_URL, 'DATABASE_URL or MIGRATION_DATABASE_URL');
+
 // Create a connection pool
 const pool = new Pool({
-  ...(MIGRATION_DATABASE_URL
-    ? { connectionString: MIGRATION_DATABASE_URL }
-    : {
-        host: DB_HOST,
-        port: DB_PORT,
-        database: DB_NAME,
-        user: DB_USER,
-        password: DB_PASSWORD,
-      }),
+  connectionString: MIGRATION_DATABASE_URL,
   ssl: DB_SSL ? { rejectUnauthorized: false } : undefined,
   max: 5, // Maximum number of clients
   idleTimeoutMillis: 30000 // Close idle clients after 30 seconds
@@ -153,7 +127,7 @@ function describeConnection() {
     }
   }
 
-  return `${DB_NAME} at ${DB_HOST}:${DB_PORT}`;
+  return 'hosted Supabase';
 }
 
 /**

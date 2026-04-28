@@ -176,7 +176,7 @@ start_local_stack() {
       npm run dev
   fi
 
-  wait_for_http "https://127.0.0.1:4000/api/health" "backend"
+  wait_for_http "https://127.0.0.1:4000/api/health" "backend" 180
 
   if ! port_open 3090; then
     start_local_service \

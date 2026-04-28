@@ -13,15 +13,11 @@
 
 const bcrypt = require('bcrypt');
 const { Pool } = require('pg');
-require('dotenv').config({ path: './src/backend/.env' });
+const path = require('path');
+const { pgConnectionConfig } = require('./lib/hosted-supabase-db');
+require('dotenv').config({ path: path.resolve(__dirname, '..', '.env') });
 
-const pool = new Pool({
-  host: process.env.DB_HOST || process.env.POSTGRES_HOST || 'localhost',
-  port: parseInt(process.env.DB_PORT || process.env.POSTGRES_PORT || '5432'),
-  database: process.env.DB_NAME || process.env.POSTGRES_DB || 'psscript',
-  user: process.env.DB_USER || process.env.POSTGRES_USER || 'postgres',
-  password: process.env.DB_PASSWORD || process.env.POSTGRES_PASSWORD || 'postgres',
-});
+const pool = new Pool(pgConnectionConfig());
 
 // Use 12 rounds per OWASP 2025 recommendations (minimum for production)
 const SALT_ROUNDS = parseInt(process.env.BCRYPT_ROUNDS || '12');

@@ -7,6 +7,10 @@ const { Client } = require('pg');
 const fs = require('fs');
 const path = require('path');
 const dotenv = require('dotenv');
+const {
+  assertHostedSupabaseDatabaseUrl,
+  databaseUrlRequestsSSL,
+} = require('../lib/hosted-supabase-db');
 
 const REPO_ROOT = path.resolve(__dirname, '..', '..');
 dotenv.config({ path: path.join(REPO_ROOT, '.env') });
@@ -19,12 +23,16 @@ if (!dbConnectionString) {
   process.exit(1);
 }
 
+assertHostedSupabaseDatabaseUrl(dbConnectionString);
+
 async function runMigration() {
   console.log('Running file_hash migration...');
   
   const client = new Client({
     connectionString: dbConnectionString,
-    ssl: process.env.DB_SSL === 'true' ? { rejectUnauthorized: false } : undefined
+    ssl: process.env.DB_SSL === 'true' || databaseUrlRequestsSSL(dbConnectionString)
+      ? { rejectUnauthorized: false }
+      : undefined
   });
 
   try {

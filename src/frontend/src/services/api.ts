@@ -608,6 +608,36 @@ export const analyticsService = {
         categories: []
       };
     }
+  },
+
+  // Get AI usage/cost/latency analytics
+  getAiAnalytics: async () => {
+    try {
+      const response = await apiClient.get("/analytics/ai");
+      return response.data?.data || response.data;
+    } catch (error) {
+      console.error("Error fetching AI analytics:", error);
+      return {
+        summary: {
+          totalRequests: 0,
+          successfulRequests: 0,
+          failedRequests: 0,
+          promptTokens: 0,
+          completionTokens: 0,
+          totalTokens: 0,
+          totalCost: 0,
+          avgCostPerRequest: 0,
+          avgLatency: 0,
+          p95Latency: 0,
+          successRate: 0,
+          errorRate: 0,
+        },
+        byModel: [],
+        byEndpoint: [],
+        byProvider: [],
+        costTrend: [],
+      };
+    }
   }
 };
 

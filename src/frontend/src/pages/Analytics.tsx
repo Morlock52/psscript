@@ -31,6 +31,12 @@ const Analytics: React.FC = () => {
     staleTime: 5 * 60 * 1000, // 5 minutes
   });
 
+  const { data: aiAnalytics, isLoading: aiLoading } = useQuery({
+    queryKey: ['analytics', 'ai'],
+    queryFn: analyticsService.getAiAnalytics,
+    staleTime: 60 * 1000,
+  });
+
   // Calculate security distribution percentages
   const totalSecurityScripts = (securityMetrics?.highSecurityCount || 0) +
     (securityMetrics?.mediumSecurityCount || 0) +
@@ -45,6 +51,10 @@ const Analytics: React.FC = () => {
   const lowSecurityPercentage = totalSecurityScripts > 0
     ? Math.round((securityMetrics?.lowSecurityCount || 0) / totalSecurityScripts * 100)
     : 0;
+  const aiSummary = aiAnalytics?.summary || {};
+  const formatCost = (value: number | undefined) => `$${Number(value || 0).toFixed(4)}`;
+  const formatRate = (value: number | undefined) => `${Math.round(Number(value || 0) * 100)}%`;
+  const formatMs = (value: number | undefined) => `${Math.round(Number(value || 0))} ms`;
 
   return (
     <div className="container mx-auto pb-8 text-[var(--color-text-primary)]">
@@ -82,6 +92,100 @@ const Analytics: React.FC = () => {
                   </span>
                 )}
               </p>
+            </div>
+          </div>
+        )}
+      </div>
+
+      {/* AI Analysis Tracking */}
+      <div className="mb-8">
+        <h2 className="text-xl font-semibold mb-4">AI Analysis Tracking</h2>
+        {aiLoading ? (
+          <div className="text-[var(--color-text-tertiary)]">Loading AI analytics...</div>
+        ) : (
+          <div className={cardStyles}>
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+              <div className={statCardStyles}>
+                <h3 className="text-sm font-medium text-[var(--color-text-secondary)] mb-1">AI Requests</h3>
+                <p className="text-2xl font-bold">{aiSummary.totalRequests || 0}</p>
+                <p className="text-xs text-[var(--color-text-tertiary)] mt-1">
+                  {aiSummary.failedRequests || 0} failed
+                </p>
+              </div>
+
+              <div className={statCardStyles}>
+                <h3 className="text-sm font-medium text-[var(--color-text-secondary)] mb-1">Token Usage</h3>
+                <p className="text-2xl font-bold">{aiSummary.totalTokens || 0}</p>
+                <p className="text-xs text-[var(--color-text-tertiary)] mt-1">
+                  {aiSummary.promptTokens || 0} prompt / {aiSummary.completionTokens || 0} completion
+                </p>
+              </div>
+
+              <div className={statCardStyles}>
+                <h3 className="text-sm font-medium text-[var(--color-text-secondary)] mb-1">Estimated Cost</h3>
+                <p className="text-2xl font-bold">{formatCost(aiSummary.totalCost)}</p>
+                <p className="text-xs text-[var(--color-text-tertiary)] mt-1">
+                  {formatCost(aiSummary.avgCostPerRequest)} avg/request
+                </p>
+              </div>
+
+              <div className={statCardStyles}>
+                <h3 className="text-sm font-medium text-[var(--color-text-secondary)] mb-1">Latency / Success</h3>
+                <p className="text-2xl font-bold">{formatMs(aiSummary.p95Latency)}</p>
+                <p className="text-xs text-[var(--color-text-tertiary)] mt-1">
+                  {formatRate(aiSummary.successRate)} success, {formatRate(aiSummary.errorRate)} error
+                </p>
+              </div>
+            </div>
+
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+              <div>
+                <h3 className="text-lg font-medium mb-3">Model Breakdown</h3>
+                {aiAnalytics?.byModel?.length ? (
+                  <div className="space-y-3">
+                    {aiAnalytics.byModel.slice(0, 6).map((model: any) => (
+                      <div key={`${model.provider}-${model.model}`} className={categoryItemStyles}>
+                        <div>
+                          <p className="text-sm font-medium">{model.model}</p>
+                          <p className="text-xs text-[var(--color-text-tertiary)]">
+                            {model.provider} · {model.requests} requests · {formatRate(model.successRate)} success
+                          </p>
+                        </div>
+                        <div className="text-right">
+                          <p className="text-sm font-bold">{formatCost(model.totalCost)}</p>
+                          <p className="text-xs text-[var(--color-text-tertiary)]">{model.totalTokens || 0} tokens</p>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                ) : (
+                  <p className="text-[var(--color-text-tertiary)] text-sm">No AI model usage has been recorded for this range.</p>
+                )}
+              </div>
+
+              <div>
+                <h3 className="text-lg font-medium mb-3">Endpoint Breakdown</h3>
+                {aiAnalytics?.byEndpoint?.length ? (
+                  <div className="space-y-3">
+                    {aiAnalytics.byEndpoint.slice(0, 6).map((endpoint: any) => (
+                      <div key={endpoint.endpoint} className={categoryItemStyles}>
+                        <div>
+                          <p className="text-sm font-medium">{endpoint.endpoint}</p>
+                          <p className="text-xs text-[var(--color-text-tertiary)]">
+                            {endpoint.requests} requests · p95 {formatMs(endpoint.p95Latency)}
+                          </p>
+                        </div>
+                        <div className="text-right">
+                          <p className="text-sm font-bold">{formatCost(endpoint.totalCost)}</p>
+                          <p className="text-xs text-[var(--color-text-tertiary)]">{endpoint.failures || 0} failures</p>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                ) : (
+                  <p className="text-[var(--color-text-tertiary)] text-sm">No AI endpoint usage has been recorded for this range.</p>
+                )}
+              </div>
             </div>
           </div>
         )}

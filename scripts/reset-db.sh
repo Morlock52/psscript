@@ -8,6 +8,8 @@ cd "$(dirname "$0")"
 
 echo "=== PSScript Database Reset and Setup ==="
 echo "Started at: $(date)"
+echo "This legacy local reset script is disabled. Use hosted Supabase migrations through DATABASE_URL instead."
+exit 1
 
 # Check if PostgreSQL is installed
 if ! command -v psql &> /dev/null; then

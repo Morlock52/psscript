@@ -20,26 +20,34 @@ else
     export LOG_LEVEL="info"
     export PORT=3001
     export HOST="0.0.0.0"
-    export DB_HOST="localhost"
-    export DB_PORT=5432
-    export DB_NAME="psscript"
-    export DB_USER="postgres"
-    export DB_PASSWORD="postgres"
     export REDIS_URL="redis://localhost:6379/0"
     export CACHE_ENABLED="true"
     export CACHE_TTL=3600
 fi
 
+if [ -z "$DATABASE_URL" ]; then
+    echo "DATABASE_URL must point at hosted Supabase Postgres."
+    exit 1
+fi
+
+case "$DATABASE_URL" in
+    *".supabase.co"*|*".supabase.com"*) ;;
+    *)
+        echo "Refusing to run against a local or non-Supabase database."
+        exit 1
+        ;;
+esac
+
 # Check if the database is ready
 echo "Checking database connection..."
-if ! PGPASSWORD=$DB_PASSWORD psql -h $DB_HOST -p $DB_PORT -U $DB_USER -d $DB_NAME -c "SELECT 1" > /dev/null 2>&1; then
+if ! psql "$DATABASE_URL" -c "SELECT 1" > /dev/null 2>&1; then
     echo "Error: Cannot connect to the database. Make sure the database is running and the connection details are correct."
     exit 1
 fi
 
 # Check if the required tables exist
 echo "Checking if agent tables exist..."
-AGENT_STATE_COUNT=$(PGPASSWORD=$DB_PASSWORD psql -h $DB_HOST -p $DB_PORT -U $DB_USER -d $DB_NAME -t -c "SELECT COUNT(*) FROM information_schema.tables WHERE table_name = 'agent_state';")
+AGENT_STATE_COUNT=$(psql "$DATABASE_URL" -t -c "SELECT COUNT(*) FROM information_schema.tables WHERE table_name = 'agent_state';")
 if [ $AGENT_STATE_COUNT -eq 0 ]; then
     echo "Warning: agent_state table does not exist. Run the migration script first."
     read -p "Do you want to run the migration script now? (y/n) " -n 1 -r
