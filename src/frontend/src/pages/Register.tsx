@@ -50,10 +50,7 @@ const Register: React.FC = () => {
   };
 
   return (
-    <div className="relative flex min-h-screen items-center justify-center overflow-hidden px-4 bg-[var(--gradient-surface)]">
-      <div className="absolute -left-24 top-12 h-72 w-72 rounded-full bg-[var(--accent)]/20 blur-3xl" />
-      <div className="absolute -right-20 bottom-10 h-80 w-80 rounded-full bg-[var(--accent)]/20 blur-3xl" />
-      <div className="relative w-full max-w-md">
+    <div className="relative w-full max-w-md">
         <div className="text-center mb-10">
           <BrandMark size="lg" className="justify-center" />
           <p className="mt-4 text-[var(--ink-secondary)]">Join the AI Ops Studio for PowerShell teams.</p>
@@ -175,8 +172,7 @@ const Register: React.FC = () => {
           &copy; {new Date().getFullYear()} PSScript. All rights reserved.
         </div>
       </div>
-    </div>
-  );
+    );
 };
 
 export default Register;

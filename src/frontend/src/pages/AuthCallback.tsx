@@ -50,8 +50,7 @@ const AuthCallback: React.FC = () => {
   }, [navigate]);
 
   return (
-    <div className="flex min-h-screen items-center justify-center bg-[var(--gradient-surface)] px-4">
-      <div className="w-full max-w-md rounded-3xl border border-[var(--surface-overlay)] bg-[var(--surface-raised)]/92 p-8 text-center shadow-[var(--shadow-far)]">
+    <div className="w-full max-w-md rounded-3xl border border-[var(--surface-overlay)] bg-[var(--surface-raised)]/92 p-8 text-center shadow-[var(--shadow-far)]">
         <BrandMark size="lg" className="justify-center" />
         <h1 className="mt-6 text-2xl font-black text-[var(--ink-primary)]">Completing sign-in</h1>
         {error ? (
@@ -70,7 +69,6 @@ const AuthCallback: React.FC = () => {
           </div>
         )}
       </div>
-    </div>
   );
 };
 

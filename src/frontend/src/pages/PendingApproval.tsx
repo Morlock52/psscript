@@ -43,8 +43,7 @@ const PendingApproval: React.FC = () => {
   };
 
   return (
-    <div className="flex min-h-screen items-center justify-center bg-[var(--gradient-surface)] px-4">
-      <div className="w-full max-w-lg rounded-3xl border border-[var(--surface-overlay)] bg-[var(--surface-raised)]/92 p-8 shadow-[var(--shadow-far)]">
+    <div className="w-full max-w-lg rounded-3xl border border-[var(--surface-overlay)] bg-[var(--surface-raised)]/92 p-8 shadow-[var(--shadow-far)]">
         <BrandMark size="lg" className="justify-center" />
         <div className="mt-8 text-center">
           <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-2xl border border-amber-400/30 bg-amber-400/10 text-amber-300">
@@ -80,7 +79,6 @@ const PendingApproval: React.FC = () => {
           </button>
         </div>
       </div>
-    </div>
   );
 };
 
