@@ -2,7 +2,6 @@
   "brand": [
     { "route": "/login",            "page": "Login" },
     { "route": "/register",         "page": "Register" },
-    { "route": "/landing",          "page": "LandingPage" },
     { "route": "/auth/callback",    "page": "AuthCallback" },
     { "route": "/pending-approval", "page": "PendingApproval" },
     { "route": "/404",              "page": "NotFound" }

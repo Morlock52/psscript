@@ -83,7 +83,6 @@ const AppLayout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
     location.pathname === '/register' ||
     location.pathname === '/auth/callback' ||
     location.pathname === '/pending-approval' ||
-    location.pathname === '/landing' ||
     location.pathname === '/404';
 
   if (isBrandRoute) {
