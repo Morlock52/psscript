@@ -11,6 +11,7 @@ import Sidebar from './components/Sidebar';
 import VoiceAssistantDock from './components/VoiceAssistantDock';
 import ProtectedRoute from './components/ProtectedRoute';
 import LoadingScreen from './components/LoadingScreen';
+import { BrandShell, OperatorShell } from './components/layouts';
 
 const Login = lazyWithRetry(() => import('./pages/Login'));
 const AuthCallback = lazyWithRetry(() => import('./pages/AuthCallback'));
@@ -75,7 +76,6 @@ const Home: React.FC = () => {
 
 // Layout wrapper that conditionally shows navigation
 const AppLayout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  const [sidebarOpen, setSidebarOpen] = useState(false);
   const location = useLocation();
   const { user, isLoading } = useAuth();
 
@@ -91,16 +91,10 @@ const AppLayout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   }
 
   return (
-    <div className="flex h-screen bg-[var(--color-bg-secondary)] text-[var(--color-text-primary)]">
-      <Sidebar isOpen={sidebarOpen} onClose={() => setSidebarOpen(false)} />
-      <div className="flex flex-col flex-1 overflow-hidden">
-        <Navbar onMenuClick={() => setSidebarOpen(true)} />
-        <main className="flex-1 overflow-y-auto p-4">
-          {children}
-        </main>
-        <VoiceAssistantDock />
-      </div>
-    </div>
+    <OperatorShell>
+      {children}
+      <VoiceAssistantDock />
+    </OperatorShell>
   );
 };
 

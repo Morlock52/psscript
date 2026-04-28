@@ -6,6 +6,7 @@ import '@fontsource-variable/jetbrains-mono';
 
 import React from 'react'
 import ReactDOM from 'react-dom/client'
+import { MotionConfig } from 'framer-motion'
 import App from './App'
 import { AuthProvider } from './contexts/AuthContext'
 import { ThemeProvider } from './contexts/ThemeContext'
@@ -37,7 +38,9 @@ try {
       <ErrorBoundary>
         <AuthProvider>
           <ThemeProvider>
-            <App />
+            <MotionConfig reducedMotion="user">
+              <App />
+            </MotionConfig>
           </ThemeProvider>
         </AuthProvider>
       </ErrorBoundary>
