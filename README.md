@@ -11,18 +11,20 @@
 
 <p align="center">
   <a href="./docs/graphics/hero-aurora.svg">
-    <img src="./docs/graphics/hero-aurora.svg" alt="PSScript — PowerShell, finally explained. A quiet console for a loud corner of your infrastructure. Live April 27, 2026." width="100%" />
+    <img src="./docs/graphics/hero-aurora.svg" alt="PSScript — PowerShell, finally explained. A quiet console for a loud corner of your infrastructure. Live April 28, 2026." width="100%" />
   </a>
 </p>
 
 <p align="center">
-  <img src="https://img.shields.io/badge/live-2026.04.27-FCA5A5?style=for-the-badge&labelColor=0E1525" alt="live 2026.04.27" />
+  <img src="https://img.shields.io/badge/live-2026.04.28-FCA5A5?style=for-the-badge&labelColor=0E1525" alt="live 2026.04.28" />
   &nbsp;
   <img src="https://img.shields.io/badge/hosted-Netlify_+_Supabase-5EEAD4?style=for-the-badge&labelColor=0E1525" alt="Netlify + Supabase" />
   &nbsp;
   <img src="https://img.shields.io/badge/door-OAuth_+_admin_approval-C4B5FD?style=for-the-badge&labelColor=0E1525" alt="OAuth + admin approval" />
   &nbsp;
   <img src="https://img.shields.io/badge/brain-gpt--5.5_·_sonnet--4--6-F5F1E8?style=for-the-badge&labelColor=0E1525" alt="gpt-5.5 + sonnet-4-6" />
+  &nbsp;
+  <img src="https://img.shields.io/badge/criteria-v2026.04.26-C4B5FD?style=for-the-badge&labelColor=0E1525" alt="analysis criteria v2026.04.26" />
 </p>
 
 <p align="center">
@@ -76,9 +78,9 @@ Eight modules. The teal tiles are the standard product surface. The peach tile i
 
 Briefly, in the order people usually meet them:
 
-- **A workspace for every script.** Drop a `.ps1` in. We hash it (SHA-256), check if we've seen it before, version it if we have, welcome it if we haven't. History is kept. Nothing gets lost.
-- **An AI that explains itself.** A frontier model reads each script and returns four artifacts: a security score, a quality score, a beginner-friendly summary, and a remediation list. We use `gpt-5.4-mini` for structured analysis and fall back to `claude-sonnet-4-6` if the primary path fails.
-- **Search by what you mean.** We embed every script with `text-embedding-3-small` and store the vectors in Postgres via `pgvector(1536)`. So you can search for *"the script that rotates the service-account password"* instead of remembering whether someone called it `rotate-svc-pwd.ps1` or `pwd_cycle_FINAL2.ps1`.
+- **A workspace for every script.** Drop a `.ps1` in. We hash it (SHA-256), check if we've seen it before, **version it under the existing record** if we have (the new `script_versions` row links back to the original), welcome it if we haven't. History is kept. Nothing gets lost.
+- **An AI that grades against a rubric.** A frontier model reads each script and returns a structured **analysis criteria v2026-04-26** payload — security score, quality score, a beginner-friendly summary, a management summary, command-by-command details, **prioritized findings** (each tagged `critical` / `high` / `medium` / `low`), a **remediation plan**, and **test recommendations**. The criteria version and a model confidence number ride along so reviewers can see exactly what they're looking at. We use `gpt-5.4-mini` as the structured-analysis primary, fall back to `claude-sonnet-4-6` text parsed back into JSON, and — if both providers fail or return malformed output — fall back to a deterministic static analyzer that produces the same shape.
+- **Search by what you mean.** We embed every script with `text-embedding-3-small` and store the vectors in Postgres via `pgvector(1536)`. Hosted search now combines `websearch_to_tsquery` full-text scoring with an `ILIKE` fallback, paginated and ownership-checked, so you can search for *"the script that rotates the service-account password"* instead of remembering whether someone called it `rotate-svc-pwd.ps1` or `pwd_cycle_FINAL2.ps1`.
 - **A door you control.** Google sign-in works — but new identities arrive **disabled**. An admin has to enable them. There is no other way in. (The sub-section below walks through this in detail. It's the most important thing on the page.)
 - **Hands-free, if you want.** Voice in (`gpt-4o-mini-transcribe`), voice out (`gpt-4o-mini-tts`). Useful when you're at a whiteboard, not so useful in a quiet office. Optional.
 - **Multi-step review, when one pass isn't enough.** A FastAPI + LangGraph agent that thinks twice for higher-stakes scripts. Local-only for now.
@@ -101,13 +103,13 @@ Most READMEs list features. We thought it'd be more useful to walk you through w
 
 **2. We make sure you're allowed to be here.** The hosted API checks two things: (a) your Supabase JWT is valid, and (b) your `app_profiles` row has `is_enabled = true`. If either fails you get `403 account_pending_approval` and nothing else happens. (More on that below.)
 
-**3. We hash it.** SHA-256, server-side. If we've seen this exact script body before, we don't duplicate — we add a new version under the existing record. If it's new, we welcome it as a fresh script.
+**3. We hash it.** SHA-256, server-side. If we've seen this exact script body before, we don't duplicate — we bump the version counter and write a new `script_versions` row under the existing record (with `ON CONFLICT DO NOTHING`, so concurrent uploads don't fight). If it's new, we welcome it as a fresh script.
 
-**4. The AI reads it.** We send the script body to the configured model (`gpt-5.4-mini` by default for structured analysis), with a prompt that asks for a security score, a quality score, a plain-English explanation, a "what would a beginner need to know" note, and a remediation list. If OpenAI is down or the response can't be parsed, we fall back to `claude-sonnet-4-6` and parse the text response as JSON.
+**4. The AI reads it against a rubric.** We send the script body to the configured model (`gpt-5.4-mini` by default for structured analysis) with a prompt anchored to **analysis criteria v2026-04-26**. The response must include `criteria_version`, `confidence`, security/quality scores, a beginner explanation, a management summary, command-level details, an execution summary, prioritized findings, a remediation plan, and test recommendations. If OpenAI is down or the JSON won't parse, we fall back to `claude-sonnet-4-6` and re-parse the text. If *that* fails too, `shouldUseStaticAnalysisFallback` flips on and a deterministic PowerShell static analyzer produces the same payload shape — a degraded answer is still a structured answer.
 
-**5. We embed it for search.** A separate call to `text-embedding-3-small` produces a 1536-dimension vector. We upsert that into Supabase via `pgvector` so the next person searching for "the script that does X" finds it without remembering the filename.
+**5. We embed it for search.** A separate call to `text-embedding-3-small` produces a 1536-dimension vector. We upsert that into Supabase via `pgvector` so the next person searching for "the script that does X" finds it without remembering the filename. We also record per-call `ai_metrics` (prompt / completion / total tokens, estimated cost, provider, model, latency, success or failure) on a best-effort write — analytics never block a user request.
 
-**6. You see the result.** The frontend renders the scores side-by-side with the script source, the summary above the code, the remediation as a checklist below, and the version history one click away. From upload to visible: usually a couple of seconds.
+**6. You see the result.** The frontend renders scores side-by-side with the script source, the summary above the code, a dedicated **Criteria tab** showing the rubric version and confidence, prioritized findings as a triaged list, the remediation plan as a checklist, test recommendations beneath, and **version history** one click away on the script-detail page. From upload to visible: usually a couple of seconds.
 
 > **One quiet thing worth noticing:** every step above happens *behind* the approval gate. If you weren't enabled by an admin, your upload is rejected at step 2 and the AI never sees your script. That's the whole point.
 
@@ -134,7 +136,8 @@ Here's how the door actually works:
 - Disabled users see exactly one thing: a `/pending-approval` page that says "ask your admin to enable you." Every protected API returns `403 account_pending_approval` for them.
 - An admin enables a user by ticking a checkbox in **Settings → User Management**. That's it. No extra steps. No emails. No tokens.
 - The backend will not let you disable your own admin account, and it will not let you remove the last enabled admin. We checked, you'll get an error and a polite explanation.
-- Underneath, Supabase **Row Level Security** policies check `current_app_profile_is_enabled()` — so even if an attacker bypassed the API somehow, the database itself wouldn't return rows to a disabled identity.
+- The **first** administrator is no longer free for the taking. The default-admin bootstrap now requires `DEFAULT_ADMIN_EMAIL`, `DEFAULT_ADMIN_PASSWORD`, *and* a one-time `x-bootstrap-token` header that has to match `DEFAULT_ADMIN_BOOTSTRAP_TOKEN`. Forgetting any of the three returns a hard error and the bootstrap path stays closed.
+- Underneath, Supabase **Row Level Security** policies check `current_app_profile_is_enabled()` — so even if an attacker bypassed the API somehow, the database itself wouldn't return rows to a disabled identity. The 2026-04-27 RLS migration also tightened search and similarity policies so vector lookups respect the same gate.
 
 > **Heads up:** Google OAuth credentials and the Supabase redirect allow-list still need to be configured outside this repo. Google Cloud should redirect to Supabase Auth (`/auth/v1/callback`); Supabase should redirect back to this app (`/auth/callback`). The full setup is in [Netlify + Supabase Deployment](./docs/NETLIFY-SUPABASE-DEPLOYMENT.md).
 
@@ -166,7 +169,7 @@ The local-dev plane is optional. You don't need either of those services to use 
 
 ## The brains.
 
-The defaults below reflect the **state of this repo on April 27, 2026**. Provider model availability moves around — by account, by region, by week — so we keep model IDs overrideable through environment variables. If you upgrade or change a provider, update one env var and you're done.
+The defaults below reflect the **state of this repo on April 28, 2026**. Provider model availability moves around — by account, by region, by week — so we keep model IDs overrideable through environment variables. If you upgrade or change a provider, update one env var and you're done.
 
 | What it's for | We default to | We fall back to | Where to look |
 | :--- | :--- | :--- | :--- |
@@ -325,10 +328,14 @@ SUPABASE_URL=https://your-project.supabase.co
 SUPABASE_ANON_KEY=...
 SUPABASE_SERVICE_ROLE_KEY=...
 DEFAULT_ADMIN_EMAIL=admin@example.com
+DEFAULT_ADMIN_PASSWORD=change-me                # required since 2026-04-28
+DEFAULT_ADMIN_BOOTSTRAP_TOKEN=change-me         # required; sent as x-bootstrap-token
 VITE_SUPABASE_URL=https://your-project.supabase.co
 VITE_SUPABASE_ANON_KEY=...
 VITE_HOSTED_STATIC_ANALYSIS_ONLY=true
 ```
+
+> The local Postgres fallback that used to be implicit was retired in the 2026-04-28 hardening — `DATABASE_URL` must point at Supabase (or a Supabase-compatible Postgres) for the hosted code path to come up.
 
 ### Apply the migrations (in order)
 
@@ -338,6 +345,7 @@ supabase/migrations/20260425_scripts_file_hash_uniqueness.sql
 supabase/migrations/20260425_user_management_schema_fixes.sql
 supabase/migrations/20260426_supabase_advisor_fixes.sql
 supabase/migrations/20260426_z_google_oauth_approval_gate.sql
+supabase/migrations/20260427_hosted_search_similarity_rls_fixes.sql
 ```
 
 ### Run it locally
@@ -486,6 +494,13 @@ Not in the hosted path, no. Non-admin users can upload, view, search, and run AI
 | [Deployment Platforms](./docs/DEPLOYMENT-PLATFORMS.md)                       | Alternatives and legacy split-service notes                                  |
 | [Project Review · 2026-04-01](./docs/PROJECT-REVIEW-2026-04-01.md)           | April 2026 comprehensive review                                              |
 | [AI Functions Review · 2026-04-02](./docs/AI-FUNCTIONS-REVIEW-2026-04-02.md) | AI audit and model migration notes                                           |
+| [AI Analysis Criteria · 2026-04-26](./docs/AI-ANALYSIS-CRITERIA-2026-04-26.md) | The graded rubric — weighted criteria, output shape, persistence strategy   |
+| [AI Functions Review · 2026-04-27](./docs/AI-FUNCTIONS-REVIEW-2026-04-27.md) | Hosted-AI parity and hardening pass                                          |
+| [Analytics Capture Plan · 2026-04-27](./docs/ANALYTICS-CAPTURE-PLAN-2026-04-27.md) | `ai_metrics` schema, processes, and rollout                              |
+| [Supabase DB Review · 2026-04-27](./docs/SUPABASE-DB-REVIEW-2026-04-27.md)   | Database review covering search, similarity, and RLS                         |
+| [Supabase DB Fix Implementation · 2026-04-27](./docs/SUPABASE-DB-FIX-IMPLEMENTATION-2026-04-27.md) | What landed in the 2026-04-27 RLS / search migration             |
+| [Performance Test Design · 2026-04-27](./docs/PROJECT-PERFORMANCE-TEST-DESIGN-2026-04-27.md) | How we plan to load-test the hosted path                          |
+| [Project Test Results · 2026-04-28](./docs/PROJECT-TEST-RESULTS-2026-04-28.md) | The latest pass — including criteria-payload validation                    |
 | [Documentation Hub](./docs/index.md)                                         | Full docs index                                                              |
 
 ---
@@ -557,5 +572,5 @@ psscript/
 </p>
 
 <p align="center">
-  <sub>Verified April 27, 2026 &nbsp;·&nbsp; Hosted on Netlify &nbsp;·&nbsp; Data on Supabase &nbsp;·&nbsp; Audited by gpt-5.5 with sonnet-4-6 fallback &nbsp;·&nbsp; Made with care.</sub>
+  <sub>Verified April 28, 2026 &nbsp;·&nbsp; Hosted on Netlify &nbsp;·&nbsp; Data on Supabase &nbsp;·&nbsp; Graded against analysis criteria v2026-04-26 &nbsp;·&nbsp; Audited by gpt-5.5 with sonnet-4-6 fallback &nbsp;·&nbsp; Made with care.</sub>
 </p>
