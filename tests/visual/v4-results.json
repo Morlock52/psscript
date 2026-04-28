@@ -1,0 +1,866 @@
+[
+  {
+    "name": "brand__dark__default__AuthCallback.png",
+    "status": "size-changed",
+    "baselineH": 900,
+    "currentH": 1028
+  },
+  {
+    "name": "brand__dark__default__LandingPage.png",
+    "status": "diffed",
+    "mismatchPixels": 258358,
+    "totalPixels": 1296000,
+    "pct": 0.1993503086419753
+  },
+  {
+    "name": "brand__dark__default__Login.png",
+    "status": "size-changed",
+    "baselineH": 991,
+    "currentH": 1799
+  },
+  {
+    "name": "brand__dark__default__NotFound.png",
+    "status": "diffed",
+    "mismatchPixels": 258358,
+    "totalPixels": 1296000,
+    "pct": 0.1993503086419753
+  },
+  {
+    "name": "brand__dark__default__PendingApproval.png",
+    "status": "size-changed",
+    "baselineH": 991,
+    "currentH": 1799
+  },
+  {
+    "name": "brand__dark__default__Register.png",
+    "status": "size-changed",
+    "baselineH": 900,
+    "currentH": 1028
+  },
+  {
+    "name": "brand__dark__reduce__AuthCallback.png",
+    "status": "size-changed",
+    "baselineH": 900,
+    "currentH": 1028
+  },
+  {
+    "name": "brand__dark__reduce__LandingPage.png",
+    "status": "diffed",
+    "mismatchPixels": 258358,
+    "totalPixels": 1296000,
+    "pct": 0.1993503086419753
+  },
+  {
+    "name": "brand__dark__reduce__Login.png",
+    "status": "size-changed",
+    "baselineH": 991,
+    "currentH": 1799
+  },
+  {
+    "name": "brand__dark__reduce__NotFound.png",
+    "status": "diffed",
+    "mismatchPixels": 258358,
+    "totalPixels": 1296000,
+    "pct": 0.1993503086419753
+  },
+  {
+    "name": "brand__dark__reduce__PendingApproval.png",
+    "status": "size-changed",
+    "baselineH": 991,
+    "currentH": 1799
+  },
+  {
+    "name": "brand__dark__reduce__Register.png",
+    "status": "size-changed",
+    "baselineH": 900,
+    "currentH": 1028
+  },
+  {
+    "name": "operator__dark__default__AgentOrchestrationPage.png",
+    "status": "diffed",
+    "mismatchPixels": 258358,
+    "totalPixels": 1296000,
+    "pct": 0.1993503086419753
+  },
+  {
+    "name": "operator__dark__default__AgenticAIPage.png",
+    "status": "diffed",
+    "mismatchPixels": 258358,
+    "totalPixels": 1296000,
+    "pct": 0.1993503086419753
+  },
+  {
+    "name": "operator__dark__default__Analytics.png",
+    "status": "size-changed",
+    "baselineH": 991,
+    "currentH": 1016
+  },
+  {
+    "name": "operator__dark__default__ApiSettings.png",
+    "status": "size-changed",
+    "baselineH": 991,
+    "currentH": 900
+  },
+  {
+    "name": "operator__dark__default__AppearanceSettings.png",
+    "status": "size-changed",
+    "baselineH": 991,
+    "currentH": 1025
+  },
+  {
+    "name": "operator__dark__default__ApplicationSettings.png",
+    "status": "diffed",
+    "mismatchPixels": 258358,
+    "totalPixels": 1296000,
+    "pct": 0.1993503086419753
+  },
+  {
+    "name": "operator__dark__default__Categories.png",
+    "status": "diffed",
+    "mismatchPixels": 258358,
+    "totalPixels": 1296000,
+    "pct": 0.1993503086419753
+  },
+  {
+    "name": "operator__dark__default__CategoriesSettings.png",
+    "status": "size-changed",
+    "baselineH": 991,
+    "currentH": 900
+  },
+  {
+    "name": "operator__dark__default__ChatHistory.png",
+    "status": "size-changed",
+    "baselineH": 991,
+    "currentH": 1004
+  },
+  {
+    "name": "operator__dark__default__ChatWithAI.png",
+    "status": "diffed",
+    "mismatchPixels": 52363,
+    "totalPixels": 1296000,
+    "pct": 0.04040354938271605
+  },
+  {
+    "name": "operator__dark__default__CrawledData.png",
+    "status": "size-changed",
+    "baselineH": 900,
+    "currentH": 1004
+  },
+  {
+    "name": "operator__dark__default__Dashboard.png",
+    "status": "size-changed",
+    "baselineH": 991,
+    "currentH": 1799
+  },
+  {
+    "name": "operator__dark__default__Dashboard__wait-kpi-populated.png",
+    "status": "size-changed",
+    "baselineH": 991,
+    "currentH": 1799
+  },
+  {
+    "name": "operator__dark__default__DataMaintenanceSettings.png",
+    "status": "diffed",
+    "mismatchPixels": 258358,
+    "totalPixels": 1296000,
+    "pct": 0.1993503086419753
+  },
+  {
+    "name": "operator__dark__default__Documentation.png",
+    "status": "diffed",
+    "mismatchPixels": 69105,
+    "totalPixels": 1296000,
+    "pct": 0.053321759259259256
+  },
+  {
+    "name": "operator__dark__default__DocumentationCrawl.png",
+    "status": "size-changed",
+    "baselineH": 991,
+    "currentH": 1369
+  },
+  {
+    "name": "operator__dark__default__ManageFiles.png",
+    "status": "diffed",
+    "mismatchPixels": 258358,
+    "totalPixels": 1296000,
+    "pct": 0.1993503086419753
+  },
+  {
+    "name": "operator__dark__default__NotificationSettings.png",
+    "status": "size-changed",
+    "baselineH": 991,
+    "currentH": 1559
+  },
+  {
+    "name": "operator__dark__default__Profile.png",
+    "status": "diffed",
+    "mismatchPixels": 258358,
+    "totalPixels": 1296000,
+    "pct": 0.1993503086419753
+  },
+  {
+    "name": "operator__dark__default__ProfileSettings.png",
+    "status": "size-changed",
+    "baselineH": 991,
+    "currentH": 964
+  },
+  {
+    "name": "operator__dark__default__ScriptAnalysis.png",
+    "status": "size-changed",
+    "baselineH": 991,
+    "currentH": 900
+  },
+  {
+    "name": "operator__dark__default__ScriptAnalysis__click-criteria-tab.png",
+    "status": "size-changed",
+    "baselineH": 991,
+    "currentH": 900
+  },
+  {
+    "name": "operator__dark__default__ScriptDetail.png",
+    "status": "size-changed",
+    "baselineH": 991,
+    "currentH": 900
+  },
+  {
+    "name": "operator__dark__default__ScriptDetail__open.png",
+    "status": "size-changed",
+    "baselineH": 991,
+    "currentH": 900
+  },
+  {
+    "name": "operator__dark__default__ScriptEditor.png",
+    "status": "size-changed",
+    "baselineH": 991,
+    "currentH": 900
+  },
+  {
+    "name": "operator__dark__default__ScriptManagement.png",
+    "status": "size-changed",
+    "baselineH": 991,
+    "currentH": 900
+  },
+  {
+    "name": "operator__dark__default__ScriptUpload.png",
+    "status": "size-changed",
+    "baselineH": 991,
+    "currentH": 900
+  },
+  {
+    "name": "operator__dark__default__Search.png",
+    "status": "diffed",
+    "mismatchPixels": 258358,
+    "totalPixels": 1296000,
+    "pct": 0.1993503086419753
+  },
+  {
+    "name": "operator__dark__default__SecuritySettings.png",
+    "status": "size-changed",
+    "baselineH": 991,
+    "currentH": 1551
+  },
+  {
+    "name": "operator__dark__default__Settings.png",
+    "status": "size-changed",
+    "baselineH": 991,
+    "currentH": 964
+  },
+  {
+    "name": "operator__dark__default__SimpleChatWithAI.png",
+    "status": "diffed",
+    "mismatchPixels": 258358,
+    "totalPixels": 1296000,
+    "pct": 0.1993503086419753
+  },
+  {
+    "name": "operator__dark__default__UIComponentsDemo.png",
+    "status": "size-changed",
+    "baselineH": 900,
+    "currentH": 2766
+  },
+  {
+    "name": "operator__dark__default__UserManagement.png",
+    "status": "size-changed",
+    "baselineH": 991,
+    "currentH": 1016
+  },
+  {
+    "name": "operator__dark__default__UserManagement__show-safety-rail-disabled-state.png",
+    "status": "size-changed",
+    "baselineH": 991,
+    "currentH": 1016
+  },
+  {
+    "name": "operator__dark__reduce__AgentOrchestrationPage.png",
+    "status": "diffed",
+    "mismatchPixels": 258358,
+    "totalPixels": 1296000,
+    "pct": 0.1993503086419753
+  },
+  {
+    "name": "operator__dark__reduce__AgenticAIPage.png",
+    "status": "diffed",
+    "mismatchPixels": 258358,
+    "totalPixels": 1296000,
+    "pct": 0.1993503086419753
+  },
+  {
+    "name": "operator__dark__reduce__Analytics.png",
+    "status": "size-changed",
+    "baselineH": 991,
+    "currentH": 1016
+  },
+  {
+    "name": "operator__dark__reduce__ApiSettings.png",
+    "status": "size-changed",
+    "baselineH": 991,
+    "currentH": 900
+  },
+  {
+    "name": "operator__dark__reduce__AppearanceSettings.png",
+    "status": "size-changed",
+    "baselineH": 991,
+    "currentH": 1025
+  },
+  {
+    "name": "operator__dark__reduce__ApplicationSettings.png",
+    "status": "diffed",
+    "mismatchPixels": 258358,
+    "totalPixels": 1296000,
+    "pct": 0.1993503086419753
+  },
+  {
+    "name": "operator__dark__reduce__Categories.png",
+    "status": "diffed",
+    "mismatchPixels": 258358,
+    "totalPixels": 1296000,
+    "pct": 0.1993503086419753
+  },
+  {
+    "name": "operator__dark__reduce__CategoriesSettings.png",
+    "status": "size-changed",
+    "baselineH": 991,
+    "currentH": 900
+  },
+  {
+    "name": "operator__dark__reduce__ChatHistory.png",
+    "status": "size-changed",
+    "baselineH": 991,
+    "currentH": 1004
+  },
+  {
+    "name": "operator__dark__reduce__ChatWithAI.png",
+    "status": "diffed",
+    "mismatchPixels": 52363,
+    "totalPixels": 1296000,
+    "pct": 0.04040354938271605
+  },
+  {
+    "name": "operator__dark__reduce__CrawledData.png",
+    "status": "size-changed",
+    "baselineH": 900,
+    "currentH": 1004
+  },
+  {
+    "name": "operator__dark__reduce__Dashboard.png",
+    "status": "size-changed",
+    "baselineH": 991,
+    "currentH": 1799
+  },
+  {
+    "name": "operator__dark__reduce__DataMaintenanceSettings.png",
+    "status": "diffed",
+    "mismatchPixels": 258358,
+    "totalPixels": 1296000,
+    "pct": 0.1993503086419753
+  },
+  {
+    "name": "operator__dark__reduce__Documentation.png",
+    "status": "diffed",
+    "mismatchPixels": 69105,
+    "totalPixels": 1296000,
+    "pct": 0.053321759259259256
+  },
+  {
+    "name": "operator__dark__reduce__DocumentationCrawl.png",
+    "status": "size-changed",
+    "baselineH": 991,
+    "currentH": 1369
+  },
+  {
+    "name": "operator__dark__reduce__ManageFiles.png",
+    "status": "diffed",
+    "mismatchPixels": 258358,
+    "totalPixels": 1296000,
+    "pct": 0.1993503086419753
+  },
+  {
+    "name": "operator__dark__reduce__NotificationSettings.png",
+    "status": "size-changed",
+    "baselineH": 991,
+    "currentH": 1559
+  },
+  {
+    "name": "operator__dark__reduce__Profile.png",
+    "status": "diffed",
+    "mismatchPixels": 258358,
+    "totalPixels": 1296000,
+    "pct": 0.1993503086419753
+  },
+  {
+    "name": "operator__dark__reduce__ProfileSettings.png",
+    "status": "size-changed",
+    "baselineH": 991,
+    "currentH": 964
+  },
+  {
+    "name": "operator__dark__reduce__ScriptAnalysis.png",
+    "status": "size-changed",
+    "baselineH": 991,
+    "currentH": 900
+  },
+  {
+    "name": "operator__dark__reduce__ScriptDetail.png",
+    "status": "size-changed",
+    "baselineH": 991,
+    "currentH": 900
+  },
+  {
+    "name": "operator__dark__reduce__ScriptEditor.png",
+    "status": "size-changed",
+    "baselineH": 991,
+    "currentH": 900
+  },
+  {
+    "name": "operator__dark__reduce__ScriptManagement.png",
+    "status": "size-changed",
+    "baselineH": 991,
+    "currentH": 900
+  },
+  {
+    "name": "operator__dark__reduce__ScriptUpload.png",
+    "status": "size-changed",
+    "baselineH": 991,
+    "currentH": 900
+  },
+  {
+    "name": "operator__dark__reduce__Search.png",
+    "status": "diffed",
+    "mismatchPixels": 258358,
+    "totalPixels": 1296000,
+    "pct": 0.1993503086419753
+  },
+  {
+    "name": "operator__dark__reduce__SecuritySettings.png",
+    "status": "size-changed",
+    "baselineH": 991,
+    "currentH": 1551
+  },
+  {
+    "name": "operator__dark__reduce__Settings.png",
+    "status": "size-changed",
+    "baselineH": 991,
+    "currentH": 964
+  },
+  {
+    "name": "operator__dark__reduce__SimpleChatWithAI.png",
+    "status": "diffed",
+    "mismatchPixels": 258358,
+    "totalPixels": 1296000,
+    "pct": 0.1993503086419753
+  },
+  {
+    "name": "operator__dark__reduce__UIComponentsDemo.png",
+    "status": "size-changed",
+    "baselineH": 900,
+    "currentH": 2766
+  },
+  {
+    "name": "operator__dark__reduce__UserManagement.png",
+    "status": "size-changed",
+    "baselineH": 991,
+    "currentH": 1016
+  },
+  {
+    "name": "operator__light__default__AgentOrchestrationPage.png",
+    "status": "diffed",
+    "mismatchPixels": 258358,
+    "totalPixels": 1296000,
+    "pct": 0.1993503086419753
+  },
+  {
+    "name": "operator__light__default__AgenticAIPage.png",
+    "status": "diffed",
+    "mismatchPixels": 258358,
+    "totalPixels": 1296000,
+    "pct": 0.1993503086419753
+  },
+  {
+    "name": "operator__light__default__Analytics.png",
+    "status": "size-changed",
+    "baselineH": 991,
+    "currentH": 1016
+  },
+  {
+    "name": "operator__light__default__ApiSettings.png",
+    "status": "size-changed",
+    "baselineH": 991,
+    "currentH": 900
+  },
+  {
+    "name": "operator__light__default__AppearanceSettings.png",
+    "status": "size-changed",
+    "baselineH": 991,
+    "currentH": 1025
+  },
+  {
+    "name": "operator__light__default__ApplicationSettings.png",
+    "status": "diffed",
+    "mismatchPixels": 258358,
+    "totalPixels": 1296000,
+    "pct": 0.1993503086419753
+  },
+  {
+    "name": "operator__light__default__Categories.png",
+    "status": "diffed",
+    "mismatchPixels": 258358,
+    "totalPixels": 1296000,
+    "pct": 0.1993503086419753
+  },
+  {
+    "name": "operator__light__default__CategoriesSettings.png",
+    "status": "size-changed",
+    "baselineH": 991,
+    "currentH": 900
+  },
+  {
+    "name": "operator__light__default__ChatHistory.png",
+    "status": "size-changed",
+    "baselineH": 991,
+    "currentH": 1004
+  },
+  {
+    "name": "operator__light__default__ChatWithAI.png",
+    "status": "diffed",
+    "mismatchPixels": 52363,
+    "totalPixels": 1296000,
+    "pct": 0.04040354938271605
+  },
+  {
+    "name": "operator__light__default__CrawledData.png",
+    "status": "size-changed",
+    "baselineH": 900,
+    "currentH": 1004
+  },
+  {
+    "name": "operator__light__default__Dashboard.png",
+    "status": "size-changed",
+    "baselineH": 991,
+    "currentH": 1799
+  },
+  {
+    "name": "operator__light__default__DataMaintenanceSettings.png",
+    "status": "diffed",
+    "mismatchPixels": 258358,
+    "totalPixels": 1296000,
+    "pct": 0.1993503086419753
+  },
+  {
+    "name": "operator__light__default__Documentation.png",
+    "status": "diffed",
+    "mismatchPixels": 69105,
+    "totalPixels": 1296000,
+    "pct": 0.053321759259259256
+  },
+  {
+    "name": "operator__light__default__DocumentationCrawl.png",
+    "status": "size-changed",
+    "baselineH": 991,
+    "currentH": 1369
+  },
+  {
+    "name": "operator__light__default__ManageFiles.png",
+    "status": "diffed",
+    "mismatchPixels": 258358,
+    "totalPixels": 1296000,
+    "pct": 0.1993503086419753
+  },
+  {
+    "name": "operator__light__default__NotificationSettings.png",
+    "status": "size-changed",
+    "baselineH": 991,
+    "currentH": 1559
+  },
+  {
+    "name": "operator__light__default__Profile.png",
+    "status": "diffed",
+    "mismatchPixels": 258358,
+    "totalPixels": 1296000,
+    "pct": 0.1993503086419753
+  },
+  {
+    "name": "operator__light__default__ProfileSettings.png",
+    "status": "size-changed",
+    "baselineH": 991,
+    "currentH": 964
+  },
+  {
+    "name": "operator__light__default__ScriptAnalysis.png",
+    "status": "size-changed",
+    "baselineH": 991,
+    "currentH": 900
+  },
+  {
+    "name": "operator__light__default__ScriptDetail.png",
+    "status": "size-changed",
+    "baselineH": 991,
+    "currentH": 900
+  },
+  {
+    "name": "operator__light__default__ScriptEditor.png",
+    "status": "size-changed",
+    "baselineH": 991,
+    "currentH": 900
+  },
+  {
+    "name": "operator__light__default__ScriptManagement.png",
+    "status": "size-changed",
+    "baselineH": 991,
+    "currentH": 900
+  },
+  {
+    "name": "operator__light__default__ScriptUpload.png",
+    "status": "size-changed",
+    "baselineH": 991,
+    "currentH": 900
+  },
+  {
+    "name": "operator__light__default__Search.png",
+    "status": "diffed",
+    "mismatchPixels": 258358,
+    "totalPixels": 1296000,
+    "pct": 0.1993503086419753
+  },
+  {
+    "name": "operator__light__default__SecuritySettings.png",
+    "status": "size-changed",
+    "baselineH": 991,
+    "currentH": 1551
+  },
+  {
+    "name": "operator__light__default__Settings.png",
+    "status": "size-changed",
+    "baselineH": 991,
+    "currentH": 964
+  },
+  {
+    "name": "operator__light__default__SimpleChatWithAI.png",
+    "status": "diffed",
+    "mismatchPixels": 258358,
+    "totalPixels": 1296000,
+    "pct": 0.1993503086419753
+  },
+  {
+    "name": "operator__light__default__UIComponentsDemo.png",
+    "status": "size-changed",
+    "baselineH": 900,
+    "currentH": 2766
+  },
+  {
+    "name": "operator__light__default__UserManagement.png",
+    "status": "size-changed",
+    "baselineH": 991,
+    "currentH": 1016
+  },
+  {
+    "name": "operator__light__reduce__AgentOrchestrationPage.png",
+    "status": "diffed",
+    "mismatchPixels": 258358,
+    "totalPixels": 1296000,
+    "pct": 0.1993503086419753
+  },
+  {
+    "name": "operator__light__reduce__AgenticAIPage.png",
+    "status": "diffed",
+    "mismatchPixels": 258358,
+    "totalPixels": 1296000,
+    "pct": 0.1993503086419753
+  },
+  {
+    "name": "operator__light__reduce__Analytics.png",
+    "status": "size-changed",
+    "baselineH": 991,
+    "currentH": 1016
+  },
+  {
+    "name": "operator__light__reduce__ApiSettings.png",
+    "status": "size-changed",
+    "baselineH": 991,
+    "currentH": 900
+  },
+  {
+    "name": "operator__light__reduce__AppearanceSettings.png",
+    "status": "size-changed",
+    "baselineH": 991,
+    "currentH": 1025
+  },
+  {
+    "name": "operator__light__reduce__ApplicationSettings.png",
+    "status": "diffed",
+    "mismatchPixels": 258358,
+    "totalPixels": 1296000,
+    "pct": 0.1993503086419753
+  },
+  {
+    "name": "operator__light__reduce__Categories.png",
+    "status": "diffed",
+    "mismatchPixels": 258358,
+    "totalPixels": 1296000,
+    "pct": 0.1993503086419753
+  },
+  {
+    "name": "operator__light__reduce__CategoriesSettings.png",
+    "status": "size-changed",
+    "baselineH": 991,
+    "currentH": 900
+  },
+  {
+    "name": "operator__light__reduce__ChatHistory.png",
+    "status": "size-changed",
+    "baselineH": 991,
+    "currentH": 1004
+  },
+  {
+    "name": "operator__light__reduce__ChatWithAI.png",
+    "status": "diffed",
+    "mismatchPixels": 52363,
+    "totalPixels": 1296000,
+    "pct": 0.04040354938271605
+  },
+  {
+    "name": "operator__light__reduce__CrawledData.png",
+    "status": "size-changed",
+    "baselineH": 900,
+    "currentH": 1004
+  },
+  {
+    "name": "operator__light__reduce__Dashboard.png",
+    "status": "size-changed",
+    "baselineH": 991,
+    "currentH": 1799
+  },
+  {
+    "name": "operator__light__reduce__DataMaintenanceSettings.png",
+    "status": "diffed",
+    "mismatchPixels": 258358,
+    "totalPixels": 1296000,
+    "pct": 0.1993503086419753
+  },
+  {
+    "name": "operator__light__reduce__Documentation.png",
+    "status": "diffed",
+    "mismatchPixels": 69105,
+    "totalPixels": 1296000,
+    "pct": 0.053321759259259256
+  },
+  {
+    "name": "operator__light__reduce__DocumentationCrawl.png",
+    "status": "size-changed",
+    "baselineH": 991,
+    "currentH": 1369
+  },
+  {
+    "name": "operator__light__reduce__ManageFiles.png",
+    "status": "diffed",
+    "mismatchPixels": 258358,
+    "totalPixels": 1296000,
+    "pct": 0.1993503086419753
+  },
+  {
+    "name": "operator__light__reduce__NotificationSettings.png",
+    "status": "size-changed",
+    "baselineH": 991,
+    "currentH": 1559
+  },
+  {
+    "name": "operator__light__reduce__Profile.png",
+    "status": "diffed",
+    "mismatchPixels": 258358,
+    "totalPixels": 1296000,
+    "pct": 0.1993503086419753
+  },
+  {
+    "name": "operator__light__reduce__ProfileSettings.png",
+    "status": "size-changed",
+    "baselineH": 991,
+    "currentH": 964
+  },
+  {
+    "name": "operator__light__reduce__ScriptAnalysis.png",
+    "status": "size-changed",
+    "baselineH": 991,
+    "currentH": 900
+  },
+  {
+    "name": "operator__light__reduce__ScriptDetail.png",
+    "status": "size-changed",
+    "baselineH": 991,
+    "currentH": 900
+  },
+  {
+    "name": "operator__light__reduce__ScriptEditor.png",
+    "status": "size-changed",
+    "baselineH": 991,
+    "currentH": 900
+  },
+  {
+    "name": "operator__light__reduce__ScriptManagement.png",
+    "status": "size-changed",
+    "baselineH": 991,
+    "currentH": 900
+  },
+  {
+    "name": "operator__light__reduce__ScriptUpload.png",
+    "status": "size-changed",
+    "baselineH": 991,
+    "currentH": 900
+  },
+  {
+    "name": "operator__light__reduce__Search.png",
+    "status": "diffed",
+    "mismatchPixels": 258358,
+    "totalPixels": 1296000,
+    "pct": 0.1993503086419753
+  },
+  {
+    "name": "operator__light__reduce__SecuritySettings.png",
+    "status": "size-changed",
+    "baselineH": 991,
+    "currentH": 1551
+  },
+  {
+    "name": "operator__light__reduce__Settings.png",
+    "status": "size-changed",
+    "baselineH": 991,
+    "currentH": 964
+  },
+  {
+    "name": "operator__light__reduce__SimpleChatWithAI.png",
+    "status": "diffed",
+    "mismatchPixels": 258358,
+    "totalPixels": 1296000,
+    "pct": 0.1993503086419753
+  },
+  {
+    "name": "operator__light__reduce__UIComponentsDemo.png",
+    "status": "size-changed",
+    "baselineH": 900,
+    "currentH": 2766
+  },
+  {
+    "name": "operator__light__reduce__UserManagement.png",
+    "status": "size-changed",
+    "baselineH": 991,
+    "currentH": 1016
+  }
+]
