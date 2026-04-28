@@ -4,6 +4,7 @@ import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import { useAuth } from './hooks/useAuth';
+import { isAuthDisabledForCurrentHost } from './services/supabase';
 // All pages eagerly loaded — Cloudflare Access blocks dynamic chunk imports
 // because import() doesn't send the Access session cookie.
 // TODO: Re-enable lazy loading once Cloudflare Access bypass for /assets/* is confirmed working.
@@ -55,7 +56,7 @@ const queryClient = new QueryClient({
 // Home route that shows Login for unauthenticated users, Dashboard for authenticated
 const Home: React.FC = () => {
   const { user, isLoading } = useAuth();
-  const disableAuth = import.meta.env.MODE !== 'test' && import.meta.env.VITE_DISABLE_AUTH === 'true';
+  const disableAuth = isAuthDisabledForCurrentHost();
 
   // When auth is disabled in local dev, avoid a "bounce" to /login (and confusing demo-login UX).
   if (disableAuth) {

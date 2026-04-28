@@ -1,6 +1,7 @@
 import React from 'react';
 import { Navigate } from 'react-router-dom';
 import { useAuth } from '../hooks/useAuth';
+import { isAuthDisabledForCurrentHost } from '../services/supabase';
 
 interface ProtectedRouteProps {
   children: React.ReactNode;
@@ -14,7 +15,7 @@ const ProtectedRoute: React.FC<ProtectedRouteProps> = ({
   const { user, isLoading } = useAuth();
 
   // Local dev convenience: allow running with auth disabled.
-  if (import.meta.env.MODE !== 'test' && import.meta.env.VITE_DISABLE_AUTH === 'true') {
+  if (isAuthDisabledForCurrentHost()) {
     return <>{children}</>;
   }
 

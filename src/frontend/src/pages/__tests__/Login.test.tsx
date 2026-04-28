@@ -26,6 +26,7 @@ vi.mock('../../contexts/AuthContext', () => ({
 }));
 
 vi.mock('../../services/supabase', () => ({
+  isAuthDisabledForCurrentHost: () => false,
   isHostedAuthConfigurationMissing: () => supabaseState.missing,
   isSupabaseAuthEnabled: () => supabaseState.enabled,
 }));

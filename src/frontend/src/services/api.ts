@@ -622,33 +622,19 @@ interface ChatResponse {
   response: string;
 }
 
-// AI service URL
-const AI_SERVICE_URL = import.meta.env.VITE_AI_SERVICE_URL || "http://localhost:8000";
-
 // Chat service
 export const chatService = {
   // Send a chat message to the AI
   sendMessage: async (messages: ChatMessage[]): Promise<ChatResponse> => {
     try {
-      // Get the user's OpenAI API key from local storage
-      const openaiApiKey = localStorage.getItem('openai_api_key');
       const useMockMode = localStorage.getItem('psscript_mock_mode') === 'true';
-      
-      // Only use valid API keys, not placeholder values
-      const apiKey = openaiApiKey || "";
-      
-      // Check if API key is missing and not in mock mode
-      if (!apiKey && !useMockMode) {
-        console.warn("No OpenAI API key found in local storage");
-        throw new Error("Please set your OpenAI API key in Settings before using the chat. Go to Settings > API Settings to enter your API key.");
-      }
       
       // Log if we're in mock mode
       if (useMockMode) {
         console.log("Using mock mode for chat service");
       }
       
-      console.log(`Sending chat request to ${AI_SERVICE_URL}/chat with ${messages.length} messages`);
+      console.log(`Sending hosted chat request with ${messages.length} messages`);
       
       // Try using the backend endpoint first
       try {
@@ -663,25 +649,8 @@ export const chatService = {
         
         return response.data;
       } catch (backendError) {
-        console.warn("Backend chat service failed, trying direct AI service:", backendError);
-        
-        // Fall back to direct AI service if backend fails
-        // SECURITY: API key passed in header, NOT in request body
-        // Headers are easier to redact in logs and won't be cached by proxies
-        const response = await axios.post(`${AI_SERVICE_URL}/chat`, {
-          messages: messages.map(msg => ({
-            role: msg.role,
-            content: msg.content
-          }))
-        }, {
-          headers: {
-            'Content-Type': 'application/json',
-            ...(apiKey ? { 'X-API-Key': apiKey } : {})
-          },
-          timeout: 30000 // 30 second timeout
-        });
-        
-        return response.data;
+        console.warn("Hosted chat service failed:", backendError);
+        throw backendError;
       }
     } catch (error) {
       console.error("Error sending chat message:", error);
@@ -699,7 +668,7 @@ export const chatService = {
           throw new Error("The AI service is currently unavailable. Please try again later.");
         } else if (error.response.status === 401) {
           // Authentication error
-          throw new Error("Authentication failed. Please check your API key in settings.");
+          throw new Error("Authentication failed. Please sign in again.");
         }
       }
       

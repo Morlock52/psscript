@@ -78,6 +78,32 @@ const handleApiError = (error: Error | AxiosError, operation: string): AIService
     code: 'UNKNOWN_ERROR',
     isRetryable: false
   };
+
+  const normalized = error as any;
+  if (!axios.isAxiosError(error) && normalized && typeof normalized === 'object') {
+    serviceError.status = normalized.status;
+    serviceError.code = normalized.code || serviceError.code;
+    serviceError.message = normalized.message || serviceError.message;
+    serviceError.details = normalized.details || normalized;
+
+    if (normalized.isNetworkError || normalized.code === 'ECONNABORTED') {
+      serviceError.code = 'NETWORK_ERROR';
+      serviceError.isRetryable = true;
+    } else if (normalized.status === 401 || normalized.status === 403) {
+      serviceError.code = 'AUTH_ERROR';
+      serviceError.message = `Authentication error while ${operation}. Please sign in again.`;
+    } else if (normalized.status === 429) {
+      serviceError.code = 'RATE_LIMIT';
+      serviceError.message = `Rate limit exceeded while ${operation}`;
+      serviceError.isRetryable = true;
+    } else if (normalized.status >= 500) {
+      serviceError.code = 'SERVER_ERROR';
+      serviceError.isRetryable = true;
+    }
+
+    console.error('AI service error (' + operation + '):', serviceError);
+    return serviceError;
+  }
   
   if (axios.isAxiosError(error)) {
     // Handle network errors (likely retryable)
@@ -94,7 +120,7 @@ const handleApiError = (error: Error | AxiosError, operation: string): AIService
       // Specific status code handling
       if (error.response.status === 401 || error.response.status === 403) {
         serviceError.code = 'AUTH_ERROR';
-        serviceError.message = `Authentication error while ${operation}. Please check your API key.`;
+        serviceError.message = `Authentication error while ${operation}. Please sign in again.`;
         serviceError.isRetryable = false;
       } else if (error.response.status === 429) {
         serviceError.code = 'RATE_LIMIT';
@@ -164,28 +190,17 @@ const withRetry = async <T>(
  * This uses the enhanced assistant that can search the internet and find similar scripts
  * 
  * @param {AIAnalysisRequest} request Analysis request details
- * @param {string} apiKey Optional API key to use for the request
  * @returns {Promise<AIAnalysisResult>} Analysis results
  * @throws {AIServiceError} Normalized error object
  */
 export const analyzeScriptWithAgent = async (
-  request: AIAnalysisRequest,
-  apiKey?: string
+  request: AIAnalysisRequest
 ): Promise<AIAnalysisResult> => {
-  const headers: Record<string, string> = {};
-  
-  if (apiKey) {
-    headers['x-openai-api-key'] = apiKey;
-  }
-
   return withRetry(async () => {
     const { data } = await apiClient.post<AIAnalysisResult>(
       '/scripts/analyze/assistant',
       request,
-      { 
-        headers,
-        timeout: API_TIMEOUT
-      }
+      { timeout: API_TIMEOUT }
     );
     return data;
   }, 'analyze script with AI agent');
@@ -219,28 +234,17 @@ export const getSimilarScriptExamples = async (
  * Generate a PowerShell script using the agentic AI assistant
  * 
  * @param {string} description Description of the desired script functionality
- * @param {string} apiKey Optional API key to use for the request
  * @returns {Promise<string>} Generated script content
  * @throws {AIServiceError} Normalized error object
  */
 export const generateScript = async (
-  description: string,
-  apiKey?: string
+  description: string
 ): Promise<string> => {
-  const headers: Record<string, string> = {};
-  
-  if (apiKey) {
-    headers['x-openai-api-key'] = apiKey;
-  }
-
   return withRetry(async () => {
     const { data } = await apiClient.post<{content: string}>(
       '/scripts/generate',
       { description },
-      { 
-        headers,
-        timeout: API_TIMEOUT
-      }
+      { timeout: API_TIMEOUT }
     );
     return data.content;
   }, 'generate script');

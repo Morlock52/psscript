@@ -2,6 +2,8 @@ import type { Config, Context } from '@netlify/functions';
 import OpenAI, { toFile } from 'openai';
 import Anthropic from '@anthropic-ai/sdk';
 import { createClient } from '@supabase/supabase-js';
+import { lookup } from 'node:dns/promises';
+import net from 'node:net';
 import { query } from './_shared/db';
 import { getEnv, requireEnv } from './_shared/env';
 import { requireAdmin, requireUser, requireUserAllowingDisabled } from './_shared/auth';
@@ -14,6 +16,17 @@ export const config: Config = {
 type RouteParams = { path: string; segments: string[]; url: URL };
 type RequestContext = Pick<Context, 'requestId'>;
 type ChatMessage = { role: 'system' | 'user' | 'assistant'; content: string };
+type AiUsage = { promptTokens: number; completionTokens: number; totalTokens: number };
+type AiMetricContext = { userId?: string; endpoint: string };
+type AiCompletion = { text: string; provider: string; model: string; usage?: AiUsage };
+type AiMetricDetails = {
+  provider: string;
+  model: string;
+  usage?: AiUsage;
+  latency: number;
+  success: boolean;
+  errorMessage?: string;
+};
 
 const OPENAI_TEXT_MODEL = 'gpt-5.5';
 const OPENAI_ANALYSIS_MODEL = 'gpt-5.4-mini';
@@ -23,6 +36,23 @@ const OPENAI_STT_MODEL = 'gpt-4o-mini-transcribe';
 const ANTHROPIC_TEXT_MODEL = 'claude-sonnet-4-6';
 const SCRIPT_EMBEDDING_TIMEOUT_MS = 3000;
 const UPLOAD_ANALYSIS_TIMEOUT_MS = 12000;
+
+const AI_MODEL_PRICING: Record<string, { prompt: number; completion: number }> = {
+  'gpt-5.5': { prompt: 5.00, completion: 30.00 },
+  'gpt-5.4-mini': { prompt: 0.75, completion: 4.50 },
+  'gpt-5.4-nano': { prompt: 0.20, completion: 1.25 },
+  'gpt-4.1': { prompt: 2.00, completion: 8.00 },
+  'gpt-4.1-mini': { prompt: 0.40, completion: 1.60 },
+  'gpt-4.1-nano': { prompt: 0.10, completion: 0.40 },
+  o3: { prompt: 2.00, completion: 8.00 },
+  'o3-pro': { prompt: 20.00, completion: 80.00 },
+  'o4-mini': { prompt: 1.10, completion: 4.40 },
+  'text-embedding-3-small': { prompt: 0.02, completion: 0 },
+  'text-embedding-3-large': { prompt: 0.13, completion: 0 },
+  'claude-opus-4-7': { prompt: 5.00, completion: 25.00 },
+  'claude-sonnet-4-6': { prompt: 3.00, completion: 15.00 },
+  'claude-haiku-4-5-20251001': { prompt: 1.00, completion: 5.00 },
+};
 
 const openAiVoices = [
   { id: 'marin', name: 'Marin', provider: 'openai' },
@@ -133,8 +163,14 @@ export default async function handleRequest(req: Request, context: Context): Pro
     if (route.path === '/scripts/search') return await handleScriptSearch(req, route);
     if (route.path === '/scripts/upload' || route.path === '/scripts/upload/large') return await handleScriptUpload(req);
     if (route.path === '/scripts/analyze') return await handleAdhocAnalysis(req);
+    if (route.path === '/scripts/analyze/assistant' || route.path === '/ai-agent/analyze/assistant') return await handleHostedAgentAnalysis(req, route);
+    if (route.path === '/scripts/please' || route.path === '/ai-agent/please') return await handleHostedAgentQuestion(req, route);
+    if (route.path === '/scripts/generate' || route.path === '/ai-agent/generate') return await handleHostedScriptGeneration(req, route);
+    if (route.path === '/scripts/explain' || route.path === '/ai-agent/explain') return await handleHostedScriptExplanation(req, route);
+    if (route.path === '/scripts/examples' || route.path === '/ai-agent/examples') return await handleHostedScriptExamples(req, route);
     if (route.path === '/chat/stream') return await handleChatStream(req);
     if (route.path === '/chat' || route.path === '/chat/message') return await handleChat(req);
+    if (route.path === '/analytics/ai' || route.path.startsWith('/analytics/ai/')) return await handleHostedAiAnalytics(req, route);
     if (route.path === '/analytics/summary') return await handleAnalyticsSummary(req);
     if (route.path === '/analytics/security') return await handleAnalyticsSecurity(req);
     if (route.path === '/analytics/categories') return await handleAnalyticsCategories(req);
@@ -542,15 +578,57 @@ async function handleScripts(req: Request, route: RouteParams): Promise<Response
 async function handleScriptSearch(req: Request, route: RouteParams): Promise<Response> {
   if (req.method !== 'GET') return methodNotAllowed();
   const user = await requireUser(req);
-  const search = `%${route.url.searchParams.get('q') || ''}%`;
-  const result = await query(
-    `${scriptSelect}
-     WHERE (s.user_id = $1 OR s.is_public = true)
-       AND ($2 = '%%' OR s.title ILIKE $2 OR s.description ILIKE $2 OR s.content ILIKE $2)
-     ORDER BY s.updated_at DESC
-     LIMIT 50`,
-    [user.id, search]
-  );
+  const queryText = (route.url.searchParams.get('q') || '').trim();
+  const limit = Math.min(Math.max(Number(route.url.searchParams.get('limit') || '50'), 1), 100);
+
+  if (!queryText) {
+    const result = await query(
+      `${scriptSelect}
+       WHERE s.user_id = $1 OR s.is_public = true
+       ORDER BY s.updated_at DESC
+       LIMIT $2`,
+      [user.id, limit]
+    );
+    const scripts = result.rows.map(toFrontendScript);
+    return json({ scripts, total: scripts.length });
+  }
+
+  const likeSearch = `%${queryText}%`;
+  let result;
+  try {
+    result = await query(
+      `WITH search_query AS (
+         SELECT websearch_to_tsquery('simple', $2) AS tsq
+       )
+       ${scriptSelect}
+       CROSS JOIN search_query
+       WHERE (s.user_id = $1 OR s.is_public = true)
+         AND (
+           s.search_vector @@ search_query.tsq
+           OR s.title ILIKE $3
+           OR s.description ILIKE $3
+           OR s.content ILIKE $3
+         )
+       ORDER BY
+         CASE WHEN s.search_vector @@ search_query.tsq THEN 0 ELSE 1 END,
+         ts_rank_cd(s.search_vector, search_query.tsq) DESC,
+         s.updated_at DESC
+       LIMIT $4`,
+      [user.id, queryText, likeSearch, limit]
+    );
+  } catch (error) {
+    if ((error as { code?: string }).code !== '42703') throw error;
+    console.warn('[netlify-api] search_vector missing, falling back to ILIKE search');
+    result = await query(
+      `${scriptSelect}
+       WHERE (s.user_id = $1 OR s.is_public = true)
+         AND (s.title ILIKE $2 OR s.description ILIKE $2 OR s.content ILIKE $2)
+       ORDER BY s.updated_at DESC
+       LIMIT $3`,
+      [user.id, likeSearch, limit]
+    );
+  }
+
   const scripts = result.rows.map(toFrontendScript);
   return json({ scripts, total: scripts.length });
 }
@@ -570,6 +648,7 @@ async function handleScriptById(req: Request, route: RouteParams): Promise<Respo
 
   if (route.segments[2] === 'analysis') {
     if (req.method !== 'GET') return methodNotAllowed();
+    await fetchScriptForUser(id, user.id);
     const result = await query('SELECT * FROM script_analysis WHERE script_id = $1', [id]);
     return json(result.rows[0] ? toFrontendAnalysis(result.rows[0]) : null);
   }
@@ -580,7 +659,7 @@ async function handleScriptById(req: Request, route: RouteParams): Promise<Respo
 
   if (route.segments[2] === 'similar') {
     if (req.method !== 'GET') return methodNotAllowed();
-    return json({ similar_scripts: [] });
+    return await handleSimilarScripts(id, user.id, route);
   }
 
   if (route.segments[2] === 'execution-history') {
@@ -600,7 +679,7 @@ async function handleScriptById(req: Request, route: RouteParams): Promise<Respo
   if (route.segments[2] === 'analyze') {
     if (req.method !== 'POST') return methodNotAllowed();
     const script = await fetchScriptForUser(id, user.id);
-    const analysis = await analyzePowerShell(script.content, script.title);
+    const analysis = await analyzePowerShell(script.content, script.title, { userId: user.id, endpoint: '/scripts/:id/analyze' });
     const saved = await saveAnalysis(id, analysis);
     return json({ success: true, analysis: toFrontendAnalysis(saved) });
   }
@@ -610,7 +689,7 @@ async function handleScriptById(req: Request, route: RouteParams): Promise<Respo
     const script = await fetchScriptForUser(id, user.id);
     const startedAt = new Date().toISOString();
     const workflowId = `hosted-${id}-${Date.now()}`;
-    const analysis = await analyzePowerShell(script.content, script.title);
+    const analysis = await analyzePowerShell(script.content, script.title, { userId: user.id, endpoint: '/scripts/:id/analyze-langgraph' });
     const saved = await saveAnalysis(id, analysis);
     const frontendAnalysis = toFrontendAnalysis(saved);
     const completedAt = new Date().toISOString();
@@ -707,19 +786,59 @@ async function handleDocumentation(req: Request, route: RouteParams): Promise<Re
   }
 
   if (route.path === '/documentation/search') {
-    const search = `%${route.url.searchParams.get('query') || route.url.searchParams.get('q') || ''}%`;
-    const result = await query(
-      `
-        SELECT id, title, url, content, source, tags, created_at, updated_at
-        FROM documentation_items
-        WHERE $1 = '%%' OR title ILIKE $1 OR content ILIKE $1
-        ORDER BY updated_at DESC
-        LIMIT 50
-      `,
-      [search]
-    );
+    const queryText = (route.url.searchParams.get('query') || route.url.searchParams.get('q') || '').trim();
     const limit = Math.min(Number(route.url.searchParams.get('limit') || '20'), 100);
     const offset = Number(route.url.searchParams.get('offset') || '0');
+    let result;
+
+    if (!queryText) {
+      result = await query(
+        `
+          SELECT id, title, url, content, source, tags, created_at, updated_at
+          FROM documentation_items
+          ORDER BY updated_at DESC
+          LIMIT $1 OFFSET $2
+        `,
+        [limit, offset]
+      );
+    } else {
+      const likeSearch = `%${queryText}%`;
+      try {
+        result = await query(
+          `
+            WITH search_query AS (
+              SELECT websearch_to_tsquery('simple', $1) AS tsq
+            )
+            SELECT id, title, url, content, source, tags, created_at, updated_at
+            FROM documentation_items
+            CROSS JOIN search_query
+            WHERE search_vector @@ search_query.tsq
+               OR title ILIKE $2
+               OR content ILIKE $2
+            ORDER BY
+              CASE WHEN search_vector @@ search_query.tsq THEN 0 ELSE 1 END,
+              ts_rank_cd(search_vector, search_query.tsq) DESC,
+              updated_at DESC
+            LIMIT $3 OFFSET $4
+          `,
+          [queryText, likeSearch, limit, offset]
+        );
+      } catch (error) {
+        if ((error as { code?: string }).code !== '42703') throw error;
+        console.warn('[netlify-api] documentation search_vector missing, falling back to ILIKE search');
+        result = await query(
+          `
+            SELECT id, title, url, content, source, tags, created_at, updated_at
+            FROM documentation_items
+            WHERE title ILIKE $1 OR content ILIKE $1
+            ORDER BY updated_at DESC
+            LIMIT $2 OFFSET $3
+          `,
+          [likeSearch, limit, offset]
+        );
+      }
+    }
+
     return json({ success: true, data: result.rows, results: result.rows, total: result.rows.length, limit, offset });
   }
 
@@ -803,9 +922,9 @@ async function handleDocumentation(req: Request, route: RouteParams): Promise<Re
 }
 
 async function handleHostedDocumentationImport(req: Request): Promise<Response> {
-  await requireUser(req);
+  const user = await requireUser(req);
   const body = await req.json().catch(() => ({}));
-  const startUrl = normalizePublicImportUrl(body.url);
+  const startUrl = await normalizePublicImportUrl(body.url);
   const maxPages = Math.min(Math.max(Number(body.maxPages || 5), 1), 10);
   const maxDepth = Math.min(Math.max(Number(body.depth || 1), 0), 2);
   const pages = await collectDocumentationPages(startUrl, maxPages, maxDepth);
@@ -816,7 +935,7 @@ async function handleHostedDocumentationImport(req: Request): Promise<Response> 
 
   for (const page of pages) {
     try {
-      const doc = await buildDocumentationItem(page);
+      const doc = await buildDocumentationItem(page, { userId: user.id, endpoint: '/documentation/crawl/ai' });
       if (!doc.content.trim()) {
         errors += 1;
         continue;
@@ -882,7 +1001,7 @@ async function handleScriptUpload(req: Request): Promise<Response> {
   if (form.get('analyze_with_ai') === 'true') {
     try {
       analysis = toFrontendAnalysis(await withTimeout(
-        (async () => saveAnalysis(Number(script.id), await analyzePowerShell(content, script.title)))(),
+        (async () => saveAnalysis(Number(script.id), await analyzePowerShell(content, script.title, { userId: user.id, endpoint: '/scripts/upload' })))(),
         UPLOAD_ANALYSIS_TIMEOUT_MS,
         'AI analysis is taking longer than expected. The script was uploaded; run analysis from the script detail page.'
       ));
@@ -924,12 +1043,160 @@ async function withTimeout<T>(promise: Promise<T>, timeoutMs: number, message: s
 
 async function handleAdhocAnalysis(req: Request): Promise<Response> {
   if (req.method !== 'POST') return methodNotAllowed();
-  await requireUser(req);
+  const user = await requireUser(req);
   const body = await req.json().catch(() => ({}));
   const content = String(body.content || '');
   if (!content.trim()) return json({ error: 'missing_content', message: 'Script content is required for analysis' }, { status: 400 });
-  const analysis = await analyzePowerShell(content, body.title || 'Ad hoc script');
+  const analysis = await analyzePowerShell(content, body.title || 'Ad hoc script', { userId: user.id, endpoint: '/scripts/analyze' });
   return json({ success: true, analysis });
+}
+
+async function handleHostedAgentQuestion(req: Request, route: RouteParams): Promise<Response> {
+  if (req.method !== 'POST') return methodNotAllowed();
+  const user = await requireUser(req);
+  const body = await req.json().catch(() => ({}));
+  const question = String(body.question || body.message || '').trim();
+  const context = String(body.context || '').trim();
+  if (!question) return json({ error: 'missing_question', message: 'Question is required' }, { status: 400 });
+
+  const response = await completeText([
+    {
+      role: 'system',
+      content: [
+        'You are PSScript AI, a pragmatic PowerShell assistant.',
+        'Answer with accurate, actionable PowerShell guidance.',
+        'Prefer safe commands and call out destructive operations before showing them.',
+      ].join(' '),
+    },
+    ...(context ? [{ role: 'system' as const, content: `User-provided script context:\n${context.slice(0, 20000)}` }] : []),
+    { role: 'user', content: question },
+  ], { userId: user.id, endpoint: route.path });
+
+  return json({
+    response: response.text,
+    source: response.provider,
+    provider: response.provider,
+    model: response.model,
+  });
+}
+
+async function handleHostedScriptGeneration(req: Request, route: RouteParams): Promise<Response> {
+  if (req.method !== 'POST') return methodNotAllowed();
+  const user = await requireUser(req);
+  const body = await req.json().catch(() => ({}));
+  const description = String(body.description || body.prompt || '').trim();
+  if (!description) return json({ error: 'missing_description', message: 'Description is required' }, { status: 400 });
+
+  const response = await completeText([
+    {
+      role: 'system',
+      content: [
+        'You are a senior PowerShell engineer.',
+        'Generate production-ready PowerShell scripts with parameter validation, comments for non-obvious logic, and conservative defaults.',
+        'Return only the script content, without Markdown fences.',
+      ].join(' '),
+    },
+    { role: 'user', content: `Generate a PowerShell script that: ${description}` },
+  ], { userId: user.id, endpoint: route.path });
+
+  return json({
+    content: stripMarkdownCodeFence(response.text),
+    source: response.provider,
+    provider: response.provider,
+    model: response.model,
+  });
+}
+
+async function handleHostedScriptExplanation(req: Request, route: RouteParams): Promise<Response> {
+  if (req.method !== 'POST') return methodNotAllowed();
+  const user = await requireUser(req);
+  const body = await req.json().catch(() => ({}));
+  const content = String(body.content || '').trim();
+  const type = String(body.type || 'simple');
+  if (!content) return json({ error: 'missing_content', message: 'Script content is required' }, { status: 400 });
+
+  let systemPrompt = 'Explain this PowerShell clearly and concisely for an operator.';
+  if (type === 'detailed') {
+    systemPrompt = 'Explain this PowerShell in detail, including purpose, flow, important commands, and operational assumptions.';
+  } else if (type === 'security') {
+    systemPrompt = 'Review this PowerShell for security risk, unsafe patterns, permissions, remote calls, and safer alternatives.';
+  }
+
+  const response = await completeText([
+    { role: 'system', content: systemPrompt },
+    { role: 'user', content: `Explain this PowerShell script:\n\n${content.slice(0, 30000)}` },
+  ], { userId: user.id, endpoint: route.path });
+
+  return json({
+    explanation: response.text,
+    response: response.text,
+    source: response.provider,
+    provider: response.provider,
+    model: response.model,
+  });
+}
+
+async function handleHostedAgentAnalysis(req: Request, route: RouteParams): Promise<Response> {
+  if (req.method !== 'POST') return methodNotAllowed();
+  const user = await requireUser(req);
+  const body = await req.json().catch(() => ({}));
+  const content = String(body.content || '').trim();
+  if (!content) return json({ error: 'missing_content', message: 'Script content is required' }, { status: 400 });
+
+  const started = Date.now();
+  const title = String(body.filename || body.title || 'Agent analysis');
+  const analysis = await analyzePowerShell(content, title, { userId: user.id, endpoint: route.path });
+
+  return json({
+    analysis: toAgentAnalysisResult(analysis),
+    metadata: {
+      processingTime: Date.now() - started,
+      model: getEnv('OPENAI_ANALYSIS_MODEL', getEnv('OPENAI_MODEL', OPENAI_ANALYSIS_MODEL)),
+      threadId: '',
+      assistantId: 'hosted-netlify',
+      requestId: `hosted-${Date.now()}`,
+    },
+  });
+}
+
+async function handleHostedScriptExamples(req: Request, route: RouteParams): Promise<Response> {
+  if (req.method !== 'GET') return methodNotAllowed();
+  const user = await requireUser(req);
+  const description = String(route.url.searchParams.get('description') || '').trim();
+  const limit = clampNumber(route.url.searchParams.get('limit'), 1, 10, 5);
+  if (!description) return json({ error: 'missing_description', message: 'Description is required' }, { status: 400 });
+
+  const schema = {
+    type: 'object',
+    additionalProperties: false,
+    required: ['examples'],
+    properties: {
+      examples: {
+        type: 'array',
+        items: {
+          type: 'object',
+          additionalProperties: false,
+          required: ['title', 'snippet', 'complexity'],
+          properties: {
+            title: { type: 'string' },
+            snippet: { type: 'string' },
+            complexity: { type: 'string' },
+          },
+        },
+      },
+    },
+  };
+
+  const parsed = await completeJson([
+    {
+      role: 'system',
+      content: `Return ${limit} concise PowerShell examples as structured data. Each snippet should be useful and safe by default.`,
+    },
+    { role: 'user', content: `Examples related to: ${description}` },
+  ], schema, 'powershell_script_examples', { userId: user.id, endpoint: route.path });
+
+  const examples = Array.isArray(parsed.examples) ? parsed.examples.slice(0, limit) : [];
+  return json({ examples });
 }
 
 async function handleHostedAnalysisStream(req: Request, route: RouteParams, scriptId: number): Promise<Response> {
@@ -969,7 +1236,7 @@ async function handleHostedAnalysisStream(req: Request, route: RouteParams, scri
           data: { workflow_id: workflowId, tool_name: 'analyze_powershell_script' },
         });
 
-        const analysis = await analyzePowerShell(script.content, script.title);
+        const analysis = await analyzePowerShell(script.content, script.title, { userId: user.id, endpoint: '/scripts/analysis-stream' });
         const saved = await saveAnalysis(scriptId, analysis);
         const frontendAnalysis = toFrontendAnalysis(saved);
 
@@ -1024,7 +1291,7 @@ async function handleHostedAnalysisStream(req: Request, route: RouteParams, scri
 
 async function handleChat(req: Request): Promise<Response> {
   if (req.method !== 'POST') return methodNotAllowed();
-  await requireUser(req);
+  const user = await requireUser(req);
   const body = await req.json().catch(() => ({}));
   const messages = normalizeChatMessages([
     body.system_prompt ? { role: 'system', content: String(body.system_prompt) } : null,
@@ -1034,7 +1301,7 @@ async function handleChat(req: Request): Promise<Response> {
     return json({ error: 'missing_user_message', message: 'At least one user message is required' }, { status: 400 });
   }
 
-  const response = await completeText(messages);
+  const response = await completeText(messages, { userId: user.id, endpoint: '/chat' });
   return json({
     response: response.text,
     provider: response.provider,
@@ -1044,7 +1311,7 @@ async function handleChat(req: Request): Promise<Response> {
 
 async function handleChatStream(req: Request): Promise<Response> {
   if (req.method !== 'POST') return methodNotAllowed();
-  await requireUser(req);
+  const user = await requireUser(req);
   const body = await req.json().catch(() => ({}));
   const messages = normalizeChatMessages([
     body.system_prompt ? { role: 'system', content: String(body.system_prompt) } : null,
@@ -1058,8 +1325,9 @@ async function handleChatStream(req: Request): Promise<Response> {
   const stream = new ReadableStream({
     async start(controller) {
       try {
-        const response = await completeText(messages);
-        controller.enqueue(encoder.encode(`data: ${JSON.stringify({ type: 'token', content: response.text })}\n\n`));
+        const response = await streamText(messages, { userId: user.id, endpoint: '/chat/stream' }, (delta) => {
+          controller.enqueue(encoder.encode(`data: ${JSON.stringify({ type: 'token', content: delta })}\n\n`));
+        });
         controller.enqueue(encoder.encode(`data: ${JSON.stringify({ type: 'done', provider: response.provider, model: response.model })}\n\n`));
       } catch (error) {
         const err = error as Error & { code?: string };
@@ -1077,6 +1345,39 @@ async function handleChatStream(req: Request): Promise<Response> {
       Connection: 'keep-alive',
     },
   });
+}
+
+async function handleHostedAiAnalytics(req: Request, route: RouteParams): Promise<Response> {
+  if (req.method !== 'GET') return methodNotAllowed();
+  const user = await requireUser(req);
+
+  if (route.path === '/analytics/ai/budget-alerts') {
+    const dailyBudget = clampNumber(route.url.searchParams.get('dailyBudget'), 0, Number.MAX_SAFE_INTEGER, 50);
+    const monthlyBudget = clampNumber(route.url.searchParams.get('monthlyBudget'), 0, Number.MAX_SAFE_INTEGER, 1000);
+    const alerts = await getHostedAiBudgetAlerts(user.id, dailyBudget, monthlyBudget);
+    return json({ success: true, alerts, hasAlerts: alerts.length > 0 });
+  }
+
+  const now = new Date();
+  const endDate = parseDateParam(route.url.searchParams.get('endDate'), now);
+  const defaultStart = new Date(endDate.getTime() - 30 * 24 * 60 * 60 * 1000);
+  const startDate = parseDateParam(route.url.searchParams.get('startDate'), defaultStart);
+  const analytics = await getHostedAiAnalytics(user.id, startDate, endDate);
+
+  if (route.path === '/analytics/ai/summary') {
+    return json({
+      success: true,
+      data: {
+        summary: analytics.summary,
+        topModels: analytics.byModel.slice(0, 5),
+        topEndpoints: analytics.byEndpoint.slice(0, 5),
+      },
+    });
+  }
+
+  if (route.path !== '/analytics/ai') return notFound(route.path);
+
+  return json({ success: true, data: analytics });
 }
 
 async function handleVoice(req: Request, route: RouteParams): Promise<Response> {
@@ -1118,7 +1419,7 @@ async function handleVoice(req: Request, route: RouteParams): Promise<Response> 
       outputFormat: String(body.outputFormat || body.output_format || 'mp3'),
       speed: clampNumber(body.speed, 0.25, 4, 1),
       voiceInstructions: body.voiceInstructions || body.voice_instructions,
-    });
+    }, { userId: user.id, endpoint: route.path });
     return json(result);
   }
 
@@ -1131,7 +1432,7 @@ async function handleVoice(req: Request, route: RouteParams): Promise<Response> 
       language: body.language ? String(body.language) : undefined,
       prompt: body.prompt ? String(body.prompt) : undefined,
       transcriptionMode: body.transcriptionMode || body.transcription_mode,
-    });
+    }, { userId: user.id, endpoint: route.path });
     return json(result);
   }
 
@@ -1290,6 +1591,60 @@ async function createScript(userId: string, input: any) {
   return toFrontendScript(script);
 }
 
+async function handleSimilarScripts(id: number, userId: string, route: RouteParams): Promise<Response> {
+  const script = await fetchScriptForUser(id, userId);
+  const limit = Math.min(Math.max(Number(route.url.searchParams.get('limit') || '5'), 1), 20);
+  const threshold = Math.min(Math.max(Number(route.url.searchParams.get('threshold') || '0.55'), 0), 1);
+
+  try {
+    await withTimeout(
+      saveScriptEmbedding(script.id, [script.title, script.description, script.content].join('\n\n')),
+      SCRIPT_EMBEDDING_TIMEOUT_MS,
+      'Script embedding generation timed out'
+    );
+  } catch (error) {
+    console.warn('[netlify-api] target embedding unavailable for similar scripts', error);
+  }
+
+  const result = await query(
+    `
+      WITH target AS (
+        SELECT embedding
+        FROM script_embeddings
+        WHERE script_id = $1 AND embedding IS NOT NULL
+        LIMIT 1
+      )
+      SELECT
+        s.id,
+        s.title,
+        s.description,
+        s.category_id,
+        c.name AS category_name,
+        1 - (se.embedding <=> target.embedding) AS similarity
+      FROM target
+      JOIN script_embeddings se ON se.script_id <> $1 AND se.embedding IS NOT NULL
+      JOIN scripts s ON s.id = se.script_id
+      LEFT JOIN categories c ON c.id = s.category_id
+      WHERE (s.user_id = $2 OR s.is_public = true)
+        AND 1 - (se.embedding <=> target.embedding) >= $3
+      ORDER BY se.embedding <=> target.embedding
+      LIMIT $4
+    `,
+    [id, userId, threshold, limit]
+  );
+
+  const similarScripts = result.rows.map(row => ({
+    script_id: row.id,
+    scriptId: row.id,
+    title: row.title,
+    description: row.description,
+    category: row.category_name ? { id: row.category_id, name: row.category_name } : null,
+    similarity: Number(row.similarity),
+  }));
+
+  return json({ success: true, similar_scripts: similarScripts, similarScripts, total: similarScripts.length });
+}
+
 async function fetchScriptForUser(id: number, userId: string) {
   const result = await query(
     `${scriptSelect} WHERE s.id = $1 AND (s.user_id = $2 OR s.is_public = true)`,
@@ -1301,7 +1656,7 @@ async function fetchScriptForUser(id: number, userId: string) {
   return result.rows[0];
 }
 
-async function analyzePowerShell(content: string, title: string) {
+async function analyzePowerShell(content: string, title: string, metricContext?: AiMetricContext) {
   if (!content.trim()) {
     throw Object.assign(new Error('Script content is required for analysis'), { status: 400, code: 'missing_content' });
   }
@@ -1325,7 +1680,8 @@ async function analyzePowerShell(content: string, title: string) {
         },
       ],
       analysisJsonSchema,
-      'powershell_script_analysis'
+      'powershell_script_analysis',
+      metricContext
     );
   } catch (error: any) {
     if (Number(error?.status || 500) < 500) throw error;
@@ -1469,12 +1825,234 @@ async function saveAnalysis(scriptId: number, analysis: any) {
   return result.rows[0];
 }
 
-async function completeText(messages: ChatMessage[]): Promise<{ text: string; provider: string; model: string }> {
+function zeroAiUsage(): AiUsage {
+  return { promptTokens: 0, completionTokens: 0, totalTokens: 0 };
+}
+
+function normalizeAiUsage(response: any): AiUsage {
+  const usage = response?.usage || {};
+  const promptTokens = Number(usage.prompt_tokens ?? usage.input_tokens ?? usage.inputTokens ?? 0);
+  const completionTokens = Number(usage.completion_tokens ?? usage.output_tokens ?? usage.outputTokens ?? 0);
+  const totalTokens = Number(usage.total_tokens ?? usage.totalTokens ?? promptTokens + completionTokens);
+  return {
+    promptTokens: Number.isFinite(promptTokens) ? promptTokens : 0,
+    completionTokens: Number.isFinite(completionTokens) ? completionTokens : 0,
+    totalTokens: Number.isFinite(totalTokens) ? totalTokens : 0,
+  };
+}
+
+function calculateAiCost(model: string, promptTokens: number, completionTokens: number): number {
+  let pricing = AI_MODEL_PRICING[model];
+  if (!pricing) {
+    const key = Object.keys(AI_MODEL_PRICING)
+      .sort((a, b) => b.length - a.length)
+      .find(candidate => model.includes(candidate));
+    pricing = key ? AI_MODEL_PRICING[key] : AI_MODEL_PRICING['gpt-4.1-mini'];
+  }
+  const promptCost = (promptTokens / 1_000_000) * pricing.prompt;
+  const completionCost = (completionTokens / 1_000_000) * pricing.completion;
+  return Number((promptCost + completionCost).toFixed(6));
+}
+
+async function recordAiMetric(context: AiMetricContext | undefined, details: AiMetricDetails): Promise<void> {
+  if (!context) return;
+
+  try {
+    const usage = details.usage || zeroAiUsage();
+    await query(
+      `
+        INSERT INTO ai_metrics (
+          user_id, endpoint, model, prompt_tokens, completion_tokens, total_tokens,
+          total_cost, latency, success, error_message, request_payload, response_payload
+        )
+        VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11::jsonb, $12::jsonb)
+      `,
+      [
+        context.userId || null,
+        context.endpoint,
+        details.model,
+        usage.promptTokens,
+        usage.completionTokens,
+        usage.totalTokens,
+        calculateAiCost(details.model, usage.promptTokens, usage.completionTokens),
+        details.latency,
+        details.success,
+        details.errorMessage || null,
+        JSON.stringify({ provider: details.provider }),
+        JSON.stringify({ hasUsage: usage.totalTokens > 0 }),
+      ]
+    );
+  } catch (error) {
+    console.warn('[netlify-api] AI metric write skipped', error);
+  }
+}
+
+function emptyAiAnalytics(startDate: Date, endDate: Date) {
+  return {
+    summary: {
+      totalRequests: 0,
+      totalTokens: 0,
+      totalCost: 0,
+      avgLatency: 0,
+      p95Latency: 0,
+      successRate: 0,
+    },
+    byModel: [],
+    byEndpoint: [],
+    costTrend: [],
+    dateRange: {
+      start: startDate.toISOString(),
+      end: endDate.toISOString(),
+    },
+  };
+}
+
+async function aiMetricsTableExists(): Promise<boolean> {
+  try {
+    const result = await query<{ exists: boolean }>("SELECT to_regclass('public.ai_metrics') IS NOT NULL AS exists");
+    return result.rows[0]?.exists === true;
+  } catch (error) {
+    console.warn('[netlify-api] ai_metrics table existence check failed', error);
+    return false;
+  }
+}
+
+async function getHostedAiAnalytics(userId: string, startDate: Date, endDate: Date) {
+  if (!(await aiMetricsTableExists())) return emptyAiAnalytics(startDate, endDate);
+
+  try {
+    const [summary, byModel, byEndpoint, costTrend] = await Promise.all([
+      query(
+        `
+          SELECT
+            COUNT(*)::int AS "totalRequests",
+            COALESCE(SUM(total_tokens), 0)::int AS "totalTokens",
+            COALESCE(SUM(total_cost), 0)::float AS "totalCost",
+            COALESCE(AVG(latency), 0)::float AS "avgLatency",
+            COALESCE(PERCENTILE_CONT(0.95) WITHIN GROUP (ORDER BY latency), 0)::float AS "p95Latency",
+            COALESCE(AVG(CASE WHEN success = true THEN 1 ELSE 0 END), 0)::float AS "successRate"
+          FROM ai_metrics
+          WHERE created_at >= $1 AND created_at <= $2 AND (user_id = $3 OR user_id IS NULL)
+        `,
+        [startDate.toISOString(), endDate.toISOString(), userId]
+      ),
+      query(
+        `
+          SELECT
+            model,
+            COUNT(*)::int AS requests,
+            COALESCE(SUM(total_tokens), 0)::int AS "totalTokens",
+            COALESCE(SUM(total_cost), 0)::float AS "totalCost",
+            COALESCE(AVG(latency), 0)::float AS "avgLatency"
+          FROM ai_metrics
+          WHERE created_at >= $1 AND created_at <= $2 AND (user_id = $3 OR user_id IS NULL)
+          GROUP BY model
+          ORDER BY COALESCE(SUM(total_cost), 0) DESC
+        `,
+        [startDate.toISOString(), endDate.toISOString(), userId]
+      ),
+      query(
+        `
+          SELECT
+            endpoint,
+            COUNT(*)::int AS requests,
+            COALESCE(SUM(total_cost), 0)::float AS "totalCost",
+            COALESCE(AVG(latency), 0)::float AS "avgLatency"
+          FROM ai_metrics
+          WHERE created_at >= $1 AND created_at <= $2 AND (user_id = $3 OR user_id IS NULL)
+          GROUP BY endpoint
+          ORDER BY COUNT(*) DESC
+          LIMIT 10
+        `,
+        [startDate.toISOString(), endDate.toISOString(), userId]
+      ),
+      query(
+        `
+          SELECT
+            DATE(created_at)::text AS date,
+            COALESCE(SUM(total_cost), 0)::float AS cost,
+            COUNT(*)::int AS requests
+          FROM ai_metrics
+          WHERE created_at >= $1 AND created_at <= $2 AND (user_id = $3 OR user_id IS NULL)
+          GROUP BY DATE(created_at)
+          ORDER BY DATE(created_at) ASC
+        `,
+        [startDate.toISOString(), endDate.toISOString(), userId]
+      ),
+    ]);
+
+    return {
+      summary: summary.rows[0] || emptyAiAnalytics(startDate, endDate).summary,
+      byModel: byModel.rows,
+      byEndpoint: byEndpoint.rows,
+      costTrend: costTrend.rows,
+      dateRange: {
+        start: startDate.toISOString(),
+        end: endDate.toISOString(),
+      },
+    };
+  } catch (error) {
+    console.warn('[netlify-api] AI analytics query failed; returning empty summary', error);
+    return emptyAiAnalytics(startDate, endDate);
+  }
+}
+
+async function getHostedAiBudgetAlerts(userId: string, dailyBudget: number, monthlyBudget: number) {
+  if (!(await aiMetricsTableExists())) return [];
+
+  const now = new Date();
+  const today = new Date(now);
+  today.setHours(0, 0, 0, 0);
+  const monthStart = new Date(now.getFullYear(), now.getMonth(), 1);
+
+  try {
+    const [dailyResult, monthlyResult] = await Promise.all([
+      query(
+        'SELECT COALESCE(SUM(total_cost), 0)::float AS cost FROM ai_metrics WHERE created_at >= $1 AND (user_id = $2 OR user_id IS NULL)',
+        [today.toISOString(), userId]
+      ),
+      query(
+        'SELECT COALESCE(SUM(total_cost), 0)::float AS cost FROM ai_metrics WHERE created_at >= $1 AND (user_id = $2 OR user_id IS NULL)',
+        [monthStart.toISOString(), userId]
+      ),
+    ]);
+
+    const dailyCost = Number(dailyResult.rows[0]?.cost || 0);
+    const monthlyCost = Number(monthlyResult.rows[0]?.cost || 0);
+    const alerts = [];
+
+    if (dailyBudget > 0 && dailyCost > dailyBudget) {
+      alerts.push({
+        type: 'daily_budget_exceeded',
+        threshold: dailyBudget,
+        actual: dailyCost,
+        percentage: ((dailyCost / dailyBudget) * 100).toFixed(1),
+      });
+    }
+
+    if (monthlyBudget > 0 && monthlyCost > monthlyBudget) {
+      alerts.push({
+        type: 'monthly_budget_exceeded',
+        threshold: monthlyBudget,
+        actual: monthlyCost,
+        percentage: ((monthlyCost / monthlyBudget) * 100).toFixed(1),
+      });
+    }
+
+    return alerts;
+  } catch (error) {
+    console.warn('[netlify-api] AI budget alert query failed; returning no alerts', error);
+    return [];
+  }
+}
+
+async function completeText(messages: ChatMessage[], metricContext?: AiMetricContext): Promise<AiCompletion> {
   const openaiKey = getEnv('OPENAI_API_KEY');
   let openaiError: unknown = null;
   if (openaiKey) {
+    const model = getEnv('OPENAI_MODEL', OPENAI_TEXT_MODEL);
+    const started = Date.now();
     try {
-      const model = getEnv('OPENAI_MODEL', OPENAI_TEXT_MODEL);
       const openai = new OpenAI({ apiKey: openaiKey });
       const { instructions, input } = toOpenAIResponseInput(messages);
       const response = await openai.responses.create({
@@ -1486,14 +2064,30 @@ async function completeText(messages: ChatMessage[]): Promise<{ text: string; pr
       });
       const text = extractResponseText(response);
       if (!text) throw Object.assign(new Error('OpenAI returned an empty text response'), { status: 502, code: 'empty_ai_text_response' });
-      return { text, provider: 'openai', model };
+      const usage = normalizeAiUsage(response);
+      await recordAiMetric(metricContext, {
+        provider: 'openai',
+        model,
+        usage,
+        latency: Date.now() - started,
+        success: true,
+      });
+      return { text, provider: 'openai', model, usage };
     } catch (error) {
       openaiError = error;
+      await recordAiMetric(metricContext, {
+        provider: 'openai',
+        model,
+        usage: zeroAiUsage(),
+        latency: Date.now() - started,
+        success: false,
+        errorMessage: error instanceof Error ? error.message : String(error),
+      });
       console.error('[netlify-api] OpenAI text completion failed; trying fallback provider if configured', error);
     }
   }
 
-  const anthropicText = await completeTextWithAnthropic(messages);
+  const anthropicText = await completeTextWithAnthropic(messages, metricContext);
   if (anthropicText.text) return anthropicText;
 
   if (openaiError) {
@@ -1509,12 +2103,95 @@ async function completeText(messages: ChatMessage[]): Promise<{ text: string; pr
   });
 }
 
-async function completeJson(messages: ChatMessage[], schema: any, name: string): Promise<Record<string, any>> {
+async function streamText(
+  messages: ChatMessage[],
+  metricContext: AiMetricContext | undefined,
+  onDelta: (delta: string) => void
+): Promise<AiCompletion> {
+  const openaiKey = getEnv('OPENAI_API_KEY');
+  let openaiError: unknown = null;
+
+  if (openaiKey) {
+    const model = getEnv('OPENAI_MODEL', OPENAI_TEXT_MODEL);
+    const started = Date.now();
+    let text = '';
+    let usage = zeroAiUsage();
+
+    try {
+      const openai = new OpenAI({ apiKey: openaiKey });
+      const { instructions, input } = toOpenAIResponseInput(messages);
+      const stream = openai.responses.stream({
+        model,
+        instructions,
+        input,
+        store: false,
+        max_output_tokens: Number(getEnv('OPENAI_MAX_OUTPUT_TOKENS', '1600')),
+      } as any);
+
+      for await (const event of stream as any) {
+        if (event.type === 'response.output_text.delta' && event.delta) {
+          text += event.delta;
+          onDelta(event.delta);
+        } else if (event.type === 'response.completed') {
+          usage = normalizeAiUsage(event.response);
+        } else if (event.type === 'response.failed' || event.type === 'error') {
+          const message = event.error?.message || event.response?.error?.message || 'OpenAI streaming response failed';
+          throw Object.assign(new Error(message), { status: 502, code: 'ai_stream_failed' });
+        }
+      }
+
+      if (!text.trim()) {
+        throw Object.assign(new Error('OpenAI returned an empty streaming text response'), { status: 502, code: 'empty_ai_text_response' });
+      }
+
+      await recordAiMetric(metricContext, {
+        provider: 'openai',
+        model,
+        usage,
+        latency: Date.now() - started,
+        success: true,
+      });
+      return { text, provider: 'openai', model, usage };
+    } catch (error) {
+      openaiError = error;
+      await recordAiMetric(metricContext, {
+        provider: 'openai',
+        model,
+        usage: zeroAiUsage(),
+        latency: Date.now() - started,
+        success: false,
+        errorMessage: error instanceof Error ? error.message : String(error),
+      });
+      console.error('[netlify-api] OpenAI text stream failed; trying fallback provider if configured', error);
+    }
+  }
+
+  const fallback = await completeTextWithAnthropic(messages, metricContext);
+  if (fallback.text) {
+    onDelta(fallback.text);
+    return fallback;
+  }
+
+  if (openaiError) {
+    throw Object.assign(new Error('AI stream provider failed and no fallback provider returned a response'), {
+      status: 502,
+      code: 'ai_provider_failed',
+    });
+  }
+
+  throw Object.assign(new Error('No AI text provider is configured. Set OPENAI_API_KEY or ANTHROPIC_API_KEY.'), {
+    status: 503,
+    code: 'ai_provider_unconfigured',
+  });
+}
+
+async function completeJson(messages: ChatMessage[], schema: any, name: string, metricContext?: AiMetricContext): Promise<Record<string, any>> {
   const openaiKey = getEnv('OPENAI_API_KEY');
   let openaiError: unknown = null;
   if (openaiKey) {
+    const model = getEnv('OPENAI_ANALYSIS_MODEL', getEnv('OPENAI_MODEL', OPENAI_ANALYSIS_MODEL));
+    const started = Date.now();
     try {
-      const model = getEnv('OPENAI_ANALYSIS_MODEL', getEnv('OPENAI_MODEL', OPENAI_ANALYSIS_MODEL));
       const openai = new OpenAI({ apiKey: openaiKey });
       const { instructions, input } = toOpenAIResponseInput(messages);
       const response = await openai.responses.create({
@@ -1532,6 +2209,7 @@ async function completeJson(messages: ChatMessage[], schema: any, name: string):
           },
         },
       });
+      const usage = normalizeAiUsage(response);
       const parsed = parseJsonObject(extractResponseText(response));
       if (!Object.keys(parsed).length) {
         throw Object.assign(new Error('OpenAI returned invalid structured analysis JSON'), {
@@ -1539,9 +2217,24 @@ async function completeJson(messages: ChatMessage[], schema: any, name: string):
           code: 'invalid_ai_analysis_response',
         });
       }
+      await recordAiMetric(metricContext, {
+        provider: 'openai',
+        model,
+        usage,
+        latency: Date.now() - started,
+        success: true,
+      });
       return parsed;
     } catch (error) {
       openaiError = error;
+      await recordAiMetric(metricContext, {
+        provider: 'openai',
+        model,
+        usage: zeroAiUsage(),
+        latency: Date.now() - started,
+        success: false,
+        errorMessage: error instanceof Error ? error.message : String(error),
+      });
       console.error('[netlify-api] OpenAI structured analysis failed; trying Anthropic fallback if configured', error);
     }
   }
@@ -1552,7 +2245,7 @@ async function completeJson(messages: ChatMessage[], schema: any, name: string):
       role: 'user',
       content: `Return valid JSON matching this JSON Schema. Do not include Markdown fences.\n\n${JSON.stringify(schema)}`,
     },
-  ]);
+  ], metricContext);
   if (!fallback.text) {
     if (openaiError) {
       throw Object.assign(new Error('AI analysis provider failed and no fallback provider returned a response'), {
@@ -1575,31 +2268,53 @@ async function completeJson(messages: ChatMessage[], schema: any, name: string):
   return parsed;
 }
 
-async function completeTextWithAnthropic(messages: ChatMessage[]): Promise<{ text: string; provider: string; model: string }> {
+async function completeTextWithAnthropic(messages: ChatMessage[], metricContext?: AiMetricContext): Promise<AiCompletion> {
   const anthropicKey = getEnv('ANTHROPIC_API_KEY');
   if (!anthropicKey) return { text: '', provider: 'none', model: 'none' };
 
   const model = getEnv('ANTHROPIC_MODEL', ANTHROPIC_TEXT_MODEL);
+  const provider = getEnv('ANTHROPIC_BASE_URL') ? 'anthropic-compatible' : 'anthropic';
+  const started = Date.now();
   const anthropic = new Anthropic({
     apiKey: anthropicKey,
     baseURL: getEnv('ANTHROPIC_BASE_URL') || undefined,
   });
-  const system = messages.find(message => message.role === 'system')?.content;
+  const system = messages
+    .filter(message => message.role === 'system')
+    .map(message => message.content)
+    .join('\n\n') || undefined;
   const userMessages = messages.filter(message => message.role !== 'system');
-  const response = await anthropic.messages.create({
-    model,
-    max_tokens: Number(getEnv('ANTHROPIC_MAX_TOKENS', '1600')),
-    system,
-    messages: userMessages.map(message => ({
-      role: message.role === 'assistant' ? 'assistant' : 'user',
-      content: String(message.content || ''),
-    })),
-  });
-  return {
-    text: response.content.map((part: any) => part.type === 'text' ? part.text : '').join('\n').trim(),
-    provider: getEnv('ANTHROPIC_BASE_URL') ? 'anthropic-compatible' : 'anthropic',
-    model,
-  };
+  try {
+    const response = await anthropic.messages.create({
+      model,
+      max_tokens: Number(getEnv('ANTHROPIC_MAX_TOKENS', '1600')),
+      system,
+      messages: userMessages.map(message => ({
+        role: message.role === 'assistant' ? 'assistant' : 'user',
+        content: String(message.content || ''),
+      })),
+    });
+    const usage = normalizeAiUsage(response);
+    const text = response.content.map((part: any) => part.type === 'text' ? part.text : '').join('\n').trim();
+    await recordAiMetric(metricContext, {
+      provider,
+      model,
+      usage,
+      latency: Date.now() - started,
+      success: true,
+    });
+    return { text, provider, model, usage };
+  } catch (error) {
+    await recordAiMetric(metricContext, {
+      provider,
+      model,
+      usage: zeroAiUsage(),
+      latency: Date.now() - started,
+      success: false,
+      errorMessage: error instanceof Error ? error.message : String(error),
+    });
+    throw error;
+  }
 }
 
 function toOpenAIResponseInput(messages: ChatMessage[]) {
@@ -1636,12 +2351,12 @@ async function collectDocumentationPages(startUrl: URL, maxPages: number, maxDep
     const next = queue.shift();
     if (!next) break;
 
-    const normalized = normalizeUrlForCrawl(next.url);
+    const fetchUrl = await normalizePublicImportUrl(next.url.toString());
+    const normalized = normalizeUrlForCrawl(fetchUrl);
     if (seen.has(normalized)) continue;
     seen.add(normalized);
 
-    const response = await fetch(normalized, {
-      redirect: 'follow',
+    const response = await fetchPublicDocumentationUrl(new URL(normalized), 3, {
       headers: {
         Accept: 'text/html,application/xhtml+xml,text/plain;q=0.8',
         'User-Agent': 'PSScript-Knowledge-Importer/1.0',
@@ -1671,9 +2386,9 @@ async function collectDocumentationPages(startUrl: URL, maxPages: number, maxDep
   return pages;
 }
 
-async function buildDocumentationItem(page: { url: string; title: string; text: string; codeBlocks: string[] }) {
+async function buildDocumentationItem(page: { url: string; title: string; text: string; codeBlocks: string[] }, metricContext?: AiMetricContext) {
   const commands = extractPowerShellSignals(`${page.title}\n${page.text}\n${page.codeBlocks.join('\n')}`);
-  const aiSummary = await summarizeDocumentationPage(page, commands).catch(() => null);
+  const aiSummary = await summarizeDocumentationPage(page, commands, metricContext).catch(() => null);
   const title = aiSummary?.title || page.title || titleFromUrl(page.url);
   const summary = aiSummary?.summary || page.text.slice(0, 500);
   const tags = Array.from(new Set([
@@ -1702,7 +2417,8 @@ async function buildDocumentationItem(page: { url: string; title: string; text: 
 
 async function summarizeDocumentationPage(
   page: { url: string; title: string; text: string; codeBlocks: string[] },
-  commands: string[]
+  commands: string[],
+  metricContext?: AiMetricContext
 ): Promise<{ title: string; summary: string; tags: string[] } | null> {
   if (!getEnv('OPENAI_API_KEY') && !getEnv('ANTHROPIC_API_KEY')) return null;
 
@@ -1737,7 +2453,8 @@ async function summarizeDocumentationPage(
       },
     ],
     schema,
-    'documentation_import_metadata'
+    'documentation_import_metadata',
+    metricContext
   );
 
   return {
@@ -1749,7 +2466,7 @@ async function summarizeDocumentationPage(
   };
 }
 
-function normalizePublicImportUrl(value: unknown): URL {
+async function normalizePublicImportUrl(value: unknown): Promise<URL> {
   const raw = typeof value === 'string' ? value.trim() : '';
   let url: URL;
   try {
@@ -1762,22 +2479,99 @@ function normalizePublicImportUrl(value: unknown): URL {
     throw Object.assign(new Error('Only HTTP and HTTPS URLs can be imported'), { status: 400, code: 'invalid_import_url' });
   }
 
-  const hostname = url.hostname.toLowerCase();
-  if (
-    hostname === 'localhost' ||
-    hostname.endsWith('.localhost') ||
-    hostname === '127.0.0.1' ||
-    hostname === '0.0.0.0' ||
-    hostname === '::1' ||
-    hostname.startsWith('10.') ||
-    hostname.startsWith('192.168.') ||
-    /^172\.(1[6-9]|2\d|3[0-1])\./.test(hostname)
-  ) {
+  if (await isPrivateImportDestination(url)) {
     throw Object.assign(new Error('Private and localhost URLs cannot be imported'), { status: 400, code: 'private_import_url' });
   }
 
   url.hash = '';
   return url;
+}
+
+async function fetchPublicDocumentationUrl(url: URL, redirectsRemaining: number, init: RequestInit): Promise<Response> {
+  const safeUrl = await normalizePublicImportUrl(url.toString());
+  const response = await fetch(safeUrl.toString(), {
+    ...init,
+    redirect: 'manual',
+  });
+
+  if (response.status >= 300 && response.status < 400 && response.headers.has('location')) {
+    if (redirectsRemaining <= 0) {
+      throw Object.assign(new Error('Too many redirects while importing documentation'), { status: 400, code: 'too_many_redirects' });
+    }
+    const redirectedUrl = new URL(response.headers.get('location') || '', safeUrl);
+    return fetchPublicDocumentationUrl(redirectedUrl, redirectsRemaining - 1, init);
+  }
+
+  return response;
+}
+
+async function isPrivateImportDestination(url: URL): Promise<boolean> {
+  const hostname = url.hostname.toLowerCase().replace(/^\[|\]$/g, '');
+  if (
+    hostname === 'localhost' ||
+    hostname.endsWith('.localhost') ||
+    hostname.endsWith('.local')
+  ) {
+    return true;
+  }
+
+  const literalIp = net.isIP(hostname) ? hostname : '';
+  if (literalIp) return isUnsafeIpAddress(literalIp);
+
+  try {
+    const addresses = await lookup(hostname, { all: true, verbatim: true });
+    return addresses.length === 0 || addresses.some(address => isUnsafeIpAddress(address.address));
+  } catch {
+    return true;
+  }
+}
+
+function isUnsafeIpAddress(address: string): boolean {
+  if (net.isIP(address) === 4) return isUnsafeIpv4(address);
+  if (net.isIP(address) === 6) return isUnsafeIpv6(address);
+  return true;
+}
+
+function isUnsafeIpv4(address: string): boolean {
+  const octets = address.split('.').map(Number);
+  if (octets.length !== 4 || octets.some(octet => !Number.isInteger(octet) || octet < 0 || octet > 255)) {
+    return true;
+  }
+  const [a, b] = octets;
+  return (
+    a === 0 ||
+    a === 10 ||
+    a === 127 ||
+    (a === 100 && b >= 64 && b <= 127) ||
+    (a === 169 && b === 254) ||
+    (a === 172 && b >= 16 && b <= 31) ||
+    (a === 192 && (b === 0 || b === 168)) ||
+    (a === 198 && (b === 18 || b === 19 || b === 51)) ||
+    (a === 203 && b === 0) ||
+    a >= 224
+  );
+}
+
+function isUnsafeIpv6(address: string): boolean {
+  const normalized = address.toLowerCase();
+  if (
+    normalized === '::' ||
+    normalized === '::1' ||
+    normalized.startsWith('fe80:') ||
+    normalized.startsWith('fe90:') ||
+    normalized.startsWith('fea0:') ||
+    normalized.startsWith('feb0:') ||
+    normalized.startsWith('fc') ||
+    normalized.startsWith('fd') ||
+    normalized.startsWith('ff') ||
+    normalized.startsWith('2001:db8:') ||
+    normalized.startsWith('2002:')
+  ) {
+    return true;
+  }
+
+  const ipv4Mapped = normalized.match(/::ffff:(\d{1,3}(?:\.\d{1,3}){3})$/);
+  return ipv4Mapped ? isUnsafeIpv4(ipv4Mapped[1]) : false;
 }
 
 function extractDocumentationPage(url: string, html: string) {
@@ -1877,7 +2671,14 @@ async function saveScriptEmbedding(scriptId: number, text: string): Promise<void
     const embedding = await generateEmbedding(text);
     if (!embedding.length) return;
     await query(
-      'INSERT INTO script_embeddings (script_id, embedding, embedding_model) VALUES ($1, $2::vector, $3)',
+      `
+        INSERT INTO script_embeddings (script_id, embedding, embedding_model)
+        VALUES ($1, $2::vector, $3)
+        ON CONFLICT (script_id) DO UPDATE
+        SET embedding = EXCLUDED.embedding,
+            embedding_model = EXCLUDED.embedding_model,
+            updated_at = now()
+      `,
       [scriptId, `[${embedding.join(',')}]`, getEnv('OPENAI_EMBEDDING_MODEL', OPENAI_EMBEDDING_MODEL)]
     );
   } catch (error) {
@@ -1891,7 +2692,7 @@ async function synthesizeSpeech(input: {
   outputFormat: string;
   speed: number;
   voiceInstructions?: string;
-}) {
+}, metricContext?: AiMetricContext) {
   const text = input.text.trim();
   if (!text) throw Object.assign(new Error('Text is required for speech synthesis'), { status: 400, code: 'missing_text' });
   if (text.length > 4096) throw Object.assign(new Error('Speech text is limited to 4096 characters'), { status: 413, code: 'text_too_large' });
@@ -1900,24 +2701,45 @@ async function synthesizeSpeech(input: {
   if (!openaiKey) throw Object.assign(new Error('OPENAI_API_KEY is required for hosted voice synthesis'), { status: 503, code: 'voice_provider_unconfigured' });
 
   const format = normalizeAudioFormat(input.outputFormat, ['mp3', 'wav', 'opus', 'aac', 'flac', 'pcm'], 'mp3');
+  const model = getEnv('VOICE_TTS_MODEL', OPENAI_TTS_MODEL);
+  const started = Date.now();
   const openai = new OpenAI({ apiKey: openaiKey });
-  const response = await openai.audio.speech.create({
-    model: getEnv('VOICE_TTS_MODEL', OPENAI_TTS_MODEL),
-    voice: normalizeVoiceId(input.voiceId) as any,
-    input: text,
-    response_format: format as any,
-    speed: input.speed,
-    instructions: input.voiceInstructions ? String(input.voiceInstructions).slice(0, 512) : undefined,
-  });
-  const audioBuffer = Buffer.from(await response.arrayBuffer());
-  return {
-    audio_data: audioBuffer.toString('base64'),
-    format,
-    duration: 0,
-    text,
-    model: getEnv('VOICE_TTS_MODEL', OPENAI_TTS_MODEL),
-    voice: normalizeVoiceId(input.voiceId),
-  };
+  try {
+    const response = await openai.audio.speech.create({
+      model,
+      voice: normalizeVoiceId(input.voiceId) as any,
+      input: text,
+      response_format: format as any,
+      speed: input.speed,
+      instructions: input.voiceInstructions ? String(input.voiceInstructions).slice(0, 512) : undefined,
+    });
+    const audioBuffer = Buffer.from(await response.arrayBuffer());
+    await recordAiMetric(metricContext, {
+      provider: 'openai',
+      model,
+      usage: zeroAiUsage(),
+      latency: Date.now() - started,
+      success: true,
+    });
+    return {
+      audio_data: audioBuffer.toString('base64'),
+      format,
+      duration: 0,
+      text,
+      model,
+      voice: normalizeVoiceId(input.voiceId),
+    };
+  } catch (error) {
+    await recordAiMetric(metricContext, {
+      provider: 'openai',
+      model,
+      usage: zeroAiUsage(),
+      latency: Date.now() - started,
+      success: false,
+      errorMessage: error instanceof Error ? error.message : String(error),
+    });
+    throw error;
+  }
 }
 
 async function recognizeSpeech(input: {
@@ -1926,7 +2748,7 @@ async function recognizeSpeech(input: {
   language?: string;
   prompt?: string;
   transcriptionMode?: string;
-}) {
+}, metricContext?: AiMetricContext) {
   const base64 = input.audioData.replace(/^data:audio\/[^;]+;base64,/, '');
   if (!base64) throw Object.assign(new Error('Audio data is required for speech recognition'), { status: 400, code: 'missing_audio' });
   if (base64.length > Number(getEnv('VOICE_MAX_BASE64_CHARS', '16000000'))) {
@@ -1945,25 +2767,44 @@ async function recognizeSpeech(input: {
     : getEnv('VOICE_STT_MODEL', OPENAI_STT_MODEL);
   const diarize = model === 'gpt-4o-transcribe-diarize';
 
+  const started = Date.now();
   const openai = new OpenAI({ apiKey: openaiKey });
-  const transcription = await openai.audio.transcriptions.create({
-    file,
-    model,
-    language: input.language?.split('-')[0],
-    prompt: diarize ? undefined : input.prompt?.slice(0, 512),
-    response_format: diarize ? 'diarized_json' : 'json',
-    chunking_strategy: diarize ? 'auto' : undefined,
-  } as any);
-
-  return {
-    text: (transcription as any).text || '',
-    segments: (transcription as any).segments,
-    confidence: undefined,
-    language: input.language || 'auto',
-    duration: undefined,
-    model,
-    mode: input.transcriptionMode || 'standard',
-  };
+  try {
+    const transcription = await openai.audio.transcriptions.create({
+      file,
+      model,
+      language: input.language?.split('-')[0],
+      prompt: diarize ? undefined : input.prompt?.slice(0, 512),
+      response_format: diarize ? 'diarized_json' : 'json',
+      chunking_strategy: diarize ? 'auto' : undefined,
+    } as any);
+    await recordAiMetric(metricContext, {
+      provider: 'openai',
+      model,
+      usage: zeroAiUsage(),
+      latency: Date.now() - started,
+      success: true,
+    });
+    return {
+      text: (transcription as any).text || '',
+      segments: (transcription as any).segments,
+      confidence: undefined,
+      language: input.language || 'auto',
+      duration: undefined,
+      model,
+      mode: input.transcriptionMode || 'standard',
+    };
+  } catch (error) {
+    await recordAiMetric(metricContext, {
+      provider: 'openai',
+      model,
+      usage: zeroAiUsage(),
+      latency: Date.now() - started,
+      success: false,
+      errorMessage: error instanceof Error ? error.message : String(error),
+    });
+    throw error;
+  }
 }
 
 function normalizeVoiceId(voiceId: string): string {
@@ -2098,6 +2939,51 @@ function extractResponseText(response: any): string {
   }
 
   return parts.join('\n').trim();
+}
+
+function stripMarkdownCodeFence(value: string): string {
+  const trimmed = value.trim();
+  const match = trimmed.match(/^```(?:powershell|ps1|pwsh)?\s*\n([\s\S]*?)\n```$/i);
+  return (match ? match[1] : trimmed).trim();
+}
+
+function toAgentAnalysisResult(analysis: any) {
+  const commandDetails = Array.isArray(analysis.command_details)
+    ? analysis.command_details.reduce((acc: Record<string, any>, command: any) => {
+        const name = String(command?.name || '').trim();
+        if (!name) return acc;
+        acc[name] = {
+          description: String(command?.description || command?.purpose || ''),
+          parameters: Array.isArray(command?.parameters) ? command.parameters : [],
+        };
+        return acc;
+      }, {})
+    : {};
+
+  return {
+    purpose: String(analysis.purpose || ''),
+    securityScore: scoreToPercent(analysis.security_score ?? analysis.securityScore),
+    codeQualityScore: scoreToPercent(analysis.quality_score ?? analysis.qualityScore),
+    riskScore: scoreToPercent(analysis.risk_score ?? analysis.riskScore),
+    suggestions: Array.isArray(analysis.suggestions) ? analysis.suggestions : [],
+    commandDetails,
+    msDocsReferences: [],
+    examples: [],
+    rawAnalysis: JSON.stringify(analysis),
+  };
+}
+
+function scoreToPercent(value: unknown): number {
+  const score = Number(value);
+  if (!Number.isFinite(score)) return 0;
+  const percent = score <= 10 ? score * 10 : score;
+  return Math.round(Math.min(100, Math.max(0, percent)));
+}
+
+function parseDateParam(value: string | null, fallback: Date): Date {
+  if (!value) return fallback;
+  const parsed = new Date(value);
+  return Number.isNaN(parsed.getTime()) ? fallback : parsed;
 }
 
 function clampNumber(value: unknown, min: number, max: number, fallback: number): number {

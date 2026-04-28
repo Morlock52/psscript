@@ -12,6 +12,14 @@ export function isRemoteHostedApp(): boolean {
   return hostname !== 'localhost' && hostname !== '127.0.0.1';
 }
 
+export function isAuthDisabledForCurrentHost(): boolean {
+  if (import.meta.env.MODE === 'test' || import.meta.env.VITE_DISABLE_AUTH !== 'true') {
+    return false;
+  }
+
+  return !isRemoteHostedApp();
+}
+
 export function isHostedAuthConfigurationMissing(): boolean {
   return isRemoteHostedApp() && !isSupabaseAuthEnabled();
 }

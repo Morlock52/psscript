@@ -218,6 +218,7 @@ const AgenticAIPage: React.FC = () => {
   // State for generation
   const [generationPrompt, setGenerationPrompt] = useState('');
   const [isGenerating, setIsGenerating] = useState(false);
+  const [pendingAssistantQuestion, setPendingAssistantQuestion] = useState<{ id: number; question: string } | null>(null);
   
   // State for notification
   const [notification, setNotification] = useState({
@@ -226,49 +227,12 @@ const AgenticAIPage: React.FC = () => {
     severity: 'info' as 'info' | 'success' | 'warning' | 'error',
   });
   
-  // OpenAI API key (check environment variable first, otherwise empty string)
-  const [apiKey, setApiKey] = useState('');
-  const [hasEnvApiKey, setHasEnvApiKey] = useState(false); // eslint-disable-line @typescript-eslint/no-unused-vars
-  
-  // Load saved API key and examples on component mount
+  // Load examples on component mount
   useEffect(() => {
-    // Check for environment variable first
-    const envApiKey = import.meta.env.VITE_OPENAI_API_KEY;
-    
-    if (envApiKey) {
-      console.log('Environment variable OpenAI API key detected');
-      setHasEnvApiKey(true);
-    } else {
-      console.log('No environment variable OpenAI API key found, checking localStorage');
-      // Otherwise check localStorage
-      const savedApiKey = localStorage.getItem('openai_api_key');
-      if (savedApiKey) {
-        console.log('Found OpenAI API key in localStorage');
-        setApiKey(savedApiKey);
-      } else {
-        console.log('No API key found in localStorage');
-      }
-    }
-    
     // In a real implementation, we would fetch examples from API
     // For now, use mock data
     setScriptExamples(MOCK_EXAMPLES);
   }, []);
-  
-  // Get the effective API key to use (env variable takes precedence over localStorage)
-  const getEffectiveApiKey = (): string | undefined => {
-    const envApiKey = import.meta.env.VITE_OPENAI_API_KEY;
-    if (envApiKey) {
-      return envApiKey;
-    }
-    
-    if (apiKey) {
-      return apiKey;
-    }
-    
-    // If we have neither, return undefined to use backend's fallback
-    return undefined;
-  };
   
   // Handle tab change
   const handleTabChange = (_: React.SyntheticEvent, newValue: number) => {
@@ -293,7 +257,6 @@ const AgenticAIPage: React.FC = () => {
       const result = await runAIAgentWorkflow(
         scriptCode,
         scriptName || 'script.ps1',
-        getEffectiveApiKey(),
         false
       );
       
@@ -339,9 +302,7 @@ const AgenticAIPage: React.FC = () => {
     setIsGenerating(true);
 
     try {
-      // API key is optional - backend has its own configured key
-      const effectiveApiKey = getEffectiveApiKey();
-      const generatedCode = await generateScript(generationPrompt, effectiveApiKey);
+      const generatedCode = await generateScript(generationPrompt);
 
       if (generatedCode) {
         setScriptCode(generatedCode);
@@ -365,7 +326,7 @@ const AgenticAIPage: React.FC = () => {
       if (error instanceof Error) {
         const errorMsg = error.message.toLowerCase();
         if (errorMsg.includes('api key') || errorMsg.includes('unauthorized') || errorMsg.includes('401')) {
-          errorMessage = 'Invalid API key. Please check your OpenAI API key in Settings → API Settings.';
+          errorMessage = 'AI service authentication failed. Please sign in again or contact an admin.';
         } else if (errorMsg.includes('rate limit') || errorMsg.includes('429')) {
           errorMessage = 'Rate limit exceeded. Please wait a moment and try again.';
         } else if (errorMsg.includes('timeout') || errorMsg.includes('network')) {
@@ -436,11 +397,11 @@ const AgenticAIPage: React.FC = () => {
   };
   
   // Handle asking AI about current script
-  const handleAskAboutScript = (_question: string) => {
+  const handleAskAboutScript = (question: string) => {
     // Switch to assistant tab
+    setPendingAssistantQuestion({ id: Date.now(), question });
     setActiveTab(3);
-    
-    // The PleaseMethodAgent component will handle the question
+
     setNotification({
       open: true,
       message: 'Question sent to AI Assistant',
@@ -653,6 +614,8 @@ const AgenticAIPage: React.FC = () => {
             <PleaseMethodAgent
               activeScript={scriptCode}
               onScriptGenerated={handleScriptFromAssistant}
+              pendingQuestion={pendingAssistantQuestion?.question}
+              pendingQuestionId={pendingAssistantQuestion?.id}
             />
           </StyledPaper>
         </TabPanel>

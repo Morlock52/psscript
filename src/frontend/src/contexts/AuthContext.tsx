@@ -1,7 +1,7 @@
 import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
 import axios from 'axios';
 import { getApiUrl } from '../utils/apiUrl';
-import { getSupabaseClient, isHostedAuthConfigurationMissing, isSupabaseAuthEnabled } from '../services/supabase';
+import { getSupabaseClient, isAuthDisabledForCurrentHost, isHostedAuthConfigurationMissing, isSupabaseAuthEnabled } from '../services/supabase';
 
 // Define user type
 export interface User {
@@ -69,7 +69,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   const [error, setError] = useState<string | null>(null);
   // In unit tests we want to exercise the real auth flow by default.
   // Local dev frequently sets VITE_DISABLE_AUTH=true, which would short-circuit tests.
-  const disableAuth = import.meta.env.MODE !== 'test' && import.meta.env.VITE_DISABLE_AUTH === 'true';
+  const disableAuth = isAuthDisabledForCurrentHost();
   const supabaseAuth = isSupabaseAuthEnabled();
   const hostedAuthMissing = isHostedAuthConfigurationMissing();
 

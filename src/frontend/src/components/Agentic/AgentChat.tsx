@@ -25,26 +25,35 @@ import { Prism as SyntaxHighlighter } from 'react-syntax-highlighter';
 import { atomDark } from 'react-syntax-highlighter/dist/esm/styles/prism';
 import { useAuth } from '../../hooks/useAuth';
 import ReactMarkdown from 'react-markdown';
+import { chatService } from '../../services/api-simple';
 
-// Import agentic framework
-import {
-  Agent,
-  Thread,
-  Message,
-  createAgent,
-  createThread,
-  addMessage,
-  createRun,
-  getThread,
-  getThreadMessages,
-  waitForRun
-} from '../../api/agentOrchestrator';
+import type { Agent } from '../../api/agentOrchestrator';
 
 interface AgentChatProps {
   agentConfig?: Partial<Agent>;
   initialMessage?: string;
   placeholder?: string;
   showToolbar?: boolean;
+}
+
+interface HostedAgentMessage {
+  id: string;
+  threadId: string;
+  role: 'user' | 'assistant' | 'system';
+  content: string | null;
+  metadata: Record<string, any>;
+  createdAt: Date;
+}
+
+function buildAgentSystemPrompt(agentConfig: Partial<Agent>): string {
+  return [
+    `You are ${agentConfig.name || 'PSScript AI Assistant'}.`,
+    agentConfig.description || 'You help users write, analyze, secure, and debug PowerShell scripts.',
+    agentConfig.capabilities?.length
+      ? `Your capabilities are: ${agentConfig.capabilities.join(', ')}.`
+      : '',
+    'Answer with practical PowerShell guidance, include safe examples, and warn before destructive actions.',
+  ].filter(Boolean).join(' ');
 }
 
 const AgentChat: React.FC<AgentChatProps> = ({
@@ -77,11 +86,12 @@ What PowerShell challenge can I help you with today?`,
   const theme = useTheme();
   const { isAuthenticated } = useAuth();
   const messagesEndRef = useRef<HTMLDivElement>(null);
+  const threadIdRef = useRef(`hosted-agent-${Date.now()}`);
+  const agentName = agentConfig.name || 'PowerShell Assistant';
+  const agentModel = agentConfig.model || 'Hosted AI';
   
   // State for the conversation
-  const [agent, setAgent] = useState<Agent | null>(null);
-  const [thread, setThread] = useState<Thread | null>(null);
-  const [messages, setMessages] = useState<Message[]>([]);
+  const [messages, setMessages] = useState<HostedAgentMessage[]>([]);
   const [inputMessage, setInputMessage] = useState('');
   const [isProcessing, setIsProcessing] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -91,48 +101,20 @@ What PowerShell challenge can I help you with today?`,
     severity: 'info' as 'info' | 'success' | 'warning' | 'error'
   });
   
-  // Initialize the agent and thread
+  // Initialize a hosted chat session locally. Production chat goes through /api/chat.
   useEffect(() => {
-    const initializeAgent = async () => {
-      try {
-        // Create the agent
-        const newAgent = await createAgent(agentConfig);
-        setAgent(newAgent);
-        
-        // Create a thread
-        const newThread = await createThread(newAgent.id);
-        setThread(newThread);
-        
-        // Add the initial welcome message
-        const welcomeMessage: Message = {
-          id: 'welcome-msg',
-          threadId: newThread.id,
-          role: 'assistant',
-          content: initialMessage,
-          metadata: {},
-          createdAt: new Date()
-        };
-        
-        setMessages([welcomeMessage]);
-      } catch (error) {
-        console.error('Failed to initialize agent:', error);
-        setError('Failed to initialize the assistant. Please try again later.');
-        setNotification({
-          open: true,
-          message: 'Failed to initialize the assistant',
-          severity: 'error'
-        });
-      }
-    };
-    
     if (isAuthenticated) {
-      initializeAgent();
+      setError(null);
+      setMessages([{
+        id: 'welcome-msg',
+        threadId: threadIdRef.current,
+        role: 'assistant',
+        content: initialMessage,
+        metadata: {},
+        createdAt: new Date()
+      }]);
     }
-    
-    return () => {
-      // Clean up logic if needed
-    };
-  }, [isAuthenticated, agentConfig, initialMessage]);
+  }, [isAuthenticated, initialMessage]);
   
   // Scroll to bottom of messages
   useEffect(() => {
@@ -141,54 +123,55 @@ What PowerShell challenge can I help you with today?`,
   
   // Handle sending a message
   const handleSendMessage = async () => {
-    if (!inputMessage.trim() || !thread || !agent || isProcessing) return;
+    if (!inputMessage.trim() || !isAuthenticated || isProcessing) return;
     
     const userMessage = inputMessage;
+    const threadId = threadIdRef.current;
     setInputMessage('');
     setIsProcessing(true);
+    setError(null);
     
+    const tempUserMessage: HostedAgentMessage = {
+      id: `user-${Date.now()}`,
+      threadId,
+      role: 'user',
+      content: userMessage,
+      metadata: {},
+      createdAt: new Date()
+    };
+    const loadingMessage: HostedAgentMessage = {
+      id: `loading-${Date.now()}`,
+      threadId,
+      role: 'assistant',
+      content: '...',
+      metadata: { isLoading: true },
+      createdAt: new Date()
+    };
+    const nextMessages = [...messages.filter(message => !message.metadata?.isLoading), tempUserMessage];
+
+    setMessages([...nextMessages, loadingMessage]);
+
     try {
-      // Add user message to UI immediately for responsiveness
-      const tempUserMessage: Message = {
-        id: `temp-${Date.now()}`,
-        threadId: thread.id,
-        role: 'user',
-        content: userMessage,
+      const response = await chatService.sendMessage([
+        { role: 'system', content: buildAgentSystemPrompt(agentConfig) },
+        ...nextMessages
+          .filter(message => message.role === 'user' || message.role === 'assistant')
+          .map(message => ({
+            role: message.role,
+            content: String(message.content || '')
+          }))
+      ], 'agent', threadId);
+
+      const assistantMessage: HostedAgentMessage = {
+        id: `assistant-${Date.now()}`,
+        threadId,
+        role: 'assistant',
+        content: response.response || 'I could not generate a response.',
         metadata: {},
         createdAt: new Date()
       };
-      
-      setMessages(prev => [...prev, tempUserMessage]);
-      
-      // Add the message to the thread
-      await addMessage(thread.id, userMessage);
-      
-      // Create a new run
-      const run = await createRun(thread.id);
-      
-      // Add a temporary loading message
-      const tempLoadingMessage: Message = {
-        id: `loading-${Date.now()}`,
-        threadId: thread.id,
-        role: 'assistant',
-        content: '...',
-        metadata: { isLoading: true },
-        createdAt: new Date()
-      };
-      
-      setMessages(prev => [...prev, tempLoadingMessage]);
-      
-      // Wait for the run to complete
-      await waitForRun(run.id);
-      
-      // Get updated messages
-      const updatedThread = await getThread(thread.id);
-      const updatedMessages = await getThreadMessages(thread.id);
-      
-      // Update the thread and messages
-      setThread(updatedThread);
-      setMessages(updatedMessages);
-      
+
+      setMessages([...nextMessages, assistantMessage]);
     } catch (error) {
       console.error('Error sending message:', error);
       setError('Failed to send message. Please try again.');
@@ -198,8 +181,17 @@ What PowerShell challenge can I help you with today?`,
         severity: 'error'
       });
       
-      // Remove the loading message
-      setMessages(prev => prev.filter(m => !m.metadata?.isLoading));
+      setMessages([
+        ...nextMessages,
+        {
+          id: `error-${Date.now()}`,
+          threadId,
+          role: 'assistant',
+          content: 'I could not reach the hosted AI service. Please try again.',
+          metadata: {},
+          createdAt: new Date()
+        }
+      ]);
     } finally {
       setIsProcessing(false);
     }
@@ -219,7 +211,7 @@ What PowerShell challenge can I help you with today?`,
   };
   
   // Render a message based on its role
-  const renderMessage = (message: Message) => {
+  const renderMessage = (message: HostedAgentMessage) => {
     const isUser = message.role === 'user';
     const isLoading = message.metadata?.isLoading;
     
@@ -331,11 +323,11 @@ What PowerShell challenge can I help you with today?`,
           </Avatar>
           <Box>
             <Typography variant="subtitle1" fontWeight="bold">
-              {agent?.name || 'PowerShell Assistant'}
+              {agentName}
             </Typography>
             <Chip
               size="small"
-              label={agent?.model || 'GPT-4o'}
+              label={agentModel}
               sx={{ fontSize: '0.7rem' }}
             />
           </Box>
@@ -389,7 +381,7 @@ What PowerShell challenge can I help you with today?`,
               value={inputMessage}
               onChange={(e) => setInputMessage(e.target.value)}
               onKeyPress={handleKeyPress}
-              disabled={isProcessing || !thread}
+              disabled={isProcessing || !isAuthenticated}
               variant="outlined"
               sx={{
                 '& .MuiOutlinedInput-root': {
@@ -404,7 +396,7 @@ What PowerShell challenge can I help you with today?`,
               color="primary"
               endIcon={isProcessing ? <CircularProgress size={20} color="inherit" /> : <SendIcon />}
               onClick={handleSendMessage}
-              disabled={!inputMessage.trim() || isProcessing || !thread}
+              disabled={!inputMessage.trim() || isProcessing || !isAuthenticated}
               sx={{ borderRadius: 2, px: 3, py: 1 }}
             >
               {isProcessing ? 'Sending...' : 'Send'}

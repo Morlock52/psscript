@@ -16,7 +16,6 @@ import {
   ListItemText,
   Divider,
   TextField,
-  CircularProgress,
   Alert,
   Chip,
   Avatar
@@ -35,11 +34,7 @@ import { Link } from 'react-router-dom';
 import AgentChat from '../components/Agentic/AgentChat';
 import { useAuth } from '../hooks/useAuth';
 
-// Import API
-import { 
-  createAgent,
-  Agent
-} from '../api/agentOrchestrator';
+import type { Agent } from '../api/agentOrchestrator';
 
 // TabPanel component for tab content
 interface TabPanelProps {
@@ -125,7 +120,6 @@ const AgentOrchestrationPage: React.FC = () => {
   const { isAuthenticated, user: _user } = useAuth();
   const [activeTab, setActiveTab] = useState(0);
   const [selectedAgentTemplate, setSelectedAgentTemplate] = useState<Partial<Agent> | null>(null);
-  const [isCreatingAgent, setIsCreatingAgent] = useState(false);
   const [error, setError] = useState<string | null>(null);
   
   // Handle tab change
@@ -139,26 +133,30 @@ const AgentOrchestrationPage: React.FC = () => {
   };
   
   // Handle creating an agent from a template
-  const handleCreateAgent = async (template: Partial<Agent>) => {
+  const handleCreateAgent = (template: Partial<Agent>) => {
     if (!isAuthenticated) {
       setError('You must be logged in to create an agent');
       return;
     }
     
-    setIsCreatingAgent(true);
     setError(null);
-    
-    try {
-      const agent = await createAgent(template);
-      console.log('Created agent:', agent);
-      setSelectedAgentTemplate(agent);
-      setActiveTab(1); // Switch to chat tab
-    } catch (error) {
-      console.error('Failed to create agent:', error);
-      setError('Failed to create agent. Please try again.');
-    } finally {
-      setIsCreatingAgent(false);
-    }
+    const now = new Date();
+    const agent: Agent = {
+      id: `hosted-${String(template.name || 'agent').toLowerCase().replace(/[^a-z0-9]+/g, '-')}-${Date.now()}`,
+      name: template.name || 'PowerShell Assistant',
+      description: template.description || 'Hosted PowerShell assistant',
+      capabilities: template.capabilities || [],
+      model: template.model || 'Hosted AI',
+      tools: [],
+      metadata: {
+        ...(template.metadata || {}),
+        hosted: true,
+      },
+      createdAt: now,
+      updatedAt: now,
+    };
+    setSelectedAgentTemplate(agent);
+    setActiveTab(1); // Switch to chat tab
   };
   
   return (
@@ -256,12 +254,12 @@ const AgentOrchestrationPage: React.FC = () => {
               variant="contained"
               color="primary"
               size="large"
-              startIcon={isCreatingAgent ? <CircularProgress size={20} color="inherit" /> : <SmartToyIcon />}
-              disabled={!selectedAgentTemplate || isCreatingAgent}
+              startIcon={<SmartToyIcon />}
+              disabled={!selectedAgentTemplate}
               onClick={() => selectedAgentTemplate && handleCreateAgent(selectedAgentTemplate)}
               sx={{ px: 4, py: 1.5 }}
             >
-              {isCreatingAgent ? 'Creating...' : 'Create & Start Chat'}
+              Start Chat
             </Button>
           </Box>
           
@@ -364,7 +362,7 @@ const AgentOrchestrationPage: React.FC = () => {
               API Configuration
             </Typography>
             <Alert severity="info" sx={{ mb: 2 }}>
-              Agent settings use your OpenAI API key configured in the Settings page.
+              Hosted agents use server-side OpenAI and Anthropic credentials configured in Netlify. No browser API key is required.
             </Alert>
             <Button 
               variant="outlined" 
@@ -372,7 +370,7 @@ const AgentOrchestrationPage: React.FC = () => {
               component={Link}
               to="/settings/api"
             >
-              Manage API Keys
+              View API Settings
             </Button>
           </Box>
           

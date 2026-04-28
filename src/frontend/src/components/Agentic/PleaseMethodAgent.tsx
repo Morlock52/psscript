@@ -126,6 +126,24 @@ const CodeBlock = ({ language, value }: { language: string; value: string }) => 
 interface PleaseMethodAgentProps {
   activeScript?: string;
   onScriptGenerated?: (script: string) => void;
+  pendingQuestion?: string;
+  pendingQuestionId?: number;
+}
+
+function isScriptGenerationPrompt(prompt: string): boolean {
+  return /\b(generate|create|write|build|make)\b[\s\S]{0,80}\b(script|powershell|ps1|function)\b/i.test(prompt) ||
+    /\b(script|powershell|ps1|function)\b[\s\S]{0,80}\b(generate|create|write|build|make)\b/i.test(prompt);
+}
+
+function extractGeneratedScript(responseText: string): string | null {
+  const fenced = responseText.match(/```(?:powershell|ps1|pwsh)?\s*\n([\s\S]*?)```/i);
+  if (fenced?.[1]?.trim()) {
+    return fenced[1].trim();
+  }
+
+  const trimmed = responseText.trim();
+  const looksLikePowerShell = /(?:^|\n)\s*(?:param\s*\(|function\s+|#requires|\$[A-Za-z_][\w]*\s*=|[A-Z][a-z]+-[A-Z][A-Za-z]+)/m.test(trimmed);
+  return looksLikePowerShell ? trimmed : null;
 }
 
 /**
@@ -135,6 +153,8 @@ interface PleaseMethodAgentProps {
 const PleaseMethodAgent: React.FC<PleaseMethodAgentProps> = ({
   activeScript,
   onScriptGenerated,
+  pendingQuestion,
+  pendingQuestionId,
 }) => {
   const [messages, setMessages] = useState<Message[]>([]);
   const [input, setInput] = useState<string>('');
@@ -168,18 +188,16 @@ const PleaseMethodAgent: React.FC<PleaseMethodAgentProps> = ({
     }
   }, []);
 
-  // Handle user input submission
-  const handleSubmit = async (e?: React.FormEvent) => {
-    if (e) e.preventDefault();
-    
-    if (!input.trim()) return;
+  const submitQuestion = async (question: string) => {
+    const prompt = question.trim();
+    if (!prompt || isLoading) return;
 
     // Add user message to chat
     const userMessageId = `user-${Date.now()}`;
     const userMessage: Message = {
       id: userMessageId,
       role: 'user',
-      content: input,
+      content: prompt,
       timestamp: new Date(),
     };
 
@@ -199,22 +217,15 @@ const PleaseMethodAgent: React.FC<PleaseMethodAgentProps> = ({
 
     try {
       // Make API call to backend
-      const response = await askAgentQuestion(input, activeScript);
+      const response = await askAgentQuestion(prompt, activeScript);
 
       // Ensure response is a string (defensive check)
       const responseText = response ?? '';
 
-      // Check if this is a script generation request
-      const isScriptGeneration = input.toLowerCase().includes('generate') &&
-        input.toLowerCase().includes('script');
-
-      // Extract any generated script if present
-      const scriptRegex = /```powershell\n([\s\S]*?)```/;
-      const scriptMatch = responseText.match(scriptRegex);
-      const generatedScript = scriptMatch ? scriptMatch[1] : null;
+      const generatedScript = extractGeneratedScript(responseText);
 
       // If a script was generated and we have a callback
-      if (generatedScript && onScriptGenerated && isScriptGeneration) {
+      if (generatedScript && onScriptGenerated && isScriptGenerationPrompt(prompt)) {
         onScriptGenerated(generatedScript);
       }
 
@@ -254,6 +265,19 @@ const PleaseMethodAgent: React.FC<PleaseMethodAgentProps> = ({
       setIsLoading(false);
     }
   };
+
+  // Handle user input submission
+  const handleSubmit = async (e?: React.FormEvent) => {
+    if (e) e.preventDefault();
+    await submitQuestion(input);
+  };
+
+  useEffect(() => {
+    if (!pendingQuestion || pendingQuestionId === undefined) return;
+    submitQuestion(pendingQuestion);
+    // submitQuestion intentionally reads the latest activeScript and loading state.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [pendingQuestionId]);
 
   // Handle keyboard shortcuts
   const handleKeyDown = (e: React.KeyboardEvent) => {

@@ -96,14 +96,12 @@ export const extractKeywords = (analysis: AIAnalysisResult): string[] => {
  * 
  * @param scriptContent The PowerShell script to analyze
  * @param filename Optional filename
- * @param apiKey Optional OpenAI API key
  * @param includeInternetSearch Whether to include internet search in analysis
  * @returns Promise resolving to the workflow state
  */
 export const runAIAgentWorkflow = async (
   scriptContent: string, 
   filename: string,
-  apiKey?: string,
   includeInternetSearch = true
 ): Promise<AIAgentWorkflowState> => {
   console.log('Starting AI agent workflow analysis');
@@ -128,7 +126,7 @@ export const runAIAgentWorkflow = async (
           includeInternetSearch,
           maxExamples: 5
         }
-      }, apiKey);
+      });
       
       result.analysis = analysisResult;
       

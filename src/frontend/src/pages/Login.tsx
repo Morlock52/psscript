@@ -3,7 +3,7 @@ import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 import BrandMark from '../components/BrandMark';
 import { FcGoogle } from 'react-icons/fc';
-import { isHostedAuthConfigurationMissing, isSupabaseAuthEnabled } from '../services/supabase';
+import { isAuthDisabledForCurrentHost, isHostedAuthConfigurationMissing, isSupabaseAuthEnabled } from '../services/supabase';
 
 interface ErrorDetails {
   code: string;
@@ -26,7 +26,7 @@ const Login: React.FC = () => {
   const { login, loginWithGoogle, defaultLogin, error, isLoading } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
-  const disableAuth = import.meta.env.MODE !== 'test' && import.meta.env.VITE_DISABLE_AUTH === 'true';
+  const disableAuth = isAuthDisabledForCurrentHost();
   const hostedAuthMissing = isHostedAuthConfigurationMissing();
   const supabaseAuth = isSupabaseAuthEnabled();
 

@@ -411,22 +411,32 @@ export const scriptService = {
   // Upload a script
   uploadScript: async (scriptData: ScriptData) => {
     try {
-      // In a real implementation, this would upload the script to the server
-      console.log("Mock: Uploading script", scriptData.name);
-      
-      // Simulate network delay
-      await delay(1000 + Math.random() * 1000);
-      
-      return { 
-        id: 'mock-script-' + Date.now(),
-        name: scriptData.name,
+      const apiUrl = getApiUrl();
+      const response = await axios.post(`${apiUrl}/scripts`, {
+        title: scriptData.name,
         content: scriptData.content,
         description: scriptData.description,
         isPublic: scriptData.isPublic,
-        createdAt: new Date().toISOString()
-      };
+      }, {
+        headers: getAuthHeaders(),
+        timeout: 30000,
+      });
+
+      return response.data?.script || response.data;
     } catch (error) {
       console.error('Error uploading script:', error);
+      if (isMockModeEnabled()) {
+        console.log("Mock: Uploading script", scriptData.name);
+        await delay(1000 + Math.random() * 1000);
+        return {
+          id: 'mock-script-' + Date.now(),
+          name: scriptData.name,
+          content: scriptData.content,
+          description: scriptData.description,
+          isPublic: scriptData.isPublic,
+          createdAt: new Date().toISOString()
+        };
+      }
       throw new Error('Failed to upload script');
     }
   }
