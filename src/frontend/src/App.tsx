@@ -1,4 +1,4 @@
-import React, { useState, Suspense } from 'react';
+import React, { Suspense } from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate, useLocation } from 'react-router-dom';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { ToastContainer } from 'react-toastify';
@@ -6,8 +6,6 @@ import 'react-toastify/dist/ReactToastify.css';
 import { useAuth } from './hooks/useAuth';
 import { isAuthDisabledForCurrentHost } from './services/supabase';
 import lazyWithRetry from './utils/lazyWithRetry';
-import Navbar from './components/Navbar';
-import Sidebar from './components/Sidebar';
 import VoiceAssistantDock from './components/VoiceAssistantDock';
 import ProtectedRoute from './components/ProtectedRoute';
 import LoadingScreen from './components/LoadingScreen';
@@ -79,11 +77,17 @@ const AppLayout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const location = useLocation();
   const { user, isLoading } = useAuth();
 
-  // Don't show sidebar/navbar on auth pages
-  const isAuthPage = location.pathname === '/login' || location.pathname === '/register' || location.pathname === '/auth/callback' || location.pathname === '/pending-approval';
+  // Brand-surface routes get BrandShell (Aurora glow + lazy DM Serif Display).
+  const isBrandRoute =
+    location.pathname === '/login' ||
+    location.pathname === '/register' ||
+    location.pathname === '/auth/callback' ||
+    location.pathname === '/pending-approval' ||
+    location.pathname === '/landing' ||
+    location.pathname === '/404';
 
-  if (isAuthPage) {
-    return <>{children}</>;
+  if (isBrandRoute) {
+    return <BrandShell>{children}</BrandShell>;
   }
 
   if (!isLoading && user?.isEnabled === false) {

@@ -126,3 +126,32 @@ describe('typography cascade integration', () => {
     expect(family).not.toContain('Space Grotesk');
   });
 });
+
+/*
+ * Plan 2 deleted the legacy variable shim. This describe locks that in
+ * so a future revival is caught.
+ */
+describe('legacy shim removal (Plan 2)', () => {
+  const shimVars = [
+    '--color-bg-primary',
+    '--color-text-primary',
+    '--color-border-default',
+    '--color-primary',
+    '--color-success',
+    '--color-error',
+    '--shadow-sm',
+    '--shadow-lg',
+    '--gradient-primary',
+    '--glass-bg',
+    '--space-4',
+    '--transition-fast',
+    '--radius-md',
+    '--blur-md',
+  ];
+  shimVars.forEach((name) => {
+    it(`legacy shim variable ${name} is no longer defined`, () => {
+      const declared = getComputedStyle(document.documentElement).getPropertyValue(name).trim();
+      expect(declared).toBe('');
+    });
+  });
+});

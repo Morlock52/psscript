@@ -2,7 +2,6 @@ import React, { useState, useCallback, useRef } from 'react';
 import ReactMarkdown from 'react-markdown';
 import { Prism as SyntaxHighlighter } from 'react-syntax-highlighter';
 import { vscDarkPlus } from 'react-syntax-highlighter/dist/esm/styles/prism';
-import Layout from '../components/Layout';
 import { useChat } from '../hooks/useChat';
 import { chatService } from '../services/api-simple';
 import CodeDiffView from '../components/CodeDiffView';
@@ -243,7 +242,7 @@ Use the toolbar below to quickly lint, improve, test, or execute your scripts!
   const currentScript = getCurrentScript();
 
   return (
-    <Layout>
+    <>
       <div className="flex flex-col h-[calc(100vh-64px)]">
         <header className="bg-gray-800 p-4 shadow-md">
           <div className="container mx-auto flex justify-between items-center">
@@ -511,7 +510,7 @@ Use the toolbar below to quickly lint, improve, test, or execute your scripts!
           </div>
         </div>
       </div>
-    </Layout>
+    </>
   );
 };
 
