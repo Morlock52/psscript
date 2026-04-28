@@ -44,7 +44,7 @@ const PendingApproval: React.FC = () => {
 
   return (
     <div className="flex min-h-screen items-center justify-center bg-[var(--gradient-surface)] px-4">
-      <div className="w-full max-w-lg rounded-3xl border border-[var(--color-border-default)] bg-[var(--color-bg-elevated)]/92 p-8 shadow-[var(--shadow-xl)]">
+      <div className="w-full max-w-lg rounded-3xl border border-[var(--surface-overlay)] bg-[var(--surface-raised)]/92 p-8 shadow-[var(--shadow-far)]">
         <BrandMark size="lg" className="justify-center" />
         <div className="mt-8 text-center">
           <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-2xl border border-amber-400/30 bg-amber-400/10 text-amber-300">
@@ -52,12 +52,12 @@ const PendingApproval: React.FC = () => {
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
             </svg>
           </div>
-          <h1 className="mt-5 text-2xl font-black text-[var(--color-text-primary)]">Account pending approval</h1>
-          <p className="mt-3 text-sm leading-6 text-[var(--color-text-secondary)]">
+          <h1 className="mt-5 text-2xl font-black text-[var(--ink-primary)]">Account pending approval</h1>
+          <p className="mt-3 text-sm leading-6 text-[var(--ink-secondary)]">
             Your Google sign-in created a PSScript account for {user?.email || 'this email'}, but an admin must enable it before you can use the app.
           </p>
           {message && (
-            <p className="mt-4 rounded-xl border border-[var(--color-border-default)] bg-[var(--color-bg-primary)] px-4 py-3 text-sm text-[var(--color-text-secondary)]">
+            <p className="mt-4 rounded-xl border border-[var(--surface-overlay)] bg-[var(--surface-base)] px-4 py-3 text-sm text-[var(--ink-secondary)]">
               {message}
             </p>
           )}
@@ -67,14 +67,14 @@ const PendingApproval: React.FC = () => {
             type="button"
             onClick={handleRetry}
             disabled={checking}
-            className="flex-1 rounded-xl bg-[var(--color-primary)] px-4 py-3 font-bold text-white transition hover:bg-[var(--color-primary-dark)] disabled:cursor-not-allowed disabled:opacity-50"
+            className="flex-1 rounded-xl bg-[var(--accent)] px-4 py-3 font-bold text-white transition hover:bg-[var(--color-primary-dark)] disabled:cursor-not-allowed disabled:opacity-50"
           >
             {checking ? 'Checking...' : 'Check status'}
           </button>
           <button
             type="button"
             onClick={handleSignOut}
-            className="flex-1 rounded-xl border border-[var(--color-border-default)] bg-[var(--color-bg-primary)] px-4 py-3 font-bold text-[var(--color-text-primary)] transition hover:bg-[var(--color-bg-tertiary)]"
+            className="flex-1 rounded-xl border border-[var(--surface-overlay)] bg-[var(--surface-base)] px-4 py-3 font-bold text-[var(--ink-primary)] transition hover:bg-[var(--surface-overlay)]"
           >
             Sign out
           </button>

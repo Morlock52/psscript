@@ -5,11 +5,11 @@ import { useAuth } from '../hooks/useAuth';
 import ReactMarkdown from 'react-markdown';
 
 // Reusable style constants for theme-aware styling
-const sidebarStyles = "rounded-lg shadow-[var(--shadow-md)] p-4 bg-[var(--color-bg-elevated)] border border-[var(--color-border-default)]";
-const searchInputStyles = "w-full p-2 rounded bg-[var(--color-bg-primary)] border border-[var(--color-border-default)] text-[var(--color-text-primary)] focus:ring-2 focus:ring-[var(--color-primary)] focus:outline-none mb-3 placeholder:text-[var(--color-text-tertiary)]";
-const categorySelectStyles = "text-xs px-2 py-1 rounded bg-[var(--color-bg-primary)] border border-[var(--color-border-default)] text-[var(--color-text-primary)] focus:ring-2 focus:ring-[var(--color-primary)] focus:outline-none";
-const detailPanelStyles = "rounded-lg shadow-[var(--shadow-md)] bg-[var(--color-bg-elevated)] border border-[var(--color-border-default)]";
-const headerBorderStyles = "p-4 flex justify-between items-center border-b border-[var(--color-border-default)]";
+const sidebarStyles = "rounded-lg shadow-[var(--shadow-near)] p-4 bg-[var(--surface-raised)] border border-[var(--surface-overlay)]";
+const searchInputStyles = "w-full p-2 rounded bg-[var(--surface-base)] border border-[var(--surface-overlay)] text-[var(--ink-primary)] focus:ring-2 focus:ring-[var(--accent)] focus:outline-none mb-3 placeholder:text-[var(--ink-tertiary)]";
+const categorySelectStyles = "text-xs px-2 py-1 rounded bg-[var(--surface-base)] border border-[var(--surface-overlay)] text-[var(--ink-primary)] focus:ring-2 focus:ring-[var(--accent)] focus:outline-none";
+const detailPanelStyles = "rounded-lg shadow-[var(--shadow-near)] bg-[var(--surface-raised)] border border-[var(--surface-overlay)]";
+const headerBorderStyles = "p-4 flex justify-between items-center border-b border-[var(--surface-overlay)]";
 
 interface ChatSession {
   id: string;
@@ -169,13 +169,13 @@ const ChatHistory: React.FC = () => {
 
   return (
     <>
-      <div className="min-h-screen bg-[var(--color-bg-secondary)] text-[var(--color-text-primary)]">
+      <div className="min-h-screen bg-[var(--surface-raised)] text-[var(--ink-primary)]">
         <div className="container mx-auto py-6 px-4">
           <div className="flex justify-between items-center mb-6">
             <h1 className="text-2xl font-bold">Chat History</h1>
             <button
               onClick={() => navigate('/chat')}
-              className="px-4 py-2 rounded font-medium bg-[var(--color-primary)] hover:bg-[var(--color-primary-dark)] text-white"
+              className="px-4 py-2 rounded font-medium bg-[var(--accent)] hover:bg-[var(--color-primary-dark)] text-white"
             >
               New Chat
             </button>
@@ -201,8 +201,8 @@ const ChatHistory: React.FC = () => {
                       onClick={() => setSelectedCategory(category)}
                       className={`px-3 py-1 text-sm rounded-full transition-colors ${
                         selectedCategory === category
-                          ? 'bg-[var(--color-primary)] text-white'
-                          : 'bg-[var(--color-bg-tertiary)] text-[var(--color-text-secondary)] hover:bg-[var(--color-bg-primary)]'
+                          ? 'bg-[var(--accent)] text-white'
+                          : 'bg-[var(--surface-overlay)] text-[var(--ink-secondary)] hover:bg-[var(--surface-base)]'
                       }`}
                     >
                       {category.charAt(0).toUpperCase() + category.slice(1)}
@@ -217,9 +217,9 @@ const ChatHistory: React.FC = () => {
                   <div className="py-10 text-center">
                     <div className="inline-block">
                       <div className="flex space-x-2">
-                        <div className="w-2 h-2 bg-[var(--color-primary)] rounded-full animate-bounce"></div>
-                        <div className="w-2 h-2 bg-[var(--color-primary)] rounded-full animate-bounce delay-150"></div>
-                        <div className="w-2 h-2 bg-[var(--color-primary)] rounded-full animate-bounce delay-300"></div>
+                        <div className="w-2 h-2 bg-[var(--accent)] rounded-full animate-bounce"></div>
+                        <div className="w-2 h-2 bg-[var(--accent)] rounded-full animate-bounce delay-150"></div>
+                        <div className="w-2 h-2 bg-[var(--accent)] rounded-full animate-bounce delay-300"></div>
                       </div>
                     </div>
                   </div>
@@ -230,25 +230,25 @@ const ChatHistory: React.FC = () => {
                       onClick={() => setSelectedSession(session)}
                       className={`p-3 mb-2 rounded cursor-pointer border transition-colors ${
                         selectedSession?.id === session.id
-                          ? 'bg-[var(--color-primary)]/10 border-[var(--color-primary)]/30'
-                          : 'bg-[var(--color-bg-tertiary)] hover:bg-[var(--color-bg-primary)] border-[var(--color-border-default)]'
+                          ? 'bg-[var(--accent)]/10 border-[var(--accent)]/30'
+                          : 'bg-[var(--surface-overlay)] hover:bg-[var(--surface-base)] border-[var(--surface-overlay)]'
                       }`}
                     >
                       <div className="flex justify-between">
-                        <span className="text-xs text-[var(--color-text-tertiary)]">{session.timestamp}</span>
+                        <span className="text-xs text-[var(--ink-tertiary)]">{session.timestamp}</span>
                         {session.category && (
-                          <span className="text-xs px-2 py-0.5 rounded-full bg-[var(--color-primary)]/10 text-[var(--color-primary)]">
+                          <span className="text-xs px-2 py-0.5 rounded-full bg-[var(--accent)]/10 text-[var(--accent)]">
                             {session.category}
                           </span>
                         )}
                       </div>
-                      <div className="mt-1 text-sm truncate text-[var(--color-text-secondary)]">
+                      <div className="mt-1 text-sm truncate text-[var(--ink-secondary)]">
                         {session.messages[0]?.content.substring(0, 100) || 'No content'}...
                       </div>
                     </div>
                   ))
                 ) : (
-                  <div className="py-10 text-center text-[var(--color-text-tertiary)]">
+                  <div className="py-10 text-center text-[var(--ink-tertiary)]">
                     No chat sessions found
                   </div>
                 )}
@@ -262,7 +262,7 @@ const ChatHistory: React.FC = () => {
                   {/* Session header */}
                   <div className={headerBorderStyles}>
                     <div>
-                      <span className="text-sm text-[var(--color-text-tertiary)]">Session: {selectedSession.timestamp}</span>
+                      <span className="text-sm text-[var(--ink-tertiary)]">Session: {selectedSession.timestamp}</span>
                       <div className="flex gap-2 mt-2">
                         <select
                           value={selectedSession.category || ''}
@@ -302,8 +302,8 @@ const ChatHistory: React.FC = () => {
                         <div
                           className={`p-3 rounded-lg ${
                             msg.role === 'user'
-                              ? 'bg-[var(--color-primary)] text-white'
-                              : 'bg-[var(--color-bg-tertiary)] border border-[var(--color-border-default)] text-[var(--color-text-primary)]'
+                              ? 'bg-[var(--accent)] text-white'
+                              : 'bg-[var(--surface-overlay)] border border-[var(--surface-overlay)] text-[var(--ink-primary)]'
                           }`}
                         >
                           <ReactMarkdown className="prose prose-sm max-w-none dark:prose-invert">
@@ -315,7 +315,7 @@ const ChatHistory: React.FC = () => {
                   </div>
                 </div>
               ) : (
-                <div className="h-full flex items-center justify-center p-10 text-center text-[var(--color-text-tertiary)]">
+                <div className="h-full flex items-center justify-center p-10 text-center text-[var(--ink-tertiary)]">
                   <div>
                     <svg
                       xmlns="http://www.w3.org/2000/svg"
@@ -331,7 +331,7 @@ const ChatHistory: React.FC = () => {
                         d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z"
                       />
                     </svg>
-                    <h3 className="text-lg font-medium mb-2 text-[var(--color-text-secondary)]">No Chat Session Selected</h3>
+                    <h3 className="text-lg font-medium mb-2 text-[var(--ink-secondary)]">No Chat Session Selected</h3>
                     <p>Select a chat session from the list to view its contents</p>
                   </div>
                 </div>

@@ -46,32 +46,32 @@ const ChatMessage: React.FC<ChatMessageProps> = ({ message, onSaveScript }) => {
     const isPs = !language || language === 'powershell';
 
     return (
-      <div className="relative rounded-md overflow-hidden bg-[var(--color-bg-tertiary)]">
-        <div className="flex justify-between items-center px-4 py-2 text-xs border-b border-[var(--color-border-default)] bg-[var(--color-bg-primary)]">
-          <span className="text-[var(--color-text-secondary)]">{isPs ? 'PowerShell' : language}</span>
+      <div className="relative rounded-md overflow-hidden bg-[var(--surface-overlay)]">
+        <div className="flex justify-between items-center px-4 py-2 text-xs border-b border-[var(--surface-overlay)] bg-[var(--surface-base)]">
+          <span className="text-[var(--ink-secondary)]">{isPs ? 'PowerShell' : language}</span>
           <div className="flex space-x-2">
             {showCopySuccess && (
-              <span className="text-xs text-[var(--color-text-tertiary)]">
+              <span className="text-xs text-[var(--ink-tertiary)]">
                 Copied!
               </span>
             )}
             <button
               onClick={() => copyCodeToClipboard(children)}
-              className="px-2 py-1 rounded text-xs bg-[var(--color-bg-tertiary)] hover:bg-[var(--color-bg-tertiary)]/80 text-[var(--color-text-secondary)] transition-colors"
+              className="px-2 py-1 rounded text-xs bg-[var(--surface-overlay)] hover:bg-[var(--surface-overlay)]/80 text-[var(--ink-secondary)] transition-colors"
             >
               Copy
             </button>
             {onSaveScript && isPs && (
               <button
                 onClick={onSaveScript}
-                className="px-2 py-1 rounded text-xs border border-[var(--color-border-default)] bg-[var(--color-bg-tertiary)]/60 hover:bg-[var(--color-bg-tertiary)] text-[var(--color-text-secondary)] transition-colors"
+                className="px-2 py-1 rounded text-xs border border-[var(--surface-overlay)] bg-[var(--surface-overlay)]/60 hover:bg-[var(--surface-overlay)] text-[var(--ink-secondary)] transition-colors"
               >
                 Save as Script
               </button>
             )}
           </div>
         </div>
-        <pre className={`p-4 overflow-x-auto text-[var(--color-text-primary)] ${className}`} {...rest}>
+        <pre className={`p-4 overflow-x-auto text-[var(--ink-primary)] ${className}`} {...rest}>
           {children}
         </pre>
       </div>
@@ -84,7 +84,7 @@ const ChatMessage: React.FC<ChatMessageProps> = ({ message, onSaveScript }) => {
       if (inline) {
         return (
           <code
-            className="bg-[var(--color-bg-tertiary)] text-[var(--color-text-primary)] px-1 py-0.5 rounded text-sm font-mono"
+            className="bg-[var(--surface-overlay)] text-[var(--ink-primary)] px-1 py-0.5 rounded text-sm font-mono"
             {...props}
           >
             {children}
@@ -134,7 +134,7 @@ const ChatMessage: React.FC<ChatMessageProps> = ({ message, onSaveScript }) => {
     blockquote({ children }: any) {
       return (
         <blockquote
-          className="border-l-4 border-[var(--color-border-default)] bg-[var(--color-bg-tertiary)] pl-4 py-2 mb-4 italic"
+          className="border-l-4 border-[var(--surface-overlay)] bg-[var(--surface-overlay)] pl-4 py-2 mb-4 italic"
         >
           {children}
         </blockquote>
@@ -143,7 +143,7 @@ const ChatMessage: React.FC<ChatMessageProps> = ({ message, onSaveScript }) => {
     table({ children }: any) {
       return (
         <div className="overflow-x-auto mb-4">
-          <table className="min-w-full border border-[var(--color-border-default)]">
+          <table className="min-w-full border border-[var(--surface-overlay)]">
             {children}
           </table>
         </div>
@@ -151,7 +151,7 @@ const ChatMessage: React.FC<ChatMessageProps> = ({ message, onSaveScript }) => {
     },
     thead({ children }: any) {
       return (
-        <thead className="bg-[var(--color-bg-tertiary)]">
+        <thead className="bg-[var(--surface-overlay)]">
           {children}
         </thead>
       );
@@ -161,28 +161,28 @@ const ChatMessage: React.FC<ChatMessageProps> = ({ message, onSaveScript }) => {
     },
     tr({ children }: any) {
       return (
-        <tr className="border-t border-[var(--color-border-default)]">
+        <tr className="border-t border-[var(--surface-overlay)]">
           {children}
         </tr>
       );
     },
     th({ children }: any) {
       return (
-        <th className="border border-[var(--color-border-default)] px-4 py-2 text-left font-semibold">
+        <th className="border border-[var(--surface-overlay)] px-4 py-2 text-left font-semibold">
           {children}
         </th>
       );
     },
     td({ children }: any) {
       return (
-        <td className="border border-[var(--color-border-default)] px-4 py-2">
+        <td className="border border-[var(--surface-overlay)] px-4 py-2">
           {children}
         </td>
       );
     },
     hr() {
       return (
-        <hr className="my-4 border-[var(--color-border-default)]" />
+        <hr className="my-4 border-[var(--surface-overlay)]" />
       );
     }
   };
@@ -192,8 +192,8 @@ const ChatMessage: React.FC<ChatMessageProps> = ({ message, onSaveScript }) => {
       <div
         className={`max-w-3xl rounded-lg p-3 ${
           message.role === 'user'
-            ? 'bg-[var(--color-bg-tertiary)]/70 text-[var(--color-text-primary)] border border-[var(--color-border-strong)]'
-            : 'bg-[var(--color-bg-elevated)]/85 text-[var(--color-text-primary)] border border-[var(--color-border-default)]'
+            ? 'bg-[var(--surface-overlay)]/70 text-[var(--ink-primary)] border border-[var(--ink-muted)]'
+            : 'bg-[var(--surface-raised)]/85 text-[var(--ink-primary)] border border-[var(--surface-overlay)]'
         }`}
       >
         {message.role === 'user' ? (
@@ -208,7 +208,7 @@ const ChatMessage: React.FC<ChatMessageProps> = ({ message, onSaveScript }) => {
               <div className="mt-4 flex justify-end">
                 <button
                   onClick={onSaveScript}
-                  className="px-3 py-1 rounded text-sm border border-[var(--color-border-default)] bg-[var(--color-bg-tertiary)]/60 hover:bg-[var(--color-bg-tertiary)] text-[var(--color-text-secondary)] transition-colors"
+                  className="px-3 py-1 rounded text-sm border border-[var(--surface-overlay)] bg-[var(--surface-overlay)]/60 hover:bg-[var(--surface-overlay)] text-[var(--ink-secondary)] transition-colors"
                 >
                   Save as Script
                 </button>
@@ -220,8 +220,8 @@ const ChatMessage: React.FC<ChatMessageProps> = ({ message, onSaveScript }) => {
         {message.timestamp && (
           <div className={`text-xs mt-2 text-right ${
             message.role === 'user'
-              ? 'text-[var(--color-text-tertiary)]'
-              : 'text-[var(--color-text-tertiary)]'
+              ? 'text-[var(--ink-tertiary)]'
+              : 'text-[var(--ink-tertiary)]'
           }`}>
             {new Date(message.timestamp).toLocaleTimeString()}
           </div>

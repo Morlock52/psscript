@@ -5,10 +5,10 @@ import api from '../../services/api';
 import { getErrorMessage } from '../../utils/errorUtils';
 
 // Reusable style constants matching Dashboard.tsx patterns (2026 design)
-const cardStyles = "p-6 rounded-xl shadow-[var(--shadow-md)] bg-[var(--color-bg-elevated)] border border-[var(--color-border-default)] transition-colors duration-300";
-const inputStyles = "w-full px-3 py-2 rounded-md bg-[var(--color-bg-primary)] border border-[var(--color-border-default)] text-[var(--color-text-primary)] placeholder-[var(--color-text-tertiary)] focus:outline-none focus:ring-2 focus:ring-[var(--color-primary)]";
-const selectStyles = "px-3 py-2 rounded-md bg-[var(--color-bg-primary)] border border-[var(--color-border-default)] text-[var(--color-text-primary)] focus:outline-none focus:ring-2 focus:ring-[var(--color-primary)]";
-const labelStyles = "block text-sm mb-2 text-[var(--color-text-secondary)]";
+const cardStyles = "p-6 rounded-xl shadow-[var(--shadow-near)] bg-[var(--surface-raised)] border border-[var(--surface-overlay)] transition-colors duration-300";
+const inputStyles = "w-full px-3 py-2 rounded-md bg-[var(--surface-base)] border border-[var(--surface-overlay)] text-[var(--ink-primary)] placeholder-[var(--ink-tertiary)] focus:outline-none focus:ring-2 focus:ring-[var(--accent)]";
+const selectStyles = "px-3 py-2 rounded-md bg-[var(--surface-base)] border border-[var(--surface-overlay)] text-[var(--ink-primary)] focus:outline-none focus:ring-2 focus:ring-[var(--accent)]";
+const labelStyles = "block text-sm mb-2 text-[var(--ink-secondary)]";
 
 interface User {
   id: string;
@@ -271,7 +271,7 @@ const UserManagement: React.FC = () => {
       <div className="mb-6">
         <Link
           to="/settings"
-          className="inline-flex items-center gap-2 text-[var(--color-text-secondary)] hover:text-[var(--color-primary)] transition mb-4"
+          className="inline-flex items-center gap-2 text-[var(--ink-secondary)] hover:text-[var(--accent)] transition mb-4"
         >
           <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 19l-7-7m0 0l7-7m-7 7h18" />
@@ -287,18 +287,18 @@ const UserManagement: React.FC = () => {
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
                 </svg>
               </div>
-              <span className="bg-gradient-to-r from-[var(--color-primary)] to-[var(--color-accent)] bg-clip-text text-transparent">
+              <span className="bg-gradient-to-r from-[var(--accent)] to-[var(--accent)] bg-clip-text text-transparent">
                 User Management
               </span>
             </h1>
-            <p className="text-[var(--color-text-secondary)] mt-1">
+            <p className="text-[var(--ink-secondary)] mt-1">
               Manage user accounts, roles, and permissions
             </p>
           </div>
 
           <button
             onClick={openCreateModal}
-            className="px-4 py-2 bg-[var(--color-primary)] text-white rounded-md font-medium hover:bg-[var(--color-primary-dark)] transition flex items-center gap-2"
+            className="px-4 py-2 bg-[var(--accent)] text-white rounded-md font-medium hover:bg-[var(--color-primary-dark)] transition flex items-center gap-2"
           >
             <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M18 9v3m0 0v3m0-3h3m-3 0h-3m-2-5a4 4 0 11-8 0 4 4 0 018 0zM3 20a6 6 0 0112 0v1H3v-1z" />
@@ -318,8 +318,8 @@ const UserManagement: React.FC = () => {
               </svg>
             </div>
             <div>
-              <p className="text-2xl font-bold text-[var(--color-text-primary)]">{users.length}</p>
-              <p className="text-sm text-[var(--color-text-secondary)]">Total Users</p>
+              <p className="text-2xl font-bold text-[var(--ink-primary)]">{users.length}</p>
+              <p className="text-sm text-[var(--ink-secondary)]">Total Users</p>
             </div>
           </div>
         </div>
@@ -332,8 +332,8 @@ const UserManagement: React.FC = () => {
               </svg>
             </div>
             <div>
-              <p className="text-2xl font-bold text-[var(--color-text-primary)]">{adminCount}</p>
-              <p className="text-sm text-[var(--color-text-secondary)]">Administrators</p>
+              <p className="text-2xl font-bold text-[var(--ink-primary)]">{adminCount}</p>
+              <p className="text-sm text-[var(--ink-secondary)]">Administrators</p>
             </div>
           </div>
         </div>
@@ -346,8 +346,8 @@ const UserManagement: React.FC = () => {
               </svg>
             </div>
             <div>
-              <p className="text-2xl font-bold text-[var(--color-text-primary)]">{recentLogins}</p>
-              <p className="text-sm text-[var(--color-text-secondary)]">Active Today</p>
+              <p className="text-2xl font-bold text-[var(--ink-primary)]">{recentLogins}</p>
+              <p className="text-sm text-[var(--ink-secondary)]">Active Today</p>
             </div>
           </div>
         </div>
@@ -360,8 +360,8 @@ const UserManagement: React.FC = () => {
               </svg>
             </div>
             <div>
-              <p className="text-2xl font-bold text-[var(--color-text-primary)]">{pendingCount}</p>
-              <p className="text-sm text-[var(--color-text-secondary)]">Pending Approval</p>
+              <p className="text-2xl font-bold text-[var(--ink-primary)]">{pendingCount}</p>
+              <p className="text-sm text-[var(--ink-secondary)]">Pending Approval</p>
             </div>
           </div>
         </div>
@@ -372,7 +372,7 @@ const UserManagement: React.FC = () => {
         <div className="flex flex-wrap gap-4">
           <div className="flex-1 min-w-[250px]">
             <div className="relative">
-              <svg className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-[var(--color-text-tertiary)]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <svg className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-[var(--ink-tertiary)]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
               </svg>
               <input
@@ -391,8 +391,8 @@ const UserManagement: React.FC = () => {
                 onClick={() => setRoleFilter(role)}
                 className={`px-4 py-2 rounded-md font-medium transition ${
                   roleFilter === role
-                    ? 'bg-[var(--color-primary)] text-white'
-                    : 'bg-[var(--color-bg-tertiary)] text-[var(--color-text-secondary)] hover:bg-[var(--color-bg-primary)]'
+                    ? 'bg-[var(--accent)] text-white'
+                    : 'bg-[var(--surface-overlay)] text-[var(--ink-secondary)] hover:bg-[var(--surface-base)]'
                 }`}
               >
                 {role === 'all' ? 'All Roles' : role.charAt(0).toUpperCase() + role.slice(1) + 's'}
@@ -400,7 +400,7 @@ const UserManagement: React.FC = () => {
             ))}
             <button
               onClick={fetchUsers}
-              className="px-4 py-2 bg-[var(--color-bg-tertiary)] text-[var(--color-text-secondary)] rounded-md hover:bg-[var(--color-bg-primary)] transition flex items-center gap-2"
+              className="px-4 py-2 bg-[var(--surface-overlay)] text-[var(--ink-secondary)] rounded-md hover:bg-[var(--surface-base)] transition flex items-center gap-2"
             >
               <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
@@ -439,16 +439,16 @@ const UserManagement: React.FC = () => {
       <div className={cardStyles}>
         {loading ? (
           <div className="flex flex-col items-center justify-center py-20">
-            <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-[var(--color-primary)] mb-4"></div>
-            <p className="text-[var(--color-text-secondary)]">Loading users...</p>
+            <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-[var(--accent)] mb-4"></div>
+            <p className="text-[var(--ink-secondary)]">Loading users...</p>
           </div>
         ) : filteredUsers.length === 0 ? (
           <div className="text-center py-20">
-            <svg className="mx-auto h-16 w-16 text-[var(--color-text-tertiary)] mb-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <svg className="mx-auto h-16 w-16 text-[var(--ink-tertiary)] mb-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
             </svg>
-            <h3 className="text-xl font-medium text-[var(--color-text-secondary)]">No users found</h3>
-            <p className="mt-2 text-[var(--color-text-tertiary)]">
+            <h3 className="text-xl font-medium text-[var(--ink-secondary)]">No users found</h3>
+            <p className="mt-2 text-[var(--ink-tertiary)]">
               {searchQuery || roleFilter !== 'all'
                 ? 'Try adjusting your search or filter'
                 : 'Get started by adding your first user'}
@@ -456,7 +456,7 @@ const UserManagement: React.FC = () => {
             {!searchQuery && roleFilter === 'all' && (
               <button
                 onClick={openCreateModal}
-                className="mt-4 px-6 py-2 bg-[var(--color-primary)] text-white rounded-md hover:bg-[var(--color-primary-dark)] transition inline-flex items-center gap-2"
+                className="mt-4 px-6 py-2 bg-[var(--accent)] text-white rounded-md hover:bg-[var(--color-primary-dark)] transition inline-flex items-center gap-2"
               >
                 <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
@@ -466,11 +466,11 @@ const UserManagement: React.FC = () => {
             )}
           </div>
         ) : (
-          <div className="divide-y divide-[var(--color-border-default)]">
+          <div className="divide-y divide-[var(--surface-overlay)]">
             {filteredUsers.map((user) => (
               <div
                 key={user.id}
-                className="py-4 first:pt-0 last:pb-0 hover:bg-[var(--color-bg-primary)] -mx-6 px-6 transition group"
+                className="py-4 first:pt-0 last:pb-0 hover:bg-[var(--surface-base)] -mx-6 px-6 transition group"
               >
                 <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
                   <div className="flex min-w-0 items-center gap-4">
@@ -486,7 +486,7 @@ const UserManagement: React.FC = () => {
                     {/* User Info */}
                     <div className="min-w-0">
                       <div className="flex flex-wrap items-center gap-2">
-                        <h3 className="text-lg font-semibold text-[var(--color-text-primary)]">
+                        <h3 className="text-lg font-semibold text-[var(--ink-primary)]">
                           {user.username}
                         </h3>
                         {String(currentUser?.id) === String(user.id) && (
@@ -505,11 +505,11 @@ const UserManagement: React.FC = () => {
                         <span className={`px-2.5 py-0.5 text-xs font-semibold rounded-full ${getStatusBadgeStyles(user.isEnabled !== false)}`}>
                           {user.isEnabled === false ? 'Pending' : 'Enabled'}
                         </span>
-                        <span className="px-2.5 py-0.5 text-xs font-semibold rounded-full border border-[var(--color-border-default)] bg-[var(--color-bg-primary)] text-[var(--color-text-secondary)]">
+                        <span className="px-2.5 py-0.5 text-xs font-semibold rounded-full border border-[var(--surface-overlay)] bg-[var(--surface-base)] text-[var(--ink-secondary)]">
                           {formatProvider(user.authProvider)}
                         </span>
                       </div>
-                      <p className="text-[var(--color-text-secondary)] text-sm flex items-center gap-1 mt-0.5 break-all">
+                      <p className="text-[var(--ink-secondary)] text-sm flex items-center gap-1 mt-0.5 break-all">
                         <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
                         </svg>
@@ -520,34 +520,34 @@ const UserManagement: React.FC = () => {
 
                   {/* Meta & Actions */}
                   <div className="flex flex-wrap items-center gap-4 lg:gap-6">
-                    <label className="hidden sm:flex items-center gap-2 text-sm text-[var(--color-text-secondary)]">
+                    <label className="hidden sm:flex items-center gap-2 text-sm text-[var(--ink-secondary)]">
                       <input
                         type="checkbox"
                         checked={user.isEnabled !== false}
                         disabled={String(currentUser?.id) === String(user.id)}
                         onChange={(event) => handleToggleUserEnabled(user, event.target.checked)}
-                        className="h-4 w-4 rounded border-[var(--color-border-default)] bg-[var(--color-bg-primary)] text-[var(--color-primary)] focus:ring-[var(--color-primary)] disabled:cursor-not-allowed disabled:opacity-50"
+                        className="h-4 w-4 rounded border-[var(--surface-overlay)] bg-[var(--surface-base)] text-[var(--accent)] focus:ring-[var(--accent)] disabled:cursor-not-allowed disabled:opacity-50"
                       />
                       Enabled
                     </label>
 
                     {/* Last Login */}
                     <div className="text-right hidden sm:block">
-                      <p className="text-xs text-[var(--color-text-tertiary)] uppercase tracking-wide">Last Login</p>
-                      <p className="text-sm text-[var(--color-text-secondary)]">{getTimeSince(user.lastLoginAt)}</p>
+                      <p className="text-xs text-[var(--ink-tertiary)] uppercase tracking-wide">Last Login</p>
+                      <p className="text-sm text-[var(--ink-secondary)]">{getTimeSince(user.lastLoginAt)}</p>
                     </div>
 
                     {/* Created */}
                     <div className="text-right hidden md:block">
-                      <p className="text-xs text-[var(--color-text-tertiary)] uppercase tracking-wide">Created</p>
-                      <p className="text-sm text-[var(--color-text-secondary)]">{formatDate(user.createdAt)}</p>
+                      <p className="text-xs text-[var(--ink-tertiary)] uppercase tracking-wide">Created</p>
+                      <p className="text-sm text-[var(--ink-secondary)]">{formatDate(user.createdAt)}</p>
                     </div>
 
                     {/* Actions */}
                     <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition">
                       <button
                         onClick={() => openEditModal(user)}
-                        className="p-2 text-[var(--color-text-tertiary)] hover:text-blue-400 hover:bg-blue-500/10 rounded-xl transition-all"
+                        className="p-2 text-[var(--ink-tertiary)] hover:text-blue-400 hover:bg-blue-500/10 rounded-xl transition-all"
                         title="Edit user"
                       >
                         <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -557,7 +557,7 @@ const UserManagement: React.FC = () => {
 
                       <button
                         onClick={() => openResetPasswordModal(user)}
-                        className="p-2 text-[var(--color-text-tertiary)] hover:text-yellow-400 hover:bg-yellow-500/10 rounded-xl transition-all"
+                        className="p-2 text-[var(--ink-tertiary)] hover:text-yellow-400 hover:bg-yellow-500/10 rounded-xl transition-all"
                         title="Reset password"
                       >
                         <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -568,7 +568,7 @@ const UserManagement: React.FC = () => {
                       {String(currentUser?.id) !== String(user.id) && (
                         <button
                           onClick={() => openDeleteModal(user)}
-                          className="p-2 text-[var(--color-text-tertiary)] hover:text-red-400 hover:bg-red-500/10 rounded-xl transition-all"
+                          className="p-2 text-[var(--ink-tertiary)] hover:text-red-400 hover:bg-red-500/10 rounded-xl transition-all"
                           title="Delete user"
                         >
                           <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -589,14 +589,14 @@ const UserManagement: React.FC = () => {
       {showCreateModal && (
         <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 p-4" onClick={() => setShowCreateModal(false)}>
           <div className={`${cardStyles} max-w-md w-full`} onClick={e => e.stopPropagation()}>
-            <h2 className="text-xl font-bold text-[var(--color-text-primary)] flex items-center gap-2 mb-4">
+            <h2 className="text-xl font-bold text-[var(--ink-primary)] flex items-center gap-2 mb-4">
               <svg className="w-6 h-6 text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M18 9v3m0 0v3m0-3h3m-3 0h-3m-2-5a4 4 0 11-8 0 4 4 0 018 0zM3 20a6 6 0 0112 0v1H3v-1z" />
               </svg>
               Add New User
             </h2>
 
-            <p className="text-[var(--color-text-secondary)] text-sm mb-4">
+            <p className="text-[var(--ink-secondary)] text-sm mb-4">
               Create a new user account with login credentials.
             </p>
 
@@ -653,16 +653,16 @@ const UserManagement: React.FC = () => {
               </div>
             </div>
 
-            <div className="flex justify-end gap-3 mt-6 pt-4 border-t border-[var(--color-border-default)]">
+            <div className="flex justify-end gap-3 mt-6 pt-4 border-t border-[var(--surface-overlay)]">
               <button
                 onClick={() => setShowCreateModal(false)}
-                className="px-4 py-2 text-[var(--color-text-secondary)] hover:text-[var(--color-text-primary)] transition"
+                className="px-4 py-2 text-[var(--ink-secondary)] hover:text-[var(--ink-primary)] transition"
               >
                 Cancel
               </button>
               <button
                 onClick={handleCreateUser}
-                className="px-5 py-2 bg-[var(--color-primary)] text-white rounded-md font-medium hover:bg-[var(--color-primary-dark)] transition"
+                className="px-5 py-2 bg-[var(--accent)] text-white rounded-md font-medium hover:bg-[var(--color-primary-dark)] transition"
               >
                 Create User
               </button>
@@ -675,14 +675,14 @@ const UserManagement: React.FC = () => {
       {showEditModal && selectedUser && (
         <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 p-4" onClick={() => setShowEditModal(false)}>
           <div className={`${cardStyles} max-w-md w-full`} onClick={e => e.stopPropagation()}>
-            <h2 className="text-xl font-bold text-[var(--color-text-primary)] flex items-center gap-2 mb-4">
+            <h2 className="text-xl font-bold text-[var(--ink-primary)] flex items-center gap-2 mb-4">
               <svg className="w-6 h-6 text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
               </svg>
               Edit User
             </h2>
 
-            <p className="text-[var(--color-text-secondary)] text-sm mb-4">
+            <p className="text-[var(--ink-secondary)] text-sm mb-4">
               Update user information. Leave password empty to keep current.
             </p>
 
@@ -740,31 +740,31 @@ const UserManagement: React.FC = () => {
                 )}
               </div>
 
-              <label className="flex items-center justify-between gap-4 rounded-xl border border-[var(--color-border-default)] bg-[var(--color-bg-primary)] px-4 py-3">
+              <label className="flex items-center justify-between gap-4 rounded-xl border border-[var(--surface-overlay)] bg-[var(--surface-base)] px-4 py-3">
                 <span>
-                  <span className="block text-sm font-medium text-[var(--color-text-primary)]">Enabled</span>
-                  <span className="block text-xs text-[var(--color-text-tertiary)]">Disabled users can sign in only to see pending approval.</span>
+                  <span className="block text-sm font-medium text-[var(--ink-primary)]">Enabled</span>
+                  <span className="block text-xs text-[var(--ink-tertiary)]">Disabled users can sign in only to see pending approval.</span>
                 </span>
                 <input
                   type="checkbox"
                   checked={formData.isEnabled}
                   disabled={String(currentUser?.id) === String(selectedUser.id)}
                   onChange={(e) => setFormData({...formData, isEnabled: e.target.checked})}
-                  className="h-5 w-5 rounded border-[var(--color-border-default)] bg-[var(--color-bg-primary)] text-[var(--color-primary)] focus:ring-[var(--color-primary)] disabled:cursor-not-allowed disabled:opacity-50"
+                  className="h-5 w-5 rounded border-[var(--surface-overlay)] bg-[var(--surface-base)] text-[var(--accent)] focus:ring-[var(--accent)] disabled:cursor-not-allowed disabled:opacity-50"
                 />
               </label>
             </div>
 
-            <div className="flex justify-end gap-3 mt-6 pt-4 border-t border-[var(--color-border-default)]">
+            <div className="flex justify-end gap-3 mt-6 pt-4 border-t border-[var(--surface-overlay)]">
               <button
                 onClick={() => setShowEditModal(false)}
-                className="px-4 py-2 text-[var(--color-text-secondary)] hover:text-[var(--color-text-primary)] transition"
+                className="px-4 py-2 text-[var(--ink-secondary)] hover:text-[var(--ink-primary)] transition"
               >
                 Cancel
               </button>
               <button
                 onClick={handleUpdateUser}
-                className="px-5 py-2 bg-[var(--color-primary)] text-white rounded-md font-medium hover:bg-[var(--color-primary-dark)] transition"
+                className="px-5 py-2 bg-[var(--accent)] text-white rounded-md font-medium hover:bg-[var(--color-primary-dark)] transition"
               >
                 Save Changes
               </button>
@@ -777,7 +777,7 @@ const UserManagement: React.FC = () => {
       {showDeleteModal && selectedUser && (
         <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 p-4" onClick={() => setShowDeleteModal(false)}>
           <div className={`${cardStyles} max-w-md w-full`} onClick={e => e.stopPropagation()}>
-            <h2 className="text-xl font-bold text-[var(--color-text-primary)] flex items-center gap-2 mb-4">
+            <h2 className="text-xl font-bold text-[var(--ink-primary)] flex items-center gap-2 mb-4">
               <svg className="w-6 h-6 text-red-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
               </svg>
@@ -789,19 +789,19 @@ const UserManagement: React.FC = () => {
                 {selectedUser.username.charAt(0).toUpperCase()}
               </div>
               <div>
-                <p className="text-[var(--color-text-primary)] font-semibold">{selectedUser.username}</p>
-                <p className="text-[var(--color-text-secondary)] text-sm">{selectedUser.email}</p>
+                <p className="text-[var(--ink-primary)] font-semibold">{selectedUser.username}</p>
+                <p className="text-[var(--ink-secondary)] text-sm">{selectedUser.email}</p>
               </div>
             </div>
 
-            <p className="text-[var(--color-text-secondary)]">
+            <p className="text-[var(--ink-secondary)]">
               Are you sure you want to delete this user? This action cannot be undone.
             </p>
 
-            <div className="flex justify-end gap-3 mt-6 pt-4 border-t border-[var(--color-border-default)]">
+            <div className="flex justify-end gap-3 mt-6 pt-4 border-t border-[var(--surface-overlay)]">
               <button
                 onClick={() => setShowDeleteModal(false)}
-                className="px-4 py-2 text-[var(--color-text-secondary)] hover:text-[var(--color-text-primary)] transition"
+                className="px-4 py-2 text-[var(--ink-secondary)] hover:text-[var(--ink-primary)] transition"
               >
                 Cancel
               </button>
@@ -820,15 +820,15 @@ const UserManagement: React.FC = () => {
       {showResetPasswordModal && selectedUser && (
         <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 p-4" onClick={() => setShowResetPasswordModal(false)}>
           <div className={`${cardStyles} max-w-md w-full`} onClick={e => e.stopPropagation()}>
-            <h2 className="text-xl font-bold text-[var(--color-text-primary)] flex items-center gap-2 mb-4">
+            <h2 className="text-xl font-bold text-[var(--ink-primary)] flex items-center gap-2 mb-4">
               <svg className="w-6 h-6 text-yellow-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 7a2 2 0 012 2m4 0a6 6 0 01-7.743 5.743L11 17H9v2H7v2H4a1 1 0 01-1-1v-2.586a1 1 0 01.293-.707l5.964-5.964A6 6 0 1121 9z" />
               </svg>
               Reset Password
             </h2>
 
-            <p className="text-[var(--color-text-secondary)] text-sm mb-4">
-              Set a new password for <span className="text-[var(--color-text-primary)] font-medium">{selectedUser.username}</span>.
+            <p className="text-[var(--ink-secondary)] text-sm mb-4">
+              Set a new password for <span className="text-[var(--ink-primary)] font-medium">{selectedUser.username}</span>.
             </p>
 
             {formError && (
@@ -849,10 +849,10 @@ const UserManagement: React.FC = () => {
               />
             </div>
 
-            <div className="flex justify-end gap-3 mt-6 pt-4 border-t border-[var(--color-border-default)]">
+            <div className="flex justify-end gap-3 mt-6 pt-4 border-t border-[var(--surface-overlay)]">
               <button
                 onClick={() => setShowResetPasswordModal(false)}
-                className="px-4 py-2 text-[var(--color-text-secondary)] hover:text-[var(--color-text-primary)] transition"
+                className="px-4 py-2 text-[var(--ink-secondary)] hover:text-[var(--ink-primary)] transition"
               >
                 Cancel
               </button>

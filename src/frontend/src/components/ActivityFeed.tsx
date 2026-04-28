@@ -73,7 +73,7 @@ const ActivityFeed: React.FC<ActivityFeedProps> = ({ activities }) => {
         );
       default:
         return (
-          <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 text-[var(--color-text-tertiary)]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 text-[var(--ink-tertiary)]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
           </svg>
         );
@@ -103,35 +103,35 @@ const ActivityFeed: React.FC<ActivityFeedProps> = ({ activities }) => {
   return (
     <div className={`space-y-4 ${activities.length === 0 ? 'flex justify-center items-center h-40' : ''}`}>
       {activities.length === 0 ? (
-        <p className="text-sm text-[var(--color-text-tertiary)]">
+        <p className="text-sm text-[var(--ink-tertiary)]">
           No recent activity
         </p>
       ) : (
         activities.map((activity) => (
           <div
             key={activity.id}
-            className="flex items-start space-x-3 p-3 rounded-lg bg-[var(--color-bg-tertiary)] hover:bg-[var(--color-bg-tertiary)]/80 transition-colors duration-150"
+            className="flex items-start space-x-3 p-3 rounded-lg bg-[var(--surface-overlay)] hover:bg-[var(--surface-overlay)]/80 transition-colors duration-150"
           >
-            <div className="p-2 rounded-full bg-[var(--color-bg-elevated)]">
+            <div className="p-2 rounded-full bg-[var(--surface-raised)]">
               {getActivityIcon(activity.type)}
             </div>
 
             <div className="flex-1 min-w-0">
               <div className="flex justify-between items-start">
-                <p className="font-medium text-[var(--color-text-primary)] truncate">
+                <p className="font-medium text-[var(--ink-primary)] truncate">
                   {activity.username}
                 </p>
-                <span className="text-xs text-[var(--color-text-tertiary)]">
+                <span className="text-xs text-[var(--ink-tertiary)]">
                   {formatRelativeTime(activity.timestamp)}
                 </span>
               </div>
 
-              <p className="text-sm text-[var(--color-text-secondary)]">
+              <p className="text-sm text-[var(--ink-secondary)]">
                 {getActivityDescription(activity)}
               </p>
 
               {activity.details && activity.details.message && (
-                <p className="text-xs mt-1 text-[var(--color-text-tertiary)]">
+                <p className="text-xs mt-1 text-[var(--ink-tertiary)]">
                   {activity.details.message}
                 </p>
               )}

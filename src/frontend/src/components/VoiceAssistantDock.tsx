@@ -333,19 +333,19 @@ const VoiceAssistantDock: React.FC = () => {
     <div className="fixed bottom-4 right-4 z-50">
       <div className="flex flex-col items-end gap-3">
         {isOpen && (
-          <div className="w-[22rem] rounded-3xl border border-[var(--color-border-default)] bg-[var(--color-bg-elevated)]/95 p-4 shadow-[var(--shadow-xl)] backdrop-blur-xl">
+          <div className="w-[22rem] rounded-3xl border border-[var(--surface-overlay)] bg-[var(--surface-raised)]/95 p-4 shadow-[var(--shadow-far)] backdrop-blur-xl">
             <div className="mb-3 flex items-start justify-between gap-3">
               <div>
-                <p className="text-[0.65rem] font-bold uppercase tracking-[0.2em] text-[var(--color-text-tertiary)]">OpenAI Audio</p>
-                <h3 className="text-sm font-bold text-[var(--color-text-primary)]">Voice Copilot</h3>
-                <p className="mt-1 text-xs text-[var(--color-text-secondary)]">
+                <p className="text-[0.65rem] font-bold uppercase tracking-[0.2em] text-[var(--ink-tertiary)]">OpenAI Audio</p>
+                <h3 className="text-sm font-bold text-[var(--ink-primary)]">Voice Copilot</h3>
+                <p className="mt-1 text-xs text-[var(--ink-secondary)]">
                   Dictate into the focused input or read selected script context aloud.
                 </p>
               </div>
               <button
                 type="button"
                 onClick={() => setIsOpen(false)}
-                className="rounded-md px-2 py-1 text-xs text-[var(--color-text-tertiary)] hover:bg-[var(--color-bg-tertiary)]"
+                className="rounded-md px-2 py-1 text-xs text-[var(--ink-tertiary)] hover:bg-[var(--surface-overlay)]"
               >
                 Close
               </button>
@@ -365,7 +365,7 @@ const VoiceAssistantDock: React.FC = () => {
                 className={`rounded-xl border px-3 py-3 text-sm font-medium transition-colors ${
                   isRecording
                     ? 'border-red-900/30 bg-red-950/35 text-red-100 hover:bg-red-950/50'
-                    : 'border-[var(--color-border-strong)] bg-[var(--color-bg-tertiary)] text-[var(--color-text-primary)] hover:bg-[var(--color-bg-elevated)]'
+                    : 'border-[var(--ink-muted)] bg-[var(--surface-overlay)] text-[var(--ink-primary)] hover:bg-[var(--surface-raised)]'
                 } disabled:cursor-not-allowed disabled:opacity-60`}
               >
                 {isRecording ? 'Stop dictation' : 'Dictate to input'}
@@ -374,7 +374,7 @@ const VoiceAssistantDock: React.FC = () => {
                 type="button"
                 onClick={speakCurrentContext}
                 disabled={isBusy || isRecording}
-                className="rounded-xl border border-[var(--color-border-strong)] bg-[var(--color-bg-tertiary)] px-3 py-3 text-sm font-medium text-[var(--color-text-primary)] hover:bg-[var(--color-bg-elevated)] disabled:cursor-not-allowed disabled:opacity-60"
+                className="rounded-xl border border-[var(--ink-muted)] bg-[var(--surface-overlay)] px-3 py-3 text-sm font-medium text-[var(--ink-primary)] hover:bg-[var(--surface-raised)] disabled:cursor-not-allowed disabled:opacity-60"
               >
                 Speak selection
               </button>
@@ -439,7 +439,7 @@ const VoiceAssistantDock: React.FC = () => {
         <button
           type="button"
           onClick={() => setIsOpen((current) => !current)}
-          className="rounded-full border border-[var(--color-border-strong)] bg-[var(--color-bg-elevated)]/95 px-5 py-3 text-sm font-black text-[var(--color-text-primary)] shadow-[var(--shadow-sm)] hover:bg-[var(--color-bg-tertiary)]"
+          className="rounded-full border border-[var(--ink-muted)] bg-[var(--surface-raised)]/95 px-5 py-3 text-sm font-black text-[var(--ink-primary)] shadow-[var(--shadow-near)] hover:bg-[var(--surface-overlay)]"
         >
           {isOpen ? 'Hide voice' : 'Voice'}
         </button>

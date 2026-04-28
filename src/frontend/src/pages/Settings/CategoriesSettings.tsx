@@ -12,12 +12,12 @@ type CategoryRow = {
 };
 
 const inputStyles =
-  'w-full px-3 py-2 rounded-md bg-[var(--color-bg-primary)] border border-[var(--color-border-default)] text-[var(--color-text-primary)] focus:ring-2 focus:ring-[var(--color-primary)] focus:outline-none';
+  'w-full px-3 py-2 rounded-md bg-[var(--surface-base)] border border-[var(--surface-overlay)] text-[var(--ink-primary)] focus:ring-2 focus:ring-[var(--accent)] focus:outline-none';
 
 const buttonPrimary =
-  'px-3 py-2 rounded-md bg-[var(--color-primary)] hover:bg-[var(--color-primary-dark)] text-white transition disabled:opacity-60 disabled:cursor-not-allowed';
+  'px-3 py-2 rounded-md bg-[var(--accent)] hover:bg-[var(--color-primary-dark)] text-white transition disabled:opacity-60 disabled:cursor-not-allowed';
 const buttonSecondary =
-  'px-3 py-2 rounded-md bg-[var(--color-bg-tertiary)] hover:bg-[var(--color-bg-primary)] text-[var(--color-text-primary)] border border-[var(--color-border-default)] transition disabled:opacity-60 disabled:cursor-not-allowed';
+  'px-3 py-2 rounded-md bg-[var(--surface-overlay)] hover:bg-[var(--surface-base)] text-[var(--ink-primary)] border border-[var(--surface-overlay)] transition disabled:opacity-60 disabled:cursor-not-allowed';
 const buttonDanger =
   'px-3 py-2 rounded-md bg-red-600 hover:bg-red-700 text-white transition disabled:opacity-60 disabled:cursor-not-allowed';
 
@@ -215,11 +215,11 @@ export default function CategoriesSettings() {
     >
       <div className="space-y-6">
         {/* Create */}
-        <div className="rounded-lg border border-[var(--color-border-default)] bg-[var(--color-bg-tertiary)] p-4">
+        <div className="rounded-lg border border-[var(--surface-overlay)] bg-[var(--surface-overlay)] p-4">
           <div className="flex items-center justify-between gap-3 mb-3">
-            <h2 className="text-lg font-semibold text-[var(--color-text-primary)]">New category</h2>
+            <h2 className="text-lg font-semibold text-[var(--ink-primary)]">New category</h2>
             <div
-              className="text-xs text-[var(--color-text-tertiary)]"
+              className="text-xs text-[var(--ink-tertiary)]"
               data-testid="categories-refreshing"
             >
               {categoriesQuery.isFetching ? 'Refreshing…' : ''}
@@ -228,7 +228,7 @@ export default function CategoriesSettings() {
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
             <div>
-              <label className="block text-xs mb-1 text-[var(--color-text-secondary)]">Name</label>
+              <label className="block text-xs mb-1 text-[var(--ink-secondary)]">Name</label>
               <input
                 id="category-name"
                 aria-label="Name"
@@ -239,7 +239,7 @@ export default function CategoriesSettings() {
               />
             </div>
             <div className="md:col-span-2">
-              <label className="block text-xs mb-1 text-[var(--color-text-secondary)]">Description (optional)</label>
+              <label className="block text-xs mb-1 text-[var(--ink-secondary)]">Description (optional)</label>
               <input
                 id="category-description"
                 aria-label="Description"
@@ -263,7 +263,7 @@ export default function CategoriesSettings() {
               {createMutation.isPending ? 'Creating…' : 'Create'}
             </button>
             <div className="ml-auto w-full md:w-[320px]">
-              <label className="block text-xs mb-1 text-[var(--color-text-secondary)]">Search</label>
+              <label className="block text-xs mb-1 text-[var(--ink-secondary)]">Search</label>
               <input
                 className={inputStyles}
                 value={search}
@@ -279,9 +279,9 @@ export default function CategoriesSettings() {
         </div>
 
         {/* List */}
-        <div className="rounded-lg border border-[var(--color-border-default)] overflow-hidden" data-testid="categories-list">
-          <div className="px-4 py-3 bg-[var(--color-bg-tertiary)] border-b border-[var(--color-border-default)] flex items-center justify-between">
-            <div className="text-sm font-semibold text-[var(--color-text-primary)]">
+        <div className="rounded-lg border border-[var(--surface-overlay)] overflow-hidden" data-testid="categories-list">
+          <div className="px-4 py-3 bg-[var(--surface-overlay)] border-b border-[var(--surface-overlay)] flex items-center justify-between">
+            <div className="text-sm font-semibold text-[var(--ink-primary)]">
               Categories ({filtered.length})
             </div>
             <button
@@ -295,26 +295,26 @@ export default function CategoriesSettings() {
           </div>
 
           {categoriesQuery.isLoading ? (
-            <div className="p-4 text-sm text-[var(--color-text-secondary)]">Loading…</div>
+            <div className="p-4 text-sm text-[var(--ink-secondary)]">Loading…</div>
           ) : categoriesQuery.isError ? (
             <div className="p-4 text-sm text-red-400">Failed to load categories.</div>
           ) : filtered.length === 0 ? (
-            <div className="p-4 text-sm text-[var(--color-text-secondary)]">No categories found.</div>
+            <div className="p-4 text-sm text-[var(--ink-secondary)]">No categories found.</div>
           ) : (
-            <div className="divide-y divide-[var(--color-border-default)]">
+            <div className="divide-y divide-[var(--surface-overlay)]">
               {filtered.map((c) => {
                 const isEditing = editingId === c.id;
                 return (
                   <div
                     key={c.id}
-                    className="p-4 bg-[var(--color-bg-elevated)]"
+                    className="p-4 bg-[var(--surface-raised)]"
                     data-testid={`category-row-${c.id}`}
                     data-category-id={c.id}
                     data-category-name={c.name}
                   >
                     <div className="grid grid-cols-1 md:grid-cols-12 gap-3 items-start">
                       <div className="md:col-span-4">
-                        <div className="text-xs text-[var(--color-text-tertiary)] mb-1">Name</div>
+                        <div className="text-xs text-[var(--ink-tertiary)] mb-1">Name</div>
                         {isEditing ? (
                           <input
                             data-testid="category-edit-name"
@@ -323,12 +323,12 @@ export default function CategoriesSettings() {
                             onChange={(e) => setEditName(e.target.value)}
                           />
                         ) : (
-                          <div className="text-[var(--color-text-primary)] font-semibold">{c.name}</div>
+                          <div className="text-[var(--ink-primary)] font-semibold">{c.name}</div>
                         )}
                       </div>
 
                       <div className="md:col-span-6">
-                        <div className="text-xs text-[var(--color-text-tertiary)] mb-1">Description</div>
+                        <div className="text-xs text-[var(--ink-tertiary)] mb-1">Description</div>
                         {isEditing ? (
                           <input
                             aria-label="Description"
@@ -338,15 +338,15 @@ export default function CategoriesSettings() {
                             onChange={(e) => setEditDesc(e.target.value)}
                           />
                         ) : (
-                          <div className="text-sm text-[var(--color-text-secondary)]">
-                            {c.description || <span className="italic text-[var(--color-text-tertiary)]">—</span>}
+                          <div className="text-sm text-[var(--ink-secondary)]">
+                            {c.description || <span className="italic text-[var(--ink-tertiary)]">—</span>}
                           </div>
                         )}
                       </div>
 
                       <div className="md:col-span-2">
-                        <div className="text-xs text-[var(--color-text-tertiary)] mb-1">Scripts</div>
-                        <div className="text-sm text-[var(--color-text-secondary)]">
+                        <div className="text-xs text-[var(--ink-tertiary)] mb-1">Scripts</div>
+                        <div className="text-sm text-[var(--ink-secondary)]">
                           {Number(c.scriptCount || 0)}
                         </div>
                       </div>
@@ -406,13 +406,13 @@ export default function CategoriesSettings() {
             onClick={() => setConfirm(null)}
           >
             <div
-              className="w-full max-w-lg rounded-xl border border-[var(--color-border-default)] bg-[var(--color-bg-elevated)] shadow-[var(--shadow-lg)] overflow-hidden"
+              className="w-full max-w-lg rounded-xl border border-[var(--surface-overlay)] bg-[var(--surface-raised)] shadow-[var(--shadow-far)] overflow-hidden"
               onClick={(e) => e.stopPropagation()}
             >
-              <div className="px-5 py-4 bg-[var(--color-bg-tertiary)] border-b border-[var(--color-border-default)] flex items-center justify-between">
+              <div className="px-5 py-4 bg-[var(--surface-overlay)] border-b border-[var(--surface-overlay)] flex items-center justify-between">
                 <div
                   id="delete-category-dialog-title"
-                  className="text-sm font-semibold text-[var(--color-text-primary)]"
+                  className="text-sm font-semibold text-[var(--ink-primary)]"
                 >
                   Delete category and uncategorize scripts
                 </div>
@@ -421,9 +421,9 @@ export default function CategoriesSettings() {
                 </button>
               </div>
               <div className="p-5 space-y-3">
-                <div className="text-sm text-[var(--color-text-secondary)]">
-                  Deleting <span className="font-semibold text-[var(--color-text-primary)]">{confirm.name}</span> will
-                  uncategorize <span className="font-semibold text-[var(--color-text-primary)]">{confirm.scriptCount}</span>{' '}
+                <div className="text-sm text-[var(--ink-secondary)]">
+                  Deleting <span className="font-semibold text-[var(--ink-primary)]">{confirm.name}</span> will
+                  uncategorize <span className="font-semibold text-[var(--ink-primary)]">{confirm.scriptCount}</span>{' '}
                   scripts (set their category to empty).
                 </div>
                 <div className="flex gap-2 justify-end">

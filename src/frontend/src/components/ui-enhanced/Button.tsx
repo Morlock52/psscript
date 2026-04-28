@@ -63,17 +63,17 @@ export const Button = forwardRef<HTMLButtonElement, ButtonProps>(
       switch (variant) {
         case 'primary':
           return `
-            bg-gradient-to-r from-[var(--color-primary)] to-[var(--color-primary-dark)]
-            hover:from-[var(--color-primary-light)] hover:to-[var(--color-primary)]
+            bg-gradient-to-r from-[var(--accent)] to-[var(--color-primary-dark)]
+            hover:from-[var(--accent-soft)] hover:to-[var(--accent)]
             active:from-[var(--color-primary-dark)] active:to-[var(--color-primary-dark)]
             text-white shadow-sm hover:shadow-md
           `;
         case 'secondary':
           return `
-            bg-[var(--color-bg-tertiary)]
-            hover:bg-[var(--color-bg-tertiary)]/80
-            text-[var(--color-text-primary)]
-            border border-[var(--color-border-default)]
+            bg-[var(--surface-overlay)]
+            hover:bg-[var(--surface-overlay)]/80
+            text-[var(--ink-primary)]
+            border border-[var(--surface-overlay)]
           `;
         case 'success':
           return `
@@ -102,21 +102,21 @@ export const Button = forwardRef<HTMLButtonElement, ButtonProps>(
         case 'ghost':
           return `
             bg-transparent
-            hover:bg-[var(--color-bg-tertiary)]
-            text-[var(--color-text-secondary)]
-            hover:text-[var(--color-text-primary)]
+            hover:bg-[var(--surface-overlay)]
+            text-[var(--ink-secondary)]
+            hover:text-[var(--ink-primary)]
           `;
         case 'outline':
           return `
             bg-transparent
-            border-2 border-[var(--color-primary)]
-            text-[var(--color-primary)]
-            hover:bg-[var(--color-primary)]/10
+            border-2 border-[var(--accent)]
+            text-[var(--accent)]
+            hover:bg-[var(--accent)]/10
           `;
         default:
           return `
-            bg-gradient-to-r from-[var(--color-primary)] to-[var(--color-primary-dark)]
-            hover:from-[var(--color-primary-light)] hover:to-[var(--color-primary)]
+            bg-gradient-to-r from-[var(--accent)] to-[var(--color-primary-dark)]
+            hover:from-[var(--accent-soft)] hover:to-[var(--accent)]
             text-white shadow-sm hover:shadow-md
           `;
       }
@@ -164,8 +164,8 @@ export const Button = forwardRef<HTMLButtonElement, ButtonProps>(
     const getDisabledStyles = (): string => {
       return `
         opacity-50 cursor-not-allowed
-        bg-[var(--color-bg-tertiary)]
-        text-[var(--color-text-tertiary)]
+        bg-[var(--surface-overlay)]
+        text-[var(--ink-tertiary)]
       `;
     };
 
@@ -181,7 +181,7 @@ export const Button = forwardRef<HTMLButtonElement, ButtonProps>(
           ${disabled || isLoading ? getDisabledStyles() : getVariantStyles()}
           ${fullWidth ? 'w-full' : ''}
           ${className}
-          focus:outline-none focus:ring-2 focus:ring-[var(--color-primary)]/50 focus:ring-offset-2 focus:ring-offset-[var(--color-bg-primary)]
+          focus:outline-none focus:ring-2 focus:ring-[var(--accent)]/50 focus:ring-offset-2 focus:ring-offset-[var(--surface-base)]
           active:scale-[0.98]
           overflow-hidden
         `}

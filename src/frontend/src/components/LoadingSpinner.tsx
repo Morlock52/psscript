@@ -25,8 +25,8 @@ const LoadingSpinner: React.FC<LoadingSpinnerProps> = ({
     green: 'text-green-500',
     red: 'text-red-500',
     yellow: 'text-yellow-500',
-    gray: 'text-[var(--color-text-tertiary)]',
-    primary: 'text-[var(--color-primary)]'
+    gray: 'text-[var(--ink-tertiary)]',
+    primary: 'text-[var(--accent)]'
   }[color];
 
   return (

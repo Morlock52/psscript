@@ -51,22 +51,22 @@ const AuthCallback: React.FC = () => {
 
   return (
     <div className="flex min-h-screen items-center justify-center bg-[var(--gradient-surface)] px-4">
-      <div className="w-full max-w-md rounded-3xl border border-[var(--color-border-default)] bg-[var(--color-bg-elevated)]/92 p-8 text-center shadow-[var(--shadow-xl)]">
+      <div className="w-full max-w-md rounded-3xl border border-[var(--surface-overlay)] bg-[var(--surface-raised)]/92 p-8 text-center shadow-[var(--shadow-far)]">
         <BrandMark size="lg" className="justify-center" />
-        <h1 className="mt-6 text-2xl font-black text-[var(--color-text-primary)]">Completing sign-in</h1>
+        <h1 className="mt-6 text-2xl font-black text-[var(--ink-primary)]">Completing sign-in</h1>
         {error ? (
           <>
             <p className="mt-3 text-sm text-red-400">{error}</p>
             <Link
               to="/login"
-              className="mt-6 inline-flex rounded-xl bg-[var(--color-primary)] px-5 py-3 font-bold text-white transition hover:bg-[var(--color-primary-dark)]"
+              className="mt-6 inline-flex rounded-xl bg-[var(--accent)] px-5 py-3 font-bold text-white transition hover:bg-[var(--color-primary-dark)]"
             >
               Back to login
             </Link>
           </>
         ) : (
           <div className="mt-6 flex justify-center">
-            <div className="h-10 w-10 animate-spin rounded-full border-2 border-[var(--color-border-default)] border-t-[var(--color-primary)]" />
+            <div className="h-10 w-10 animate-spin rounded-full border-2 border-[var(--surface-overlay)] border-t-[var(--accent)]" />
           </div>
         )}
       </div>

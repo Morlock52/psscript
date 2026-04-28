@@ -113,7 +113,7 @@ export const Avatar: React.FC<AvatarProps> = ({
     })();
 
     // Use provided color or theme-aware default
-    const color = borderColor || 'border-[var(--color-bg-elevated)]';
+    const color = borderColor || 'border-[var(--surface-raised)]';
 
     return `${width} ${color}`;
   };
@@ -178,13 +178,13 @@ export const Avatar: React.FC<AvatarProps> = ({
     })();
 
     // Ring color adapts to theme via dark: variant
-    return `after:content-[''] after:absolute after:${statusPositionClass} after:block after:${statusSize} after:${statusColor} after:rounded-full after:ring-2 after:ring-[var(--color-bg-elevated)]`;
+    return `after:content-[''] after:absolute after:${statusPositionClass} after:block after:${statusSize} after:${statusColor} after:rounded-full after:ring-2 after:ring-[var(--surface-raised)]`;
   };
 
   // Get background color for placeholder - generates unique color from name
   const getPlaceholderBgColor = (): string => {
     if (!name) {
-      return 'bg-[var(--color-bg-tertiary)]';
+      return 'bg-[var(--surface-overlay)]';
     }
 
     // Generate a consistent color based on the name
@@ -212,7 +212,7 @@ export const Avatar: React.FC<AvatarProps> = ({
           ${getRoundedStyles()}
           ${getBorderStyles()}
           ${getShadowStyles()}
-          bg-[var(--color-bg-tertiary)] text-[var(--color-text-primary)]
+          bg-[var(--surface-overlay)] text-[var(--ink-primary)]
           font-medium
           ${className}
         `}

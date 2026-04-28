@@ -46,17 +46,17 @@ export const Card = forwardRef<HTMLDivElement, CardProps>(
     const getVariantStyles = (): string => {
       switch (variant) {
         case 'default':
-          return 'bg-[var(--color-bg-elevated)] text-[var(--color-text-primary)]';
+          return 'bg-[var(--surface-raised)] text-[var(--ink-primary)]';
         case 'elevated':
-          return 'bg-[var(--color-bg-elevated)] text-[var(--color-text-primary)] shadow-[var(--shadow-lg)]';
+          return 'bg-[var(--surface-raised)] text-[var(--ink-primary)] shadow-[var(--shadow-far)]';
         case 'outlined':
-          return 'bg-transparent text-[var(--color-text-primary)] border border-[var(--color-border-default)]';
+          return 'bg-transparent text-[var(--ink-primary)] border border-[var(--surface-overlay)]';
         case 'filled':
-          return 'bg-[var(--color-bg-tertiary)] text-[var(--color-text-primary)]';
+          return 'bg-[var(--surface-overlay)] text-[var(--ink-primary)]';
         case 'glass':
-          return 'bg-[var(--color-bg-elevated)]/80 backdrop-blur-lg text-[var(--color-text-primary)]';
+          return 'bg-[var(--surface-raised)]/80 backdrop-blur-lg text-[var(--ink-primary)]';
         default:
-          return 'bg-[var(--color-bg-elevated)] text-[var(--color-text-primary)]';
+          return 'bg-[var(--surface-raised)] text-[var(--ink-primary)]';
       }
     };
 
@@ -163,7 +163,7 @@ export const Card = forwardRef<HTMLDivElement, CardProps>(
       if (!withBorder) return '';
       if (variant === 'outlined') return '';
 
-      return 'border border-[var(--color-border-default)]';
+      return 'border border-[var(--surface-overlay)]';
     };
 
     // Get shadow styles
@@ -171,14 +171,14 @@ export const Card = forwardRef<HTMLDivElement, CardProps>(
       if (!withShadow) return '';
       if (variant === 'elevated') return '';
 
-      return 'shadow-[var(--shadow-md)]';
+      return 'shadow-[var(--shadow-near)]';
     };
 
     // Get hover styles
     const getHoverStyles = (): string => {
       if (!hoverable) return '';
 
-      return 'transition-all duration-300 hover:-translate-y-1 hover:shadow-[var(--shadow-lg)]';
+      return 'transition-all duration-300 hover:-translate-y-1 hover:shadow-[var(--shadow-far)]';
     };
 
     // Get clickable styles
@@ -209,7 +209,7 @@ export const Card = forwardRef<HTMLDivElement, CardProps>(
           <div
             className={`
               ${getHeaderPaddingStyles()}
-              border-b border-[var(--color-border-default)]
+              border-b border-[var(--surface-overlay)]
               ${headerClassName}
             `}
           >
@@ -232,8 +232,8 @@ export const Card = forwardRef<HTMLDivElement, CardProps>(
           <div
             className={`
               ${getFooterPaddingStyles()}
-              border-t border-[var(--color-border-default)]
-              bg-[var(--color-bg-tertiary)]/50
+              border-t border-[var(--surface-overlay)]
+              bg-[var(--surface-overlay)]/50
               ${footerClassName}
             `}
           >
