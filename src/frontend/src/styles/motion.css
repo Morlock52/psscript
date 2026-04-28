@@ -1,0 +1,39 @@
+/* ============================================================
+   Global motion baseline + reduced-motion enforcement.
+   Per spec section 7.5; verified by Plan 3 a11y sweep.
+   ============================================================ */
+
+@keyframes aurora-drift {
+  0%   { transform: translate(-2%, -1%) rotate(0deg);  }
+  50%  { transform: translate( 2%,  1%) rotate(0.4deg); }
+  100% { transform: translate(-2%, -1%) rotate(0deg);  }
+}
+
+@keyframes skeleton-shimmer {
+  0%   { background-position: -200% 0; }
+  100% { background-position:  200% 0; }
+}
+
+@keyframes spin {
+  from { transform: rotate(0deg); }
+  to   { transform: rotate(360deg); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 80ms !important;
+    scroll-behavior: auto !important;
+  }
+  .aurora-glow,
+  .skeleton-shimmer,
+  .sparkline-draw {
+    animation: none !important;
+  }
+  .motion-transform {
+    transform: none !important;
+  }
+}

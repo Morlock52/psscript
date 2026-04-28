@@ -211,3 +211,55 @@
   /* Radius full alias (the new system already has sm/md/lg/xl) */
   --radius-full: 9999px;
 }
+
+/* ----------------------------------------------------------------
+   Fallback metric overrides — match system-font metrics to
+   Mona Sans + JetBrains Mono so the swap-in doesn't shift layout.
+   Numbers are computed against Söhne / Geist proxies; if the
+   visual diff in Plan 3 shows shift, re-tune ascent-override and
+   size-adjust here.
+   ---------------------------------------------------------------- */
+
+@font-face {
+  font-family: 'Mona Sans Fallback';
+  src: local('Söhne'), local('Inter Variable'), local('Helvetica Neue'), local('Arial');
+  ascent-override: 92%;
+  descent-override: 22%;
+  line-gap-override: 0%;
+  size-adjust: 99%;
+}
+
+@font-face {
+  font-family: 'JetBrains Mono Fallback';
+  src: local('SF Mono'), local('Menlo'), local('Consolas'), local('Liberation Mono');
+  ascent-override: 88%;
+  descent-override: 22%;
+  line-gap-override: 0%;
+  size-adjust: 100%;
+}
+
+/* ----------------------------------------------------------------
+   Body / display / mono families.
+   ---------------------------------------------------------------- */
+
+:root {
+  --font-sans:    'Mona Sans Variable', 'Mona Sans Fallback', system-ui, sans-serif;
+  --font-mono:    'JetBrains Mono Variable', 'JetBrains Mono Fallback', ui-monospace, monospace;
+  --font-display: 'DM Serif Display', Georgia, serif;
+}
+
+body {
+  font-family: var(--font-sans);
+  font-weight: 380;
+  font-feature-settings: 'cv11', 'ss01';
+  font-optical-sizing: auto;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+code, kbd, pre, samp, .font-mono {
+  font-family: var(--font-mono);
+  font-feature-settings: 'liga' 0;
+}
+.tabular-nums {
+  font-variant-numeric: tabular-nums slashed-zero;
+}
