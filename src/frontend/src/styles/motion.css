@@ -14,6 +14,16 @@
   100% { background-position:  200% 0; }
 }
 
+/* Skeleton primitive's animated shimmer — declared as a class rather
+   than inline style so the @media (prefers-reduced-motion: reduce)
+   `.skeleton-shimmer { animation: none !important }` rule below
+   actually intercepts it. */
+.skeleton-shimmer {
+  background-image: linear-gradient(90deg, transparent 0%, rgba(255, 255, 255, 0.06) 50%, transparent 100%);
+  background-size: 200% 100%;
+  animation: skeleton-shimmer 1400ms linear infinite;
+}
+
 @keyframes spin {
   from { transform: rotate(0deg); }
   to   { transform: rotate(360deg); }

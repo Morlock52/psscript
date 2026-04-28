@@ -22,15 +22,7 @@ export const Skeleton = ({ width = '100%', height = 14, rounded = 'sm', classNam
       roundedClass[rounded],
       className,
     )}
-    style={{
-      width,
-      height,
-      backgroundImage:
-        'linear-gradient(90deg, transparent 0%, rgba(255,255,255,0.06) 50%, transparent 100%)',
-      backgroundSize: '200% 100%',
-      animation: 'skeleton-shimmer 1400ms linear infinite',
-      ...style,
-    }}
+    style={{ width, height, ...style }}
     {...rest}
   />
 );

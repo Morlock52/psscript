@@ -25,7 +25,7 @@ export const Sidebar = () => {
   return (
     <nav
       className={clsx(
-        'shrink-0 border-r border-surface-overlay/40 bg-surface-base/60 backdrop-blur-sm transition-[width] duration-220',
+        'relative shrink-0 border-r border-surface-overlay/40 bg-surface-base/60 backdrop-blur-sm transition-[width] duration-200',
         collapsed ? 'w-[64px]' : 'w-[240px]',
       )}
       aria-label="Primary navigation"
