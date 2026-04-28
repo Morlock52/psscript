@@ -1,4 +1,4 @@
-import React, { useState, Suspense } from 'react';
+import React, { Suspense } from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate, useLocation } from 'react-router-dom';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { ToastContainer } from 'react-toastify';
@@ -6,11 +6,10 @@ import 'react-toastify/dist/ReactToastify.css';
 import { useAuth } from './hooks/useAuth';
 import { isAuthDisabledForCurrentHost } from './services/supabase';
 import lazyWithRetry from './utils/lazyWithRetry';
-import Navbar from './components/Navbar';
-import Sidebar from './components/Sidebar';
 import VoiceAssistantDock from './components/VoiceAssistantDock';
 import ProtectedRoute from './components/ProtectedRoute';
 import LoadingScreen from './components/LoadingScreen';
+import { BrandShell, OperatorShell } from './components/layouts';
 
 const Login = lazyWithRetry(() => import('./pages/Login'));
 const AuthCallback = lazyWithRetry(() => import('./pages/AuthCallback'));
@@ -75,15 +74,20 @@ const Home: React.FC = () => {
 
 // Layout wrapper that conditionally shows navigation
 const AppLayout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  const [sidebarOpen, setSidebarOpen] = useState(false);
   const location = useLocation();
   const { user, isLoading } = useAuth();
 
-  // Don't show sidebar/navbar on auth pages
-  const isAuthPage = location.pathname === '/login' || location.pathname === '/register' || location.pathname === '/auth/callback' || location.pathname === '/pending-approval';
+  // Brand-surface routes get BrandShell (Aurora glow + lazy DM Serif Display).
+  const isBrandRoute =
+    location.pathname === '/login' ||
+    location.pathname === '/register' ||
+    location.pathname === '/auth/callback' ||
+    location.pathname === '/pending-approval' ||
+    location.pathname === '/landing' ||
+    location.pathname === '/404';
 
-  if (isAuthPage) {
-    return <>{children}</>;
+  if (isBrandRoute) {
+    return <BrandShell>{children}</BrandShell>;
   }
 
   if (!isLoading && user?.isEnabled === false) {
@@ -91,16 +95,10 @@ const AppLayout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   }
 
   return (
-    <div className="flex h-screen bg-[var(--color-bg-secondary)] text-[var(--color-text-primary)]">
-      <Sidebar isOpen={sidebarOpen} onClose={() => setSidebarOpen(false)} />
-      <div className="flex flex-col flex-1 overflow-hidden">
-        <Navbar onMenuClick={() => setSidebarOpen(true)} />
-        <main className="flex-1 overflow-y-auto p-4">
-          {children}
-        </main>
-        <VoiceAssistantDock />
-      </div>
-    </div>
+    <OperatorShell>
+      {children}
+      <VoiceAssistantDock />
+    </OperatorShell>
   );
 };
 

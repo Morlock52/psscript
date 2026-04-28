@@ -2,7 +2,6 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { chatService } from '../services/api';
 import { useAuth } from '../hooks/useAuth';
-import Layout from '../components/Layout';
 import ReactMarkdown from 'react-markdown';
 
 // Reusable style constants for theme-aware styling
@@ -169,7 +168,7 @@ const ChatHistory: React.FC = () => {
   };
 
   return (
-    <Layout>
+    <>
       <div className="min-h-screen bg-[var(--color-bg-secondary)] text-[var(--color-text-primary)]">
         <div className="container mx-auto py-6 px-4">
           <div className="flex justify-between items-center mb-6">
@@ -341,7 +340,7 @@ const ChatHistory: React.FC = () => {
           </div>
         </div>
       </div>
-    </Layout>
+    </>
   );
 };
 

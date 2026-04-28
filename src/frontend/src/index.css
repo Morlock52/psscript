@@ -2,195 +2,8 @@
 @tailwind components;
 @tailwind utilities;
 
-/* ============================================
-   PSScript Design System - Light/Dark Theme
-   Beautiful, Modern, Consistent
-   ============================================ */
-
-/* CSS Custom Properties - Light Theme (Default) */
-:root {
-  /* Color scheme hint for browser */
-  color-scheme: light dark;
-
-  /* === Surface Colors === */
-  --color-bg-primary: #fbf8f1;
-  --color-bg-secondary: #f4efe4;
-  --color-bg-tertiary: #e9f7f0;
-  --color-bg-elevated: #ffffff;
-  --color-bg-sunken: #dce8e0;
-  --color-bg-overlay: rgba(15, 23, 42, 0.5);
-
-  /* === Text Colors === */
-  --color-text-primary: #0f172a;
-  --color-text-secondary: #475569;
-  --color-text-tertiary: #64748b;
-  --color-text-muted: #94a3b8;
-  --color-text-inverse: #f8fafc;
-
-  /* === Border Colors === */
-  --color-border-default: #e2e8f0;
-  --color-border-subtle: #f1f5f9;
-  --color-border-strong: #cbd5e1;
-  --color-border-focus: #0ea5a3;
-
-  /* === Brand Colors === */
-  --color-primary: #3f8f88;
-  --color-primary-hover: #347a75;
-  --color-primary-light: #d8ebe6;
-  --color-primary-dark: #2f6864;
-
-  --color-accent: #f59e0b;
-  --color-accent-hover: #d97706;
-  --color-accent-light: #ffedd5;
-
-  /* === Status Colors === */
-  --color-success: #4d8f73;
-  --color-success-light: #dcebe3;
-  --color-success-dark: #3d765f;
-
-  --color-warning: #f59e0b;
-  --color-warning-light: #fef3c7;
-  --color-warning-dark: #d97706;
-
-  --color-error: #ef4444;
-  --color-error-light: #fee2e2;
-  --color-error-dark: #dc2626;
-
-  --color-info: #4f8292;
-  --color-info-light: #dce9ed;
-  --color-info-dark: #406b78;
-
-  /* === Interactive States === */
-  --color-hover-overlay: rgba(0, 0, 0, 0.04);
-  --color-active-overlay: rgba(0, 0, 0, 0.08);
-  --color-disabled-bg: #f1f5f9;
-  --color-disabled-text: #94a3b8;
-
-  /* === Shadows === */
-  --shadow-xs: 0 1px 2px rgba(0, 0, 0, 0.05);
-  --shadow-sm: 0 2px 4px rgba(0, 0, 0, 0.06), 0 1px 2px rgba(0, 0, 0, 0.04);
-  --shadow-md: 0 4px 8px rgba(0, 0, 0, 0.08), 0 2px 4px rgba(0, 0, 0, 0.04);
-  --shadow-lg: 0 8px 16px rgba(0, 0, 0, 0.1), 0 4px 8px rgba(0, 0, 0, 0.06);
-  --shadow-xl: 0 16px 32px rgba(0, 0, 0, 0.12), 0 8px 16px rgba(0, 0, 0, 0.08);
-  --shadow-inner: inset 0 2px 4px rgba(0, 0, 0, 0.05);
-  --shadow-glow: 0 0 18px rgba(63, 143, 136, 0.16);
-
-  /* === Gradients === */
-  --gradient-primary: linear-gradient(135deg, #4d8f86 0%, #536f93 56%, #9b7a42 100%);
-  --gradient-surface: linear-gradient(180deg, #ffffff 0%, #fbf8f1 100%);
-  --gradient-shimmer: linear-gradient(90deg, transparent 0%, rgba(255,255,255,0.4) 50%, transparent 100%);
-
-  /* === Blur & Glass === */
-  --blur-sm: 4px;
-  --blur-md: 8px;
-  --blur-lg: 16px;
-  --glass-bg: rgba(255, 255, 255, 0.7);
-  --glass-border: rgba(255, 255, 255, 0.3);
-
-  /* === Spacing Scale === */
-  --space-px: 1px;
-  --space-0: 0;
-  --space-1: 0.25rem;
-  --space-2: 0.5rem;
-  --space-3: 0.75rem;
-  --space-4: 1rem;
-  --space-5: 1.25rem;
-  --space-6: 1.5rem;
-  --space-8: 2rem;
-  --space-10: 2.5rem;
-  --space-12: 3rem;
-
-  /* === Border Radius === */
-  --radius-sm: 0.375rem;
-  --radius-md: 0.5rem;
-  --radius-lg: 0.75rem;
-  --radius-xl: 1rem;
-  --radius-2xl: 1.5rem;
-  --radius-full: 9999px;
-
-  /* === Transitions === */
-  --transition-fast: 150ms ease;
-  --transition-normal: 250ms ease;
-  --transition-slow: 350ms ease;
-  --transition-colors: color 250ms ease, background-color 250ms ease, border-color 250ms ease;
-}
-
-/* === Dark Theme === */
-.dark {
-  color-scheme: dark;
-
-  /* === Surface Colors === */
-  --color-bg-primary: #07111f;
-  --color-bg-secondary: #0b1d33;
-  --color-bg-tertiary: #15314d;
-  --color-bg-elevated: #0f2238;
-  --color-bg-sunken: #030712;
-  --color-bg-overlay: rgba(0, 0, 0, 0.7);
-
-  /* === Text Colors === */
-  --color-text-primary: #f8fafc;
-  --color-text-secondary: #e2e8f0;
-  --color-text-tertiary: #94a3b8;
-  --color-text-muted: #64748b;
-  --color-text-inverse: #0f172a;
-
-  /* === Border Colors === */
-  --color-border-default: #1d3b53;
-  --color-border-subtle: #102a43;
-  --color-border-strong: #2f5d75;
-  --color-border-focus: #80bdb0;
-
-  /* === Brand Colors (adjusted for dark) === */
-  --color-primary: #80bdb0;
-  --color-primary-hover: #9ccbc1;
-  --color-primary-light: #173b35;
-  --color-primary-dark: #5f9f94;
-
-  --color-accent: #ffb347;
-  --color-accent-hover: #ffd166;
-  --color-accent-light: #3b2306;
-
-  /* === Status Colors (adjusted for dark) === */
-  --color-success: #72a98f;
-  --color-success-light: #064e3b;
-  --color-success-dark: #10b981;
-
-  --color-warning: #fbbf24;
-  --color-warning-light: #451a03;
-  --color-warning-dark: #f59e0b;
-
-  --color-error: #f87171;
-  --color-error-light: #450a0a;
-  --color-error-dark: #ef4444;
-
-  --color-info: #72a5b3;
-  --color-info-light: #083344;
-  --color-info-dark: #06b6d4;
-
-  /* === Interactive States === */
-  --color-hover-overlay: rgba(255, 255, 255, 0.05);
-  --color-active-overlay: rgba(255, 255, 255, 0.1);
-  --color-disabled-bg: #1e293b;
-  --color-disabled-text: #475569;
-
-  /* === Shadows (adjusted for dark) === */
-  --shadow-xs: 0 1px 2px rgba(0, 0, 0, 0.3);
-  --shadow-sm: 0 2px 4px rgba(0, 0, 0, 0.4), 0 1px 2px rgba(0, 0, 0, 0.3);
-  --shadow-md: 0 4px 8px rgba(0, 0, 0, 0.5), 0 2px 4px rgba(0, 0, 0, 0.3);
-  --shadow-lg: 0 8px 16px rgba(0, 0, 0, 0.6), 0 4px 8px rgba(0, 0, 0, 0.4);
-  --shadow-xl: 0 16px 32px rgba(0, 0, 0, 0.7), 0 8px 16px rgba(0, 0, 0, 0.5);
-  --shadow-inner: inset 0 2px 4px rgba(0, 0, 0, 0.3);
-  --shadow-glow: 0 0 18px rgba(128, 189, 176, 0.18);
-
-  /* === Gradients === */
-  --gradient-primary: linear-gradient(135deg, #80bdb0 0%, #5d7fa7 56%, #a98752 100%);
-  --gradient-surface: radial-gradient(circle at top left, rgba(128, 189, 176, 0.08), transparent 34%), linear-gradient(180deg, #0f2238 0%, #07111f 100%);
-  --gradient-shimmer: linear-gradient(90deg, transparent 0%, rgba(255,255,255,0.1) 50%, transparent 100%);
-
-  /* === Blur & Glass === */
-  --glass-bg: rgba(30, 41, 59, 0.8);
-  --glass-border: rgba(51, 65, 85, 0.5);
-}
+@import './styles/tokens.css';
+@import './styles/motion.css';
 
 /* ============================================
    Base Styles
@@ -208,16 +21,14 @@ html {
 
 body {
   margin: 0;
-  font-family: 'Space Grotesk', 'Aptos', 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI',
-    'Oxygen', 'Ubuntu', 'Cantarell', 'Helvetica Neue',
-    sans-serif;
+  /* font-family is owned by tokens.css (uses --font-sans). */
   /* Fallback colors for browsers without CSS custom property support */
   background-color: #0f172a;
   color: #f8fafc;
   /* CSS custom properties (will override fallbacks in supporting browsers) */
-  background-color: var(--color-bg-primary, #0f172a);
-  color: var(--color-text-primary, #f8fafc);
-  transition: background-color var(--transition-normal, 250ms ease), color var(--transition-normal, 250ms ease);
+  background-color: var(--surface-base, #0f172a);
+  color: var(--ink-primary, #f8fafc);
+  transition: background-color 250ms ease, color 250ms ease;
   line-height: 1.6;
   /* Ensure full viewport coverage on mobile */
   min-height: 100vh;
@@ -226,182 +37,21 @@ body {
 
 /* Smooth theme transitions */
 *, *::before, *::after {
-  transition: background-color var(--transition-normal),
-              border-color var(--transition-normal),
-              box-shadow var(--transition-normal);
+  transition: background-color 250ms ease,
+              border-color 250ms ease,
+              box-shadow 250ms ease;
 }
 
 /* Override for elements that shouldn't transition */
 input, textarea, button, a {
-  transition: background-color var(--transition-fast),
-              border-color var(--transition-fast),
-              box-shadow var(--transition-fast),
-              transform var(--transition-fast),
-              opacity var(--transition-fast);
+  transition: background-color 150ms ease,
+              border-color 150ms ease,
+              box-shadow 150ms ease,
+              transform 150ms ease,
+              opacity 150ms ease;
 }
 
-code {
-  font-family: 'Fira Code', 'JetBrains Mono', source-code-pro, Menlo, Monaco,
-    Consolas, 'Courier New', monospace;
-}
-
-/* ============================================
-   Utility Classes
-   ============================================ */
-
-/* Surface variants */
-.surface-primary {
-  background-color: var(--color-bg-primary);
-}
-
-.surface-secondary {
-  background-color: var(--color-bg-secondary);
-}
-
-.surface-tertiary {
-  background-color: var(--color-bg-tertiary);
-}
-
-.surface-elevated {
-  background-color: var(--color-bg-elevated);
-  box-shadow: var(--shadow-md);
-}
-
-/* Text variants */
-.text-primary {
-  color: var(--color-text-primary);
-}
-
-.text-secondary {
-  color: var(--color-text-secondary);
-}
-
-.text-tertiary {
-  color: var(--color-text-tertiary);
-}
-
-.text-muted {
-  color: var(--color-text-muted);
-}
-
-/* Glass effect */
-.glass {
-  background: var(--glass-bg);
-  backdrop-filter: blur(var(--blur-md));
-  -webkit-backdrop-filter: blur(var(--blur-md));
-  border: 1px solid var(--glass-border);
-}
-
-/* Gradient text */
-.gradient-text {
-  background: var(--gradient-primary);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
-}
-
-/* Card styles */
-.card {
-  background-color: var(--color-bg-elevated);
-  border: 1px solid var(--color-border-default);
-  border-radius: var(--radius-xl);
-  box-shadow: var(--shadow-sm);
-  transition: box-shadow var(--transition-normal), transform var(--transition-normal);
-}
-
-.card:hover {
-  box-shadow: var(--shadow-md);
-}
-
-.card-interactive:hover {
-  transform: translateY(-2px);
-  box-shadow: var(--shadow-lg);
-}
-
-/* Button base */
-.btn {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  gap: 0.5rem;
-  padding: 0.625rem 1.25rem;
-  font-weight: 500;
-  border-radius: var(--radius-lg);
-  transition: all var(--transition-fast);
-  cursor: pointer;
-  border: none;
-  outline: none;
-}
-
-.btn:focus-visible {
-  outline: 2px solid var(--color-border-focus);
-  outline-offset: 2px;
-}
-
-.btn-primary {
-  background: var(--gradient-primary);
-  color: white;
-  box-shadow: var(--shadow-sm);
-}
-
-.btn-primary:hover {
-  box-shadow: var(--shadow-glow);
-  transform: translateY(-1px);
-}
-
-.btn-secondary {
-  background-color: var(--color-bg-tertiary);
-  color: var(--color-text-primary);
-  border: 1px solid var(--color-border-default);
-}
-
-.btn-secondary:hover {
-  background-color: var(--color-hover-overlay);
-  border-color: var(--color-border-strong);
-}
-
-.btn-ghost {
-  background-color: transparent;
-  color: var(--color-text-secondary);
-}
-
-.btn-ghost:hover {
-  background-color: var(--color-hover-overlay);
-  color: var(--color-text-primary);
-}
-
-/* Input styles */
-.input {
-  width: 100%;
-  padding: 0.625rem 1rem;
-  background-color: var(--color-bg-secondary);
-  border: 1px solid var(--color-border-default);
-  border-radius: var(--radius-lg);
-  color: var(--color-text-primary);
-  transition: all var(--transition-fast);
-}
-
-.input:hover {
-  border-color: var(--color-border-strong);
-}
-
-.input:focus {
-  outline: none;
-  border-color: var(--color-border-focus);
-  box-shadow: 0 0 0 3px var(--color-primary-light);
-}
-
-.input::placeholder {
-  color: var(--color-text-muted);
-}
-
-/* Divider */
-.divider {
-  height: 1px;
-  background-color: var(--color-border-default);
-  border: none;
-  margin: var(--space-4) 0;
-}
+/* code, kbd, pre, samp, .font-mono — owned by tokens.css (uses --font-mono). */
 
 /* ============================================
    Scrollbar Styles
@@ -413,18 +63,18 @@ code {
 }
 
 ::-webkit-scrollbar-track {
-  background: var(--color-bg-secondary);
-  border-radius: var(--radius-full);
+  background: var(--surface-raised);
+  border-radius: 9999px;
 }
 
 ::-webkit-scrollbar-thumb {
-  background: var(--color-border-strong);
-  border-radius: var(--radius-full);
-  border: 2px solid var(--color-bg-secondary);
+  background: var(--ink-muted);
+  border-radius: 9999px;
+  border: 2px solid var(--surface-raised);
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: var(--color-text-muted);
+  background: var(--ink-tertiary);
 }
 
 /* ============================================
@@ -432,8 +82,8 @@ code {
    ============================================ */
 
 ::selection {
-  background-color: var(--color-primary);
-  color: white;
+  background-color: var(--accent);
+  color: var(--ink-inverse);
 }
 
 /* ============================================
@@ -441,146 +91,8 @@ code {
    ============================================ */
 
 :focus-visible {
-  outline: 2px solid var(--color-border-focus);
+  outline: 2px solid var(--ring-focus);
   outline-offset: 2px;
-}
-
-/* ============================================
-   Markdown Viewer Styles
-   ============================================ */
-
-.markdown-body {
-  color: var(--color-text-primary);
-}
-
-.markdown-body h1 {
-  font-size: 1.875rem;
-  line-height: 2.25rem;
-  font-weight: 700;
-  margin-bottom: 1rem;
-  padding-bottom: 0.5rem;
-  border-bottom: 1px solid var(--color-border-default);
-  color: var(--color-text-primary);
-}
-
-.markdown-body h2 {
-  font-size: 1.5rem;
-  line-height: 2rem;
-  font-weight: 600;
-  margin-top: 1.5rem;
-  margin-bottom: 0.75rem;
-  color: var(--color-text-primary);
-}
-
-.markdown-body h3 {
-  font-size: 1.25rem;
-  line-height: 1.75rem;
-  font-weight: 600;
-  margin-top: 1.25rem;
-  margin-bottom: 0.5rem;
-  color: var(--color-text-primary);
-}
-
-.markdown-body p {
-  margin-bottom: 1rem;
-  color: var(--color-text-secondary);
-}
-
-.markdown-body pre {
-  background-color: var(--color-bg-tertiary);
-  border: 1px solid var(--color-border-default);
-  border-radius: var(--radius-lg);
-  padding: 1rem;
-  overflow-x: auto;
-  font-size: 0.875rem;
-  line-height: 1.5;
-  margin-bottom: 1rem;
-}
-
-.markdown-body code {
-  font-family: 'Fira Code', monospace;
-  background-color: var(--color-bg-tertiary);
-  border-radius: var(--radius-sm);
-  padding: 0.125rem 0.375rem;
-  font-size: 0.875rem;
-  color: var(--color-accent);
-}
-
-.markdown-body pre code {
-  background-color: transparent;
-  padding: 0;
-  color: var(--color-text-primary);
-}
-
-.markdown-body a {
-  color: var(--color-primary);
-  text-decoration: none;
-  font-weight: 500;
-  transition: color var(--transition-fast);
-}
-
-.markdown-body a:hover {
-  color: var(--color-primary-hover);
-  text-decoration: underline;
-}
-
-.markdown-body ul {
-  list-style-type: disc;
-  margin-left: 1.5rem;
-  margin-bottom: 1rem;
-  color: var(--color-text-secondary);
-}
-
-.markdown-body ol {
-  list-style-type: decimal;
-  margin-left: 1.5rem;
-  margin-bottom: 1rem;
-  color: var(--color-text-secondary);
-}
-
-.markdown-body li {
-  margin-bottom: 0.5rem;
-}
-
-.markdown-body table {
-  width: 100%;
-  border-collapse: collapse;
-  margin-bottom: 1rem;
-  border-radius: var(--radius-lg);
-  overflow: hidden;
-}
-
-.markdown-body table th,
-.markdown-body table td {
-  border: 1px solid var(--color-border-default);
-  padding: 0.75rem 1rem;
-}
-
-.markdown-body table th {
-  background-color: var(--color-bg-tertiary);
-  font-weight: 600;
-  text-align: left;
-  color: var(--color-text-primary);
-}
-
-.markdown-body table td {
-  background-color: var(--color-bg-secondary);
-  color: var(--color-text-secondary);
-}
-
-.markdown-body table tr:hover td {
-  background-color: var(--color-bg-tertiary);
-}
-
-.markdown-body blockquote {
-  border-left: 4px solid var(--color-primary);
-  padding-left: 1rem;
-  margin: 1rem 0;
-  color: var(--color-text-tertiary);
-  font-style: italic;
-  background-color: var(--color-bg-secondary);
-  padding: 1rem;
-  border-radius: 0 var(--radius-lg) var(--radius-lg) 0;
 }
 
 /* ============================================
@@ -644,9 +156,9 @@ code {
 .skeleton {
   background: linear-gradient(
     90deg,
-    var(--color-bg-tertiary) 0%,
-    var(--color-bg-secondary) 50%,
-    var(--color-bg-tertiary) 100%
+    var(--surface-overlay) 0%,
+    var(--surface-raised) 50%,
+    var(--surface-overlay) 100%
   );
   background-size: 200% 100%;
   animation: shimmer 1.5s ease-in-out infinite;

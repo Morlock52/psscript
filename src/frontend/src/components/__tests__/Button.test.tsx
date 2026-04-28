@@ -1,6 +1,6 @@
 import { describe, it, expect, vi } from 'vitest';
 import { render, screen, fireEvent } from '@testing-library/react';
-import Button from '../ui/Button';
+import { Button } from '../ui';
 
 describe('Button Component', () => {
   it('renders button with text', () => {
@@ -18,13 +18,13 @@ describe('Button Component', () => {
 
   it('applies custom className', () => {
     render(<Button className="custom-class">Button</Button>);
-    const button = screen.getByText('Button');
+    const button = screen.getByRole('button', { name: 'Button' });
     expect(button.className).toContain('custom-class');
   });
 
   it('can be disabled', () => {
     render(<Button disabled>Disabled Button</Button>);
-    const button = screen.getByText('Disabled Button');
+    const button = screen.getByRole('button', { name: 'Disabled Button' });
     expect(button).toBeDisabled();
   });
 });

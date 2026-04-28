@@ -1,10 +1,9 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
-import Layout from '../components/Layout';
 
 const LandingPage: React.FC = () => {
   return (
-    <Layout hideSidebar={true}>
+    <>
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
         {/* Hero Section */}
         <div className="py-16 sm:py-24">
@@ -408,7 +407,7 @@ const LandingPage: React.FC = () => {
           </div>
         </div>
       </div>
-    </Layout>
+    </>
   );
 };
 

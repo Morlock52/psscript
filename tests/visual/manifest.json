@@ -1,0 +1,48 @@
+{
+  "brand": [
+    { "route": "/login",            "page": "Login" },
+    { "route": "/register",         "page": "Register" },
+    { "route": "/landing",          "page": "LandingPage" },
+    { "route": "/auth/callback",    "page": "AuthCallback" },
+    { "route": "/pending-approval", "page": "PendingApproval" },
+    { "route": "/404",              "page": "NotFound" }
+  ],
+  "operator": [
+    { "route": "/dashboard",                "page": "Dashboard" },
+    { "route": "/scripts",                  "page": "ScriptManagement" },
+    { "route": "/scripts/upload",           "page": "ScriptUpload" },
+    { "route": "/scripts/editor",           "page": "ScriptEditor" },
+    { "route": "/scripts/1",                "page": "ScriptDetail" },
+    { "route": "/scripts/1/analysis",       "page": "ScriptAnalysis" },
+    { "route": "/search",                   "page": "Search" },
+    { "route": "/categories",               "page": "Categories" },
+    { "route": "/manage-files",             "page": "ManageFiles" },
+    { "route": "/documentation",            "page": "Documentation" },
+    { "route": "/documentation/crawl",      "page": "DocumentationCrawl" },
+    { "route": "/documentation/data",       "page": "CrawledData" },
+    { "route": "/chat",                     "page": "ChatWithAI" },
+    { "route": "/chat/simple",              "page": "SimpleChatWithAI" },
+    { "route": "/chat/history",             "page": "ChatHistory" },
+    { "route": "/agentic",                  "page": "AgenticAIPage" },
+    { "route": "/agentic/orchestration",    "page": "AgentOrchestrationPage" },
+    { "route": "/analytics",                "page": "Analytics" },
+    { "route": "/profile",                  "page": "Profile" },
+    { "route": "/settings",                 "page": "Settings" },
+    { "route": "/settings/api",             "page": "ApiSettings" },
+    { "route": "/settings/appearance",      "page": "AppearanceSettings" },
+    { "route": "/settings/application",     "page": "ApplicationSettings" },
+    { "route": "/settings/categories",      "page": "CategoriesSettings" },
+    { "route": "/settings/data-maintenance","page": "DataMaintenanceSettings" },
+    { "route": "/settings/notifications",   "page": "NotificationSettings" },
+    { "route": "/settings/profile",         "page": "ProfileSettings" },
+    { "route": "/settings/security",        "page": "SecuritySettings" },
+    { "route": "/settings/users",           "page": "UserManagement" },
+    { "route": "/ui-components",            "page": "UIComponentsDemo" }
+  ],
+  "criticalDetail": [
+    { "route": "/scripts/1",          "page": "ScriptDetail",   "interaction": "open" },
+    { "route": "/scripts/1/analysis", "page": "ScriptAnalysis", "interaction": "click-criteria-tab" },
+    { "route": "/dashboard",          "page": "Dashboard",      "interaction": "wait-kpi-populated" },
+    { "route": "/settings/users",     "page": "UserManagement", "interaction": "show-safety-rail-disabled-state" }
+  ]
+}

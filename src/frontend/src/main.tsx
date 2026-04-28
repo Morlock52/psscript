@@ -1,5 +1,12 @@
+// Self-hosted font faces — loaded once for the entire app.
+// DM Serif Display is NOT imported here; the BrandShell lazy-loads it
+// only when a brand-surface route mounts (Phase E task E5).
+import '@fontsource-variable/mona-sans';
+import '@fontsource-variable/jetbrains-mono';
+
 import React from 'react'
 import ReactDOM from 'react-dom/client'
+import { MotionConfig } from 'framer-motion'
 import App from './App'
 import { AuthProvider } from './contexts/AuthContext'
 import { ThemeProvider } from './contexts/ThemeContext'
@@ -31,7 +38,9 @@ try {
       <ErrorBoundary>
         <AuthProvider>
           <ThemeProvider>
-            <App />
+            <MotionConfig reducedMotion="user">
+              <App />
+            </MotionConfig>
           </ThemeProvider>
         </AuthProvider>
       </ErrorBoundary>

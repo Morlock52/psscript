@@ -1,0 +1,264 @@
+/* ============================================================
+   PSScript design tokens — single source of truth.
+   Spec: docs/superpowers/specs/2026-04-28-frontend-modernization-design.md
+   ============================================================ */
+
+[data-surface="brand"] {
+  --surface-base:    #0E1525;
+  --surface-raised:  #131C30;
+  --surface-overlay: #1A2440;
+  --surface-glass:   rgba(20, 28, 50, 0.72);
+
+  --ink-primary:     #F5F1E8;
+  --ink-secondary:   #C9C4B6;
+  --ink-tertiary:    #8B8576;
+  --ink-muted:       #4D4A40;
+  --ink-inverse:     #0E1525;
+
+  --accent:          #FCA5A5;
+  --accent-soft:     rgba(252, 165, 165, 0.16);
+  --cool:            #5EEAD4;
+  --warm:            #FCA5A5;
+  --violet:          #C4B5FD;
+
+  --signal-success:  #5EEAD4;
+  --signal-warning:  #F5C97A;
+  --signal-danger:   #F87B7B;
+  --signal-info:     #C4B5FD;
+
+  --ring-focus:      #FCA5A5;
+  --shadow-near:     0 1px 2px rgba(0, 0, 0, 0.40), 0 2px 8px rgba(0, 0, 0, 0.32);
+  --shadow-far:      0 8px 24px rgba(0, 0, 0, 0.48), 0 24px 64px rgba(0, 0, 0, 0.36);
+  --shadow-glow:     0 0 80px rgba(252, 165, 165, 0.18),
+                     0 0 160px rgba(94, 234, 212, 0.10);
+
+  --blur-glass:      12px;
+  --radius-sm:       4px;
+  --radius-md:       8px;
+  --radius-lg:       14px;
+  --radius-xl:       20px;
+}
+
+[data-surface="operator"] {
+  --surface-base:    #0E1116;
+  --surface-raised:  #171B22;
+  --surface-overlay: #1F242D;
+  --surface-glass:   rgba(23, 27, 34, 0.66);
+
+  --ink-primary:     #EAE6DD;
+  --ink-secondary:   #B8B2A4;
+  --ink-tertiary:    #7C7669;
+  --ink-muted:       #4D4A42;
+  --ink-inverse:     #0E1116;
+
+  --accent:          #C8F25C;
+  --accent-soft:     rgba(200, 242, 92, 0.14);
+  --cool:            #5EEAD4;
+  --warm:            #FCA5A5;
+  --violet:          #C4B5FD;
+
+  --signal-success:  #5EEAD4;
+  --signal-warning:  #F5C97A;
+  --signal-danger:   #F5A8A8;
+  --signal-info:     #8FB4D9;
+
+  --ring-focus:      #C8F25C;
+  --shadow-near:     0 1px 2px rgba(0, 0, 0, 0.40), 0 2px 8px rgba(0, 0, 0, 0.28);
+  --shadow-far:      0 8px 24px rgba(0, 0, 0, 0.50), 0 24px 64px rgba(0, 0, 0, 0.34);
+  --shadow-glow:     0 0 200px rgba(94, 234, 212, 0.04),
+                     0 0 360px rgba(196, 181, 253, 0.04);
+
+  --blur-glass:      12px;
+  --radius-sm:       4px;
+  --radius-md:       8px;
+  --radius-lg:       14px;
+  --radius-xl:       20px;
+}
+
+[data-surface="operator"][data-theme="light"] {
+  --surface-base:    #FBF8F1;
+  --surface-raised:  #FFFFFF;
+  --surface-overlay: #FFFFFF;
+  --surface-glass:   rgba(255, 255, 255, 0.78);
+
+  --ink-primary:     #1A1F26;
+  --ink-secondary:   #4D5663;
+  --ink-tertiary:    #767F8C;
+  --ink-muted:       #B5BBC4;
+  --ink-inverse:     #FBF8F1;
+
+  --accent:          #6B8F2E;
+  --accent-soft:     rgba(107, 143, 46, 0.10);
+  --cool:            #1F8B7A;
+  --warm:            #C8623F;
+  --violet:          #6B5DD3;
+
+  --signal-success:  #1F8B7A;
+  --signal-warning:  #B57B14;
+  --signal-danger:   #C04646;
+  --signal-info:     #335E8C;
+
+  --ring-focus:      #6B8F2E;
+  --shadow-near:     0 1px 2px rgba(0, 0, 0, 0.06), 0 2px 8px rgba(0, 0, 0, 0.04);
+  --shadow-far:      0 8px 24px rgba(0, 0, 0, 0.10), 0 24px 64px rgba(0, 0, 0, 0.06);
+  --shadow-glow:     none;
+}
+
+/* ============================================================
+   Legacy variable compatibility shim — bridges JSX call sites that
+   still consume --color-* / --shadow-* / --gradient-* etc. via
+   arbitrary-value Tailwind classes (`bg-[var(--color-primary)]`).
+
+   Plan 2 retired the bespoke utility classes (.btn, .card, .input,
+   .glass, .markdown-body) but the audit missed 588 var(--*) call
+   sites in JSX. This shim stays alive until Plan 4 migrates them
+   onto the new token names directly.
+   ============================================================ */
+
+:root {
+  /* Background / surface aliases */
+  --color-bg-primary:    var(--surface-base);
+  --color-bg-secondary:  var(--surface-raised);
+  --color-bg-tertiary:   var(--surface-overlay);
+  --color-bg-elevated:   var(--surface-raised);
+  --color-bg-sunken:     var(--surface-base);
+  --color-bg-overlay:    rgba(0, 0, 0, 0.5);
+
+  /* Text aliases */
+  --color-text-primary:   var(--ink-primary);
+  --color-text-secondary: var(--ink-secondary);
+  --color-text-tertiary:  var(--ink-tertiary);
+  --color-text-muted:     var(--ink-muted);
+  --color-text-inverse:   var(--ink-inverse);
+
+  /* Border aliases */
+  --color-border-default: var(--surface-overlay);
+  --color-border-subtle:  var(--surface-raised);
+  --color-border-strong:  var(--ink-muted);
+  --color-border-focus:   var(--ring-focus);
+
+  /* Brand / accent / status aliases */
+  --color-primary:        var(--accent);
+  --color-primary-hover:  color-mix(in srgb, var(--accent) 88%, black);
+  --color-primary-light:  var(--accent-soft);
+  --color-primary-dark:   color-mix(in srgb, var(--accent) 80%, black);
+  --color-accent:         var(--accent);
+  --color-accent-hover:   color-mix(in srgb, var(--accent) 88%, black);
+  --color-accent-light:   var(--accent-soft);
+  --color-success:        var(--signal-success);
+  --color-success-light:  color-mix(in srgb, var(--signal-success) 16%, transparent);
+  --color-success-dark:   color-mix(in srgb, var(--signal-success) 80%, black);
+  --color-warning:        var(--signal-warning);
+  --color-warning-light:  color-mix(in srgb, var(--signal-warning) 16%, transparent);
+  --color-warning-dark:   color-mix(in srgb, var(--signal-warning) 80%, black);
+  --color-error:          var(--signal-danger);
+  --color-error-light:    color-mix(in srgb, var(--signal-danger) 16%, transparent);
+  --color-error-dark:     color-mix(in srgb, var(--signal-danger) 80%, black);
+  --color-info:           var(--signal-info);
+  --color-info-light:     color-mix(in srgb, var(--signal-info) 16%, transparent);
+  --color-info-dark:      color-mix(in srgb, var(--signal-info) 80%, black);
+
+  /* Interactive state aliases */
+  --color-hover-overlay:  rgba(255, 255, 255, 0.04);
+  --color-active-overlay: rgba(255, 255, 255, 0.08);
+  --color-disabled-bg:    var(--surface-overlay);
+  --color-disabled-text:  var(--ink-muted);
+
+  /* Shadow aliases */
+  --shadow-xs:    var(--shadow-near);
+  --shadow-sm:    var(--shadow-near);
+  --shadow-md:    var(--shadow-near);
+  --shadow-lg:    var(--shadow-far);
+  --shadow-xl:    var(--shadow-far);
+  --shadow-inner: inset 0 2px 4px rgba(0, 0, 0, 0.05);
+
+  /* Gradient aliases */
+  --gradient-primary:  linear-gradient(135deg, var(--cool) 0%, var(--violet) 56%, var(--warm) 100%);
+  --gradient-surface:  linear-gradient(180deg, var(--surface-raised) 0%, var(--surface-base) 100%);
+  --gradient-shimmer:  linear-gradient(90deg, transparent 0%, rgba(255, 255, 255, 0.06) 50%, transparent 100%);
+
+  /* Blur aliases */
+  --blur-sm: 4px;
+  --blur-md: 8px;
+  --blur-lg: 16px;
+
+  /* Glass aliases */
+  --glass-bg:     var(--surface-glass);
+  --glass-border: rgba(255, 255, 255, 0.08);
+
+  /* Spacing aliases */
+  --space-px: 1px;
+  --space-0:  0;
+  --space-1:  0.25rem;
+  --space-2:  0.5rem;
+  --space-3:  0.75rem;
+  --space-4:  1rem;
+  --space-5:  1.25rem;
+  --space-6:  1.5rem;
+  --space-8:  2rem;
+  --space-10: 2.5rem;
+  --space-12: 3rem;
+  --space-16: 4rem;
+  --space-20: 5rem;
+  --space-24: 6rem;
+
+  /* Transition aliases */
+  --transition-fast:   150ms ease;
+  --transition-normal: 250ms ease;
+  --transition-slow:   350ms ease;
+
+  /* Radius full alias (the new system already has sm/md/lg/xl) */
+  --radius-full: 9999px;
+}
+
+/* ----------------------------------------------------------------
+   Fallback metric overrides — match system-font metrics to
+   Mona Sans + JetBrains Mono so the swap-in doesn't shift layout.
+   Numbers are computed against Söhne / Geist proxies; if the
+   visual diff in Plan 3 shows shift, re-tune ascent-override and
+   size-adjust here.
+   ---------------------------------------------------------------- */
+
+@font-face {
+  font-family: 'Mona Sans Fallback';
+  src: local('Söhne'), local('Inter Variable'), local('Helvetica Neue'), local('Arial');
+  ascent-override: 92%;
+  descent-override: 22%;
+  line-gap-override: 0%;
+  size-adjust: 99%;
+}
+
+@font-face {
+  font-family: 'JetBrains Mono Fallback';
+  src: local('SF Mono'), local('Menlo'), local('Consolas'), local('Liberation Mono');
+  ascent-override: 88%;
+  descent-override: 22%;
+  line-gap-override: 0%;
+  size-adjust: 100%;
+}
+
+/* ----------------------------------------------------------------
+   Body / display / mono families.
+   ---------------------------------------------------------------- */
+
+:root {
+  --font-sans:    'Mona Sans Variable', 'Mona Sans Fallback', system-ui, sans-serif;
+  --font-mono:    'JetBrains Mono Variable', 'JetBrains Mono Fallback', ui-monospace, monospace;
+  --font-display: 'DM Serif Display', Georgia, serif;
+}
+
+body {
+  font-family: var(--font-sans);
+  font-weight: 380;
+  font-feature-settings: 'cv11', 'ss01';
+  font-optical-sizing: auto;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+code, kbd, pre, samp, .font-mono {
+  font-family: var(--font-mono);
+  font-feature-settings: 'liga' 0;
+}
+.tabular-nums {
+  font-variant-numeric: tabular-nums slashed-zero;
+}

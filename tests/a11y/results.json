@@ -1,0 +1,98 @@
+[
+  {
+    "route": "/login",
+    "tag": "brand",
+    "violations": [
+      {
+        "id": "color-contrast",
+        "impact": "serious",
+        "help": "Elements must meet minimum color contrast ratio thresholds",
+        "nodes": 1
+      }
+    ],
+    "total": 1
+  },
+  {
+    "route": "/register",
+    "tag": "brand",
+    "violations": [
+      {
+        "id": "color-contrast",
+        "impact": "serious",
+        "help": "Elements must meet minimum color contrast ratio thresholds",
+        "nodes": 1
+      }
+    ],
+    "total": 1
+  },
+  {
+    "route": "/auth/callback",
+    "tag": "brand",
+    "violations": [],
+    "total": 0
+  },
+  {
+    "route": "/pending-approval",
+    "tag": "brand",
+    "violations": [
+      {
+        "id": "color-contrast",
+        "impact": "serious",
+        "help": "Elements must meet minimum color contrast ratio thresholds",
+        "nodes": 1
+      }
+    ],
+    "total": 1
+  },
+  {
+    "route": "/landing",
+    "tag": "brand",
+    "violations": [],
+    "total": 0
+  },
+  {
+    "route": "/404",
+    "tag": "brand",
+    "violations": [],
+    "total": 0
+  },
+  {
+    "route": "/dashboard",
+    "tag": "operator",
+    "violations": [
+      {
+        "id": "color-contrast",
+        "impact": "serious",
+        "help": "Elements must meet minimum color contrast ratio thresholds",
+        "nodes": 1
+      }
+    ],
+    "total": 1
+  },
+  {
+    "route": "/scripts",
+    "tag": "operator",
+    "violations": [
+      {
+        "id": "color-contrast",
+        "impact": "serious",
+        "help": "Elements must meet minimum color contrast ratio thresholds",
+        "nodes": 1
+      }
+    ],
+    "total": 1
+  },
+  {
+    "route": "/settings/profile",
+    "tag": "operator",
+    "violations": [
+      {
+        "id": "color-contrast",
+        "impact": "serious",
+        "help": "Elements must meet minimum color contrast ratio thresholds",
+        "nodes": 1
+      }
+    ],
+    "total": 1
+  }
+]
