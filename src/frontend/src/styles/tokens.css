@@ -104,12 +104,112 @@
   --shadow-glow:     none;
 }
 
-/* Legacy compatibility shim was removed in Plan 2 (2026-04-28).
-   The bespoke utilities that consumed it (.btn-*, .card, .input,
-   .glass, .markdown-body, .surface-*, .text-*, .gradient-text) and
-   the matching --color-* / --shadow-* / --gradient-* / --glass-* /
-   --space-* / --transition-* / --radius-* / --blur-* aliases were
-   deleted together once the last external consumer was migrated. */
+/* ============================================================
+   Legacy variable compatibility shim — bridges JSX call sites that
+   still consume --color-* / --shadow-* / --gradient-* etc. via
+   arbitrary-value Tailwind classes (`bg-[var(--color-primary)]`).
+
+   Plan 2 retired the bespoke utility classes (.btn, .card, .input,
+   .glass, .markdown-body) but the audit missed 588 var(--*) call
+   sites in JSX. This shim stays alive until Plan 4 migrates them
+   onto the new token names directly.
+   ============================================================ */
+
+:root {
+  /* Background / surface aliases */
+  --color-bg-primary:    var(--surface-base);
+  --color-bg-secondary:  var(--surface-raised);
+  --color-bg-tertiary:   var(--surface-overlay);
+  --color-bg-elevated:   var(--surface-raised);
+  --color-bg-sunken:     var(--surface-base);
+  --color-bg-overlay:    rgba(0, 0, 0, 0.5);
+
+  /* Text aliases */
+  --color-text-primary:   var(--ink-primary);
+  --color-text-secondary: var(--ink-secondary);
+  --color-text-tertiary:  var(--ink-tertiary);
+  --color-text-muted:     var(--ink-muted);
+  --color-text-inverse:   var(--ink-inverse);
+
+  /* Border aliases */
+  --color-border-default: var(--surface-overlay);
+  --color-border-subtle:  var(--surface-raised);
+  --color-border-strong:  var(--ink-muted);
+  --color-border-focus:   var(--ring-focus);
+
+  /* Brand / accent / status aliases */
+  --color-primary:        var(--accent);
+  --color-primary-hover:  color-mix(in srgb, var(--accent) 88%, black);
+  --color-primary-light:  var(--accent-soft);
+  --color-primary-dark:   color-mix(in srgb, var(--accent) 80%, black);
+  --color-accent:         var(--accent);
+  --color-accent-hover:   color-mix(in srgb, var(--accent) 88%, black);
+  --color-accent-light:   var(--accent-soft);
+  --color-success:        var(--signal-success);
+  --color-success-light:  color-mix(in srgb, var(--signal-success) 16%, transparent);
+  --color-success-dark:   color-mix(in srgb, var(--signal-success) 80%, black);
+  --color-warning:        var(--signal-warning);
+  --color-warning-light:  color-mix(in srgb, var(--signal-warning) 16%, transparent);
+  --color-warning-dark:   color-mix(in srgb, var(--signal-warning) 80%, black);
+  --color-error:          var(--signal-danger);
+  --color-error-light:    color-mix(in srgb, var(--signal-danger) 16%, transparent);
+  --color-error-dark:     color-mix(in srgb, var(--signal-danger) 80%, black);
+  --color-info:           var(--signal-info);
+  --color-info-light:     color-mix(in srgb, var(--signal-info) 16%, transparent);
+  --color-info-dark:      color-mix(in srgb, var(--signal-info) 80%, black);
+
+  /* Interactive state aliases */
+  --color-hover-overlay:  rgba(255, 255, 255, 0.04);
+  --color-active-overlay: rgba(255, 255, 255, 0.08);
+  --color-disabled-bg:    var(--surface-overlay);
+  --color-disabled-text:  var(--ink-muted);
+
+  /* Shadow aliases */
+  --shadow-xs:    var(--shadow-near);
+  --shadow-sm:    var(--shadow-near);
+  --shadow-md:    var(--shadow-near);
+  --shadow-lg:    var(--shadow-far);
+  --shadow-xl:    var(--shadow-far);
+  --shadow-inner: inset 0 2px 4px rgba(0, 0, 0, 0.05);
+
+  /* Gradient aliases */
+  --gradient-primary:  linear-gradient(135deg, var(--cool) 0%, var(--violet) 56%, var(--warm) 100%);
+  --gradient-surface:  linear-gradient(180deg, var(--surface-raised) 0%, var(--surface-base) 100%);
+  --gradient-shimmer:  linear-gradient(90deg, transparent 0%, rgba(255, 255, 255, 0.06) 50%, transparent 100%);
+
+  /* Blur aliases */
+  --blur-sm: 4px;
+  --blur-md: 8px;
+  --blur-lg: 16px;
+
+  /* Glass aliases */
+  --glass-bg:     var(--surface-glass);
+  --glass-border: rgba(255, 255, 255, 0.08);
+
+  /* Spacing aliases */
+  --space-px: 1px;
+  --space-0:  0;
+  --space-1:  0.25rem;
+  --space-2:  0.5rem;
+  --space-3:  0.75rem;
+  --space-4:  1rem;
+  --space-5:  1.25rem;
+  --space-6:  1.5rem;
+  --space-8:  2rem;
+  --space-10: 2.5rem;
+  --space-12: 3rem;
+  --space-16: 4rem;
+  --space-20: 5rem;
+  --space-24: 6rem;
+
+  /* Transition aliases */
+  --transition-fast:   150ms ease;
+  --transition-normal: 250ms ease;
+  --transition-slow:   350ms ease;
+
+  /* Radius full alias (the new system already has sm/md/lg/xl) */
+  --radius-full: 9999px;
+}
 
 /* ----------------------------------------------------------------
    Fallback metric overrides — match system-font metrics to

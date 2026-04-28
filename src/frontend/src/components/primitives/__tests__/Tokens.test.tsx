@@ -128,10 +128,14 @@ describe('typography cascade integration', () => {
 });
 
 /*
- * Plan 2 deleted the legacy variable shim. This describe locks that in
- * so a future revival is caught.
+ * Plan 2 retired the bespoke utility classes (.btn, .card, .input,
+ * .glass, .markdown-body) but Plan 3's a11y sweep surfaced 588 JSX
+ * call sites still consuming the legacy --color-* / --gradient-* vars
+ * via arbitrary-value Tailwind classes. The shim stays alive until
+ * Plan 4 migrates them. This describe asserts the shim is INTACT so
+ * a future "let's clean this up" doesn't repeat Plan 2's mistake.
  */
-describe('legacy shim removal (Plan 2)', () => {
+describe('legacy shim still alive (Plan 4 migration pending)', () => {
   const shimVars = [
     '--color-bg-primary',
     '--color-text-primary',
@@ -145,13 +149,13 @@ describe('legacy shim removal (Plan 2)', () => {
     '--glass-bg',
     '--space-4',
     '--transition-fast',
-    '--radius-md',
+    '--radius-full',
     '--blur-md',
   ];
   shimVars.forEach((name) => {
-    it(`legacy shim variable ${name} is no longer defined`, () => {
+    it(`legacy shim variable ${name} is still defined`, () => {
       const declared = getComputedStyle(document.documentElement).getPropertyValue(name).trim();
-      expect(declared).toBe('');
+      expect(declared).not.toBe('');
     });
   });
 });
