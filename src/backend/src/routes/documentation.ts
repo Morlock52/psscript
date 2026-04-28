@@ -1,7 +1,7 @@
 // Request type extensions are in src/types/express.d.ts
 import express from 'express';
 import { documentationController } from '../controllers/DocumentationController';
-import { authenticateJWT } from '../middleware/authMiddleware';
+import { authenticateJWT, requireAdmin } from '../middleware/authMiddleware';
 import { corsMiddleware } from '../middleware/corsMiddleware';
 
 const router = express.Router();
@@ -247,8 +247,7 @@ router.post('/crawl/mslearn', authenticateJWT, documentationController.crawlMSLe
  *       400:
  *         description: Invalid request
  */
-// Note: bulkImport is public to allow the crawl page to save documents
-router.post('/bulk', documentationController.bulkImport);
+router.post('/bulk', authenticateJWT, requireAdmin, documentationController.bulkImport);
 
 /**
  * @swagger
@@ -283,15 +282,15 @@ router.post('/bulk', documentationController.bulkImport);
  *       400:
  *         description: Invalid request
  */
-router.post('/crawl/ai', documentationController.crawlWithAI);
+router.post('/crawl/ai', authenticateJWT, requireAdmin, documentationController.crawlWithAI);
 
 /**
  * Async AI crawl jobs (progress + cancel)
  */
 // Bind controller methods that rely on `this` (Express does not bind automatically).
-router.post('/crawl/ai/jobs', documentationController.startCrawlWithAIJob.bind(documentationController));
-router.get('/crawl/ai/jobs/:jobId', documentationController.getCrawlWithAIJobStatus.bind(documentationController));
-router.post('/crawl/ai/jobs/:jobId/cancel', documentationController.cancelCrawlWithAIJob.bind(documentationController));
+router.post('/crawl/ai/jobs', authenticateJWT, requireAdmin, documentationController.startCrawlWithAIJob.bind(documentationController));
+router.get('/crawl/ai/jobs/:jobId', authenticateJWT, documentationController.getCrawlWithAIJobStatus.bind(documentationController));
+router.post('/crawl/ai/jobs/:jobId/cancel', authenticateJWT, requireAdmin, documentationController.cancelCrawlWithAIJob.bind(documentationController));
 
 /**
  * @swagger
@@ -315,6 +314,6 @@ router.post('/crawl/ai/jobs/:jobId/cancel', documentationController.cancelCrawlW
  *       404:
  *         description: Not found
  */
-router.delete('/:id', documentationController.delete);
+router.delete('/:id', authenticateJWT, documentationController.delete);
 
 export default router;

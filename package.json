@@ -13,8 +13,8 @@
     "test:frontend": "npm run test:run --prefix src/frontend",
     "test:e2e": "playwright test",
     "test:e2e:chromium": "playwright test --project=chromium",
-    "netlify:dev": "netlify dev",
-    "netlify:build": "netlify build",
+    "netlify:dev": "npx --yes netlify-cli@26.0.0 dev",
+    "netlify:build": "npx --yes netlify-cli@26.0.0 build",
     "playwright:stack": "bash ./scripts/playwright-stack.sh",
     "screenshots:readme": "node scripts/frame-readme-screenshots.mjs",
     "install:all": "npm install && cd src/frontend && npm install && cd ../backend && npm install",
@@ -37,10 +37,9 @@
   "license": "MIT",
   "devDependencies": {
     "@axe-core/playwright": "^4.11.2",
-    "@netlify/functions": "^4.2.5",
+    "@netlify/functions": "^5.2.0",
     "@playwright/test": "^1.59.1",
     "concurrently": "^8.2.0",
-    "netlify-cli": "^25.6.2",
     "pixelmatch": "^7.1.1",
     "pngjs": "^7.0.0",
     "sharp": "^0.34.5"
@@ -55,8 +54,7 @@
     "pg": "^8.13.3",
     "pg-hstore": "^2.3.4",
     "react-icons": "^5.5.0",
-    "sequelize": "^6.37.8",
-    "uuid": "^11.1.0",
+    "uuid": "^14.0.0",
     "winston-daily-rotate-file": "^5.0.0"
   }
 }

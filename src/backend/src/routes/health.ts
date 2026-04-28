@@ -14,6 +14,7 @@ import {
   persistCache,
   loadCache
 } from '../utils/redis';
+import { authenticateJWT, requireAdmin } from '../middleware/authMiddleware';
 
 // Constants for cache health checks
 // These match the values defined in index.ts
@@ -366,7 +367,7 @@ router.get('/network-test', async (req, res) => {
 });
 
 // Manual database connection management
-router.post('/db/:action', async (req, res) => {
+router.post('/db/:action', authenticateJWT, requireAdmin, async (req, res) => {
   const { action } = req.params;
   try {
     if (action === 'disconnect') {
@@ -429,7 +430,7 @@ router.post('/db/:action', async (req, res) => {
 });
 
 // Comprehensive diagnostics endpoint
-router.get('/diagnostics', async (req, res) => {
+router.get('/diagnostics', authenticateJWT, requireAdmin, async (req, res) => {
   try {
     // System information
     const systemInfo = {

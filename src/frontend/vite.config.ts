@@ -1,6 +1,6 @@
 /// <reference types="vitest" />
 import { defineConfig } from 'vite'
-import react from '@vitejs/plugin-react-swc'
+import react from '@vitejs/plugin-react'
 import fs from 'fs'
 
 // Check if TLS certificates are available
@@ -19,7 +19,7 @@ if (tlsEnabled) {
 
 // https://vitejs.dev/config/
 export default defineConfig({
-  plugins: [react()], // SWC is 20-70x faster than Babel
+  plugins: [react()],
   server: {
     port: 3090,
     host: '0.0.0.0',
@@ -95,14 +95,18 @@ export default defineConfig({
           if (id.includes('/refractor/')) {
             return 'vendor-refractor'
           }
+          if (id.includes('/monaco-editor/')) {
+            return 'vendor-monaco'
+          }
 
           // Everything else: let rollup decide (safe for circular deps)
           return undefined
         },
       },
     },
-    // Allow larger Monaco/highlight chunks with intentional bundling.
-    chunkSizeWarningLimit: 1000,
+    // Monaco is isolated into an editor-only route chunk; keep warnings focused on
+    // unexpected chunks instead of the known editor payload.
+    chunkSizeWarningLimit: 2500,
   },
   test: {
     globals: true,

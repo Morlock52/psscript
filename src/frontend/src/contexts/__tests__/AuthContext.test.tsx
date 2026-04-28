@@ -4,6 +4,12 @@ import userEvent from '@testing-library/user-event';
 import axios from 'axios';
 import { AuthProvider, useAuth } from '../AuthContext';
 
+const supabaseAuthMocks = vi.hoisted(() => ({
+  getSession: vi.fn(),
+  signInWithPassword: vi.fn(),
+  signOut: vi.fn(),
+}));
+
 // Mock axios with proper typing for Vitest
 vi.mock('axios', () => ({
   default: {
@@ -20,6 +26,15 @@ vi.mock('axios', () => ({
       }
     }))
   }
+}));
+
+vi.mock('../../services/supabase', () => ({
+  getSupabaseClient: vi.fn(() => ({
+    auth: supabaseAuthMocks,
+  })),
+  isAuthDisabledForCurrentHost: vi.fn(() => false),
+  isHostedAuthConfigurationMissing: vi.fn(() => false),
+  isSupabaseAuthEnabled: vi.fn(() => true),
 }));
 
 const mockedAxios = axios as unknown as {
@@ -74,6 +89,12 @@ describe('AuthContext', () => {
   beforeEach(() => {
     vi.clearAllMocks();
     localStorageMock.clear();
+    supabaseAuthMocks.getSession.mockResolvedValue({
+      data: { session: null },
+      error: null,
+    });
+    supabaseAuthMocks.signInWithPassword.mockResolvedValue({ error: null });
+    supabaseAuthMocks.signOut.mockResolvedValue({ error: null });
 
     // These unit tests exercise the "auth enabled" behavior by default.
     // In local dev, the repo often runs with VITE_DISABLE_AUTH=true, which would
@@ -108,7 +129,15 @@ describe('AuthContext', () => {
     });
 
     it('loads user from token on mount', async () => {
-      localStorageMock.getItem.mockReturnValue('valid-token');
+      supabaseAuthMocks.getSession.mockResolvedValueOnce({
+        data: {
+          session: {
+            access_token: 'valid-token',
+            refresh_token: 'refresh-token',
+          },
+        },
+        error: null,
+      });
       mockedAxios.get.mockResolvedValueOnce({
         data: {
           user: {
@@ -134,8 +163,10 @@ describe('AuthContext', () => {
     });
 
     it('clears invalid token on mount', async () => {
-      localStorageMock.getItem.mockReturnValue('invalid-token');
-      mockedAxios.get.mockRejectedValueOnce(new Error('Invalid token'));
+      supabaseAuthMocks.getSession.mockResolvedValueOnce({
+        data: { session: null },
+        error: new Error('Invalid token'),
+      });
 
       render(
         <AuthProvider>
@@ -154,10 +185,22 @@ describe('AuthContext', () => {
   describe('Login', () => {
     it('successfully logs in user', async () => {
       const user = userEvent.setup();
-      mockedAxios.post.mockResolvedValueOnce({
+      supabaseAuthMocks.getSession.mockResolvedValueOnce({
+        data: { session: null },
+        error: null,
+      });
+      supabaseAuthMocks.signInWithPassword.mockResolvedValueOnce({ error: null });
+      supabaseAuthMocks.getSession.mockResolvedValueOnce({
         data: {
-          token: 'new-token',
-          refreshToken: 'refresh-token',
+          session: {
+            access_token: 'new-token',
+            refresh_token: 'refresh-token',
+          },
+        },
+        error: null,
+      });
+      mockedAxios.get.mockResolvedValueOnce({
+        data: {
           user: {
             id: '1',
             username: 'testuser',
@@ -191,11 +234,8 @@ describe('AuthContext', () => {
 
     it('handles login failure with server error', async () => {
       const user = userEvent.setup();
-      mockedAxios.post.mockRejectedValueOnce({
-        response: {
-          status: 401,
-          data: { message: 'Invalid credentials' },
-        },
+      supabaseAuthMocks.signInWithPassword.mockResolvedValueOnce({
+        error: new Error('Invalid credentials'),
       });
 
       render(
@@ -220,7 +260,9 @@ describe('AuthContext', () => {
       const networkError = new Error('Network Error');
       (networkError as any).request = {};
       (networkError as any).config = { url: 'http://localhost:4001/api' };
-      mockedAxios.post.mockRejectedValueOnce(networkError);
+      supabaseAuthMocks.signInWithPassword.mockResolvedValueOnce({
+        error: networkError,
+      });
 
       render(
         <AuthProvider>
@@ -243,7 +285,15 @@ describe('AuthContext', () => {
   describe('Logout', () => {
     it('clears user and tokens on logout', async () => {
       const user = userEvent.setup();
-      localStorageMock.getItem.mockReturnValue('valid-token');
+      supabaseAuthMocks.getSession.mockResolvedValueOnce({
+        data: {
+          session: {
+            access_token: 'valid-token',
+            refresh_token: 'refresh-token',
+          },
+        },
+        error: null,
+      });
       mockedAxios.get.mockResolvedValueOnce({
         data: {
           user: {

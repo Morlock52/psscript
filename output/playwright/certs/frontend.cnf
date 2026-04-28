@@ -1,0 +1,14 @@
+[req]
+default_bits = 2048
+prompt = no
+default_md = sha256
+distinguished_name = dn
+x509_extensions = ext
+
+[dn]
+CN = 127.0.0.1
+
+[ext]
+subjectAltName = IP:127.0.0.1,DNS:localhost
+keyUsage = digitalSignature,keyEncipherment
+extendedKeyUsage = serverAuth

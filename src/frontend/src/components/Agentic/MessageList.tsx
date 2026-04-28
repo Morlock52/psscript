@@ -1,7 +1,7 @@
 import React from 'react';
 import { Message } from '../../api/assistantsApi';
 import { marked } from 'marked';
-import DOMPurify from 'dompurify';
+import SafeHtml from '../SafeHtml';
 import 'highlight.js'; // Imported for side-effect styles
 import 'highlight.js/styles/github.css';
 
@@ -64,12 +64,7 @@ const MessageList: React.FC<MessageListProps> = ({ messages, loading = false }) 
     }
   }, [messages]);
 
-  // Parse and sanitize markdown
-  const renderMarkdown = (text: string) => {
-    const rawHtml = marked.parse(text) as string;
-    const cleanHtml = DOMPurify.sanitize(rawHtml);
-    return { __html: cleanHtml };
-  };
+  const renderMarkdown = (text: string) => marked.parse(text) as string;
 
   return (
     <div className="message-list" style={{ 
@@ -97,9 +92,10 @@ const MessageList: React.FC<MessageListProps> = ({ messages, loading = false }) 
           }}>
             {message.role === 'user' ? 'You' : 'Assistant'}
           </div>
-          <div 
+          <SafeHtml
             className="message-content"
-            dangerouslySetInnerHTML={renderMarkdown(getMessageText(message))} 
+            html={renderMarkdown(getMessageText(message))}
+            variant="markdown"
           />
           <div className="message-timestamp" style={{ 
             fontSize: '0.7rem',

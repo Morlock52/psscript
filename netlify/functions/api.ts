@@ -298,17 +298,6 @@ function getRoute(req: Request): RouteParams {
   return { path, segments: path.split('/').filter(Boolean), url };
 }
 
-async function requireUserWithQueryToken(req: Request, route: RouteParams) {
-  const token = route.url.searchParams.get('token');
-  if (!token) {
-    return await requireUser(req);
-  }
-
-  const headers = new Headers(req.headers);
-  headers.set('authorization', `Bearer ${token}`);
-  return await requireUser(new Request(req, { headers }));
-}
-
 async function handleHealth(): Promise<Response> {
   const env = {
     database: Boolean(getEnv('DATABASE_URL')),
@@ -1317,7 +1306,7 @@ async function handleHostedScriptExamples(req: Request, route: RouteParams): Pro
 async function handleHostedAnalysisStream(req: Request, route: RouteParams, scriptId: number): Promise<Response> {
   if (req.method !== 'GET') return methodNotAllowed();
 
-  const user = await requireUserWithQueryToken(req, route);
+  const user = await requireUser(req);
   const script = await fetchScriptForUser(scriptId, user.id);
   const startedAt = new Date().toISOString();
   const workflowId = `hosted-${scriptId}-${Date.now()}`;

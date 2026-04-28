@@ -1,9 +1,9 @@
+@import './styles/tokens.css';
+@import './styles/motion.css';
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
-
-@import './styles/tokens.css';
-@import './styles/motion.css';
 
 /* ============================================
    Base Styles

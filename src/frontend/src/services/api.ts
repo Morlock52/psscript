@@ -1,6 +1,4 @@
-// eslint-disable-next-line @typescript-eslint/ban-ts-comment
-// @ts-nocheck - Required for flexible API client configuration
-import axios, { AxiosRequestConfig, AxiosError } from "axios";
+import axios, { AxiosRequestConfig, AxiosError, InternalAxiosRequestConfig } from "axios";
 import { getApiUrl, isLocalhost as checkIsLocalhost } from "../utils/apiUrl";
 import { extractApiError, ErrorCodes as _ErrorCodes } from "../utils/errorUtils";
 
@@ -20,7 +18,7 @@ const apiClient = axios.create({
 
 // Request interceptor to dynamically set baseURL at runtime AND add auth token
 apiClient.interceptors.request.use(
-  (config) => {
+  (config: InternalAxiosRequestConfig) => {
     // Step 1: Prepend API URL if the request URL is relative (doesn't start with http)
     if (config.url && !config.url.startsWith('http')) {
       const apiUrl = getApiUrl();
@@ -33,7 +31,7 @@ apiClient.interceptors.request.use(
     const isFileUpload = config.url?.includes('/upload') === true;
 
     // Upload endpoints are authenticated too, so do not suppress the auth header.
-    if (token) {
+    if (token && config.headers) {
       config.headers["Authorization"] = `Bearer ${token}`;
     }
 
@@ -58,16 +56,11 @@ export default apiClient;
 apiClient.interceptors.response.use(
   (response) => response,
   async (error: AxiosError) => {
-    const originalRequest = error.config as AxiosRequestConfig;
-    
-    // Define extended config type that includes _retry
-    interface ExtendedRequestConfig extends AxiosRequestConfig {
-      _retry?: boolean;
-    }
+    const originalRequest = error.config as (InternalAxiosRequestConfig & { _retry?: boolean }) | undefined;
     
     // Handle token expiration (401 errors)
-    const config = originalRequest as ExtendedRequestConfig;
-    if (error.response?.status === 401 && !config._retry) {
+    const config = originalRequest;
+    if (error.response?.status === 401 && config && !config._retry) {
       config._retry = true;
       
       try {
@@ -158,12 +151,6 @@ const scriptService = {
         withCredentials: false
       };
       
-      // Debug log
-      console.log('[UPLOAD DEBUG] Starting upload:',
-        isFormData ? 'as FormData' : 'as JSON',
-        isLargeFile ? '(large file)' : '',
-        'to API URL:', getApiUrl());
-      
       // Choose the appropriate endpoint based on file size and type
       const endpoint = isFormData
         ? isLargeFile
@@ -171,11 +158,7 @@ const scriptService = {
           : "/scripts/upload"
         : "/scripts";
 
-      // Use a single approach for upload with improved error handling
-       console.log('[UPLOAD DEBUG] Attempting upload to endpoint:', endpoint);
-        
-       // Set up a more robust upload configuration
-      const uploadConfig = {
+      const uploadConfig: AxiosRequestConfig = {
         ...config,
         // Increase timeout for all uploads
         timeout: isLargeFile ? 180000 : 120000, // 3 minutes for large files, 2 minutes for regular
@@ -188,31 +171,12 @@ const scriptService = {
           ...(authToken ? { Authorization: `Bearer ${authToken}` } : {})
         }
       };
-        
-       console.log('[UPLOAD DEBUG] Upload config:', {
-         timeout: uploadConfig.timeout,
-         withCredentials: uploadConfig.withCredentials,
-         hasAuthHeader: !!uploadConfig.headers.Authorization
-       });
-        
-       // Use the main apiClient with our custom config
-       const response = await apiClient.post(endpoint, scriptData, uploadConfig).catch(err => {
-         console.log('[UPLOAD DEBUG] Upload error details:', {
-           message: err.message,
-           code: err.code,
-           status: err.response?.status,
-           statusText: err.response?.statusText,
-           responseData: err.response?.data
-         });
-         throw err;
-       });
-        
-       console.log('[UPLOAD DEBUG] Upload successful');
-       return response.data;
-       
+	        
+      const response = await apiClient.post(endpoint, scriptData, uploadConfig);
+      return response.data;
+	       
      } catch (error) {
       const err = error as AxiosError & { status?: number; details?: Record<string, unknown>; existingScriptId?: string | number };
-      console.error("[UPLOAD DEBUG] Final error uploading script:", err);
 
       if (err.status === 409) {
         throw Object.assign(new Error(err.message || 'This script already exists.'), {
@@ -223,15 +187,6 @@ const scriptService = {
       
       // Enhanced error handling with more detailed messages
       if (err.code === 'ECONNABORTED') {
-        console.error('[UPLOAD DEBUG] Timeout Error Details:', JSON.stringify({
-          code: err.code,
-          message: err.message,
-          config: {
-            timeout: err.config?.timeout,
-            url: err.config?.url,
-            method: err.config?.method
-          }
-        }, null, 2));
         throw new Error('The upload request timed out. Please check your connection and try again with a smaller file or better connection.');
       }
       
@@ -241,11 +196,6 @@ const scriptService = {
           err.message.includes('connection') ||
           err.message.includes('socket')
       )) {
-        console.error('[UPLOAD DEBUG] Network Error Details:', JSON.stringify({
-          code: err.code,
-          message: err.message,
-          name: err.name
-        }, null, 2));
         throw new Error('Network error detected. This could be due to server unavailability or connection problems. Please check your internet connection and try again.');
       }
       
@@ -253,11 +203,6 @@ const scriptService = {
           (err.message && err.message.includes('CORS')) ||
           (err.message && err.message.includes('cross-origin'))
       ) {
-        console.error('[UPLOAD DEBUG] CORS Error Details:', JSON.stringify({
-          code: err.code,
-          message: err.message,
-          headers: err.config?.headers
-        }, null, 2));
         throw new Error('Cross-Origin Resource Sharing (CORS) error. Please try again or contact support if the issue persists.');
       }
       

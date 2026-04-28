@@ -125,9 +125,9 @@ const App: React.FC = () => {
               <Route path="/scripts/:id/analysis" element={<ProtectedRoute><ScriptAnalysis /></ProtectedRoute>} />
 
               {/* AI Features */}
-              <Route path="/chat" element={<SimpleChatWithAI />} />
+              <Route path="/chat" element={<ProtectedRoute><SimpleChatWithAI /></ProtectedRoute>} />
               <Route path="/chat/history" element={<ProtectedRoute><ChatHistory /></ProtectedRoute>} />
-              <Route path="/ai/assistant" element={<AgenticAIPage />} />
+              <Route path="/ai/assistant" element={<ProtectedRoute><AgenticAIPage /></ProtectedRoute>} />
               <Route path="/ai/agents" element={<ProtectedRoute><AgentOrchestrationPage /></ProtectedRoute>} />
 
               {/* Documentation */}

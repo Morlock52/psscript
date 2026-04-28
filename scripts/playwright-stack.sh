@@ -89,6 +89,53 @@ require_supabase_database_url() {
   fi
 }
 
+ensure_playwright_cert() {
+  local name="$1"
+  local cert_dir="${PLAYWRIGHT_TLS_CERT_DIR:-$LOG_DIR/certs}"
+  local cert_path="$cert_dir/$name.crt"
+  local key_path="$cert_dir/$name.key"
+  local config_path="$cert_dir/$name.cnf"
+
+  mkdir -p "$cert_dir"
+
+  if [[ -s "$cert_path" && -s "$key_path" ]]; then
+    printf '%s|%s\n' "$cert_path" "$key_path"
+    return 0
+  fi
+
+  require_local_prereq openssl "openssl"
+
+  cat >"$config_path" <<'EOF'
+[req]
+default_bits = 2048
+prompt = no
+default_md = sha256
+distinguished_name = dn
+x509_extensions = ext
+
+[dn]
+CN = 127.0.0.1
+
+[ext]
+subjectAltName = IP:127.0.0.1,DNS:localhost
+keyUsage = digitalSignature,keyEncipherment
+extendedKeyUsage = serverAuth
+EOF
+
+  openssl req \
+    -x509 \
+    -nodes \
+    -newkey rsa:2048 \
+    -days "${PLAYWRIGHT_TLS_CERT_DAYS:-7}" \
+    -keyout "$key_path" \
+    -out "$cert_path" \
+    -config "$config_path" \
+    >/dev/null 2>&1
+
+  chmod 0600 "$key_path"
+  printf '%s|%s\n' "$cert_path" "$key_path"
+}
+
 start_local_service() {
   local label="$1"
   local workdir="$2"
@@ -136,6 +183,19 @@ start_local_stack() {
   local ai_log="$LOG_DIR/ai-service.log"
   local backend_log="$LOG_DIR/backend.log"
   local frontend_log="$LOG_DIR/frontend.log"
+  local backend_cert_pair
+  local frontend_cert_pair
+  local backend_cert
+  local backend_key
+  local frontend_cert
+  local frontend_key
+
+  backend_cert_pair="$(ensure_playwright_cert backend)"
+  frontend_cert_pair="$(ensure_playwright_cert frontend)"
+  backend_cert="${backend_cert_pair%%|*}"
+  backend_key="${backend_cert_pair#*|}"
+  frontend_cert="${frontend_cert_pair%%|*}"
+  frontend_key="${frontend_cert_pair#*|}"
 
   if ! port_open 8000; then
     start_local_service \
@@ -171,8 +231,8 @@ start_local_stack() {
       REDIS_URL="${REDIS_URL:-}" \
       AI_SERVICE_URL=http://127.0.0.1:8000 \
       JWT_SECRET=development_jwt_secret_key_change_in_production \
-      TLS_CERT="$ROOT_DIR/certs/backend.crt" \
-      TLS_KEY="$ROOT_DIR/certs/backend.key" \
+      TLS_CERT="$backend_cert" \
+      TLS_KEY="$backend_key" \
       npm run dev
   fi
 
@@ -188,8 +248,8 @@ start_local_stack() {
       VITE_DISABLE_AUTH=true \
       VITE_USE_MOCKS=true \
       VITE_PORT=3090 \
-      TLS_CERT="$ROOT_DIR/certs/frontend.crt" \
-      TLS_KEY="$ROOT_DIR/certs/frontend.key" \
+      TLS_CERT="$frontend_cert" \
+      TLS_KEY="$frontend_key" \
       npm run dev -- --host 0.0.0.0 --port 3090
   fi
 

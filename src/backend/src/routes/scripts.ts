@@ -494,7 +494,7 @@ router.delete('/:id', authenticateJWT, ScriptCrudController.deleteScript);
  *       404:
  *         description: Analysis not found
  */
-router.get('/:id/analysis', ScriptAnalysisController.getScriptAnalysis);
+router.get('/:id/analysis', authenticateJWT, ScriptAnalysisController.getScriptAnalysis);
 
 /**
  * @swagger
@@ -520,7 +520,7 @@ router.get('/:id/analysis', ScriptAnalysisController.getScriptAnalysis);
  *       404:
  *         description: Script not found
  */
-router.get('/:id/export-analysis', ScriptExportController.exportAnalysis);
+router.get('/:id/export-analysis', authenticateJWT, ScriptExportController.exportAnalysis);
 
 /**
  * @swagger
@@ -780,7 +780,7 @@ router.get('/:id/similar', authenticateJWT, ScriptSearchController.findSimilarSc
  *       404:
  *         description: Script not found
  */
-router.get('/:id/versions', ScriptVersionController.getVersionHistory);
+router.get('/:id/versions', authenticateJWT, ScriptVersionController.getVersionHistory);
 
 /**
  * @swagger
@@ -813,7 +813,7 @@ router.get('/:id/versions', ScriptVersionController.getVersionHistory);
  *       404:
  *         description: Version not found
  */
-router.get('/:id/versions/compare', ScriptVersionController.compareVersions);
+router.get('/:id/versions/compare', authenticateJWT, ScriptVersionController.compareVersions);
 
 /**
  * @swagger
@@ -840,7 +840,7 @@ router.get('/:id/versions/compare', ScriptVersionController.compareVersions);
  *       404:
  *         description: Version not found
  */
-router.get('/:id/versions/:versionNumber', ScriptVersionController.getVersion);
+router.get('/:id/versions/:versionNumber', authenticateJWT, ScriptVersionController.getVersion);
 
 /**
  * @swagger
@@ -898,7 +898,7 @@ router.post('/:id/revert/:versionNumber', authenticateJWT, ScriptVersionControll
  *       400:
  *         description: Bad request
  */
-router.post('/analyze', ScriptAnalysisController.analyzeScript);
+router.post('/analyze', authenticateJWT, ScriptAnalysisController.analyzeScript);
 
 /**
  * @swagger
@@ -1307,7 +1307,7 @@ router.post('/:id/apply-suggestions', authenticateJWT, async (req, res) => {
  *       500:
  *         description: Server error
  */
-router.post('/generate', async (req, res) => {
+router.post('/generate', authenticateJWT, async (req, res) => {
   try {
     const { description } = req.body;
 
@@ -1350,7 +1350,7 @@ router.post('/analyze/assistant', authenticateJWT, ScriptAnalysisController.anal
 /**
  * Endpoint to handle AI assistant question answering
  */
-router.post('/please', async (req, res) => {
+router.post('/please', authenticateJWT, async (req, res) => {
   try {
     const { question, context } = req.body;
 
@@ -1394,7 +1394,7 @@ router.post('/please', async (req, res) => {
 /**
  * Explain a PowerShell script or command
  */
-router.post('/explain', async (req, res) => {
+router.post('/explain', authenticateJWT, async (req, res) => {
   try {
     const { content, type = 'simple' } = req.body;
 

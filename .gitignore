@@ -115,6 +115,12 @@ src/backend/logs/
 # Credentials and secrets (never commit)
 config/config.json
 .env.production
+certs/*
+!certs/README.md
+*.key
+*.pem
+*.p12
+*.pfx
 
 # Cloudflare Tunnel credentials (keep config, ignore secrets)
 cloudflared/*.json
@@ -146,3 +152,5 @@ src/ai/memory_storage/
 !archive/
 !archive/unused-files-2026-04-26/
 !archive/unused-files-2026-04-26/**
+!archive/local-private-material-2026-04-28/
+!archive/local-private-material-2026-04-28/**

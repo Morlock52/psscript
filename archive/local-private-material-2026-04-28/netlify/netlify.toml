@@ -1,0 +1,62 @@
+functionsDirectory = "/Users/morlock/fun/02_PowerShell_Projects/psscript/netlify/functions"
+functionsDirectoryOrigin = "config"
+redirectsOrigin = "config"
+headers = []
+
+[build]
+publish = "/Users/morlock/fun/02_PowerShell_Projects/psscript/src/frontend/dist"
+publishOrigin = "config"
+commandOrigin = "config"
+command = "npm run build:netlify"
+functions = "/Users/morlock/fun/02_PowerShell_Projects/psscript/netlify/functions"
+
+[build.environment]
+NODE_VERSION = "20"
+
+[build.processing]
+
+[build.processing.css]
+
+[build.processing.html]
+
+[build.processing.images]
+
+[build.processing.js]
+
+[build.services]
+
+[functions]
+
+[functions."*"]
+node_bundler = "esbuild"
+
+[[plugins]]
+origin = "ui"
+package = "@netlify/plugin-lighthouse"
+pinned_version = "6"
+
+[plugins.inputs]
+
+[[redirects]]
+from = "/api/*"
+to = "/.netlify/functions/api/:splat"
+status = 200.0
+force = false
+
+[redirects.query]
+
+[redirects.conditions]
+
+[redirects.headers]
+
+[[redirects]]
+from = "/*"
+to = "/index.html"
+status = 200.0
+force = false
+
+[redirects.query]
+
+[redirects.conditions]
+
+[redirects.headers]

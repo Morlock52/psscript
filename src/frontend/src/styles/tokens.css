@@ -108,7 +108,7 @@
    First-class derived tokens — color-mix expressions and composite
    gradients that benefit from being named rather than inlined at
    each consumer. Plan 4 migrated all simple aliases onto the new
-   --surface-*/--ink-*/--accent/--signal-* token names directly;
+   surface, ink, accent, and signal token names directly;
    what remains here is genuine derived/composite values.
    ============================================================ */
 

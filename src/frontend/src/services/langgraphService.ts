@@ -231,46 +231,33 @@ export function streamAnalysis(
   // Note: provider is not passed for SSE streaming — the LangGraph
   // orchestrator determines the provider from the model ID server-side.
 
-  // Get auth token for headers
   const token = localStorage.getItem('auth_token');
-
-  // Add token to query params since EventSource doesn't support custom headers
-  if (token) {
-    params.append('token', token);
-  }
-
   const url = `${getApiUrl()}/scripts/${scriptId}/analysis-stream?${params.toString()}`;
-
-  // Create EventSource for SSE with credentials
-  // Note: withCredentials is required for CORS with credentials
-  const eventSource = new EventSource(url, { withCredentials: true });
+  const abortController = new AbortController();
   let completed = false;
   let fallbackStarted = false;
 
-  // Handle incoming events
-  eventSource.onmessage = (event) => {
+  const handleSseMessage = (rawData: string) => {
     try {
-      const data = JSON.parse(event.data) as AnalysisEvent;
+      const data = JSON.parse(rawData) as AnalysisEvent;
       const normalizedEvents = normalizeAnalysisEvents(data);
 
       normalizedEvents.forEach(onEvent);
 
-      // Auto-close on completion or error
       if (normalizedEvents.some((item) => item.type === 'completed' || item.type === 'error')) {
         completed = true;
-        eventSource.close();
+        abortController.abort();
       }
     } catch (error) {
       console.error('[LangGraph] Failed to parse SSE event:', error);
     }
   };
 
-  // Handle connection errors
-  eventSource.onerror = async (error) => {
+  const startFallbackAnalysis = async (error: unknown) => {
     if (completed || fallbackStarted) return;
     fallbackStarted = true;
     console.error('[LangGraph] SSE connection error:', error);
-    eventSource.close();
+    abortController.abort();
 
     try {
       onEvent({
@@ -307,9 +294,56 @@ export function streamAnalysis(
     }
   };
 
-  // Return cleanup function
+  void (async () => {
+    try {
+      const response = await fetch(url, {
+        method: 'GET',
+        headers: token ? { Authorization: `Bearer ${token}` } : undefined,
+        signal: abortController.signal,
+        credentials: 'include',
+      });
+
+      if (!response.ok || !response.body) {
+        throw new Error(`Streaming request failed with status ${response.status}`);
+      }
+
+      const reader = response.body.getReader();
+      const decoder = new TextDecoder();
+      let buffer = '';
+
+      while (!completed) {
+        const { value, done } = await reader.read();
+        if (done) break;
+
+        buffer += decoder.decode(value, { stream: true });
+        const messages = buffer.split('\n\n');
+        buffer = messages.pop() || '';
+
+        for (const message of messages) {
+          const dataLines = message
+            .split('\n')
+            .filter((line) => line.startsWith('data:'))
+            .map((line) => line.slice('data:'.length).trim());
+
+          if (dataLines.length > 0) {
+            handleSseMessage(dataLines.join('\n'));
+          }
+        }
+      }
+
+      const trailing = buffer.trim();
+      if (trailing.startsWith('data:')) {
+        handleSseMessage(trailing.slice('data:'.length).trim());
+      }
+    } catch (error) {
+      if (abortController.signal.aborted) return;
+      await startFallbackAnalysis(error);
+    }
+  })();
+
   return () => {
-    eventSource.close();
+    completed = true;
+    abortController.abort();
   };
 }
 
