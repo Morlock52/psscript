@@ -58,6 +58,17 @@ The code has a fallback for missing `search_vector`, but the intended production
 - `GET /api/analytics/ai/summary` returns 200 for an authenticated user.
 - Dashboard, Chat Assistant, Agentic Assistant, AI Agents template chat, voice settings, script analysis, script generation, and explanation still load through Netlify Functions.
 
+## Production Application Log
+
+- Applied the Supabase migration to project `picxiqcekyfgjlrknfds`.
+- Verified `idx_scripts_search_vector`, `idx_documentation_items_search_vector`, `idx_script_embeddings_hnsw`, `current_app_profile_is_admin()`, and both generated `search_vector` columns.
+- Deployed Netlify production deploy `69eff953e9bcfc82c43b3cad`.
+- Verified production URL `https://pstest.morloksmaze.com`.
+- Backfilled script embeddings for 7 hosted scripts.
+- Verified vector similarity returns results for embedded scripts.
+- Confirmed AI Agents chat sends and receives a hosted AI response.
+- Confirmed AI metrics captured the hosted chat request at `2026-04-28T00:11:40.356Z`.
+
 ## Sources Used
 
 - Supabase RLS guidance: https://supabase.com/docs/guides/database/postgres/row-level-security

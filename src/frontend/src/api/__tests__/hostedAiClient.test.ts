@@ -99,6 +99,45 @@ describe('hosted AI client routing', () => {
     expect(netlifyApi).toContain("endpoint: '/documentation/crawl/ai'");
   });
 
+  it('keeps hosted analysis resilient to structured output provider failures', () => {
+    const netlifyApi = readWorkspaceFile('netlify/functions/api.ts');
+
+    for (const field of [
+      'beginner_explanation',
+      'management_summary',
+      'command_details',
+      'execution_summary',
+    ]) {
+      expect(netlifyApi).toContain(`'${field}',`);
+    }
+
+    expect(netlifyApi).toContain('function shouldUseStaticAnalysisFallback');
+    expect(netlifyApi).toContain('json_schema');
+    expect(netlifyApi).toContain('response_format');
+    expect(netlifyApi).toContain('buildStaticPowerShellAnalysis(content, title)');
+  });
+
+  it('falls back from SSE analysis to authenticated hosted analysis', () => {
+    const langgraphService = readWorkspaceFile('src/frontend/src/services/langgraphService.ts');
+
+    expect(langgraphService).toContain('fallbackStarted');
+    expect(langgraphService).toContain('Streaming unavailable; continuing with hosted analysis.');
+    expect(langgraphService).toContain('const result = await analyzeLangGraph(scriptId, options);');
+    expect(langgraphService).toContain('fallbackError?.message');
+  });
+
+  it('surfaces script version history and honest data protection status', () => {
+    const netlifyApi = readWorkspaceFile('netlify/functions/api.ts');
+    const scriptDetail = readWorkspaceFile('src/frontend/src/pages/ScriptDetail.tsx');
+
+    expect(netlifyApi).toContain('INSERT INTO script_versions');
+    expect(netlifyApi).toContain('contentChanged');
+    expect(scriptDetail).toContain("queryKey: ['scriptVersions', id]");
+    expect(scriptDetail).toContain('Version History');
+    expect(scriptDetail).toContain('Data Protection');
+    expect(scriptDetail).toContain('Per-script client-side encryption is not enabled in this build.');
+  });
+
   it('routes active chat and assistant follow-ups through hosted API paths', () => {
     const simpleChatApi = readWorkspaceFile('src/frontend/src/services/api-simple.ts');
     const agentPage = readWorkspaceFile('src/frontend/src/pages/AgenticAIPage.tsx');

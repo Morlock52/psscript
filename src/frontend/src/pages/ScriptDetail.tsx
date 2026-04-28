@@ -37,6 +37,13 @@ const ScriptDetail: React.FC = () => {
     refetchOnWindowFocus: false,
   });
 
+  const { data: versionHistory } = useQuery({
+    queryKey: ['scriptVersions', id],
+    queryFn: () => scriptService.getScriptVersions(id || ''),
+    enabled: !!id,
+    refetchOnWindowFocus: false,
+  });
+
   const executeMutation = useMutation({
     mutationFn: (params: Record<string, string>) => scriptService.executeScript(id || '', params),
     onSuccess: (data) => {
@@ -303,6 +310,57 @@ const ScriptDetail: React.FC = () => {
                   <h3 className="text-sm text-[var(--color-text-tertiary)]">Execution Count</h3>
                   <p className="text-[var(--color-text-primary)]">{script.executionCount || 0}</p>
                 </div>
+              </div>
+            </div>
+          </div>
+
+          <div className={cardStyles}>
+            <div className={cardHeaderStyles}>
+              <h2 className="text-lg font-medium text-[var(--color-text-primary)]">Version History</h2>
+            </div>
+            <div className="p-4">
+              {versionHistory?.versions?.length ? (
+                <ol className="space-y-3">
+                  {versionHistory.versions.map((version: any) => (
+                    <li key={version.id} className="border-l-2 border-[var(--color-primary)] pl-3">
+                      <div className="flex items-center justify-between gap-3">
+                        <span className="font-medium text-[var(--color-text-primary)]">
+                          Version {version.version}
+                        </span>
+                        <span className="text-xs text-[var(--color-text-tertiary)]">
+                          {new Date(version.created_at || version.createdAt).toLocaleDateString()}
+                        </span>
+                      </div>
+                      <p className="mt-1 text-sm text-[var(--color-text-secondary)]">
+                        {version.commit_message || version.commitMessage || 'Script version saved'}
+                      </p>
+                    </li>
+                  ))}
+                </ol>
+              ) : (
+                <p className="text-sm text-[var(--color-text-secondary)]">
+                  No version entries are available yet. Editing and saving script content creates the next version.
+                </p>
+              )}
+            </div>
+          </div>
+
+          <div className={cardStyles}>
+            <div className={cardHeaderStyles}>
+              <h2 className="text-lg font-medium text-[var(--color-text-primary)]">Data Protection</h2>
+            </div>
+            <div className="p-4 space-y-3 text-sm text-[var(--color-text-secondary)]">
+              <div className="flex items-start gap-2">
+                <span className="mt-1 h-2 w-2 rounded-full bg-emerald-500" aria-hidden="true"></span>
+                <p>Transport is protected by HTTPS/TLS on the hosted app.</p>
+              </div>
+              <div className="flex items-start gap-2">
+                <span className="mt-1 h-2 w-2 rounded-full bg-emerald-500" aria-hidden="true"></span>
+                <p>Script access is scoped by signed-in user and public/private visibility.</p>
+              </div>
+              <div className="flex items-start gap-2">
+                <span className="mt-1 h-2 w-2 rounded-full bg-amber-500" aria-hidden="true"></span>
+                <p>Per-script client-side encryption is not enabled in this build.</p>
               </div>
             </div>
           </div>

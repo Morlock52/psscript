@@ -75,13 +75,17 @@ const analysisJsonSchema = {
   additionalProperties: false,
   required: [
     'purpose',
+    'beginner_explanation',
+    'management_summary',
     'security_score',
     'quality_score',
     'risk_score',
     'suggestions',
+    'command_details',
     'security_issues',
     'best_practice_violations',
     'performance_insights',
+    'execution_summary',
   ],
   properties: {
     purpose: { type: 'string' },
@@ -755,6 +759,11 @@ async function handleScriptById(req: Request, route: RouteParams): Promise<Respo
 
   if (req.method === 'PUT') {
     const body = await req.json().catch(() => ({}));
+    const current = await fetchScriptForUser(id, user.id);
+    const nextContent = typeof body.content === 'string' ? body.content : undefined;
+    const contentChanged = nextContent !== undefined && nextContent !== current.content;
+    const nextVersion = contentChanged ? Number(current.version || 1) + 1 : Number(current.version || 1);
+
     const result = await query(
       `
         UPDATE scripts
@@ -762,13 +771,26 @@ async function handleScriptById(req: Request, route: RouteParams): Promise<Respo
             description = COALESCE($4, description),
             content = COALESCE($5, content),
             category_id = COALESCE($6, category_id),
+            version = $7,
             updated_at = now()
         WHERE id = $1 AND user_id = $2
         RETURNING *
       `,
-      [id, user.id, body.title, body.description, body.content, body.category_id ?? body.categoryId]
+      [id, user.id, body.title, body.description, nextContent, body.category_id ?? body.categoryId, nextVersion]
     );
     if (!result.rows[0]) return json({ error: 'script_not_found', message: 'Script not found' }, { status: 404 });
+
+    if (contentChanged) {
+      await query(
+        `
+          INSERT INTO script_versions (script_id, content, version, user_id, commit_message)
+          VALUES ($1, $2, $3, $4, $5)
+          ON CONFLICT (script_id, version) DO NOTHING
+        `,
+        [id, nextContent, nextVersion, user.id, body.commit_message || body.commitMessage || 'Script updated']
+      );
+    }
+
     return json({ success: true, script: toFrontendScript(result.rows[0]) });
   }
 
@@ -1684,7 +1706,7 @@ async function analyzePowerShell(content: string, title: string, metricContext?:
       metricContext
     );
   } catch (error: any) {
-    if (Number(error?.status || 500) < 500) throw error;
+    if (!shouldUseStaticAnalysisFallback(error)) throw error;
     console.warn('[netlify-api] AI analysis degraded to static fallback', error);
     parsed = buildStaticPowerShellAnalysis(content, title);
   }
@@ -1718,6 +1740,25 @@ async function analyzePowerShell(content: string, title: string, metricContext?:
           operational_risk: 'Review permissions, system impact, and target scope before running in production.',
         },
   };
+}
+
+function shouldUseStaticAnalysisFallback(error: any): boolean {
+  const status = Number(error?.status ?? error?.response?.status ?? 500);
+  if (!Number.isFinite(status) || status >= 500) return true;
+
+  const code = String(error?.code ?? error?.error?.code ?? '').toLowerCase();
+  const message = String(error?.message ?? error?.error?.message ?? '').toLowerCase();
+  const providerAnalysisFailures = [
+    'schema',
+    'json_schema',
+    'structured',
+    'response_format',
+    'text.format',
+    'invalid_ai_analysis_response',
+    'ai_provider_failed',
+  ];
+
+  return status === 400 && providerAnalysisFailures.some(term => code.includes(term) || message.includes(term));
 }
 
 function buildStaticPowerShellAnalysis(content: string, title: string) {

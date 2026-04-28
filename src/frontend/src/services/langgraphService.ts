@@ -244,6 +244,8 @@ export function streamAnalysis(
   // Create EventSource for SSE with credentials
   // Note: withCredentials is required for CORS with credentials
   const eventSource = new EventSource(url, { withCredentials: true });
+  let completed = false;
+  let fallbackStarted = false;
 
   // Handle incoming events
   eventSource.onmessage = (event) => {
@@ -255,6 +257,7 @@ export function streamAnalysis(
 
       // Auto-close on completion or error
       if (normalizedEvents.some((item) => item.type === 'completed' || item.type === 'error')) {
+        completed = true;
         eventSource.close();
       }
     } catch (error) {
@@ -263,13 +266,45 @@ export function streamAnalysis(
   };
 
   // Handle connection errors
-  eventSource.onerror = (error) => {
+  eventSource.onerror = async (error) => {
+    if (completed || fallbackStarted) return;
+    fallbackStarted = true;
     console.error('[LangGraph] SSE connection error:', error);
-    onEvent({
-      type: 'error',
-      message: 'Connection to analysis stream lost',
-    });
     eventSource.close();
+
+    try {
+      onEvent({
+        type: 'stage_change',
+        message: 'Streaming unavailable; continuing with hosted analysis.',
+        data: { stage: 'analyze' },
+      });
+
+      const result = await analyzeLangGraph(scriptId, options);
+      onEvent({
+        type: 'tool_completed',
+        message: 'Hosted PowerShell analysis completed',
+        data: {
+          workflow_id: result.workflow_id,
+          tool_name: 'analyze_powershell_script',
+          result,
+        },
+      });
+      onEvent({
+        type: 'completed',
+        message: result.final_response || 'Analysis complete',
+        data: {
+          workflow_id: result.workflow_id,
+          stage: 'completed',
+          result,
+        },
+      });
+      completed = true;
+    } catch (fallbackError: any) {
+      onEvent({
+        type: 'error',
+        message: fallbackError?.message || 'Connection to analysis stream lost',
+      });
+    }
   };
 
   // Return cleanup function
