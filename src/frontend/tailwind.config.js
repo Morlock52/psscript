@@ -83,8 +83,8 @@ export default {
           '100%': { opacity: '1', transform: 'scale(1)' },
         },
         glowPulse: {
-          '0%, 100%': { boxShadow: '0 0 20px -5px rgba(59, 130, 246, 0.3)' },
-          '50%': { boxShadow: '0 0 30px -5px rgba(59, 130, 246, 0.6)' },
+          '0%, 100%': { boxShadow: '0 0 20px -5px color-mix(in srgb, var(--accent) 30%, transparent)' },
+          '50%': { boxShadow: '0 0 30px -5px color-mix(in srgb, var(--accent) 60%, transparent)' },
         },
       },
     },

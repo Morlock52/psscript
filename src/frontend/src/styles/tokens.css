@@ -139,24 +139,24 @@
 
   /* Brand / accent / status aliases */
   --color-primary:        var(--accent);
-  --color-primary-hover:  var(--accent);
+  --color-primary-hover:  color-mix(in srgb, var(--accent) 88%, black);
   --color-primary-light:  var(--accent-soft);
-  --color-primary-dark:   var(--accent);
+  --color-primary-dark:   color-mix(in srgb, var(--accent) 80%, black);
   --color-accent:         var(--accent);
-  --color-accent-hover:   var(--accent);
+  --color-accent-hover:   color-mix(in srgb, var(--accent) 88%, black);
   --color-accent-light:   var(--accent-soft);
   --color-success:        var(--signal-success);
-  --color-success-light:  var(--accent-soft);
-  --color-success-dark:   var(--signal-success);
+  --color-success-light:  color-mix(in srgb, var(--signal-success) 16%, transparent);
+  --color-success-dark:   color-mix(in srgb, var(--signal-success) 80%, black);
   --color-warning:        var(--signal-warning);
-  --color-warning-light:  var(--accent-soft);
-  --color-warning-dark:   var(--signal-warning);
+  --color-warning-light:  color-mix(in srgb, var(--signal-warning) 16%, transparent);
+  --color-warning-dark:   color-mix(in srgb, var(--signal-warning) 80%, black);
   --color-error:          var(--signal-danger);
-  --color-error-light:    var(--accent-soft);
-  --color-error-dark:     var(--signal-danger);
+  --color-error-light:    color-mix(in srgb, var(--signal-danger) 16%, transparent);
+  --color-error-dark:     color-mix(in srgb, var(--signal-danger) 80%, black);
   --color-info:           var(--signal-info);
-  --color-info-light:     var(--accent-soft);
-  --color-info-dark:      var(--signal-info);
+  --color-info-light:     color-mix(in srgb, var(--signal-info) 16%, transparent);
+  --color-info-dark:      color-mix(in srgb, var(--signal-info) 80%, black);
 
   /* Interactive state aliases */
   --color-hover-overlay:  rgba(255, 255, 255, 0.04);
