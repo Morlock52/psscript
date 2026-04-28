@@ -448,6 +448,13 @@ When generating or modifying scripts:
       </div>
     );
   };
+
+  const analysisCriteria = analysis.analysisCriteria || analysis.executionSummary?.analysis_criteria || [];
+  const prioritizedFindings = analysis.prioritizedFindings || analysis.executionSummary?.prioritized_findings || [];
+  const remediationPlan = analysis.remediationPlan || analysis.executionSummary?.remediation_plan || [];
+  const testRecommendations = analysis.testRecommendations || analysis.executionSummary?.test_recommendations || [];
+  const criteriaVersion = analysis.criteriaVersion || analysis.executionSummary?.criteria_version || '2026-04-26';
+  const confidence = analysis.confidence ?? analysis.executionSummary?.confidence;
   
   return (
     <div className="container mx-auto pb-8">
@@ -490,6 +497,12 @@ When generating or modifying scripts:
             onClick={() => setActiveTab('security')}
           >
             Security
+          </button>
+          <button
+            className={`py-3 px-4 text-sm font-medium ${activeTab === 'criteria' ? 'text-blue-400 border-b-2 border-blue-400' : 'text-gray-400 hover:text-white'}`}
+            onClick={() => setActiveTab('criteria')}
+          >
+            Criteria
           </button>
           <button
             className={`py-3 px-4 text-sm font-medium ${activeTab === 'quality' ? 'text-blue-400 border-b-2 border-blue-400' : 'text-gray-400 hover:text-white'}`}
@@ -633,6 +646,21 @@ When generating or modifying scripts:
                 </div>
                 <div className="p-6">
                   <p className="text-gray-300 mb-6">{analysis.purpose}</p>
+
+                  <div className="bg-gray-800 border border-gray-700 rounded-lg p-4 mb-6">
+                    <div className="flex flex-wrap items-center gap-3 text-sm">
+                      <span className="text-gray-400">Criteria version</span>
+                      <span className="px-2 py-1 rounded bg-blue-900/40 text-blue-200 border border-blue-800">{criteriaVersion}</span>
+                      {typeof confidence === 'number' && (
+                        <>
+                          <span className="text-gray-400">Confidence</span>
+                          <span className="px-2 py-1 rounded bg-emerald-900/40 text-emerald-200 border border-emerald-800">
+                            {(confidence * 100).toFixed(0)}%
+                          </span>
+                        </>
+                      )}
+                    </div>
+                  </div>
 
                   {(analysis.beginnerExplanation || analysis.executionSummary?.beginner_explanation || analysis.executionSummary?.what_it_does) && (
                     <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 mb-8">
@@ -940,6 +968,111 @@ This script follows the PowerShell cmdlet naming convention "Verb-Noun" and uses
               </div>
               </div>
             </>
+          )}
+
+          {/* Criteria Tab */}
+          {activeTab === 'criteria' && (
+            <div className="space-y-6">
+              <div className="bg-gray-700 rounded-lg shadow">
+                <div className="p-4 bg-gray-800 border-b border-gray-600">
+                  <h2 className="text-lg font-medium">AI Analysis Criteria</h2>
+                </div>
+                <div className="p-6">
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    {analysisCriteria.length > 0 ? (
+                      analysisCriteria.map((criterion, index) => (
+                        <div key={`${criterion.name || 'criterion'}-${index}`} className="bg-gray-800 border border-gray-700 rounded-lg p-4">
+                          <div className="flex items-center justify-between mb-2">
+                            <h3 className="font-medium text-white">{criterion.name}</h3>
+                            <span className="text-xs text-gray-400">{criterion.weight}%</span>
+                          </div>
+                          <div className="flex items-center gap-3 mb-3">
+                            <div className="flex-1 bg-gray-900 rounded-full h-2">
+                              <div
+                                className="bg-blue-500 h-2 rounded-full"
+                                style={{ width: `${Math.min(100, Math.max(0, Number(criterion.score || 0) * 10))}%` }}
+                              />
+                            </div>
+                            <span className="text-sm text-blue-200">{Number(criterion.score || 0).toFixed(1)}/10</span>
+                          </div>
+                          <p className="text-sm text-gray-300">{criterion.summary}</p>
+                        </div>
+                      ))
+                    ) : (
+                      <p className="text-gray-400">No criteria breakdown was provided for this analysis.</p>
+                    )}
+                  </div>
+                </div>
+              </div>
+
+              <div className="bg-gray-700 rounded-lg shadow">
+                <div className="p-4 bg-gray-800 border-b border-gray-600">
+                  <h2 className="text-lg font-medium">Prioritized Findings</h2>
+                </div>
+                <div className="p-6">
+                  {prioritizedFindings.length > 0 ? (
+                    <div className="space-y-4">
+                      {prioritizedFindings.map((finding, index) => (
+                        <div key={finding.id || index} className="bg-gray-800 border border-gray-700 rounded-lg p-4">
+                          <div className="flex flex-wrap items-center gap-2 mb-2">
+                            <span className="text-xs uppercase tracking-wide text-gray-400">{finding.id || `Finding ${index + 1}`}</span>
+                            <span className="px-2 py-0.5 rounded bg-red-900/40 text-red-200 text-xs">{finding.severity || 'unknown'}</span>
+                            <span className="px-2 py-0.5 rounded bg-slate-900 text-slate-200 text-xs">{finding.category || 'general'}</span>
+                          </div>
+                          <h3 className="font-medium text-white mb-2">{finding.title}</h3>
+                          <p className="text-sm text-gray-300 mb-2">{finding.impact}</p>
+                          <p className="text-sm text-gray-400 mb-2"><span className="text-gray-300">Evidence:</span> {finding.evidence}</p>
+                          <p className="text-sm text-emerald-200"><span className="text-gray-300">Recommendation:</span> {finding.recommendation}</p>
+                        </div>
+                      ))}
+                    </div>
+                  ) : (
+                    <p className="text-gray-400">No prioritized findings were provided for this analysis.</p>
+                  )}
+                </div>
+              </div>
+
+              <div className="bg-gray-700 rounded-lg shadow">
+                <div className="p-4 bg-gray-800 border-b border-gray-600">
+                  <h2 className="text-lg font-medium">Remediation And Test Plan</h2>
+                </div>
+                <div className="p-6 grid grid-cols-1 lg:grid-cols-2 gap-6">
+                  <div>
+                    <h3 className="font-medium mb-3">Remediation</h3>
+                    {remediationPlan.length > 0 ? (
+                      <ul className="space-y-3">
+                        {remediationPlan.map((item, index) => (
+                          <li key={index} className="bg-gray-800 border border-gray-700 rounded-lg p-3">
+                            <div className="flex justify-between gap-3 mb-1">
+                              <span className="text-sm font-medium text-white">{item.action}</span>
+                              <span className="text-xs text-gray-400">{item.effort}</span>
+                            </div>
+                            <p className="text-sm text-gray-300">{item.rationale}</p>
+                          </li>
+                        ))}
+                      </ul>
+                    ) : (
+                      <p className="text-gray-400">No remediation plan was provided.</p>
+                    )}
+                  </div>
+                  <div>
+                    <h3 className="font-medium mb-3">Recommended Tests</h3>
+                    {testRecommendations.length > 0 ? (
+                      <ul className="space-y-2">
+                        {testRecommendations.map((item, index) => (
+                          <li key={index} className="flex items-start text-gray-300">
+                            <FaCheckCircle className="text-blue-400 mt-1 mr-2 flex-shrink-0" />
+                            <span>{item}</span>
+                          </li>
+                        ))}
+                      </ul>
+                    ) : (
+                      <p className="text-gray-400">No test recommendations were provided.</p>
+                    )}
+                  </div>
+                </div>
+              </div>
+            </div>
           )}
 
           {/* Security Tab */}

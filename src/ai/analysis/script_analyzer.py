@@ -214,7 +214,8 @@ class ScriptAnalyzer:
         # Prepare the prompts for analysis
         system_prompt = """
         You are an expert PowerShell script analyzer. Your task is to analyze the provided PowerShell script and extract key information about it.
-        You must provide a thorough, accurate, and security-focused analysis. Pay special attention to potential security risks, code quality, and execution risks.
+        You must provide a thorough, accurate, and security-focused analysis. Pay special attention to potential security risks, code quality, execution risks, and operational safety.
+        Use criteria version 2026-04-26. Base the criteria on Microsoft PSScriptAnalyzer/PowerShell conventions, ShouldProcess/WhatIf/Confirm safety for changing commands, OWASP secure coding practices, and NIST SSDF review-and-test expectations.
         """
         
         user_prompt = f"""
@@ -253,8 +254,19 @@ class ScriptAnalyzer:
           - A score of 1-4 means poor error handling requiring significant improvements
         10. COMMAND_DETAILS: Identify and document all PowerShell commands used in the script, including their purpose and potential risks
         11. MS_DOCS_REFERENCES: For each PowerShell command or concept in the script, include relevant Microsoft Learn documentation links with brief descriptions
-        
-        Format your response as a JSON object with these keys: "purpose", "security_analysis", "security_score", "code_quality_score", "parameters", "category", "category_id", "optimization", "risk_score", "dependencies", "reliability_score", "command_details", "ms_docs_references"
+        12. ANALYSIS_CRITERIA: Score these weighted criteria with name, weight, score, and summary:
+          - Security (35): secrets, injection, dynamic execution, remote content, privilege boundaries, remoting, least privilege
+          - Operational safety (20): destructive/system-changing actions, target scope, rollback, idempotency, SupportsShouldProcess, -WhatIf, -Confirm
+          - Reliability (15): StrictMode, validation attributes, terminating errors, try/catch, retries, timeouts, observable failures
+          - Maintainability (15): Verb-Noun naming, approved verbs, advanced functions, comment-based help, readable parameters, module hygiene
+          - Compatibility (10): PowerShell 5.1 vs 7+, platform dependencies, deprecated cmdlets, required modules, environmental assumptions
+          - Performance (5): pipeline streaming, filtering strategy, collection materialization, remote fan-out, throttling, expensive loops
+        13. PRIORITIZED_FINDINGS: Findings with id, severity, category, title, evidence, impact, and recommendation
+        14. REMEDIATION_PLAN: Action plan with priority, action, rationale, and effort
+        15. TEST_RECOMMENDATIONS: Concrete validation tests before production execution
+        16. CONFIDENCE: Number from 0 to 1 indicating confidence in the analysis
+
+        Format your response as a JSON object with these keys: "criteria_version", "purpose", "security_analysis", "security_score", "code_quality_score", "parameters", "category", "category_id", "optimization", "risk_score", "dependencies", "reliability_score", "command_details", "ms_docs_references", "analysis_criteria", "prioritized_findings", "remediation_plan", "test_recommendations", "confidence"
         
         For the category_id field, use these mappings:
         1: "System Administration"
@@ -299,9 +311,10 @@ class ScriptAnalyzer:
             
             # Ensure all expected keys are present
             required_keys = [
-                "purpose", "security_analysis", "security_score", "code_quality_score", 
+                "criteria_version", "purpose", "security_analysis", "security_score", "code_quality_score", 
                 "parameters", "category", "category_id", "optimization", "risk_score", 
-                "dependencies", "reliability_score", "command_details"
+                "dependencies", "reliability_score", "command_details", "analysis_criteria",
+                "prioritized_findings", "remediation_plan", "test_recommendations", "confidence"
             ]
             
             for key in required_keys:
@@ -325,6 +338,7 @@ class ScriptAnalyzer:
             # Return a minimal response structure on error
             error_response = {
                 "purpose": "Error analyzing script",
+                "criteria_version": "2026-04-26",
                 "security_analysis": f"Analysis failed: {str(e)}",
                 "security_score": 5,
                 "code_quality_score": 5,
@@ -336,6 +350,11 @@ class ScriptAnalyzer:
                 "dependencies": [],
                 "reliability_score": 5,
                 "command_details": [],
+                "analysis_criteria": [],
+                "prioritized_findings": [],
+                "remediation_plan": [],
+                "test_recommendations": ["Retry analysis after the AI service is healthy."],
+                "confidence": 0,
                 "error": str(e),
                 "analyzed_at": int(time.time()),
                 "model": ANALYSIS_MODEL

@@ -37,6 +37,13 @@ Run date: April 28, 2026. Environment: local checkout backed by hosted Supabase,
 | AI analytics e2e after lazy-route wait fix | `playwright test tests/e2e/ai-analytics.spec.ts --project=chromium` | Passed: 10 passed |
 | Production browser smoke after route splitting | Playwright Chromium on `/login` and `/documentation` | Passed; lazy route chunks loaded with no asset errors |
 | Full Chromium e2e after backend cold-start wait fix | `npm run test:e2e:chromium` | Passed cleanly: 37 passed, 3 skipped |
+| AI analysis criteria update | Research-backed review as of 2026-04-26; updated Netlify API, backend fallback, Python analyzer, frontend criteria UI, and Markdown export | Passed local validation |
+| Frontend build after criteria UI | `npm run build` in `src/frontend` | Passed |
+| Frontend unit tests after criteria UI | `npm test -- --run` in `src/frontend` | Passed: 46 passed |
+| Backend TypeScript build after criteria prompt update | `npm run build` in `src/backend` | Passed |
+| Netlify build after hosted analysis schema update | `npm run netlify:build` | Passed build and function bundling; local Lighthouse plugin reported 404 for `/` |
+| Production deploy after criteria update | `./node_modules/.bin/netlify deploy --prod` | Passed; deploy live at `69f0a2ac3170e28b6fc70d44` |
+| Production smoke after criteria deploy | `GET /`, `GET /api/health`, `GET /api/scripts`, `POST /api/auth/default-user` | Frontend 200, health 200 connected, scripts 401 as expected, default-user 401 fixed |
 
 ## Non-Destructive Load Results
 
@@ -79,6 +86,21 @@ Run date: April 28, 2026. Environment: local checkout backed by hosted Supabase,
   - `POST /api/auth/default-user`: 401, `bootstrap_token_required`
   - `GET /api/scripts?limit=5&page=1`: 401, `missing_or_invalid_token`
 - Netlify Lighthouse after route-splitting deploy: Performance 81, Accessibility 97, Best Practices 100, SEO 81, PWA 30.
+
+## AI Analysis Criteria Update
+
+- Criteria design source: [AI-ANALYSIS-CRITERIA-2026-04-26.md](./AI-ANALYSIS-CRITERIA-2026-04-26.md).
+- Updated analysis contract: `criteria_version`, weighted `analysis_criteria`, `prioritized_findings`, `remediation_plan`, `test_recommendations`, and `confidence`.
+- Persistence strategy: richer criteria are saved inside `execution_summary` JSONB, so hosted Supabase does not need a local or production database migration.
+- Production URL: `https://pstest.morloksmaze.com`
+- Unique deploy URL: `https://69f0a2ac3170e28b6fc70d44--psscript.netlify.app`
+- Deploy logs: `https://app.netlify.com/projects/psscript/deploys/69f0a2ac3170e28b6fc70d44`
+- Post-deploy verification:
+  - `GET /`: 200
+  - `GET /api/health`: 200, `status: healthy`, `database: connected`
+  - `POST /api/auth/default-user`: 401, `bootstrap_token_required`
+  - `GET /api/scripts?limit=5&page=1`: 401, `missing_or_invalid_token`
+- Netlify Lighthouse after criteria deploy: Performance 75, Accessibility 97, Best Practices 100, SEO 81, PWA 30.
 
 ## Remaining Risks
 

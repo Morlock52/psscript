@@ -70,10 +70,45 @@ const openAiVoices = [
   { id: 'verse', name: 'Verse', provider: 'openai' },
 ];
 
+const ANALYSIS_CRITERIA_VERSION = '2026-04-26';
+const ANALYSIS_CRITERIA = [
+  {
+    name: 'Security',
+    weight: 35,
+    summary: 'Secrets, injection, dynamic execution, remote content, privilege boundaries, remoting, and least-privilege handling.',
+  },
+  {
+    name: 'Operational safety',
+    weight: 20,
+    summary: 'Destructive or system-changing actions, target scope, rollback expectations, idempotency, and ShouldProcess/WhatIf/Confirm support.',
+  },
+  {
+    name: 'Reliability',
+    weight: 15,
+    summary: 'Strict mode, parameter validation, terminating errors, try/catch behavior, retries, timeouts, and observable failure modes.',
+  },
+  {
+    name: 'Maintainability',
+    weight: 15,
+    summary: 'Verb-Noun naming, approved verbs, advanced functions, comment-based help, readable parameters, comments, and module hygiene.',
+  },
+  {
+    name: 'Compatibility',
+    weight: 10,
+    summary: 'PowerShell 5.1 versus 7+ compatibility, platform dependencies, deprecated cmdlets, required modules, and environmental assumptions.',
+  },
+  {
+    name: 'Performance',
+    weight: 5,
+    summary: 'Pipeline streaming, filtering strategy, collection materialization, remote fan-out, throttling, and expensive loops.',
+  },
+];
+
 const analysisJsonSchema = {
   type: 'object',
   additionalProperties: false,
   required: [
+    'criteria_version',
     'purpose',
     'beginner_explanation',
     'management_summary',
@@ -85,9 +120,15 @@ const analysisJsonSchema = {
     'security_issues',
     'best_practice_violations',
     'performance_insights',
+    'analysis_criteria',
+    'prioritized_findings',
+    'remediation_plan',
+    'test_recommendations',
+    'confidence',
     'execution_summary',
   ],
   properties: {
+    criteria_version: { type: 'string' },
     purpose: { type: 'string' },
     beginner_explanation: { type: 'string' },
     management_summary: { type: 'string' },
@@ -126,6 +167,53 @@ const analysisJsonSchema = {
     security_issues: { type: 'array', items: { type: 'string' } },
     best_practice_violations: { type: 'array', items: { type: 'string' } },
     performance_insights: { type: 'array', items: { type: 'string' } },
+    analysis_criteria: {
+      type: 'array',
+      items: {
+        type: 'object',
+        additionalProperties: false,
+        required: ['name', 'weight', 'score', 'summary'],
+        properties: {
+          name: { type: 'string' },
+          weight: { type: 'number', minimum: 0, maximum: 100 },
+          score: { type: 'number', minimum: 0, maximum: 10 },
+          summary: { type: 'string' },
+        },
+      },
+    },
+    prioritized_findings: {
+      type: 'array',
+      items: {
+        type: 'object',
+        additionalProperties: false,
+        required: ['id', 'severity', 'category', 'title', 'evidence', 'impact', 'recommendation'],
+        properties: {
+          id: { type: 'string' },
+          severity: { type: 'string' },
+          category: { type: 'string' },
+          title: { type: 'string' },
+          evidence: { type: 'string' },
+          impact: { type: 'string' },
+          recommendation: { type: 'string' },
+        },
+      },
+    },
+    remediation_plan: {
+      type: 'array',
+      items: {
+        type: 'object',
+        additionalProperties: false,
+        required: ['priority', 'action', 'rationale', 'effort'],
+        properties: {
+          priority: { type: 'string' },
+          action: { type: 'string' },
+          rationale: { type: 'string' },
+          effort: { type: 'string' },
+        },
+      },
+    },
+    test_recommendations: { type: 'array', items: { type: 'string' } },
+    confidence: { type: 'number', minimum: 0, maximum: 1 },
     execution_summary: {
       type: 'object',
       additionalProperties: false,
@@ -1696,9 +1784,13 @@ async function analyzePowerShell(content: string, title: string, metricContext?:
           role: 'system',
           content: [
             'You are a senior PowerShell security reviewer and PowerShell teacher.',
-            'Return only the requested analysis fields for the supplied script.',
+            `Return only the requested analysis fields for the supplied script using criteria version ${ANALYSIS_CRITERIA_VERSION}.`,
             'Explain the whole script for both beginners and management.',
             'For command_details, include the key PowerShell commands that materially affect behavior, what each command does in plain English, and any important parameters used.',
+            'Score analysis_criteria with this weighted rubric: Security 35%, Operational safety 20%, Reliability 15%, Maintainability 15%, Compatibility 10%, Performance 5%.',
+            'Prioritize findings by concrete execution impact. Security findings must cover secrets, injection or dynamic execution, remote downloads, privilege changes, destructive operations, and remoting when present.',
+            'Operational safety must call out whether destructive or changing actions use CmdletBinding SupportsShouldProcess, $PSCmdlet.ShouldProcess, -WhatIf, and -Confirm patterns.',
+            'Use Microsoft PowerShell/PSScriptAnalyzer conventions, OWASP secure coding practices, and NIST SSDF review-and-test expectations.',
           ].join(' '),
         },
         {
@@ -1716,7 +1808,22 @@ async function analyzePowerShell(content: string, title: string, metricContext?:
     parsed = buildStaticPowerShellAnalysis(content, title);
   }
 
+  const executionSummary = parsed.execution_summary && typeof parsed.execution_summary === 'object'
+    ? parsed.execution_summary
+    : {
+        what_it_does: parsed.purpose || 'Automates PowerShell tasks defined in the script.',
+        business_value: 'Reduces manual administration by packaging repeatable steps into a script.',
+        key_actions: [],
+        operational_risk: 'Review permissions, system impact, and target scope before running in production.',
+      };
+  const analysisCriteria = normalizeAnalysisCriteria(parsed.analysis_criteria, parsed);
+  const prioritizedFindings = normalizeAnalysisArray(parsed.prioritized_findings);
+  const remediationPlan = normalizeAnalysisArray(parsed.remediation_plan);
+  const testRecommendations = normalizeStringArray(parsed.test_recommendations);
+  const confidence = clampNumber(parsed.confidence, 0, 1, 0.75);
+
   return {
+    criteria_version: parsed.criteria_version || ANALYSIS_CRITERIA_VERSION,
     purpose: parsed.purpose || 'PowerShell script analysis generated by hosted PSScript.',
     beginner_explanation:
       parsed.beginner_explanation ||
@@ -1736,14 +1843,20 @@ async function analyzePowerShell(content: string, title: string, metricContext?:
     security_issues: Array.isArray(parsed.security_issues) ? parsed.security_issues : [],
     best_practice_violations: Array.isArray(parsed.best_practice_violations) ? parsed.best_practice_violations : [],
     performance_insights: Array.isArray(parsed.performance_insights) ? parsed.performance_insights : [],
-    execution_summary: parsed.execution_summary && typeof parsed.execution_summary === 'object'
-      ? parsed.execution_summary
-      : {
-          what_it_does: parsed.purpose || 'Automates PowerShell tasks defined in the script.',
-          business_value: 'Reduces manual administration by packaging repeatable steps into a script.',
-          key_actions: [],
-          operational_risk: 'Review permissions, system impact, and target scope before running in production.',
-        },
+    analysis_criteria: analysisCriteria,
+    prioritized_findings: prioritizedFindings,
+    remediation_plan: remediationPlan,
+    test_recommendations: testRecommendations,
+    confidence,
+    execution_summary: {
+      ...executionSummary,
+      criteria_version: parsed.criteria_version || ANALYSIS_CRITERIA_VERSION,
+      analysis_criteria: analysisCriteria,
+      prioritized_findings: prioritizedFindings,
+      remediation_plan: remediationPlan,
+      test_recommendations: testRecommendations,
+      confidence,
+    },
   };
 }
 
@@ -1766,19 +1879,143 @@ function shouldUseStaticAnalysisFallback(error: any): boolean {
   return status === 400 && providerAnalysisFailures.some(term => code.includes(term) || message.includes(term));
 }
 
+function normalizeStringArray(value: any): string[] {
+  if (!Array.isArray(value)) return [];
+  return value.map(item => String(item || '').trim()).filter(Boolean);
+}
+
+function normalizeAnalysisArray(value: any): any[] {
+  return Array.isArray(value) ? value.filter(item => item && typeof item === 'object') : [];
+}
+
+function normalizeAnalysisCriteria(value: any, parsed: Record<string, any>) {
+  if (Array.isArray(value) && value.length) {
+    return value.map(item => ({
+      name: String(item?.name || 'Criterion'),
+      weight: clampNumber(item?.weight, 0, 100, 0),
+      score: clampNumber(item?.score, 0, 10, 5),
+      summary: String(item?.summary || ''),
+    }));
+  }
+
+  return ANALYSIS_CRITERIA.map(criterion => ({
+    ...criterion,
+    score: criterion.name === 'Security'
+      ? clampNumber(parsed.security_score ?? parsed.securityScore, 0, 10, 7)
+      : criterion.name === 'Performance'
+        ? clampNumber(parsed.performance_score ?? parsed.quality_score ?? parsed.qualityScore, 0, 10, 7)
+        : clampNumber(parsed.quality_score ?? parsed.qualityScore, 0, 10, 7),
+  }));
+}
+
 function buildStaticPowerShellAnalysis(content: string, title: string) {
   const commands = Array.from(new Set(content.match(/\b[A-Z][A-Za-z]+-[A-Za-z][A-Za-z0-9]+\b/g) || [])).slice(0, 12);
   const parameterNames = Array.from(new Set(content.match(/(?<!\w)-[A-Za-z][A-Za-z0-9]+/g) || [])).slice(0, 24);
   const riskPatterns = [
-    { pattern: /\bInvoke-Expression\b|\biex\b/i, issue: 'Uses dynamic expression execution. Validate inputs carefully because this can execute untrusted text as code.' },
-    { pattern: /\bDownloadString\b|\bInvoke-WebRequest\b|\bInvoke-RestMethod\b/i, issue: 'Downloads or calls remote content. Verify the source, TLS requirements, and expected response before production use.' },
-    { pattern: /\bStart-Process\b/i, issue: 'Starts another process. Confirm the executable path, arguments, and privilege requirements.' },
-    { pattern: /\bSet-ExecutionPolicy\b/i, issue: 'Changes PowerShell execution policy. Document why the change is required and scope it as narrowly as possible.' },
-    { pattern: /\bRemove-Item\b/i, issue: 'Deletes filesystem items. Confirm path filters, recurse usage, and recovery procedures before running.' },
+    {
+      pattern: /\bInvoke-Expression\b|\biex\b/i,
+      severity: 'critical',
+      category: 'Security',
+      title: 'Dynamic expression execution',
+      issue: 'Uses dynamic expression execution. Validate inputs carefully because this can execute untrusted text as code.',
+      recommendation: 'Replace Invoke-Expression with parameterized command invocation or explicit allow-listed operations.',
+    },
+    {
+      pattern: /\b(ConvertTo-SecureString\b[^\n\r;]*-AsPlainText\b|\b(password|passwd|pwd|secret|token|api[_-]?key)\s*=)/i,
+      severity: 'high',
+      category: 'Security',
+      title: 'Secret or plaintext credential handling',
+      issue: 'May contain hardcoded secrets or plaintext credential conversion.',
+      recommendation: 'Move secrets to a secure vault or environment-managed secret and avoid -AsPlainText except for controlled migration code.',
+    },
+    {
+      pattern: /\bDownloadString\b|\bInvoke-WebRequest\b|\bInvoke-RestMethod\b/i,
+      severity: 'high',
+      category: 'Security',
+      title: 'Remote content or API dependency',
+      issue: 'Downloads or calls remote content. Verify the source, TLS requirements, and expected response before production use.',
+      recommendation: 'Pin trusted endpoints, validate downloaded content, avoid piping remote content directly to execution, and document expected schemas.',
+    },
+    {
+      pattern: /\bStart-Process\b/i,
+      severity: 'medium',
+      category: 'Operational safety',
+      title: 'External process launch',
+      issue: 'Starts another process. Confirm the executable path, arguments, and privilege requirements.',
+      recommendation: 'Validate executable paths and arguments, avoid shell expansion, and capture exit codes and output.',
+    },
+    {
+      pattern: /\bSet-ExecutionPolicy\b/i,
+      severity: 'medium',
+      category: 'Security',
+      title: 'Execution policy change',
+      issue: 'Changes PowerShell execution policy. Document why the change is required and scope it as narrowly as possible.',
+      recommendation: 'Use the narrowest scope possible and prefer signed scripts and documented deployment policy.',
+    },
+    {
+      pattern: /\b(Remove-Item|Clear-Content|Clear-Item|Stop-Service|Restart-Computer|Format-Volume)\b/i,
+      severity: 'high',
+      category: 'Operational safety',
+      title: 'Destructive or system-changing command',
+      issue: 'Runs destructive or system-changing commands. Confirm path filters, target scope, and recovery procedures before running.',
+      recommendation: 'Wrap changing operations in SupportsShouldProcess and $PSCmdlet.ShouldProcess, and test -WhatIf and -Confirm behavior.',
+    },
+    {
+      pattern: /\bInvoke-Command\b|\bEnter-PSSession\b|\bNew-PSSession\b/i,
+      severity: 'medium',
+      category: 'Security',
+      title: 'PowerShell remoting',
+      issue: 'Uses PowerShell remoting. Review authentication, endpoint restrictions, credential handling, and target inventory.',
+      recommendation: 'Use least-privilege credentials, explicit target allow lists, and secure remoting configuration.',
+    },
+    {
+      pattern: /\bGet-WmiObject\b/i,
+      severity: 'low',
+      category: 'Compatibility',
+      title: 'Legacy WMI cmdlet',
+      issue: 'Uses Get-WmiObject, which is Windows PowerShell-era behavior and is not available in PowerShell 7 on all platforms.',
+      recommendation: 'Prefer Get-CimInstance when compatible with the target environment.',
+    },
   ];
-  const securityIssues = riskPatterns
-    .filter(({ pattern }) => pattern.test(content))
+  const detectedFindings = riskPatterns.filter(({ pattern }) => pattern.test(content));
+  const mutatesState = /\b(Set|New|Remove|Clear|Start|Stop|Restart|Enable|Disable|Install|Uninstall|Format)-[A-Za-z][A-Za-z0-9]+\b/i.test(content);
+  const supportsShouldProcess = /\[CmdletBinding\([^\)]*SupportsShouldProcess/i.test(content) || /\$PSCmdlet\.ShouldProcess\s*\(/i.test(content);
+  if (mutatesState && !supportsShouldProcess) {
+    detectedFindings.push({
+      pattern: /\b(Set|New|Remove|Clear|Start|Stop|Restart|Enable|Disable|Install|Uninstall|Format)-/i,
+      severity: 'medium',
+      category: 'Operational safety',
+      title: 'Missing ShouldProcess protection',
+      issue: 'State-changing commands were detected without clear SupportsShouldProcess or $PSCmdlet.ShouldProcess handling.',
+      recommendation: 'Add [CmdletBinding(SupportsShouldProcess, ConfirmImpact = "High")] and guard changes with $PSCmdlet.ShouldProcess.',
+    });
+  }
+  const securityIssues = detectedFindings
+    .filter(({ category }) => category === 'Security')
     .map(({ issue }) => issue);
+  const bestPracticeViolations = detectedFindings
+    .filter(({ category }) => category !== 'Security')
+    .map(({ issue }) => issue);
+  const prioritizedFindings = detectedFindings.map((finding, index) => ({
+    id: `PS-${String(index + 1).padStart(3, '0')}`,
+    severity: finding.severity,
+    category: finding.category,
+    title: finding.title,
+    evidence: `Detected pattern: ${finding.pattern}`,
+    impact: finding.issue,
+    recommendation: finding.recommendation,
+  }));
+  const securityScore = clampNumber(8 - detectedFindings.filter(item => item.category === 'Security').length * 1.5, 0, 10, 7);
+  const qualityScore = clampNumber(commands.length ? 7 - (supportsShouldProcess ? 0 : mutatesState ? 1 : 0) : 5, 0, 10, 7);
+  const riskScore = clampNumber(3 + detectedFindings.length * 1.25, 0, 10, 3);
+  const analysisCriteria = [
+    { ...ANALYSIS_CRITERIA[0], score: securityScore },
+    { ...ANALYSIS_CRITERIA[1], score: clampNumber(supportsShouldProcess || !mutatesState ? 8 : 4, 0, 10, 6) },
+    { ...ANALYSIS_CRITERIA[2], score: clampNumber(/\btry\s*\{|\bcatch\s*\{|\$ErrorActionPreference|-ErrorAction\b/i.test(content) ? 7 : 5, 0, 10, 5) },
+    { ...ANALYSIS_CRITERIA[3], score: clampNumber(commands.length ? 7 : 4, 0, 10, 6) },
+    { ...ANALYSIS_CRITERIA[4], score: clampNumber(/\bGet-WmiObject\b/i.test(content) ? 5 : 7, 0, 10, 7) },
+    { ...ANALYSIS_CRITERIA[5], score: clampNumber(/\bForEach-Object\b|\bWhere-Object\b|\bSelect-Object\b/i.test(content) ? 7 : 6, 0, 10, 6) },
+  ];
   const commandDetails = commands.map(command => ({
     name: command,
     description: `${command} is one of the main PowerShell commands used by this script.`,
@@ -1793,6 +2030,7 @@ function buildStaticPowerShellAnalysis(content: string, title: string) {
   }));
 
   return {
+    criteria_version: ANALYSIS_CRITERIA_VERSION,
     purpose: title
       ? `Static hosted analysis for "${title}". The script automates PowerShell actions and should be reviewed before production use.`
       : 'Static hosted analysis for an uploaded PowerShell script. The script automates PowerShell actions and should be reviewed before production use.',
@@ -1800,9 +2038,9 @@ function buildStaticPowerShellAnalysis(content: string, title: string) {
       'This script is a set of PowerShell instructions. Read it from top to bottom: variables store values, commands perform actions, and parameters after each command control where and how those actions run.',
     management_summary:
       'The hosted AI provider did not return valid structured JSON, so PSScript saved a deterministic static review. Use it as a baseline operational summary, then rerun AI analysis when the provider is healthy for deeper recommendations.',
-    security_score: securityIssues.length ? 5 : 7,
-    quality_score: commands.length ? 7 : 5,
-    risk_score: Math.min(10, 3 + securityIssues.length * 2),
+    security_score: securityScore,
+    quality_score: qualityScore,
+    risk_score: riskScore,
     suggestions: [
       'Review the detected commands and parameters against the intended target environment.',
       'Run in a non-production environment first and capture expected output.',
@@ -1811,9 +2049,24 @@ function buildStaticPowerShellAnalysis(content: string, title: string) {
     command_details: commandDetails,
     security_issues: securityIssues,
     best_practice_violations: commands.length
-      ? []
+      ? bestPracticeViolations
       : ['No standard Verb-Noun PowerShell commands were detected. Confirm the upload contains the intended script content.'],
     performance_insights: ['Static analysis does not execute the script. Runtime performance should be validated with representative input and target systems.'],
+    analysis_criteria: analysisCriteria,
+    prioritized_findings: prioritizedFindings,
+    remediation_plan: prioritizedFindings.map(finding => ({
+      priority: finding.severity,
+      action: finding.recommendation,
+      rationale: finding.impact,
+      effort: finding.severity === 'critical' || finding.severity === 'high' ? 'medium' : 'low',
+    })),
+    test_recommendations: [
+      'Run PSScriptAnalyzer and review all Error and Warning findings.',
+      'Execute the script in a non-production environment with representative parameters.',
+      'For state-changing scripts, verify -WhatIf and -Confirm behavior before production execution.',
+      'Validate failure paths, missing permissions, and invalid input handling.',
+    ],
+    confidence: 0.62,
     execution_summary: {
       what_it_does: commands.length
         ? `Runs PowerShell workflow steps using commands such as ${commands.slice(0, 4).join(', ')}.`
@@ -1823,6 +2076,22 @@ function buildStaticPowerShellAnalysis(content: string, title: string) {
       operational_risk: securityIssues.length
         ? 'Potentially sensitive commands were detected. Review permissions, remote content, deletion, execution policy, and process launch behavior before production use.'
         : 'No high-risk command pattern was detected by static fallback, but permissions and target scope still need review.',
+      criteria_version: ANALYSIS_CRITERIA_VERSION,
+      analysis_criteria: analysisCriteria,
+      prioritized_findings: prioritizedFindings,
+      remediation_plan: prioritizedFindings.map(finding => ({
+        priority: finding.severity,
+        action: finding.recommendation,
+        rationale: finding.impact,
+        effort: finding.severity === 'critical' || finding.severity === 'high' ? 'medium' : 'low',
+      })),
+      test_recommendations: [
+        'Run PSScriptAnalyzer and review all Error and Warning findings.',
+        'Execute the script in a non-production environment with representative parameters.',
+        'For state-changing scripts, verify -WhatIf and -Confirm behavior before production execution.',
+        'Validate failure paths, missing permissions, and invalid input handling.',
+      ],
+      confidence: 0.62,
     },
   };
 }
@@ -1865,6 +2134,12 @@ async function saveAnalysis(scriptId: number, analysis: any) {
         ...(analysis.execution_summary || {}),
         beginner_explanation: analysis.beginner_explanation || '',
         management_summary: analysis.management_summary || '',
+        criteria_version: analysis.criteria_version || analysis.execution_summary?.criteria_version || ANALYSIS_CRITERIA_VERSION,
+        analysis_criteria: analysis.analysis_criteria || analysis.execution_summary?.analysis_criteria || [],
+        prioritized_findings: analysis.prioritized_findings || analysis.execution_summary?.prioritized_findings || [],
+        remediation_plan: analysis.remediation_plan || analysis.execution_summary?.remediation_plan || [],
+        test_recommendations: analysis.test_recommendations || analysis.execution_summary?.test_recommendations || [],
+        confidence: analysis.confidence ?? analysis.execution_summary?.confidence ?? null,
       }),
     ]
   );
@@ -3165,6 +3440,12 @@ function toFrontendAnalysis(row: any) {
     executionSummary,
     beginnerExplanation: executionSummary.beginner_explanation || '',
     managementSummary: executionSummary.management_summary || '',
+    criteriaVersion: executionSummary.criteria_version || ANALYSIS_CRITERIA_VERSION,
+    analysisCriteria: executionSummary.analysis_criteria || [],
+    prioritizedFindings: executionSummary.prioritized_findings || [],
+    remediationPlan: executionSummary.remediation_plan || [],
+    testRecommendations: executionSummary.test_recommendations || [],
+    confidence: executionSummary.confidence ?? null,
     createdAt: row.created_at,
     updatedAt: row.updated_at,
   };
@@ -3199,6 +3480,8 @@ function exportAnalysisMarkdown(script: any, analysis: any): Response {
     `- Quality: ${analysis.qualityScore ?? analysis.codeQualityScore ?? 'N/A'}/10`,
     `- Security: ${analysis.securityScore ?? 'N/A'}/10`,
     `- Risk: ${analysis.riskScore ?? 'N/A'}/10`,
+    `- Criteria version: ${analysis.criteriaVersion || analysis.executionSummary?.criteria_version || ANALYSIS_CRITERIA_VERSION}`,
+    `- Confidence: ${analysis.confidence ?? analysis.executionSummary?.confidence ?? 'N/A'}`,
     '',
     '## Beginner Breakdown',
     '',
@@ -3213,6 +3496,44 @@ function exportAnalysisMarkdown(script: any, analysis: any): Response {
     ...((analysis.executionSummary?.key_actions || []).length
       ? analysis.executionSummary.key_actions.map((action: string) => `- ${action}`)
       : ['- No key actions were provided.']),
+    '',
+    '## Analysis Criteria',
+    '',
+    '| Criterion | Weight | Score | Summary |',
+    '| --- | ---: | ---: | --- |',
+    ...((analysis.analysisCriteria || analysis.executionSummary?.analysis_criteria || []).length
+      ? (analysis.analysisCriteria || analysis.executionSummary?.analysis_criteria).map((criterion: any) =>
+          `| ${criterion.name || 'Criterion'} | ${criterion.weight ?? 'N/A'} | ${criterion.score ?? 'N/A'}/10 | ${criterion.summary || ''} |`
+        )
+      : ['| No criteria were provided. | N/A | N/A | |']),
+    '',
+    '## Prioritized Findings',
+    '',
+    ...((analysis.prioritizedFindings || analysis.executionSummary?.prioritized_findings || []).length
+      ? (analysis.prioritizedFindings || analysis.executionSummary?.prioritized_findings).flatMap((finding: any) => [
+          `### ${finding.id || 'Finding'}: ${finding.title || 'Finding'}`,
+          '',
+          `- Severity: ${finding.severity || 'N/A'}`,
+          `- Category: ${finding.category || 'N/A'}`,
+          `- Evidence: ${finding.evidence || 'N/A'}`,
+          `- Impact: ${finding.impact || 'N/A'}`,
+          `- Recommendation: ${finding.recommendation || 'N/A'}`,
+          '',
+        ])
+      : ['- No prioritized findings were provided.', '']),
+    '## Remediation Plan',
+    '',
+    ...((analysis.remediationPlan || analysis.executionSummary?.remediation_plan || []).length
+      ? (analysis.remediationPlan || analysis.executionSummary?.remediation_plan).map((item: any) =>
+          `- [${item.priority || 'priority'}] ${item.action || 'Action not provided'} (${item.effort || 'effort unknown'}): ${item.rationale || ''}`
+        )
+      : ['- No remediation plan was provided.']),
+    '',
+    '## Test Recommendations',
+    '',
+    ...((analysis.testRecommendations || analysis.executionSummary?.test_recommendations || []).length
+      ? (analysis.testRecommendations || analysis.executionSummary?.test_recommendations).map((item: string) => `- ${item}`)
+      : ['- No test recommendations were provided.']),
     '',
     '## Suggestions',
     '',

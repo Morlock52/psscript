@@ -37,7 +37,7 @@ async function analyzeWithOpenAIDirect(content: string): Promise<Record<string, 
     messages: [
       {
         role: 'system',
-        content: `You are a PowerShell script security and quality analyzer. Analyze the given script and return a JSON object with these fields:
+        content: `You are a PowerShell script security and quality analyzer. Analyze the given script using criteria version 2026-04-26 and return a JSON object with these fields:
 - purpose (string): Brief description of what the script does
 - security_score (number 0-10): Higher is more secure
 - code_quality_score (number 0-10): Higher is better quality
@@ -48,8 +48,14 @@ async function analyzeWithOpenAIDirect(content: string): Promise<Record<string, 
 - security_issues (object[]): Each with {severity, description, remediation}
 - best_practice_violations (object[]): Each with {rule, description, suggestion}
 - parameters (object): Detected script parameters with descriptions
+- criteria_version (string): Use "2026-04-26"
+- analysis_criteria (object[]): Six weighted criteria with {name, weight, score, summary}: Security 35, Operational safety 20, Reliability 15, Maintainability 15, Compatibility 10, Performance 5
+- prioritized_findings (object[]): Each with {id, severity, category, title, evidence, impact, recommendation}
+- remediation_plan (object[]): Each with {priority, action, rationale, effort}
+- test_recommendations (string[]): Concrete validation tests to run before production
+- confidence (number 0-1): Confidence in the static review
 
-Return ONLY valid JSON, no markdown or explanation.`
+Base the criteria on Microsoft PSScriptAnalyzer/PowerShell conventions, ShouldProcess/WhatIf/Confirm safety for changing commands, OWASP secure coding practices, and NIST SSDF review-and-test expectations. Return ONLY valid JSON, no markdown or explanation.`
       },
       {
         role: 'user',
@@ -94,7 +100,7 @@ async function analyzeWithClaudeDirect(content: string): Promise<Record<string, 
     messages: [
       {
         role: 'user',
-        content: `You are a PowerShell script security and quality analyzer. Analyze this script and return ONLY a JSON object (no markdown, no explanation) with these fields:
+        content: `You are a PowerShell script security and quality analyzer. Analyze this script using criteria version 2026-04-26 and return ONLY a JSON object (no markdown, no explanation) with these fields:
 - purpose (string): Brief description of what the script does
 - security_score (number 0-10): Higher is more secure
 - code_quality_score (number 0-10): Higher is better quality
@@ -105,6 +111,14 @@ async function analyzeWithClaudeDirect(content: string): Promise<Record<string, 
 - security_issues (object[]): Each with {severity, description, remediation}
 - best_practice_violations (object[]): Each with {rule, description, suggestion}
 - parameters (object): Detected script parameters with descriptions
+- criteria_version (string): Use "2026-04-26"
+- analysis_criteria (object[]): Six weighted criteria with {name, weight, score, summary}: Security 35, Operational safety 20, Reliability 15, Maintainability 15, Compatibility 10, Performance 5
+- prioritized_findings (object[]): Each with {id, severity, category, title, evidence, impact, recommendation}
+- remediation_plan (object[]): Each with {priority, action, rationale, effort}
+- test_recommendations (string[]): Concrete validation tests to run before production
+- confidence (number 0-1): Confidence in the static review
+
+Base the criteria on Microsoft PSScriptAnalyzer/PowerShell conventions, ShouldProcess/WhatIf/Confirm safety for changing commands, OWASP secure coding practices, and NIST SSDF review-and-test expectations.
 
 Script to analyze:
 

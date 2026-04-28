@@ -18,6 +18,7 @@ This index points to the active documentation set for the current validated repo
 | [AUTHENTICATION-IMPROVEMENTS.md](./AUTHENTICATION-IMPROVEMENTS.md) | Auth model and local auth-disabled behavior |
 | [NETLIFY-SUPABASE-DEPLOYMENT.md](./NETLIFY-SUPABASE-DEPLOYMENT.md) | Current hosted Netlify + Supabase deployment path |
 | [DEPLOYMENT-PLATFORMS.md](./DEPLOYMENT-PLATFORMS.md) | Deployment alternatives and legacy split-service notes |
+| [AI-ANALYSIS-CRITERIA-2026-04-26.md](./AI-ANALYSIS-CRITERIA-2026-04-26.md) | Current AI analysis rubric, output contract, sources, and hosted persistence strategy |
 | [PROJECT-PERFORMANCE-TEST-DESIGN-2026-04-27.md](./PROJECT-PERFORMANCE-TEST-DESIGN-2026-04-27.md) | Current project performance and test design |
 | [PROJECT-TEST-RESULTS-2026-04-28.md](./PROJECT-TEST-RESULTS-2026-04-28.md) | Latest Netlify/Supabase smoke, e2e, UI, and performance results |
 
