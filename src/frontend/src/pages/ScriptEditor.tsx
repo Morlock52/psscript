@@ -3,8 +3,8 @@ import { useParams, useNavigate } from 'react-router-dom';
 import { Card } from '../components/ui-enhanced';
 
 // Reusable style constants for theme-aware styling
-const inputStyles = "w-full px-3 py-2 rounded-md bg-[var(--color-bg-primary)] text-[var(--color-text-primary)] border border-[var(--color-border-default)] focus:outline-none focus:ring-2 focus:ring-[var(--color-primary)]";
-const buttonSecondaryStyles = "px-4 py-2 rounded-md bg-[var(--color-bg-tertiary)] hover:bg-[var(--color-bg-primary)] text-[var(--color-text-primary)] border border-[var(--color-border-default)]";
+const inputStyles = "w-full px-3 py-2 rounded-md bg-[var(--surface-base)] text-[var(--ink-primary)] border border-[var(--surface-overlay)] focus:outline-none focus:ring-2 focus:ring-[var(--accent)]";
+const buttonSecondaryStyles = "px-4 py-2 rounded-md bg-[var(--surface-overlay)] hover:bg-[var(--surface-base)] text-[var(--ink-primary)] border border-[var(--surface-overlay)]";
 
 const ScriptEditor: React.FC = () => {
   const { id } = useParams<{ id: string }>();
@@ -45,7 +45,7 @@ const ScriptEditor: React.FC = () => {
   if (isLoading) {
     return (
       <div className="flex justify-center items-center h-full">
-        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-[var(--color-primary)]"></div>
+        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-[var(--accent)]"></div>
       </div>
     );
   }
@@ -53,7 +53,7 @@ const ScriptEditor: React.FC = () => {
   if (error) {
     return (
       <div className="flex justify-center items-center h-full">
-        <div className="text-red-500 text-center p-4 bg-[var(--color-bg-elevated)] border border-[var(--color-border-default)] rounded-lg">
+        <div className="text-red-500 text-center p-4 bg-[var(--surface-raised)] border border-[var(--surface-overlay)] rounded-lg">
           <h2 className="text-xl font-bold mb-2">Error</h2>
           <p>{error}</p>
         </div>
@@ -65,7 +65,7 @@ const ScriptEditor: React.FC = () => {
     <div className="container mx-auto px-4 py-6">
       <Card className="mb-6">
         <div className="flex justify-between items-center mb-4">
-          <h1 className="text-2xl font-bold text-[var(--color-text-primary)]">Edit Script: {script?.name}</h1>
+          <h1 className="text-2xl font-bold text-[var(--ink-primary)]">Edit Script: {script?.name}</h1>
           <div className="space-x-2">
             <button
               onClick={handleCancel}
@@ -75,7 +75,7 @@ const ScriptEditor: React.FC = () => {
             </button>
             <button
               onClick={handleSave}
-              className="px-4 py-2 rounded-md bg-[var(--color-primary)] hover:bg-[var(--color-primary-dark)] text-white"
+              className="px-4 py-2 rounded-md bg-[var(--accent)] hover:bg-[var(--color-primary-dark)] text-white"
             >
               Save
             </button>
@@ -83,7 +83,7 @@ const ScriptEditor: React.FC = () => {
         </div>
 
         <div className="mb-4">
-          <label htmlFor="description" className="block mb-2 font-medium text-[var(--color-text-secondary)]">
+          <label htmlFor="description" className="block mb-2 font-medium text-[var(--ink-secondary)]">
             Description
           </label>
           <input
@@ -96,7 +96,7 @@ const ScriptEditor: React.FC = () => {
         </div>
 
         <div>
-          <label htmlFor="content" className="block mb-2 font-medium text-[var(--color-text-secondary)]">
+          <label htmlFor="content" className="block mb-2 font-medium text-[var(--ink-secondary)]">
             Script Content
           </label>
           <textarea

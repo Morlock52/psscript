@@ -27,10 +27,10 @@ const BrandMark: React.FC<BrandMarkProps> = ({ size = 'md', showText = true, cla
     />
     {showText && (
       <div>
-        <div className={`${textClasses[size]} font-black tracking-tight text-[var(--color-text-primary)]`}>
+        <div className={`${textClasses[size]} font-black tracking-tight text-[var(--ink-primary)]`}>
           PSScript
         </div>
-        <div className="text-[0.68rem] font-semibold uppercase tracking-[0.24em] text-[var(--color-primary)]">
+        <div className="text-[0.68rem] font-semibold uppercase tracking-[0.24em] text-[var(--accent)]">
           AI Ops Studio
         </div>
       </div>

@@ -59,7 +59,7 @@ export const Badge: React.FC<BadgeProps> = ({
   const getVariantStyles = (): string => {
     switch (variant) {
       case 'primary':
-        return 'bg-[var(--color-primary)] text-white';
+        return 'bg-[var(--accent)] text-white';
       case 'secondary':
         return 'bg-gray-500 text-white';
       case 'success':
@@ -71,9 +71,9 @@ export const Badge: React.FC<BadgeProps> = ({
       case 'info':
         return 'bg-purple-500 text-white';
       case 'neutral':
-        return 'bg-[var(--color-bg-tertiary)] text-[var(--color-text-primary)]';
+        return 'bg-[var(--surface-overlay)] text-[var(--ink-primary)]';
       default:
-        return 'bg-[var(--color-primary)] text-white';
+        return 'bg-[var(--accent)] text-white';
     }
   };
 
@@ -114,7 +114,7 @@ export const Badge: React.FC<BadgeProps> = ({
   // Get border styles - theme-aware via CSS variable
   const getBorderStyles = (): string => {
     if (!withBorder) return '';
-    return 'border border-[var(--color-border-default)]';
+    return 'border border-[var(--surface-overlay)]';
   };
 
   // Get shadow styles - using transparent black works in both modes

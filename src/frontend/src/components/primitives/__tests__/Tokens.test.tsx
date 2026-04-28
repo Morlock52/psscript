@@ -128,34 +128,59 @@ describe('typography cascade integration', () => {
 });
 
 /*
- * Plan 2 retired the bespoke utility classes (.btn, .card, .input,
- * .glass, .markdown-body) but Plan 3's a11y sweep surfaced 588 JSX
- * call sites still consuming the legacy --color-* / --gradient-* vars
- * via arbitrary-value Tailwind classes. The shim stays alive until
- * Plan 4 migrates them. This describe asserts the shim is INTACT so
- * a future "let's clean this up" doesn't repeat Plan 2's mistake.
+ * Plan 4 migrated the simple legacy aliases (--color-bg-*, --color-text-*,
+ * --color-primary, --shadow-sm/md/lg, etc.) onto the new token names
+ * directly via sed. What remains in :root is the small set of genuinely
+ * derived tokens — color-mix expressions and composite gradients — that
+ * benefit from being named rather than inlined at each consumer.
+ *
+ * This describe asserts BOTH that:
+ *   (a) the surviving derived tokens are present (consumers still use them)
+ *   (b) the simple-alias shim members are GONE (Plan 4 removal landed)
  */
-describe('legacy shim still alive (Plan 4 migration pending)', () => {
-  const shimVars = [
+describe('post-Plan-4 token surface', () => {
+  /*
+   * For "still defined" derived tokens we read the tokens.css source
+   * directly because jsdom's CSS parser drops color-mix() declarations
+   * (returns empty for getPropertyValue). For "removed" simple aliases
+   * we use getPropertyValue — that path works because non-existent
+   * declarations also return empty, which is what we want.
+   */
+  const tokensCss = fs.readFileSync(
+    path.resolve(__dirname, '../../../styles/tokens.css'),
+    'utf8',
+  );
+
+  const stillDefined = [
+    '--color-primary-dark',
+    '--color-success-light',
+    '--color-warning-light',
+    '--color-info-light',
+    '--gradient-primary',
+    '--gradient-surface',
+  ];
+  const removed = [
     '--color-bg-primary',
     '--color-text-primary',
     '--color-border-default',
     '--color-primary',
+    '--color-accent',
     '--color-success',
     '--color-error',
-    '--shadow-sm',
-    '--shadow-lg',
-    '--gradient-primary',
+    '--shadow-md',
     '--glass-bg',
-    '--space-4',
     '--transition-fast',
     '--radius-full',
-    '--blur-md',
   ];
-  shimVars.forEach((name) => {
-    it(`legacy shim variable ${name} is still defined`, () => {
-      const declared = getComputedStyle(document.documentElement).getPropertyValue(name).trim();
-      expect(declared).not.toBe('');
+  stillDefined.forEach((name) => {
+    it(`derived token ${name} is declared in tokens.css`, () => {
+      expect(tokensCss).toContain(`${name}:`);
+    });
+  });
+  removed.forEach((name) => {
+    it(`legacy alias ${name} is GONE from tokens.css`, () => {
+      expect(tokensCss).not.toContain(`${name}:`);
     });
   });
 });
+

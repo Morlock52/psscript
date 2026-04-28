@@ -57,7 +57,7 @@ const ScriptCard: React.FC<ScriptCardProps> = ({
 
   // Get security score color
   const getSecurityScoreColor = (score?: number) => {
-    if (score === undefined) return 'text-[var(--color-text-tertiary)]';
+    if (score === undefined) return 'text-[var(--ink-tertiary)]';
     if (score >= 8) return 'text-emerald-500';
     if (score >= 5) return 'text-amber-500';
     return 'text-red-500';
@@ -65,7 +65,7 @@ const ScriptCard: React.FC<ScriptCardProps> = ({
 
   // Get quality score color
   const getQualityScoreColor = (score?: number) => {
-    if (score === undefined) return 'text-[var(--color-text-tertiary)]';
+    if (score === undefined) return 'text-[var(--ink-tertiary)]';
     if (score >= 8) return 'text-blue-500';
     if (score >= 5) return 'text-blue-400';
     return 'text-blue-300';
@@ -95,19 +95,19 @@ const ScriptCard: React.FC<ScriptCardProps> = ({
   return (
     <Link
       to={`/scripts/${script.id}`}
-      className="block rounded-xl overflow-hidden shadow-[var(--shadow-sm)] transition-all duration-300 hover:shadow-[var(--shadow-md)] hover:-translate-y-1 bg-[var(--color-bg-elevated)] border border-[var(--color-border-default)]"
+      className="block rounded-xl overflow-hidden shadow-[var(--shadow-near)] transition-all duration-300 hover:shadow-[var(--shadow-near)] hover:-translate-y-1 bg-[var(--surface-raised)] border border-[var(--surface-overlay)]"
     >
       <div className="p-4">
         {/* Header */}
         <div className="flex justify-between items-start mb-2">
-          <h3 className="text-lg font-semibold truncate text-[var(--color-text-primary)] pr-2">{script.title}</h3>
+          <h3 className="text-lg font-semibold truncate text-[var(--ink-primary)] pr-2">{script.title}</h3>
           <div className="flex items-center gap-2">
             {script.is_public ? (
               <span className="text-xs px-2 py-1 rounded-full bg-blue-500/10 text-blue-500 border border-blue-500/20">
                 Public
               </span>
             ) : (
-              <span className="text-xs px-2 py-1 rounded-full bg-[var(--color-bg-tertiary)] text-[var(--color-text-tertiary)] border border-[var(--color-border-default)]">
+              <span className="text-xs px-2 py-1 rounded-full bg-[var(--surface-overlay)] text-[var(--ink-tertiary)] border border-[var(--surface-overlay)]">
                 Private
               </span>
             )}
@@ -115,7 +115,7 @@ const ScriptCard: React.FC<ScriptCardProps> = ({
             {showDelete && onDelete && (
               <button
                 onClick={handleDeleteClick}
-                className="p-1 rounded-md text-[var(--color-text-tertiary)] hover:text-red-500 hover:bg-red-500/10 transition-colors"
+                className="p-1 rounded-md text-[var(--ink-tertiary)] hover:text-red-500 hover:bg-red-500/10 transition-colors"
                 title="Delete script"
               >
                 <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -127,7 +127,7 @@ const ScriptCard: React.FC<ScriptCardProps> = ({
         </div>
 
         {/* Description */}
-        <p className="text-sm mb-3 line-clamp-2 text-[var(--color-text-secondary)]">
+        <p className="text-sm mb-3 line-clamp-2 text-[var(--ink-secondary)]">
           {script.description || 'No description provided.'}
         </p>
 
@@ -137,13 +137,13 @@ const ScriptCard: React.FC<ScriptCardProps> = ({
             {script.tags.slice(0, 3).map((tag, index) => (
               <span
                 key={index}
-                className="text-xs px-2 py-0.5 rounded-full bg-[var(--color-bg-tertiary)] text-[var(--color-text-secondary)]"
+                className="text-xs px-2 py-0.5 rounded-full bg-[var(--surface-overlay)] text-[var(--ink-secondary)]"
               >
                 {tag}
               </span>
             ))}
             {script.tags.length > 3 && (
-              <span className="text-xs px-2 py-0.5 rounded-full bg-[var(--color-bg-tertiary)] text-[var(--color-text-tertiary)]">
+              <span className="text-xs px-2 py-0.5 rounded-full bg-[var(--surface-overlay)] text-[var(--ink-tertiary)]">
                 +{script.tags.length - 3}
               </span>
             )}
@@ -152,7 +152,7 @@ const ScriptCard: React.FC<ScriptCardProps> = ({
 
         {/* Metadata */}
         <div className="flex justify-between items-center text-xs">
-          <div className="text-[var(--color-text-tertiary)]">
+          <div className="text-[var(--ink-tertiary)]">
             {script.category_name && (
               <span className="mr-2">{script.category_name}</span>
             )}
@@ -186,7 +186,7 @@ const ScriptCard: React.FC<ScriptCardProps> = ({
 
             {/* Views */}
             {script.views !== undefined && (
-              <div className="flex items-center text-[var(--color-text-tertiary)]">
+              <div className="flex items-center text-[var(--ink-tertiary)]">
                 <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />

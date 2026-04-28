@@ -70,45 +70,45 @@ const StatCard: React.FC<StatCardProps> = ({
   const getIconColor = () => {
     switch (icon) {
       case 'script':
-        return 'text-[var(--color-primary)]';
+        return 'text-[var(--accent)]';
       case 'category':
-        return 'text-[var(--color-accent)]';
+        return 'text-[var(--accent)]';
       case 'security':
-        return 'text-[var(--color-success)]';
+        return 'text-[var(--signal-success)]';
       case 'analysis':
-        return 'text-[var(--color-info)]';
+        return 'text-[var(--signal-info)]';
       case 'user':
-        return 'text-[var(--color-primary)]';
+        return 'text-[var(--accent)]';
       case 'execution':
-        return 'text-[var(--color-warning)]';
+        return 'text-[var(--signal-warning)]';
       default:
-        return 'text-[var(--color-text-tertiary)]';
+        return 'text-[var(--ink-tertiary)]';
     }
   };
 
   const getIconBgColor = () => {
     switch (icon) {
       case 'script':
-        return 'bg-[var(--color-primary-light)]';
+        return 'bg-[var(--accent-soft)]';
       case 'category':
-        return 'bg-[var(--color-accent-light)]';
+        return 'bg-[var(--accent-soft)]';
       case 'security':
         return 'bg-[var(--color-success-light)]';
       case 'analysis':
         return 'bg-[var(--color-info-light)]';
       case 'user':
-        return 'bg-[var(--color-primary-light)]';
+        return 'bg-[var(--accent-soft)]';
       case 'execution':
         return 'bg-[var(--color-warning-light)]';
       default:
-        return 'bg-[var(--color-bg-tertiary)]';
+        return 'bg-[var(--surface-overlay)]';
     }
   };
 
   // Get change indicator color
   const getChangeColor = () => {
-    if (!change) return 'text-[var(--color-text-tertiary)]';
-    return change > 0 ? 'text-[var(--color-success)]' : 'text-[var(--color-error)]';
+    if (!change) return 'text-[var(--ink-tertiary)]';
+    return change > 0 ? 'text-[var(--signal-success)]' : 'text-[var(--signal-danger)]';
   };
 
   // Get change indicator icon
@@ -126,13 +126,13 @@ const StatCard: React.FC<StatCardProps> = ({
   };
 
   return (
-    <div className="p-6 rounded-2xl shadow-[var(--shadow-md)] bg-[var(--color-bg-elevated)] border border-[var(--color-border-default)] transition-all duration-300 hover:-translate-y-0.5 hover:shadow-[var(--shadow-lg)]">
+    <div className="p-6 rounded-2xl shadow-[var(--shadow-near)] bg-[var(--surface-raised)] border border-[var(--surface-overlay)] transition-all duration-300 hover:-translate-y-0.5 hover:shadow-[var(--shadow-far)]">
       <div className="flex items-center justify-between mb-4">
         <div className="flex items-center">
           <div className={`p-3 rounded-2xl ${getIconBgColor()}`}>
             <div className={getIconColor()}>{getIcon()}</div>
           </div>
-          <h3 className="ml-3 text-lg font-medium text-[var(--color-text-secondary)]">{title}</h3>
+          <h3 className="ml-3 text-lg font-medium text-[var(--ink-secondary)]">{title}</h3>
         </div>
         {change !== undefined && (
           <div className={`flex items-center ${getChangeColor()}`}>
@@ -148,8 +148,8 @@ const StatCard: React.FC<StatCardProps> = ({
         </div>
       ) : (
         <div className="flex items-baseline">
-          <span className="text-3xl font-bold text-[var(--color-text-primary)]">{value}</span>
-          {suffix && <span className="ml-1 text-lg text-[var(--color-text-tertiary)]">{suffix}</span>}
+          <span className="text-3xl font-bold text-[var(--ink-primary)]">{value}</span>
+          {suffix && <span className="ml-1 text-lg text-[var(--ink-tertiary)]">{suffix}</span>}
         </div>
       )}
     </div>

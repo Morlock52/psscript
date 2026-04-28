@@ -106,27 +106,27 @@ const Dashboard: React.FC = () => {
   });
 
   // Card base styles using CSS variables
-  const cardStyles = "p-6 rounded-2xl shadow-[var(--shadow-md)] bg-[var(--color-bg-elevated)] border border-[var(--color-border-default)] transition-colors duration-300";
+  const cardStyles = "p-6 rounded-2xl shadow-[var(--shadow-near)] bg-[var(--surface-raised)] border border-[var(--surface-overlay)] transition-colors duration-300";
 
   // Button styles
-  const primaryBtnStyles = "px-3 py-1.5 text-sm rounded-lg bg-[var(--color-primary)] hover:bg-[var(--color-primary-dark)] text-white transition-colors";
-  const secondaryBtnStyles = "px-3 py-1.5 text-sm rounded-lg bg-[var(--color-bg-tertiary)] hover:bg-[var(--color-bg-tertiary)]/80 text-[var(--color-text-secondary)] transition-colors";
+  const primaryBtnStyles = "px-3 py-1.5 text-sm rounded-lg bg-[var(--accent)] hover:bg-[var(--color-primary-dark)] text-white transition-colors";
+  const secondaryBtnStyles = "px-3 py-1.5 text-sm rounded-lg bg-[var(--surface-overlay)] hover:bg-[var(--surface-overlay)]/80 text-[var(--ink-secondary)] transition-colors";
 
   // Chip/pill styles
-  const chipActiveStyles = "px-3 py-1 text-sm rounded-full bg-[var(--color-primary)] text-white";
-  const chipInactiveStyles = "px-3 py-1 text-sm rounded-full bg-[var(--color-bg-tertiary)] text-[var(--color-text-secondary)] hover:bg-[var(--color-bg-tertiary)]/80 transition-colors";
+  const chipActiveStyles = "px-3 py-1 text-sm rounded-full bg-[var(--accent)] text-white";
+  const chipInactiveStyles = "px-3 py-1 text-sm rounded-full bg-[var(--surface-overlay)] text-[var(--ink-secondary)] hover:bg-[var(--surface-overlay)]/80 transition-colors";
 
   return (
-    <div className="text-[var(--color-text-primary)]">
+    <div className="text-[var(--ink-primary)]">
       {/* Welcome Section */}
-      <div className="mb-8 rounded-3xl border border-[var(--color-border-default)] bg-[var(--gradient-surface)] p-7 shadow-[var(--shadow-xl)]">
-        <p className="text-xs font-bold uppercase tracking-[0.24em] text-[var(--color-primary)]">AI Ops Studio</p>
+      <div className="mb-8 rounded-3xl border border-[var(--surface-overlay)] bg-[var(--gradient-surface)] p-7 shadow-[var(--shadow-far)]">
+        <p className="text-xs font-bold uppercase tracking-[0.24em] text-[var(--accent)]">AI Ops Studio</p>
         <h1 className="mt-2 text-4xl font-black mb-2 bg-[var(--gradient-primary)] bg-clip-text text-transparent">
           {isAuthenticated
             ? `Welcome back, ${user?.username || 'User'}!`
             : 'Welcome to PSScript'}
         </h1>
-        <p className="max-w-3xl text-lg text-[var(--color-text-secondary)]">
+        <p className="max-w-3xl text-lg text-[var(--ink-secondary)]">
           Review, catalog, and harden PowerShell scripts with enterprise-grade AI analysis, voice workflows, and deployment-safe recommendations.
         </p>
       </div>
@@ -169,7 +169,7 @@ const Dashboard: React.FC = () => {
         <div className="lg:col-span-2 space-y-6">
           <div className={cardStyles}>
             <div className="flex justify-between items-center mb-4">
-              <h2 className="text-xl font-bold text-[var(--color-text-primary)]">Recent Scripts</h2>
+              <h2 className="text-xl font-bold text-[var(--ink-primary)]">Recent Scripts</h2>
               <Link to="/scripts" className={primaryBtnStyles}>
                 View All
               </Link>
@@ -205,7 +205,7 @@ const Dashboard: React.FC = () => {
                 Error loading scripts. Please try again.
               </div>
             ) : scripts?.length === 0 ? (
-              <div className="text-center py-8 text-[var(--color-text-tertiary)]">
+              <div className="text-center py-8 text-[var(--ink-tertiary)]">
                 {selectedCategory
                   ? "No scripts found in this category."
                   : "No scripts found. Create your first script!"}
@@ -230,7 +230,7 @@ const Dashboard: React.FC = () => {
 
           {/* Security Metrics */}
           <div className={cardStyles}>
-            <h2 className="text-xl font-bold mb-4 text-[var(--color-text-primary)]">Security Metrics</h2>
+            <h2 className="text-xl font-bold mb-4 text-[var(--ink-primary)]">Security Metrics</h2>
 
             {isLoadingSecurityMetrics ? (
               <div className="flex justify-center py-8">
@@ -246,7 +246,7 @@ const Dashboard: React.FC = () => {
           {/* Script Trends */}
           <div className={cardStyles}>
             <div className="flex justify-between items-center mb-4">
-              <h2 className="text-xl font-bold text-[var(--color-text-primary)]">Script Activity Trends</h2>
+              <h2 className="text-xl font-bold text-[var(--ink-primary)]">Script Activity Trends</h2>
               <div className="flex gap-1">
                 {(['week', 'month', 'year'] as const).map(period => (
                   <button
@@ -254,8 +254,8 @@ const Dashboard: React.FC = () => {
                     onClick={() => setTrendPeriod(period)}
                     className={`px-2 py-1 text-xs rounded-md transition-colors ${
                       trendPeriod === period
-                        ? 'bg-[var(--color-primary)] text-white'
-                        : 'bg-[var(--color-bg-tertiary)] text-[var(--color-text-secondary)] hover:bg-[var(--color-bg-tertiary)]/80'
+                        ? 'bg-[var(--accent)] text-white'
+                        : 'bg-[var(--surface-overlay)] text-[var(--ink-secondary)] hover:bg-[var(--surface-overlay)]/80'
                     }`}
                   >
                     {period.charAt(0).toUpperCase() + period.slice(1)}
@@ -283,7 +283,7 @@ const Dashboard: React.FC = () => {
         <div className="space-y-6">
           {/* Category Distribution */}
           <div className={cardStyles}>
-            <h2 className="text-xl font-bold mb-4 text-[var(--color-text-primary)]">Script Categories</h2>
+            <h2 className="text-xl font-bold mb-4 text-[var(--ink-primary)]">Script Categories</h2>
 
             {isLoadingCategories ? (
               <div className="flex justify-center py-8">
@@ -299,7 +299,7 @@ const Dashboard: React.FC = () => {
           {/* Recent Activity */}
           <div className={cardStyles}>
             <div className="flex justify-between items-center mb-4">
-              <h2 className="text-xl font-bold text-[var(--color-text-primary)]">Recent Activity</h2>
+              <h2 className="text-xl font-bold text-[var(--ink-primary)]">Recent Activity</h2>
               {isAuthenticated && (
                 <Link to="/scripts" className={secondaryBtnStyles}>
                   View All
@@ -308,7 +308,7 @@ const Dashboard: React.FC = () => {
             </div>
 
             {!isAuthenticated ? (
-              <div className="text-center py-4 text-[var(--color-text-tertiary)]">
+              <div className="text-center py-4 text-[var(--ink-tertiary)]">
                 <p>Sign in to view your activity</p>
                 <div className="mt-4">
                   <Link to="/login" className={primaryBtnStyles}>
@@ -329,64 +329,64 @@ const Dashboard: React.FC = () => {
 
       {/* Quick Actions */}
       <div className={`mt-8 ${cardStyles}`}>
-        <h2 className="text-xl font-bold mb-4 text-[var(--color-text-primary)]">Quick Actions</h2>
+        <h2 className="text-xl font-bold mb-4 text-[var(--ink-primary)]">Quick Actions</h2>
 
         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4">
           {/* Chat with AI */}
           <Link
             to="/chat"
-            className="p-4 rounded-2xl flex flex-col items-center text-center transition-all hover:-translate-y-1 bg-[var(--color-primary-light)] border border-[var(--color-border-default)]"
+            className="p-4 rounded-2xl flex flex-col items-center text-center transition-all hover:-translate-y-1 bg-[var(--accent-soft)] border border-[var(--surface-overlay)]"
           >
-            <div className="w-12 h-12 rounded-2xl flex items-center justify-center mb-2 bg-[var(--color-bg-elevated)]">
-              <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6 text-[var(--color-primary)]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <div className="w-12 h-12 rounded-2xl flex items-center justify-center mb-2 bg-[var(--surface-raised)]">
+              <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6 text-[var(--accent)]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z" />
               </svg>
             </div>
-            <h3 className="font-medium text-[var(--color-text-primary)]">Chat with AI</h3>
-            <p className="text-sm text-[var(--color-text-tertiary)] mt-1">Get help with PowerShell scripts</p>
+            <h3 className="font-medium text-[var(--ink-primary)]">Chat with AI</h3>
+            <p className="text-sm text-[var(--ink-tertiary)] mt-1">Get help with PowerShell scripts</p>
           </Link>
 
           {/* Manage Scripts */}
           <Link
             to="/scripts"
-            className="p-4 rounded-2xl flex flex-col items-center text-center transition-all hover:-translate-y-1 bg-[var(--color-success-light)] border border-[var(--color-border-default)]"
+            className="p-4 rounded-2xl flex flex-col items-center text-center transition-all hover:-translate-y-1 bg-[var(--color-success-light)] border border-[var(--surface-overlay)]"
           >
-            <div className="w-12 h-12 rounded-2xl flex items-center justify-center mb-2 bg-[var(--color-bg-elevated)]">
-              <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6 text-[var(--color-success)]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <div className="w-12 h-12 rounded-2xl flex items-center justify-center mb-2 bg-[var(--surface-raised)]">
+              <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6 text-[var(--signal-success)]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
               </svg>
             </div>
-            <h3 className="font-medium text-[var(--color-text-primary)]">Manage Scripts</h3>
-            <p className="text-sm text-[var(--color-text-tertiary)] mt-1">Browse and organize your scripts</p>
+            <h3 className="font-medium text-[var(--ink-primary)]">Manage Scripts</h3>
+            <p className="text-sm text-[var(--ink-tertiary)] mt-1">Browse and organize your scripts</p>
           </Link>
 
           {/* Documentation */}
           <Link
             to="/documentation"
-            className="p-4 rounded-2xl flex flex-col items-center text-center transition-all hover:-translate-y-1 bg-[var(--color-accent-light)] border border-[var(--color-border-default)]"
+            className="p-4 rounded-2xl flex flex-col items-center text-center transition-all hover:-translate-y-1 bg-[var(--accent-soft)] border border-[var(--surface-overlay)]"
           >
-            <div className="w-12 h-12 rounded-2xl flex items-center justify-center mb-2 bg-[var(--color-bg-elevated)]">
-              <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6 text-[var(--color-accent)]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <div className="w-12 h-12 rounded-2xl flex items-center justify-center mb-2 bg-[var(--surface-raised)]">
+              <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6 text-[var(--accent)]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" />
               </svg>
             </div>
-            <h3 className="font-medium text-[var(--color-text-primary)]">Documentation</h3>
-            <p className="text-sm text-[var(--color-text-tertiary)] mt-1">PowerShell reference and guides</p>
+            <h3 className="font-medium text-[var(--ink-primary)]">Documentation</h3>
+            <p className="text-sm text-[var(--ink-tertiary)] mt-1">PowerShell reference and guides</p>
           </Link>
 
           {/* Settings */}
           <Link
             to={isAuthenticated ? "/settings" : "/login"}
-            className="p-4 rounded-2xl flex flex-col items-center text-center transition-all hover:-translate-y-1 bg-[var(--color-bg-tertiary)] hover:bg-[var(--color-bg-tertiary)]/80 border border-[var(--color-border-default)]"
+            className="p-4 rounded-2xl flex flex-col items-center text-center transition-all hover:-translate-y-1 bg-[var(--surface-overlay)] hover:bg-[var(--surface-overlay)]/80 border border-[var(--surface-overlay)]"
           >
-            <div className="w-12 h-12 rounded-2xl flex items-center justify-center mb-2 bg-[var(--color-bg-elevated)]">
-              <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6 text-[var(--color-text-tertiary)]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <div className="w-12 h-12 rounded-2xl flex items-center justify-center mb-2 bg-[var(--surface-raised)]">
+              <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6 text-[var(--ink-tertiary)]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
               </svg>
             </div>
-            <h3 className="font-medium text-[var(--color-text-primary)]">{isAuthenticated ? "Settings" : "Sign In"}</h3>
-            <p className="text-sm text-[var(--color-text-tertiary)] mt-1">{isAuthenticated ? "Configure your account" : "Access your account"}</p>
+            <h3 className="font-medium text-[var(--ink-primary)]">{isAuthenticated ? "Settings" : "Sign In"}</h3>
+            <p className="text-sm text-[var(--ink-tertiary)] mt-1">{isAuthenticated ? "Configure your account" : "Access your account"}</p>
           </Link>
         </div>
       </div>

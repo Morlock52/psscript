@@ -12,10 +12,10 @@ interface ErrorDetails {
 }
 
 // Reusable style constants for theme-aware styling
-const inputStyles = "w-full px-4 py-3 rounded-xl focus:outline-none focus:ring-2 focus:ring-[var(--color-primary)] bg-[var(--color-bg-primary)] border border-[var(--color-border-default)] text-[var(--color-text-primary)]";
-const labelStyles = "block text-sm font-medium mb-2 text-[var(--color-text-secondary)]";
-const linkStyles = "text-[var(--color-primary)] hover:text-[var(--color-primary-light)]";
-const buttonPrimaryStyles = "w-full bg-[var(--gradient-primary)] hover:opacity-95 text-slate-950 font-bold py-3 px-4 rounded-xl focus:outline-none focus:ring-2 focus:ring-[var(--color-primary)] focus:ring-offset-2 focus:ring-offset-[var(--color-bg-elevated)] disabled:opacity-50 disabled:cursor-not-allowed shadow-[var(--shadow-glow)]";
+const inputStyles = "w-full px-4 py-3 rounded-xl focus:outline-none focus:ring-2 focus:ring-[var(--accent)] bg-[var(--surface-base)] border border-[var(--surface-overlay)] text-[var(--ink-primary)]";
+const labelStyles = "block text-sm font-medium mb-2 text-[var(--ink-secondary)]";
+const linkStyles = "text-[var(--accent)] hover:text-[var(--accent-soft)]";
+const buttonPrimaryStyles = "w-full bg-[var(--gradient-primary)] hover:opacity-95 text-slate-950 font-bold py-3 px-4 rounded-xl focus:outline-none focus:ring-2 focus:ring-[var(--accent)] focus:ring-offset-2 focus:ring-offset-[var(--surface-raised)] disabled:opacity-50 disabled:cursor-not-allowed shadow-[var(--shadow-glow)]";
 
 const Login: React.FC = () => {
   const [email, setEmail] = useState('');
@@ -124,20 +124,20 @@ const Login: React.FC = () => {
 
   return (
     <div className="relative flex min-h-screen items-center justify-center overflow-hidden px-4 bg-[var(--gradient-surface)]">
-      <div className="absolute -left-24 top-12 h-72 w-72 rounded-full bg-[var(--color-primary)]/20 blur-3xl" />
-      <div className="absolute -right-20 bottom-10 h-80 w-80 rounded-full bg-[var(--color-accent)]/20 blur-3xl" />
+      <div className="absolute -left-24 top-12 h-72 w-72 rounded-full bg-[var(--accent)]/20 blur-3xl" />
+      <div className="absolute -right-20 bottom-10 h-80 w-80 rounded-full bg-[var(--accent)]/20 blur-3xl" />
       <div className="relative w-full max-w-md">
         <div className="mb-10 text-center">
           <BrandMark size="lg" className="justify-center" />
-          <p className="mt-4 text-[var(--color-text-secondary)]">
+          <p className="mt-4 text-[var(--ink-secondary)]">
             Secure PowerShell intelligence for teams that move fast.
           </p>
         </div>
 
-        <div className="rounded-3xl shadow-[var(--shadow-xl)] p-8 bg-[var(--color-bg-elevated)]/92 border border-[var(--color-border-default)] backdrop-blur-xl">
+        <div className="rounded-3xl shadow-[var(--shadow-far)] p-8 bg-[var(--surface-raised)]/92 border border-[var(--surface-overlay)] backdrop-blur-xl">
           <div className="mb-6">
-            <p className="text-xs font-bold uppercase tracking-[0.24em] text-[var(--color-primary)]">Command center</p>
-            <h2 className="mt-2 text-2xl font-black text-[var(--color-text-primary)]">Sign in to PSScript</h2>
+            <p className="text-xs font-bold uppercase tracking-[0.24em] text-[var(--accent)]">Command center</p>
+            <h2 className="mt-2 text-2xl font-black text-[var(--ink-primary)]">Sign in to PSScript</h2>
           </div>
 
           {hostedAuthMissing && (
@@ -203,7 +203,7 @@ const Login: React.FC = () => {
 
             <div className="mb-6">
               <div className="flex items-center justify-between mb-2">
-                <label htmlFor="password" className="block text-sm font-medium text-[var(--color-text-secondary)]">
+                <label htmlFor="password" className="block text-sm font-medium text-[var(--ink-secondary)]">
                   Password
                 </label>
                 <a href="#" className={`text-sm ${linkStyles}`}>
@@ -229,9 +229,9 @@ const Login: React.FC = () => {
               <input
                 id="remember-me"
                 type="checkbox"
-                className="h-4 w-4 rounded text-[var(--color-primary)] focus:ring-[var(--color-primary)] bg-[var(--color-bg-primary)] border-[var(--color-border-default)]"
+                className="h-4 w-4 rounded text-[var(--accent)] focus:ring-[var(--accent)] bg-[var(--surface-base)] border-[var(--surface-overlay)]"
               />
-              <label htmlFor="remember-me" className="ml-2 block text-sm text-[var(--color-text-secondary)]">
+              <label htmlFor="remember-me" className="ml-2 block text-sm text-[var(--ink-secondary)]">
                 Remember me
               </label>
             </div>
@@ -259,17 +259,17 @@ const Login: React.FC = () => {
             <div className="mt-5">
               <div className="relative my-5">
                 <div className="absolute inset-0 flex items-center">
-                  <span className="w-full border-t border-[var(--color-border-default)]" />
+                  <span className="w-full border-t border-[var(--surface-overlay)]" />
                 </div>
                 <div className="relative flex justify-center text-xs uppercase">
-                  <span className="bg-[var(--color-bg-elevated)] px-2 text-[var(--color-text-tertiary)]">or</span>
+                  <span className="bg-[var(--surface-raised)] px-2 text-[var(--ink-tertiary)]">or</span>
                 </div>
               </div>
               <button
                 type="button"
                 onClick={handleGoogleLogin}
                 disabled={isLoading || hostedAuthMissing}
-                className="flex w-full items-center justify-center gap-3 rounded-xl border border-[var(--color-border-default)] bg-[var(--color-bg-primary)] px-4 py-3 font-bold text-[var(--color-text-primary)] transition hover:bg-[var(--color-bg-tertiary)] focus:outline-none focus:ring-2 focus:ring-[var(--color-primary)] focus:ring-offset-2 focus:ring-offset-[var(--color-bg-elevated)] disabled:cursor-not-allowed disabled:opacity-50"
+                className="flex w-full items-center justify-center gap-3 rounded-xl border border-[var(--surface-overlay)] bg-[var(--surface-base)] px-4 py-3 font-bold text-[var(--ink-primary)] transition hover:bg-[var(--surface-overlay)] focus:outline-none focus:ring-2 focus:ring-[var(--accent)] focus:ring-offset-2 focus:ring-offset-[var(--surface-raised)] disabled:cursor-not-allowed disabled:opacity-50"
               >
                 <FcGoogle className="h-5 w-5" aria-hidden="true" />
                 Continue with Google
@@ -278,7 +278,7 @@ const Login: React.FC = () => {
           )}
 
           <div className="mt-6 text-center">
-            <p className="text-[var(--color-text-secondary)]">
+            <p className="text-[var(--ink-secondary)]">
               Don&apos;t have an account?{' '}
               <Link to="/register" className={linkStyles}>
                 Sign up
@@ -286,9 +286,9 @@ const Login: React.FC = () => {
             </p>
           </div>
 
-          <div className="mt-6 p-4 rounded-2xl border bg-[var(--color-bg-tertiary)] border-[var(--color-border-default)]">
-            <h3 className="text-sm font-bold mb-2 text-[var(--color-primary)]">Quick Access</h3>
-            <p className="text-xs mb-3 text-[var(--color-text-secondary)]">
+          <div className="mt-6 p-4 rounded-2xl border bg-[var(--surface-overlay)] border-[var(--surface-overlay)]">
+            <h3 className="text-sm font-bold mb-2 text-[var(--accent)]">Quick Access</h3>
+            <p className="text-xs mb-3 text-[var(--ink-secondary)]">
               Preview the enterprise dashboard with a seeded demo admin session.
             </p>
             <button
@@ -301,7 +301,7 @@ const Login: React.FC = () => {
                   setFormError(err.message || 'Demo login failed. Please ensure the backend is running.');
                 }
               }}
-              className="w-full bg-[var(--color-bg-primary)] hover:bg-[var(--color-primary-light)] text-[var(--color-text-primary)] font-bold py-3 px-4 rounded-xl border border-[var(--color-border-default)] focus:outline-none focus:ring-2 focus:ring-[var(--color-primary)] focus:ring-offset-2 focus:ring-offset-[var(--color-bg-elevated)] disabled:opacity-50 disabled:cursor-not-allowed"
+              className="w-full bg-[var(--surface-base)] hover:bg-[var(--accent-soft)] text-[var(--ink-primary)] font-bold py-3 px-4 rounded-xl border border-[var(--surface-overlay)] focus:outline-none focus:ring-2 focus:ring-[var(--accent)] focus:ring-offset-2 focus:ring-offset-[var(--surface-raised)] disabled:opacity-50 disabled:cursor-not-allowed"
               disabled={isLoading || hostedAuthMissing}
             >
               {isLoading ? 'Signing in...' : 'Use Default Login'}
@@ -309,7 +309,7 @@ const Login: React.FC = () => {
           </div>
         </div>
 
-        <div className="text-center mt-8 text-sm text-[var(--color-text-tertiary)]">
+        <div className="text-center mt-8 text-sm text-[var(--ink-tertiary)]">
           &copy; {new Date().getFullYear()} PSScript. All rights reserved.
         </div>
       </div>

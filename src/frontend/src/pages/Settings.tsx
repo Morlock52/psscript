@@ -3,13 +3,13 @@ import { Link } from 'react-router-dom';
 import { useTheme } from '../hooks/useTheme';
 
 // Reusable style constants for theme-aware styling
-const cardStyles = "rounded-lg shadow-[var(--shadow-md)] p-6 bg-[var(--color-bg-elevated)] border border-[var(--color-border-default)]";
-const inputStyles = "w-full px-3 py-2 rounded-md bg-[var(--color-bg-primary)] border border-[var(--color-border-default)] text-[var(--color-text-primary)] focus:outline-none focus:ring-2 focus:ring-[var(--color-primary)]";
-const selectStyles = "px-3 py-2 rounded-md w-full bg-[var(--color-bg-primary)] border border-[var(--color-border-default)] text-[var(--color-text-primary)]";
-const labelStyles = "block text-sm mb-2 text-[var(--color-text-secondary)]";
-const toggleLabelStyles = "text-[var(--color-text-secondary)]";
-const linkButtonStyles = "px-4 py-2 rounded-md transition text-center bg-[var(--color-bg-tertiary)] text-[var(--color-text-primary)] hover:bg-[var(--color-bg-primary)] border border-[var(--color-border-default)]";
-const moduleLinkStyles = "px-3 py-2 rounded-md transition text-center text-sm bg-[var(--color-bg-tertiary)] text-[var(--color-text-primary)] hover:bg-[var(--color-bg-primary)] border border-[var(--color-border-default)]";
+const cardStyles = "rounded-lg shadow-[var(--shadow-near)] p-6 bg-[var(--surface-raised)] border border-[var(--surface-overlay)]";
+const inputStyles = "w-full px-3 py-2 rounded-md bg-[var(--surface-base)] border border-[var(--surface-overlay)] text-[var(--ink-primary)] focus:outline-none focus:ring-2 focus:ring-[var(--accent)]";
+const selectStyles = "px-3 py-2 rounded-md w-full bg-[var(--surface-base)] border border-[var(--surface-overlay)] text-[var(--ink-primary)]";
+const labelStyles = "block text-sm mb-2 text-[var(--ink-secondary)]";
+const toggleLabelStyles = "text-[var(--ink-secondary)]";
+const linkButtonStyles = "px-4 py-2 rounded-md transition text-center bg-[var(--surface-overlay)] text-[var(--ink-primary)] hover:bg-[var(--surface-base)] border border-[var(--surface-overlay)]";
+const moduleLinkStyles = "px-3 py-2 rounded-md transition text-center text-sm bg-[var(--surface-overlay)] text-[var(--ink-primary)] hover:bg-[var(--surface-base)] border border-[var(--surface-overlay)]";
 
 const Settings: React.FC = () => {
   // Theme settings
@@ -68,12 +68,12 @@ const Settings: React.FC = () => {
 
   return (
     <div className="container mx-auto p-6">
-      <h1 className="text-2xl font-bold mb-6 text-[var(--color-text-primary)]">Settings</h1>
+      <h1 className="text-2xl font-bold mb-6 text-[var(--ink-primary)]">Settings</h1>
 
       {/* User Management Card - Admin Only */}
       <Link
         to="/settings/users"
-        className={`block mb-6 ${cardStyles} hover:border-[var(--color-primary)] hover:shadow-lg transition-all group`}
+        className={`block mb-6 ${cardStyles} hover:border-[var(--accent)] hover:shadow-lg transition-all group`}
       >
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-4">
@@ -83,10 +83,10 @@ const Settings: React.FC = () => {
               </svg>
             </div>
             <div>
-              <h2 className="text-xl font-bold text-[var(--color-text-primary)] group-hover:text-[var(--color-primary)] transition-colors">
+              <h2 className="text-xl font-bold text-[var(--ink-primary)] group-hover:text-[var(--accent)] transition-colors">
                 User Management
               </h2>
-              <p className="text-[var(--color-text-secondary)]">
+              <p className="text-[var(--ink-secondary)]">
                 Add users, change passwords, and manage user settings
               </p>
             </div>
@@ -95,7 +95,7 @@ const Settings: React.FC = () => {
             <span className="px-3 py-1 text-xs font-medium rounded-full bg-purple-500/10 text-purple-400 border border-purple-500/30">
               Admin
             </span>
-            <svg className="w-5 h-5 text-[var(--color-text-tertiary)] group-hover:text-[var(--color-primary)] group-hover:translate-x-1 transition-all" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <svg className="w-5 h-5 text-[var(--ink-tertiary)] group-hover:text-[var(--accent)] group-hover:translate-x-1 transition-all" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
             </svg>
           </div>
@@ -105,7 +105,7 @@ const Settings: React.FC = () => {
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
         {/* Appearance */}
         <div className={cardStyles}>
-          <h2 className="text-xl font-bold mb-4 text-[var(--color-text-primary)]">Appearance</h2>
+          <h2 className="text-xl font-bold mb-4 text-[var(--ink-primary)]">Appearance</h2>
 
           <div className="space-y-4">
             <div>
@@ -115,8 +115,8 @@ const Settings: React.FC = () => {
                   onClick={() => setTheme('light')}
                   className={`px-4 py-2 rounded-md transition ${
                     theme === 'light'
-                      ? 'bg-[var(--color-primary)] text-white'
-                      : 'bg-[var(--color-bg-tertiary)] text-[var(--color-text-secondary)]'
+                      ? 'bg-[var(--accent)] text-white'
+                      : 'bg-[var(--surface-overlay)] text-[var(--ink-secondary)]'
                   }`}
                 >
                   Light
@@ -125,8 +125,8 @@ const Settings: React.FC = () => {
                   onClick={() => setTheme('dark')}
                   className={`px-4 py-2 rounded-md transition ${
                     theme === 'dark'
-                      ? 'bg-[var(--color-primary)] text-white'
-                      : 'bg-[var(--color-bg-tertiary)] text-[var(--color-text-secondary)]'
+                      ? 'bg-[var(--accent)] text-white'
+                      : 'bg-[var(--surface-overlay)] text-[var(--ink-secondary)]'
                   }`}
                 >
                   Dark
@@ -191,7 +191,7 @@ const Settings: React.FC = () => {
 
         {/* Notifications */}
         <div className={cardStyles}>
-          <h2 className="text-xl font-bold mb-4 text-[var(--color-text-primary)]">Notifications</h2>
+          <h2 className="text-xl font-bold mb-4 text-[var(--ink-primary)]">Notifications</h2>
 
           <div className="space-y-4">
             <div className="flex items-center justify-between">
@@ -207,7 +207,7 @@ const Settings: React.FC = () => {
                   checked={notifications.emailNotifications}
                   onChange={handleNotificationToggle}
                 />
-                <div className="w-11 h-6 bg-[var(--color-bg-tertiary)] peer-focus:outline-none peer-focus:ring-2 peer-focus:ring-[var(--color-primary)] rounded-full peer peer-checked:after:translate-x-full rtl:peer-checked:after:-translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:start-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-[var(--color-primary)]"></div>
+                <div className="w-11 h-6 bg-[var(--surface-overlay)] peer-focus:outline-none peer-focus:ring-2 peer-focus:ring-[var(--accent)] rounded-full peer peer-checked:after:translate-x-full rtl:peer-checked:after:-translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:start-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-[var(--accent)]"></div>
               </label>
             </div>
 
@@ -224,7 +224,7 @@ const Settings: React.FC = () => {
                   checked={notifications.scriptExecutionAlerts}
                   onChange={handleNotificationToggle}
                 />
-                <div className="w-11 h-6 bg-[var(--color-bg-tertiary)] peer-focus:outline-none peer-focus:ring-2 peer-focus:ring-[var(--color-primary)] rounded-full peer peer-checked:after:translate-x-full rtl:peer-checked:after:-translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:start-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-[var(--color-primary)]"></div>
+                <div className="w-11 h-6 bg-[var(--surface-overlay)] peer-focus:outline-none peer-focus:ring-2 peer-focus:ring-[var(--accent)] rounded-full peer peer-checked:after:translate-x-full rtl:peer-checked:after:-translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:start-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-[var(--accent)]"></div>
               </label>
             </div>
 
@@ -241,7 +241,7 @@ const Settings: React.FC = () => {
                   checked={notifications.securityAlerts}
                   onChange={handleNotificationToggle}
                 />
-                <div className="w-11 h-6 bg-[var(--color-bg-tertiary)] peer-focus:outline-none peer-focus:ring-2 peer-focus:ring-[var(--color-primary)] rounded-full peer peer-checked:after:translate-x-full rtl:peer-checked:after:-translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:start-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-[var(--color-primary)]"></div>
+                <div className="w-11 h-6 bg-[var(--surface-overlay)] peer-focus:outline-none peer-focus:ring-2 peer-focus:ring-[var(--accent)] rounded-full peer peer-checked:after:translate-x-full rtl:peer-checked:after:-translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:start-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-[var(--accent)]"></div>
               </label>
             </div>
 
@@ -258,7 +258,7 @@ const Settings: React.FC = () => {
                   checked={notifications.weeklyDigest}
                   onChange={handleNotificationToggle}
                 />
-                <div className="w-11 h-6 bg-[var(--color-bg-tertiary)] peer-focus:outline-none peer-focus:ring-2 peer-focus:ring-[var(--color-primary)] rounded-full peer peer-checked:after:translate-x-full rtl:peer-checked:after:-translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:start-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-[var(--color-primary)]"></div>
+                <div className="w-11 h-6 bg-[var(--surface-overlay)] peer-focus:outline-none peer-focus:ring-2 peer-focus:ring-[var(--accent)] rounded-full peer peer-checked:after:translate-x-full rtl:peer-checked:after:-translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:start-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-[var(--accent)]"></div>
               </label>
             </div>
           </div>
@@ -266,7 +266,7 @@ const Settings: React.FC = () => {
 
         {/* API Settings */}
         <div className={cardStyles}>
-          <h2 className="text-xl font-bold mb-4 text-[var(--color-text-primary)]">API Settings</h2>
+          <h2 className="text-xl font-bold mb-4 text-[var(--ink-primary)]">API Settings</h2>
 
           <div className="space-y-4">
             <div>
@@ -276,11 +276,11 @@ const Settings: React.FC = () => {
                   type={apiSettings.showApiKey ? "text" : "password"}
                   value={apiSettings.apiKey}
                   readOnly
-                  className="flex-1 px-3 py-2 rounded-l-md bg-[var(--color-bg-primary)] border border-[var(--color-border-default)] text-[var(--color-text-primary)]"
+                  className="flex-1 px-3 py-2 rounded-l-md bg-[var(--surface-base)] border border-[var(--surface-overlay)] text-[var(--ink-primary)]"
                 />
                 <button
                   onClick={toggleApiKeyVisibility}
-                  className="px-3 py-2 rounded-r-md bg-[var(--color-bg-tertiary)] text-[var(--color-text-secondary)] border border-l-0 border-[var(--color-border-default)] hover:bg-[var(--color-bg-primary)] transition"
+                  className="px-3 py-2 rounded-r-md bg-[var(--surface-overlay)] text-[var(--ink-secondary)] border border-l-0 border-[var(--surface-overlay)] hover:bg-[var(--surface-base)] transition"
                 >
                   {apiSettings.showApiKey ? "Hide" : "Show"}
                 </button>
@@ -289,29 +289,29 @@ const Settings: React.FC = () => {
 
             <button
               onClick={regenerateApiKey}
-              className="bg-[var(--color-primary)] text-white px-4 py-2 rounded-md hover:bg-[var(--color-primary-dark)] transition w-full"
+              className="bg-[var(--accent)] text-white px-4 py-2 rounded-md hover:bg-[var(--color-primary-dark)] transition w-full"
             >
               Regenerate API Key
             </button>
 
-            <div className="mt-4 p-4 rounded-md text-sm bg-[var(--color-bg-tertiary)] border border-[var(--color-border-default)]">
-              <p className="mb-2 text-[var(--color-text-secondary)]">API Usage This Month:</p>
+            <div className="mt-4 p-4 rounded-md text-sm bg-[var(--surface-overlay)] border border-[var(--surface-overlay)]">
+              <p className="mb-2 text-[var(--ink-secondary)]">API Usage This Month:</p>
               <div className="flex justify-between mb-1">
-                <span className="text-[var(--color-text-secondary)]">Script Analysis</span>
-                <span className="text-[var(--color-text-secondary)]">245 / 1000</span>
+                <span className="text-[var(--ink-secondary)]">Script Analysis</span>
+                <span className="text-[var(--ink-secondary)]">245 / 1000</span>
               </div>
-              <div className="w-full rounded-full h-2.5 mb-4 bg-[var(--color-bg-primary)]">
+              <div className="w-full rounded-full h-2.5 mb-4 bg-[var(--surface-base)]">
                 <div
-                  className="bg-[var(--color-primary)] h-2.5 rounded-full"
+                  className="bg-[var(--accent)] h-2.5 rounded-full"
                   style={{ width: '24.5%' }}
                 ></div>
               </div>
 
               <div className="flex justify-between mb-1">
-                <span className="text-[var(--color-text-secondary)]">Script Executions</span>
-                <span className="text-[var(--color-text-secondary)]">87 / 500</span>
+                <span className="text-[var(--ink-secondary)]">Script Executions</span>
+                <span className="text-[var(--ink-secondary)]">87 / 500</span>
               </div>
-              <div className="w-full rounded-full h-2.5 bg-[var(--color-bg-primary)]">
+              <div className="w-full rounded-full h-2.5 bg-[var(--surface-base)]">
                 <div
                   className="bg-green-500 h-2.5 rounded-full"
                   style={{ width: '17.4%' }}
@@ -324,8 +324,8 @@ const Settings: React.FC = () => {
 
       {/* Documentation & Training */}
       <div className={`mt-6 ${cardStyles}`}>
-        <h2 className="text-xl font-bold mb-4 text-[var(--color-text-primary)]">Documentation &amp; Training</h2>
-        <p className="mb-4 text-[var(--color-text-secondary)]">
+        <h2 className="text-xl font-bold mb-4 text-[var(--ink-primary)]">Documentation &amp; Training</h2>
+        <p className="mb-4 text-[var(--ink-secondary)]">
           Open the project documentation and training suite for guided onboarding.
         </p>
         <div className="flex flex-col sm:flex-row gap-3">
@@ -341,7 +341,7 @@ const Settings: React.FC = () => {
             href="https://github.com/Morlock52/psscript/tree/main/docs/training-suite"
             target="_blank"
             rel="noreferrer"
-            className="bg-[var(--color-primary)] text-white px-4 py-2 rounded-md hover:bg-[var(--color-primary-dark)] transition text-center"
+            className="bg-[var(--accent)] text-white px-4 py-2 rounded-md hover:bg-[var(--color-primary-dark)] transition text-center"
           >
             Training Suite
           </a>
@@ -387,7 +387,7 @@ const Settings: React.FC = () => {
           </a>
         </div>
         <div className="mt-4">
-          <p className="text-sm mb-2 text-[var(--color-text-tertiary)]">Management Playbook (PDF)</p>
+          <p className="text-sm mb-2 text-[var(--ink-tertiary)]">Management Playbook (PDF)</p>
           <div className="flex flex-col sm:flex-row gap-2">
             <a
               href={`${docsBaseUrl}/docs/exports/pdf/Management-Playbook.pdf`}
@@ -408,7 +408,7 @@ const Settings: React.FC = () => {
           </div>
         </div>
         <div className="mt-4">
-          <p className="text-sm mb-2 text-[var(--color-text-tertiary)]">Module PDFs (Local)</p>
+          <p className="text-sm mb-2 text-[var(--ink-tertiary)]">Module PDFs (Local)</p>
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2">
             <a
               href={`${docsBaseUrl}/docs/exports/pdf/docs-training-suite-modules-module-01-foundations.pdf`}
@@ -453,7 +453,7 @@ const Settings: React.FC = () => {
           </div>
         </div>
         <div className="mt-4">
-          <p className="text-sm mb-2 text-[var(--color-text-tertiary)]">Module PDFs (GitHub)</p>
+          <p className="text-sm mb-2 text-[var(--ink-tertiary)]">Module PDFs (GitHub)</p>
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2">
             <a
               href={`${docsRepoPdfBaseUrl}/docs-training-suite-modules-module-01-foundations.pdf`}
@@ -498,7 +498,7 @@ const Settings: React.FC = () => {
           </div>
         </div>
         <div className="mt-4">
-          <p className="text-sm mb-2 text-[var(--color-text-tertiary)]">Lab PDFs (Local)</p>
+          <p className="text-sm mb-2 text-[var(--ink-tertiary)]">Lab PDFs (Local)</p>
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2">
             <a
               href={`${docsBaseUrl}/docs/exports/pdf/docs-training-suite-labs-lab-01-upload-analyze.pdf`}
@@ -535,7 +535,7 @@ const Settings: React.FC = () => {
           </div>
         </div>
         <div className="mt-4">
-          <p className="text-sm mb-2 text-[var(--color-text-tertiary)]">Lab PDFs (GitHub)</p>
+          <p className="text-sm mb-2 text-[var(--ink-tertiary)]">Lab PDFs (GitHub)</p>
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2">
             <a
               href={`${docsRepoPdfBaseUrl}/docs-training-suite-labs-lab-01-upload-analyze.pdf`}
@@ -572,7 +572,7 @@ const Settings: React.FC = () => {
           </div>
         </div>
         <div className="mt-4">
-          <p className="text-sm mb-2 text-[var(--color-text-tertiary)]">DOCX exports (GitHub)</p>
+          <p className="text-sm mb-2 text-[var(--ink-tertiary)]">DOCX exports (GitHub)</p>
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2">
             <a
               href={`${docsRepoDocxBaseUrl}/README.docx`}
@@ -616,18 +616,18 @@ const Settings: React.FC = () => {
             </a>
           </div>
         </div>
-        <p className="text-xs mt-3 text-[var(--color-text-tertiary)]">
+        <p className="text-xs mt-3 text-[var(--ink-tertiary)]">
           Local path: docs/training-suite/README.md
         </p>
       </div>
 
       {/* Account Security */}
       <div className={`mt-6 ${cardStyles}`}>
-        <h2 className="text-xl font-bold mb-4 text-[var(--color-text-primary)]">Account Security</h2>
+        <h2 className="text-xl font-bold mb-4 text-[var(--ink-primary)]">Account Security</h2>
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           <div>
-            <h3 className="text-lg font-semibold mb-3 text-[var(--color-text-primary)]">Change Password</h3>
+            <h3 className="text-lg font-semibold mb-3 text-[var(--ink-primary)]">Change Password</h3>
             <form className="space-y-4">
               <div>
                 <label htmlFor="currentPassword" className={labelStyles}>
@@ -664,7 +664,7 @@ const Settings: React.FC = () => {
 
               <button
                 type="submit"
-                className="bg-[var(--color-primary)] text-white px-4 py-2 rounded-md hover:bg-[var(--color-primary-dark)] transition"
+                className="bg-[var(--accent)] text-white px-4 py-2 rounded-md hover:bg-[var(--color-primary-dark)] transition"
               >
                 Update Password
               </button>
@@ -672,8 +672,8 @@ const Settings: React.FC = () => {
           </div>
 
           <div>
-            <h3 className="text-lg font-semibold mb-3 text-[var(--color-text-primary)]">Two-Factor Authentication</h3>
-            <p className="mb-4 text-[var(--color-text-secondary)]">
+            <h3 className="text-lg font-semibold mb-3 text-[var(--ink-primary)]">Two-Factor Authentication</h3>
+            <p className="mb-4 text-[var(--ink-secondary)]">
               Enhance your account security by enabling two-factor authentication.
             </p>
 
@@ -684,7 +684,7 @@ const Settings: React.FC = () => {
             </div>
 
             <button
-              className="bg-[var(--color-primary)] text-white px-4 py-2 rounded-md hover:bg-[var(--color-primary-dark)] transition"
+              className="bg-[var(--accent)] text-white px-4 py-2 rounded-md hover:bg-[var(--color-primary-dark)] transition"
             >
               Enable 2FA
             </button>
@@ -695,7 +695,7 @@ const Settings: React.FC = () => {
       {/* Save Settings Button */}
       <div className="mt-6 flex justify-end">
         <button
-          className="bg-[var(--color-primary)] text-white px-6 py-2 rounded-md hover:bg-[var(--color-primary-dark)] transition"
+          className="bg-[var(--accent)] text-white px-6 py-2 rounded-md hover:bg-[var(--color-primary-dark)] transition"
         >
           Save All Settings
         </button>

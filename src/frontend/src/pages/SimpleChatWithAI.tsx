@@ -142,15 +142,15 @@ const SimpleChatWithAI = () => {
   };
 
   // Reusable styles
-  const inputStyles = "bg-[var(--color-bg-sunken)]/45 border border-[var(--color-border-default)] focus:ring-2 focus:ring-[var(--color-border-focus)]/35 focus:border-[var(--color-border-focus)] focus:outline-none";
-  const buttonPrimaryStyles = "px-4 py-2 rounded border border-[var(--color-border-strong)] bg-[var(--color-bg-tertiary)] text-[var(--color-text-primary)] hover:bg-[var(--color-bg-elevated)] disabled:opacity-50 transition-colors";
-  const buttonSecondaryStyles = "px-3 py-1 rounded text-sm border border-[var(--color-border-default)] bg-[var(--color-bg-tertiary)]/55 hover:bg-[var(--color-bg-tertiary)] text-[var(--color-text-secondary)] hover:text-[var(--color-text-primary)] transition-colors";
-  const headerButtonStyles = "px-3 py-1 rounded border border-[var(--color-border-default)] bg-[var(--color-bg-tertiary)]/45 hover:bg-[var(--color-bg-tertiary)] text-[var(--color-text-secondary)] hover:text-[var(--color-text-primary)] flex items-center transition-colors";
+  const inputStyles = "bg-[var(--surface-base)]/45 border border-[var(--surface-overlay)] focus:ring-2 focus:ring-[var(--ring-focus)]/35 focus:border-[var(--ring-focus)] focus:outline-none";
+  const buttonPrimaryStyles = "px-4 py-2 rounded border border-[var(--ink-muted)] bg-[var(--surface-overlay)] text-[var(--ink-primary)] hover:bg-[var(--surface-raised)] disabled:opacity-50 transition-colors";
+  const buttonSecondaryStyles = "px-3 py-1 rounded text-sm border border-[var(--surface-overlay)] bg-[var(--surface-overlay)]/55 hover:bg-[var(--surface-overlay)] text-[var(--ink-secondary)] hover:text-[var(--ink-primary)] transition-colors";
+  const headerButtonStyles = "px-3 py-1 rounded border border-[var(--surface-overlay)] bg-[var(--surface-overlay)]/45 hover:bg-[var(--surface-overlay)] text-[var(--ink-secondary)] hover:text-[var(--ink-primary)] flex items-center transition-colors";
 
   return (
-    <div className="flex flex-col h-full bg-[var(--color-bg-primary)] text-[var(--color-text-primary)]">
+    <div className="flex flex-col h-full bg-[var(--surface-base)] text-[var(--ink-primary)]">
       {/* Header */}
-      <div className="p-4 flex justify-between items-center bg-[var(--color-bg-elevated)]/90 text-[var(--color-text-primary)] border-b border-[var(--color-border-default)] shadow-[var(--shadow-sm)]">
+      <div className="p-4 flex justify-between items-center bg-[var(--surface-raised)]/90 text-[var(--ink-primary)] border-b border-[var(--surface-overlay)] shadow-[var(--shadow-near)]">
         <div className="flex items-center space-x-2">
           <button
             onClick={() => navigate('/dashboard')}
@@ -207,7 +207,7 @@ const SimpleChatWithAI = () => {
 
       {/* Search panel */}
       {showSearch && (
-        <div className="p-4 bg-[var(--color-bg-elevated)] border-b border-[var(--color-border-default)]">
+        <div className="p-4 bg-[var(--surface-raised)] border-b border-[var(--surface-overlay)]">
           <form onSubmit={handleSearch} className="flex gap-2 mb-4">
             <input
               type="text"
@@ -232,27 +232,27 @@ const SimpleChatWithAI = () => {
             </div>
           )}
 
-          <div className={`max-h-60 overflow-y-auto rounded ${searchResults.length > 0 ? 'border border-[var(--color-border-default)]' : ''}`}>
+          <div className={`max-h-60 overflow-y-auto rounded ${searchResults.length > 0 ? 'border border-[var(--surface-overlay)]' : ''}`}>
             {searchResults.map((result, idx) => (
               <div
                 key={result.id || idx}
-                className={`p-3 cursor-pointer hover:bg-[var(--color-bg-tertiary)] border-b border-[var(--color-border-default)] transition-colors ${idx === searchResults.length - 1 ? 'border-b-0' : ''}`}
+                className={`p-3 cursor-pointer hover:bg-[var(--surface-overlay)] border-b border-[var(--surface-overlay)] transition-colors ${idx === searchResults.length - 1 ? 'border-b-0' : ''}`}
                 onClick={() => loadChatHistory(result.messages)}
               >
                 <div className="flex justify-between mb-1">
-                  <span className="text-sm font-medium text-[var(--color-text-primary)]">{result.date}</span>
-                  <span className="text-xs px-2 py-0.5 rounded-full border border-[var(--color-border-default)] bg-[var(--color-bg-tertiary)]/50 text-[var(--color-text-tertiary)]">
+                  <span className="text-sm font-medium text-[var(--ink-primary)]">{result.date}</span>
+                  <span className="text-xs px-2 py-0.5 rounded-full border border-[var(--surface-overlay)] bg-[var(--surface-overlay)]/50 text-[var(--ink-tertiary)]">
                     Score: {result.score.toFixed(2)}
                   </span>
                 </div>
-                <div className="text-sm truncate text-[var(--color-text-secondary)]">
+                <div className="text-sm truncate text-[var(--ink-secondary)]">
                   {result.messages[0]?.content || 'No content'}
                 </div>
               </div>
             ))}
 
             {searchResults.length === 0 && searchQuery.trim() !== '' && !isSearching && (
-              <div className="p-4 text-center text-[var(--color-text-tertiary)]">
+              <div className="p-4 text-center text-[var(--ink-tertiary)]">
                 No results found
               </div>
             )}
@@ -261,9 +261,9 @@ const SimpleChatWithAI = () => {
               <div className="p-4 text-center">
                 <div className="inline-block">
                   <div className="flex space-x-2">
-                    <div className="w-2 h-2 bg-[var(--color-text-tertiary)] rounded-full animate-bounce"></div>
-                    <div className="w-2 h-2 bg-[var(--color-text-tertiary)] rounded-full animate-bounce delay-150"></div>
-                    <div className="w-2 h-2 bg-[var(--color-text-tertiary)] rounded-full animate-bounce delay-300"></div>
+                    <div className="w-2 h-2 bg-[var(--ink-tertiary)] rounded-full animate-bounce"></div>
+                    <div className="w-2 h-2 bg-[var(--ink-tertiary)] rounded-full animate-bounce delay-150"></div>
+                    <div className="w-2 h-2 bg-[var(--ink-tertiary)] rounded-full animate-bounce delay-300"></div>
                   </div>
                 </div>
               </div>
@@ -273,9 +273,9 @@ const SimpleChatWithAI = () => {
       )}
 
       {/* Messages */}
-      <div className="flex-1 p-4 overflow-y-auto bg-[var(--color-bg-secondary)]">
+      <div className="flex-1 p-4 overflow-y-auto bg-[var(--surface-raised)]">
         {messages.length === 0 ? (
-          <div className="flex items-center justify-center h-full text-[var(--color-text-tertiary)]">
+          <div className="flex items-center justify-center h-full text-[var(--ink-tertiary)]">
             <div className="text-center">
               <p>No messages yet</p>
               <p className="text-sm mt-2">Start a conversation by typing a message below</p>
@@ -294,11 +294,11 @@ const SimpleChatWithAI = () => {
         {/* Loading indicator */}
         {isLoading && (
           <div className="flex items-center mb-4">
-            <div className="p-3 rounded-lg bg-[var(--color-bg-elevated)]">
+            <div className="p-3 rounded-lg bg-[var(--surface-raised)]">
               <div className="flex space-x-2">
-                <div className="w-2 h-2 bg-[var(--color-text-tertiary)] rounded-full animate-bounce"></div>
-                <div className="w-2 h-2 bg-[var(--color-text-tertiary)] rounded-full animate-bounce delay-150"></div>
-                <div className="w-2 h-2 bg-[var(--color-text-tertiary)] rounded-full animate-bounce delay-300"></div>
+                <div className="w-2 h-2 bg-[var(--ink-tertiary)] rounded-full animate-bounce"></div>
+                <div className="w-2 h-2 bg-[var(--ink-tertiary)] rounded-full animate-bounce delay-150"></div>
+                <div className="w-2 h-2 bg-[var(--ink-tertiary)] rounded-full animate-bounce delay-300"></div>
               </div>
             </div>
           </div>
@@ -307,7 +307,7 @@ const SimpleChatWithAI = () => {
       </div>
 
       {/* Input form */}
-      <div className="p-4 bg-[var(--color-bg-elevated)] border-t border-[var(--color-border-default)]">
+      <div className="p-4 bg-[var(--surface-raised)] border-t border-[var(--surface-overlay)]">
         <div className="flex gap-2 mb-2">
           <label htmlFor="file-upload" className="sr-only">
             Upload PowerShell Script
@@ -332,11 +332,11 @@ const SimpleChatWithAI = () => {
           </button>
           {selectedFile && (
             <div className="flex-1 flex items-center">
-              <span className="text-sm truncate text-[var(--color-text-primary)]">{selectedFile.name}</span>
+              <span className="text-sm truncate text-[var(--ink-primary)]">{selectedFile.name}</span>
               <button
                 type="button"
                 onClick={handleFileUpload}
-                className="ml-2 px-3 py-1 rounded text-sm border border-[var(--color-border-strong)] bg-[var(--color-bg-tertiary)] text-[var(--color-text-primary)] hover:bg-[var(--color-bg-elevated)] transition-colors"
+                className="ml-2 px-3 py-1 rounded text-sm border border-[var(--ink-muted)] bg-[var(--surface-overlay)] text-[var(--ink-primary)] hover:bg-[var(--surface-raised)] transition-colors"
                 disabled={isLoading || isUploading}
               >
                 {isUploading ? 'Uploading...' : 'Analyze'}
@@ -372,11 +372,11 @@ const SimpleChatWithAI = () => {
           </button>
         </form>
         {isAuthenticated ? (
-          <p className="text-xs text-center mt-2 text-[var(--color-text-tertiary)]">
+          <p className="text-xs text-center mt-2 text-[var(--ink-tertiary)]">
             {user?.username} • {isSaving ? 'Saving chat...' : 'Chat saved'}
           </p>
         ) : (
-          <p className="text-xs text-center mt-2 text-[var(--color-text-tertiary)]">
+          <p className="text-xs text-center mt-2 text-[var(--ink-tertiary)]">
             Sign in to save your chat history
           </p>
         )}
@@ -385,15 +385,15 @@ const SimpleChatWithAI = () => {
       {/* Create Script Modal */}
       {showCreateScriptModal && (
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
-          <div className="rounded-xl shadow-lg max-w-lg w-full max-h-[90vh] overflow-y-auto bg-[var(--color-bg-elevated)] text-[var(--color-text-primary)] border border-[var(--color-border-default)]">
-            <div className="p-4 border-b border-[var(--color-border-default)]">
+          <div className="rounded-xl shadow-lg max-w-lg w-full max-h-[90vh] overflow-y-auto bg-[var(--surface-raised)] text-[var(--ink-primary)] border border-[var(--surface-overlay)]">
+            <div className="p-4 border-b border-[var(--surface-overlay)]">
               <h2 className="text-xl font-bold">Create New Script</h2>
-              <p className="text-sm text-[var(--color-text-tertiary)] mt-1">Save this code as a new PowerShell script</p>
+              <p className="text-sm text-[var(--ink-tertiary)] mt-1">Save this code as a new PowerShell script</p>
             </div>
 
             <div className="p-4">
               <div className="mb-4">
-                <label className="block text-sm font-medium mb-1 text-[var(--color-text-secondary)]">Script Name</label>
+                <label className="block text-sm font-medium mb-1 text-[var(--ink-secondary)]">Script Name</label>
                 <input
                   type="text"
                   value={scriptName}
@@ -404,7 +404,7 @@ const SimpleChatWithAI = () => {
               </div>
 
               <div className="mb-4">
-                <label className="block text-sm font-medium mb-1 text-[var(--color-text-secondary)]">Description</label>
+                <label className="block text-sm font-medium mb-1 text-[var(--ink-secondary)]">Description</label>
                 <input
                   type="text"
                   value={scriptDescription}
@@ -415,16 +415,16 @@ const SimpleChatWithAI = () => {
               </div>
 
               <div className="mb-4">
-                <label className="block text-sm font-medium mb-1 text-[var(--color-text-secondary)]">Script Content</label>
-                <div className={`w-full rounded border border-[var(--color-border-default)] bg-[var(--color-bg-tertiary)] p-2 h-60 overflow-y-auto`}>
-                  <pre className="whitespace-pre-wrap font-mono text-sm text-[var(--color-text-primary)]">
+                <label className="block text-sm font-medium mb-1 text-[var(--ink-secondary)]">Script Content</label>
+                <div className={`w-full rounded border border-[var(--surface-overlay)] bg-[var(--surface-overlay)] p-2 h-60 overflow-y-auto`}>
+                  <pre className="whitespace-pre-wrap font-mono text-sm text-[var(--ink-primary)]">
                     {scriptContent}
                   </pre>
                 </div>
               </div>
             </div>
 
-            <div className="p-4 border-t border-[var(--color-border-default)] flex justify-end gap-2">
+            <div className="p-4 border-t border-[var(--surface-overlay)] flex justify-end gap-2">
               <button
                 type="button"
                 onClick={() => setShowCreateScriptModal(false)}

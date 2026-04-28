@@ -4,10 +4,10 @@ import { analyticsService } from '../services/api';
 import CategoryPieChart from '../components/charts/CategoryPieChart';
 
 // Reusable style constants for theme-aware styling
-const cardStyles = "rounded-lg shadow-[var(--shadow-md)] p-6 bg-[var(--color-bg-elevated)] border border-[var(--color-border-default)]";
-const statCardStyles = "rounded-lg p-4 shadow-[var(--shadow-sm)] bg-[var(--color-bg-tertiary)]";
-const progressBarBgStyles = "w-full rounded-full h-2.5 bg-[var(--color-bg-primary)]";
-const categoryItemStyles = "flex items-center justify-between p-3 rounded bg-[var(--color-bg-tertiary)]";
+const cardStyles = "rounded-lg shadow-[var(--shadow-near)] p-6 bg-[var(--surface-raised)] border border-[var(--surface-overlay)]";
+const statCardStyles = "rounded-lg p-4 shadow-[var(--shadow-near)] bg-[var(--surface-overlay)]";
+const progressBarBgStyles = "w-full rounded-full h-2.5 bg-[var(--surface-base)]";
+const categoryItemStyles = "flex items-center justify-between p-3 rounded bg-[var(--surface-overlay)]";
 
 const Analytics: React.FC = () => {
   // Fetch real usage statistics
@@ -57,33 +57,33 @@ const Analytics: React.FC = () => {
   const formatMs = (value: number | undefined) => `${Math.round(Number(value || 0))} ms`;
 
   return (
-    <div className="container mx-auto pb-8 text-[var(--color-text-primary)]">
+    <div className="container mx-auto pb-8 text-[var(--ink-primary)]">
       <h1 className="text-2xl font-bold mb-6">Analytics Dashboard</h1>
 
       {/* Usage Statistics */}
       <div className="mb-8">
         <h2 className="text-xl font-semibold mb-4">Usage Statistics</h2>
         {usageLoading ? (
-          <div className="text-[var(--color-text-tertiary)]">Loading statistics...</div>
+          <div className="text-[var(--ink-tertiary)]">Loading statistics...</div>
         ) : (
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
             <div className={statCardStyles}>
-              <h3 className="text-sm font-medium text-[var(--color-text-secondary)] mb-1">Total Scripts</h3>
+              <h3 className="text-sm font-medium text-[var(--ink-secondary)] mb-1">Total Scripts</h3>
               <p className="text-2xl font-bold">{usageStats?.totalScripts || 0}</p>
             </div>
 
             <div className={statCardStyles}>
-              <h3 className="text-sm font-medium text-[var(--color-text-secondary)] mb-1">Total Users</h3>
+              <h3 className="text-sm font-medium text-[var(--ink-secondary)] mb-1">Total Users</h3>
               <p className="text-2xl font-bold">{usageStats?.totalUsers || 0}</p>
             </div>
 
             <div className={statCardStyles}>
-              <h3 className="text-sm font-medium text-[var(--color-text-secondary)] mb-1">Total Analyses</h3>
+              <h3 className="text-sm font-medium text-[var(--ink-secondary)] mb-1">Total Analyses</h3>
               <p className="text-2xl font-bold">{usageStats?.totalAnalyses || 0}</p>
             </div>
 
             <div className={statCardStyles}>
-              <h3 className="text-sm font-medium text-[var(--color-text-secondary)] mb-1">Scripts (Last 30 Days)</h3>
+              <h3 className="text-sm font-medium text-[var(--ink-secondary)] mb-1">Scripts (Last 30 Days)</h3>
               <p className="text-2xl font-bold">
                 {usageStats?.totalScripts || 0}
                 {usageStats?.scriptsChange && usageStats.scriptsChange !== 0 && (
@@ -101,38 +101,38 @@ const Analytics: React.FC = () => {
       <div className="mb-8">
         <h2 className="text-xl font-semibold mb-4">AI Analysis Tracking</h2>
         {aiLoading ? (
-          <div className="text-[var(--color-text-tertiary)]">Loading AI analytics...</div>
+          <div className="text-[var(--ink-tertiary)]">Loading AI analytics...</div>
         ) : (
           <div className={cardStyles}>
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
               <div className={statCardStyles}>
-                <h3 className="text-sm font-medium text-[var(--color-text-secondary)] mb-1">AI Requests</h3>
+                <h3 className="text-sm font-medium text-[var(--ink-secondary)] mb-1">AI Requests</h3>
                 <p className="text-2xl font-bold">{aiSummary.totalRequests || 0}</p>
-                <p className="text-xs text-[var(--color-text-tertiary)] mt-1">
+                <p className="text-xs text-[var(--ink-tertiary)] mt-1">
                   {aiSummary.failedRequests || 0} failed
                 </p>
               </div>
 
               <div className={statCardStyles}>
-                <h3 className="text-sm font-medium text-[var(--color-text-secondary)] mb-1">Token Usage</h3>
+                <h3 className="text-sm font-medium text-[var(--ink-secondary)] mb-1">Token Usage</h3>
                 <p className="text-2xl font-bold">{aiSummary.totalTokens || 0}</p>
-                <p className="text-xs text-[var(--color-text-tertiary)] mt-1">
+                <p className="text-xs text-[var(--ink-tertiary)] mt-1">
                   {aiSummary.promptTokens || 0} prompt / {aiSummary.completionTokens || 0} completion
                 </p>
               </div>
 
               <div className={statCardStyles}>
-                <h3 className="text-sm font-medium text-[var(--color-text-secondary)] mb-1">Estimated Cost</h3>
+                <h3 className="text-sm font-medium text-[var(--ink-secondary)] mb-1">Estimated Cost</h3>
                 <p className="text-2xl font-bold">{formatCost(aiSummary.totalCost)}</p>
-                <p className="text-xs text-[var(--color-text-tertiary)] mt-1">
+                <p className="text-xs text-[var(--ink-tertiary)] mt-1">
                   {formatCost(aiSummary.avgCostPerRequest)} avg/request
                 </p>
               </div>
 
               <div className={statCardStyles}>
-                <h3 className="text-sm font-medium text-[var(--color-text-secondary)] mb-1">Latency / Success</h3>
+                <h3 className="text-sm font-medium text-[var(--ink-secondary)] mb-1">Latency / Success</h3>
                 <p className="text-2xl font-bold">{formatMs(aiSummary.p95Latency)}</p>
-                <p className="text-xs text-[var(--color-text-tertiary)] mt-1">
+                <p className="text-xs text-[var(--ink-tertiary)] mt-1">
                   {formatRate(aiSummary.successRate)} success, {formatRate(aiSummary.errorRate)} error
                 </p>
               </div>
@@ -147,19 +147,19 @@ const Analytics: React.FC = () => {
                       <div key={`${model.provider}-${model.model}`} className={categoryItemStyles}>
                         <div>
                           <p className="text-sm font-medium">{model.model}</p>
-                          <p className="text-xs text-[var(--color-text-tertiary)]">
+                          <p className="text-xs text-[var(--ink-tertiary)]">
                             {model.provider} · {model.requests} requests · {formatRate(model.successRate)} success
                           </p>
                         </div>
                         <div className="text-right">
                           <p className="text-sm font-bold">{formatCost(model.totalCost)}</p>
-                          <p className="text-xs text-[var(--color-text-tertiary)]">{model.totalTokens || 0} tokens</p>
+                          <p className="text-xs text-[var(--ink-tertiary)]">{model.totalTokens || 0} tokens</p>
                         </div>
                       </div>
                     ))}
                   </div>
                 ) : (
-                  <p className="text-[var(--color-text-tertiary)] text-sm">No AI model usage has been recorded for this range.</p>
+                  <p className="text-[var(--ink-tertiary)] text-sm">No AI model usage has been recorded for this range.</p>
                 )}
               </div>
 
@@ -171,19 +171,19 @@ const Analytics: React.FC = () => {
                       <div key={endpoint.endpoint} className={categoryItemStyles}>
                         <div>
                           <p className="text-sm font-medium">{endpoint.endpoint}</p>
-                          <p className="text-xs text-[var(--color-text-tertiary)]">
+                          <p className="text-xs text-[var(--ink-tertiary)]">
                             {endpoint.requests} requests · p95 {formatMs(endpoint.p95Latency)}
                           </p>
                         </div>
                         <div className="text-right">
                           <p className="text-sm font-bold">{formatCost(endpoint.totalCost)}</p>
-                          <p className="text-xs text-[var(--color-text-tertiary)]">{endpoint.failures || 0} failures</p>
+                          <p className="text-xs text-[var(--ink-tertiary)]">{endpoint.failures || 0} failures</p>
                         </div>
                       </div>
                     ))}
                   </div>
                 ) : (
-                  <p className="text-[var(--color-text-tertiary)] text-sm">No AI endpoint usage has been recorded for this range.</p>
+                  <p className="text-[var(--ink-tertiary)] text-sm">No AI endpoint usage has been recorded for this range.</p>
                 )}
               </div>
             </div>
@@ -195,7 +195,7 @@ const Analytics: React.FC = () => {
       <div className="mb-8">
         <h2 className="text-xl font-semibold mb-4">Security Overview</h2>
         {securityLoading ? (
-          <div className="text-[var(--color-text-tertiary)]">Loading security metrics...</div>
+          <div className="text-[var(--ink-tertiary)]">Loading security metrics...</div>
         ) : (
           <div className={cardStyles}>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
@@ -207,7 +207,7 @@ const Analytics: React.FC = () => {
                     <div>
                       <div className="flex justify-between mb-1">
                         <span className="text-sm font-medium text-green-500">High Security (8-10)</span>
-                        <span className="text-sm font-medium text-[var(--color-text-secondary)]">
+                        <span className="text-sm font-medium text-[var(--ink-secondary)]">
                           {securityMetrics?.highSecurityCount || 0} scripts ({highSecurityPercentage}%)
                         </span>
                       </div>
@@ -222,7 +222,7 @@ const Analytics: React.FC = () => {
                     <div>
                       <div className="flex justify-between mb-1">
                         <span className="text-sm font-medium text-yellow-500">Medium Security (5-7)</span>
-                        <span className="text-sm font-medium text-[var(--color-text-secondary)]">
+                        <span className="text-sm font-medium text-[var(--ink-secondary)]">
                           {securityMetrics?.mediumSecurityCount || 0} scripts ({mediumSecurityPercentage}%)
                         </span>
                       </div>
@@ -237,7 +237,7 @@ const Analytics: React.FC = () => {
                     <div>
                       <div className="flex justify-between mb-1">
                         <span className="text-sm font-medium text-red-500">Low Security (1-4)</span>
-                        <span className="text-sm font-medium text-[var(--color-text-secondary)]">
+                        <span className="text-sm font-medium text-[var(--ink-secondary)]">
                           {securityMetrics?.lowSecurityCount || 0} scripts ({lowSecurityPercentage}%)
                         </span>
                       </div>
@@ -250,7 +250,7 @@ const Analytics: React.FC = () => {
                     </div>
                   </div>
                 ) : (
-                  <p className="text-[var(--color-text-tertiary)] text-sm">No security data available. Analyze some scripts to see security metrics.</p>
+                  <p className="text-[var(--ink-tertiary)] text-sm">No security data available. Analyze some scripts to see security metrics.</p>
                 )}
               </div>
 
@@ -267,14 +267,14 @@ const Analytics: React.FC = () => {
                           </svg>
                         </div>
                         <div className="ml-3">
-                          <h4 className="text-sm font-medium text-[var(--color-text-primary)]">{issue.name || issue.title}</h4>
-                          <p className="text-xs text-[var(--color-text-tertiary)] mt-1">Found in {issue.count} scripts</p>
+                          <h4 className="text-sm font-medium text-[var(--ink-primary)]">{issue.name || issue.title}</h4>
+                          <p className="text-xs text-[var(--ink-tertiary)] mt-1">Found in {issue.count} scripts</p>
                         </div>
                       </li>
                     ))}
                   </ul>
                 ) : (
-                  <p className="text-[var(--color-text-tertiary)] text-sm">No common security issues detected.</p>
+                  <p className="text-[var(--ink-tertiary)] text-sm">No common security issues detected.</p>
                 )}
               </div>
             </div>
@@ -286,7 +286,7 @@ const Analytics: React.FC = () => {
       <div className="mb-8">
         <h2 className="text-xl font-semibold mb-4">Script Category Distribution</h2>
         {categoryLoading ? (
-          <div className="text-[var(--color-text-tertiary)]">Loading category distribution...</div>
+          <div className="text-[var(--ink-tertiary)]">Loading category distribution...</div>
         ) : categoryData?.categories && categoryData.categories.length > 0 ? (
           <div className={cardStyles}>
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
@@ -312,13 +312,13 @@ const Analytics: React.FC = () => {
                         <div className="flex-1">
                           <p className="text-sm font-medium">{category.name}</p>
                           {category.description && (
-                            <p className="text-xs text-[var(--color-text-tertiary)] truncate">{category.description}</p>
+                            <p className="text-xs text-[var(--ink-tertiary)] truncate">{category.description}</p>
                           )}
                         </div>
                       </div>
                       <div className="text-right ml-4">
                         <p className="text-sm font-bold">{category.count}</p>
-                        <p className="text-xs text-[var(--color-text-tertiary)]">{category.percentage}%</p>
+                        <p className="text-xs text-[var(--ink-tertiary)]">{category.percentage}%</p>
                       </div>
                     </div>
                   ))}
@@ -328,7 +328,7 @@ const Analytics: React.FC = () => {
           </div>
         ) : (
           <div className={cardStyles}>
-            <p className="text-[var(--color-text-tertiary)] text-center">
+            <p className="text-[var(--ink-tertiary)] text-center">
               No category data available. Upload and categorize some scripts to see distribution.
             </p>
           </div>
