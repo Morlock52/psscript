@@ -29,9 +29,9 @@ export const Topbar = ({ onMenuClick }: TopbarProps) => {
         >
           <FaBars aria-hidden="true" />
         </button>
-        <div className="min-w-0">
-          <span className="block truncate font-display text-base text-ink-primary md:hidden">PSScript</span>
-          <span className="hidden truncate text-[11px] text-ink-tertiary md:block">
+        <div className="min-w-0 max-w-[46vw] leading-tight">
+          <span className="block truncate font-display text-base text-ink-primary">PSScript</span>
+          <span className="block truncate text-[10px] text-ink-tertiary sm:text-[11px]">
             Designed and Built by David Keanna
           </span>
         </div>
@@ -45,7 +45,7 @@ export const Topbar = ({ onMenuClick }: TopbarProps) => {
           title={isDark ? 'Switch to light mode' : 'Switch to dark mode'}
         >
           {isDark ? <FaSun aria-hidden="true" /> : <FaMoon aria-hidden="true" />}
-          <span className="hidden sm:inline">{isDark ? 'Light' : 'Dark'}</span>
+          <span className="hidden sm:inline">{isDark ? 'Light Mode' : 'Dark Mode'}</span>
         </button>
         <button
           type="button"
