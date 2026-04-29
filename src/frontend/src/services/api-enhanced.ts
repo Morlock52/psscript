@@ -1,5 +1,6 @@
 // Enhanced API service with additional methods for the PSScript application
-import { scriptService as baseScriptService, categoryService, analyticsService } from './api';
+import { apiClient, scriptService as baseScriptService, categoryService, analyticsService } from './api';
+import { normalizeScriptSummaries } from '../utils/scriptSummary';
 
 // Define types for the enhanced API
 interface Script {
@@ -75,8 +76,8 @@ export const scriptService = {
   // Get scripts by category
   getScriptsByCategory: async (categoryId: number): Promise<Script[]> => {
     try {
-      const response = await baseScriptService.getScripts({ category_id: categoryId });
-      return response.scripts || [];
+      const response = await baseScriptService.searchScripts('', { category_id: categoryId, limit: 8 });
+      return normalizeScriptSummaries(response.scripts || []) as unknown as Script[];
     } catch (error) {
       console.error(`Error fetching scripts for category ${categoryId}:`, error);
       return [];
@@ -86,12 +87,11 @@ export const scriptService = {
   // Get recent scripts
   getRecentScripts: async (limit: number = 10): Promise<Script[]> => {
     try {
-      const response = await baseScriptService.getScripts({ 
-        sort: 'created_at',
-        order: 'desc',
+      const response = await baseScriptService.getScripts({
+        sort: 'updated',
         limit
       });
-      return response.scripts || [];
+      return normalizeScriptSummaries(response.scripts || []) as unknown as Script[];
     } catch (error) {
       console.error('Error fetching recent scripts:', error);
       return [];
@@ -101,12 +101,11 @@ export const scriptService = {
   // Get popular scripts
   getPopularScripts: async (limit: number = 10): Promise<Script[]> => {
     try {
-      const response = await baseScriptService.getScripts({ 
-        sort: 'views',
-        order: 'desc',
+      const response = await baseScriptService.searchScripts('', {
+        sort: 'executions',
         limit
       });
-      return response.scripts || [];
+      return normalizeScriptSummaries(response.scripts || []) as unknown as Script[];
     } catch (error) {
       console.error('Error fetching popular scripts:', error);
       return [];
@@ -116,11 +115,7 @@ export const scriptService = {
   // Get dashboard stats
   getDashboardStats: async (): Promise<DashboardStats> => {
     try {
-      // Get usage stats from analytics service
-      const usageStats = await analyticsService.getUsageStats();
-      
-      // Get security metrics
-      const securityMetrics = await analyticsService.getSecurityMetrics();
+      const dashboard = await apiClient.get('/analytics/dashboard').then(response => response.data);
       
       // Get recent scripts
       const recentScripts = await scriptService.getRecentScripts(5);
@@ -133,13 +128,13 @@ export const scriptService = {
       const categories = categoriesResponse.categories || [];
       
       return {
-        totalScripts: usageStats.totalScripts || 0,
-        scriptsChange: usageStats.scriptsChange || 0,
+        totalScripts: dashboard.totalScripts || 0,
+        scriptsChange: dashboard.scriptsChange || 0,
         totalCategories: categories.length,
-        avgSecurityScore: securityMetrics.averageScore || 0,
-        securityScoreChange: securityMetrics.scoreChange || 0,
-        totalAnalyses: usageStats.totalAnalyses || 0,
-        analysesChange: usageStats.analysesChange || 0,
+        avgSecurityScore: dashboard.avgSecurityScore || 0,
+        securityScoreChange: dashboard.securityScoreChange || 0,
+        totalAnalyses: dashboard.totalAnalyses || 0,
+        analysesChange: dashboard.analysesChange || 0,
         recentScripts,
         popularScripts
       };
@@ -160,27 +155,8 @@ export const scriptService = {
   // Get recent activity
   getRecentActivity: async (limit: number = 10): Promise<Activity[]> => {
     try {
-      // Try to get from analytics service first
-      try {
-        const usageStats = await analyticsService.getUsageStats();
-        if (usageStats.recentActivity && Array.isArray(usageStats.recentActivity)) {
-          return usageStats.recentActivity.slice(0, limit);
-        }
-      } catch (analyticsError) {
-        console.warn('Failed to get activity from analytics service:', analyticsError);
-      }
-      
-      // Fallback to mock data
-      return Array(limit).fill(0).map((_, i) => ({
-        id: `activity-${i}`,
-        type: ['create', 'update', 'execute', 'analyze'][Math.floor(Math.random() * 4)] as any,
-        script_id: `script-${i}`,
-        script_title: `Example Script ${i}`,
-        user_id: 'user-1',
-        username: 'User',
-        timestamp: new Date(Date.now() - i * 3600000).toISOString(),
-        details: {}
-      }));
+      const response = await apiClient.get('/activity/recent', { params: { limit } });
+      return response.data.activities || [];
     } catch (error) {
       console.error('Error fetching recent activity:', error);
       return [];
@@ -194,47 +170,13 @@ export const scriptService = {
     analyses: { date: string; count: number }[];
   }> => {
     try {
-      // In a real implementation, this would fetch from the backend
-      // For now, generate mock data based on the period
-      
-      const now = new Date();
-      const data = {
-        uploads: [] as { date: string; count: number }[],
-        executions: [] as { date: string; count: number }[],
-        analyses: [] as { date: string; count: number }[]
+      const usage = await analyticsService.getUsageStats();
+      const rows = Array.isArray(usage) ? usage : [];
+      return {
+        uploads: rows.map((row: any) => ({ date: row.date, count: Number(row.scripts || row.count || 0) })).reverse(),
+        executions: [],
+        analyses: [],
       };
-      
-      let days = 7;
-      if (period === 'month') days = 30;
-      if (period === 'year') days = 12; // For year, we'll do months instead of days
-      
-      for (let i = 0; i < days; i++) {
-        const date = new Date();
-        
-        if (period === 'year') {
-          // For year period, go back by months
-          date.setMonth(now.getMonth() - (days - i - 1));
-          date.setDate(1); // First day of month
-        } else {
-          // For week/month periods, go back by days
-          date.setDate(now.getDate() - (days - i - 1));
-        }
-        
-        // Format date as ISO string (YYYY-MM-DD)
-        const dateStr = date.toISOString().split('T')[0];
-        
-        // Generate random counts (higher for more recent dates)
-        const factor = 0.5 + (i / days) * 0.5; // 0.5 to 1.0
-        const uploadCount = Math.floor(Math.random() * 10 * factor) + 1;
-        const executionCount = Math.floor(Math.random() * 20 * factor) + 2;
-        const analysisCount = Math.floor(Math.random() * 15 * factor) + 1;
-        
-        data.uploads.push({ date: dateStr, count: uploadCount });
-        data.executions.push({ date: dateStr, count: executionCount });
-        data.analyses.push({ date: dateStr, count: analysisCount });
-      }
-      
-      return data;
     } catch (error) {
       console.error(`Error fetching script trends for ${period}:`, error);
       return {

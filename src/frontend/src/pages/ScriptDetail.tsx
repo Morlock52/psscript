@@ -87,18 +87,18 @@ const ScriptDetail: React.FC = () => {
   });
 
   const deleteScriptMutation = useMutation({
-    mutationFn: () => scriptService.deleteScript(id || ''),
+    mutationFn: () => scriptService.archiveScript(id || '', 'Archived from script detail'),
     onSuccess: (data) => {
       if (data.success) {
-        toast.success('Script deleted successfully');
+        toast.success('Script archived successfully');
         navigate('/scripts');
       } else {
-        toast.error('Failed to delete script');
+        toast.error('Failed to archive script');
       }
     },
     onError: (error) => {
-      console.error('Error deleting script:', error);
-      toast.error('Failed to delete script');
+      console.error('Error archiving script:', error);
+      toast.error('Failed to archive script');
     }
   });
 
@@ -127,7 +127,7 @@ const ScriptDetail: React.FC = () => {
   };
 
   const handleDeleteScript = () => {
-    if (window.confirm(`Are you sure you want to delete "${script.title}"?`)) {
+    if (window.confirm(`Archive "${script.title}"? It will be hidden from normal script lists and can be restored by an admin.`)) {
       deleteScriptMutation.mutate();
     }
   };
@@ -208,7 +208,7 @@ const ScriptDetail: React.FC = () => {
             onClick={handleDeleteScript}
             disabled={deleteScriptMutation.isPending}
           >
-            {deleteScriptMutation.isPending ? 'Deleting...' : 'Delete'}
+            {deleteScriptMutation.isPending ? 'Archiving...' : 'Archive'}
           </button>
           <button
             className="px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition-colors"

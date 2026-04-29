@@ -20,22 +20,22 @@ const Dashboard: React.FC = () => {
   const [trendPeriod, setTrendPeriod] = useState<'week' | 'month' | 'year'>('week');
   const queryClient = useQueryClient();
 
-  // Delete script mutation
+  // Archive script mutation
   const deleteScriptMutation = useMutation({
-    mutationFn: (id: string) => scriptApi.deleteScript(id),
+    mutationFn: (id: string) => scriptApi.archiveScript(id, 'Archived from dashboard'),
     onSuccess: () => {
       // Invalidate scripts query to refresh the list
       queryClient.invalidateQueries({ queryKey: ['scripts'] });
       queryClient.invalidateQueries({ queryKey: ['dashboard-stats'] });
     },
     onError: (error: any) => {
-      alert(error.message || 'Failed to delete script');
+      alert(error.message || 'Failed to archive script');
     }
   });
 
-  // Handle delete with confirmation
+  // Handle archive with confirmation
   const handleDeleteScript = (id: string) => {
-    if (window.confirm('Are you sure you want to delete this script?')) {
+    if (window.confirm('Archive this script? It will be hidden from normal script lists and can be restored by an admin.')) {
       deleteScriptMutation.mutate(id);
     }
   };

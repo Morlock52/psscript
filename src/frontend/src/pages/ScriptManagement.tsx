@@ -94,39 +94,38 @@ const ScriptManagement: React.FC = () => {
     }
   });
 
-  // Delete script mutation with improved error handling
+  // Archive script mutation with improved error handling
   const deleteScriptMutation = useMutation({
-    mutationFn: (id: string) => scriptService.deleteScript(id),
+    mutationFn: (id: string) => scriptService.archiveScript(id, 'Archived from script management'),
     onSuccess: (data) => {
       if (data.success) {
-        // Show success toast or notification
-        console.log('Script deleted successfully');
+        console.log('Script archived successfully');
         queryClient.invalidateQueries({ queryKey: ['scripts'] });
-        setSuccessMessage('Script deleted successfully');
+        setSuccessMessage(`Script archived successfully (${data.archivedIds?.join(', ') || data.deletedIds?.join(', ') || 'updated'})`);
         setTimeout(() => setSuccessMessage(null), 3000);
       }
     },
     onError: (error: any) => {
       // Show error toast or notification
-      console.error('Failed to delete script:', error);
-      setErrorMessage(error.message || 'Failed to delete script. Please try again.');
+      console.error('Failed to archive script:', error);
+      setErrorMessage(error.message || 'Failed to archive script. Please try again.');
       setTimeout(() => setErrorMessage(null), 5000);
     }
   });
 
-  // Bulk delete scripts
+  // Bulk archive scripts
   const bulkDeleteMutation = useMutation({
-    mutationFn: (ids: string[]) => scriptService.bulkDeleteScripts(ids),
-    onSuccess: () => {
+    mutationFn: (ids: string[]) => scriptService.bulkDeleteScripts(ids, 'archive'),
+    onSuccess: (data) => {
       queryClient.invalidateQueries({ queryKey: ['scripts'] });
       setSelectedScripts([]);
       setShowBulkActions(false);
-      setSuccessMessage(`${selectedScripts.length} scripts deleted successfully`);
+      setSuccessMessage(`${data.archived || selectedScripts.length} scripts archived successfully`);
       setTimeout(() => setSuccessMessage(null), 3000);
     },
     onError: (error: any) => {
-      console.error('Failed to delete scripts:', error);
-      setErrorMessage(error.message || 'Failed to delete scripts. Please try again.');
+      console.error('Failed to archive scripts:', error);
+      setErrorMessage(error.message || 'Failed to archive scripts. Please try again.');
       setTimeout(() => setErrorMessage(null), 5000);
     }
   });
@@ -173,9 +172,9 @@ const ScriptManagement: React.FC = () => {
     });
   };
 
-  // Handle bulk delete
+  // Handle bulk archive
   const handleBulkDelete = () => {
-    if (window.confirm(`Are you sure you want to delete ${selectedScripts.length} scripts?`)) {
+    if (window.confirm(`Archive ${selectedScripts.length} scripts? They will be hidden from normal script lists and can be restored by an admin.`)) {
       bulkDeleteMutation.mutate(selectedScripts);
     }
   };
@@ -359,7 +358,7 @@ const ScriptManagement: React.FC = () => {
                 onClick={handleBulkDelete}
                 className="px-4 py-2 bg-red-600 hover:bg-red-700 text-white rounded-md text-sm font-medium"
               >
-                Delete Selected
+                Archive Selected
               </button>
               <button
                 onClick={() => {
@@ -518,13 +517,13 @@ const ScriptManagement: React.FC = () => {
                         </Link>
                         <button
                           onClick={() => {
-                            if (window.confirm(`Are you sure you want to delete "${script.title}"?`)) {
+                            if (window.confirm(`Archive "${script.title}"? It will be hidden from normal script lists and can be restored by an admin.`)) {
                               deleteScriptMutation.mutate(script.id);
                             }
                           }}
                           className="text-red-600 hover:text-red-900 dark:text-red-400 dark:hover:text-red-300"
                         >
-                          Delete
+                          Archive
                         </button>
                       </div>
                     </td>

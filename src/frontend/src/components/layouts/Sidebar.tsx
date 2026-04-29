@@ -70,14 +70,21 @@ export const Sidebar = ({ mobile = false, onClose }: SidebarProps) => {
         ))}
       </ul>
       {!mobile && (
-        <button
-          type="button"
-          onClick={() => setCollapsed((v) => !v)}
-          className="absolute bottom-4 left-4 text-xs text-ink-tertiary hover:text-ink-primary"
-          aria-pressed={collapsed}
-        >
-          {collapsed ? '›' : '‹ collapse'}
-        </button>
+        <div className="absolute bottom-4 left-4 right-4 space-y-3">
+          {!collapsed && (
+            <p className="text-[11px] leading-4 text-ink-tertiary">
+              Designed and Built by David Keanna
+            </p>
+          )}
+          <button
+            type="button"
+            onClick={() => setCollapsed((v) => !v)}
+            className="text-xs text-ink-tertiary hover:text-ink-primary"
+            aria-pressed={collapsed}
+          >
+            {collapsed ? '›' : '‹ collapse'}
+          </button>
+        </div>
       )}
     </nav>
   );

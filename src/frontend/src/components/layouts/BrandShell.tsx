@@ -23,6 +23,9 @@ export const BrandShell = ({ children }: { children: ReactNode }) => {
     <div className="relative min-h-screen flex flex-col items-center justify-center px-4 py-16">
       <GradientField intensity="full" />
       <main className="relative z-10 w-full max-w-[520px]">{children}</main>
+      <p className="relative z-10 mt-8 text-center text-xs font-medium text-[var(--ink-tertiary)]">
+        Designed and Built by David Keanna
+      </p>
     </div>
   );
 };

@@ -288,6 +288,26 @@ const scriptService = {
       };
     }
   },
+
+  archiveScript: async (id: string, reason?: string) => {
+    try {
+      const response = await apiClient.post(`/scripts/${id}/archive`, { reason });
+      return response.data;
+    } catch (error) {
+      console.error(`Error archiving script ${id}:`, error);
+      throw error;
+    }
+  },
+
+  restoreScript: async (id: string) => {
+    try {
+      const response = await apiClient.post(`/scripts/${id}/restore`);
+      return response.data;
+    } catch (error) {
+      console.error(`Error restoring script ${id}:`, error);
+      throw error;
+    }
+  },
   
   getScriptAnalysis: async (id: string) => {
     try {
@@ -382,9 +402,9 @@ const scriptService = {
     }
   },
   
-  bulkDeleteScripts: async (ids: string[]) => {
+  bulkDeleteScripts: async (ids: string[], mode: 'archive' | 'delete' = 'archive') => {
     try {
-      const response = await apiClient.post("/scripts/delete", { ids });
+      const response = await apiClient.post("/scripts/delete", { ids, mode });
       return response.data;
     } catch (error) {
       console.error("Error bulk deleting scripts:", error);
@@ -392,9 +412,9 @@ const scriptService = {
     }
   },
 
-  deleteScripts: async (ids: string[]) => {
+  deleteScripts: async (ids: string[], mode: 'archive' | 'delete' = 'archive') => {
     try {
-      const response = await apiClient.post("/scripts/delete", { ids });
+      const response = await apiClient.post("/scripts/delete", { ids, mode });
       return response.data;
     } catch (error) {
       console.error("Error deleting scripts:", error);

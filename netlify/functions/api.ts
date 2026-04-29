@@ -27,6 +27,7 @@ type AiMetricDetails = {
   success: boolean;
   errorMessage?: string;
 };
+type ScriptDeleteMode = 'archive' | 'delete';
 
 const OPENAI_TEXT_MODEL = 'gpt-5.5';
 const OPENAI_ANALYSIS_MODEL = 'gpt-5.4-mini';
@@ -84,6 +85,7 @@ const SCRIPT_CHILD_DELETE_TABLES = [
   'script_ratings',
   'script_usage_stats',
 ];
+let scriptLifecycleSchemaPromise: Promise<void> | null = null;
 const DB_BACKUP_TABLE = 'admin_db_backups';
 const DB_MAINTENANCE_TABLES = [
   'categories',
@@ -279,6 +281,8 @@ const analysisJsonSchema = {
 const scriptSelect = `
   SELECT s.id, s.title, s.description, s.content, s.user_id, s.category_id, s.version,
          s.is_public, s.execution_count, s.file_hash, s.created_at, s.updated_at,
+         s.archived_at, s.archived_by, s.archive_reason, s.review_status, s.is_test_data,
+         s.deleted_at, s.deleted_by,
          c.name AS category_name,
          p.username AS author_username,
          sa.quality_score AS analysis_quality_score,
@@ -295,6 +299,8 @@ export default async function handleRequest(req: Request, context: Context): Pro
     const route = getRoute(req);
 
     if (route.path === '/health') return await handleHealth();
+    if (route.path === '/route-health') return await handleRouteHealth();
+    await ensureScriptLifecycleSchema();
     if (route.segments[0] === 'voice') return await handleVoice(req, route);
     if (route.path === '/auth/default-user') return await handleDefaultUser(req);
     if (route.path === '/auth/me') return await handleAuthMe(req);
@@ -321,6 +327,8 @@ export default async function handleRequest(req: Request, context: Context): Pro
     if (route.path === '/analytics/security') return await handleAnalyticsSecurity(req);
     if (route.path === '/analytics/categories') return await handleAnalyticsCategories(req);
     if (route.path === '/analytics/usage') return await handleAnalyticsUsage(req);
+    if (route.path === '/analytics/dashboard') return await handleAnalyticsDashboard(req);
+    if (route.path === '/activity/recent') return await handleRecentActivity(req, route);
     if (route.segments[0] === 'categories' && route.segments[1]) return await handleCategoryById(req, route);
     if (route.segments[0] === 'documentation') return await handleDocumentation(req, route);
 
@@ -378,6 +386,24 @@ async function handleHealth(): Promise<Response> {
     runtime: 'netlify-functions',
     database,
     env,
+  });
+}
+
+async function handleRouteHealth(): Promise<Response> {
+  const routes = [
+    '/',
+    '/login',
+    '/dashboard',
+    '/scripts',
+    '/search',
+    '/categories',
+    '/scripts/upload',
+  ];
+  return json({
+    ok: true,
+    checkedAt: new Date().toISOString(),
+    deployId: getEnv('DEPLOY_ID', getEnv('COMMIT_REF', 'local')),
+    routes: routes.map(path => ({ path, expected: 'spa' })),
   });
 }
 
@@ -645,6 +671,9 @@ async function handleCategories(req: Request): Promise<Response> {
         COUNT(s.id)::int AS "scriptCount"
       FROM categories c
       LEFT JOIN scripts s ON s.category_id = c.id
+        AND s.deleted_at IS NULL
+        AND s.archived_at IS NULL
+        AND s.is_test_data = false
       GROUP BY c.id, c.name, c.description, c.created_at, c.updated_at
       ORDER BY c.name
     `);
@@ -692,7 +721,17 @@ async function handleCategoryById(req: Request, route: RouteParams): Promise<Res
 
 async function handleTags(req: Request): Promise<Response> {
   if (req.method !== 'GET') return methodNotAllowed();
-  const result = await query('SELECT id, name, created_at FROM tags ORDER BY name');
+  const includeSystem = new URL(req.url).searchParams.get('includeSystem') === 'true';
+  const result = await query(
+    includeSystem
+      ? 'SELECT id, name, created_at FROM tags ORDER BY name'
+      : `
+          SELECT id, name, created_at
+          FROM tags
+          WHERE lower(name) NOT IN ('codex-smoke', 'delete-test', 'readme-screenshot', 'e2e', 'e2e-test', 'test-data')
+          ORDER BY name
+        `
+  );
   return json({ tags: result.rows });
 }
 
@@ -701,12 +740,17 @@ async function handleScripts(req: Request, route: RouteParams): Promise<Response
 
   if (req.method === 'GET') {
     const limit = Math.min(Number(route.url.searchParams.get('limit') || '50'), 100);
+    const includeArchived = route.url.searchParams.get('includeArchived') === 'true';
+    const includeTestData = route.url.searchParams.get('includeTestData') === 'true';
     const result = await query(
       `${scriptSelect}
-       WHERE s.user_id = $1 OR s.is_public = true
+       WHERE (s.user_id = $1 OR s.is_public = true)
+         AND s.deleted_at IS NULL
+         AND ($3::boolean OR s.archived_at IS NULL)
+         AND ($4::boolean OR s.is_test_data = false)
        ORDER BY s.updated_at DESC
        LIMIT $2`,
-      [user.id, limit]
+      [user.id, limit, includeArchived, includeTestData]
     );
     const scripts = result.rows.map(toFrontendScript);
     return json({ scripts, total: scripts.length });
@@ -722,6 +766,7 @@ async function handleScripts(req: Request, route: RouteParams): Promise<Response
       isPublic: body.is_public ?? body.isPublic,
       tags: body.tags,
     });
+    await recordAuditEvent({ eventType: 'create', scriptId: script.id, scriptTitle: script.title, user, details: { source: 'api' } });
     return json({ success: true, script }, { status: 201 });
   }
 
@@ -741,6 +786,8 @@ async function handleScriptSearch(req: Request, route: RouteParams): Promise<Res
     .map(tag => tag.trim().toLowerCase())
     .filter(Boolean);
   const onlyMine = route.url.searchParams.get('mine') === 'true';
+  const includeArchived = route.url.searchParams.get('includeArchived') === 'true';
+  const includeTestData = route.url.searchParams.get('includeTestData') === 'true';
   const requestedSort = (route.url.searchParams.get('sort') || '').toLowerCase();
   const sort = ['relevance', 'updated', 'created', 'name', 'quality', 'executions'].includes(requestedSort)
     ? requestedSort
@@ -753,7 +800,12 @@ async function handleScriptSearch(req: Request, route: RouteParams): Promise<Res
   }
 
   const params: any[] = [user.id];
-  const where: string[] = [onlyMine ? 's.user_id = $1' : '(s.user_id = $1 OR s.is_public = true)'];
+  const where: string[] = [
+    onlyMine ? 's.user_id = $1' : '(s.user_id = $1 OR s.is_public = true)',
+    's.deleted_at IS NULL',
+  ];
+  if (!includeArchived) where.push('s.archived_at IS NULL');
+  if (!includeTestData) where.push('s.is_test_data = false');
   let searchQueryIndex: number | null = null;
   let likeSearchIndex: number | null = null;
 
@@ -826,7 +878,12 @@ async function handleScriptSearch(req: Request, route: RouteParams): Promise<Res
     if ((error as { code?: string }).code !== '42703') throw error;
     console.warn('[netlify-api] search_vector missing, falling back to ILIKE search');
     const fallbackParams: any[] = [user.id];
-    const fallbackWhere: string[] = [onlyMine ? 's.user_id = $1' : '(s.user_id = $1 OR s.is_public = true)'];
+    const fallbackWhere: string[] = [
+      onlyMine ? 's.user_id = $1' : '(s.user_id = $1 OR s.is_public = true)',
+      's.deleted_at IS NULL',
+    ];
+    if (!includeArchived) fallbackWhere.push('s.archived_at IS NULL');
+    if (!includeTestData) fallbackWhere.push('s.is_test_data = false');
 
     if (categoryId !== null) {
       fallbackParams.push(categoryId);
@@ -879,6 +936,8 @@ async function handleScriptSearch(req: Request, route: RouteParams): Promise<Res
       category_id: categoryId,
       tags,
       mine: onlyMine,
+      includeArchived,
+      includeTestData,
       sort,
       limit,
       offset,
@@ -901,9 +960,13 @@ async function handleScriptById(req: Request, route: RouteParams): Promise<Respo
 
   if (route.segments[2] === 'analysis') {
     if (req.method !== 'GET') return methodNotAllowed();
-    await fetchScriptForUser(id, user.id);
+    const script = await fetchScriptForUser(id, user.id);
     const result = await query('SELECT * FROM script_analysis WHERE script_id = $1', [id]);
-    return json(result.rows[0] ? toFrontendAnalysis(result.rows[0]) : null);
+    const analysis = result.rows[0] ? toFrontendAnalysis(result.rows[0]) : null;
+    return json(analysis ? {
+      ...analysis,
+      isCurrent: Number(analysis.scriptVersion || 0) === Number(script.version || 0) || analysis.fileHash === script.file_hash,
+    } : null);
   }
 
   if (route.segments[2] === 'analysis-stream') {
@@ -934,7 +997,27 @@ async function handleScriptById(req: Request, route: RouteParams): Promise<Respo
     const script = await fetchScriptForUser(id, user.id);
     const analysis = await analyzePowerShell(script.content, script.title, { userId: user.id, endpoint: '/scripts/:id/analyze' });
     const saved = await saveAnalysis(id, analysis);
+    await recordAuditEvent({ eventType: 'analyze', scriptId: id, scriptTitle: script.title, user, details: { criteriaVersion: ANALYSIS_CRITERIA_VERSION } });
     return json({ success: true, analysis: toFrontendAnalysis(saved) });
+  }
+
+  if (route.segments[2] === 'archive') {
+    if (req.method !== 'POST') return methodNotAllowed();
+    const body = await req.json().catch(() => ({}));
+    const result = await archiveScriptsForUser([id], user, String(body.reason || 'Archived from script detail'));
+    if (result.archived === 0) {
+      return json({ success: false, error: 'script_not_found_or_not_archivable', message: 'Script not found or you do not have permission to archive it.', ...result }, { status: 404 });
+    }
+    return json({ success: true, ...result });
+  }
+
+  if (route.segments[2] === 'restore') {
+    if (req.method !== 'POST') return methodNotAllowed();
+    const result = await restoreScriptsForUser([id], user);
+    if (result.restored === 0) {
+      return json({ success: false, error: 'script_not_found_or_not_restorable', message: 'Script not found or you do not have permission to restore it.', ...result }, { status: 404 });
+    }
+    return json({ success: true, ...result });
   }
 
   if (route.segments[2] === 'analyze-langgraph') {
@@ -1038,18 +1121,24 @@ async function handleScriptById(req: Request, route: RouteParams): Promise<Respo
         `,
         [id, nextContent, nextVersion, user.id, body.commit_message || body.commitMessage || 'Script updated']
       );
+      await recordAuditEvent({ eventType: 'update', scriptId: id, scriptTitle: result.rows[0].title, user, details: { contentChanged, version: nextVersion } });
     }
 
     return json({ success: true, script: toFrontendScript(result.rows[0]) });
   }
 
   if (req.method === 'DELETE') {
-    const deleteResult = await deleteScriptsForUser([id], user);
+    const mode = route.url.searchParams.get('mode') === 'delete' ? 'delete' : 'archive';
+    const deleteResult = mode === 'delete'
+      ? await deleteScriptsForUser([id], user, mode)
+      : await archiveScriptsForUser([id], user, 'Archived through delete flow');
     if (deleteResult.deleted === 0) {
       return json({
         success: false,
-        error: 'script_not_found_or_not_deletable',
-        message: 'Script not found or you do not have permission to delete it.',
+        error: mode === 'delete' ? 'script_not_found_or_not_deletable' : 'script_not_found_or_not_archivable',
+        message: mode === 'delete'
+          ? 'Script not found or you do not have permission to delete it.'
+          : 'Script not found or you do not have permission to archive it.',
         ...deleteResult,
       }, { status: 404 });
     }
@@ -1067,17 +1156,22 @@ async function handleBulkScriptDelete(req: Request): Promise<Response> {
   const ids = Array.isArray(body.ids)
     ? body.ids.map((id: unknown) => Number(id)).filter((id: number) => Number.isFinite(id))
     : [];
+  const mode: ScriptDeleteMode = body.mode === 'delete' ? 'delete' : 'archive';
 
   if (ids.length === 0) {
     return json({ success: false, error: 'missing_script_ids', message: 'At least one script id is required' }, { status: 400 });
   }
 
-  const deleteResult = await deleteScriptsForUser(ids, user);
+  const deleteResult = mode === 'delete'
+    ? await deleteScriptsForUser(ids, user, mode)
+    : await archiveScriptsForUser(ids, user, String(body.reason || 'Bulk archived from script management'));
   if (deleteResult.deleted === 0) {
     return json({
       success: false,
-      error: 'script_not_found_or_not_deletable',
-      message: 'No requested scripts were found or available to delete.',
+      error: mode === 'delete' ? 'script_not_found_or_not_deletable' : 'script_not_found_or_not_archivable',
+      message: mode === 'delete'
+        ? 'No requested scripts were found or available to delete.'
+        : 'No requested scripts were found or available to archive.',
       ...deleteResult,
       deletedCount: deleteResult.deleted,
     }, { status: 404 });
@@ -1085,7 +1179,83 @@ async function handleBulkScriptDelete(req: Request): Promise<Response> {
   return json({ success: true, ...deleteResult, deletedCount: deleteResult.deleted });
 }
 
-async function deleteScriptsForUser(ids: number[], user: HostedUser): Promise<{
+async function archiveScriptsForUser(ids: number[], user: HostedUser, reason: string): Promise<{
+  requested: number;
+  deleted: number;
+  archived: number;
+  deletedIds: number[];
+  archivedIds: number[];
+  notDeletedIds: number[];
+  notArchivedIds: number[];
+}> {
+  const uniqueIds = Array.from(new Set(ids));
+  const isAdmin = user.role === 'admin';
+  const result = await query<{ id: number; title: string }>(
+    `
+      UPDATE scripts
+      SET archived_at = now(),
+          archived_by = $3,
+          archive_reason = $4,
+          updated_at = now()
+      WHERE id = ANY($1::bigint[])
+        AND deleted_at IS NULL
+        AND archived_at IS NULL
+        AND ($2::boolean OR user_id = $3)
+      RETURNING id, title
+    `,
+    [uniqueIds, isAdmin, user.id, reason]
+  );
+  const archivedIds = result.rows.map(row => Number(row.id));
+  for (const row of result.rows) {
+    await recordAuditEvent({ eventType: 'archive', scriptId: row.id, scriptTitle: row.title, user, details: { reason } });
+  }
+  return {
+    requested: uniqueIds.length,
+    deleted: archivedIds.length,
+    archived: archivedIds.length,
+    deletedIds: archivedIds,
+    archivedIds,
+    notDeletedIds: uniqueIds.filter(id => !archivedIds.includes(id)),
+    notArchivedIds: uniqueIds.filter(id => !archivedIds.includes(id)),
+  };
+}
+
+async function restoreScriptsForUser(ids: number[], user: HostedUser): Promise<{
+  requested: number;
+  restored: number;
+  restoredIds: number[];
+  notRestoredIds: number[];
+}> {
+  const uniqueIds = Array.from(new Set(ids));
+  const isAdmin = user.role === 'admin';
+  const result = await query<{ id: number; title: string }>(
+    `
+      UPDATE scripts
+      SET archived_at = NULL,
+          archived_by = NULL,
+          archive_reason = NULL,
+          updated_at = now()
+      WHERE id = ANY($1::bigint[])
+        AND deleted_at IS NULL
+        AND archived_at IS NOT NULL
+        AND ($2::boolean OR user_id = $3)
+      RETURNING id, title
+    `,
+    [uniqueIds, isAdmin, user.id]
+  );
+  const restoredIds = result.rows.map(row => Number(row.id));
+  for (const row of result.rows) {
+    await recordAuditEvent({ eventType: 'restore', scriptId: row.id, scriptTitle: row.title, user });
+  }
+  return {
+    requested: uniqueIds.length,
+    restored: restoredIds.length,
+    restoredIds,
+    notRestoredIds: uniqueIds.filter(id => !restoredIds.includes(id)),
+  };
+}
+
+async function deleteScriptsForUser(ids: number[], user: HostedUser, mode: ScriptDeleteMode = 'delete'): Promise<{
   requested: number;
   deleted: number;
   deletedIds: number[];
@@ -1094,7 +1264,7 @@ async function deleteScriptsForUser(ids: number[], user: HostedUser): Promise<{
   const uniqueIds = Array.from(new Set(ids));
   const isAdmin = user.role === 'admin';
   const owned = await query<{ id: number }>(
-    'SELECT id FROM scripts WHERE id = ANY($1::bigint[]) AND ($2::boolean OR user_id = $3)',
+    'SELECT id FROM scripts WHERE id = ANY($1::bigint[]) AND deleted_at IS NULL AND ($2::boolean OR user_id = $3)',
     [uniqueIds, isAdmin, user.id]
   );
   const deletableIds = owned.rows.map(row => Number(row.id));
@@ -1108,17 +1278,22 @@ async function deleteScriptsForUser(ids: number[], user: HostedUser): Promise<{
     };
   }
 
-  for (const table of SCRIPT_CHILD_DELETE_TABLES) {
-    if (await tableExists(table)) {
-      await query(`DELETE FROM ${quoteIdentifier(table)} WHERE script_id = ANY($1::bigint[])`, [deletableIds]);
+  if (mode === 'delete') {
+    for (const table of SCRIPT_CHILD_DELETE_TABLES) {
+      if (await tableExists(table)) {
+        await query(`DELETE FROM ${quoteIdentifier(table)} WHERE script_id = ANY($1::bigint[])`, [deletableIds]);
+      }
     }
   }
 
-  const result = await query<{ id: number }>(
-    'DELETE FROM scripts WHERE id = ANY($1::bigint[]) AND ($2::boolean OR user_id = $3) RETURNING id',
+  const result = await query<{ id: number; title: string }>(
+    'UPDATE scripts SET deleted_at = now(), deleted_by = $3, updated_at = now() WHERE id = ANY($1::bigint[]) AND ($2::boolean OR user_id = $3) RETURNING id, title',
     [deletableIds, isAdmin, user.id]
   );
   const deletedIds = result.rows.map(row => Number(row.id));
+  for (const row of result.rows) {
+    await recordAuditEvent({ eventType: 'delete', scriptId: row.id, scriptTitle: row.title, user, details: { mode } });
+  }
   return {
     requested: uniqueIds.length,
     deleted: deletedIds.length,
@@ -1323,6 +1498,95 @@ async function filterExistingMaintenanceTables(tables: string[]): Promise<string
 async function tableExists(table: string): Promise<boolean> {
   const result = await query<{ exists: boolean }>('SELECT to_regclass($1) IS NOT NULL AS exists', [`public.${table}`]);
   return Boolean(result.rows[0]?.exists);
+}
+
+async function columnExists(table: string, column: string): Promise<boolean> {
+  const result = await query<{ exists: boolean }>(
+    `
+      SELECT EXISTS (
+        SELECT 1
+        FROM information_schema.columns
+        WHERE table_schema = 'public'
+          AND table_name = $1
+          AND column_name = $2
+      ) AS exists
+    `,
+    [table, column]
+  );
+  return Boolean(result.rows[0]?.exists);
+}
+
+async function ensureScriptLifecycleSchema(): Promise<void> {
+  if (!scriptLifecycleSchemaPromise) {
+    scriptLifecycleSchemaPromise = (async () => {
+      await query(`
+        ALTER TABLE scripts
+          ADD COLUMN IF NOT EXISTS archived_at TIMESTAMPTZ,
+          ADD COLUMN IF NOT EXISTS archived_by UUID,
+          ADD COLUMN IF NOT EXISTS archive_reason TEXT,
+          ADD COLUMN IF NOT EXISTS review_status TEXT NOT NULL DEFAULT 'draft',
+          ADD COLUMN IF NOT EXISTS is_test_data BOOLEAN NOT NULL DEFAULT false,
+          ADD COLUMN IF NOT EXISTS deleted_at TIMESTAMPTZ,
+          ADD COLUMN IF NOT EXISTS deleted_by UUID
+      `);
+      await query(`
+        CREATE TABLE IF NOT EXISTS audit_events (
+          id BIGSERIAL PRIMARY KEY,
+          event_type TEXT NOT NULL,
+          script_id BIGINT,
+          script_title TEXT,
+          user_id UUID,
+          username TEXT,
+          details JSONB NOT NULL DEFAULT '{}'::jsonb,
+          created_at TIMESTAMPTZ NOT NULL DEFAULT now()
+        )
+      `);
+      await query(`
+        ALTER TABLE script_analysis
+          ADD COLUMN IF NOT EXISTS script_version INTEGER,
+          ADD COLUMN IF NOT EXISTS file_hash TEXT,
+          ADD COLUMN IF NOT EXISTS analysis_source TEXT NOT NULL DEFAULT 'ai'
+      `);
+      await query('CREATE INDEX IF NOT EXISTS idx_scripts_visible_updated ON scripts (user_id, is_public, deleted_at, archived_at, updated_at DESC)');
+      await query('CREATE INDEX IF NOT EXISTS idx_scripts_archive_state ON scripts (archived_at, deleted_at, updated_at DESC)');
+      await query('CREATE INDEX IF NOT EXISTS idx_scripts_test_data ON scripts (is_test_data, updated_at DESC) WHERE is_test_data = true');
+      await query('CREATE INDEX IF NOT EXISTS idx_audit_events_created_at ON audit_events (created_at DESC)');
+      await query('CREATE INDEX IF NOT EXISTS idx_audit_events_script_id ON audit_events (script_id, created_at DESC) WHERE script_id IS NOT NULL');
+      await query('CREATE INDEX IF NOT EXISTS idx_audit_events_user_id ON audit_events (user_id, created_at DESC) WHERE user_id IS NOT NULL');
+    })().catch(error => {
+      scriptLifecycleSchemaPromise = null;
+      throw error;
+    });
+  }
+  return scriptLifecycleSchemaPromise;
+}
+
+async function recordAuditEvent(input: {
+  eventType: string;
+  scriptId?: number | string | null;
+  scriptTitle?: string | null;
+  user?: HostedUser | null;
+  details?: Record<string, unknown>;
+}): Promise<void> {
+  try {
+    if (!(await tableExists('audit_events'))) return;
+    await query(
+      `
+        INSERT INTO audit_events (event_type, script_id, script_title, user_id, username, details)
+        VALUES ($1, $2, $3, $4, $5, $6::jsonb)
+      `,
+      [
+        input.eventType,
+        input.scriptId ? Number(input.scriptId) : null,
+        input.scriptTitle || null,
+        input.user?.id || null,
+        input.user?.username || input.user?.email || null,
+        JSON.stringify(input.details || {}),
+      ]
+    );
+  } catch (error) {
+    console.warn('[netlify-api] audit event skipped', error);
+  }
 }
 
 function normalizeBackupName(rawName: unknown): string {
@@ -1543,6 +1807,7 @@ async function handleScriptUpload(req: Request): Promise<Response> {
     isPublic: upload.isPublic,
     tags: upload.tags,
   });
+  await recordAuditEvent({ eventType: 'create', scriptId: script.id, scriptTitle: script.title, user, details: { source: 'upload', analyzeWithAi: upload.analyzeWithAi } });
 
   let analysis: any = null;
   let analysisError: string | null = null;
@@ -1553,6 +1818,7 @@ async function handleScriptUpload(req: Request): Promise<Response> {
         UPLOAD_ANALYSIS_TIMEOUT_MS,
         'AI analysis is taking longer than expected. The script was uploaded; run analysis from the script detail page.'
       ));
+      await recordAuditEvent({ eventType: 'analyze', scriptId: script.id, scriptTitle: script.title, user, details: { source: 'upload' } });
     } catch (error) {
       const err = error as Error;
       analysisError = err.message || 'AI analysis failed after upload';
@@ -2096,7 +2362,10 @@ async function handleAnalyticsSummary(req: Request): Promise<Response> {
         COALESCE(AVG(sa.security_score), 0)::float AS average_security_score
       FROM scripts s
       LEFT JOIN script_analysis sa ON sa.script_id = s.id
-      WHERE s.user_id = $1 OR s.is_public = true
+      WHERE (s.user_id = $1 OR s.is_public = true)
+        AND s.deleted_at IS NULL
+        AND s.archived_at IS NULL
+        AND s.is_test_data = false
     `,
     [user.id]
   );
@@ -2114,7 +2383,10 @@ async function handleAnalyticsSecurity(req: Request): Promise<Response> {
         COUNT(*) FILTER (WHERE security_score < 5)::int AS low
       FROM script_analysis sa
       JOIN scripts s ON s.id = sa.script_id
-      WHERE s.user_id = $1 OR s.is_public = true
+      WHERE (s.user_id = $1 OR s.is_public = true)
+        AND s.deleted_at IS NULL
+        AND s.archived_at IS NULL
+        AND s.is_test_data = false
     `,
     [user.id]
   );
@@ -2128,7 +2400,10 @@ async function handleAnalyticsCategories(req: Request): Promise<Response> {
       SELECT COALESCE(c.name, 'Uncategorized') AS name, COUNT(*)::int AS count
       FROM scripts s
       LEFT JOIN categories c ON c.id = s.category_id
-      WHERE s.user_id = $1 OR s.is_public = true
+      WHERE (s.user_id = $1 OR s.is_public = true)
+        AND s.deleted_at IS NULL
+        AND s.archived_at IS NULL
+        AND s.is_test_data = false
       GROUP BY c.name
       ORDER BY count DESC
     `,
@@ -2143,7 +2418,10 @@ async function handleAnalyticsUsage(req: Request): Promise<Response> {
     `
       SELECT date_trunc('day', created_at)::date AS date, COUNT(*)::int AS scripts
       FROM scripts
-      WHERE user_id = $1 OR is_public = true
+      WHERE (user_id = $1 OR is_public = true)
+        AND deleted_at IS NULL
+        AND archived_at IS NULL
+        AND is_test_data = false
       GROUP BY 1
       ORDER BY 1 DESC
       LIMIT 30
@@ -2153,6 +2431,82 @@ async function handleAnalyticsUsage(req: Request): Promise<Response> {
   return json(result.rows);
 }
 
+async function handleAnalyticsDashboard(req: Request): Promise<Response> {
+  const user = await requireUser(req);
+  const summary = await query(
+    `
+      SELECT
+        COUNT(*)::int AS total_scripts,
+        COUNT(*) FILTER (WHERE s.created_at > now() - interval '7 days')::int AS recent_scripts,
+        COUNT(sa.script_id)::int AS total_analyses,
+        COALESCE(AVG(sa.security_score), 0)::float AS average_security_score
+      FROM scripts s
+      LEFT JOIN script_analysis sa ON sa.script_id = s.id
+      WHERE (s.user_id = $1 OR s.is_public = true)
+        AND s.deleted_at IS NULL
+        AND s.archived_at IS NULL
+        AND s.is_test_data = false
+    `,
+    [user.id]
+  );
+  const categories = await query(
+    `
+      SELECT COUNT(*)::int AS total_categories
+      FROM categories c
+      WHERE EXISTS (
+        SELECT 1
+        FROM scripts s
+        WHERE s.category_id = c.id
+          AND (s.user_id = $1 OR s.is_public = true)
+          AND s.deleted_at IS NULL
+          AND s.archived_at IS NULL
+          AND s.is_test_data = false
+      )
+    `,
+    [user.id]
+  );
+  return json({
+    totalScripts: Number(summary.rows[0]?.total_scripts || 0),
+    scriptsChange: 0,
+    totalCategories: Number(categories.rows[0]?.total_categories || 0),
+    avgSecurityScore: Number(summary.rows[0]?.average_security_score || 0),
+    securityScoreChange: 0,
+    totalAnalyses: Number(summary.rows[0]?.total_analyses || 0),
+    analysesChange: 0,
+    refreshedAt: new Date().toISOString(),
+    source: '/api/analytics/dashboard',
+  });
+}
+
+async function handleRecentActivity(req: Request, route: RouteParams): Promise<Response> {
+  if (req.method !== 'GET') return methodNotAllowed();
+  const user = await requireUser(req);
+  const limit = Math.min(Math.max(Number(route.url.searchParams.get('limit') || '10'), 1), 50);
+  if (!(await tableExists('audit_events'))) return json({ activities: [] });
+  const result = await query(
+    `
+      SELECT id, event_type, script_id, script_title, user_id, username, details, created_at
+      FROM audit_events
+      WHERE user_id = $1 OR user_id IS NULL
+      ORDER BY created_at DESC
+      LIMIT $2
+    `,
+    [user.id, limit]
+  );
+  return json({
+    activities: result.rows.map(row => ({
+      id: String(row.id),
+      type: row.event_type,
+      script_id: row.script_id ? String(row.script_id) : undefined,
+      script_title: row.script_title,
+      user_id: row.user_id,
+      username: row.username || 'System',
+      timestamp: row.created_at,
+      details: row.details || {},
+    })),
+  });
+}
+
 async function createScript(userId: string, input: any) {
   const content = String(input.content || '');
   if (!content.trim()) {
@@ -2160,6 +2514,10 @@ async function createScript(userId: string, input: any) {
   }
 
   const fileHash = await sha256(content);
+  const inputTags = Array.isArray(input.tags) ? input.tags.map((tag: unknown) => String(tag || '').trim().toLowerCase()).filter(Boolean) : [];
+  const isTestData = Boolean(input.isTestData || input.is_test_data) ||
+    inputTags.some((tag: string) => ['codex-smoke', 'delete-test', 'readme-screenshot', 'e2e', 'e2e-test', 'test-data'].includes(tag)) ||
+    /^(e2e script|smoke upload|codex lifecycle|test upload)/i.test(String(input.title || ''));
   const existing = await query(
     `${scriptSelect} WHERE s.file_hash = $1 AND (s.user_id = $2 OR s.is_public = true) LIMIT 1`,
     [fileHash, userId]
@@ -2176,8 +2534,8 @@ async function createScript(userId: string, input: any) {
   try {
     result = await query(
       `
-        INSERT INTO scripts (title, description, content, user_id, category_id, is_public, file_hash)
-        VALUES ($1, $2, $3, $4, $5, $6, $7)
+        INSERT INTO scripts (title, description, content, user_id, category_id, is_public, file_hash, is_test_data, review_status)
+        VALUES ($1, $2, $3, $4, $5, $6, $7, $8, 'draft')
         RETURNING *
       `,
       [
@@ -2188,6 +2546,7 @@ async function createScript(userId: string, input: any) {
         input.categoryId || null,
         Boolean(input.isPublic),
         fileHash,
+        isTestData,
       ]
     );
   } catch (error) {
@@ -2212,7 +2571,7 @@ async function createScript(userId: string, input: any) {
     [script.id, content, userId, 'Initial upload']
   );
 
-  const tags = Array.isArray(input.tags) ? input.tags : [];
+  const tags = inputTags;
   for (const tag of tags) {
     if (typeof tag !== 'string' || !tag.trim()) continue;
     const tagResult = await query(
@@ -2294,7 +2653,7 @@ async function handleSimilarScripts(id: number, userId: string, route: RoutePara
 
 async function fetchScriptForUser(id: number, userId: string) {
   const result = await query(
-    `${scriptSelect} WHERE s.id = $1 AND (s.user_id = $2 OR s.is_public = true)`,
+    `${scriptSelect} WHERE s.id = $1 AND (s.user_id = $2 OR s.is_public = true) AND s.deleted_at IS NULL`,
     [id, userId]
   );
   if (!result.rows[0]) {
@@ -2629,14 +2988,17 @@ function buildStaticPowerShellAnalysis(content: string, title: string) {
 }
 
 async function saveAnalysis(scriptId: number, analysis: any) {
+  const scriptResult = await query<{ version: number; file_hash: string }>('SELECT version, file_hash FROM scripts WHERE id = $1', [scriptId]);
+  const scriptVersion = Number(scriptResult.rows[0]?.version || 1);
+  const fileHash = scriptResult.rows[0]?.file_hash || null;
   const result = await query(
     `
       INSERT INTO script_analysis (
         script_id, purpose, security_score, quality_score, risk_score,
         suggestions, command_details, security_issues, best_practice_violations,
-        performance_insights, execution_summary
+        performance_insights, execution_summary, script_version, file_hash, analysis_source
       )
-      VALUES ($1, $2, $3, $4, $5, $6::jsonb, $7::jsonb, $8::jsonb, $9::jsonb, $10::jsonb, $11::jsonb)
+      VALUES ($1, $2, $3, $4, $5, $6::jsonb, $7::jsonb, $8::jsonb, $9::jsonb, $10::jsonb, $11::jsonb, $12, $13, $14)
       ON CONFLICT (script_id) DO UPDATE
       SET purpose = EXCLUDED.purpose,
           security_score = EXCLUDED.security_score,
@@ -2648,6 +3010,9 @@ async function saveAnalysis(scriptId: number, analysis: any) {
           best_practice_violations = EXCLUDED.best_practice_violations,
           performance_insights = EXCLUDED.performance_insights,
           execution_summary = EXCLUDED.execution_summary,
+          script_version = EXCLUDED.script_version,
+          file_hash = EXCLUDED.file_hash,
+          analysis_source = EXCLUDED.analysis_source,
           updated_at = now()
       RETURNING *
     `,
@@ -2673,6 +3038,9 @@ async function saveAnalysis(scriptId: number, analysis: any) {
         test_recommendations: analysis.test_recommendations || analysis.execution_summary?.test_recommendations || [],
         confidence: analysis.confidence ?? analysis.execution_summary?.confidence ?? null,
       }),
+      scriptVersion,
+      fileHash,
+      analysis.analysis_source || 'ai',
     ]
   );
   return result.rows[0];
@@ -3930,6 +4298,16 @@ function toFrontendManagedUser(profile: any, authUser?: any) {
 }
 
 function toFrontendScript(row: any) {
+  const isTestData = Boolean(row.is_test_data) || /^(e2e script|smoke upload|codex lifecycle|test upload)/i.test(String(row.title || ''));
+  const lifecycleStatus = row.deleted_at
+    ? 'deleted'
+    : row.archived_at
+      ? 'archived'
+      : row.review_status === 'approved'
+        ? 'approved'
+        : row.analysis_quality_score != null || row.analysis_security_score != null || row.analysis_risk_score != null
+          ? 'analyzed'
+          : 'uploaded';
   return {
     id: row.id,
     title: row.title,
@@ -3943,6 +4321,14 @@ function toFrontendScript(row: any) {
     fileHash: row.file_hash,
     createdAt: row.created_at,
     updatedAt: row.updated_at,
+    archivedAt: row.archived_at,
+    archivedBy: row.archived_by,
+    archiveReason: row.archive_reason,
+    reviewStatus: row.review_status || 'draft',
+    isTestData,
+    deletedAt: row.deleted_at,
+    deletedBy: row.deleted_by,
+    lifecycleStatus,
     category: row.category_name ? { id: row.category_id, name: row.category_name } : null,
     user: row.author_username ? { id: row.user_id, username: row.author_username } : null,
     analysis: row.analysis_quality_score == null && row.analysis_security_score == null && row.analysis_risk_score == null
@@ -3983,6 +4369,10 @@ function toFrontendAnalysis(row: any) {
     beginnerExplanation: executionSummary.beginner_explanation || '',
     managementSummary: executionSummary.management_summary || '',
     criteriaVersion: executionSummary.criteria_version || ANALYSIS_CRITERIA_VERSION,
+    scriptVersion: row.script_version,
+    fileHash: row.file_hash,
+    analysisSource: row.analysis_source || 'ai',
+    isCurrent: true,
     analysisCriteria: executionSummary.analysis_criteria || [],
     prioritizedFindings: executionSummary.prioritized_findings || [],
     remediationPlan: executionSummary.remediation_plan || [],
