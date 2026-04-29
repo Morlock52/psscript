@@ -73,8 +73,9 @@ export default defineConfig({
     // ES2020 supports: optional chaining, nullish coalescing, dynamic imports
     // Safari 14+, Chrome 87+, Firefox 78+, Edge 88+, iOS Safari 14+
     target: ['es2020', 'edge88', 'firefox78', 'chrome87', 'safari14'],
-    // Generate sourcemaps for production debugging
-    sourcemap: true,
+    // Do not publish production sourcemaps for the public Netlify app.
+    // Keep source details in the repository and CI artifacts instead.
+    sourcemap: false,
     cssMinify: 'lightningcss',
     // Rollup options for chunk splitting
     // IMPORTANT: Only split truly self-contained, large packages.
