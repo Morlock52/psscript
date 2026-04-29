@@ -51,8 +51,8 @@
   --ink-muted:       #4D4A42;
   --ink-inverse:     #0E1116;
 
-  --accent:          #C8F25C;
-  --accent-soft:     rgba(200, 242, 92, 0.14);
+  --accent:          #7F9361;
+  --accent-soft:     rgba(127, 147, 97, 0.16);
   --cool:            #5EEAD4;
   --warm:            #FCA5A5;
   --violet:          #C4B5FD;
@@ -62,7 +62,7 @@
   --signal-danger:   #F5A8A8;
   --signal-info:     #8FB4D9;
 
-  --ring-focus:      #C8F25C;
+  --ring-focus:      #7F9361;
   --shadow-near:     0 1px 2px rgba(0, 0, 0, 0.40), 0 2px 8px rgba(0, 0, 0, 0.28);
   --shadow-far:      0 8px 24px rgba(0, 0, 0, 0.50), 0 24px 64px rgba(0, 0, 0, 0.34);
   --shadow-glow:     0 0 200px rgba(94, 234, 212, 0.04),

@@ -27,7 +27,7 @@ const cases: Array<{
   { surface: 'brand',    variable: '--accent',         expected: 'rgb(252, 165, 165)'},
   { surface: 'brand',    variable: '--ink-primary',    expected: 'rgb(245, 241, 232)'},
   { surface: 'operator', theme: 'dark', variable: '--surface-base', expected: 'rgb(14, 17, 22)'  },
-  { surface: 'operator', theme: 'dark', variable: '--accent',        expected: 'rgb(200, 242, 92)'},
+  { surface: 'operator', theme: 'dark', variable: '--accent',        expected: 'rgb(127, 147, 97)'},
   { surface: 'operator', theme: 'light',variable: '--surface-base',  expected: 'rgb(251, 248, 241)'},
   { surface: 'operator', theme: 'light',variable: '--accent',        expected: 'rgb(107, 143, 46)'},
 ];
@@ -183,4 +183,3 @@ describe('post-Plan-4 token surface', () => {
     });
   });
 });
-

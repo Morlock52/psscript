@@ -47,13 +47,6 @@ export const Topbar = ({ onMenuClick }: TopbarProps) => {
           {isDark ? <FaSun aria-hidden="true" /> : <FaMoon aria-hidden="true" />}
           <span className="hidden sm:inline">{isDark ? 'Light Mode' : 'Dark Mode'}</span>
         </button>
-        <button
-          type="button"
-          className="hidden text-xs text-ink-tertiary hover:text-ink-primary border border-surface-overlay/60 rounded px-2 py-1 sm:inline-flex"
-          aria-label="Open command palette"
-        >
-          Command
-        </button>
         {isAuthenticated && (
           <button
             type="button"
