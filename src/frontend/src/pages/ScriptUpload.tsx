@@ -108,6 +108,8 @@ const ScriptUpload: React.FC = () => {
   
   // Acceptable PowerShell file extensions
   const ALLOWED_EXTENSIONS = ['.ps1', '.psm1', '.psd1', '.ps1xml'];
+  const MAX_HOSTED_UPLOAD_MB = 4;
+  const MAX_HOSTED_UPLOAD_BYTES = MAX_HOSTED_UPLOAD_MB * 1024 * 1024;
   
   // Format file size for display
   const formatFileSize = (bytes: number): string => {
@@ -134,10 +136,10 @@ const ScriptUpload: React.FC = () => {
     setFileSize(file.size);
     setFileName(file.name);
     setFileType(fileExt);
-    setIsLargeFile(fileSizeInMB > 2); // Files larger than 2MB use the large file upload endpoint
+    setIsLargeFile(fileSizeInMB > 2);
     
-    if (fileSizeInMB > 10) {
-      setFileError('File size exceeds the maximum limit of 10MB');
+    if (file.size > MAX_HOSTED_UPLOAD_BYTES) {
+      setFileError(`Hosted uploads are limited to ${MAX_HOSTED_UPLOAD_MB}MB. Paste a smaller script or split the file before uploading.`);
       return;
     }
     
@@ -249,38 +251,18 @@ const ScriptUpload: React.FC = () => {
     return null;
   };
   
-  // Prepare form data for submission
-  const prepareFormData = () => {
-    const formData = new FormData();
-    
-    // Add script metadata
-    formData.append('title', title);
-    formData.append('description', description);
-    formData.append('content', content);
-    if (category) {
-      formData.append('category_id', category);
-    }
-    if (tags.length > 0) {
-      formData.append('tags', JSON.stringify(tags));
-    }
-    formData.append('is_public', isPublic.toString());
-    formData.append('analyze_with_ai', analyzeWithAI.toString());
-    
-    // Attach the file: prefer the actual file input, but create a blob from content if needed
-    if (fileInputRef.current?.files?.[0]) {
-      formData.append('script_file', fileInputRef.current.files[0]);
-    } else if (content) {
-      // File was loaded into state but ref lost the file (e.g., programmatic set, re-render)
-      // Create a File blob from the content so the upload endpoint receives a proper file
-      const blob = new File(
-        [content],
-        fileName || 'script.ps1',
-        { type: 'application/octet-stream' }
-      );
-      formData.append('script_file', blob);
-    }
-    
-    return formData;
+  const prepareUploadPayload = () => {
+    return {
+      title,
+      description,
+      content,
+      file_name: fileName || 'script.ps1',
+      file_size: fileSize || new Blob([content]).size,
+      category_id: category ? Number(category) : null,
+      tags,
+      is_public: isPublic,
+      analyze_with_ai: analyzeWithAI,
+    };
   };
   
   // Handle retry after network error
@@ -294,9 +276,7 @@ const ScriptUpload: React.FC = () => {
     // This gives the user a fresh set of automatic retries
     setRetryCount(0);
     
-    // Prepare and submit form data again
-    const formData = prepareFormData();
-    uploadMutation.mutate(formData);
+    uploadMutation.mutate(prepareUploadPayload());
   };
   
   const handleSubmit = (e: React.FormEvent) => {
@@ -313,9 +293,7 @@ const ScriptUpload: React.FC = () => {
     setUploadProgress(0);
     setRetryCount(0);
     
-    // Create and submit form data
-    const formData = prepareFormData();
-    uploadMutation.mutate(formData);
+    uploadMutation.mutate(prepareUploadPayload());
   };
   
   return (
@@ -371,7 +349,7 @@ const ScriptUpload: React.FC = () => {
                   Drag and drop your PowerShell script here, or click to browse
                 </p>
                 <p className="mt-1 text-xs text-gray-500">
-                  Accepted file types: .ps1, .psm1, .psd1, .ps1xml
+                  Accepted file types: .ps1, .psm1, .psd1, .ps1xml. Max hosted upload: {MAX_HOSTED_UPLOAD_MB}MB.
                 </p>
                 
                 {fileError && (

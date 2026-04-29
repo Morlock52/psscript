@@ -16,6 +16,7 @@
     "netlify:dev": "npx --yes netlify-cli@26.0.0 dev",
     "netlify:build": "npx --yes netlify-cli@26.0.0 build",
     "playwright:stack": "bash ./scripts/playwright-stack.sh",
+    "screenshots:readme:hosted": "node scripts/capture-hosted-readme-screenshots.mjs && npm run screenshots:readme",
     "screenshots:readme": "node scripts/frame-readme-screenshots.mjs",
     "install:all": "npm install && cd src/frontend && npm install && cd ../backend && npm install",
     "stress:data-maintenance": "node scripts/db-maintenance-stress-test.mjs",

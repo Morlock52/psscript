@@ -99,6 +99,7 @@ src/backend/logs/
 *.min.js
 *.min.css
 *.bundle.js
+deploy-*.zip
 
 # Misc
 .env.example

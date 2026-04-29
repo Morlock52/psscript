@@ -1,227 +1,168 @@
 # PSScript Training Guide
 
-End-to-end walkthrough of the PowerShell Script Manager. Includes flows, screenshots, labs, tables, sample actions, and operational checklists. Built for hands-on enablement and printable exports.
+Last updated: April 29, 2026.
 
-## Table of Contents
+This guide trains users on the current hosted app at `https://pstest.morloksmaze.com`.
 
-- [Program overview](#program-overview)
-- [System overview](#system-overview)
-- [Feature cheat sheet](#feature-cheat-sheet)
-- [Training roadmap](#training-roadmap)
-- [Environment setup](#environment-setup)
-- [Guided walkthrough](#guided-walkthrough)
-- [Role-based paths](#role-based-paths)
-- [Module breakdown](#module-breakdown)
-- [Hands-on labs](#hands-on-labs)
-- [Sample actions](#sample-actions)
-- [Operational readiness](#operational-readiness)
-- [Appendix](#appendix)
+## Program Overview
 
-## Program overview
+PSScript is a governed workspace for PowerShell scripts. The current training path covers:
 
-PSScript Manager is a full workflow platform for PowerShell scripts—intake, AI analysis, discovery, agentic chat, and governance. This guide delivers:
-- Organized, tagged, versioned scripts with deduplication by hash
-- AI-backed analysis with scores, recommendations, and remediation notes
-- Dual-mode discovery (keyword + vector search) plus documentation crawler
-- Analytics and audit trails for compliance and release readiness
+- Supabase Auth and admin approval
+- script upload, metadata, versioning, delete, and bulk delete
+- full script design and management lifecycle
+- AI analysis using the current criteria payload
+- PDF analysis export
+- keyword and vector-backed discovery
+- assistant and agentic route aliases
+- hosted operations through Netlify and Supabase
+- mobile navigation and responsive pages
 
-Management rollout details live in `../MANAGEMENT-PLAYBOOK.md`.
+![Training support suite map](../graphics/training-support-suite-map-2026-04-29.svg)
 
-## System overview
+## System Overview
 
-![Architecture Diagram](../graphics/architecture.svg)
+| Layer | Current implementation |
+| --- | --- |
+| UI | React/Vite on Netlify |
+| API | Netlify Functions under `/api/*` |
+| Auth | Supabase Auth plus `app_profiles.is_enabled` |
+| Data | hosted Supabase Postgres with RLS and `pgvector` |
+| AI | hosted provider calls through Netlify Functions |
+| Backups | admin-only hosted data maintenance |
 
-![Analysis Pipeline](../graphics/analysis-pipeline.svg)
+## Feature Cheat Sheet
 
-![Script Lifecycle](../graphics/lifecycle.svg)
-
-![Search Modes](../graphics/search-modes.svg)
-
-![Usage Metrics](../graphics/usage-metrics.svg)
-
-## Feature cheat sheet
-
-| Area | What to look for | Screenshot |
+| Area | What to verify | Screenshot |
 | --- | --- | --- |
-| Dashboard | Stats, recent scripts, security trends | ![Dashboard](../screenshots/dashboard.png) |
-| Script library | Categories, owners, version history | ![Scripts](../screenshots/scripts.png) |
-| Upload | Live preview, tags, dedup hints | ![Upload](../screenshots/upload.png) |
-| Analysis | Scores, findings, remediation | ![Analysis](../screenshots/analysis.png) |
-| Docs + crawl | Cmdlet search, crawling, saved excerpts | ![Documentation](../screenshots/documentation.png) |
-| Chat/agents | Quick prompts, agentic orchestration | ![Chat](../screenshots/chat.png) |
-| Analytics | Adoption, usage, training exports | ![Analytics](../screenshots/analytics.png) |
-| Settings | API usage, notifications, training links | ![Settings](../screenshots/settings.png) |
+| Login | Supabase login and Google OAuth entry | `../screenshots/readme/login.png` |
+| Dashboard | Desktop and mobile cards render without overlap | `../screenshots/readme/dashboard.png` |
+| Scripts | List, filters, delete, bulk selection | `../screenshots/readme/scripts.png` |
+| Upload | File intake, metadata, and hosted 4 MB limit | `../screenshots/readme/upload.png` |
+| Analysis | Scores, criteria, remediation, PDF export | `../screenshots/readme/analysis.png` |
+| Assistant | `/agentic` resolves to assistant instead of 404 | `../screenshots/readme/agentic-assistant.png` |
+| Settings | Profile and admin surfaces | `../screenshots/readme/settings-profile.png` |
+| Data maintenance | Backup-first admin maintenance | `../screenshots/readme/data-maintenance.png` |
 
-## Training roadmap
+## Environment Setup
 
-![Training Roadmap](../graphics/training-roadmap.svg)
+Use production for training with approved accounts:
 
-## Environment setup
-
-Recommended mock mode so every lab works offline:
-
-```bash
-./start-all-mock.sh
+```text
+https://pstest.morloksmaze.com
 ```
 
-Ports:
-- Frontend: http://localhost:3002
-- Backend API: http://localhost:4000/api
-- AI service: http://localhost:8000
-
-Verify:
-- `curl http://localhost:4000/health` → 200 OK
-- Open http://localhost:3002 and click **Use Default Login**
-- Confirm dashboard counters populate with mock data
-
-## Guided walkthrough
-
-Ship a vetted script in ~15 minutes:
-1. **Sign in** → use Default Login on the login screen.
-2. **Scan the dashboard** → note total scripts, AI analyses, and security score trend.
-3. **Upload** → go to Upload, add `test-script.ps1`, tags, and category; note dedup hints.
-4. **Review detail** → open the new script, confirm metadata, owner, and activity feed.
-5. **Analyze** → open Analysis, read findings, and log remediation notes.
-6. **Search** → find a similar script via keyword + vector search.
-7. **Consult docs** → open Documentation, search for a related cmdlet, and save an excerpt.
-8. **Chat** → ask the assistant “safest way to schedule this script weekly?” and record the answer.
-9. **Analytics** → confirm the run shows up in usage metrics and training exports.
-10. **Settings** → open Documentation & Training and verify the PDF/DOCX links load.
-
-## Role-based paths
-
-| Role | Focus | Primary modules |
-| --- | --- | --- |
-| Script author | Upload, analyze, improve | 01, 02, 03 |
-| Security reviewer | Risk review, approvals | 03, 04, 05 |
-| Platform admin | Operations, reliability | 01, 05 |
-
-## Module breakdown
-
-| Module | Objectives | Key screen |
-| --- | --- | --- |
-| Module 01: Foundations | Navigate UI, find docs, understand services | Dashboard |
-| Module 02: Script Lifecycle | Upload, tag, version scripts | Upload |
-| Module 03: AI Analysis | Read scores and recommendations | Analysis |
-| Module 04: Search | Use keyword + vector search | Scripts |
-| Module 05: Operations | Review analytics and logs | Analytics |
-
-## Hands-on labs
-
-### Lab 01: Sign in and orient
-1. Open the login screen and use Default Login.
-2. Review stats cards and activity feed on the dashboard.
-3. Find Scripts, Documentation, Analytics in the sidebar.
-
-![Login Screen](../screenshots/login.png)
-![Dashboard](../screenshots/dashboard.png)
-
-### Lab 02: Upload and analyze a script
-1. Go to Upload and add `test-script.ps1` with tags + category.
-2. Observe dedup hints; submit the script.
-3. Open the script detail view and verify metadata.
-4. Run AI analysis and capture recommendations.
-
-![Script Upload](../screenshots/upload.png)
-![Script Detail](../screenshots/script-detail.png)
-![Script Analysis](../screenshots/analysis.png)
-
-### Lab 03: Documentation and AI chat
-1. Open Documentation; search for a cmdlet (e.g., `Get-Process`).
-2. Save an excerpt to your notes.
-3. Open Chat and ask for safe usage patterns.
-
-![Documentation Explorer](../screenshots/documentation.png)
-![AI Chat](../screenshots/chat.png)
-
-### Lab 04: Analytics and governance
-1. Open Analytics; review usage metrics and trend lines.
-2. Identify top activity areas and any gaps.
-3. Draft a governance checklist for releases.
-
-![Analytics](../screenshots/analytics.png)
-![Sample Usage Metrics](../graphics/usage-metrics.svg)
-
-### Lab 05: Settings and training resources
-1. Open Settings; review API usage and notifications.
-2. Locate Documentation & Training and open the Training Suite.
-3. Open the local PDF export at `http://localhost:4000/docs/exports/pdf/Training-Guide.pdf`.
-
-![Settings](../screenshots/settings.png)
-
-## Sample actions
-
-### Upload via API
+Use local mock mode only for screenshot rehearsal or non-mutating classroom demos:
 
 ```bash
-curl -X POST http://localhost:4000/api/scripts \
-  -H "Authorization: Bearer <token>" \
-  -F "file=@test-script.ps1" \
-  -F "title=Reset-UserPassword" \
-  -F "description=Reset AD user password" \
-  -F "tags=security,active-directory"
+cd src/frontend
+VITE_DISABLE_AUTH=true VITE_USE_MOCKS=true npm run dev -- --host 127.0.0.1 --port 5173
 ```
 
-### Run analysis
+Do not configure a local database for training. Database-backed exercises use hosted Supabase.
 
-```bash
-curl -X POST http://localhost:8000/analyze \
-  -H "Content-Type: application/json" \
-  -d '{"content": "Get-ADUser -Filter *", "type": "security"}'
-```
+## Guided Walkthrough
 
-### Vector search
+1. Sign in with an approved account.
+2. If you land on pending approval, ask an admin to enable your profile.
+3. Review dashboard status on desktop or mobile.
+4. Open Scripts and inspect list controls.
+5. Design a safe test `.ps1` file with purpose, owner, examples, and test expectation.
+6. Upload the script with category, tags, and description.
+7. Open the script detail page.
+8. Run or view AI analysis.
+9. Export the analysis report and confirm the download is a PDF.
+10. Search for the script by keyword and by meaning.
+11. Open `/agentic` and confirm it routes to the assistant.
+12. Open Settings -> Data Maintenance as an admin and review backup controls without running destructive actions.
+13. Delete only disposable test scripts and record cleanup evidence.
 
-```bash
-curl -X POST http://localhost:8000/similar \
-  -H "Content-Type: application/json" \
-  -d '{"content": "active directory onboarding", "limit": 5}'
-```
+## Role-Based Paths
 
-## Operational readiness
+| Role | Focus |
+| --- | --- |
+| Script author | upload, metadata, analysis, PDF export |
+| Security reviewer | criteria payload, findings, remediation, evidence |
+| Platform admin | approval gate, backups, logs, data maintenance |
+| Mobile reviewer | topbar, drawer, dashboard, script list, settings |
+| Support analyst | reproduction notes, screenshots, deploy id, Function logs, Supabase logs |
 
-### Governance checklist
-- Scripts are tagged, categorized, and have an owner
-- Security score is reviewed and exceptions are documented
-- Duplicates are prevented by hash check
-- Analysis results are logged and stored
-- Analytics reflect script usage and review cadence
+## Hands-On Labs
 
-### Security scorecard
+### Lab 01: Upload, Analyze, Export
 
-![Security Scorecard](../graphics/security-scorecard.svg)
+1. Upload a safe test script.
+2. Review scores and findings.
+3. Export the analysis PDF.
+4. Confirm the file is a PDF, not JSON.
 
-### Scorecard rubric
+### Lab 02: Search And Similarity
 
-| Signal | Description | Target |
-| --- | --- | --- |
-| Security score | Weighted risk score from AI analysis | >= 7.5 |
-| High-risk findings | Count of high severity issues | 0 |
-| Remediation SLA | Days to close high-risk findings | <= 7 |
-| Ownership coverage | Scripts with owner tag | 100% |
-| Review cadence | Days between audits | <= 30 |
+1. Search by cmdlet or title.
+2. Search by a natural-language description.
+3. Compare ranking and relevance.
 
-### Operational checks
+### Lab 03: Assistant And Documentation
+
+1. Open the assistant.
+2. Ask for a safe remediation pattern.
+3. Open `/agentic` and confirm it lands in the assistant experience.
+
+### Lab 04: Operations And Governance
+
+1. Check `https://pstest.morloksmaze.com/api/health`.
+2. Review Netlify deploy state and Function logs.
+3. Review Supabase logs for API/database failures.
+4. Open Settings -> Data Maintenance and confirm backup list access as an admin.
+
+### Lab 05: Governance, Support, Cleanup
+
+1. Capture a support-ready screenshot and route.
+2. Verify PDF export and delete behavior on disposable test data.
+3. Record Netlify/Supabase evidence fields for the case.
+4. Confirm cleanup without touching unrelated production records.
+
+## Operational Readiness
 
 | Area | Check | Target |
 | --- | --- | --- |
-| Backend | Health endpoint | 200 OK |
-| Database | pgvector enabled | true |
-| AI service | Analyze endpoint | 200 OK |
-| Cache | Redis reachable | Optional |
-| UI | Dashboard load | < 3 seconds |
+| Netlify app | production URL loads | 200/app shell |
+| Netlify Functions | `/api/health` returns hosted status | healthy/degraded with reason |
+| Supabase | Auth and database reachable | no auth/DB errors |
+| RLS | disabled users blocked | `403 account_pending_approval` |
+| Export | analysis report download | PDF content type |
+| Mobile | dashboard/navigation readable | no overlap |
+| Data maintenance | backup list/create | admin only |
+| Upload size | hosted upload route | UI blocks files above 4 MB |
+| Delete | disposable test scripts | intended records removed only |
 
-## Appendix
-
-- Troubleshooting and support: `../SUPPORT.md`
-- Screenshot capture: `./scripts/capture-readme-screenshots.sh`
-- Exports (HTML/PDF/DOCX): `scripts/export-docs.sh --all`
-
-## Appendix: Troubleshooting
+## Troubleshooting
 
 | Issue | Likely cause | Fix |
 | --- | --- | --- |
-| Upload fails | Backend not running | Start backend on port 4000 |
-| Analysis empty | AI service down | Start AI service or mock mode |
-| Search returns none | Embeddings missing | Run embedding generation |
-| Docs empty | Crawl not completed | Run documentation crawl |
+| Pending approval | profile exists but is disabled | admin enables user in Settings -> User Management |
+| `/agentic` 404 | stale deploy or redirect mismatch | redeploy Netlify and verify redirects |
+| Export is JSON | old frontend/API build | redeploy and verify `/api/scripts/:id/export-analysis` headers |
+| Delete fails | auth/ownership/admin mismatch | inspect API response and user role |
+| Data maintenance fails | non-admin user or Supabase route error | check Netlify Function logs and Supabase logs |
+| Mobile overlap | stale frontend deploy | verify latest production deploy and screenshots |
+
+## Source-Guided Training Notes
+
+- PowerShell lifecycle training should emphasize static analysis, documentation, examples, tests, versioning, and code signing where appropriate.
+- Netlify support training should tie issues to the active deploy because functions and frontend assets are deployed together and are immutable per deploy.
+- Supabase training should treat RLS, explicit policies, hosted backups, MFA, and service-key protection as core operating controls.
+
+Primary sources:
+
+- <https://learn.microsoft.com/en-us/powershell/gallery/concepts/publishing-guidelines?view=powershellget-3.x>
+- <https://docs.netlify.com/build/functions/overview/>
+- <https://supabase.com/docs/guides/database/postgres/row-level-security>
+- <https://supabase.com/docs/guides/deployment/going-into-prod>
+
+## Appendix
+
+- Support: `../SUPPORT.md`
+- Deployment: `../NETLIFY-SUPABASE-DEPLOYMENT.md`
+- Data maintenance: `../DATA-MAINTENANCE.md`
+- Screenshots: `SCREENSHOT-ATLAS.md`

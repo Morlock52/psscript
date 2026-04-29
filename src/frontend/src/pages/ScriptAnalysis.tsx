@@ -268,16 +268,48 @@ When generating or modifying scripts:
     }
   };
 
-  const handleExportAnalysis = () => {
+  const handleExportAnalysis = async () => {
     if (!id) return;
 
-    const link = document.createElement('a');
-    link.href = `${getApiUrl()}/scripts/${encodeURIComponent(id)}/export-analysis`;
-    link.download = '';
-    link.rel = 'noopener noreferrer';
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
+    try {
+      const token = localStorage.getItem('auth_token');
+      const headers: HeadersInit = token && token !== 'dev-auth-disabled'
+        ? { Authorization: `Bearer ${token}` }
+        : {};
+
+      const response = await fetch(`${getApiUrl()}/scripts/${encodeURIComponent(id)}/export-analysis`, {
+        method: 'GET',
+        headers,
+      });
+
+      if (!response.ok) {
+        const errorPayload = await response.json().catch(() => null);
+        throw new Error(errorPayload?.message || errorPayload?.error || 'Failed to export PDF');
+      }
+
+      const contentType = response.headers.get('content-type') || '';
+      if (!contentType.includes('application/pdf')) {
+        throw new Error('Export did not return a PDF');
+      }
+
+      const blob = await response.blob();
+      const url = URL.createObjectURL(blob);
+      const disposition = response.headers.get('content-disposition') || '';
+      const filenameMatch = disposition.match(/filename="?([^"]+)"?/i);
+      const filename = filenameMatch?.[1] || `script-${id}-analysis.pdf`;
+
+      const link = document.createElement('a');
+      link.href = url;
+      link.download = filename.endsWith('.pdf') ? filename : `${filename}.pdf`;
+      link.rel = 'noopener noreferrer';
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      URL.revokeObjectURL(url);
+    } catch (error) {
+      console.error('Failed to export analysis PDF:', error);
+      alert(error instanceof Error ? error.message : 'Failed to export PDF');
+    }
   };
 
   // Cleanup on unmount

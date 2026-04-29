@@ -1,13 +1,15 @@
 # Authentication Improvements
 
-_Last updated: March 6, 2026_
+_Last updated: April 28, 2026_
 
 ![Settings screenshot](./screenshots/settings-profile.png)
 
 ## Current auth model
 
-- JWT-based backend authentication for protected APIs
-- Shared backend auth middleware across normal protected routes and admin DB maintenance routes
+- Supabase Auth for hosted identity
+- enabled-profile gate through `app_profiles.is_enabled`
+- JWT validation for protected Netlify Function APIs
+- Shared auth middleware across normal protected routes and admin DB maintenance routes
 - Optional auth uses the same auth configuration path as primary auth
 - Local frontend development commonly runs with `VITE_DISABLE_AUTH=true`, which creates a `dev-admin` session automatically
 
@@ -51,9 +53,10 @@ That means:
 - frontend screenshots taken in the default local environment show the `dev-admin` session
 - real login testing requires turning auth back on before starting the frontend
 
-Canonical local URLs:
-- frontend: `https://127.0.0.1:3090`
-- backend: `https://127.0.0.1:4000`
+Canonical URLs:
+- production app: `https://pstest.morloksmaze.com`
+- production API health: `https://pstest.morloksmaze.com/api/health`
+- local mock UI: `http://127.0.0.1:5173`
 
 ## Credential guidance
 

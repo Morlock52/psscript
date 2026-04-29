@@ -1,49 +1,53 @@
 # Module 01: Platform Foundations
 
+Last updated: April 29, 2026.
+
 ## Objectives
 
-- Log in and navigate the main UI
-- Understand core services and data flow
-- Locate documentation and training resources
+- Sign in through Supabase Auth.
+- Understand the enabled-profile approval gate.
+- Navigate the current desktop and mobile shell.
+- Identify Netlify Functions and hosted Supabase as the production architecture.
 
 ## Prerequisites
 
-- Services running on localhost
-- Demo credentials available in `docs/LOGIN-CREDENTIALS.md`
+- Approved account for `https://pstest.morloksmaze.com`, or local mock UI mode for non-mutating classroom demos.
+- No local database requirement.
 
 ## Walkthrough
 
-1. Sign in with the default login button on the login screen.
-2. Review the dashboard stats cards and recent scripts.
-3. Open the Scripts page and inspect metadata, tags, and scores.
-4. Visit Settings and locate the Training Suite link.
+1. Open the production app.
+2. Sign in and confirm you are not on pending approval.
+3. Review the dashboard cards.
+4. On mobile width, open the navigation drawer and confirm routes are reachable.
+5. Open Scripts, Assistant, Analytics, and Settings.
 
-## Visual references
+## Visual References
 
-![Login Screen](../../screenshots/login.png)
+![Production login](../../screenshots/readme/login.png)
 
-![Dashboard](../../screenshots/dashboard.png)
+![Dashboard](../../screenshots/readme/dashboard.png)
 
-![Settings](../../screenshots/settings.png)
+![Settings profile](../../screenshots/readme/settings-profile.png)
 
-![Architecture Diagram](../../graphics/architecture.svg)
+## Service Map
 
-## Service map
-
-| Service | Role | Default URL |
+| Service | Role | Production |
 | --- | --- | --- |
-| Frontend | UI for scripts and analytics | http://localhost:3002 |
-| Backend API | Auth, scripts, docs | http://localhost:4000/api |
-| AI service | Analysis and chat | http://localhost:8000 |
+| Netlify site | React app and SPA routing | `https://pstest.morloksmaze.com` |
+| Netlify Functions | same-origin API | `/api/*` |
+| Supabase Auth | identity/session | hosted Supabase |
+| Supabase Postgres | scripts, analyses, vectors, backups | hosted Supabase |
 
-## Key concepts
+## Key Concepts
 
-- Scripts are stored in Postgres with file hash deduplication
-- Analysis results are stored as separate records and linked to scripts
-- Vector embeddings enable similarity search
+- Enabled Supabase profile access is required for protected app/API routes.
+- Hosted Supabase Postgres is the canonical database.
+- Netlify Functions are the production API.
+- Local mock UI mode is for demos and screenshots, not production data.
 
-## Verification checklist
+## Verification Checklist
 
-- You can navigate between Dashboard, Scripts, Analytics, and Settings
-- You can open at least one script detail view
-- You can locate the Training Suite and Documentation links
+- You can reach Dashboard, Scripts, Assistant, Analytics, and Settings.
+- Mobile navigation opens and closes without covering unreadable content.
+- You can explain why disabled users cannot access protected APIs.

@@ -3,12 +3,14 @@ import { Link, useNavigate } from 'react-router-dom';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { scriptService } from '../services/api';
 import BatchDownloadButton from '../components/BatchDownloadButton';
+import { useAuth } from '../hooks/useAuth';
 
 interface Script {
   id: string;
   title: string;
   description: string;
   content: string; // Added content property for download
+  userId?: string;
   category?: { 
     name: string;
     id: string;
@@ -26,6 +28,7 @@ interface Script {
 const ManageFiles: React.FC = () => {
   const navigate = useNavigate();
   const queryClient = useQueryClient();
+  const { user } = useAuth();
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedScripts, setSelectedScripts] = useState<string[]>([]);
   const [showAIModal, setShowAIModal] = useState(false);
@@ -49,13 +52,13 @@ const ManageFiles: React.FC = () => {
     mutationFn: (ids: string[]) => scriptService.bulkDeleteScripts(ids),
     onSuccess: (data, variables) => {
         // variables contains the ids that were passed to the mutation
-        const deletedIds = variables;
+        const deletedIds = Array.isArray(data?.deletedIds) ? data.deletedIds.map(String) : variables;
         
         // Update the local state immediately for a more responsive UI
         if (data && data.success) {
           // Show success notification
-          const message = deletedIds.length > 1 
-            ? `Successfully deleted ${deletedIds.length} scripts` 
+          const message = deletedIds.length > 1
+            ? `Successfully deleted ${deletedIds.length} scripts`
             : 'Script deleted successfully';
           
           // You could add a toast notification here if you have a toast library
@@ -76,7 +79,7 @@ const ManageFiles: React.FC = () => {
       },
       onError: (error) => {
         console.error('Error deleting scripts:', error);
-        alert('Failed to delete script(s). Please try again.');
+        alert((error as Error)?.message || 'Failed to delete script(s). Please try again.');
       }
   });
 
@@ -112,8 +115,13 @@ const ManageFiles: React.FC = () => {
     (script.description && script.description.toLowerCase().includes(searchTerm.toLowerCase())) ||
     (script.category?.name && script.category.name.toLowerCase().includes(searchTerm.toLowerCase()))
   );
+  const canDeleteScript = (script: Script) => user?.role === 'admin' || String(script.userId) === String(user?.id);
+  const deletableFilteredScripts = filteredScripts.filter(canDeleteScript);
 
   const toggleScriptSelection = (scriptId: string) => {
+    const script = filteredScripts.find(item => item.id === scriptId);
+    if (script && !canDeleteScript(script)) return;
+
     if (selectedScripts.includes(scriptId)) {
       setSelectedScripts(selectedScripts.filter(id => id !== scriptId));
     } else {
@@ -122,10 +130,10 @@ const ManageFiles: React.FC = () => {
   };
 
   const selectAllScripts = () => {
-    if (selectedScripts.length === filteredScripts.length) {
+    if (selectedScripts.length === deletableFilteredScripts.length) {
       setSelectedScripts([]);
     } else {
-      setSelectedScripts(filteredScripts.map(script => script.id));
+      setSelectedScripts(deletableFilteredScripts.map(script => script.id));
     }
   };
 
@@ -248,7 +256,7 @@ const ManageFiles: React.FC = () => {
               onClick={selectAllScripts}
               className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
             >
-              {selectedScripts.length === filteredScripts.length ? 'Deselect All' : 'Select All'}
+              {selectedScripts.length === deletableFilteredScripts.length && deletableFilteredScripts.length > 0 ? 'Deselect All' : 'Select All'}
             </button>
           </div>
         </div>
@@ -274,11 +282,12 @@ const ManageFiles: React.FC = () => {
                   <th className="px-4 py-2 w-10">
                     <input 
                       type="checkbox" 
-                      checked={selectedScripts.length === filteredScripts.length && filteredScripts.length > 0}
+                      checked={selectedScripts.length === deletableFilteredScripts.length && deletableFilteredScripts.length > 0}
                       aria-label="Select all scripts"
                       title="Select all scripts"
                       onChange={selectAllScripts}
                       className="w-4 h-4 rounded"
+                      disabled={deletableFilteredScripts.length === 0}
                     />
                   </th>
                   <th className="px-4 py-2">Name</th>
@@ -292,13 +301,14 @@ const ManageFiles: React.FC = () => {
                 {filteredScripts.map((script: any) => (
                   <tr key={script.id} className="hover:bg-gray-600">
                     <td className="px-4 py-3">
-                      <input 
-                        type="checkbox" 
+                      <input
+                        type="checkbox"
                         checked={selectedScripts.includes(script.id)}
                         aria-label={`Select script ${script.title}`}
-                        title={`Select script ${script.title}`}
+                        title={canDeleteScript(script) ? `Select script ${script.title}` : 'Only the owner or an admin can delete this script'}
                         onChange={() => toggleScriptSelection(script.id)}
                         className="w-4 h-4 rounded"
+                        disabled={!canDeleteScript(script)}
                       />
                     </td>
                     <td className="px-4 py-3">
@@ -405,36 +415,33 @@ const ManageFiles: React.FC = () => {
                             />
                           </svg>
                         </button>
-                        <button
-                          onClick={() => {
-                            if (window.confirm('Are you sure you want to delete this script? This action cannot be undone.')) {
-                              // Remove from UI immediately for better UX
-                              const updatedScripts = scripts.filter(s => s.id !== script.id);
-                              queryClient.setQueryData(['allScripts'], { ...scriptsData, scripts: updatedScripts });
-                              
-                              // Then perform the actual deletion
-                              deleteMutation.mutate([script.id]);
-                            }
-                          }}
-                          className="text-red-400 hover:text-red-300"
-                          title="Delete"
-                          data-testid={`delete-script-${script.id}`}
-                        >
-                          <svg
-                            className="w-5 h-5"
-                            fill="none"
-                            stroke="currentColor"
-                            viewBox="0 0 24 24"
-                            xmlns="http://www.w3.org/2000/svg"
+                        {canDeleteScript(script) && (
+                          <button
+                            onClick={() => {
+                              if (window.confirm('Are you sure you want to delete this script? This action cannot be undone.')) {
+                                deleteMutation.mutate([script.id]);
+                              }
+                            }}
+                            className="text-red-400 hover:text-red-300"
+                            title="Delete"
+                            data-testid={`delete-script-${script.id}`}
                           >
-                            <path
-                              strokeLinecap="round"
-                              strokeLinejoin="round"
-                              strokeWidth={2}
-                              d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"
-                            ></path>
-                          </svg>
-                        </button>
+                            <svg
+                              className="w-5 h-5"
+                              fill="none"
+                              stroke="currentColor"
+                              viewBox="0 0 24 24"
+                              xmlns="http://www.w3.org/2000/svg"
+                            >
+                              <path
+                                strokeLinecap="round"
+                                strokeLinejoin="round"
+                                strokeWidth={2}
+                                d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"
+                              ></path>
+                            </svg>
+                          </button>
+                        )}
                       </div>
                     </td>
                   </tr>

@@ -11,7 +11,7 @@ Validate that PSScript works as a Netlify-hosted application using Supabase Post
 - Frontend: Vite React app built from `src/frontend` and published by Netlify from `src/frontend/dist`.
 - Hosted API: Netlify Function router at `netlify/functions/api.ts`, mapped by `netlify.toml` from `/api/*` to `/.netlify/functions/api/:splat`.
 - Database: Supabase Postgres via `DATABASE_URL`, `SUPABASE_URL`, `SUPABASE_ANON_KEY`, and `SUPABASE_SERVICE_ROLE_KEY`.
-- Local full-stack e2e path: `scripts/playwright-stack.sh` starts frontend on `https://127.0.0.1:3090`, backend on `https://127.0.0.1:4000`, and AI service on `http://127.0.0.1:8000`, while requiring `DATABASE_URL` to point at Supabase or `DB_PROFILE=supabase`.
+- Local UI e2e path: run the frontend against mock data for non-mutating browser checks, or run hosted-auth tests against the Netlify/Supabase production path. Do not introduce a local database; `DATABASE_URL` must point at hosted Supabase when database-backed tests are used.
 - Linked Netlify site: `psscript`, project id `a6cb54b5-b3f7-4f01-a756-70b127f07e19`, primary URL `https://pstest.morloksmaze.com`.
 
 ## External Guidance Used

@@ -1,29 +1,41 @@
-# Lab 01: Upload and Analyze a Script
+# Lab 01: Upload, Analyze, Export
+
+Last updated: April 29, 2026.
 
 ## Goal
 
-Upload a PowerShell script, run AI analysis, and record the top recommendation.
+Design a safe PowerShell script, upload it to the hosted app, run analysis, remediate or document findings, and export the analysis report as a PDF.
 
 ## Prerequisites
 
-- Services running
-- Access to a test script (example: `test-script.ps1`)
+- Approved account on `https://pstest.morloksmaze.com`, or local mock UI for non-mutating demos.
+- A disposable `.ps1` test script that contains no secrets and is safe to delete.
 
 ## Steps
 
-1. Go to Scripts and select Upload.
-2. Upload `test-script.ps1`.
-3. Add category and tags.
-4. Open the script detail view.
-5. Run analysis and review scores.
+1. Write a one-paragraph script intent statement.
+2. Confirm the script has a safe name, owner, examples, and a test expectation.
+3. Open Scripts and select Upload.
+4. Upload the test script.
+5. Add category, tags, owner/team tag, and description.
+6. Open the script detail view.
+7. Run or view AI analysis.
+8. Review score, criteria version, confidence, findings, remediation, and test recommendations.
+9. Export the analysis report.
+10. Confirm the downloaded file is a PDF.
+11. Decide whether the test script should be kept for later labs or deleted after Lab 05.
 
-## Expected results
+## Expected Results
 
-- Script appears in the library
-- Analysis shows security and quality scores
-- Recommendation list contains at least one entry
+- Script appears in the library.
+- Analysis shows security and quality scores.
+- Findings and remediation are visible.
+- Export downloads a PDF, not JSON.
+- Metadata is clear enough for another reviewer to understand ownership and purpose.
 
 ## Troubleshooting
 
-- If the upload fails, confirm the backend is running on port 4000
-- If analysis is empty, check mock mode and AI service logs
+- If upload fails, check Netlify Function logs and the authenticated API response.
+- If the file is larger than 4 MB, reduce the test file size before using the hosted app.
+- If analysis is empty, check provider env vars and deterministic fallback behavior.
+- If export is not PDF, verify the latest Netlify deploy is live.

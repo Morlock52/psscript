@@ -184,7 +184,7 @@ const ScriptManagement: React.FC = () => {
   const categories: Category[] = categoriesData?.categories || [];
 
   return (
-    <div className="p-6">
+    <div className="p-0 sm:p-2 md:p-6">
       {/* Success and Error Messages */}
       {successMessage && (
         <div className="mb-4">
@@ -210,17 +210,17 @@ const ScriptManagement: React.FC = () => {
         </div>
       )}
       
-      <div className="mb-6 flex justify-between items-start">
-        <div>
+      <div className="mb-6 flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
+        <div className="min-w-0">
           <h1 className="text-2xl font-bold mb-4">Manage Scripts</h1>
           <p className="text-gray-500 dark:text-gray-400">
             Batch manage your PowerShell scripts, apply bulk actions and organize your collection.
           </p>
         </div>
-        <div className="flex space-x-3">
+        <div className="grid grid-cols-1 gap-2 min-[420px]:grid-cols-2 sm:flex sm:space-x-3 sm:gap-0">
           <button
             onClick={() => navigate('/scripts/upload')}
-            className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 flex items-center space-x-2"
+            className="inline-flex items-center justify-center gap-2 rounded-lg bg-blue-600 px-4 py-2 text-white hover:bg-blue-700"
             aria-label="Upload Script"
           >
             <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -230,7 +230,7 @@ const ScriptManagement: React.FC = () => {
           </button>
           <Link 
             to="/"
-            className="px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 flex items-center space-x-2"
+            className="inline-flex items-center justify-center gap-2 rounded-lg bg-indigo-600 px-4 py-2 text-white hover:bg-indigo-700"
           >
             <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" />
@@ -336,13 +336,13 @@ const ScriptManagement: React.FC = () => {
       {/* Bulk Actions Bar */}
       {showBulkActions && (
         <div className="fixed bottom-0 left-0 right-0 bg-white dark:bg-gray-800 shadow-md p-4 z-10 border-t border-gray-200 dark:border-gray-700">
-          <div className="container mx-auto flex items-center justify-between">
+          <div className="container mx-auto flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
             <div className="flex items-center space-x-2">
               <span className="text-sm font-medium text-gray-700 dark:text-gray-300">
                 {selectedScripts.length} scripts selected
               </span>
             </div>
-            <div className="flex items-center space-x-3">
+            <div className="grid grid-cols-2 gap-2 sm:flex sm:items-center sm:space-x-3 sm:gap-0">
               <button
                 onClick={() => handleBulkVisibility(true)}
                 className="px-4 py-2 bg-green-600 hover:bg-green-700 text-white rounded-md text-sm font-medium"

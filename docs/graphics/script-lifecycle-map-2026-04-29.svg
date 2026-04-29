@@ -1,0 +1,63 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1280" height="720" viewBox="0 0 1280 720" role="img" aria-labelledby="title desc">
+  <title id="title">PSScript script lifecycle map</title>
+  <desc id="desc">A lifecycle graphic showing design, upload, analysis, remediation, discovery, governance, and support stages.</desc>
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#0E1525"/>
+      <stop offset="0.58" stop-color="#17213A"/>
+      <stop offset="1" stop-color="#102A35"/>
+    </linearGradient>
+    <linearGradient id="accent" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0" stop-color="#5EEAD4"/>
+      <stop offset="1" stop-color="#C4B5FD"/>
+    </linearGradient>
+    <filter id="shadow" x="-10%" y="-10%" width="120%" height="130%">
+      <feDropShadow dx="0" dy="16" stdDeviation="18" flood-color="#020617" flood-opacity="0.35"/>
+    </filter>
+  </defs>
+  <rect width="1280" height="720" fill="url(#bg)"/>
+  <rect x="70" y="68" width="1140" height="584" rx="28" fill="#F8FAFC" opacity="0.965" filter="url(#shadow)"/>
+  <text x="110" y="126" font-family="Inter, Segoe UI, Arial, sans-serif" font-size="34" font-weight="800" fill="#0E1525">PSScript Script Design And Management Lifecycle</text>
+  <text x="110" y="160" font-family="Inter, Segoe UI, Arial, sans-serif" font-size="17" fill="#475569">Hosted Netlify app, Netlify Functions API, and Supabase Auth/Postgres as the database of record</text>
+  <path d="M168 350 C250 205 438 205 520 350 C602 495 790 495 872 350 C954 205 1120 232 1150 350" fill="none" stroke="url(#accent)" stroke-width="18" stroke-linecap="round"/>
+  <g font-family="Inter, Segoe UI, Arial, sans-serif">
+    <g transform="translate(108 252)">
+      <rect width="168" height="116" rx="14" fill="#0F766E"/>
+      <text x="22" y="36" font-size="20" font-weight="800" fill="#FFFFFF">1. Design</text>
+      <text x="22" y="66" font-size="14" fill="#D9FFF8">Intent, owner, risk,</text>
+      <text x="22" y="86" font-size="14" fill="#D9FFF8">tests, examples</text>
+    </g>
+    <g transform="translate(284 430)">
+      <rect width="168" height="116" rx="14" fill="#1D4ED8"/>
+      <text x="22" y="36" font-size="20" font-weight="800" fill="#FFFFFF">2. Upload</text>
+      <text x="22" y="66" font-size="14" fill="#DBEAFE">File, metadata,</text>
+      <text x="22" y="86" font-size="14" fill="#DBEAFE">tags, category</text>
+    </g>
+    <g transform="translate(460 252)">
+      <rect width="168" height="116" rx="14" fill="#6D28D9"/>
+      <text x="22" y="36" font-size="20" font-weight="800" fill="#FFFFFF">3. Analyze</text>
+      <text x="22" y="66" font-size="14" fill="#F3E8FF">Criteria, score,</text>
+      <text x="22" y="86" font-size="14" fill="#F3E8FF">findings, PDF</text>
+    </g>
+    <g transform="translate(636 430)">
+      <rect width="168" height="116" rx="14" fill="#BE123C"/>
+      <text x="22" y="36" font-size="20" font-weight="800" fill="#FFFFFF">4. Remediate</text>
+      <text x="22" y="66" font-size="14" fill="#FFE4E6">Fix, accept risk,</text>
+      <text x="22" y="86" font-size="14" fill="#FFE4E6">rerun analysis</text>
+    </g>
+    <g transform="translate(812 252)">
+      <rect width="168" height="116" rx="14" fill="#B45309"/>
+      <text x="22" y="36" font-size="20" font-weight="800" fill="#FFFFFF">5. Discover</text>
+      <text x="22" y="66" font-size="14" fill="#FEF3C7">Search, docs,</text>
+      <text x="22" y="86" font-size="14" fill="#FEF3C7">assistant reuse</text>
+    </g>
+    <g transform="translate(988 430)">
+      <rect width="168" height="116" rx="14" fill="#334155"/>
+      <text x="22" y="36" font-size="20" font-weight="800" fill="#FFFFFF">6. Support</text>
+      <text x="22" y="66" font-size="14" fill="#E2E8F0">Logs, screenshots,</text>
+      <text x="22" y="86" font-size="14" fill="#E2E8F0">delete, cleanup</text>
+    </g>
+  </g>
+  <rect x="110" y="594" width="1060" height="2" fill="#CBD5E1"/>
+  <text x="110" y="628" font-family="Inter, Segoe UI, Arial, sans-serif" font-size="16" fill="#334155">Evidence chain: metadata -> analysis -> PDF report -> search/reuse trail -> cleanup/support record</text>
+</svg>

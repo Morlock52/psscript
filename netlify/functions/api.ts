@@ -6,7 +6,7 @@ import { lookup } from 'node:dns/promises';
 import net from 'node:net';
 import { query } from './_shared/db';
 import { getEnv, requireEnv } from './_shared/env';
-import { requireAdmin, requireUser, requireUserAllowingDisabled } from './_shared/auth';
+import { requireAdmin, requireUser, requireUserAllowingDisabled, type HostedUser } from './_shared/auth';
 import { json, methodNotAllowed, notFound } from './_shared/http';
 
 export const config: Config = {
@@ -36,6 +36,8 @@ const OPENAI_STT_MODEL = 'gpt-4o-mini-transcribe';
 const ANTHROPIC_TEXT_MODEL = 'claude-sonnet-4-6';
 const SCRIPT_EMBEDDING_TIMEOUT_MS = 3000;
 const UPLOAD_ANALYSIS_TIMEOUT_MS = 12000;
+const HOSTED_SCRIPT_UPLOAD_MAX_BYTES = 4 * 1024 * 1024;
+const POWERSHELL_UPLOAD_EXTENSIONS = new Set(['.ps1', '.psm1', '.psd1', '.ps1xml']);
 
 const AI_MODEL_PRICING: Record<string, { prompt: number; completion: number }> = {
   'gpt-5.5': { prompt: 5.00, completion: 30.00 },
@@ -71,6 +73,52 @@ const openAiVoices = [
 ];
 
 const ANALYSIS_CRITERIA_VERSION = '2026-04-26';
+const SCRIPT_CHILD_DELETE_TABLES = [
+  'script_embeddings',
+  'script_analysis',
+  'script_versions',
+  'script_tags',
+  'script_metrics',
+  'script_executions',
+  'script_dependencies',
+  'script_ratings',
+  'script_usage_stats',
+];
+const DB_BACKUP_TABLE = 'admin_db_backups';
+const DB_MAINTENANCE_TABLES = [
+  'categories',
+  'tags',
+  'scripts',
+  'script_versions',
+  'script_tags',
+  'script_analysis',
+  'script_embeddings',
+  'documentation_items',
+];
+const DB_CLEAR_DEFAULT_TABLES = [
+  'script_embeddings',
+  'script_analysis',
+  'script_versions',
+  'script_tags',
+  'scripts',
+  'documentation_items',
+];
+const DB_DELETE_ORDER = [
+  'script_embeddings',
+  'script_analysis',
+  'script_versions',
+  'script_tags',
+  'script_metrics',
+  'script_executions',
+  'script_dependencies',
+  'script_ratings',
+  'script_usage_stats',
+  'documentation_items',
+  'scripts',
+  'tags',
+  'categories',
+];
+const DB_INSERT_ORDER = [...DB_DELETE_ORDER].reverse();
 const ANALYSIS_CRITERIA = [
   {
     name: 'Security',
@@ -249,11 +297,13 @@ export default async function handleRequest(req: Request, context: Context): Pro
     if (route.path === '/auth/user') return await handleAuthUser(req);
     if (route.path === '/users') return await handleUsers(req);
     if (route.segments[0] === 'users' && route.segments[1]) return await handleUserById(req, route);
+    if (route.segments[0] === 'admin' && route.segments[1] === 'db') return await handleHostedDbAdmin(req, route);
     if (route.path === '/categories') return await handleCategories(req);
     if (route.path === '/tags') return await handleTags(req);
     if (route.path === '/scripts') return await handleScripts(req, route);
     if (route.path === '/scripts/search') return await handleScriptSearch(req, route);
     if (route.path === '/scripts/upload' || route.path === '/scripts/upload/large') return await handleScriptUpload(req);
+    if (route.path === '/scripts/delete') return await handleBulkScriptDelete(req);
     if (route.path === '/scripts/analyze') return await handleAdhocAnalysis(req);
     if (route.path === '/scripts/analyze/assistant' || route.path === '/ai-agent/analyze/assistant') return await handleHostedAgentAnalysis(req, route);
     if (route.path === '/scripts/please' || route.path === '/ai-agent/please') return await handleHostedAgentQuestion(req, route);
@@ -371,7 +421,8 @@ async function handleDefaultUser(req: Request): Promise<Response> {
     throw Object.assign(new Error(list.error.message), { status: 500, code: 'default_user_lookup_failed' });
   }
 
-  const existing = list.data.users.find((candidate) => candidate.email?.toLowerCase() === email.toLowerCase());
+  const users = list.data.users as Array<{ id: string; email?: string; user_metadata?: Record<string, unknown> }>;
+  const existing = users.find((candidate) => candidate.email?.toLowerCase() === email.toLowerCase());
   const metadata = { username: 'admin', role: 'admin' };
   const authResult = existing
     ? await supabase.auth.admin.updateUserById(existing.id, {
@@ -831,7 +882,7 @@ async function handleScriptById(req: Request, route: RouteParams): Promise<Respo
     if (!result.rows[0]) {
       return json({ success: false, error: 'analysis_not_found', message: 'Analysis not found for this script' }, { status: 404 });
     }
-    return exportAnalysisMarkdown(script, toFrontendAnalysis(result.rows[0]));
+    return exportAnalysisPdf(script, toFrontendAnalysis(result.rows[0]));
   }
 
   if (req.method === 'GET') {
@@ -877,11 +928,299 @@ async function handleScriptById(req: Request, route: RouteParams): Promise<Respo
   }
 
   if (req.method === 'DELETE') {
-    const result = await query('DELETE FROM scripts WHERE id = $1 AND user_id = $2 RETURNING id', [id, user.id]);
-    return json({ success: true, deleted: result.rowCount || 0 });
+    const deleteResult = await deleteScriptsForUser([id], user);
+    if (deleteResult.deleted === 0) {
+      return json({
+        success: false,
+        error: 'script_not_found_or_not_deletable',
+        message: 'Script not found or you do not have permission to delete it.',
+        ...deleteResult,
+      }, { status: 404 });
+    }
+    return json({ success: true, ...deleteResult });
   }
 
   return methodNotAllowed();
+}
+
+async function handleBulkScriptDelete(req: Request): Promise<Response> {
+  if (req.method !== 'POST') return methodNotAllowed();
+
+  const user = await requireUser(req);
+  const body = await req.json().catch(() => ({}));
+  const ids = Array.isArray(body.ids)
+    ? body.ids.map((id: unknown) => Number(id)).filter((id: number) => Number.isFinite(id))
+    : [];
+
+  if (ids.length === 0) {
+    return json({ success: false, error: 'missing_script_ids', message: 'At least one script id is required' }, { status: 400 });
+  }
+
+  const deleteResult = await deleteScriptsForUser(ids, user);
+  if (deleteResult.deleted === 0) {
+    return json({
+      success: false,
+      error: 'script_not_found_or_not_deletable',
+      message: 'No requested scripts were found or available to delete.',
+      ...deleteResult,
+      deletedCount: deleteResult.deleted,
+    }, { status: 404 });
+  }
+  return json({ success: true, ...deleteResult, deletedCount: deleteResult.deleted });
+}
+
+async function deleteScriptsForUser(ids: number[], user: HostedUser): Promise<{
+  requested: number;
+  deleted: number;
+  deletedIds: number[];
+  notDeletedIds: number[];
+}> {
+  const uniqueIds = Array.from(new Set(ids));
+  const isAdmin = user.role === 'admin';
+  const owned = await query<{ id: number }>(
+    'SELECT id FROM scripts WHERE id = ANY($1::bigint[]) AND ($2::boolean OR user_id = $3)',
+    [uniqueIds, isAdmin, user.id]
+  );
+  const deletableIds = owned.rows.map(row => Number(row.id));
+
+  if (deletableIds.length === 0) {
+    return {
+      requested: uniqueIds.length,
+      deleted: 0,
+      deletedIds: [],
+      notDeletedIds: uniqueIds,
+    };
+  }
+
+  for (const table of SCRIPT_CHILD_DELETE_TABLES) {
+    if (await tableExists(table)) {
+      await query(`DELETE FROM ${quoteIdentifier(table)} WHERE script_id = ANY($1::bigint[])`, [deletableIds]);
+    }
+  }
+
+  const result = await query<{ id: number }>(
+    'DELETE FROM scripts WHERE id = ANY($1::bigint[]) AND ($2::boolean OR user_id = $3) RETURNING id',
+    [deletableIds, isAdmin, user.id]
+  );
+  const deletedIds = result.rows.map(row => Number(row.id));
+  return {
+    requested: uniqueIds.length,
+    deleted: deletedIds.length,
+    deletedIds,
+    notDeletedIds: uniqueIds.filter(id => !deletedIds.includes(id)),
+  };
+}
+
+async function handleHostedDbAdmin(req: Request, route: RouteParams): Promise<Response> {
+  const admin = await requireAdmin(req);
+  const action = route.segments[2] || '';
+
+  await ensureBackupStore();
+
+  if (action === 'backups' && req.method === 'GET') {
+    const result = await query(
+      `
+        SELECT name, size_bytes, created_at, updated_at
+        FROM ${quoteIdentifier(DB_BACKUP_TABLE)}
+        ORDER BY updated_at DESC
+      `
+    );
+
+    return json({
+      success: true,
+      backups: result.rows.map(row => ({
+        name: row.name,
+        sizeBytes: Number(row.size_bytes || 0),
+        createdAt: row.created_at,
+        updatedAt: row.updated_at,
+      })),
+    });
+  }
+
+  if (action === 'backup' && req.method === 'POST') {
+    const body = await req.json().catch(() => ({}));
+    const backup = await createHostedDbBackup(body.filename, admin.id);
+    return json({ success: true, message: 'Backup created', backup });
+  }
+
+  if (action === 'restore' && req.method === 'POST') {
+    const body = await req.json().catch(() => ({}));
+    if (body.confirmText !== 'RESTORE BACKUP') {
+      return json({ success: false, error: 'confirmation_required', message: 'Type RESTORE BACKUP to restore a backup' }, { status: 400 });
+    }
+
+    const restored = await restoreHostedDbBackup(String(body.filename || ''));
+    return json({ success: true, message: 'Restore completed', restoredFrom: restored.name, restoredTables: restored.tables });
+  }
+
+  if (action === 'clear-test-data' && req.method === 'POST') {
+    const body = await req.json().catch(() => ({}));
+    if (body.confirmText !== 'CLEAR TEST DATA') {
+      return json({ success: false, error: 'confirmation_required', message: 'Type CLEAR TEST DATA to clear test data' }, { status: 400 });
+    }
+
+    const requestedTables = Array.isArray(body.tables)
+      ? body.tables.map((table: unknown) => String(table).trim()).filter(Boolean)
+      : [];
+    const selectedTables = requestedTables.length > 0 ? requestedTables : DB_CLEAR_DEFAULT_TABLES;
+    const existingTables = await filterExistingMaintenanceTables(selectedTables);
+    const filteredTables = existingTables.filter(table => DB_CLEAR_DEFAULT_TABLES.includes(table) || requestedTables.includes(table));
+    const ignoredTables = selectedTables.filter(table => !filteredTables.includes(table));
+    const backup = body.backupFirst === false ? null : await createHostedDbBackup(body.backupFilename, admin.id);
+    const clearedTables = await clearHostedTables(filteredTables);
+
+    return json({
+      success: true,
+      message: 'Test data cleared',
+      backup,
+      requestedTables,
+      filteredTables,
+      ignoredTables,
+      clearedTables,
+    });
+  }
+
+  return methodNotAllowed();
+}
+
+async function ensureBackupStore(): Promise<void> {
+  await query(`
+    CREATE TABLE IF NOT EXISTS ${quoteIdentifier(DB_BACKUP_TABLE)} (
+      name TEXT PRIMARY KEY,
+      payload JSONB NOT NULL,
+      size_bytes INTEGER NOT NULL DEFAULT 0,
+      created_by UUID NULL,
+      created_at TIMESTAMPTZ NOT NULL DEFAULT now(),
+      updated_at TIMESTAMPTZ NOT NULL DEFAULT now()
+    )
+  `);
+}
+
+async function createHostedDbBackup(rawName: unknown, userId: string) {
+  const name = normalizeBackupName(rawName);
+  const payload = await captureHostedDbBackupPayload();
+  const sizeBytes = Buffer.byteLength(JSON.stringify(payload), 'utf8');
+
+  await query(
+    `
+      INSERT INTO ${quoteIdentifier(DB_BACKUP_TABLE)} (name, payload, size_bytes, created_by, updated_at)
+      VALUES ($1, $2::jsonb, $3, $4, now())
+      ON CONFLICT (name)
+      DO UPDATE SET payload = EXCLUDED.payload,
+                    size_bytes = EXCLUDED.size_bytes,
+                    created_by = EXCLUDED.created_by,
+                    updated_at = now()
+    `,
+    [name, JSON.stringify(payload), sizeBytes, userId]
+  );
+
+  return {
+    name,
+    sizeBytes,
+    createdAt: payload.createdAt,
+    updatedAt: new Date().toISOString(),
+  };
+}
+
+async function captureHostedDbBackupPayload() {
+  const tables: Record<string, any[]> = {};
+  const existingTables = await filterExistingMaintenanceTables(DB_MAINTENANCE_TABLES);
+
+  for (const table of existingTables) {
+    const result = await query(`SELECT * FROM ${quoteIdentifier(table)} ORDER BY 1`);
+    tables[table] = result.rows;
+  }
+
+  return {
+    version: 1,
+    runtime: 'netlify-supabase',
+    createdAt: new Date().toISOString(),
+    tables,
+  };
+}
+
+async function restoreHostedDbBackup(filename: string): Promise<{ name: string; tables: string[] }> {
+  const name = normalizeBackupName(filename);
+  const backup = await query<{ payload: any }>(
+    `SELECT payload FROM ${quoteIdentifier(DB_BACKUP_TABLE)} WHERE name = $1`,
+    [name]
+  );
+
+  if (!backup.rows[0]) {
+    throw Object.assign(new Error('Backup not found'), { status: 404, code: 'backup_not_found' });
+  }
+
+  const payload = typeof backup.rows[0].payload === 'string' ? JSON.parse(backup.rows[0].payload) : backup.rows[0].payload;
+  const tables = payload?.tables && typeof payload.tables === 'object' ? payload.tables as Record<string, any[]> : {};
+  const existingTables = await filterExistingMaintenanceTables(Object.keys(tables));
+  const deleteTables = DB_DELETE_ORDER.filter(table => existingTables.includes(table));
+  const insertTables = DB_INSERT_ORDER.filter(table => existingTables.includes(table));
+
+  await clearHostedTables(deleteTables);
+
+  for (const table of insertTables) {
+    const rows = Array.isArray(tables[table]) ? tables[table] : [];
+    for (const row of rows) {
+      await insertBackupRow(table, row);
+    }
+  }
+
+  return { name, tables: insertTables };
+}
+
+async function clearHostedTables(tables: string[]): Promise<string[]> {
+  const clearedTables: string[] = [];
+  const orderedTables = DB_DELETE_ORDER.filter(table => tables.includes(table));
+
+  for (const table of orderedTables) {
+    if (!(await tableExists(table))) continue;
+    await query(`DELETE FROM ${quoteIdentifier(table)}`);
+    clearedTables.push(table);
+  }
+
+  return clearedTables;
+}
+
+async function insertBackupRow(table: string, row: Record<string, any>): Promise<void> {
+  if (!DB_MAINTENANCE_TABLES.includes(table) || !row || typeof row !== 'object') return;
+
+  const columns = Object.keys(row);
+  if (columns.length === 0) return;
+
+  const columnSql = columns.map(quoteIdentifier).join(', ');
+  const valueSql = columns.map((_, index) => `$${index + 1}`).join(', ');
+  const values = columns.map(column => row[column]);
+  await query(`INSERT INTO ${quoteIdentifier(table)} (${columnSql}) VALUES (${valueSql}) ON CONFLICT DO NOTHING`, values);
+}
+
+async function filterExistingMaintenanceTables(tables: string[]): Promise<string[]> {
+  const uniqueTables = Array.from(new Set(tables.filter(table => DB_MAINTENANCE_TABLES.includes(table) || DB_CLEAR_DEFAULT_TABLES.includes(table))));
+  const existing: string[] = [];
+
+  for (const table of uniqueTables) {
+    if (await tableExists(table)) existing.push(table);
+  }
+
+  return existing;
+}
+
+async function tableExists(table: string): Promise<boolean> {
+  const result = await query<{ exists: boolean }>('SELECT to_regclass($1) IS NOT NULL AS exists', [`public.${table}`]);
+  return Boolean(result.rows[0]?.exists);
+}
+
+function normalizeBackupName(rawName: unknown): string {
+  const base = String(rawName || `backup-${new Date().toISOString()}`)
+    .trim()
+    .replace(/\.json$/i, '')
+    .replace(/[^a-zA-Z0-9_.-]+/g, '-')
+    .replace(/^-+|-+$/g, '')
+    .slice(0, 96) || 'backup';
+  return `${base}.json`;
+}
+
+function quoteIdentifier(identifier: string): string {
+  return `"${identifier.replace(/"/g, '""')}"`;
 }
 
 async function handleDocumentation(req: Request, route: RouteParams): Promise<Response> {
@@ -1076,36 +1415,25 @@ async function handleHostedDocumentationImport(req: Request): Promise<Response> 
 async function handleScriptUpload(req: Request): Promise<Response> {
   if (req.method !== 'POST') return methodNotAllowed();
   const user = await requireUser(req);
-  const form = await req.formData();
-  const file = form.get('script_file');
-  const contentField = form.get('content');
-  let content = typeof contentField === 'string' ? contentField : '';
-  let fileName = 'script.ps1';
-
-  if (file instanceof File) {
-    fileName = file.name || fileName;
-    content = await file.text();
-  }
-
-  if (!content.trim()) {
-    return json({ error: 'missing_file', message: 'No script file or content was provided' }, { status: 400 });
-  }
+  const upload = await parseScriptUploadRequest(req);
+  const uploadError = validateHostedScriptUpload(upload);
+  if (uploadError) return uploadError;
 
   const script = await createScript(user.id, {
-    title: String(form.get('title') || fileName),
-    description: String(form.get('description') || 'No description provided'),
-    content,
-    categoryId: form.get('category_id') ? Number(form.get('category_id')) : null,
-    isPublic: form.get('is_public') === 'true',
-    tags: safeJsonArray(form.get('tags')),
+    title: upload.title,
+    description: upload.description,
+    content: upload.content,
+    categoryId: upload.categoryId,
+    isPublic: upload.isPublic,
+    tags: upload.tags,
   });
 
   let analysis: any = null;
   let analysisError: string | null = null;
-  if (form.get('analyze_with_ai') === 'true') {
+  if (upload.analyzeWithAi) {
     try {
       analysis = toFrontendAnalysis(await withTimeout(
-        (async () => saveAnalysis(Number(script.id), await analyzePowerShell(content, script.title, { userId: user.id, endpoint: '/scripts/upload' })))(),
+        (async () => saveAnalysis(Number(script.id), await analyzePowerShell(upload.content, script.title, { userId: user.id, endpoint: '/scripts/upload' })))(),
         UPLOAD_ANALYSIS_TIMEOUT_MS,
         'AI analysis is taking longer than expected. The script was uploaded; run analysis from the script detail page.'
       ));
@@ -1130,6 +1458,105 @@ async function handleScriptUpload(req: Request): Promise<Response> {
         ? 'Script uploaded successfully, but AI analysis failed.'
         : 'Script uploaded and saved successfully',
   }, { status: 201 });
+}
+
+type ScriptUploadInput = {
+  title: string;
+  description: string;
+  content: string;
+  fileName: string;
+  categoryId: number | null;
+  isPublic: boolean;
+  tags: string[];
+  analyzeWithAi: boolean;
+};
+
+async function parseScriptUploadRequest(req: Request): Promise<ScriptUploadInput> {
+  const contentType = req.headers.get('content-type') || '';
+
+  if (contentType.includes('application/json')) {
+    const body = await req.json().catch(() => ({}));
+    const fileName = String(body.file_name || body.fileName || body.filename || 'script.ps1');
+    return {
+      title: String(body.title || fileName || 'Untitled Script'),
+      description: String(body.description || 'No description provided'),
+      content: String(body.content || ''),
+      fileName,
+      categoryId: body.category_id || body.categoryId ? Number(body.category_id ?? body.categoryId) : null,
+      isPublic: parseUploadBoolean(body.is_public ?? body.isPublic, false),
+      tags: normalizeUploadTags(body.tags),
+      analyzeWithAi: parseUploadBoolean(body.analyze_with_ai ?? body.analyzeWithAi, false),
+    };
+  }
+
+  const form = await req.formData();
+  const file = form.get('script_file');
+  const contentField = form.get('content');
+  let content = typeof contentField === 'string' ? contentField : '';
+  let fileName = String(form.get('file_name') || form.get('fileName') || 'script.ps1');
+
+  if (file instanceof File) {
+    fileName = file.name || fileName;
+    content = await file.text();
+  }
+
+  return {
+    title: String(form.get('title') || fileName || 'Untitled Script'),
+    description: String(form.get('description') || 'No description provided'),
+    content,
+    fileName,
+    categoryId: form.get('category_id') ? Number(form.get('category_id')) : null,
+    isPublic: form.get('is_public') === 'true',
+    tags: safeJsonArray(form.get('tags')).filter((tag): tag is string => typeof tag === 'string'),
+    analyzeWithAi: form.get('analyze_with_ai') === 'true',
+  };
+}
+
+function validateHostedScriptUpload(upload: ScriptUploadInput): Response | null {
+  if (!upload.content.trim()) {
+    return json({ error: 'missing_file', message: 'No script file or content was provided' }, { status: 400 });
+  }
+
+  const ext = getFileExtension(upload.fileName);
+  if (ext && !POWERSHELL_UPLOAD_EXTENSIONS.has(ext)) {
+    return json({
+      error: 'unsupported_file_type',
+      message: `Only PowerShell files (${Array.from(POWERSHELL_UPLOAD_EXTENSIONS).join(', ')}) are supported.`,
+    }, { status: 400 });
+  }
+
+  const sizeBytes = Buffer.byteLength(upload.content, 'utf8');
+  if (sizeBytes > HOSTED_SCRIPT_UPLOAD_MAX_BYTES) {
+    return json({
+      error: 'upload_too_large',
+      message: 'The script is too large for hosted upload. Maximum hosted upload size is 4MB.',
+      maxBytes: HOSTED_SCRIPT_UPLOAD_MAX_BYTES,
+      receivedBytes: sizeBytes,
+    }, { status: 413 });
+  }
+
+  return null;
+}
+
+function getFileExtension(fileName: string): string {
+  const match = String(fileName || '').toLowerCase().match(/(\.[^.]+)$/);
+  return match ? match[1] : '';
+}
+
+function parseUploadBoolean(value: unknown, fallback: boolean): boolean {
+  if (typeof value === 'boolean') return value;
+  if (typeof value === 'string') return value.toLowerCase() === 'true';
+  return fallback;
+}
+
+function normalizeUploadTags(value: unknown): string[] {
+  if (Array.isArray(value)) {
+    return value.filter((tag): tag is string => typeof tag === 'string');
+  }
+  if (typeof value === 'string') {
+    return safeJsonArray(value).filter((tag): tag is string => typeof tag === 'string');
+  }
+  return [];
 }
 
 async function withTimeout<T>(promise: Promise<T>, timeoutMs: number, message: string): Promise<T> {
@@ -3454,17 +3881,17 @@ function toFrontendDocumentationItem(row: any) {
   };
 }
 
-function exportAnalysisMarkdown(script: any, analysis: any): Response {
+function buildAnalysisReportLines(script: any, analysis: any): string[] {
   const lines = [
-    `# ${script.title} Analysis`,
+    `${script.title} Analysis`,
     '',
     `Generated: ${new Date().toISOString()}`,
     '',
-    '## Summary',
+    'Summary',
     '',
     analysis.purpose || 'No summary available.',
     '',
-    '## Scores',
+    'Scores',
     '',
     `- Quality: ${analysis.qualityScore ?? analysis.codeQualityScore ?? 'N/A'}/10`,
     `- Security: ${analysis.securityScore ?? 'N/A'}/10`,
@@ -3472,35 +3899,33 @@ function exportAnalysisMarkdown(script: any, analysis: any): Response {
     `- Criteria version: ${analysis.criteriaVersion || analysis.executionSummary?.criteria_version || ANALYSIS_CRITERIA_VERSION}`,
     `- Confidence: ${analysis.confidence ?? analysis.executionSummary?.confidence ?? 'N/A'}`,
     '',
-    '## Beginner Breakdown',
+    'Beginner Breakdown',
     '',
     analysis.beginnerExplanation || analysis.executionSummary?.beginner_explanation || 'No beginner breakdown available.',
     '',
-    '## Management Summary',
+    'Management Summary',
     '',
     analysis.managementSummary || analysis.executionSummary?.management_summary || 'No management summary available.',
     '',
-    '## What The Script Does',
+    'What The Script Does',
     '',
     ...((analysis.executionSummary?.key_actions || []).length
       ? analysis.executionSummary.key_actions.map((action: string) => `- ${action}`)
       : ['- No key actions were provided.']),
     '',
-    '## Analysis Criteria',
+    'Analysis Criteria',
     '',
-    '| Criterion | Weight | Score | Summary |',
-    '| --- | ---: | ---: | --- |',
     ...((analysis.analysisCriteria || analysis.executionSummary?.analysis_criteria || []).length
       ? (analysis.analysisCriteria || analysis.executionSummary?.analysis_criteria).map((criterion: any) =>
-          `| ${criterion.name || 'Criterion'} | ${criterion.weight ?? 'N/A'} | ${criterion.score ?? 'N/A'}/10 | ${criterion.summary || ''} |`
+          `- ${criterion.name || 'Criterion'} (${criterion.weight ?? 'N/A'}): ${criterion.score ?? 'N/A'}/10 - ${criterion.summary || ''}`
         )
-      : ['| No criteria were provided. | N/A | N/A | |']),
+      : ['- No criteria were provided.']),
     '',
-    '## Prioritized Findings',
+    'Prioritized Findings',
     '',
     ...((analysis.prioritizedFindings || analysis.executionSummary?.prioritized_findings || []).length
       ? (analysis.prioritizedFindings || analysis.executionSummary?.prioritized_findings).flatMap((finding: any) => [
-          `### ${finding.id || 'Finding'}: ${finding.title || 'Finding'}`,
+          `${finding.id || 'Finding'}: ${finding.title || 'Finding'}`,
           '',
           `- Severity: ${finding.severity || 'N/A'}`,
           `- Category: ${finding.category || 'N/A'}`,
@@ -3510,7 +3935,7 @@ function exportAnalysisMarkdown(script: any, analysis: any): Response {
           '',
         ])
       : ['- No prioritized findings were provided.', '']),
-    '## Remediation Plan',
+    'Remediation Plan',
     '',
     ...((analysis.remediationPlan || analysis.executionSummary?.remediation_plan || []).length
       ? (analysis.remediationPlan || analysis.executionSummary?.remediation_plan).map((item: any) =>
@@ -3518,41 +3943,41 @@ function exportAnalysisMarkdown(script: any, analysis: any): Response {
         )
       : ['- No remediation plan was provided.']),
     '',
-    '## Test Recommendations',
+    'Test Recommendations',
     '',
     ...((analysis.testRecommendations || analysis.executionSummary?.test_recommendations || []).length
       ? (analysis.testRecommendations || analysis.executionSummary?.test_recommendations).map((item: string) => `- ${item}`)
       : ['- No test recommendations were provided.']),
     '',
-    '## Suggestions',
+    'Suggestions',
     '',
     ...((analysis.suggestions || []).length
       ? analysis.suggestions.map((item: string) => `- ${item}`)
       : ['- No suggestions were provided.']),
     '',
-    '## Security Issues',
+    'Security Issues',
     '',
     ...((analysis.securityIssues || analysis.security_issues || []).length
       ? (analysis.securityIssues || analysis.security_issues).map((item: string) => `- ${item}`)
       : ['- No security issues were identified.']),
     '',
-    '## Best Practice Violations',
+    'Best Practice Violations',
     '',
     ...((analysis.bestPracticeViolations || analysis.best_practice_violations || []).length
       ? (analysis.bestPracticeViolations || analysis.best_practice_violations).map((item: string) => `- ${item}`)
       : ['- No best practice violations were identified.']),
     '',
-    '## Performance Insights',
+    'Performance Insights',
     '',
     ...((analysis.performanceInsights || analysis.performance_insights || []).length
       ? (analysis.performanceInsights || analysis.performance_insights).map((item: string) => `- ${item}`)
       : ['- No performance insights were identified.']),
     '',
-    '## Key Commands',
+    'Key Commands',
     '',
     ...((analysis.commandDetails || analysis.command_details || []).length
       ? (analysis.commandDetails || analysis.command_details).flatMap((command: any) => [
-          `### ${command.name || 'Command'}`,
+          `${command.name || 'Command'}`,
           '',
           command.description || command.purpose || 'No description provided.',
           '',
@@ -3565,13 +3990,95 @@ function exportAnalysisMarkdown(script: any, analysis: any): Response {
       : ['No key command breakdown was provided.', '']),
   ];
 
-  const fileName = `${String(script.title || 'script-analysis').replace(/[^a-z0-9-_]+/gi, '-').toLowerCase() || 'script-analysis'}.md`;
-  return new Response(lines.join('\n'), {
+  return lines;
+}
+
+function exportAnalysisPdf(script: any, analysis: any): Response {
+  const fileName = `${String(script.title || 'script-analysis').replace(/[^a-z0-9-_]+/gi, '-').toLowerCase() || 'script-analysis'}-analysis.pdf`;
+  const pdf = createTextPdf(buildAnalysisReportLines(script, analysis));
+
+  return new Response(pdf, {
     headers: {
-      'Content-Type': 'text/markdown; charset=utf-8',
+      'Content-Type': 'application/pdf',
       'Content-Disposition': `attachment; filename="${fileName}"`,
+      'Content-Length': String(pdf.byteLength),
     },
   });
+}
+
+function createTextPdf(lines: string[]): Uint8Array {
+  const pageWidth = 595;
+  const pageHeight = 842;
+  const margin = 50;
+  const fontSize = 10;
+  const leading = 14;
+  const maxChars = 92;
+  const maxLinesPerPage = Math.floor((pageHeight - margin * 2) / leading);
+  const wrappedLines = lines.flatMap(line => wrapPdfLine(line, maxChars));
+  const pages: string[][] = [];
+
+  for (let i = 0; i < wrappedLines.length; i += maxLinesPerPage) {
+    pages.push(wrappedLines.slice(i, i + maxLinesPerPage));
+  }
+  if (pages.length === 0) pages.push(['No report content was generated.']);
+
+  const objects: string[] = [];
+  objects.push('<< /Type /Catalog /Pages 2 0 R >>');
+
+  const pageObjectIds = pages.map((_, index) => 3 + index * 2);
+  objects.push(`<< /Type /Pages /Kids [${pageObjectIds.map(id => `${id} 0 R`).join(' ')}] /Count ${pages.length} >>`);
+
+  pages.forEach((pageLines, index) => {
+    const pageObjectId = pageObjectIds[index];
+    const contentObjectId = pageObjectId + 1;
+    const stream = buildPdfTextStream(pageLines, margin, pageHeight - margin, leading, fontSize);
+    objects.push(`<< /Type /Page /Parent 2 0 R /MediaBox [0 0 ${pageWidth} ${pageHeight}] /Resources << /Font << /F1 << /Type /Font /Subtype /Type1 /BaseFont /Helvetica >> >> >> /Contents ${contentObjectId} 0 R >>`);
+    objects.push(`<< /Length ${Buffer.byteLength(stream, 'latin1')} >>\nstream\n${stream}\nendstream`);
+  });
+
+  let body = '%PDF-1.4\n';
+  const offsets = [0];
+  objects.forEach((object, index) => {
+    offsets.push(Buffer.byteLength(body, 'latin1'));
+    body += `${index + 1} 0 obj\n${object}\nendobj\n`;
+  });
+
+  const xrefOffset = Buffer.byteLength(body, 'latin1');
+  body += `xref\n0 ${objects.length + 1}\n0000000000 65535 f \n`;
+  for (let i = 1; i < offsets.length; i += 1) {
+    body += `${String(offsets[i]).padStart(10, '0')} 00000 n \n`;
+  }
+  body += `trailer\n<< /Size ${objects.length + 1} /Root 1 0 R >>\nstartxref\n${xrefOffset}\n%%EOF\n`;
+
+  return new Uint8Array(Buffer.from(body, 'latin1'));
+}
+
+function buildPdfTextStream(lines: string[], x: number, y: number, leading: number, fontSize: number): string {
+  const textLines = lines.map((line, index) => {
+    const prefix = index === 0 ? `${x} ${y} Td` : `0 -${leading} Td`;
+    return `${prefix} (${escapePdfText(line)}) Tj`;
+  });
+  return `BT\n/F1 ${fontSize} Tf\n${textLines.join('\n')}\nET`;
+}
+
+function wrapPdfLine(line: string, maxChars: number): string[] {
+  const normalized = String(line ?? '').replace(/[^\x09\x0A\x0D\x20-\x7E]/g, '?');
+  if (!normalized) return [''];
+
+  const result: string[] = [];
+  let remaining = normalized;
+  while (remaining.length > maxChars) {
+    const breakAt = remaining.lastIndexOf(' ', maxChars);
+    const cutAt = breakAt > 20 ? breakAt : maxChars;
+    result.push(remaining.slice(0, cutAt));
+    remaining = remaining.slice(cutAt).trimStart();
+  }
+  result.push(remaining);
+  return result;
+}
+
+function escapePdfText(text: string): string {
+  return text.replace(/\\/g, '\\\\').replace(/\(/g, '\\(').replace(/\)/g, '\\)');
 }
 
 function parseJsonObject(text: string): Record<string, any> {

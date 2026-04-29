@@ -74,6 +74,16 @@ const SettingsLayout: React.FC<SettingsLayoutProps> = ({
       )
     },
     {
+      name: 'Docs & Training',
+      path: '/settings/docs',
+      icon: (
+        <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M12 6.75A5.25 5.25 0 006.75 1.5H4.5A1.5 1.5 0 003 3v15.75a1.5 1.5 0 001.5 1.5h2.25A5.25 5.25 0 0112 22.5m0-15.75a5.25 5.25 0 015.25-5.25h2.25A1.5 1.5 0 0121 3v15.75a1.5 1.5 0 01-1.5 1.5h-2.25A5.25 5.25 0 0012 22.5" />
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M12 6.75v15.75" />
+        </svg>
+      )
+    },
+    {
       name: 'API Settings',
       path: '/settings/api',
       icon: (
@@ -99,12 +109,12 @@ const SettingsLayout: React.FC<SettingsLayoutProps> = ({
   ];
 
   return (
-    <div className="p-6 max-w-7xl mx-auto">
+    <div className="mx-auto max-w-7xl p-0 sm:p-4 md:p-6">
       {/* Navigation links */}
-      <div className="mb-6 flex space-x-6">
+      <div className="mb-5 flex flex-wrap gap-3 text-sm sm:gap-6">
         <Link 
           to="/"
-          className="text-blue-600 dark:text-blue-400 hover:underline flex items-center space-x-1"
+          className="flex items-center gap-1 text-blue-600 hover:underline dark:text-blue-400"
         >
           <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" />
@@ -115,7 +125,7 @@ const SettingsLayout: React.FC<SettingsLayoutProps> = ({
         {location.pathname !== '/settings' && (
           <Link 
             to="/settings"
-            className="text-blue-600 dark:text-blue-400 hover:underline flex items-center space-x-1"
+            className="flex items-center gap-1 text-blue-600 hover:underline dark:text-blue-400"
           >
             <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 19l-7-7m0 0l7-7m-7 7h18" />
@@ -126,7 +136,7 @@ const SettingsLayout: React.FC<SettingsLayoutProps> = ({
       </div>
 
       {/* Page header */}
-      <div className="mb-8">
+      <div className="mb-6">
         <h1 className="text-2xl font-bold mb-2">{title}</h1>
         {description && (
           <p className="text-gray-500 dark:text-gray-400">
@@ -135,10 +145,10 @@ const SettingsLayout: React.FC<SettingsLayoutProps> = ({
         )}
       </div>
 
-      <div className="flex flex-col md:flex-row gap-8">
+      <div className="flex flex-col gap-5 md:flex-row md:gap-8">
         {/* Side navigation */}
         <div className="w-full md:w-64 flex-shrink-0">
-          <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-4 sticky top-6 border border-gray-200 dark:border-gray-700">
+          <div className="sticky top-16 rounded-lg border border-gray-200 bg-white p-3 shadow dark:border-gray-700 dark:bg-gray-800 md:top-6 md:p-4">
             <nav>
               <ul className="space-y-1">
                 {settingsNav.map(item => (
@@ -146,7 +156,7 @@ const SettingsLayout: React.FC<SettingsLayoutProps> = ({
                     <NavLink
                       to={item.path}
                       className={({ isActive }) => `
-                        flex items-center px-3 py-2 rounded-md transition-colors
+                        flex items-center px-3 py-2 rounded-md transition-colors text-sm sm:text-base
                         ${isActive 
                           ? 'bg-blue-50 text-blue-700 dark:bg-blue-900 dark:text-blue-200' 
                           : 'text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700'
@@ -164,8 +174,8 @@ const SettingsLayout: React.FC<SettingsLayoutProps> = ({
         </div>
 
         {/* Main content */}
-        <div className="flex-1">
-          <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-6 border border-gray-200 dark:border-gray-700">
+        <div className="min-w-0 flex-1">
+          <div className="rounded-lg border border-gray-200 bg-white p-3 shadow dark:border-gray-700 dark:bg-gray-800 sm:p-4 md:p-6">
             {children}
           </div>
         </div>

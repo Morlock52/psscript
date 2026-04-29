@@ -1,22 +1,24 @@
-# Lab 02: Vector Search and Similarity
+# Lab 02: Search And Similarity
 
 ## Goal
 
-Use vector search to locate scripts that are similar to a target script.
+Use keyword and similarity search to locate related scripts.
 
 ## Steps
 
-1. Open a script detail page.
-2. Trigger similarity search or use the search page.
-3. Compare the top three results.
-4. Record which script is most relevant and why.
+1. Open Scripts.
+2. Search for an exact cmdlet or script title.
+3. Search for a natural-language intent.
+4. Compare the top three results.
+5. Record which result is most relevant and why.
 
-## Expected results
+## Expected Results
 
-- Similar scripts are returned based on content
-- Results improve when tags and categories are applied
+- Exact matches appear for known cmdlets or titles.
+- Similarity results return scripts related by meaning.
+- Tags and categories help narrow the set.
 
 ## Troubleshooting
 
-- Confirm pgvector is installed in Postgres
-- Ensure embeddings have been generated for scripts
+- If results are empty, confirm the script exists and the authenticated API response is successful.
+- If similarity is poor, verify embeddings were generated and Supabase `pgvector` is enabled.

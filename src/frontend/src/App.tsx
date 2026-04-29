@@ -39,6 +39,7 @@ const ApiSettings = lazyWithRetry(() => import('./pages/Settings/ApiSettings'));
 const UserManagement = lazyWithRetry(() => import('./pages/Settings/UserManagement'));
 const CategoriesSettings = lazyWithRetry(() => import('./pages/Settings/CategoriesSettings'));
 const DataMaintenanceSettings = lazyWithRetry(() => import('./pages/Settings/DataMaintenanceSettings'));
+const DocumentationSettings = lazyWithRetry(() => import('./pages/Settings/DocumentationSettings'));
 
 // Create a client for React Query
 const queryClient = new QueryClient({
@@ -128,6 +129,9 @@ const App: React.FC = () => {
               <Route path="/chat" element={<ProtectedRoute><SimpleChatWithAI /></ProtectedRoute>} />
               <Route path="/chat/history" element={<ProtectedRoute><ChatHistory /></ProtectedRoute>} />
               <Route path="/ai/assistant" element={<ProtectedRoute><AgenticAIPage /></ProtectedRoute>} />
+              <Route path="/agentic" element={<Navigate to="/ai/assistant" replace />} />
+              <Route path="/agentic-ai" element={<Navigate to="/ai/assistant" replace />} />
+              <Route path="/ai/agentic" element={<Navigate to="/ai/assistant" replace />} />
               <Route path="/ai/agents" element={<ProtectedRoute><AgentOrchestrationPage /></ProtectedRoute>} />
 
               {/* Documentation */}
@@ -144,6 +148,7 @@ const App: React.FC = () => {
               <Route path="/settings/security" element={<ProtectedRoute><SecuritySettings /></ProtectedRoute>} />
               <Route path="/settings/notifications" element={<ProtectedRoute><NotificationSettings /></ProtectedRoute>} />
               <Route path="/settings/api" element={<ProtectedRoute><ApiSettings /></ProtectedRoute>} />
+              <Route path="/settings/docs" element={<ProtectedRoute><DocumentationSettings /></ProtectedRoute>} />
               <Route path="/settings/users" element={<ProtectedRoute requiredRole="admin"><UserManagement /></ProtectedRoute>} />
               <Route path="/settings/categories" element={<ProtectedRoute><CategoriesSettings /></ProtectedRoute>} />
               <Route path="/settings/data" element={<ProtectedRoute requiredRole="admin"><DataMaintenanceSettings /></ProtectedRoute>} />

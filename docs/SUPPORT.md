@@ -1,121 +1,157 @@
 # PSScript Support and Operations
 
-This guide defines how to get help, how issues are triaged, and what operational checks should be performed before escalation.
+Last updated: April 29, 2026.
 
-## Support entry points
+This guide reflects the active hosted app at `https://pstest.morloksmaze.com`.
 
-| Channel | Purpose | Best for |
+![Support escalation ladder](./graphics/support-escalation-ladder-2026-04-29.svg)
+
+## Before Opening An Issue
+
+- Reproduce the issue and write exact steps.
+- Capture the expected behavior and actual behavior.
+- Include screenshots for UI problems.
+- Include the production URL or preview deploy URL.
+- Include Netlify Function logs and Supabase logs for the failure window when the issue involves data, auth, or API behavior.
+- Confirm whether the record is disposable test data or production data before attempting delete, bulk delete, restore, or cleanup actions.
+
+## Operational Checks
+
+| Area | Check |
+| --- | --- |
+| Production app | Open `https://pstest.morloksmaze.com` |
+| Hosted API | `curl -fsS https://pstest.morloksmaze.com/api/health` |
+| Auth | Sign in through Supabase Auth and confirm enabled profile access |
+| Database | Confirm Supabase connection from the health payload and Supabase dashboard logs |
+| Deploy | Review the latest Netlify production deploy and Function logs |
+| Mobile | Check dashboard, navigation drawer, scripts, and settings at phone width |
+| Upload | Confirm file size is below the hosted 4 MB limit |
+| Export | Confirm analysis export returns a PDF content type |
+
+Local Express and FastAPI services can still be used by developers, but they are not the production support path.
+
+## Common Escalations
+
+| Symptom | First check | Evidence to attach |
 | --- | --- | --- |
-| GitHub Issues | Bug reports and feature requests | Product issues and reproducible defects |
-| Docs and Training | Self-service guides | Onboarding, workflows, and troubleshooting |
-| Logs and health checks | Operational diagnostics | Service availability and performance |
+| Login loop or pending approval | Supabase redirect allow-list and `app_profiles.is_enabled` | user email, callback URL, API response |
+| `/agentic` returns 404 | Netlify redirects and current deploy id | URL, deploy id, browser screenshot |
+| Analysis export downloads wrong type | `/api/scripts/:id/export-analysis` response headers | script id, headers, downloaded filename |
+| Script delete or bulk delete fails | enabled profile, ownership/admin role, route response | script ids, request id, route payload |
+| Data maintenance fails | admin role and Supabase backup record | backup id, route response, Netlify logs |
+| Mobile layout overlaps | viewport width and route | screenshot, device/browser |
 
-## Before you open an issue
+## Intake Template
 
-- Confirm the problem is reproducible
-- Capture steps, expected behavior, and actual behavior
-- Include logs from backend and AI service
-- Include screenshots if UI related
-
-## Issue triage checklist
-
-| Step | Owner | Outcome |
-| --- | --- | --- |
-| Reproduce | Reporter | Clear reproduction steps |
-| Classify | Maintainer | Bug, feature, or support |
-| Assign | Maintainer | Owner and priority set |
-| Verify fix | Maintainer | Regression or unit test added |
-
-## Operational checks
-
-### Health endpoints
-
-- Backend: http://localhost:4000/health
-- Backend API: http://localhost:4000/api/health
-- AI service: http://localhost:8000/health
-
-### Log locations
-
-- Backend logs: `src/backend/logs/`
-- AI service logs: `src/ai/logs/` (if configured)
-- Netlify deploy logs: Netlify project deploy log for `psscript`
-
-### Common recovery actions
-
-```bash
-# Restart all services
-./restart-all.sh
-
-# Restart backend only
-./restart-backend.sh
+```text
+Summary:
+Severity:
+Environment URL:
+Netlify deploy id:
+User email/role:
+Route:
+Timestamp and timezone:
+Expected behavior:
+Actual behavior:
+Steps to reproduce:
+Screenshots:
+API response/status:
+Netlify Function log window:
+Supabase Auth/database log window:
+Data involved:
+Cleanup or rollback needed:
 ```
 
-### Data Maintenance Escalation
+## Data Maintenance Escalation
 
-If maintenance actions fail:
+For Settings -> Data Maintenance issues, collect:
 
-1. Save the exact API request/response payload for:
-   - `POST /api/admin/db/backup`
-   - `POST /api/admin/db/restore`
-   - `POST /api/admin/db/clear-test-data`
-2. Capture backup directory state:
-    - run `ls -l $(echo $DB_BACKUP_DIR || echo /tmp/psscript-db-backups)`
-3. Collect recent server logs:
-    - `tail -n 200 src/backend/logs/backend.log`
-4. Open a support ticket with:
-    - environment (`netlify` / hosted API / local),
-    - user role used,
-    - endpoint payload,
-    - and backup filename involved.
-5. Include smoke-check output (`--smoke-only` / `--no-smoke`) or the `DB_STRESS_REPORT_FILE` artifact for endpoint-level diagnostics.
-6. If testing rollback behavior, include the `--restore-after-clear` mode output and note whether `restoredAfterClear.success` stayed true.
+1. Admin user email.
+2. Exact action: list backups, backup, restore, or clear test data.
+3. Route response payload.
+4. Netlify Function log lines for `/api/admin/db/*`.
+5. Supabase logs and backup row status.
+6. Confirmation text and `backupFirst` value for destructive actions.
 
-### Data Maintenance Stress Test Failures
+Do not run a production restore or cleanup as a diagnostic step without explicit approval.
 
-If the stress test script fails:
+## Upload, Export, And Delete Escalation
 
-1. Save the generated report:
-   - `export DB_STRESS_REPORT_FILE=/tmp/data-maintenance-stress.json`
-   - rerun `npm run stress:data-maintenance`
-   - or run `npm run verify:data-maintenance:e2e -- --base-url http://localhost:3001` for full startup + smoke+restore verification
-2. Attach API request log and the report file to the ticket.
-3. If failure occurred in GitHub Actions, include artifacts from `maintenance-smoke-logs`.
-4. If you see `Created backup was not listed by /api/admin/db/backups`, verify all maintenance requests hit the same backend instance and that `DB_BACKUP_DIR` is shared/persistent for that instance.
+For script lifecycle failures, collect:
 
-### Voice API Tests 1-8 Failures
+| Workflow | Evidence |
+| --- | --- |
+| Upload | file size, filename, route, response status, Function logs |
+| AI analysis | script id, criteria version, provider/fallback state, Function logs |
+| PDF export | script id, response headers, downloaded filename, screenshot |
+| Single delete | script id, title, owner, user role, response status |
+| Bulk delete | selected ids, confirmation, response payload, remaining records |
 
-If voice tests fail:
+Delete and cleanup diagnostics must use disposable test records unless the user explicitly approves work against production records.
 
-1. Run the local report command:
-   - `npm run test:voice:1-8:report`
-2. Attach both artifacts to the support ticket:
-   - `/tmp/voice-tests-1-8-latest.json`
-   - `docs/VOICE-TESTS-1-8-LATEST.md`
-3. Include the backend and AI service logs around the failure window:
-   - backend and AI service deploy/runtime logs for the same timestamp window
-4. If authentication checks fail unexpectedly, include:
-   - `AUTH_ENABLED`, `DISABLE_AUTH`, and route middleware config details.
-5. If invalid-key behavior fails (expected `401`), include:
-   - whether `x-openai-api-key` was provided,
-   - and whether the same text was used in previous synth requests.
-6. If telemetry checks fail, include output from:
-   - `GET /api/analytics/ai/summary` before and after one synth+recognize call.
+## Voice And AI Escalation
 
-## Severity guide
+Collect:
+
+- route or UI surface used
+- model/provider configured in Netlify env
+- Netlify Function logs
+- provider error payload, if present
+- whether deterministic fallback rendered a structured analysis
+
+## Severity Guide
 
 | Severity | Description | Example |
 | --- | --- | --- |
-| Sev 1 | Production down or data loss | Cannot log in, data missing |
-| Sev 2 | Critical workflow blocked | Upload or analysis failing |
-| Sev 3 | Degraded experience | Slow responses, partial UI |
-| Sev 4 | Cosmetic or enhancement | UI polish, copy changes |
+| Sev 1 | Production down or data-loss risk | Cannot log in; data missing after maintenance |
+| Sev 2 | Critical workflow blocked | Upload, analysis, export, or delete is failing |
+| Sev 3 | Degraded experience | Slow responses, partial UI, one route broken |
+| Sev 4 | Cosmetic or documentation issue | Copy, screenshot, or minor layout polish |
 
-## Security reporting
+## Training And Screenshot References
 
-If you believe you have found a security issue, do not open a public issue. Share details privately with the project owner.
+- [`training-suite/SCRIPT-LIFECYCLE-SUITE-2026-04-29.md`](./training-suite/SCRIPT-LIFECYCLE-SUITE-2026-04-29.md)
+- [`training-suite/SCREENSHOT-ATLAS.md`](./training-suite/SCREENSHOT-ATLAS.md)
+- [`training-suite/TRAINING-GUIDE.md`](./training-suite/TRAINING-GUIDE.md)
 
-## Reference docs
+## Developer-Only Appendix
 
-- `docs/GETTING-STARTED.md`
-- `docs/training-suite/README.md`
-- `docs/training-suite/TRAINING-GUIDE.md`
+The production support path is Netlify plus hosted Supabase. The older local Express/FastAPI services are still useful for developer diagnostics, but they are not the database or API path for hosted training.
+
+### Local Health Checks
+
+```text
+Backend: http://localhost:4000/health
+Backend API: http://localhost:4000/api/health
+AI service: http://localhost:8000/health
+```
+
+### Local Log And Recovery Notes
+
+```bash
+# Restart all local services
+./restart-all.sh
+
+# Restart local backend only
+./restart-backend.sh
+```
+
+Developer logs may exist under `src/backend/logs/` and `src/ai/logs/` depending on local configuration.
+
+### Historical Maintenance Stress Artifacts
+
+When debugging local maintenance scripts or CI-only diagnostics, keep generated reports attached to the issue:
+
+- `DB_STRESS_REPORT_FILE`
+- `/tmp/data-maintenance-stress.json`
+- `/tmp/voice-tests-1-8-latest.json`
+- `docs/VOICE-TESTS-1-8-LATEST.md`
+
+These artifacts do not replace hosted Netlify Function logs or Supabase logs for production incidents.
+
+## References
+
+- [`GETTING-STARTED.md`](./GETTING-STARTED.md)
+- [`NETLIFY-SUPABASE-DEPLOYMENT.md`](./NETLIFY-SUPABASE-DEPLOYMENT.md)
+- [`DATA-MAINTENANCE.md`](./DATA-MAINTENANCE.md)
+- [`training-suite/README.md`](./training-suite/README.md)

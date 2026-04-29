@@ -54,7 +54,7 @@ Sensitive values were not printed. Relevant keys are present locally:
 - `SUPABASE_ANON_KEY`
 - `SUPABASE_SERVICE_ROLE_KEY`
 - `VITE_SUPABASE_URL` / `VITE_SUPABASE_ANON_KEY` in examples
-- `POSTGRES_*` local Docker variables
+- legacy `POSTGRES_*` local Docker variables, which are no longer part of the active production path
 - `JWT_SECRET`
 - `OPENAI_API_KEY`, `ANTHROPIC_API_KEY`
 
@@ -378,7 +378,7 @@ Evidence: `analytics_events` does not exist.
 
 Risk: Script/search behavior cannot be measured beyond AI provider costs.
 
-Fix: Implement `analytics_events` as described in `docs/ANALYTICS-CAPTURE-PLAN-2026-04-27.md`.
+Fix: Implement `analytics_events` using the hosted Netlify + Supabase pattern described in current architecture docs. The older analytics capture plan is archived for history.
 
 ### P3: Public read policies need explicit product decision
 

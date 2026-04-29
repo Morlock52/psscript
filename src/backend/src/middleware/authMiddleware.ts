@@ -104,17 +104,13 @@ export const authenticateJWT = async (req: Request, res: Response, next: NextFun
     userAgent
   });
 
-  // Get token from Authorization header or query parameter (for SSE)
+  // Get token from Authorization header.
   let token: string | undefined;
   const authHeader = req.headers.authorization;
 
   if (authHeader) {
     // Extract token from Authorization header (remove "Bearer " prefix)
     token = authHeader.split(' ')[1];
-  } else if (req.query.token) {
-    // For SSE which doesn't support custom headers, get token from query param
-    token = req.query.token as string;
-    logger.debug('Using token from query parameter for SSE', { requestId });
   }
 
   if (!token) {

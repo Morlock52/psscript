@@ -156,7 +156,7 @@ const scriptService = {
         ? isLargeFile
           ? "/scripts/upload/large"
           : "/scripts/upload"
-        : "/scripts";
+        : "/scripts/upload";
 
       const uploadConfig: AxiosRequestConfig = {
         ...config,
@@ -164,8 +164,8 @@ const scriptService = {
         timeout: isLargeFile ? 180000 : 120000, // 3 minutes for large files, 2 minutes for regular
         withCredentials: false,
         // Set max content length (same as server settings)
-        maxContentLength: isLargeFile ? 20 * 1024 * 1024 : 10 * 1024 * 1024, // 20MB or 10MB
-        maxBodyLength: isLargeFile ? 20 * 1024 * 1024 : 10 * 1024 * 1024, // 20MB or 10MB
+        maxContentLength: isLargeFile ? 6 * 1024 * 1024 : 5 * 1024 * 1024,
+        maxBodyLength: isLargeFile ? 6 * 1024 * 1024 : 5 * 1024 * 1024,
         headers: {
           ...config.headers,
           ...(authToken ? { Authorization: `Bearer ${authToken}` } : {})
@@ -226,7 +226,7 @@ const scriptService = {
         }
         
         if (status === 413) {
-          throw new Error('The file is too large. Maximum file size is 10MB.');
+          throw new Error(responseData?.message || 'The script is too large. Maximum hosted upload size is 4MB.');
         }
         
         if (status === 429) {

@@ -1,35 +1,41 @@
-# Module 04: Search and Discovery
+# Module 04: Search And Discovery
+
+Last updated: April 29, 2026.
 
 ## Objectives
 
-- Use keyword search and filters
-- Use vector search for similarity
-- Compare results and refine queries
+- Use script search and filters.
+- Understand embedding-backed similarity.
+- Compare exact keyword results with meaning-based results.
 
 ## Walkthrough
 
-1. Navigate to Search or Scripts.
-2. Run a keyword search for a common cmdlet (example: Get-ADUser).
-3. Apply filters for category or tag.
-4. Use semantic search to find similar scripts.
+1. Open Scripts.
+2. Search for a cmdlet or title.
+3. Apply category or tag filters.
+4. Search by natural language, such as `active directory onboarding`.
+5. Compare exact and similar results.
 
-## Search modes
+## Search Modes
 
 ![Search Modes](../../graphics/search-modes.svg)
 
-## Screenshots
+## Screenshot
 
-![Script Library](../../screenshots/scripts.png)
+![Scripts](../../screenshots/readme/scripts.png)
 
-## Query patterns
+![Documentation](../../screenshots/readme/documentation.png)
+
+## Query Patterns
 
 | Query | Mode | Expected outcome |
 | --- | --- | --- |
-| Get-ADUser | Keyword | Exact cmdlet matches |
-| onboarding workflow | Vector | Semantically similar scripts |
-| reset password | Hybrid | Mixed exact + semantic ranking |
+| `Get-ADUser` | keyword | exact cmdlet matches |
+| `onboarding workflow` | vector/similarity | semantically related scripts |
+| `reset password` | hybrid | exact and similar scripts |
 
-## Verification checklist
+## Verification Checklist
 
-- You can filter by category or tag
-- Similar scripts surface when vector search is enabled
+- Search results update without a full app reload.
+- Filters narrow results.
+- Similar scripts make sense for the query intent.

@@ -1,4 +1,4 @@
-# Lab 04: Analytics and Governance
+# Lab 04: Analytics And Governance
 
 ## Goal
 
@@ -6,16 +6,20 @@ Review analytics and define a governance checklist for script changes.
 
 ## Steps
 
-1. Open Analytics and review usage metrics.
-2. Identify the highest activity area (scripts, analysis, or chat).
-3. Draft a governance checklist for script approvals.
+1. Open Analytics.
+2. Review usage metrics, AI activity, and recent changes.
+3. Check `https://pstest.morloksmaze.com/api/health`.
+4. Draft a release governance checklist.
+5. As an admin, open Settings -> Data Maintenance and confirm backup-first controls.
 
-## Expected results
+## Expected Results
 
-- Analytics dashboard renders without errors
-- A checklist includes review, analysis, and audit steps
+- Analytics dashboard renders without errors.
+- Governance checklist includes review, analysis, export evidence, and audit steps.
+- Data maintenance is admin-only.
 
 ## Troubleshooting
 
-- If analytics fail to load, confirm the analytics service is reachable
-- Check logs for API errors
+- If analytics fail, check Netlify Function logs.
+- If health is degraded, inspect the reason and Supabase connectivity.
+- If data maintenance is visible to a non-admin, treat it as a security issue.

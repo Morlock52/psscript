@@ -1,31 +1,26 @@
 # PSScript Getting Started
 
-_Last updated: April 27, 2026_
+Last updated: April 28, 2026.
 
-Use [Setup Guide With Screenshots](./SETUP-WITH-SCREENSHOTS.md) for the full component-by-component setup. This page is the short path.
+Use this as the short path. Use [Setup Guide With Screenshots](./SETUP-WITH-SCREENSHOTS.md) for the longer walkthrough.
 
 ## Current Posture
 
-- Production path: Netlify frontend + Netlify Functions + hosted Supabase.
-- Local development path: Vite frontend, Express backend, FastAPI AI service, hosted Supabase `DATABASE_URL`.
-- Docker is retired from active setup and preserved only under `retired/docker/`.
-- Google OAuth users are disabled by default until an admin enables them in Settings -> User Management.
-
-## Local URLs
-
-| Component | URL |
-| --- | --- |
-| Frontend | `https://127.0.0.1:3090` |
-| Backend API | `https://127.0.0.1:4000` |
-| AI service | `http://127.0.0.1:8000` |
+- Production: `https://pstest.morloksmaze.com`
+- Hosting: Netlify static site plus Netlify Functions.
+- Database: hosted Supabase Postgres only.
+- Auth: Supabase Auth plus admin approval in `app_profiles`.
+- Local development: frontend can run locally, but database state should still point to hosted Supabase.
+- Docker and local Postgres are retired from the active path and preserved only as history.
 
 ## Prerequisites
 
 - Node.js 20+
-- Python 3.10+
-- hosted Supabase project with migrations applied
+- Python 3.10+ only if you are working on local AI service code
+- Netlify CLI for deploy work
+- hosted Supabase project with all migrations applied
 - Supabase pooler `DATABASE_URL`
-- OpenAI and/or Anthropic API keys
+- OpenAI and/or Anthropic keys for AI-backed analysis and chat
 
 ## Install
 
@@ -38,7 +33,7 @@ python3 -m pip install -r src/ai/requirements.txt
 
 ## Configure
 
-Create `.env` at the repo root:
+Create `.env` at the repo root for local development and mirror production secrets in Netlify environment variables.
 
 ```bash
 DATABASE_URL=postgresql://...supabase-pooler-url...
@@ -49,6 +44,8 @@ SUPABASE_URL=https://your-project.supabase.co
 SUPABASE_ANON_KEY=...
 SUPABASE_SERVICE_ROLE_KEY=...
 DEFAULT_ADMIN_EMAIL=admin@example.com
+DEFAULT_ADMIN_PASSWORD=...
+DEFAULT_ADMIN_BOOTSTRAP_TOKEN=...
 OPENAI_API_KEY=...
 ANTHROPIC_API_KEY=...
 VITE_SUPABASE_URL=https://your-project.supabase.co
@@ -56,62 +53,51 @@ VITE_SUPABASE_ANON_KEY=...
 VITE_HOSTED_STATIC_ANALYSIS_ONLY=true
 ```
 
-Apply Supabase migrations in filename order from `supabase/migrations/`.
+Never expose `SUPABASE_SERVICE_ROLE_KEY`, `DATABASE_URL`, or provider keys as `VITE_*` values.
 
-## Run
+## Run The Frontend Locally
 
-Recommended validation startup:
-
-```bash
-npx playwright test tests/e2e/project-review-validation.spec.ts --project=chromium
-```
-
-Manual startup:
+For UI work with mock data and no hosted mutations:
 
 ```bash
-# terminal 1
-cd src/ai
-python3 -m uvicorn main:app --host 0.0.0.0 --port 8000
-```
-
-```bash
-# terminal 2
-cd src/backend
-npm run dev
-```
-
-```bash
-# terminal 3
 cd src/frontend
-npm run dev -- --host 0.0.0.0 --port 3090
+VITE_DISABLE_AUTH=true VITE_USE_MOCKS=true npm run dev -- --host 127.0.0.1 --port 5173
+```
+
+For hosted-auth testing, use real Supabase browser keys and keep auth enabled:
+
+```bash
+cd src/frontend
+VITE_DISABLE_AUTH=false \
+VITE_SUPABASE_URL=https://your-project.supabase.co \
+VITE_SUPABASE_ANON_KEY=... \
+npm run dev -- --host 127.0.0.1 --port 5173
+```
+
+## Deploy
+
+```bash
+npm run build:netlify
+netlify deploy --prod
 ```
 
 ## Validate
 
 ```bash
-cd src/backend
-npm run build
-npm test -- --runInBand --forceExit
-```
-
-```bash
 cd src/frontend
+npm test -- --run --maxWorkers=1
 npm run build
 ```
 
 ```bash
-cd /Users/morlock/fun/02_PowerShell_Projects/psscript
-npx playwright test --project=chromium
+curl -fsS https://pstest.morloksmaze.com/api/health
 ```
 
-## Screenshots And Setup Details
+## Current Screenshots
 
-See [Setup Guide With Screenshots](./SETUP-WITH-SCREENSHOTS.md) for:
+Fresh screenshots are stored in:
 
-- Supabase setup
-- Google OAuth approval gate
-- Netlify setup
-- AI model defaults
-- documentation AI scanning
-- PDF report export
-- screenshots for login, pending approval, scripts, analysis, documentation, settings, and data maintenance
+- `docs/screenshots/current-2026-04-28/`
+- `docs/screenshots/readme/`
+
+They cover production login, desktop dashboard/scripts/upload/settings, agentic alias behavior, and mobile dashboard/navigation/scripts.

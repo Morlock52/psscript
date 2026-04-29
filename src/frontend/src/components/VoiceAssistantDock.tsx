@@ -330,10 +330,10 @@ const VoiceAssistantDock: React.FC = () => {
   };
 
   return (
-    <div className="fixed bottom-4 right-4 z-50">
+    <div className="fixed bottom-3 right-3 z-50 sm:bottom-4 sm:right-4">
       <div className="flex flex-col items-end gap-3">
         {isOpen && (
-          <div className="w-[22rem] rounded-3xl border border-[var(--surface-overlay)] bg-[var(--surface-raised)]/95 p-4 shadow-[var(--shadow-far)] backdrop-blur-xl">
+          <div className="max-h-[calc(100dvh-6rem)] w-[calc(100vw-1.5rem)] max-w-[22rem] overflow-y-auto rounded-3xl border border-[var(--surface-overlay)] bg-[var(--surface-raised)]/95 p-4 shadow-[var(--shadow-far)] backdrop-blur-xl">
             <div className="mb-3 flex items-start justify-between gap-3">
               <div>
                 <p className="text-[0.65rem] font-bold uppercase tracking-[0.2em] text-[var(--ink-tertiary)]">OpenAI Audio</p>
@@ -357,7 +357,7 @@ const VoiceAssistantDock: React.FC = () => {
               </div>
             )}
 
-            <div className="grid grid-cols-2 gap-2">
+            <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
               <button
                 type="button"
                 onClick={isRecording ? stopDictation : startDictation}
@@ -380,7 +380,7 @@ const VoiceAssistantDock: React.FC = () => {
               </button>
             </div>
 
-            <div className="mt-3 grid grid-cols-2 gap-3">
+            <div className="mt-3 grid grid-cols-1 gap-3 sm:grid-cols-2">
               <label className="text-xs text-slate-600 dark:text-slate-400">
                 Voice
                 <select
@@ -439,7 +439,7 @@ const VoiceAssistantDock: React.FC = () => {
         <button
           type="button"
           onClick={() => setIsOpen((current) => !current)}
-          className="rounded-full border border-[var(--ink-muted)] bg-[var(--surface-raised)]/95 px-5 py-3 text-sm font-black text-[var(--ink-primary)] shadow-[var(--shadow-near)] hover:bg-[var(--surface-overlay)]"
+          className="rounded-full border border-[var(--ink-muted)] bg-[var(--surface-raised)]/95 px-4 py-3 text-sm font-black text-[var(--ink-primary)] shadow-[var(--shadow-near)] hover:bg-[var(--surface-overlay)] sm:px-5"
         >
           {isOpen ? 'Hide voice' : 'Voice'}
         </button>

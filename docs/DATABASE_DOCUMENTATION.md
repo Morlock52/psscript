@@ -102,15 +102,8 @@ DB_PROFILE=supabase
 DB_SSL=true               # Required for hosted Supabase connections
 DB_SSL_CA_PATH=           # Path to SSL CA certificate
 
-# Local fallback when DATABASE_URL is intentionally not used
-DB_HOST=localhost
-DB_PORT=5432
-DB_NAME=psscript
-DB_USER=postgres
-DB_PASSWORD=postgres
-
-# Redis
-REDIS_URL=redis://...
+# No active local database fallback is documented for production.
+# Local development should still use a hosted Supabase DATABASE_URL.
 ```
 
 ### Connection Pool Settings
@@ -652,11 +645,8 @@ export DB_SSL=true
 ### Verify Connection
 
 ```bash
-# PostgreSQL
-psql -h localhost -p 5432 -U postgres -d psscript -c "SELECT 1"
-
-# Redis
-redis-cli -h localhost -p 6379 ping
+# Supabase pooler/Postgres URL
+psql "$DATABASE_URL" -c "SELECT 1"
 ```
 
 ### Common Queries

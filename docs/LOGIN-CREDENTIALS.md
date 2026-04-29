@@ -2,7 +2,7 @@
 
 ## Current status
 
-This document reflects the current local-development auth mode.
+This document reflects the current hosted-auth posture and the local mock UI mode used for screenshots.
 
 ## Local development default
 
@@ -35,10 +35,11 @@ Do not treat older references to these values as current credentials:
 
 Those values appear only in historical reports, legacy tests, or environment-specific seed paths.
 
-## Canonical local URLs
+## Canonical URLs
 
-- frontend: `https://127.0.0.1:3090`
-- backend: `https://127.0.0.1:4000`
+- production app: `https://pstest.morloksmaze.com`
+- production API health: `https://pstest.morloksmaze.com/api/health`
+- local mock UI: `http://127.0.0.1:5173` when started with `VITE_DISABLE_AUTH=true VITE_USE_MOCKS=true`
 
 ## Canonical auth docs
 

@@ -126,6 +126,29 @@ describe('hosted AI client routing', () => {
     expect(langgraphService).toContain('fallbackError?.message');
   });
 
+  it('keeps analysis streaming bearer tokens out of URLs', () => {
+    const langgraphService = readWorkspaceFile('src/frontend/src/services/langgraphService.ts');
+
+    expect(langgraphService).toContain("fetch(url, {");
+    expect(langgraphService).toContain('Authorization: `Bearer ${token}`');
+    expect(langgraphService).toContain("credentials: 'include'");
+    expect(langgraphService).not.toContain('new EventSource');
+    expect(langgraphService).not.toContain("params.append('auth_token'");
+    expect(langgraphService).not.toContain('params.append("auth_token"');
+    expect(langgraphService).not.toContain('auth_token=');
+  });
+
+  it('keeps stylesheet imports before Tailwind directives', () => {
+    const indexCss = readWorkspaceFile('src/frontend/src/index.css');
+    const importIndex = indexCss.indexOf("@import './styles/tokens.css';");
+    const motionImportIndex = indexCss.indexOf("@import './styles/motion.css';");
+    const tailwindBaseIndex = indexCss.indexOf('@tailwind base;');
+
+    expect(importIndex).toBeGreaterThanOrEqual(0);
+    expect(motionImportIndex).toBeGreaterThan(importIndex);
+    expect(tailwindBaseIndex).toBeGreaterThan(motionImportIndex);
+  });
+
   it('surfaces script version history and honest data protection status', () => {
     const netlifyApi = readWorkspaceFile('netlify/functions/api.ts');
     const scriptDetail = readWorkspaceFile('src/frontend/src/pages/ScriptDetail.tsx');
@@ -151,5 +174,30 @@ describe('hosted AI client routing', () => {
     expect(pleaseAgent).toContain('isScriptGenerationPrompt');
     expect(aiAgent).toContain('Please sign in again');
     expect(aiAgent).toContain("serviceError.code = 'RATE_LIMIT'");
+  });
+
+  it('keeps hosted upload and delete contracts aligned with Netlify and Supabase constraints', () => {
+    const uploadPage = readWorkspaceFile('src/frontend/src/pages/ScriptUpload.tsx');
+    const apiService = readWorkspaceFile('src/frontend/src/services/api.ts');
+    const manageFiles = readWorkspaceFile('src/frontend/src/pages/ManageFiles.tsx');
+    const netlifyApi = readWorkspaceFile('netlify/functions/api.ts');
+
+    expect(uploadPage).toContain('prepareUploadPayload');
+    expect(uploadPage).not.toContain('formData.append');
+    expect(uploadPage).toContain('MAX_HOSTED_UPLOAD_MB = 4');
+
+    expect(apiService).toContain(': "/scripts/upload";');
+    expect(apiService).toContain('Maximum hosted upload size is 4MB');
+
+    expect(netlifyApi).toContain('HOSTED_SCRIPT_UPLOAD_MAX_BYTES = 4 * 1024 * 1024');
+    expect(netlifyApi).toContain('parseScriptUploadRequest');
+    expect(netlifyApi).toContain('upload_too_large');
+    expect(netlifyApi).toContain('script_not_found_or_not_deletable');
+    expect(netlifyApi).toContain('deletedIds');
+    expect(netlifyApi).toContain('notDeletedIds');
+
+    expect(manageFiles).toContain('canDeleteScript');
+    expect(manageFiles).toContain('Only the owner or an admin can delete this script');
+    expect(manageFiles).not.toContain('Remove from UI immediately');
   });
 });

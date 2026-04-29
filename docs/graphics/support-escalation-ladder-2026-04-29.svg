@@ -1,0 +1,23 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1280" height="720" viewBox="0 0 1280 720" role="img" aria-labelledby="title desc">
+  <title id="title">PSScript support escalation ladder</title>
+  <desc id="desc">A severity ladder for support cases from cosmetic documentation issues to production data-loss risk.</desc>
+  <rect width="1280" height="720" fill="#0E1525"/>
+  <text x="96" y="102" font-family="Inter, Segoe UI, Arial, sans-serif" font-size="38" font-weight="800" fill="#F8FAFC">Support Escalation Ladder</text>
+  <text x="96" y="138" font-family="Inter, Segoe UI, Arial, sans-serif" font-size="18" fill="#CBD5E1">Attach route, screenshot, deploy id, Netlify Function logs, Supabase log window, expected result, and actual result.</text>
+  <g font-family="Inter, Segoe UI, Arial, sans-serif">
+    <rect x="120" y="518" width="1040" height="92" rx="14" fill="#334155"/>
+    <text x="158" y="554" font-size="24" font-weight="800" fill="#FFFFFF">Sev 4 - Documentation or cosmetic issue</text>
+    <text x="158" y="584" font-size="16" fill="#E2E8F0">Copy, screenshot, minor layout polish, support article mismatch</text>
+    <rect x="190" y="404" width="970" height="92" rx="14" fill="#1D4ED8"/>
+    <text x="228" y="440" font-size="24" font-weight="800" fill="#FFFFFF">Sev 3 - Degraded workflow</text>
+    <text x="228" y="470" font-size="16" fill="#DBEAFE">Slow response, one route broken, assistant degraded, mobile issue without data risk</text>
+    <rect x="260" y="290" width="900" height="92" rx="14" fill="#B45309"/>
+    <text x="298" y="326" font-size="24" font-weight="800" fill="#FFFFFF">Sev 2 - Critical workflow blocked</text>
+    <text x="298" y="356" font-size="16" fill="#FEF3C7">Upload, analysis, PDF export, delete, backup, or approval workflow fails</text>
+    <rect x="330" y="176" width="830" height="92" rx="14" fill="#BE123C"/>
+    <text x="368" y="212" font-size="24" font-weight="800" fill="#FFFFFF">Sev 1 - Production outage or data-loss risk</text>
+    <text x="368" y="242" font-size="16" fill="#FFE4E6">Cannot log in, data missing, destructive maintenance risk, broad API outage</text>
+  </g>
+  <path d="M104 610 L104 188 L148 188" fill="none" stroke="#5EEAD4" stroke-width="8" stroke-linecap="round"/>
+  <path d="M148 188 L129 173 M148 188 L129 203" fill="none" stroke="#5EEAD4" stroke-width="8" stroke-linecap="round"/>
+</svg>

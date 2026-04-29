@@ -1,58 +1,47 @@
-# Module 03: AI Analysis and Security
+# Module 03: AI Analysis And Security
 
 ## Objectives
 
-- Run an AI analysis on a script
-- Interpret security and quality scores
-- Track recommended improvements
+- Read the current AI analysis criteria payload.
+- Interpret security and quality scores.
+- Track remediation actions.
+- Export analysis as a PDF.
 
 ## Walkthrough
 
 1. Open a script detail page.
-2. Trigger analysis or open the analysis tab.
-3. Review security findings and recommendations.
-4. Capture a remediation note for the top issue.
+2. Run or view AI analysis.
+3. Review security score, quality score, criteria version, confidence, findings, remediation, and test recommendations.
+4. Export the analysis report.
+5. Confirm the downloaded report is a PDF, not JSON.
 
-## Scorecard snapshot
+## Scorecard Snapshot
 
 ![Security Scorecard](../../graphics/security-scorecard.svg)
 
 ## Screenshots
 
-![Script Analysis](../../screenshots/analysis.png)
+![Analysis](../../screenshots/readme/analysis.png)
 
-## Score interpretation
+## Score Interpretation
 
 | Band | Meaning | Action |
 | --- | --- | --- |
 | 9.0 - 10 | Low risk | Approve and monitor |
-| 7.0 - 8.9 | Moderate risk | Plan fixes and re-run analysis |
-| < 7.0 | High risk | Remediate before execution |
+| 7.0 - 8.9 | Moderate risk | Plan fixes and rerun analysis |
+| below 7.0 | High risk | Remediate before execution |
 
-## Sample analysis output
+## What To Look For
 
-```json
-{
-  "security_score": 7.8,
-  "quality_score": 8.3,
-  "issues": [
-    "Hardcoded credential found on line 42",
-    "Missing input validation for parameters"
-  ],
-  "recommendations": [
-    "Use Get-Credential or SecretStore",
-    "Add ValidateSet or ValidatePattern"
-  ]
-}
-```
+- hardcoded credentials or tokens
+- unsafe destructive commands
+- missing parameter validation
+- missing error handling and logging
+- unclear operational ownership
 
-## What to look for
+## Verification Checklist
 
-- Hardcoded credentials or unsafe commands
-- Missing parameter validation
-- Error handling and logging gaps
-
-## Verification checklist
-
-- Analysis results display successfully
-- At least one recommendation is recorded for follow up
+- Analysis results display successfully.
+- Criteria version and confidence are visible.
+- Findings have priorities.
+- PDF export downloads and opens as a PDF.

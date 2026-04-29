@@ -1,22 +1,25 @@
-# Lab 03: Documentation and AI Chat
+# Lab 03: Documentation And Assistant
 
 ## Goal
 
-Use the documentation explorer and AI chat to answer a script question.
+Use documentation and the assistant to answer a script safety question.
 
 ## Steps
 
 1. Open Documentation and search for a PowerShell cmdlet.
-2. Copy a relevant example into your notes.
-3. Open AI Chat and ask for a safe usage pattern.
-4. Compare the response to the documentation.
+2. Capture the relevant documentation note.
+3. Open the assistant.
+4. Ask for a safe usage or remediation pattern.
+5. Open `/agentic` and confirm it routes to the assistant instead of a 404.
 
-## Expected results
+## Expected Results
 
-- Documentation results show relevant cmdlets
-- Chat response includes safety guidance or best practices
+- Documentation results are relevant.
+- Assistant response includes safety guidance or best practices.
+- Agentic alias routes land on the assistant experience.
 
 ## Troubleshooting
 
-- If search results are empty, check the documentation crawler status
-- If chat responses fail, verify AI service or mock mode
+- If documentation fails, check the API response and Netlify Function logs.
+- If assistant responses fail, check provider env vars and Function logs.
+- If `/agentic` 404s, verify the latest Netlify deploy and redirects.

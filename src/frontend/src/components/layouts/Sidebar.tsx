@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { NavLink } from 'react-router-dom';
 import { clsx } from 'clsx';
+import { FaTimes } from 'react-icons/fa';
 
 interface NavItem {
   to: string;
@@ -20,24 +21,42 @@ const NAV: NavItem[] = [
   { to: '/settings',      label: 'Settings' },
 ];
 
-export const Sidebar = () => {
+interface SidebarProps {
+  mobile?: boolean;
+  onClose?: () => void;
+}
+
+export const Sidebar = ({ mobile = false, onClose }: SidebarProps) => {
   const [collapsed, setCollapsed] = useState(false);
   return (
     <nav
       className={clsx(
-        'relative shrink-0 border-r border-surface-overlay/40 bg-surface-base/60 backdrop-blur-sm transition-[width] duration-200',
-        collapsed ? 'w-[64px]' : 'w-[240px]',
+        'relative shrink-0 border-r border-surface-overlay/40 bg-surface-base/90 backdrop-blur-sm',
+        mobile
+          ? 'h-full w-[min(82vw,20rem)] shadow-[var(--shadow-far)]'
+          : clsx('hidden md:block transition-[width] duration-200', collapsed ? 'w-[64px]' : 'w-[240px]'),
       )}
       aria-label="Primary navigation"
     >
-      <div className="h-14 flex items-center px-4 border-b border-surface-overlay/40">
-        <span className="font-display text-ink-primary text-lg">PSScript</span>
+      <div className="h-14 flex items-center justify-between px-4 border-b border-surface-overlay/40">
+        <span className="font-display text-ink-primary text-lg">{collapsed && !mobile ? 'PS' : 'PSScript'}</span>
+        {mobile && (
+          <button
+            type="button"
+            onClick={onClose}
+            className="inline-flex h-9 w-9 items-center justify-center rounded-md border border-surface-overlay/60 text-ink-tertiary hover:text-ink-primary"
+            aria-label="Close navigation"
+          >
+            <FaTimes aria-hidden="true" />
+          </button>
+        )}
       </div>
       <ul className="py-3">
         {NAV.map((n) => (
           <li key={n.to}>
             <NavLink
               to={n.to}
+              onClick={onClose}
               className={({ isActive }) =>
                 clsx(
                   'relative flex items-center h-10 px-4 text-sm text-ink-secondary hover:text-ink-primary',
@@ -45,19 +64,21 @@ export const Sidebar = () => {
                 )
               }
             >
-              {!collapsed ? n.label : n.label[0]}
+              {!collapsed || mobile ? n.label : n.label[0]}
             </NavLink>
           </li>
         ))}
       </ul>
-      <button
-        type="button"
-        onClick={() => setCollapsed((v) => !v)}
-        className="absolute bottom-4 left-4 text-xs text-ink-tertiary hover:text-ink-primary"
-        aria-pressed={collapsed}
-      >
-        {collapsed ? '›' : '‹ collapse'}
-      </button>
+      {!mobile && (
+        <button
+          type="button"
+          onClick={() => setCollapsed((v) => !v)}
+          className="absolute bottom-4 left-4 text-xs text-ink-tertiary hover:text-ink-primary"
+          aria-pressed={collapsed}
+        >
+          {collapsed ? '›' : '‹ collapse'}
+        </button>
+      )}
     </nav>
   );
 };

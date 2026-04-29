@@ -59,7 +59,12 @@ async function captureLogin(page) {
     );
   }
 
-  await waitForHeading(page, /login/i);
+  const loginHeading = page.getByRole('heading', { name: /login/i }).first();
+  if (await loginHeading.count()) {
+    await loginHeading.waitFor({ state: 'visible', timeout: 15000 });
+  } else {
+    await page.getByText(/Sign in to PSScript/i).first().waitFor({ state: 'visible', timeout: 15000 });
+  }
   await page.screenshot({
     path: path.join(SCREENSHOTS_DIR, 'login.png'),
     fullPage: true,
