@@ -148,6 +148,10 @@ const inferRuntimeRequirements = (content: string, analysis: any) => {
     addModule(modules, match[1]);
   }
 
+  for (const match of scriptContent.matchAll(/Add-Type\s+-AssemblyName\s+['"]?([A-Za-z0-9_.-]+)/gi)) {
+    addModule(modules, `${match[1]} (.NET assembly)`);
+  }
+
   const commandModuleHints: Array<[RegExp, string]> = [
     [/\b(?:Get|Set|New|Remove|Add|Disable|Enable|Move|Search|Unlock|Lock)-AD[A-Za-z]+\b/i, 'ActiveDirectory'],
     [/\b(?:Connect|Get|Set|New|Remove|Update|Start|Stop)-Az[A-Za-z]*\b|\bAz\.[A-Za-z.]+/i, 'Az'],
@@ -582,7 +586,7 @@ When generating or modifying scripts:
               <p className="text-gray-200">{runtimeRequirements.powerShellVersion}</p>
             </div>
             <div>
-              <div className="text-gray-400 mb-2">Modules needed</div>
+              <div className="text-gray-400 mb-2">Modules or assemblies needed</div>
               {runtimeRequirements.modules.length > 0 ? (
                 <div className="flex flex-wrap gap-2">
                   {runtimeRequirements.modules.map((moduleName) => (
@@ -596,7 +600,7 @@ When generating or modifying scripts:
                 </div>
               ) : (
                 <p className="text-gray-300">
-                  No external modules were detected from #Requires, Import-Module, analyzer fields, or common command patterns.
+                  No external modules or assemblies were detected from #Requires, Import-Module, Add-Type, analyzer fields, or common command patterns.
                 </p>
               )}
             </div>
@@ -986,7 +990,7 @@ When generating or modifying scripts:
                         <p className="text-gray-200">{runtimeRequirements.powerShellVersion}</p>
                       </div>
                       <div>
-                        <div className="text-gray-400 mb-2">Modules needed</div>
+                        <div className="text-gray-400 mb-2">Modules or assemblies needed</div>
                         {runtimeRequirements.modules.length > 0 ? (
                           <div className="flex flex-wrap gap-2">
                             {runtimeRequirements.modules.map((moduleName) => (
@@ -1000,7 +1004,7 @@ When generating or modifying scripts:
                           </div>
                         ) : (
                           <p className="text-gray-300">
-                            No external modules were detected from #Requires, Import-Module, analyzer fields, or common command patterns.
+                            No external modules or assemblies were detected from #Requires, Import-Module, Add-Type, analyzer fields, or common command patterns.
                           </p>
                         )}
                       </div>
