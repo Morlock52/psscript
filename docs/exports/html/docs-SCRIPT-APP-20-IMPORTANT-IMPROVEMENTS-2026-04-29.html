@@ -1,0 +1,728 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <base href="file:///Users/morlock/fun/02_PowerShell_Projects/psscript/" />
+  <title>docs-SCRIPT-APP-20-IMPORTANT-IMPROVEMENTS-2026-04-29</title>
+  <style>
+:root {
+  color-scheme: light;
+}
+body {
+  font-family: "Segoe UI", "Helvetica Neue", Arial, sans-serif;
+  margin: 0;
+  padding: 0;
+  background: #f4f7fb;
+  color: #0f172a;
+}
+.markdown-body {
+  max-width: 980px;
+  margin: 0 auto;
+  padding: 36px 42px 64px;
+  line-height: 1.65;
+  background: #ffffff;
+  box-shadow: 0 24px 70px rgba(15, 23, 42, 0.08);
+}
+.markdown-body h1 {
+  font-size: 34px;
+  line-height: 1.12;
+  margin-bottom: 12px;
+  color: #07111f;
+  border-bottom: 3px solid #0ea5e9;
+  padding-bottom: 12px;
+  page-break-before: always;
+  page-break-after: avoid;
+  break-before: page;
+  break-after: avoid;
+}
+.markdown-body h1:first-of-type {
+  page-break-before: avoid;
+  break-before: avoid;
+}
+.markdown-body h2 {
+  font-size: 23px;
+  line-height: 1.2;
+  margin-top: 34px;
+  color: #102a43;
+  border-bottom: 1px solid #d7e2ee;
+  padding-bottom: 8px;
+  page-break-after: avoid;
+  break-after: avoid;
+}
+.markdown-body h3 {
+  font-size: 18px;
+  margin-top: 20px;
+  color: #1e3a5f;
+  page-break-after: avoid;
+  break-after: avoid;
+}
+.markdown-body h4, .markdown-body h5, .markdown-body h6 {
+  page-break-after: avoid;
+  break-after: avoid;
+}
+.markdown-body table {
+  width: 100%;
+  border-collapse: collapse;
+  margin: 18px 0 24px;
+  font-size: 13px;
+  page-break-inside: avoid;
+  break-inside: avoid;
+  box-shadow: 0 1px 0 #e2e8f0;
+}
+.markdown-body th,
+.markdown-body td {
+  border: 1px solid #e2e8f0;
+  padding: 9px 11px;
+  text-align: left;
+  vertical-align: top;
+}
+.markdown-body th {
+  background: #eef6ff;
+  color: #0f3157;
+  font-weight: 700;
+}
+.markdown-body tr:nth-child(even) td {
+  background: #fbfdff;
+}
+.markdown-body tr {
+  page-break-inside: avoid;
+  break-inside: avoid;
+}
+.markdown-body code {
+  background: #f1f5f9;
+  padding: 2px 4px;
+  border-radius: 4px;
+  font-family: "SFMono-Regular", Menlo, Consolas, monospace;
+  font-size: 0.92em;
+}
+.markdown-body pre {
+  background: #111827;
+  color: #e5eef8;
+  padding: 16px;
+  border-radius: 10px;
+  overflow-x: auto;
+  border: 1px solid #243244;
+  page-break-inside: avoid;
+  break-inside: avoid;
+}
+.markdown-body pre code {
+  background: transparent;
+  color: inherit;
+}
+.markdown-body blockquote {
+  border-left: 5px solid #0ea5e9;
+  margin: 18px 0;
+  padding: 12px 18px;
+  background: #eff8ff;
+  color: #18324f;
+  border-radius: 0 10px 10px 0;
+}
+.markdown-body img {
+  max-width: 100%;
+  height: auto;
+  display: block;
+  margin: 16px 0;
+  border-radius: 10px;
+  box-shadow: 0 8px 20px rgba(15, 23, 42, 0.12);
+  page-break-inside: avoid;
+  break-inside: avoid;
+}
+.markdown-body figure {
+  page-break-inside: avoid;
+  break-inside: avoid;
+  margin: 16px 0;
+}
+.markdown-body a {
+  color: #2563eb;
+  text-decoration: none;
+}
+.markdown-body a:hover {
+  text-decoration: underline;
+}
+.cover {
+  min-height: 760px;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+  padding: 72px 60px 64px;
+  background:
+    linear-gradient(135deg, rgba(9, 30, 66, 0.96) 0%, rgba(12, 74, 110, 0.94) 54%, rgba(20, 83, 45, 0.9) 100%),
+    radial-gradient(circle at 18% 18%, rgba(14, 165, 233, 0.25), transparent 36%);
+  color: #f8fafc;
+  border-radius: 0;
+  margin: -36px -42px 40px;
+  position: relative;
+  overflow: hidden;
+}
+.cover::before {
+  content: "PSScript";
+  position: absolute;
+  top: 46px;
+  left: 60px;
+  font-size: 12px;
+  font-weight: 800;
+  letter-spacing: 0.24em;
+  text-transform: uppercase;
+  color: rgba(226, 246, 255, 0.82);
+}
+.cover::after {
+  content: "";
+  position: absolute;
+  right: -120px;
+  top: -120px;
+  width: 360px;
+  height: 360px;
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  transform: rotate(28deg);
+}
+.markdown-body .cover-title {
+  font-size: 48px;
+  line-height: 1.04;
+  font-weight: 800;
+  color: #f8fafc;
+  border-bottom: 3px solid #38bdf8;
+  margin: 0 0 16px;
+  max-width: 720px;
+}
+.cover-subtitle {
+  font-size: 20px;
+  line-height: 1.42;
+  color: #dbeafe;
+  margin: 0 0 22px;
+  max-width: 720px;
+}
+.cover-meta {
+  display: inline-block;
+  width: fit-content;
+  font-size: 13px;
+  color: #e0f2fe;
+  background: rgba(255, 255, 255, 0.12);
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  border-radius: 999px;
+  padding: 7px 13px;
+}
+.page-break {
+  page-break-after: always;
+  break-after: page;
+}
+.footer {
+  margin-top: 40px;
+  font-size: 12px;
+  color: #64748b;
+  border-top: 1px solid #e2e8f0;
+  padding-top: 14px;
+}
+/* Print and PDF-specific styles */
+@page {
+  size: A4;
+  margin: 18mm 16mm 20mm;
+}
+@media print {
+  body {
+    background: #ffffff;
+  }
+  .markdown-body {
+    max-width: none;
+    margin: 0;
+    padding: 0;
+    box-shadow: none;
+  }
+  .cover {
+    margin: 0 0 28px;
+  }
+  .markdown-body {
+    orphans: 3;
+    widows: 3;
+  }
+  .markdown-body p {
+    orphans: 3;
+    widows: 3;
+  }
+  .markdown-body li {
+    page-break-inside: avoid;
+    break-inside: avoid;
+  }
+  .markdown-body ul, .markdown-body ol {
+    page-break-before: avoid;
+    break-before: avoid;
+  }
+  .markdown-body blockquote {
+    page-break-inside: avoid;
+    break-inside: avoid;
+  }
+  /* Keep section content together */
+  .markdown-body h2 + *, .markdown-body h3 + * {
+    page-break-before: avoid;
+    break-before: avoid;
+  }
+}
+</style>
+</head>
+<body>
+  <div class="markdown-body">
+    
+    <h1 id="psscript-script-app-review-20-important-improvements">PSScript Script App Review: 20 Important Improvements</h1>
+<p>Date: 2026-04-29
+Production URL reviewed: https://pstest.morloksmaze.com
+Review method: Browser Use live DOM review, production route checks, repository inspection, and current project MD review artifacts.</p>
+<h2 id="review-summary">Review Summary</h2>
+<p>The script lifecycle is stronger after the recent category/search repairs, but the app still has several high-value improvement opportunities around reliability, script data hygiene, analysis trust, lifecycle clarity, and production observability.</p>
+<p>The most important live observation is that Browser Use initially saw the authenticated dashboard and working search surface, but later the same in-app browser session showed several protected pages stuck at <code>Loading PSScript...</code> with only the shell and Voice button visible. Earlier production smoke checks verified those routes with Playwright, so this should be treated as a session/loading resilience issue rather than proof that every route is globally down.</p>
+<p>The list below is ordered by practical impact on the script management product.</p>
+<h2 id="20-improvements">20 Improvements</h2>
+<h3 id="1-add-a-hard-timeout-and-recovery-state-for-app-bootstrap-loading">1. Add a hard timeout and recovery state for app bootstrap loading</h3>
+<p>Priority: P1</p>
+<p>Evidence:</p>
+<ul>
+<li>Browser Use saw <code>/login</code>, <code>/search</code>, <code>/categories</code>, <code>/scripts/4</code>, and <code>/scripts/upload</code> render only <code>Loading PSScript...</code> plus the shell after the session changed state.</li>
+<li>No browser console errors were exposed through Browser Use during that stuck state.</li>
+</ul>
+<p>Why it matters:</p>
+<ul>
+<li>A user should never be left with an indefinite loading screen.</li>
+<li>If auth, profile fetch, chunk loading, or API startup fails, the UI needs to say which subsystem failed and offer a retry/sign-out path.</li>
+</ul>
+<p>Recommended fix:</p>
+<ul>
+<li>Add an app bootstrap watchdog around auth/profile initialization.</li>
+<li>After 8-12 seconds, show a recoverable state with <code>Retry</code>, <code>Go to Login</code>, and <code>Clear local session</code> actions.</li>
+<li>Log a structured client event containing route, auth state, profile fetch state, chunk load status, and request id.</li>
+</ul>
+<p>Validation:</p>
+<ul>
+<li>Simulate failed <code>/api/auth/me</code>.</li>
+<li>Simulate stale/invalid Supabase token.</li>
+<li>Simulate lazy chunk load failure.</li>
+<li>Verify no route stays on <code>Loading PSScript...</code> indefinitely.</li>
+</ul>
+<h3 id="2-clean-production-test-data-from-the-primary-workspace">2. Clean production test data from the primary workspace</h3>
+<p>Priority: P1</p>
+<p>Evidence:</p>
+<ul>
+<li>Dashboard showed scripts named <code>E2E Script ...</code> and <code>Smoke Upload ...</code>.</li>
+<li>Search tags included <code>codex-smoke</code>, <code>delete-test</code>, and <code>readme-screenshot</code>.</li>
+<li>Dashboard metrics displayed <code>Total Scripts 0</code> while recent scripts were visible.</li>
+</ul>
+<p>Why it matters:</p>
+<ul>
+<li>Test data makes production look untrustworthy.</li>
+<li>It can distort search, category counts, dashboard metrics, and README screenshots.</li>
+</ul>
+<p>Recommended fix:</p>
+<ul>
+<li>Add a <code>test_data</code> marker column or metadata tag for generated smoke-test records.</li>
+<li>Keep test records hidden from normal user views by default.</li>
+<li>Add an admin-only cleanup job that removes smoke data by explicit marker, not fuzzy title matching.</li>
+</ul>
+<p>Validation:</p>
+<ul>
+<li>Create a marked smoke script.</li>
+<li>Confirm it is visible only in test/admin diagnostics.</li>
+<li>Confirm dashboard counts and search results exclude it by default.</li>
+</ul>
+<h3 id="3-fix-dashboard-metric-consistency">3. Fix dashboard metric consistency</h3>
+<p>Priority: P1</p>
+<p>Evidence:</p>
+<ul>
+<li>Browser Use saw <code>Total Scripts 0</code>, <code>AI Analyses 0</code>, and <code>Avg. Security Score 0.0</code>, while the same dashboard listed recent scripts.</li>
+</ul>
+<p>Why it matters:</p>
+<ul>
+<li>Conflicting metrics make admins doubt the database and analysis pipeline.</li>
+</ul>
+<p>Recommended fix:</p>
+<ul>
+<li>Make dashboard cards use the same hosted, ownership-aware script source as recent scripts.</li>
+<li>Add explicit empty, loading, and error states per card.</li>
+<li>Include last refreshed time and source endpoint in a dev/admin-only diagnostic tooltip.</li>
+</ul>
+<p>Validation:</p>
+<ul>
+<li>Seed known scripts and analyses.</li>
+<li>Verify dashboard totals match <code>/api/scripts</code> and <code>/api/analytics/*</code>.</li>
+</ul>
+<h3 id="4-replace-fake-recent-activity-with-real-audit-events">4. Replace fake recent activity with real audit events</h3>
+<p>Priority: P1</p>
+<p>Evidence:</p>
+<ul>
+<li>Dashboard showed activity rows like <code>updated Example Script 0</code> and <code>created Example Script 4</code>.</li>
+</ul>
+<p>Why it matters:</p>
+<ul>
+<li>Fake activity in production is misleading and can hide actual operational events.</li>
+</ul>
+<p>Recommended fix:</p>
+<ul>
+<li>Back recent activity with an <code>audit_events</code> table or existing event source.</li>
+<li>Emit events for upload, edit, analysis start/complete/fail, export, delete, category change, and login approval.</li>
+<li>Show an honest empty state when there are no events.</li>
+</ul>
+<p>Validation:</p>
+<ul>
+<li>Upload, analyze, export, and delete a script.</li>
+<li>Confirm matching audit events appear with real script ids, actor ids, and timestamps.</li>
+</ul>
+<h3 id="5-normalize-all-script-date-fields">5. Normalize all script date fields</h3>
+<p>Priority: P1</p>
+<p>Evidence:</p>
+<ul>
+<li>Dashboard script cards showed <code>Unknown date</code> for several scripts.</li>
+<li>Search results for the same app showed valid updated dates.</li>
+</ul>
+<p>Why it matters:</p>
+<ul>
+<li>Script lifecycle review depends on knowing when a script was created, changed, analyzed, and deleted.</li>
+</ul>
+<p>Recommended fix:</p>
+<ul>
+<li>Normalize <code>createdAt</code>, <code>updatedAt</code>, <code>created_at</code>, and <code>updated_at</code> in one frontend adapter.</li>
+<li>Use that adapter across dashboard, script management, search, categories, details, and analysis pages.</li>
+<li>Add a visible fallback only when both created and updated dates are missing.</li>
+</ul>
+<p>Validation:</p>
+<ul>
+<li>Feed both snake_case and camelCase fixture payloads.</li>
+<li>Verify all script cards render the same date.</li>
+</ul>
+<h3 id="6-add-a-single-script-result-presentation-component">6. Add a single script result presentation component</h3>
+<p>Priority: P2</p>
+<p>Evidence:</p>
+<ul>
+<li>Search, categories, dashboard, and script management still render script rows/cards separately.</li>
+<li>Recent repairs had to normalize quality score fields in more than one page.</li>
+</ul>
+<p>Why it matters:</p>
+<ul>
+<li>Duplicated presentation code causes repeated bugs in score, date, category, author, and delete behavior.</li>
+</ul>
+<p>Recommended fix:</p>
+<ul>
+<li>Introduce a shared <code>ScriptResultCard</code> and <code>ScriptResultRow</code>.</li>
+<li>Feed both from one normalized <code>ScriptSummary</code> model.</li>
+<li>Keep page-specific actions as slots/props.</li>
+</ul>
+<p>Validation:</p>
+<ul>
+<li>Snapshot-test one normalized script fixture across search, category, and dashboard views.</li>
+</ul>
+<h3 id="7-add-a-script-lifecycle-status-model">7. Add a script lifecycle status model</h3>
+<p>Priority: P2</p>
+<p>Evidence:</p>
+<ul>
+<li>The UI has upload, analysis, export, delete, and version history, but no single lifecycle state.</li>
+</ul>
+<p>Why it matters:</p>
+<ul>
+<li>Users need to know whether a script is uploaded, analyzed, stale after edit, exported, archived, deleted, or awaiting review.</li>
+</ul>
+<p>Recommended fix:</p>
+<ul>
+<li>Add computed lifecycle states: <code>uploaded</code>, <code>analyzing</code>, <code>analyzed</code>, <code>analysis_failed</code>, <code>stale_analysis</code>, <code>archived</code>, <code>deleted</code>.</li>
+<li>Display the state consistently on cards, detail pages, and analysis pages.</li>
+</ul>
+<p>Validation:</p>
+<ul>
+<li>Edit an analyzed script and confirm it becomes <code>stale_analysis</code>.</li>
+<li>Rerun analysis and confirm it becomes <code>analyzed</code>.</li>
+</ul>
+<h3 id="8-improve-script-delete-ux-with-exact-consequences">8. Improve script delete UX with exact consequences</h3>
+<p>Priority: P2</p>
+<p>Evidence:</p>
+<ul>
+<li>Delete exists in multiple places, including dashboard cards.</li>
+<li>Prior work focused on exact backend delete reporting.</li>
+</ul>
+<p>Why it matters:</p>
+<ul>
+<li>Script deletion is high-risk and should show what will be removed and what will remain.</li>
+</ul>
+<p>Recommended fix:</p>
+<ul>
+<li>Before delete, show title, id, owner, analysis count, versions count, and whether embeddings/audit records remain.</li>
+<li>After delete, show exact backend result: deleted ids and not-deleted ids.</li>
+</ul>
+<p>Validation:</p>
+<ul>
+<li>Try owner delete, admin delete, and unauthorized delete.</li>
+<li>Confirm UI mirrors backend result exactly.</li>
+</ul>
+<h3 id="9-add-archiverestore-before-permanent-delete">9. Add archive/restore before permanent delete</h3>
+<p>Priority: P2</p>
+<p>Evidence:</p>
+<ul>
+<li>Users have repeatedly asked not to delete project artifacts and to archive old files instead.</li>
+<li>Script lifecycle currently treats delete as the primary removal path.</li>
+</ul>
+<p>Why it matters:</p>
+<ul>
+<li>Production script management usually needs reversible retirement before destructive removal.</li>
+</ul>
+<p>Recommended fix:</p>
+<ul>
+<li>Add <code>archived_at</code>, <code>archived_by</code>, and optional <code>archive_reason</code>.</li>
+<li>Default UI action should be Archive.</li>
+<li>Keep permanent Delete admin-only and visually separated.</li>
+</ul>
+<p>Validation:</p>
+<ul>
+<li>Archive a script.</li>
+<li>Confirm normal lists hide it and admin archive view can restore it.</li>
+</ul>
+<h3 id="10-make-category-assignment-part-of-upload-and-post-upload-review">10. Make category assignment part of upload and post-upload review</h3>
+<p>Priority: P2</p>
+<p>Evidence:</p>
+<ul>
+<li>Search results showed useful scripts as <code>Uncategorized</code>.</li>
+<li>Categories exist, but production category counts were all zero in the Browser Use/production smoke category sample.</li>
+</ul>
+<p>Why it matters:</p>
+<ul>
+<li>Categories are only useful if scripts reliably land in them.</li>
+</ul>
+<p>Recommended fix:</p>
+<ul>
+<li>Keep category selection in upload.</li>
+<li>Add AI-suggested category after analysis with a one-click accept action.</li>
+<li>Add an uncategorized queue in Settings or Scripts.</li>
+</ul>
+<p>Validation:</p>
+<ul>
+<li>Upload without category.</li>
+<li>Run analysis.</li>
+<li>Confirm suggested category appears and accepting it updates search/category counts.</li>
+</ul>
+<h3 id="11-add-script-tagging-governance">11. Add script tagging governance</h3>
+<p>Priority: P2</p>
+<p>Evidence:</p>
+<ul>
+<li>Search exposed test-oriented tags such as <code>delete-test</code>, <code>codex-smoke</code>, and <code>readme-screenshot</code>.</li>
+</ul>
+<p>Why it matters:</p>
+<ul>
+<li>Tags are discovery metadata; uncontrolled tags quickly become noise.</li>
+</ul>
+<p>Recommended fix:</p>
+<ul>
+<li>Add tag normalization, tag merge, hidden/system tags, and admin tag cleanup.</li>
+<li>Mark smoke/test tags as system-only and hide them from normal search filters.</li>
+</ul>
+<p>Validation:</p>
+<ul>
+<li>Create duplicate tags with case differences.</li>
+<li>Confirm canonicalization and search filter behavior.</li>
+</ul>
+<h3 id="12-add-analysis-confidence-explanations">12. Add analysis confidence explanations</h3>
+<p>Priority: P2</p>
+<p>Evidence:</p>
+<ul>
+<li>The analysis schema includes criteria version and confidence.</li>
+<li>The UI uses scores but does not make confidence meaning obvious across the script lifecycle.</li>
+</ul>
+<p>Why it matters:</p>
+<ul>
+<li>A score without confidence can look more authoritative than it is.</li>
+</ul>
+<p>Recommended fix:</p>
+<ul>
+<li>Display confidence next to score groups with short language: <code>High confidence</code>, <code>Needs manual review</code>, or <code>Fallback static analysis</code>.</li>
+<li>Distinguish AI provider results from deterministic fallback results.</li>
+</ul>
+<p>Validation:</p>
+<ul>
+<li>Force static fallback.</li>
+<li>Confirm the UI labels the result honestly.</li>
+</ul>
+<h3 id="13-add-stale-analysis-detection-after-edits">13. Add stale-analysis detection after edits</h3>
+<p>Priority: P2</p>
+<p>Evidence:</p>
+<ul>
+<li>The backend has script versioning.</li>
+<li>The UI can show analysis and script content, but stale status needs to be explicit after edits.</li>
+</ul>
+<p>Why it matters:</p>
+<ul>
+<li>Users may trust an old analysis that no longer matches the current script content.</li>
+</ul>
+<p>Recommended fix:</p>
+<ul>
+<li>Store <code>analysis.script_version</code> or <code>analysis.file_hash</code>.</li>
+<li>Compare it to current script version/hash.</li>
+<li>Warn when analysis is stale and offer rerun.</li>
+</ul>
+<p>Validation:</p>
+<ul>
+<li>Analyze a script.</li>
+<li>Edit content.</li>
+<li>Confirm the analysis page warns before showing old findings.</li>
+</ul>
+<h3 id="14-add-command-level-risk-badges-to-searchlist-cards">14. Add command-level risk badges to search/list cards</h3>
+<p>Priority: P3</p>
+<p>Evidence:</p>
+<ul>
+<li>Analysis includes command details and risk categories.</li>
+<li>Search cards currently show only broad quality score.</li>
+</ul>
+<p>Why it matters:</p>
+<ul>
+<li>Search should help users identify risky scripts before opening each detail page.</li>
+</ul>
+<p>Recommended fix:</p>
+<ul>
+<li>Surface compact badges such as <code>Deletes files</code>, <code>Downloads remote content</code>, <code>Changes users</code>, <code>Uses remoting</code>, or <code>Requires admin</code>.</li>
+<li>Derive from saved command details and static fallback detectors.</li>
+</ul>
+<p>Validation:</p>
+<ul>
+<li>Upload scripts containing <code>Remove-Item</code>, <code>Invoke-WebRequest</code>, and <code>New-ADUser</code>.</li>
+<li>Confirm badges appear in search and script management.</li>
+</ul>
+<h3 id="15-add-saved-searches-and-review-queues">15. Add saved searches and review queues</h3>
+<p>Priority: P3</p>
+<p>Evidence:</p>
+<ul>
+<li>Search now supports durable URL params.</li>
+<li>There is no visible saved search/review queue workflow.</li>
+</ul>
+<p>Why it matters:</p>
+<ul>
+<li>Admins need repeated views like <code>high risk</code>, <code>uncategorized</code>, <code>not analyzed</code>, and <code>stale analysis</code>.</li>
+</ul>
+<p>Recommended fix:</p>
+<ul>
+<li>Add saved server-side filters for common queues.</li>
+<li>Start with built-in queues before custom user-created saved searches.</li>
+</ul>
+<p>Validation:</p>
+<ul>
+<li>Create scripts matching each queue.</li>
+<li>Confirm counts and URL params stay stable.</li>
+</ul>
+<h3 id="16-add-script-owner-and-approval-workflow">16. Add script owner and approval workflow</h3>
+<p>Priority: P3</p>
+<p>Evidence:</p>
+<ul>
+<li>Scripts show owner/author but do not show approval status.</li>
+</ul>
+<p>Why it matters:</p>
+<ul>
+<li>A central script repository needs a path from uploaded draft to approved operational script.</li>
+</ul>
+<p>Recommended fix:</p>
+<ul>
+<li>Add statuses: <code>draft</code>, <code>needs_review</code>, <code>approved</code>, <code>rejected</code>, <code>retired</code>.</li>
+<li>Require reviewer notes when approving or rejecting.</li>
+</ul>
+<p>Validation:</p>
+<ul>
+<li>Upload a script as a normal user.</li>
+<li>Confirm admin can approve/reject and that the status appears in lists.</li>
+</ul>
+<h3 id="17-add-semantic-duplicate-and-near-duplicate-review">17. Add semantic duplicate and near-duplicate review</h3>
+<p>Priority: P3</p>
+<p>Evidence:</p>
+<ul>
+<li>Exact duplicate detection exists through file hash.</li>
+<li>The product also stores embeddings.</li>
+</ul>
+<p>Why it matters:</p>
+<ul>
+<li>Script libraries often contain near-duplicates with renamed variables or small edits.</li>
+</ul>
+<p>Recommended fix:</p>
+<ul>
+<li>Use existing embeddings to show <code>possibly similar scripts</code> during upload and on detail pages.</li>
+<li>Separate exact hash duplicate from semantic near-duplicate.</li>
+</ul>
+<p>Validation:</p>
+<ul>
+<li>Upload a lightly modified copy of an existing script.</li>
+<li>Confirm the UI flags it as similar without blocking upload.</li>
+</ul>
+<h3 id="18-add-export-package-for-script-review-evidence">18. Add export package for script review evidence</h3>
+<p>Priority: P3</p>
+<p>Evidence:</p>
+<ul>
+<li>PDF analysis export exists.</li>
+<li>Users need a complete evidence package for review and training.</li>
+</ul>
+<p>Why it matters:</p>
+<ul>
+<li>Security review often requires script source, analysis, findings, remediation plan, version history, and audit trail together.</li>
+</ul>
+<p>Recommended fix:</p>
+<ul>
+<li>Add a <code>Download review package</code> action that exports PDF plus JSON metadata and script source in a zip.</li>
+<li>Keep PDF as the human-readable artifact.</li>
+</ul>
+<p>Validation:</p>
+<ul>
+<li>Export a package.</li>
+<li>Confirm it contains source, analysis PDF, criteria version, version history, and audit summary.</li>
+</ul>
+<h3 id="19-add-production-diagnostics-for-route-health">19. Add production diagnostics for route health</h3>
+<p>Priority: P2</p>
+<p>Evidence:</p>
+<ul>
+<li>Recent work fixed <code>/search</code> and <code>/categories</code> route misses.</li>
+<li>Browser Use later saw route content stuck behind <code>Loading PSScript...</code>.</li>
+</ul>
+<p>Why it matters:</p>
+<ul>
+<li>Route regressions should be caught before users report them.</li>
+</ul>
+<p>Recommended fix:</p>
+<ul>
+<li>Add a synthetic smoke script that checks <code>/</code>, <code>/login</code>, <code>/dashboard</code>, <code>/scripts</code>, <code>/search</code>, <code>/categories</code>, <code>/scripts/upload</code>, and a known detail page.</li>
+<li>Store status, deploy id, and response screenshot/DOM excerpt.</li>
+</ul>
+<p>Validation:</p>
+<ul>
+<li>Run after every Netlify deploy.</li>
+<li>Fail the deploy pipeline or create an alert if a protected route renders only the shell.</li>
+</ul>
+<h3 id="20-track-lighthouse-and-bundle-performance-as-a-separate-quality-gate">20. Track Lighthouse and bundle performance as a separate quality gate</h3>
+<p>Priority: P3</p>
+<p>Evidence:</p>
+<ul>
+<li>Latest Netlify Lighthouse plugin result for <code>/</code> reported Performance <code>40</code>.</li>
+<li>Build output includes large vendor chunks, including Monaco and syntax highlighting bundles.</li>
+</ul>
+<p>Why it matters:</p>
+<ul>
+<li>Slow startup increases the odds of perceived loading failures and reduces trust in the management console.</li>
+</ul>
+<p>Recommended fix:</p>
+<ul>
+<li>Lazy-load heavy editor/highlight/Monaco paths only on pages that need them.</li>
+<li>Add route-level performance budgets for dashboard, search, upload, and analysis.</li>
+<li>Track Largest Contentful Paint, Total Blocking Time, and JS transfer size per deploy.</li>
+</ul>
+<p>Validation:</p>
+<ul>
+<li>Re-run Lighthouse after code splitting.</li>
+<li>Confirm dashboard and search bundles do not include editor-only dependencies.</li>
+</ul>
+<h2 id="recommended-implementation-order">Recommended Implementation Order</h2>
+<ol>
+<li>Fix indefinite loading recovery and route diagnostics.</li>
+<li>Clean and isolate production test data.</li>
+<li>Normalize script summary data once and reuse it across dashboard, search, categories, and script management.</li>
+<li>Add lifecycle states, stale-analysis detection, and archive/restore.</li>
+<li>Improve review workflows: approval status, saved queues, semantic duplicates, and evidence packages.</li>
+<li>Address performance as its own pass after behavior is reliable.</li>
+</ol>
+<h2 id="acceptance-criteria-for-the-next-repair-pass">Acceptance Criteria for the Next Repair Pass</h2>
+<ul>
+<li>No route can remain indefinitely on <code>Loading PSScript...</code>.</li>
+<li>Production dashboard metrics match visible script data.</li>
+<li>Test/smoke records are hidden from standard script views.</li>
+<li>Every script card uses the same title, owner, date, category, status, and quality-score adapter.</li>
+<li>Script analysis clearly shows whether it is current, stale, AI-generated, or static fallback.</li>
+<li>Archive is the default safe removal flow; delete remains explicit and exact.</li>
+<li>Post-deploy smoke checks cover all primary script lifecycle routes.</li>
+</ul>
+    <div class="footer">Generated 2026-04-29 14:08 UTC</div>
+  </div>
+</body>
+</html>

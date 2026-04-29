@@ -1,0 +1,528 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <base href="file:///Users/morlock/fun/02_PowerShell_Projects/psscript/" />
+  <title>docs-superpowers-plans-2026-04-28-frontend-modernization-plan-3-verification</title>
+  <style>
+:root {
+  color-scheme: light;
+}
+body {
+  font-family: "Segoe UI", "Helvetica Neue", Arial, sans-serif;
+  margin: 0;
+  padding: 0;
+  background: #f4f7fb;
+  color: #0f172a;
+}
+.markdown-body {
+  max-width: 980px;
+  margin: 0 auto;
+  padding: 36px 42px 64px;
+  line-height: 1.65;
+  background: #ffffff;
+  box-shadow: 0 24px 70px rgba(15, 23, 42, 0.08);
+}
+.markdown-body h1 {
+  font-size: 34px;
+  line-height: 1.12;
+  margin-bottom: 12px;
+  color: #07111f;
+  border-bottom: 3px solid #0ea5e9;
+  padding-bottom: 12px;
+  page-break-before: always;
+  page-break-after: avoid;
+  break-before: page;
+  break-after: avoid;
+}
+.markdown-body h1:first-of-type {
+  page-break-before: avoid;
+  break-before: avoid;
+}
+.markdown-body h2 {
+  font-size: 23px;
+  line-height: 1.2;
+  margin-top: 34px;
+  color: #102a43;
+  border-bottom: 1px solid #d7e2ee;
+  padding-bottom: 8px;
+  page-break-after: avoid;
+  break-after: avoid;
+}
+.markdown-body h3 {
+  font-size: 18px;
+  margin-top: 20px;
+  color: #1e3a5f;
+  page-break-after: avoid;
+  break-after: avoid;
+}
+.markdown-body h4, .markdown-body h5, .markdown-body h6 {
+  page-break-after: avoid;
+  break-after: avoid;
+}
+.markdown-body table {
+  width: 100%;
+  border-collapse: collapse;
+  margin: 18px 0 24px;
+  font-size: 13px;
+  page-break-inside: avoid;
+  break-inside: avoid;
+  box-shadow: 0 1px 0 #e2e8f0;
+}
+.markdown-body th,
+.markdown-body td {
+  border: 1px solid #e2e8f0;
+  padding: 9px 11px;
+  text-align: left;
+  vertical-align: top;
+}
+.markdown-body th {
+  background: #eef6ff;
+  color: #0f3157;
+  font-weight: 700;
+}
+.markdown-body tr:nth-child(even) td {
+  background: #fbfdff;
+}
+.markdown-body tr {
+  page-break-inside: avoid;
+  break-inside: avoid;
+}
+.markdown-body code {
+  background: #f1f5f9;
+  padding: 2px 4px;
+  border-radius: 4px;
+  font-family: "SFMono-Regular", Menlo, Consolas, monospace;
+  font-size: 0.92em;
+}
+.markdown-body pre {
+  background: #111827;
+  color: #e5eef8;
+  padding: 16px;
+  border-radius: 10px;
+  overflow-x: auto;
+  border: 1px solid #243244;
+  page-break-inside: avoid;
+  break-inside: avoid;
+}
+.markdown-body pre code {
+  background: transparent;
+  color: inherit;
+}
+.markdown-body blockquote {
+  border-left: 5px solid #0ea5e9;
+  margin: 18px 0;
+  padding: 12px 18px;
+  background: #eff8ff;
+  color: #18324f;
+  border-radius: 0 10px 10px 0;
+}
+.markdown-body img {
+  max-width: 100%;
+  height: auto;
+  display: block;
+  margin: 16px 0;
+  border-radius: 10px;
+  box-shadow: 0 8px 20px rgba(15, 23, 42, 0.12);
+  page-break-inside: avoid;
+  break-inside: avoid;
+}
+.markdown-body figure {
+  page-break-inside: avoid;
+  break-inside: avoid;
+  margin: 16px 0;
+}
+.markdown-body a {
+  color: #2563eb;
+  text-decoration: none;
+}
+.markdown-body a:hover {
+  text-decoration: underline;
+}
+.cover {
+  min-height: 760px;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+  padding: 72px 60px 64px;
+  background:
+    linear-gradient(135deg, rgba(9, 30, 66, 0.96) 0%, rgba(12, 74, 110, 0.94) 54%, rgba(20, 83, 45, 0.9) 100%),
+    radial-gradient(circle at 18% 18%, rgba(14, 165, 233, 0.25), transparent 36%);
+  color: #f8fafc;
+  border-radius: 0;
+  margin: -36px -42px 40px;
+  position: relative;
+  overflow: hidden;
+}
+.cover::before {
+  content: "PSScript";
+  position: absolute;
+  top: 46px;
+  left: 60px;
+  font-size: 12px;
+  font-weight: 800;
+  letter-spacing: 0.24em;
+  text-transform: uppercase;
+  color: rgba(226, 246, 255, 0.82);
+}
+.cover::after {
+  content: "";
+  position: absolute;
+  right: -120px;
+  top: -120px;
+  width: 360px;
+  height: 360px;
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  transform: rotate(28deg);
+}
+.markdown-body .cover-title {
+  font-size: 48px;
+  line-height: 1.04;
+  font-weight: 800;
+  color: #f8fafc;
+  border-bottom: 3px solid #38bdf8;
+  margin: 0 0 16px;
+  max-width: 720px;
+}
+.cover-subtitle {
+  font-size: 20px;
+  line-height: 1.42;
+  color: #dbeafe;
+  margin: 0 0 22px;
+  max-width: 720px;
+}
+.cover-meta {
+  display: inline-block;
+  width: fit-content;
+  font-size: 13px;
+  color: #e0f2fe;
+  background: rgba(255, 255, 255, 0.12);
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  border-radius: 999px;
+  padding: 7px 13px;
+}
+.page-break {
+  page-break-after: always;
+  break-after: page;
+}
+.footer {
+  margin-top: 40px;
+  font-size: 12px;
+  color: #64748b;
+  border-top: 1px solid #e2e8f0;
+  padding-top: 14px;
+}
+/* Print and PDF-specific styles */
+@page {
+  size: A4;
+  margin: 18mm 16mm 20mm;
+}
+@media print {
+  body {
+    background: #ffffff;
+  }
+  .markdown-body {
+    max-width: none;
+    margin: 0;
+    padding: 0;
+    box-shadow: none;
+  }
+  .cover {
+    margin: 0 0 28px;
+  }
+  .markdown-body {
+    orphans: 3;
+    widows: 3;
+  }
+  .markdown-body p {
+    orphans: 3;
+    widows: 3;
+  }
+  .markdown-body li {
+    page-break-inside: avoid;
+    break-inside: avoid;
+  }
+  .markdown-body ul, .markdown-body ol {
+    page-break-before: avoid;
+    break-before: avoid;
+  }
+  .markdown-body blockquote {
+    page-break-inside: avoid;
+    break-inside: avoid;
+  }
+  /* Keep section content together */
+  .markdown-body h2 + *, .markdown-body h3 + * {
+    page-break-before: avoid;
+    break-before: avoid;
+  }
+}
+</style>
+</head>
+<body>
+  <div class="markdown-body">
+    
+    <h1 id="frontend-modernization-plan-3-verification">Frontend Modernization — Plan 3 (Verification)</h1>
+<blockquote>
+<p><strong>For agentic workers:</strong> REQUIRED SUB-SKILL: Use superpowers:executing-plans for tasks V1–V3 (mechanical, fast). V4 (visual diff sweep) is human-in-loop and intentionally deferred to merge time.</p>
+</blockquote>
+<p><strong>Goal:</strong> Verify the redesign branch (Plans 1+2) is merge-ready: tests green, build green, bundle size within budget, accessibility audited, visual regressions either intentional or filed.</p>
+<p><strong>Architecture:</strong> Plan 1 introduced foundation, Plan 2 reflowed pages and tore down legacy machinery. Plan 3 produces the verification artifacts that decide merge-readiness. Most of Plan 3 is mechanical (run things, record results); one task (V4 visual diff) is necessarily human-in-loop because the redesign IS a visual change — most route diffs will be huge mismatches by design, and a human has to triage which mismatches are intended vs. regressions.</p>
+<p><strong>Tech Stack:</strong> Vitest + Playwright + pixelmatch + @axe-core/playwright (already installed).</p>
+<hr />
+<h2 id="discovery">Discovery</h2>
+<p>Branch state at the start of Plan 3:</p>
+<table>
+<thead>
+<tr>
+<th>Item</th>
+<th>State</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Branch</td>
+<td><code>redesign/2026-04-28-frontend-modernization</code></td>
+</tr>
+<tr>
+<td>Commits ahead of main</td>
+<td>10 (Plan 1: 8, Plan 2: 2 incl. plan commit)</td>
+</tr>
+<tr>
+<td>Tests on primitives + layouts</td>
+<td>60/60 green</td>
+</tr>
+<tr>
+<td>Token tests</td>
+<td>25/25 green</td>
+</tr>
+<tr>
+<td>Build</td>
+<td>clean</td>
+</tr>
+<tr>
+<td>Typecheck</td>
+<td>clean</td>
+</tr>
+<tr>
+<td>Pre-existing flake</td>
+<td><code>AuthContext.test.tsx</code> (vitest worker timeout, predates redesign)</td>
+</tr>
+<tr>
+<td>Visual baseline</td>
+<td><code>tests/visual/__baseline__/</code> 136 PNGs (pre-redesign main)</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="file-structure">File Structure</h2>
+<p><strong>Created (verification artifacts):</strong>
+- <code>tests/visual/PLAN3_VERIFICATION_REPORT.md</code> — human-readable summary of all V1–V4 results.
+- <code>tests/a11y/axe-sweep.mjs</code> — a11y harness using <code>@axe-core/playwright</code>.
+- <code>tests/a11y/results.json</code> — axe findings, machine-readable.</p>
+<p><strong>Modified:</strong>
+- (none expected — this plan adds verification, doesn't change product code)</p>
+<hr />
+<h2 id="task-v1-full-vitest-suite-record-green-count">Task V1: Full Vitest suite — record green count</h2>
+<p><strong>Files:</strong> <code>tests/visual/PLAN3_VERIFICATION_REPORT.md</code> (create)</p>
+<ul>
+<li>[ ] <strong>Step 1: Run the full suite</strong></li>
+</ul>
+<pre><code class="language-bash">cd /Users/morlock/fun/02_PowerShell_Projects/psscript-redesign-2026-04-28/src/frontend &amp;&amp; npm run test:run 2&gt;&amp;1 | tee /tmp/vitest-plan3.log | tail -10
+</code></pre>
+<p>Expected: 15/16 files pass (<code>AuthContext.test.tsx</code> flake is pre-existing), ≥99 tests green (60 from primitives+layouts + 25 from Tokens + the rest of the existing pre-redesign suite).</p>
+<ul>
+<li>[ ] <strong>Step 2: Record in the report</strong></li>
+</ul>
+<p>Append to <code>tests/visual/PLAN3_VERIFICATION_REPORT.md</code>:</p>
+<pre><code class="language-markdown">## V1 — Vitest suite
+
+- Files passed: &lt;N&gt;/&lt;M&gt;
+- Tests passed: &lt;N&gt;/&lt;M&gt;
+- Flake: AuthContext.test.tsx vitest worker timeout (pre-existing, not a Plan 3 regression)
+</code></pre>
+<hr />
+<h2 id="task-v2-production-build-size-budget">Task V2: Production build size budget</h2>
+<p><strong>Files:</strong> <code>tests/visual/PLAN3_VERIFICATION_REPORT.md</code> (modify)</p>
+<ul>
+<li>[ ] <strong>Step 1: Build clean</strong></li>
+</ul>
+<pre><code class="language-bash">cd /Users/morlock/fun/02_PowerShell_Projects/psscript-redesign-2026-04-28/src/frontend &amp;&amp; rm -rf dist &amp;&amp; npm run build 2&gt;&amp;1 | tail -20 &gt; /tmp/build-plan3.log &amp;&amp; cat /tmp/build-plan3.log
+</code></pre>
+<ul>
+<li>[ ] <strong>Step 2: Compute total gzipped size of CSS+JS chunks</strong></li>
+</ul>
+<pre><code class="language-bash">cd /Users/morlock/fun/02_PowerShell_Projects/psscript-redesign-2026-04-28/src/frontend &amp;&amp; find dist/assets -type f \( -name '*.js' -o -name '*.css' \) -exec wc -c {} + | tail -1 &amp;&amp; echo &quot;---gzip total---&quot; &amp;&amp; find dist/assets -type f \( -name '*.js' -o -name '*.css' \) -print0 | xargs -0 cat | gzip -9 | wc -c
+</code></pre>
+<ul>
+<li>[ ] <strong>Step 3: Record in report</strong></li>
+</ul>
+<p>Append to <code>tests/visual/PLAN3_VERIFICATION_REPORT.md</code>:</p>
+<pre><code class="language-markdown">## V2 — Production build budget
+
+- Total raw bytes (CSS+JS): &lt;N&gt;
+- Total gzip-9 bytes: &lt;N&gt;
+- Largest chunks: editor (~600 kB gz), vendor-highlight-languages (~280 kB gz), vendor-refractor (~220 kB gz). These are pre-redesign chunks (Monaco editor + syntax highlighting); the redesign did not change them.
+- Verdict: &lt;under budget / overage flagged&gt;
+</code></pre>
+<p>The redesign's intent is no perf regression — primitives + shells + framer-motion add modest weight, but the deletions in Plan 2 (legacy Layout, Navbar, Sidebar, ~300 lines of bespoke CSS) offset.</p>
+<hr />
+<h2 id="task-v3-accessibility-sweep-axe-core">Task V3: Accessibility sweep (axe-core)</h2>
+<p><strong>Files:</strong>
+- Create: <code>tests/a11y/axe-sweep.mjs</code>
+- Create: <code>tests/a11y/results.json</code> (output)
+- Modify: <code>tests/visual/PLAN3_VERIFICATION_REPORT.md</code></p>
+<p><code>@axe-core/playwright</code> is already installed at the worktree root from Phase A.</p>
+<ul>
+<li>[ ] <strong>Step 1: Write the axe sweep harness</strong></li>
+</ul>
+<p>Create <code>tests/a11y/axe-sweep.mjs</code>:</p>
+<pre><code class="language-js">#!/usr/bin/env node
+/* eslint-disable no-console */
+import { chromium } from '@playwright/test';
+import AxeBuilder from '@axe-core/playwright';
+import fs from 'node:fs/promises';
+import path from 'node:path';
+
+const BASE_URL = process.env.SWEEP_BASE_URL ?? 'http://127.0.0.1:4173';
+const ROOT = path.resolve(path.dirname(new URL(import.meta.url).pathname));
+
+// Sweep a tractable subset — the brand-surface routes plus a few
+// representative operator routes. Full 36-route sweep is overkill
+// for a foundation check.
+const ROUTES = [
+  { path: '/login',            tag: 'brand'    },
+  { path: '/register',         tag: 'brand'    },
+  { path: '/auth/callback',    tag: 'brand'    },
+  { path: '/pending-approval', tag: 'brand'    },
+  { path: '/landing',          tag: 'brand'    },
+  { path: '/404',              tag: 'brand'    },
+  { path: '/dashboard',        tag: 'operator' },
+  { path: '/scripts',          tag: 'operator' },
+  { path: '/settings/profile', tag: 'operator' },
+];
+
+async function run() {
+  const browser = await chromium.launch();
+  const context = await browser.newContext({ viewport: { width: 1440, height: 900 } });
+  const summary = [];
+  for (const route of ROUTES) {
+    const page = await context.newPage();
+    try {
+      await page.goto(`${BASE_URL}${route.path}`, { waitUntil: 'networkidle', timeout: 15000 });
+      await page.waitForTimeout(800);
+      const results = await new AxeBuilder({ page })
+        .withTags(['wcag2a', 'wcag2aa', 'wcag21aa'])
+        .analyze();
+      const violations = results.violations.map((v) =&gt; ({
+        id: v.id,
+        impact: v.impact,
+        help: v.help,
+        nodes: v.nodes.length,
+      }));
+      summary.push({ route: route.path, tag: route.tag, violations, total: violations.length });
+    } catch (err) {
+      summary.push({ route: route.path, tag: route.tag, error: err.message });
+    } finally {
+      await page.close();
+    }
+  }
+  await browser.close();
+  await fs.writeFile(path.join(ROOT, 'results.json'), JSON.stringify(summary, null, 2));
+  const total = summary.reduce((sum, s) =&gt; sum + (s.total ?? 0), 0);
+  console.log(JSON.stringify({ routes: summary.length, totalViolations: total, perRoute: summary.map((s) =&gt; ({ route: s.route, count: s.total ?? 'error' })) }, null, 2));
+  process.exit(0);
+}
+
+run().catch((err) =&gt; { console.error(err); process.exit(2); });
+</code></pre>
+<ul>
+<li>[ ] <strong>Step 2: Build + serve + run</strong></li>
+</ul>
+<pre><code class="language-bash">cd /Users/morlock/fun/02_PowerShell_Projects/psscript-redesign-2026-04-28/src/frontend &amp;&amp; npm run build 2&gt;&amp;1 | tail -3 &amp;&amp; (lsof -ti :4173 | xargs kill 2&gt;/dev/null; nohup npm run preview -- --port 4173 --host 127.0.0.1 &gt; /tmp/preview-v3.log 2&gt;&amp;1 &amp; echo $! &gt; /tmp/preview-v3.pid); sleep 5; cd /Users/morlock/fun/02_PowerShell_Projects/psscript-redesign-2026-04-28 &amp;&amp; SWEEP_BASE_URL=http://127.0.0.1:4173 node tests/a11y/axe-sweep.mjs 2&gt;&amp;1 | tail -30 &amp;&amp; kill $(cat /tmp/preview-v3.pid) 2&gt;/dev/null; rm -f /tmp/preview-v3.pid
+</code></pre>
+<ul>
+<li>[ ] <strong>Step 3: Append to report</strong></li>
+</ul>
+<pre><code class="language-markdown">## V3 — Accessibility (axe-core, WCAG 2.1 AA)
+
+- Routes audited: 9 (6 brand + 3 operator)
+- Total violations: &lt;N&gt;
+- Per-route breakdown: &lt;copy from JSON&gt;
+- Top issues (by impact): &lt;list&gt;
+- Verdict: &lt;pass / fix-list filed&gt;
+</code></pre>
+<p>If any <code>critical</code>/<code>serious</code> violations are found, file them as Plan-3 follow-up tasks rather than blocking this commit; visual chrome is the area most likely to surface findings (e.g., color contrast on Aurora gradient, focus-ring visibility on Frosted Graphite). Fixes that are 1-line edits can be folded back into the redesign branch directly.</p>
+<hr />
+<h2 id="task-v4-visual-diff-sweep-deferred-human-in-loop">Task V4: Visual diff sweep (DEFERRED — human-in-loop)</h2>
+<p><strong>Files:</strong> <code>tests/visual/__current__/</code>, <code>tests/visual/__diff__/</code> (created by harness; not committed).</p>
+<p><strong>Why deferred:</strong> the redesign INTENDS to change every route's visuals. Running pixelmatch will produce huge mismatches by design. A human has to triage which diffs are intended (Aurora glow on Login, Frosted Graphite on Dashboard, etc.) vs. regressions (broken layout, missing element, contrast inversion). Auto-running this without that triage step produces noise, not signal.</p>
+<p>The harness command is provided here for the human reviewer to run before merge:</p>
+<pre><code class="language-bash">cd /Users/morlock/fun/02_PowerShell_Projects/psscript-redesign-2026-04-28/src/frontend &amp;&amp; npm run build &amp;&amp; (lsof -ti :4173 | xargs kill 2&gt;/dev/null; nohup npm run preview -- --port 4173 --host 127.0.0.1 &gt; /tmp/preview-v4.log 2&gt;&amp;1 &amp; echo $! &gt; /tmp/preview-v4.pid); sleep 5; cd /Users/morlock/fun/02_PowerShell_Projects/psscript-redesign-2026-04-28 &amp;&amp; SWEEP_BASE_URL=http://127.0.0.1:4173 node tests/visual/route-sweep.mjs --diff 2&gt;&amp;1 | tail -40; kill $(cat /tmp/preview-v4.pid) 2&gt;/dev/null; rm -f /tmp/preview-v4.pid
+</code></pre>
+<p>The output JSON includes <code>totalMismatch</code> (sum of mismatched pixels across all 136 captures) and a <code>diffSample</code> of the first 10. The diffs themselves render in <code>tests/visual/__diff__/</code> as red-overlay PNGs.</p>
+<hr />
+<h2 id="task-v5-final-code-review-pass-over-the-entire-branch">Task V5: Final code-review pass over the entire branch</h2>
+<p><strong>Files:</strong> none — review activity.</p>
+<p>The subagent-driven-development skill calls for a final reviewer over the entire implementation after all per-task reviews. Plans 1 and 2 were reviewed at phase boundaries; this is the catch-everything sweep.</p>
+<pre><code>Dispatch superpowers:code-reviewer subagent with:
+
+WHAT_WAS_IMPLEMENTED: Three-plan frontend modernization on
+  redesign/2026-04-28-frontend-modernization (HEAD a few commits ahead
+  of 008ba3f after Plan 3 lands its verification commit). Plan 1
+  introduced tokens, fonts, primitives, and shells. Plan 2 reflowed
+  pages and tore down legacy machinery (Layout/Navbar/Sidebar component
+  files, bespoke utility classes, the legacy variable shim). Plan 3
+  produced verification artifacts.
+
+PLAN_OR_REQUIREMENTS: docs/superpowers/specs/2026-04-28-frontend-modernization-design.md
+  + plans 1, 2, 3.
+
+BASE_SHA: 3975e10  (the plan commit)
+HEAD_SHA: &lt;Plan 3 commit&gt;
+
+DESCRIPTION: Cumulative branch review. Look for cross-plan integration
+  issues — tokens that aren't actually consumed, primitives that don't
+  follow shared conventions, places where Plan 1's foundation and Plan
+  2's teardown might disagree.
+</code></pre>
+<hr />
+<h2 id="task-v6-update-memory-commit-plan-3-artifacts">Task V6: Update memory + commit Plan 3 artifacts</h2>
+<ul>
+<li>[ ] <strong>Step 1: Stage the verification artifacts</strong></li>
+</ul>
+<pre><code class="language-bash">cd /Users/morlock/fun/02_PowerShell_Projects/psscript-redesign-2026-04-28 &amp;&amp; git add tests/visual/PLAN3_VERIFICATION_REPORT.md tests/a11y/axe-sweep.mjs tests/a11y/results.json &amp;&amp; git status --short
+</code></pre>
+<ul>
+<li>[ ] <strong>Step 2: Commit</strong></li>
+</ul>
+<pre><code class="language-bash">cd /Users/morlock/fun/02_PowerShell_Projects/psscript-redesign-2026-04-28 &amp;&amp; git commit -m &quot;$(cat &lt;&lt;'EOF'
+chore(redesign): Plan 3 verification artifacts
+
+V1 Vitest suite, V2 production build budget, V3 axe-core a11y sweep
+across the 6 brand routes + 3 representative operator routes.
+
+V4 (full 136-capture pixelmatch visual diff) is intentionally deferred
+to the human reviewer because most route diffs will be huge mismatches
+by design — auto-running it without triage produces noise, not signal.
+The runnable command is recorded in the verification report and in
+plan-3-verification.md.
+
+Co-Authored-By: Claude Opus 4.7 (1M context) &lt;noreply@anthropic.com&gt;
+EOF
+)&quot; &amp;&amp; git log --oneline -3
+</code></pre>
+<hr />
+<h2 id="self-review">Self-Review</h2>
+<ul>
+<li><strong>Spec coverage:</strong> the design spec's section 11 ("Risk + Verification") calls for a visual diff baseline (V4), an a11y sweep (V3), a perf budget (V2), and full test green (V1). All four are addressed.</li>
+<li><strong>Honesty:</strong> V4 is deferred deliberately. Auto-running it on a redesign that changes every visual would produce a 100% mismatch rate by definition — meaningless without human triage. The plan acknowledges this rather than papering over it.</li>
+<li><strong>No placeholders:</strong> every step has the exact command. The harness for V3 is fully written, not a sketch.</li>
+</ul>
+<hr />
+<h2 id="execution">Execution</h2>
+<p>Recommended: superpowers:executing-plans for V1–V3 + V6, then human triage of V4 + V5 outside this session.</p>
+    <div class="footer">Generated 2026-04-29 14:08 UTC</div>
+  </div>
+</body>
+</html>

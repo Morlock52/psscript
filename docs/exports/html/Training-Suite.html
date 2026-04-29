@@ -269,109 +269,99 @@ body {
   </section>
   
     <h1 id="psscript-training-suite">PSScript Training Suite</h1>
-<p>AI-powered PowerShell operations training, packaged for onboarding, compliance, and day-2 operations. Built in the style of polished GitHub READMEs (à la Supabase/PostHog) but tailored to this platform.</p>
-<h2 id="what-youll-learn-at-a-glance">What you’ll learn (at a glance)</h2>
+<p>Last updated: April 29, 2026.</p>
+<p>This training suite is aligned to the current hosted PSScript app: Netlify for the UI/API, hosted Supabase for Auth/Postgres, admin approval for access, responsive desktop/mobile UI, upload/delete management, hosted script editing, VS Code <code>.ps1</code> export, AI runtime requirements, PDF analysis export, and support operations.</p>
+<p>The suite teaches the full lifecycle of script design and management: intake, design review, upload, metadata, analysis, remediation, discovery, export, deletion, governance, and support.</p>
+<h2 id="lifecycle-map">Lifecycle Map</h2>
+<p><img alt="Script lifecycle map" src="docs/graphics/script-lifecycle-map-2026-04-29.svg" /></p>
+<p>The operating model follows three rules:</p>
+<ul>
+<li>Hosted Supabase is the system of record. Do not use a local database for training or production workflows.</li>
+<li>Netlify deploys the UI and API functions together, so training and support evidence should include the active deploy URL and Function logs.</li>
+<li>Every script lifecycle action should leave evidence: metadata, analysis result, PDF report, support note, or cleanup record.</li>
+</ul>
+<h2 id="what-you-will-learn">What You Will Learn</h2>
 <table>
 <thead>
 <tr>
 <th>Capability</th>
 <th>What it teaches</th>
-<th>Key screens/assets</th>
+<th>Current screen</th>
 </tr>
 </thead>
 <tbody>
 <tr>
+<td>Access</td>
+<td>Supabase login, pending approval, enabled profile gate</td>
+<td><code>../screenshots/readme/login.png</code></td>
+</tr>
+<tr>
 <td>Script intake</td>
-<td>Uploads, tagging, versioning, hash-based dedup</td>
-<td><img alt="Scripts" src="docs/screenshots/scripts.png" /></td>
+<td>Uploads, metadata, versioning, delete, bulk delete</td>
+<td><code>../screenshots/readme/scripts.png</code></td>
+</tr>
+<tr>
+<td>Script edit</td>
+<td>Hosted edit, save, and VS Code <code>.ps1</code> export</td>
+<td><code>../screenshots/readme/script-edit-vscode.png</code></td>
 </tr>
 <tr>
 <td>AI analysis</td>
-<td>Security scoring, fix recommendations, audit notes</td>
-<td><img alt="Analysis" src="docs/screenshots/analysis.png" /></td>
+<td>Criteria payload, security score, runtime requirements, remediation, PDF export</td>
+<td><code>../screenshots/readme/analysis-runtime-requirements.png</code></td>
 </tr>
 <tr>
 <td>Discovery</td>
-<td>Keyword + vector search, documentation explorer, crawl</td>
-<td><img alt="Documentation" src="docs/screenshots/documentation.png" /></td>
+<td>Keyword/vector search and documentation-assisted review</td>
+<td><code>../screenshots/readme/documentation.png</code></td>
 </tr>
 <tr>
-<td>AI copilots</td>
-<td>Chat assistant, agentic workflows, history</td>
-<td><img alt="Chat" src="docs/screenshots/chat.png" /></td>
+<td>Assistant</td>
+<td>Chat and agentic route aliases through <code>/ai/assistant</code></td>
+<td><code>../screenshots/readme/agentic-assistant.png</code></td>
 </tr>
 <tr>
 <td>Operations</td>
-<td>Analytics, API usage, exports, training links</td>
-<td><img alt="Analytics" src="docs/screenshots/analytics.png" /></td>
+<td>Netlify deploy health, Supabase-backed data maintenance</td>
+<td><code>../screenshots/readme/data-maintenance.png</code></td>
+</tr>
+<tr>
+<td>Mobile</td>
+<td>Topbar, drawer navigation, responsive cards</td>
+<td><code>../screenshots/readme/dashboard.png</code></td>
 </tr>
 </tbody>
 </table>
-<h2 id="feature-tour-readme-style-checklist">Feature tour (README-style checklist)</h2>
+<h2 id="current-environment">Current Environment</h2>
 <ul>
-<li>[x] Script library with categories, owners, version history, and file-hash dedup</li>
-<li>[x] AI analysis pipeline (scorecards, recommendations, remediation notes)</li>
-<li>[x] Documentation explorer + crawler for command references and context storage</li>
-<li>[x] Chat/agent experiences for “how to fix” and “explain this script” prompts</li>
-<li>[x] Analytics dashboards for adoption, security posture, and training coverage</li>
-<li>[x] Export kit (HTML, PDF, DOCX) plus Playwright screenshot automation</li>
+<li>Production app: <code>https://pstest.morloksmaze.com</code></li>
+<li>API: same-origin Netlify Functions under <code>/api/*</code></li>
+<li>Database: hosted Supabase Postgres with RLS and <code>pgvector</code></li>
+<li>Auth: Supabase Auth plus admin approval</li>
+<li>Local database: not used</li>
+<li>Upload limit: hosted uploads are capped at 4 MB in the UI to stay below Netlify buffered Function payload limits after binary overhead.</li>
 </ul>
-<h2 id="architecture-and-flows">Architecture and flows</h2>
-<p><img alt="Architecture" src="docs/graphics/architecture.svg" /></p>
-<p><img alt="Analysis Pipeline" src="docs/graphics/analysis-pipeline.svg" /></p>
-<p><img alt="Script Lifecycle" src="docs/graphics/lifecycle.svg" /></p>
-<p><img alt="Search Modes" src="docs/graphics/search-modes.svg" /></p>
-<p><img alt="Security Scorecard" src="docs/graphics/security-scorecard.svg" /></p>
-<h2 id="screenshot-gallery">Screenshot gallery</h2>
-<ul>
-<li>Login + default access: <img alt="Login" src="docs/screenshots/login.png" /></li>
-<li>Dashboard with stats and activity: <img alt="Dashboard" src="docs/screenshots/dashboard.png" /></li>
-<li>Script detail with metadata: <img alt="Script Detail" src="docs/screenshots/script-detail.png" /></li>
-<li>Upload with live preview: <img alt="Upload" src="docs/screenshots/upload.png" /></li>
-<li>AI analysis + recommendations: <img alt="Analysis" src="docs/screenshots/analysis.png" /></li>
-<li>Documentation explorer: <img alt="Docs" src="docs/screenshots/documentation.png" /></li>
-<li>Chat assistant: <img alt="Chat" src="docs/screenshots/chat.png" /></li>
-<li>Analytics + ops KPIs: <img alt="Analytics" src="docs/screenshots/analytics.png" /></li>
-<li>Settings with training links: <img alt="Settings" src="docs/screenshots/settings.png" /></li>
-</ul>
-<h2 id="audience-and-outcomes">Audience and outcomes</h2>
-<table>
-<thead>
-<tr>
-<th>Audience</th>
-<th>Goals</th>
-<th>Outcome artifacts</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td>Script authors</td>
-<td>Upload, categorize, analyze, and improve scripts</td>
-<td>Curated script library with analysis reports</td>
-</tr>
-<tr>
-<td>Security reviewers</td>
-<td>Evaluate risk, audit findings, track fixes</td>
-<td>Security scorecards and remediation notes</td>
-</tr>
-<tr>
-<td>Platform admins</td>
-<td>Operate services, manage users, tune data</td>
-<td>Environment runbook and health checklist</td>
-</tr>
-</tbody>
-</table>
-<h2 id="training-roadmap">Training roadmap</h2>
-<p><img alt="Training Roadmap" src="docs/graphics/training-roadmap.svg" /></p>
-<pre><code class="language-mermaid">flowchart LR
-  Start[Orientation] --&gt; Foundations[Module 01: Platform Foundations]
-  Foundations --&gt; Lifecycle[Module 02: Script Lifecycle]
-  Lifecycle --&gt; Analysis[Module 03: AI Analysis]
-  Analysis --&gt; Search[Module 04: Search and Discovery]
-  Search --&gt; Ops[Module 05: Operations]
-  Ops --&gt; Labs[Hands-on Labs]
+<p>For classroom UI walkthroughs that must avoid hosted mutations, run the frontend locally with mock data:</p>
+<pre><code class="language-bash">cd src/frontend
+VITE_DISABLE_AUTH=true VITE_USE_MOCKS=true npm run dev -- --host 127.0.0.1 --port 5173
 </code></pre>
-<h2 id="curriculum-map">Curriculum map</h2>
+<p>For production-like auth labs, use the hosted app and an approved account.</p>
+<h2 id="screenshot-gallery">Screenshot Gallery</h2>
+<p>Use the screenshot atlas when building training decks or support runbooks: <a href="./SCREENSHOT-ATLAS.md"><code>SCREENSHOT-ATLAS.md</code></a>.</p>
+<p><img alt="Production login" src="docs/screenshots/readme/login.png" /></p>
+<p><img alt="Dashboard" src="docs/screenshots/readme/dashboard.png" /></p>
+<p><img alt="Scripts" src="docs/screenshots/readme/scripts.png" /></p>
+<p><img alt="Upload" src="docs/screenshots/readme/upload.png" /></p>
+<p><img alt="Script detail" src="docs/screenshots/readme/script-detail.png" /></p>
+<p><img alt="Script editor with VS Code export" src="docs/screenshots/readme/script-edit-vscode.png" /></p>
+<p><img alt="Analysis" src="docs/screenshots/readme/analysis.png" /></p>
+<p><img alt="Runtime requirements" src="docs/screenshots/readme/analysis-runtime-requirements.png" /></p>
+<p><img alt="Documentation" src="docs/screenshots/readme/documentation.png" /></p>
+<p><img alt="Agentic assistant" src="docs/screenshots/readme/agentic-assistant.png" /></p>
+<p><img alt="Data maintenance" src="docs/screenshots/readme/data-maintenance.png" /></p>
+<p><img alt="Settings profile" src="docs/screenshots/readme/settings-profile.png" /></p>
+<p><img alt="Settings appearance" src="docs/screenshots/readme/settings-appearance.png" /></p>
+<h2 id="curriculum-map">Curriculum Map</h2>
 <table>
 <thead>
 <tr>
@@ -396,7 +386,7 @@ body {
 </tr>
 <tr>
 <td>Module 03</td>
-<td>AI Analysis and Security</td>
+<td>AI Analysis and PDF Export</td>
 <td>75 min</td>
 <td><code>modules/module-03-analysis.md</code></td>
 </tr>
@@ -414,6 +404,33 @@ body {
 </tr>
 </tbody>
 </table>
+<h2 id="professional-support-suite">Professional Support Suite</h2>
+<table>
+<thead>
+<tr>
+<th>Document</th>
+<th>Use</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><a href="./SCRIPT-LIFECYCLE-SUITE-2026-04-29.md"><code>SCRIPT-LIFECYCLE-SUITE-2026-04-29.md</code></a></td>
+<td>Complete script design and management lifecycle playbook</td>
+</tr>
+<tr>
+<td><a href="./TRAINING-GUIDE.md"><code>TRAINING-GUIDE.md</code></a></td>
+<td>Facilitator agenda, role paths, lab timing, and evaluation</td>
+</tr>
+<tr>
+<td><a href="./SCREENSHOT-ATLAS.md"><code>SCREENSHOT-ATLAS.md</code></a></td>
+<td>Screenshot inventory and recommended use</td>
+</tr>
+<tr>
+<td><a href="../SUPPORT.md"><code>../SUPPORT.md</code></a></td>
+<td>Support intake, escalation, and operational evidence guide</td>
+</tr>
+</tbody>
+</table>
 <h2 id="labs">Labs</h2>
 <table>
 <thead>
@@ -426,17 +443,17 @@ body {
 <tbody>
 <tr>
 <td>Lab 01</td>
-<td>Upload and analyze a script</td>
+<td>Upload, analyze, and export a script report</td>
 <td><code>labs/lab-01-upload-analyze.md</code></td>
 </tr>
 <tr>
 <td>Lab 02</td>
-<td>Vector search and similarity</td>
+<td>Search and similarity</td>
 <td><code>labs/lab-02-vector-search.md</code></td>
 </tr>
 <tr>
 <td>Lab 03</td>
-<td>Documentation and AI chat workflows</td>
+<td>Documentation and assistant workflows</td>
 <td><code>labs/lab-03-docs-chat.md</code></td>
 </tr>
 <tr>
@@ -446,61 +463,12 @@ body {
 </tr>
 <tr>
 <td>Lab 05</td>
-<td>Settings and training resources</td>
-<td><code>TRAINING-GUIDE.md</code></td>
+<td>Governance, support evidence, and safe cleanup</td>
+<td><code>labs/lab-05-governance-support.md</code></td>
 </tr>
 </tbody>
 </table>
-<h2 id="suggested-schedules">Suggested schedules</h2>
-<table>
-<thead>
-<tr>
-<th>Option</th>
-<th>Duration</th>
-<th>Focus</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td>Fast start</td>
-<td>1 day</td>
-<td>Core workflows and 2 labs</td>
-</tr>
-<tr>
-<td>Standard</td>
-<td>2 days</td>
-<td>All modules and all labs</td>
-</tr>
-<tr>
-<td>Deep dive</td>
-<td>3 days</td>
-<td>Modules, labs, and ops review</td>
-</tr>
-</tbody>
-</table>
-<h2 id="environment-setup-mock-friendly">Environment setup (mock-friendly)</h2>
-<p>1) Start everything with sample data:</p>
-<pre><code class="language-bash">./start-all-mock.sh
-</code></pre>
-<p>2) Ports:
-- Frontend: http://localhost:3002
-- Backend API: http://localhost:4000/api
-- AI service: http://localhost:8000</p>
-<p>3) Capture screenshots (Playwright):</p>
-<pre><code class="language-bash">./scripts/capture-readme-screenshots.sh
-</code></pre>
-<p>Screens land in <code>docs/screenshots/</code>.</p>
-<h2 id="exported-formats-print-kit">Exported formats (print kit)</h2>
-<p>Generate HTML, PDF, and DOCX:</p>
-<pre><code class="language-bash">scripts/export-docs.sh --all
-</code></pre>
-<p>Key outputs (after export):
-- <code>docs/exports/pdf/Training-Suite.pdf</code>
-- <code>docs/exports/pdf/Training-Guide.pdf</code>
-- <code>docs/exports/docx/Training-Suite.docx</code>
-- <code>docs/exports/docx/Training-Guide.docx</code>
-- <code>docs/exports/pdf/README.pdf</code> (project README)</p>
-<h2 id="assessment-rubric">Assessment rubric</h2>
+<h2 id="assessment-rubric">Assessment Rubric</h2>
 <table>
 <thead>
 <tr>
@@ -512,39 +480,51 @@ body {
 </thead>
 <tbody>
 <tr>
+<td>Access</td>
+<td>Signs in and recognizes pending approval</td>
+<td>Explains enabled-profile gate</td>
+<td>Troubleshoots redirects and profile state</td>
+</tr>
+<tr>
 <td>Script hygiene</td>
-<td>Upload and tag scripts</td>
-<td>Adds categories and metadata</td>
-<td>Enforces naming and dedup rules</td>
+<td>Uploads and tags scripts</td>
+<td>Uses versioning and dedup signals</td>
+<td>Safely deletes/bulk deletes test data</td>
 </tr>
 <tr>
 <td>AI analysis</td>
-<td>Runs analysis</td>
-<td>Applies recommendations</td>
-<td>Creates reusable fixes and notes</td>
+<td>Reads scores and runtime notes</td>
+<td>Applies remediation</td>
+<td>Exports and shares PDF evidence</td>
 </tr>
 <tr>
 <td>Search</td>
-<td>Keyword search</td>
-<td>Uses filters</td>
-<td>Uses vector similarity effectively</td>
+<td>Uses keyword search</td>
+<td>Applies filters</td>
+<td>Explains embedding-backed similarity</td>
 </tr>
 <tr>
 <td>Operations</td>
-<td>Starts services</td>
-<td>Reads logs</td>
-<td>Diagnoses and remediates issues</td>
+<td>Reads health state</td>
+<td>Uses Netlify/Supabase logs</td>
+<td>Runs safe backup-first maintenance</td>
+</tr>
+<tr>
+<td>Mobile</td>
+<td>Opens key screens</td>
+<td>Uses drawer navigation</td>
+<td>Confirms no overlap at phone width</td>
 </tr>
 </tbody>
 </table>
-<h2 id="support-and-troubleshooting">Support and troubleshooting</h2>
+<h2 id="support">Support</h2>
 <ul>
-<li>Demo access: <code>../LOGIN-CREDENTIALS.md</code></li>
-<li>Support + operational playbooks: <code>../SUPPORT.md</code></li>
-<li>Infrastructure setup: <code>../../DOCKER-QUICKSTART.md</code></li>
-<li>References/inspirations: <code>../REFERENCE-SOURCES.md</code> (GitHub README patterns)</li>
+<li>Current setup: <code>../GETTING-STARTED.md</code></li>
+<li>Production deployment: <code>../NETLIFY-SUPABASE-DEPLOYMENT.md</code></li>
+<li>Support and escalation: <code>../SUPPORT.md</code></li>
+<li>Data maintenance: <code>../DATA-MAINTENANCE.md</code></li>
 </ul>
-    <div class="footer">Generated 2026-04-27 08:51 UTC</div>
+    <div class="footer">Generated 2026-04-29 14:08 UTC</div>
   </div>
 </body>
 </html>

@@ -1,6 +1,6 @@
 # Database Documentation
 ## PSScript PowerShell Analysis Platform
-**Last Updated:** January 15, 2026
+**Last Updated:** April 29, 2026
 **Version:** 1.0.0
 
 ---
@@ -169,16 +169,16 @@ DB_SSL_CA_PATH=           # Path to SSL CA certificate
 | version | INTEGER | DEFAULT 1 | Current version number |
 | is_public | BOOLEAN | DEFAULT false | Public visibility |
 | execution_count | INTEGER | DEFAULT 0 | Times executed |
-| file_hash | VARCHAR(255) | NULL | MD5 hash for deduplication |
+| file_hash | VARCHAR(255) | NULL | SHA-256 content hash for deduplication |
 | average_execution_time | FLOAT | NULL | Average runtime |
 | last_executed_at | TIMESTAMP | NULL | Last execution time |
 | created_at | TIMESTAMP | DEFAULT NOW() | Creation time |
 | updated_at | TIMESTAMP | DEFAULT NOW() | Last update time |
 
 **Deduplication:**
-- File hash (MD5) calculated on upload
-- Prevents duplicate script storage
-- Returns existing script if hash matches
+- SHA-256 content hash calculated on hosted upload
+- Prevents duplicate script storage in Supabase
+- Returns the existing script when the submitted content hash matches
 
 ---
 
@@ -551,23 +551,18 @@ const valid = await bcrypt.compare(password, hash);
 
 ```
 1. Frontend Upload
-   └─→ POST /api/scripts/upload/async
-       └─→ AsyncUploadController.uploadFiles()
-           └─→ Multer validates file
-               └─→ Queue upload for processing
-
-2. Background Processing
-   └─→ processNextFile()
-       └─→ Calculate MD5 hash
-           └─→ Check deduplication
-               └─→ INSERT Script (if new)
-                   └─→ CREATE ScriptVersion v1
+   └─→ POST /.netlify/functions/api/scripts/upload
+       └─→ Netlify function validates the JSON script payload
+           └─→ Calculate SHA-256 content hash
+               └─→ Check Supabase deduplication
+                   └─→ INSERT scripts row (if new)
+                       └─→ CREATE script_versions v1
 
 3. Analysis (if requested)
-   └─→ POST /api/scripts/:id/analyze
-       └─→ Fetch script content
-           └─→ Call AI service (port 8000)
-               └─→ UPSERT ScriptAnalysis
+   └─→ POST /.netlify/functions/api/scripts/:id/analyze
+       └─→ Fetch script content from Supabase
+           └─→ Generate AI analysis and runtime requirements
+               └─→ UPSERT script_analysis
                    └─→ Cache results (Redis)
 
 4. Retrieval

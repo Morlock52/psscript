@@ -1,0 +1,406 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <base href="file:///Users/morlock/fun/02_PowerShell_Projects/psscript/" />
+  <title>docs-AI-ANALYSIS-CRITERIA-2026-04-26</title>
+  <style>
+:root {
+  color-scheme: light;
+}
+body {
+  font-family: "Segoe UI", "Helvetica Neue", Arial, sans-serif;
+  margin: 0;
+  padding: 0;
+  background: #f4f7fb;
+  color: #0f172a;
+}
+.markdown-body {
+  max-width: 980px;
+  margin: 0 auto;
+  padding: 36px 42px 64px;
+  line-height: 1.65;
+  background: #ffffff;
+  box-shadow: 0 24px 70px rgba(15, 23, 42, 0.08);
+}
+.markdown-body h1 {
+  font-size: 34px;
+  line-height: 1.12;
+  margin-bottom: 12px;
+  color: #07111f;
+  border-bottom: 3px solid #0ea5e9;
+  padding-bottom: 12px;
+  page-break-before: always;
+  page-break-after: avoid;
+  break-before: page;
+  break-after: avoid;
+}
+.markdown-body h1:first-of-type {
+  page-break-before: avoid;
+  break-before: avoid;
+}
+.markdown-body h2 {
+  font-size: 23px;
+  line-height: 1.2;
+  margin-top: 34px;
+  color: #102a43;
+  border-bottom: 1px solid #d7e2ee;
+  padding-bottom: 8px;
+  page-break-after: avoid;
+  break-after: avoid;
+}
+.markdown-body h3 {
+  font-size: 18px;
+  margin-top: 20px;
+  color: #1e3a5f;
+  page-break-after: avoid;
+  break-after: avoid;
+}
+.markdown-body h4, .markdown-body h5, .markdown-body h6 {
+  page-break-after: avoid;
+  break-after: avoid;
+}
+.markdown-body table {
+  width: 100%;
+  border-collapse: collapse;
+  margin: 18px 0 24px;
+  font-size: 13px;
+  page-break-inside: avoid;
+  break-inside: avoid;
+  box-shadow: 0 1px 0 #e2e8f0;
+}
+.markdown-body th,
+.markdown-body td {
+  border: 1px solid #e2e8f0;
+  padding: 9px 11px;
+  text-align: left;
+  vertical-align: top;
+}
+.markdown-body th {
+  background: #eef6ff;
+  color: #0f3157;
+  font-weight: 700;
+}
+.markdown-body tr:nth-child(even) td {
+  background: #fbfdff;
+}
+.markdown-body tr {
+  page-break-inside: avoid;
+  break-inside: avoid;
+}
+.markdown-body code {
+  background: #f1f5f9;
+  padding: 2px 4px;
+  border-radius: 4px;
+  font-family: "SFMono-Regular", Menlo, Consolas, monospace;
+  font-size: 0.92em;
+}
+.markdown-body pre {
+  background: #111827;
+  color: #e5eef8;
+  padding: 16px;
+  border-radius: 10px;
+  overflow-x: auto;
+  border: 1px solid #243244;
+  page-break-inside: avoid;
+  break-inside: avoid;
+}
+.markdown-body pre code {
+  background: transparent;
+  color: inherit;
+}
+.markdown-body blockquote {
+  border-left: 5px solid #0ea5e9;
+  margin: 18px 0;
+  padding: 12px 18px;
+  background: #eff8ff;
+  color: #18324f;
+  border-radius: 0 10px 10px 0;
+}
+.markdown-body img {
+  max-width: 100%;
+  height: auto;
+  display: block;
+  margin: 16px 0;
+  border-radius: 10px;
+  box-shadow: 0 8px 20px rgba(15, 23, 42, 0.12);
+  page-break-inside: avoid;
+  break-inside: avoid;
+}
+.markdown-body figure {
+  page-break-inside: avoid;
+  break-inside: avoid;
+  margin: 16px 0;
+}
+.markdown-body a {
+  color: #2563eb;
+  text-decoration: none;
+}
+.markdown-body a:hover {
+  text-decoration: underline;
+}
+.cover {
+  min-height: 760px;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+  padding: 72px 60px 64px;
+  background:
+    linear-gradient(135deg, rgba(9, 30, 66, 0.96) 0%, rgba(12, 74, 110, 0.94) 54%, rgba(20, 83, 45, 0.9) 100%),
+    radial-gradient(circle at 18% 18%, rgba(14, 165, 233, 0.25), transparent 36%);
+  color: #f8fafc;
+  border-radius: 0;
+  margin: -36px -42px 40px;
+  position: relative;
+  overflow: hidden;
+}
+.cover::before {
+  content: "PSScript";
+  position: absolute;
+  top: 46px;
+  left: 60px;
+  font-size: 12px;
+  font-weight: 800;
+  letter-spacing: 0.24em;
+  text-transform: uppercase;
+  color: rgba(226, 246, 255, 0.82);
+}
+.cover::after {
+  content: "";
+  position: absolute;
+  right: -120px;
+  top: -120px;
+  width: 360px;
+  height: 360px;
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  transform: rotate(28deg);
+}
+.markdown-body .cover-title {
+  font-size: 48px;
+  line-height: 1.04;
+  font-weight: 800;
+  color: #f8fafc;
+  border-bottom: 3px solid #38bdf8;
+  margin: 0 0 16px;
+  max-width: 720px;
+}
+.cover-subtitle {
+  font-size: 20px;
+  line-height: 1.42;
+  color: #dbeafe;
+  margin: 0 0 22px;
+  max-width: 720px;
+}
+.cover-meta {
+  display: inline-block;
+  width: fit-content;
+  font-size: 13px;
+  color: #e0f2fe;
+  background: rgba(255, 255, 255, 0.12);
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  border-radius: 999px;
+  padding: 7px 13px;
+}
+.page-break {
+  page-break-after: always;
+  break-after: page;
+}
+.footer {
+  margin-top: 40px;
+  font-size: 12px;
+  color: #64748b;
+  border-top: 1px solid #e2e8f0;
+  padding-top: 14px;
+}
+/* Print and PDF-specific styles */
+@page {
+  size: A4;
+  margin: 18mm 16mm 20mm;
+}
+@media print {
+  body {
+    background: #ffffff;
+  }
+  .markdown-body {
+    max-width: none;
+    margin: 0;
+    padding: 0;
+    box-shadow: none;
+  }
+  .cover {
+    margin: 0 0 28px;
+  }
+  .markdown-body {
+    orphans: 3;
+    widows: 3;
+  }
+  .markdown-body p {
+    orphans: 3;
+    widows: 3;
+  }
+  .markdown-body li {
+    page-break-inside: avoid;
+    break-inside: avoid;
+  }
+  .markdown-body ul, .markdown-body ol {
+    page-break-before: avoid;
+    break-before: avoid;
+  }
+  .markdown-body blockquote {
+    page-break-inside: avoid;
+    break-inside: avoid;
+  }
+  /* Keep section content together */
+  .markdown-body h2 + *, .markdown-body h3 + * {
+    page-break-before: avoid;
+    break-before: avoid;
+  }
+}
+</style>
+</head>
+<body>
+  <div class="markdown-body">
+    
+    <h1 id="ai-analysis-criteria-design-2026-04-26">AI Analysis Criteria Design - 2026-04-26</h1>
+<p>This document defines the current PSScript AI analysis output contract for PowerShell script review. The criteria are designed for hosted Netlify execution and hosted Supabase persistence without requiring a database schema migration.</p>
+<p>Updated April 29, 2026: the UI now surfaces runtime requirements even when a saved full analysis does not exist yet. The same contract remains backward compatible: runtime details can come from analysis JSON fields, <code>execution_summary</code>, or direct script parsing.</p>
+<h2 id="research-sources">Research Sources</h2>
+<ul>
+<li>Microsoft Learn, PSScriptAnalyzer rules: static PowerShell analysis surfaces common issues as Error, Warning, and Information findings.
+  https://learn.microsoft.com/en-us/powershell/utility-modules/psscriptanalyzer/rules/readme?view=ps-modules</li>
+<li>Microsoft Learn, ShouldProcess and WhatIf: destructive or state-changing functions should implement <code>SupportsShouldProcess</code>, <code>$PSCmdlet.ShouldProcess</code>, <code>-WhatIf</code>, and <code>-Confirm</code> behavior.
+  https://learn.microsoft.com/en-us/powershell/scripting/learn/deep-dives/everything-about-shouldprocess?view=powershell-7.6</li>
+<li>Microsoft Learn, advanced function methods: <code>ShouldProcess</code> is the confirmation method for actions that change system state.
+  https://learn.microsoft.com/en-us/powershell/module/microsoft.powershell.core/about/about_functions_advanced_methods?view=powershell-7.6</li>
+<li>Microsoft Learn, PowerShell Gallery publishing guidance: package authors are expected to run PSScriptAnalyzer and address Errors and Warnings or document exceptions.
+  https://learn.microsoft.com/en-us/powershell/gallery/concepts/publishing-guidelines?view=powershellget-3.x</li>
+<li>OWASP Secure Coding Practices Quick Reference Guide: emphasizes input validation, avoiding dynamic execution of user-supplied data, secure credentials, least privilege database access, and protected configuration.
+  https://owasp.org/www-project-secure-coding-practices-quick-reference-guide/stable-en/02-checklist/05-checklist</li>
+<li>NIST SP 800-218 SSDF: recommends secure development practices that reduce released vulnerabilities, mitigate impact, and address root causes through review and testing.
+  https://csrc.nist.gov/pubs/sp/800/218/final</li>
+</ul>
+<h2 id="weighted-criteria">Weighted Criteria</h2>
+<table>
+<thead>
+<tr>
+<th>Criterion</th>
+<th style="text-align: right;">Weight</th>
+<th>What It Checks</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Security</td>
+<td style="text-align: right;">35</td>
+<td>Secrets, credential handling, injection, dynamic execution, remote downloads, privilege changes, remoting, and least privilege.</td>
+</tr>
+<tr>
+<td>Operational safety</td>
+<td style="text-align: right;">20</td>
+<td>Destructive/system-changing commands, target scope, rollback expectations, idempotency, and <code>SupportsShouldProcess</code>/<code>-WhatIf</code>/<code>-Confirm</code>.</td>
+</tr>
+<tr>
+<td>Reliability</td>
+<td style="text-align: right;">15</td>
+<td>Strict mode, parameter validation, terminating errors, try/catch behavior, retries, timeouts, and observable failure modes.</td>
+</tr>
+<tr>
+<td>Maintainability</td>
+<td style="text-align: right;">15</td>
+<td>Verb-Noun naming, approved verbs, advanced functions, comment-based help, readable parameters, comments, and module hygiene.</td>
+</tr>
+<tr>
+<td>Compatibility</td>
+<td style="text-align: right;">10</td>
+<td>PowerShell 5.1 versus 7+ behavior, platform dependencies, deprecated cmdlets, required modules, and environmental assumptions.</td>
+</tr>
+<tr>
+<td>Performance</td>
+<td style="text-align: right;">5</td>
+<td>Pipeline streaming, filtering strategy, collection materialization, remote fan-out, throttling, and expensive loops.</td>
+</tr>
+</tbody>
+</table>
+<h2 id="output-shape">Output Shape</h2>
+<p>Every new hosted analysis should include:</p>
+<pre><code class="language-json">{
+  &quot;criteria_version&quot;: &quot;2026-04-26&quot;,
+  &quot;purpose&quot;: &quot;Short script purpose&quot;,
+  &quot;beginner_explanation&quot;: &quot;Plain English explanation&quot;,
+  &quot;management_summary&quot;: &quot;Business and operational summary&quot;,
+  &quot;security_score&quot;: 0,
+  &quot;quality_score&quot;: 0,
+  &quot;risk_score&quot;: 0,
+  &quot;suggestions&quot;: [],
+  &quot;command_details&quot;: [],
+  &quot;security_issues&quot;: [],
+  &quot;best_practice_violations&quot;: [],
+  &quot;performance_insights&quot;: [],
+  &quot;analysis_criteria&quot;: [
+    {
+      &quot;name&quot;: &quot;Security&quot;,
+      &quot;weight&quot;: 35,
+      &quot;score&quot;: 0,
+      &quot;summary&quot;: &quot;Reason for the score&quot;
+    }
+  ],
+  &quot;prioritized_findings&quot;: [
+    {
+      &quot;id&quot;: &quot;PS-001&quot;,
+      &quot;severity&quot;: &quot;high&quot;,
+      &quot;category&quot;: &quot;Security&quot;,
+      &quot;title&quot;: &quot;Finding title&quot;,
+      &quot;evidence&quot;: &quot;Concrete script evidence&quot;,
+      &quot;impact&quot;: &quot;Why it matters&quot;,
+      &quot;recommendation&quot;: &quot;What to change&quot;
+    }
+  ],
+  &quot;remediation_plan&quot;: [
+    {
+      &quot;priority&quot;: &quot;high&quot;,
+      &quot;action&quot;: &quot;Specific fix&quot;,
+      &quot;rationale&quot;: &quot;Reason&quot;,
+      &quot;effort&quot;: &quot;low|medium|high&quot;
+    }
+  ],
+  &quot;test_recommendations&quot;: [],
+  &quot;required_modules&quot;: [],
+  &quot;required_powershell_version&quot;: &quot;PowerShell 7+ or Windows PowerShell 5.1 with notes&quot;,
+  &quot;confidence&quot;: 0.75,
+  &quot;execution_summary&quot;: {
+    &quot;what_it_does&quot;: &quot;Summary&quot;,
+    &quot;business_value&quot;: &quot;Value&quot;,
+    &quot;key_actions&quot;: [],
+    &quot;required_modules&quot;: [],
+    &quot;required_powershell_version&quot;: &quot;PowerShell version guidance&quot;,
+    &quot;operational_risk&quot;: &quot;Risk summary&quot;
+  }
+}
+</code></pre>
+<h2 id="runtime-requirements-display">Runtime Requirements Display</h2>
+<p>The frontend displays a <strong>Runtime Requirements</strong> panel on analysis routes:</p>
+<ul>
+<li>PowerShell version guidance from <code>requiredPowerShellVersion</code>, <code>required_powershell_version</code>, <code>runtimeRequirements.powerShellVersion</code>, <code>runtime_requirements.powershell_version</code>, or <code>execution_summary.required_powershell_version</code>.</li>
+<li>Required modules from <code>requiredModules</code>, <code>required_modules</code>, <code>runtimeRequirements.modules</code>, <code>runtime_requirements.modules</code>, <code>execution_summary.required_modules</code>, or <code>execution_summary.modules</code>.</li>
+<li>Script-derived fallbacks from <code>#Requires -Version</code>, <code>#Requires -PSEdition</code>, <code>#Requires -Modules</code>, <code>Import-Module</code>, <code>Add-Type -AssemblyName</code>, and common command/module patterns.</li>
+<li>If full AI analysis is missing, the panel still renders from script content so reviewers can see likely PowerShell version and module/assembly needs before running analysis.</li>
+</ul>
+<p>The detector is advisory. Operators should confirm requirements on the target host before production execution, especially for Windows-only assemblies, Active Directory, Exchange, Microsoft Graph, Azure, VMware PowerCLI, or Pester dependencies.</p>
+<h2 id="persistence-strategy">Persistence Strategy</h2>
+<p>The hosted Supabase <code>script_analysis</code> table already stores JSONB fields for <code>command_details</code>, <code>security_issues</code>, <code>best_practice_violations</code>, <code>performance_insights</code>, and <code>execution_summary</code>. The richer criteria are stored inside <code>execution_summary</code> to avoid requiring a database migration:</p>
+<ul>
+<li><code>execution_summary.criteria_version</code></li>
+<li><code>execution_summary.analysis_criteria</code></li>
+<li><code>execution_summary.prioritized_findings</code></li>
+<li><code>execution_summary.remediation_plan</code></li>
+<li><code>execution_summary.test_recommendations</code></li>
+<li><code>execution_summary.required_modules</code></li>
+<li><code>execution_summary.required_powershell_version</code></li>
+<li><code>execution_summary.confidence</code></li>
+</ul>
+<p>The Netlify API maps those fields to camelCase for the frontend and the Markdown export.</p>
+    <div class="footer">Generated 2026-04-29 14:08 UTC</div>
+  </div>
+</body>
+</html>

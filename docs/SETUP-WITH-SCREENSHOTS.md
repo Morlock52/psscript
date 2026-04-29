@@ -1,6 +1,6 @@
 # Setup Guide With Screenshots
 
-Last updated: April 28, 2026.
+Last updated: April 29, 2026.
 
 This guide describes the current PSScript setup: Netlify for the app/API edge and hosted Supabase for all production database state.
 
@@ -120,6 +120,9 @@ npm run dev -- --host 127.0.0.1 --port 5173
 | Upload desktop | `docs/screenshots/current-2026-04-28/upload-desktop.png` |
 | Agentic assistant alias | `docs/screenshots/current-2026-04-28/agentic-ai-desktop.png` |
 | Data maintenance | `docs/screenshots/current-2026-04-28/settings-data-desktop.png` |
+| Script editor and VS Code export | `docs/screenshots/current-2026-04-29/script-edit-vscode.png` |
+| Runtime requirements | `docs/screenshots/current-2026-04-29/analysis-runtime-requirements.png` |
+| Appearance settings | `docs/screenshots/current-2026-04-29/settings-appearance.png` |
 
 ![Mobile dashboard](./screenshots/current-2026-04-28/dashboard-mobile.png)
 
@@ -132,13 +135,31 @@ npm run dev -- --host 127.0.0.1 --port 5173
 Current behavior:
 
 - upload and list scripts
+- edit hosted title, description, and script content
+- export the current edit buffer as a `.ps1` file for VS Code
 - analyze scripts with the criteria payload
+- view runtime requirements for PowerShell version, modules, and assemblies before production execution
 - search by text and embeddings
 - delete single scripts
 - bulk delete selected scripts
 - export analysis as PDF from `/api/scripts/:id/export-analysis`
 
 The export route should download a PDF. It should not return a JSON file as the user-facing report.
+
+![Script editor with VS Code export](./screenshots/current-2026-04-29/script-edit-vscode.png)
+
+![Runtime requirements](./screenshots/current-2026-04-29/analysis-runtime-requirements.png)
+
+## 8a. Appearance Settings
+
+![Appearance settings](./screenshots/current-2026-04-29/settings-appearance.png)
+
+Settings -> Appearance owns the current user-facing display controls:
+
+- light and dark mode selection
+- muted operator accent color
+- font-size slider
+- reduce motion and high-contrast accessibility toggles
 
 ## 9. Data Maintenance
 
@@ -180,23 +201,26 @@ curl -fsS https://pstest.morloksmaze.com/api/health
 
 Latest documented validation:
 
+- 31 focused shell/token tests passed after the edit/runtime update.
 - 109 frontend tests passed.
 - frontend build passed.
 - Netlify production deploy succeeded.
-- production Lighthouse after mobile fix: Performance 25, Accessibility 100, Best Practices 100, SEO 81, PWA 30.
+- production Lighthouse after edit/runtime redeploy: Performance 37, Accessibility 100, Best Practices 100, SEO 81, PWA 30.
 
 ## 12. Screenshot Refresh
 
-Current captures are in `docs/screenshots/current-2026-04-28/`. README frames are regenerated with:
+Current captures are in `docs/screenshots/current-2026-04-28/` and `docs/screenshots/current-2026-04-29/`. README frames are regenerated with:
 
 ```bash
 npm run screenshots:readme
 ```
 
-## References Reviewed April 28, 2026
+## References Reviewed April 28-29, 2026
 
 - Netlify Functions: https://docs.netlify.com/build/functions/overview/
 - Netlify redirects: https://docs.netlify.com/routing/redirects/
 - Supabase Auth: https://supabase.com/docs/guides/auth
 - Supabase Google OAuth: https://supabase.com/docs/guides/auth/social-login/auth-google
 - Supabase RLS: https://supabase.com/docs/guides/database/postgres/row-level-security
+- Diataxis documentation framework: https://diataxis.fr/
+- Google image documentation guidance: https://developers.google.com/style/images

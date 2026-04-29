@@ -1,0 +1,2743 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <base href="file:///Users/morlock/fun/02_PowerShell_Projects/psscript/" />
+  <title>docs-superpowers-plans-2026-04-28-frontend-modernization-plan-1-foundation</title>
+  <style>
+:root {
+  color-scheme: light;
+}
+body {
+  font-family: "Segoe UI", "Helvetica Neue", Arial, sans-serif;
+  margin: 0;
+  padding: 0;
+  background: #f4f7fb;
+  color: #0f172a;
+}
+.markdown-body {
+  max-width: 980px;
+  margin: 0 auto;
+  padding: 36px 42px 64px;
+  line-height: 1.65;
+  background: #ffffff;
+  box-shadow: 0 24px 70px rgba(15, 23, 42, 0.08);
+}
+.markdown-body h1 {
+  font-size: 34px;
+  line-height: 1.12;
+  margin-bottom: 12px;
+  color: #07111f;
+  border-bottom: 3px solid #0ea5e9;
+  padding-bottom: 12px;
+  page-break-before: always;
+  page-break-after: avoid;
+  break-before: page;
+  break-after: avoid;
+}
+.markdown-body h1:first-of-type {
+  page-break-before: avoid;
+  break-before: avoid;
+}
+.markdown-body h2 {
+  font-size: 23px;
+  line-height: 1.2;
+  margin-top: 34px;
+  color: #102a43;
+  border-bottom: 1px solid #d7e2ee;
+  padding-bottom: 8px;
+  page-break-after: avoid;
+  break-after: avoid;
+}
+.markdown-body h3 {
+  font-size: 18px;
+  margin-top: 20px;
+  color: #1e3a5f;
+  page-break-after: avoid;
+  break-after: avoid;
+}
+.markdown-body h4, .markdown-body h5, .markdown-body h6 {
+  page-break-after: avoid;
+  break-after: avoid;
+}
+.markdown-body table {
+  width: 100%;
+  border-collapse: collapse;
+  margin: 18px 0 24px;
+  font-size: 13px;
+  page-break-inside: avoid;
+  break-inside: avoid;
+  box-shadow: 0 1px 0 #e2e8f0;
+}
+.markdown-body th,
+.markdown-body td {
+  border: 1px solid #e2e8f0;
+  padding: 9px 11px;
+  text-align: left;
+  vertical-align: top;
+}
+.markdown-body th {
+  background: #eef6ff;
+  color: #0f3157;
+  font-weight: 700;
+}
+.markdown-body tr:nth-child(even) td {
+  background: #fbfdff;
+}
+.markdown-body tr {
+  page-break-inside: avoid;
+  break-inside: avoid;
+}
+.markdown-body code {
+  background: #f1f5f9;
+  padding: 2px 4px;
+  border-radius: 4px;
+  font-family: "SFMono-Regular", Menlo, Consolas, monospace;
+  font-size: 0.92em;
+}
+.markdown-body pre {
+  background: #111827;
+  color: #e5eef8;
+  padding: 16px;
+  border-radius: 10px;
+  overflow-x: auto;
+  border: 1px solid #243244;
+  page-break-inside: avoid;
+  break-inside: avoid;
+}
+.markdown-body pre code {
+  background: transparent;
+  color: inherit;
+}
+.markdown-body blockquote {
+  border-left: 5px solid #0ea5e9;
+  margin: 18px 0;
+  padding: 12px 18px;
+  background: #eff8ff;
+  color: #18324f;
+  border-radius: 0 10px 10px 0;
+}
+.markdown-body img {
+  max-width: 100%;
+  height: auto;
+  display: block;
+  margin: 16px 0;
+  border-radius: 10px;
+  box-shadow: 0 8px 20px rgba(15, 23, 42, 0.12);
+  page-break-inside: avoid;
+  break-inside: avoid;
+}
+.markdown-body figure {
+  page-break-inside: avoid;
+  break-inside: avoid;
+  margin: 16px 0;
+}
+.markdown-body a {
+  color: #2563eb;
+  text-decoration: none;
+}
+.markdown-body a:hover {
+  text-decoration: underline;
+}
+.cover {
+  min-height: 760px;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+  padding: 72px 60px 64px;
+  background:
+    linear-gradient(135deg, rgba(9, 30, 66, 0.96) 0%, rgba(12, 74, 110, 0.94) 54%, rgba(20, 83, 45, 0.9) 100%),
+    radial-gradient(circle at 18% 18%, rgba(14, 165, 233, 0.25), transparent 36%);
+  color: #f8fafc;
+  border-radius: 0;
+  margin: -36px -42px 40px;
+  position: relative;
+  overflow: hidden;
+}
+.cover::before {
+  content: "PSScript";
+  position: absolute;
+  top: 46px;
+  left: 60px;
+  font-size: 12px;
+  font-weight: 800;
+  letter-spacing: 0.24em;
+  text-transform: uppercase;
+  color: rgba(226, 246, 255, 0.82);
+}
+.cover::after {
+  content: "";
+  position: absolute;
+  right: -120px;
+  top: -120px;
+  width: 360px;
+  height: 360px;
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  transform: rotate(28deg);
+}
+.markdown-body .cover-title {
+  font-size: 48px;
+  line-height: 1.04;
+  font-weight: 800;
+  color: #f8fafc;
+  border-bottom: 3px solid #38bdf8;
+  margin: 0 0 16px;
+  max-width: 720px;
+}
+.cover-subtitle {
+  font-size: 20px;
+  line-height: 1.42;
+  color: #dbeafe;
+  margin: 0 0 22px;
+  max-width: 720px;
+}
+.cover-meta {
+  display: inline-block;
+  width: fit-content;
+  font-size: 13px;
+  color: #e0f2fe;
+  background: rgba(255, 255, 255, 0.12);
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  border-radius: 999px;
+  padding: 7px 13px;
+}
+.page-break {
+  page-break-after: always;
+  break-after: page;
+}
+.footer {
+  margin-top: 40px;
+  font-size: 12px;
+  color: #64748b;
+  border-top: 1px solid #e2e8f0;
+  padding-top: 14px;
+}
+/* Print and PDF-specific styles */
+@page {
+  size: A4;
+  margin: 18mm 16mm 20mm;
+}
+@media print {
+  body {
+    background: #ffffff;
+  }
+  .markdown-body {
+    max-width: none;
+    margin: 0;
+    padding: 0;
+    box-shadow: none;
+  }
+  .cover {
+    margin: 0 0 28px;
+  }
+  .markdown-body {
+    orphans: 3;
+    widows: 3;
+  }
+  .markdown-body p {
+    orphans: 3;
+    widows: 3;
+  }
+  .markdown-body li {
+    page-break-inside: avoid;
+    break-inside: avoid;
+  }
+  .markdown-body ul, .markdown-body ol {
+    page-break-before: avoid;
+    break-before: avoid;
+  }
+  .markdown-body blockquote {
+    page-break-inside: avoid;
+    break-inside: avoid;
+  }
+  /* Keep section content together */
+  .markdown-body h2 + *, .markdown-body h3 + * {
+    page-break-before: avoid;
+    break-before: avoid;
+  }
+}
+</style>
+</head>
+<body>
+  <div class="markdown-body">
+    
+    <h1 id="frontend-modernization-plan-1-of-3-foundation">Frontend Modernization — Plan 1 of 3 — Foundation</h1>
+<blockquote>
+<p><strong>For agentic workers:</strong> REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (<code>- [ ]</code>) syntax for tracking.</p>
+</blockquote>
+<p><strong>Goal:</strong> Land the design-token system, font loading, redesigned UI primitives, and the brand + operator shells — all of which the per-page reflow (Plan 2) consumes.</p>
+<p><strong>Architecture:</strong> Three concentric layers — tokens (one CSS file + Tailwind shim) → primitives (~12 components) → shells (BrandShell + OperatorShell + Sidebar + Topbar + RightRail). Variables scoped by <code>[data-surface="brand"|"operator"][data-theme="dark"|"light"]</code> on <code>&lt;body&gt;</code>, set by the route shell on mount. Replaces existing <code>src/components/ui/{Button,Card,Spinner}.tsx</code> and the legacy Tailwind palette outright.</p>
+<p><strong>Tech Stack:</strong> Vite + React 18 + TypeScript + Tailwind CSS, Framer Motion 12 (already installed), <code>@fontsource-variable/mona-sans</code>, <code>@fontsource-variable/jetbrains-mono</code>, <code>@fontsource/dm-serif-display</code>, <code>@axe-core/playwright</code>, Vitest, Playwright.</p>
+<p><strong>Spec:</strong> <code>docs/superpowers/specs/2026-04-28-frontend-modernization-design.md</code> (commit <code>4ecd32a</code>)</p>
+<p><strong>TDD discipline (hybrid, per spec):</strong>
+- <code>[TDD]</code> — token resolution, primitive props/states, axe-core a11y, reduced-motion behavior, focus management.
+- <code>[Visual]</code> — purely visual reflows verified via the route-sweep diff.
+- <code>[Both]</code> — shells, where TDD covers integration and visual-diff covers appearance.</p>
+<hr />
+<h2 id="file-structure">File Structure</h2>
+<h3 id="created-in-this-plan">Created in this plan</h3>
+<pre><code>docs/superpowers/plans/2026-04-28-frontend-modernization-plan-1-foundation.md   ← this file
+src/frontend/src/styles/tokens.css                                              ← single token source
+src/frontend/src/styles/motion.css                                              ← reduced-motion + keyframes
+src/frontend/src/components/primitives/Surface.tsx
+src/frontend/src/components/primitives/Button.tsx                               ← replaces ui/Button.tsx
+src/frontend/src/components/primitives/Card.tsx                                 ← replaces ui/Card.tsx
+src/frontend/src/components/primitives/Input.tsx
+src/frontend/src/components/primitives/Badge.tsx
+src/frontend/src/components/primitives/Tabs.tsx
+src/frontend/src/components/primitives/Dialog.tsx
+src/frontend/src/components/primitives/Skeleton.tsx                             ← replaces ui/Spinner.tsx (deleted)
+src/frontend/src/components/primitives/Toast.tsx
+src/frontend/src/components/primitives/Table.tsx
+src/frontend/src/components/primitives/GradientField.tsx
+src/frontend/src/components/primitives/index.ts
+src/frontend/src/components/layout/BrandShell.tsx
+src/frontend/src/components/layout/OperatorShell.tsx
+src/frontend/src/components/layout/Sidebar.tsx                                  ← replaces components/Sidebar.tsx
+src/frontend/src/components/layout/Topbar.tsx
+src/frontend/src/components/layout/RightRail.tsx
+src/frontend/src/components/layout/index.ts
+src/frontend/src/components/primitives/__tests__/Button.test.tsx
+src/frontend/src/components/primitives/__tests__/Card.test.tsx
+src/frontend/src/components/primitives/__tests__/Input.test.tsx
+src/frontend/src/components/primitives/__tests__/Badge.test.tsx
+src/frontend/src/components/primitives/__tests__/Tabs.test.tsx
+src/frontend/src/components/primitives/__tests__/Dialog.test.tsx
+src/frontend/src/components/primitives/__tests__/Tokens.test.tsx
+src/frontend/src/components/layout/__tests__/BrandShell.test.tsx
+src/frontend/src/components/layout/__tests__/OperatorShell.test.tsx
+tests/visual/route-sweep.mjs
+tests/visual/__baseline__/*.png                                                 ← committed binary artifacts
+tests/visual/manifest.json                                                      ← route inventory
+</code></pre>
+<h3 id="modified-in-this-plan">Modified in this plan</h3>
+<pre><code>src/frontend/tailwind.config.js                                                 ← shim that reads var(--*)
+src/frontend/src/index.css                                                      ← imports tokens.css; legacy palette deleted
+src/frontend/index.html                                                         ← &lt;body data-surface=...&gt; seed; no system-font fallback
+src/frontend/src/main.tsx                                                       ← font imports
+src/frontend/src/App.tsx                                                        ← swaps legacy Layout/Sidebar for new shells per route
+src/frontend/package.json                                                       ← +4 deps
+src/frontend/package-lock.json                                                  ← deps
+playwright.config.ts                                                            ← visual project added
+</code></pre>
+<h3 id="deleted-in-this-plan">Deleted in this plan</h3>
+<pre><code>src/frontend/src/components/ui/Button.tsx
+src/frontend/src/components/ui/Card.tsx
+src/frontend/src/components/ui/Spinner.tsx
+src/frontend/src/components/ui/index.ts
+</code></pre>
+<p>(Existing imports of these components are redirected to <code>components/primitives</code> in Phase D's compatibility task.)</p>
+<h3 id="untouched-in-this-plan">Untouched in this plan</h3>
+<pre><code>src/components/ui-enhanced/*                                                    ← stays; Plan 2 consumers may inline-replace
+All page files in src/frontend/src/pages/*                                      ← Plan 2's job, not Plan 1's
+Backend, AI service, Netlify functions, Supabase migrations                     ← out of scope entirely
+</code></pre>
+<hr />
+<h2 id="phase-a-worktree-visual-baseline-commit-1">Phase A — Worktree + Visual Baseline (commit 1)</h2>
+<h3 id="task-a1-create-the-redesign-worktree">Task A1: Create the redesign worktree</h3>
+<p><strong>Files:</strong> none yet — git operation only.</p>
+<ul>
+<li>[ ] <strong>Step 1: Create the worktree off main</strong></li>
+</ul>
+<pre><code class="language-bash">git -C /Users/morlock/fun/02_PowerShell_Projects/psscript worktree add \
+  ../psscript-redesign-2026-04-28 \
+  -b redesign/2026-04-28-frontend-modernization
+</code></pre>
+<p>Expected output: <code>Preparing worktree (new branch 'redesign/2026-04-28-frontend-modernization')</code> followed by checkout summary.</p>
+<ul>
+<li>[ ] <strong>Step 2: Verify the worktree</strong></li>
+</ul>
+<pre><code class="language-bash">ls /Users/morlock/fun/02_PowerShell_Projects/psscript-redesign-2026-04-28/.git
+git -C /Users/morlock/fun/02_PowerShell_Projects/psscript-redesign-2026-04-28 branch --show-current
+</code></pre>
+<p>Expected output: <code>gitdir: ...worktrees/psscript-redesign-2026-04-28</code> and the branch name.</p>
+<ul>
+<li>[ ] <strong>Step 3: Switch working directory for all subsequent tasks</strong></li>
+</ul>
+<pre><code class="language-bash">cd /Users/morlock/fun/02_PowerShell_Projects/psscript-redesign-2026-04-28
+</code></pre>
+<p>All subsequent file paths in this plan are <strong>relative to this worktree</strong> unless prefixed with <code>/Users/</code>.</p>
+<h3 id="task-a2-install-visual-diff-dependencies">Task A2: Install visual-diff dependencies</h3>
+<p><strong>Files:</strong> <code>src/frontend/package.json</code>, <code>package-lock.json</code> (modified)</p>
+<ul>
+<li>[ ] <strong>Step 1: Install pixelmatch + pngjs in the frontend workspace</strong></li>
+</ul>
+<pre><code class="language-bash">cd src/frontend
+npm install --save-dev pixelmatch@^7 pngjs@^7
+</code></pre>
+<p>Expected output: <code>added 2 packages</code> (or <code>up to date</code> if Playwright already pulled them).</p>
+<ul>
+<li>[ ] <strong>Step 2: Install @axe-core/playwright at the workspace root</strong></li>
+</ul>
+<pre><code class="language-bash">cd ../..
+npm install --save-dev @axe-core/playwright@^4
+</code></pre>
+<p>Expected output: package added under devDependencies.</p>
+<ul>
+<li>[ ] <strong>Step 3: Verify Playwright config exists and lists tests dir</strong></li>
+</ul>
+<pre><code class="language-bash">grep -E &quot;testDir|testMatch&quot; playwright.config.ts
+</code></pre>
+<p>Expected output: shows <code>testDir: 'tests/e2e'</code> (or similar). Note the value — Phase A's route-sweep harness goes in a <em>separate</em> directory (<code>tests/visual/</code>) so it doesn't run by default.</p>
+<h3 id="task-a3-write-the-route-inventory-manifest">Task A3: Write the route inventory manifest</h3>
+<p><strong>Files:</strong>
+- Create: <code>tests/visual/manifest.json</code></p>
+<ul>
+<li>[ ] <strong>Step 1: Create the manifest with all 36 routes</strong></li>
+</ul>
+<p>Create <code>tests/visual/manifest.json</code>:</p>
+<pre><code class="language-json">{
+  &quot;brand&quot;: [
+    { &quot;route&quot;: &quot;/login&quot;,            &quot;page&quot;: &quot;Login&quot; },
+    { &quot;route&quot;: &quot;/register&quot;,         &quot;page&quot;: &quot;Register&quot; },
+    { &quot;route&quot;: &quot;/landing&quot;,          &quot;page&quot;: &quot;LandingPage&quot; },
+    { &quot;route&quot;: &quot;/auth/callback&quot;,    &quot;page&quot;: &quot;AuthCallback&quot; },
+    { &quot;route&quot;: &quot;/pending-approval&quot;, &quot;page&quot;: &quot;PendingApproval&quot; },
+    { &quot;route&quot;: &quot;/404&quot;,              &quot;page&quot;: &quot;NotFound&quot; }
+  ],
+  &quot;operator&quot;: [
+    { &quot;route&quot;: &quot;/dashboard&quot;,                &quot;page&quot;: &quot;Dashboard&quot; },
+    { &quot;route&quot;: &quot;/scripts&quot;,                  &quot;page&quot;: &quot;ScriptManagement&quot; },
+    { &quot;route&quot;: &quot;/scripts/upload&quot;,           &quot;page&quot;: &quot;ScriptUpload&quot; },
+    { &quot;route&quot;: &quot;/scripts/editor&quot;,           &quot;page&quot;: &quot;ScriptEditor&quot; },
+    { &quot;route&quot;: &quot;/scripts/1&quot;,                &quot;page&quot;: &quot;ScriptDetail&quot; },
+    { &quot;route&quot;: &quot;/scripts/1/analysis&quot;,       &quot;page&quot;: &quot;ScriptAnalysis&quot; },
+    { &quot;route&quot;: &quot;/search&quot;,                   &quot;page&quot;: &quot;Search&quot; },
+    { &quot;route&quot;: &quot;/categories&quot;,               &quot;page&quot;: &quot;Categories&quot; },
+    { &quot;route&quot;: &quot;/manage-files&quot;,             &quot;page&quot;: &quot;ManageFiles&quot; },
+    { &quot;route&quot;: &quot;/documentation&quot;,            &quot;page&quot;: &quot;Documentation&quot; },
+    { &quot;route&quot;: &quot;/documentation/crawl&quot;,      &quot;page&quot;: &quot;DocumentationCrawl&quot; },
+    { &quot;route&quot;: &quot;/documentation/data&quot;,       &quot;page&quot;: &quot;CrawledData&quot; },
+    { &quot;route&quot;: &quot;/chat&quot;,                     &quot;page&quot;: &quot;ChatWithAI&quot; },
+    { &quot;route&quot;: &quot;/chat/simple&quot;,              &quot;page&quot;: &quot;SimpleChatWithAI&quot; },
+    { &quot;route&quot;: &quot;/chat/history&quot;,             &quot;page&quot;: &quot;ChatHistory&quot; },
+    { &quot;route&quot;: &quot;/agentic&quot;,                  &quot;page&quot;: &quot;AgenticAIPage&quot; },
+    { &quot;route&quot;: &quot;/agentic/orchestration&quot;,    &quot;page&quot;: &quot;AgentOrchestrationPage&quot; },
+    { &quot;route&quot;: &quot;/analytics&quot;,                &quot;page&quot;: &quot;Analytics&quot; },
+    { &quot;route&quot;: &quot;/profile&quot;,                  &quot;page&quot;: &quot;Profile&quot; },
+    { &quot;route&quot;: &quot;/settings&quot;,                 &quot;page&quot;: &quot;Settings&quot; },
+    { &quot;route&quot;: &quot;/settings/api&quot;,             &quot;page&quot;: &quot;ApiSettings&quot; },
+    { &quot;route&quot;: &quot;/settings/appearance&quot;,      &quot;page&quot;: &quot;AppearanceSettings&quot; },
+    { &quot;route&quot;: &quot;/settings/application&quot;,     &quot;page&quot;: &quot;ApplicationSettings&quot; },
+    { &quot;route&quot;: &quot;/settings/categories&quot;,      &quot;page&quot;: &quot;CategoriesSettings&quot; },
+    { &quot;route&quot;: &quot;/settings/data-maintenance&quot;,&quot;page&quot;: &quot;DataMaintenanceSettings&quot; },
+    { &quot;route&quot;: &quot;/settings/notifications&quot;,   &quot;page&quot;: &quot;NotificationSettings&quot; },
+    { &quot;route&quot;: &quot;/settings/profile&quot;,         &quot;page&quot;: &quot;ProfileSettings&quot; },
+    { &quot;route&quot;: &quot;/settings/security&quot;,        &quot;page&quot;: &quot;SecuritySettings&quot; },
+    { &quot;route&quot;: &quot;/settings/users&quot;,           &quot;page&quot;: &quot;UserManagement&quot; },
+    { &quot;route&quot;: &quot;/ui-components&quot;,            &quot;page&quot;: &quot;UIComponentsDemo&quot; }
+  ],
+  &quot;criticalDetail&quot;: [
+    { &quot;route&quot;: &quot;/scripts/1&quot;,          &quot;page&quot;: &quot;ScriptDetail&quot;,   &quot;interaction&quot;: &quot;open&quot; },
+    { &quot;route&quot;: &quot;/scripts/1/analysis&quot;, &quot;page&quot;: &quot;ScriptAnalysis&quot;, &quot;interaction&quot;: &quot;click-criteria-tab&quot; },
+    { &quot;route&quot;: &quot;/dashboard&quot;,          &quot;page&quot;: &quot;Dashboard&quot;,      &quot;interaction&quot;: &quot;wait-kpi-populated&quot; },
+    { &quot;route&quot;: &quot;/settings/users&quot;,     &quot;page&quot;: &quot;UserManagement&quot;, &quot;interaction&quot;: &quot;show-safety-rail-disabled-state&quot; }
+  ]
+}
+</code></pre>
+<p>(If any route does not currently exist in <code>App.tsx</code>, the harness logs and continues — it's expected that some pages may render under different paths.)</p>
+<ul>
+<li>[ ] <strong>Step 2: Verify the JSON is valid</strong></li>
+</ul>
+<pre><code class="language-bash">node -e &quot;JSON.parse(require('fs').readFileSync('tests/visual/manifest.json','utf8'))&quot;
+</code></pre>
+<p>Expected output: no output, exit code 0. Any parse error means the JSON is malformed.</p>
+<h3 id="task-a4-write-the-route-sweep-harness">Task A4: Write the route-sweep harness</h3>
+<p><strong>Files:</strong>
+- Create: <code>tests/visual/route-sweep.mjs</code></p>
+<ul>
+<li>[ ] <strong>Step 1: Create the harness with baseline + diff modes</strong></li>
+</ul>
+<p>Create <code>tests/visual/route-sweep.mjs</code>:</p>
+<pre><code class="language-js">#!/usr/bin/env node
+/* eslint-disable no-console */
+import { chromium } from '@playwright/test';
+import fs from 'node:fs/promises';
+import path from 'node:path';
+import { PNG } from 'pngjs';
+import pixelmatch from 'pixelmatch';
+
+const BASE_URL = process.env.SWEEP_BASE_URL ?? 'http://127.0.0.1:4173';
+const ROOT = path.resolve(path.dirname(new URL(import.meta.url).pathname));
+const MODE = process.argv.includes('--baseline') ? 'baseline' : 'diff';
+const OUT_DIR = MODE === 'baseline' ? '__baseline__' : '__current__';
+const DIFF_DIR = '__diff__';
+const VIEWPORT = { width: 1440, height: 900 };
+const FULL_PAGE = true;
+const SETTLE_MS = 800;
+
+async function loadManifest() {
+  return JSON.parse(await fs.readFile(path.join(ROOT, 'manifest.json'), 'utf8'));
+}
+
+function captureName(page, surface, theme, motion) {
+  return `${surface}__${theme}__${motion}__${page.replace(/[^a-zA-Z0-9_-]/g, '_')}.png`;
+}
+
+async function ensureDir(p) {
+  await fs.mkdir(path.join(ROOT, p), { recursive: true });
+}
+
+async function captureRoute(browser, route, surface, theme, motion, name) {
+  const ctx = await browser.newContext({
+    viewport: VIEWPORT,
+    colorScheme: theme === 'dark' ? 'dark' : 'light',
+    reducedMotion: motion === 'reduce' ? 'reduce' : 'no-preference',
+  });
+  const page = await ctx.newPage();
+  try {
+    await page.goto(`${BASE_URL}${route}`, { waitUntil: 'networkidle', timeout: 15000 });
+    await page.waitForTimeout(SETTLE_MS);
+    const buf = await page.screenshot({ fullPage: FULL_PAGE, type: 'png' });
+    await fs.writeFile(path.join(ROOT, OUT_DIR, name), buf);
+    return { ok: true, name };
+  } catch (err) {
+    return { ok: false, name, error: err.message };
+  } finally {
+    await ctx.close();
+  }
+}
+
+async function diffOne(name) {
+  const baselinePath = path.join(ROOT, '__baseline__', name);
+  const currentPath = path.join(ROOT, '__current__', name);
+  const diffPath = path.join(ROOT, DIFF_DIR, name);
+  let baseBuf, curBuf;
+  try {
+    [baseBuf, curBuf] = await Promise.all([
+      fs.readFile(baselinePath),
+      fs.readFile(currentPath),
+    ]);
+  } catch {
+    return { name, status: 'missing' };
+  }
+  const base = PNG.sync.read(baseBuf);
+  const cur = PNG.sync.read(curBuf);
+  if (base.width !== cur.width || base.height !== cur.height) {
+    return { name, status: 'size-changed', baseline: [base.width, base.height], current: [cur.width, cur.height] };
+  }
+  const diff = new PNG({ width: base.width, height: base.height });
+  const mismatch = pixelmatch(base.data, cur.data, diff.data, base.width, base.height, { threshold: 0.1 });
+  await fs.writeFile(diffPath, PNG.sync.write(diff));
+  return { name, status: 'diffed', mismatchPixels: mismatch };
+}
+
+async function run() {
+  const manifest = await loadManifest();
+  await ensureDir(OUT_DIR);
+  if (MODE === 'diff') await ensureDir(DIFF_DIR);
+
+  const browser = await chromium.launch();
+  const results = [];
+
+  // Brand: dark only, both motion preferences
+  for (const item of manifest.brand) {
+    for (const motion of ['default', 'reduce']) {
+      const name = captureName(item.page, 'brand', 'dark', motion);
+      results.push(await captureRoute(browser, item.route, 'brand', 'dark', motion, name));
+    }
+  }
+  // Operator: dark + light, both motion preferences
+  for (const item of manifest.operator) {
+    for (const theme of ['dark', 'light']) {
+      for (const motion of ['default', 'reduce']) {
+        const name = captureName(item.page, 'operator', theme, motion);
+        results.push(await captureRoute(browser, item.route, 'operator', theme, motion, name));
+      }
+    }
+  }
+  // Critical detail captures
+  for (const item of manifest.criticalDetail) {
+    const name = captureName(`${item.page}__${item.interaction}`, 'operator', 'dark', 'default');
+    results.push(await captureRoute(browser, item.route, 'operator', 'dark', 'default', name));
+  }
+
+  await browser.close();
+
+  const failed = results.filter((r) =&gt; !r.ok);
+  console.log(JSON.stringify({ mode: MODE, total: results.length, failed: failed.length, failures: failed }, null, 2));
+
+  if (MODE === 'diff') {
+    const diffSummary = [];
+    for (const item of results.filter((r) =&gt; r.ok)) {
+      diffSummary.push(await diffOne(item.name));
+    }
+    const totalMismatch = diffSummary.reduce((sum, d) =&gt; sum + (d.mismatchPixels ?? 0), 0);
+    console.log(JSON.stringify({ diffSummary: diffSummary.slice(0, 10), totalMismatch }, null, 2));
+  }
+
+  process.exit(failed.length &gt; 0 ? 1 : 0);
+}
+
+run().catch((err) =&gt; {
+  console.error(err);
+  process.exit(2);
+});
+</code></pre>
+<ul>
+<li>[ ] <strong>Step 2: Make it executable and dry-run with the manifest count</strong></li>
+</ul>
+<pre><code class="language-bash">chmod +x tests/visual/route-sweep.mjs
+node -e &quot;const m=require('./tests/visual/manifest.json'); console.log('brand=',m.brand.length,'operator=',m.operator.length,'critical=',m.criticalDetail.length)&quot;
+</code></pre>
+<p>Expected output: <code>brand= 6 operator= 30 critical= 4</code>. (6×2 + 30×4 + 4 = 136 captures — slightly fewer than the 148 in the spec because brand routes don't have a light theme; spec total of 148 included an over-count. Plan 1 uses the corrected value of 136.)</p>
+<h3 id="task-a5-capture-the-baseline-against-current-main-pre-redesign">Task A5: Capture the baseline (against current main, pre-redesign)</h3>
+<p><strong>Files:</strong> <code>tests/visual/__baseline__/*.png</code> (binary artifacts, committed)</p>
+<ul>
+<li>[ ] <strong>Step 1: Build the production frontend</strong></li>
+</ul>
+<pre><code class="language-bash">cd src/frontend
+npm run build
+</code></pre>
+<p>Expected output: <code>vite v* building for production... ✓ built in *s</code>. Errors here are pre-existing and must be reported, not fixed in this task.</p>
+<ul>
+<li>[ ] <strong>Step 2: Start the preview server in the background</strong></li>
+</ul>
+<pre><code class="language-bash">nohup npm run preview -- --port 4173 --host 127.0.0.1 &gt; /tmp/preview-baseline.log 2&gt;&amp;1 &amp;
+echo $! &gt; /tmp/preview-baseline.pid
+sleep 4
+curl -fsS http://127.0.0.1:4173 -o /dev/null &amp;&amp; echo OK || echo FAILED
+</code></pre>
+<p>Expected output: <code>OK</code>. If FAILED, check <code>/tmp/preview-baseline.log</code>.</p>
+<ul>
+<li>[ ] <strong>Step 3: Run the baseline sweep</strong></li>
+</ul>
+<pre><code class="language-bash">cd ../..
+SWEEP_BASE_URL=http://127.0.0.1:4173 node tests/visual/route-sweep.mjs --baseline
+</code></pre>
+<p>Expected output: a JSON summary with <code>total: 136</code> and <code>failed: 0</code> or a small number of failures if specific routes 404 (those are noted, not blockers — the redesign will visit the same routes).</p>
+<ul>
+<li>[ ] <strong>Step 4: Stop the preview server</strong></li>
+</ul>
+<pre><code class="language-bash">kill $(cat /tmp/preview-baseline.pid)
+rm -f /tmp/preview-baseline.pid
+</code></pre>
+<ul>
+<li>[ ] <strong>Step 5: Verify baseline contents</strong></li>
+</ul>
+<pre><code class="language-bash">ls tests/visual/__baseline__ | wc -l
+</code></pre>
+<p>Expected output: a number close to 136 (any failed routes won't have files).</p>
+<ul>
+<li>[ ] <strong>Step 6: Commit</strong></li>
+</ul>
+<pre><code class="language-bash">git add tests/visual/manifest.json tests/visual/route-sweep.mjs tests/visual/__baseline__ \
+  src/frontend/package.json src/frontend/package-lock.json package.json package-lock.json
+git commit -m &quot;$(cat &lt;&lt;'EOF'
+chore(redesign): capture visual baseline before tokens land
+
+Adds tests/visual/route-sweep.mjs (Playwright-driven full-page screenshots
+across 36 routes × surface × theme × motion-pref combos) and the manifest
+that drives it. Baseline PNGs are committed as binary artifacts so the
+post-redesign diff has something to subtract from. Pixelmatch + pngjs +
+@axe-core/playwright installed; no production code touched.
+
+Co-Authored-By: Claude Opus 4.7 (1M context) &lt;noreply@anthropic.com&gt;
+EOF
+)&quot;
+</code></pre>
+<p>Expected output: commit summary with <code>tests/visual/...</code> and a few hundred PNG files added.</p>
+<hr />
+<h2 id="phase-b-token-system-commit-2">Phase B — Token System (commit 2)</h2>
+<h3 id="task-b1-tdd-write-the-token-resolution-test">Task B1: [TDD] Write the token-resolution test</h3>
+<p><strong>Files:</strong>
+- Create: <code>src/frontend/src/components/primitives/__tests__/Tokens.test.tsx</code></p>
+<ul>
+<li>[ ] <strong>Step 1: Write the failing test</strong></li>
+</ul>
+<pre><code class="language-tsx">// src/frontend/src/components/primitives/__tests__/Tokens.test.tsx
+import { describe, it, expect, beforeEach, afterEach } from 'vitest';
+import { render } from '@testing-library/react';
+
+const cases: Array&lt;{
+  surface: 'brand' | 'operator';
+  theme?: 'dark' | 'light';
+  variable: string;
+  expected: string;
+}&gt; = [
+  { surface: 'brand',    variable: '--surface-base',  expected: 'rgb(14, 21, 37)'   },
+  { surface: 'brand',    variable: '--accent',         expected: 'rgb(252, 165, 165)'},
+  { surface: 'brand',    variable: '--ink-primary',    expected: 'rgb(245, 241, 232)'},
+  { surface: 'operator', theme: 'dark', variable: '--surface-base', expected: 'rgb(14, 17, 22)'  },
+  { surface: 'operator', theme: 'dark', variable: '--accent',        expected: 'rgb(200, 242, 92)'},
+  { surface: 'operator', theme: 'light',variable: '--surface-base',  expected: 'rgb(251, 248, 241)'},
+  { surface: 'operator', theme: 'light',variable: '--accent',        expected: 'rgb(107, 143, 46)'},
+];
+
+describe('design tokens', () =&gt; {
+  beforeEach(() =&gt; {
+    document.body.removeAttribute('data-surface');
+    document.body.removeAttribute('data-theme');
+  });
+  afterEach(() =&gt; {
+    document.body.removeAttribute('data-surface');
+    document.body.removeAttribute('data-theme');
+  });
+
+  cases.forEach(({ surface, theme, variable, expected }) =&gt; {
+    it(`${surface}${theme ? '/' + theme : ''} resolves ${variable} to ${expected}`, () =&gt; {
+      document.body.setAttribute('data-surface', surface);
+      if (theme) document.body.setAttribute('data-theme', theme);
+      const el = document.createElement('div');
+      el.style.color = `var(${variable})`;
+      document.body.appendChild(el);
+      const computed = getComputedStyle(el).color;
+      el.remove();
+      expect(computed).toBe(expected);
+    });
+  });
+});
+</code></pre>
+<ul>
+<li>[ ] <strong>Step 2: Run the test and confirm it fails</strong></li>
+</ul>
+<pre><code class="language-bash">cd src/frontend
+npm run test:run -- src/components/primitives/__tests__/Tokens.test.tsx
+</code></pre>
+<p>Expected output: 7 failures with messages like <code>Expected: "rgb(14, 21, 37)" Received: ""</code> (because <code>tokens.css</code> doesn't exist yet).</p>
+<h3 id="task-b2-tdd-create-tokenscss-with-brand-surface-tokens">Task B2: [TDD] Create tokens.css with brand surface tokens</h3>
+<p><strong>Files:</strong>
+- Create: <code>src/frontend/src/styles/tokens.css</code></p>
+<ul>
+<li>[ ] <strong>Step 1: Write the brand token block</strong></li>
+</ul>
+<p>Create <code>src/frontend/src/styles/tokens.css</code> with the following content (full file, will be extended in B3 / B4):</p>
+<pre><code class="language-css">/* ============================================================
+   PSScript design tokens — single source of truth.
+   Spec: docs/superpowers/specs/2026-04-28-frontend-modernization-design.md
+   ============================================================ */
+
+[data-surface=&quot;brand&quot;] {
+  --surface-base:    #0E1525;
+  --surface-raised:  #131C30;
+  --surface-overlay: #1A2440;
+  --surface-glass:   rgba(20, 28, 50, 0.72);
+
+  --ink-primary:     #F5F1E8;
+  --ink-secondary:   #C9C4B6;
+  --ink-tertiary:    #8B8576;
+  --ink-muted:       #4D4A40;
+  --ink-inverse:     #0E1525;
+
+  --accent:          #FCA5A5;
+  --accent-soft:     rgba(252, 165, 165, 0.16);
+  --cool:            #5EEAD4;
+  --warm:            #FCA5A5;
+  --violet:          #C4B5FD;
+
+  --signal-success:  #5EEAD4;
+  --signal-warning:  #F5C97A;
+  --signal-danger:   #F87B7B;
+  --signal-info:     #C4B5FD;
+
+  --ring-focus:      #FCA5A5;
+  --shadow-near:     0 1px 2px rgba(0, 0, 0, 0.40), 0 2px 8px rgba(0, 0, 0, 0.32);
+  --shadow-far:      0 8px 24px rgba(0, 0, 0, 0.48), 0 24px 64px rgba(0, 0, 0, 0.36);
+  --shadow-glow:     0 0 80px rgba(252, 165, 165, 0.18),
+                     0 0 160px rgba(94, 234, 212, 0.10);
+
+  --blur-glass:      12px;
+  --radius-sm:       4px;
+  --radius-md:       8px;
+  --radius-lg:       14px;
+  --radius-xl:       20px;
+}
+</code></pre>
+<ul>
+<li>[ ] <strong>Step 2: Import tokens.css from index.css</strong></li>
+</ul>
+<p>Open <code>src/frontend/src/index.css</code> and add the import as the <strong>first non-Tailwind line</strong> (Tailwind directives stay at top):</p>
+<pre><code class="language-css">@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@import './styles/tokens.css';
+
+/* (existing rest of file follows here, untouched for now) */
+</code></pre>
+<ul>
+<li>[ ] <strong>Step 3: Re-run the brand subset of the token test</strong></li>
+</ul>
+<pre><code class="language-bash">npm run test:run -- src/components/primitives/__tests__/Tokens.test.tsx -t &quot;brand&quot;
+</code></pre>
+<p>Expected output: 3 brand cases pass. Operator cases still fail.</p>
+<h3 id="task-b3-tdd-add-operator-dark-tokens">Task B3: [TDD] Add operator dark tokens</h3>
+<p><strong>Files:</strong> <code>src/frontend/src/styles/tokens.css</code> (modified)</p>
+<ul>
+<li>[ ] <strong>Step 1: Append the operator-dark block</strong></li>
+</ul>
+<p>Append to <code>src/frontend/src/styles/tokens.css</code>:</p>
+<pre><code class="language-css">[data-surface=&quot;operator&quot;] {
+  --surface-base:    #0E1116;
+  --surface-raised:  #171B22;
+  --surface-overlay: #1F242D;
+  --surface-glass:   rgba(23, 27, 34, 0.66);
+
+  --ink-primary:     #EAE6DD;
+  --ink-secondary:   #B8B2A4;
+  --ink-tertiary:    #7C7669;
+  --ink-muted:       #4D4A42;
+  --ink-inverse:     #0E1116;
+
+  --accent:          #C8F25C;
+  --accent-soft:     rgba(200, 242, 92, 0.14);
+  --cool:            #5EEAD4;
+  --warm:            #FCA5A5;
+  --violet:          #C4B5FD;
+
+  --signal-success:  #5EEAD4;
+  --signal-warning:  #F5C97A;
+  --signal-danger:   #F5A8A8;
+  --signal-info:     #8FB4D9;
+
+  --ring-focus:      #C8F25C;
+  --shadow-near:     0 1px 2px rgba(0, 0, 0, 0.40), 0 2px 8px rgba(0, 0, 0, 0.28);
+  --shadow-far:      0 8px 24px rgba(0, 0, 0, 0.50), 0 24px 64px rgba(0, 0, 0, 0.34);
+  --shadow-glow:     0 0 200px rgba(94, 234, 212, 0.04),
+                     0 0 360px rgba(196, 181, 253, 0.04);
+
+  --blur-glass:      12px;
+  --radius-sm:       4px;
+  --radius-md:       8px;
+  --radius-lg:       14px;
+  --radius-xl:       20px;
+}
+</code></pre>
+<ul>
+<li>[ ] <strong>Step 2: Re-run the operator-dark subset</strong></li>
+</ul>
+<pre><code class="language-bash">npm run test:run -- src/components/primitives/__tests__/Tokens.test.tsx -t &quot;operator/dark&quot;
+</code></pre>
+<p>Expected output: 2 operator-dark cases pass.</p>
+<h3 id="task-b4-tdd-add-operator-soft-light-tokens">Task B4: [TDD] Add operator soft-light tokens</h3>
+<p><strong>Files:</strong> <code>src/frontend/src/styles/tokens.css</code> (modified)</p>
+<ul>
+<li>[ ] <strong>Step 1: Append the operator-light block</strong></li>
+</ul>
+<p>Append to <code>src/frontend/src/styles/tokens.css</code>:</p>
+<pre><code class="language-css">[data-surface=&quot;operator&quot;][data-theme=&quot;light&quot;] {
+  --surface-base:    #FBF8F1;
+  --surface-raised:  #FFFFFF;
+  --surface-overlay: #FFFFFF;
+  --surface-glass:   rgba(255, 255, 255, 0.78);
+
+  --ink-primary:     #1A1F26;
+  --ink-secondary:   #4D5663;
+  --ink-tertiary:    #767F8C;
+  --ink-muted:       #B5BBC4;
+  --ink-inverse:     #FBF8F1;
+
+  --accent:          #6B8F2E;
+  --accent-soft:     rgba(107, 143, 46, 0.10);
+  --cool:            #1F8B7A;
+  --warm:            #C8623F;
+  --violet:          #6B5DD3;
+
+  --signal-success:  #1F8B7A;
+  --signal-warning:  #B57B14;
+  --signal-danger:   #C04646;
+  --signal-info:     #335E8C;
+
+  --ring-focus:      #6B8F2E;
+  --shadow-near:     0 1px 2px rgba(0, 0, 0, 0.06), 0 2px 8px rgba(0, 0, 0, 0.04);
+  --shadow-far:      0 8px 24px rgba(0, 0, 0, 0.10), 0 24px 64px rgba(0, 0, 0, 0.06);
+  --shadow-glow:     none;
+}
+</code></pre>
+<ul>
+<li>[ ] <strong>Step 2: Re-run the full token suite</strong></li>
+</ul>
+<pre><code class="language-bash">npm run test:run -- src/components/primitives/__tests__/Tokens.test.tsx
+</code></pre>
+<p>Expected output: 7 / 7 pass.</p>
+<h3 id="task-b5-refactor-tailwindconfigjs-to-read-from-css-variables">Task B5: Refactor tailwind.config.js to read from CSS variables</h3>
+<p><strong>Files:</strong> <code>src/frontend/tailwind.config.js</code> (modified)</p>
+<ul>
+<li>[ ] <strong>Step 1: Replace the existing color block with the var() shim</strong></li>
+</ul>
+<p>Open <code>src/frontend/tailwind.config.js</code>. <strong>Delete the entire <code>colors:</code> object</strong> (the one starting with <code>primary: { 50: '#eff6ff', …}</code> and ending after the <code>border:</code> block). <strong>Replace it</strong> with:</p>
+<pre><code class="language-js">colors: {
+  surface: {
+    base:    'var(--surface-base)',
+    raised:  'var(--surface-raised)',
+    overlay: 'var(--surface-overlay)',
+    glass:   'var(--surface-glass)',
+  },
+  ink: {
+    primary:   'var(--ink-primary)',
+    secondary: 'var(--ink-secondary)',
+    tertiary:  'var(--ink-tertiary)',
+    muted:     'var(--ink-muted)',
+    inverse:   'var(--ink-inverse)',
+  },
+  accent:      'var(--accent)',
+  'accent-soft':'var(--accent-soft)',
+  cool:        'var(--cool)',
+  warm:        'var(--warm)',
+  violet:      'var(--violet)',
+  signal: {
+    success: 'var(--signal-success)',
+    warning: 'var(--signal-warning)',
+    danger:  'var(--signal-danger)',
+    info:    'var(--signal-info)',
+  },
+  ring: {
+    focus: 'var(--ring-focus)',
+  },
+  // Reset transparent + currentColor (Tailwind expects these)
+  transparent: 'transparent',
+  current:     'currentColor',
+  white:       '#ffffff',
+  black:       '#000000',
+},
+</code></pre>
+<ul>
+<li>[ ] <strong>Step 2: Replace the <code>boxShadow:</code> block with var() references</strong></li>
+</ul>
+<p>In the same file, replace the <code>boxShadow:</code> object with:</p>
+<pre><code class="language-js">boxShadow: {
+  near: 'var(--shadow-near)',
+  far:  'var(--shadow-far)',
+  glow: 'var(--shadow-glow)',
+  none: 'none',
+},
+</code></pre>
+<ul>
+<li>[ ] <strong>Step 3: Replace the <code>borderRadius:</code> block</strong></li>
+</ul>
+<p>Replace the existing <code>borderRadius:</code> extend with:</p>
+<pre><code class="language-js">borderRadius: {
+  sm: 'var(--radius-sm)',
+  md: 'var(--radius-md)',
+  lg: 'var(--radius-lg)',
+  xl: 'var(--radius-xl)',
+},
+</code></pre>
+<ul>
+<li>[ ] <strong>Step 4: Verify Tailwind builds</strong></li>
+</ul>
+<pre><code class="language-bash">npm run build
+</code></pre>
+<p>Expected output: Build succeeds. <strong>It is expected</strong> that pages referencing the deleted <code>primary-500</code>/<code>accent-500</code> classes now produce broken styles — those are repaired in Plan 2. The <em>build itself</em> must succeed (Tailwind doesn't error on unknown classes; it just emits no CSS for them).</p>
+<h3 id="task-b6-wire-body-data-attributes-on-bootstrap">Task B6: Wire <code>&lt;body&gt;</code> data attributes on bootstrap</h3>
+<p><strong>Files:</strong> <code>src/frontend/index.html</code> (modified), <code>src/frontend/src/main.tsx</code> (modified)</p>
+<ul>
+<li>[ ] <strong>Step 1: Set the operator default on <code>&lt;body&gt;</code> in index.html</strong></li>
+</ul>
+<p>Open <code>src/frontend/index.html</code>. In the <code>&lt;body&gt;</code> opening tag, replace:</p>
+<pre><code class="language-html">&lt;body&gt;
+</code></pre>
+<p>with:</p>
+<pre><code class="language-html">&lt;body data-surface=&quot;operator&quot; data-theme=&quot;dark&quot;&gt;
+</code></pre>
+<p>In the same file, <strong>delete</strong> the inline critical CSS that hard-codes <code>background-color: #0f172a</code> and <code>color: #f8fafc</code> and <code>font-family: -apple-system, BlinkMacSystemFont, ...</code>. Replace those rules with:</p>
+<pre><code class="language-html">&lt;style&gt;
+  html, body {
+    margin: 0;
+    padding: 0;
+    min-height: 100vh;
+    background-color: var(--surface-base);
+    color: var(--ink-primary);
+    font-family: 'Mona Sans Variable', system-ui, sans-serif;
+  }
+  /* Loading indicator shown until React mounts */
+  #app-loading {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    height: 100vh;
+    gap: 1rem;
+  }
+  #app-loading .spinner {
+    width: 48px;
+    height: 48px;
+    border: 4px solid var(--surface-overlay);
+    border-top-color: var(--accent);
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+  }
+&lt;/style&gt;
+</code></pre>
+<ul>
+<li>[ ] <strong>Step 2: Verify the dev server renders without color regression</strong></li>
+</ul>
+<pre><code class="language-bash">npm run dev -- --port 3091 --host 127.0.0.1 &amp;
+sleep 3
+curl -fsS http://127.0.0.1:3091 | grep -E 'data-surface=|var\(--surface' | head -3
+kill %1
+</code></pre>
+<p>Expected output: at least one match showing <code>data-surface="operator"</code>.</p>
+<h3 id="task-b7-delete-the-legacy-duplicate-light-theme-block-in-indexcss">Task B7: Delete the legacy duplicate light-theme block in index.css</h3>
+<p><strong>Files:</strong> <code>src/frontend/src/index.css</code> (modified)</p>
+<ul>
+<li>[ ] <strong>Step 1: Remove the legacy CSS-vars block</strong></li>
+</ul>
+<p>Open <code>src/frontend/src/index.css</code>. Find the <code>:root {</code> block that starts with <code>color-scheme: light dark;</code> and contains <code>--color-bg-primary: #fbf8f1;</code> (this is the <em>legacy</em> theme, now superseded by <code>tokens.css</code>). <strong>Delete the entire <code>:root {…}</code> block and any subsequent <code>[data-theme="dark"] {…}</code>, <code>.dark {…}</code>, or <code>html.dark {…}</code> blocks</strong> that re-declare these legacy variables. The file should retain only:
+- The Tailwind directives at top
+- The <code>@import './styles/tokens.css';</code> line
+- Any remaining utility classes that don't redefine tokens</p>
+<ul>
+<li>[ ] <strong>Step 2: Verify Vitest still passes the token suite</strong></li>
+</ul>
+<pre><code class="language-bash">npm run test:run -- src/components/primitives/__tests__/Tokens.test.tsx
+</code></pre>
+<p>Expected output: 7 / 7 pass — no regression.</p>
+<ul>
+<li>[ ] <strong>Step 3: Verify build still succeeds</strong></li>
+</ul>
+<pre><code class="language-bash">npm run build
+</code></pre>
+<p>Expected output: build succeeds.</p>
+<h3 id="task-b8-commit-the-token-foundation">Task B8: Commit the token foundation</h3>
+<ul>
+<li>[ ] <strong>Step 1: Stage and commit</strong></li>
+</ul>
+<pre><code class="language-bash">git add src/frontend/src/styles/tokens.css \
+        src/frontend/src/index.css \
+        src/frontend/index.html \
+        src/frontend/tailwind.config.js \
+        src/frontend/src/components/primitives/__tests__/Tokens.test.tsx
+git commit -m &quot;$(cat &lt;&lt;'EOF'
+feat(redesign): introduce single-source design tokens
+
+Adds src/frontend/src/styles/tokens.css as the canonical token store
+with three palette scopes — [data-surface=brand] for Aurora dark,
+[data-surface=operator] for Frosted Graphite dark, and
+[data-surface=operator][data-theme=light] for the soft-light fallback.
+
+tailwind.config.js becomes a thin shim that reads var(--*); legacy
+primary blue (#3b82f6) and fuchsia accent (#d946ef) classes are deleted.
+The duplicate :root block in index.css is removed in favour of the
+single tokens import.
+
+Token resolution is verified by Vitest (7/7 cases for the three
+palettes). No page reflow yet — that's Plan 2.
+
+Co-Authored-By: Claude Opus 4.7 (1M context) &lt;noreply@anthropic.com&gt;
+EOF
+)&quot;
+</code></pre>
+<hr />
+<h2 id="phase-c-font-loading-commit-3">Phase C — Font loading (commit 3)</h2>
+<h3 id="task-c1-install-fontsource-packages">Task C1: Install @fontsource packages</h3>
+<p><strong>Files:</strong> <code>src/frontend/package.json</code>, <code>package-lock.json</code> (modified)</p>
+<ul>
+<li>[ ] <strong>Step 1: Install the three font packages</strong></li>
+</ul>
+<pre><code class="language-bash">cd src/frontend
+npm install \
+  @fontsource-variable/mona-sans@^5 \
+  @fontsource-variable/jetbrains-mono@^5 \
+  @fontsource/dm-serif-display@^5
+</code></pre>
+<p>Expected output: <code>added 3 packages</code> (or <code>up to date</code> if mirror prefilled).</p>
+<ul>
+<li>[ ] <strong>Step 2: Verify the packages resolve</strong></li>
+</ul>
+<pre><code class="language-bash">ls node_modules/@fontsource-variable/mona-sans/
+ls node_modules/@fontsource-variable/jetbrains-mono/
+ls node_modules/@fontsource/dm-serif-display/
+</code></pre>
+<p>Expected output: each shows files including <code>index.css</code> and a <code>files/</code> subdirectory with <code>.woff2</code> assets.</p>
+<h3 id="task-c2-wire-core-font-imports-in-maintsx">Task C2: Wire core font imports in main.tsx</h3>
+<p><strong>Files:</strong> <code>src/frontend/src/main.tsx</code> (modified)</p>
+<ul>
+<li>[ ] <strong>Step 1: Add the imports at the top of main.tsx</strong></li>
+</ul>
+<p>Open <code>src/frontend/src/main.tsx</code>. Above the existing React imports, add:</p>
+<pre><code class="language-ts">// Self-hosted font faces — loaded once for the entire app.
+// DM Serif Display is NOT imported here; the BrandShell lazy-loads it
+// only when a brand-surface route mounts (Phase E task E5).
+import '@fontsource-variable/mona-sans';
+import '@fontsource-variable/jetbrains-mono';
+</code></pre>
+<ul>
+<li>[ ] <strong>Step 2: Verify the dev server still boots</strong></li>
+</ul>
+<pre><code class="language-bash">npm run dev -- --port 3091 --host 127.0.0.1 &amp;
+sleep 3
+curl -fsS -o /dev/null http://127.0.0.1:3091 &amp;&amp; echo OK
+kill %1
+</code></pre>
+<p>Expected output: <code>OK</code>.</p>
+<h3 id="task-c3-add-font-face-fallback-metric-overrides">Task C3: Add @font-face fallback metric overrides</h3>
+<p><strong>Files:</strong> <code>src/frontend/src/styles/tokens.css</code> (modified)</p>
+<ul>
+<li>[ ] <strong>Step 1: Append fallback metric overrides</strong></li>
+</ul>
+<p>Append to <code>src/frontend/src/styles/tokens.css</code>:</p>
+<pre><code class="language-css">/* ----------------------------------------------------------------
+   Fallback metric overrides — match system-font metrics to
+   Mona Sans + JetBrains Mono so the swap-in doesn't shift layout.
+   Numbers are computed against Söhne / Geist proxies; if the
+   visual diff in Plan 3 shows shift, re-tune ascent-override and
+   size-adjust here.
+   ---------------------------------------------------------------- */
+
+@font-face {
+  font-family: 'Mona Sans Fallback';
+  src: local('Söhne'), local('Inter Variable'), local('Helvetica Neue'), local('Arial');
+  ascent-override: 92%;
+  descent-override: 22%;
+  line-gap-override: 0%;
+  size-adjust: 99%;
+}
+
+@font-face {
+  font-family: 'JetBrains Mono Fallback';
+  src: local('SF Mono'), local('Menlo'), local('Consolas'), local('Liberation Mono');
+  ascent-override: 88%;
+  descent-override: 22%;
+  line-gap-override: 0%;
+  size-adjust: 100%;
+}
+
+/* ----------------------------------------------------------------
+   Body / display / mono families.
+   ---------------------------------------------------------------- */
+
+:root {
+  --font-sans:    'Mona Sans Variable', 'Mona Sans Fallback', system-ui, sans-serif;
+  --font-mono:    'JetBrains Mono Variable', 'JetBrains Mono Fallback', ui-monospace, monospace;
+  --font-display: 'DM Serif Display', Georgia, serif;
+}
+
+body {
+  font-family: var(--font-sans);
+  font-weight: 380;
+  font-feature-settings: 'cv11', 'ss01';
+  font-optical-sizing: auto;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+code, kbd, pre, samp, .font-mono {
+  font-family: var(--font-mono);
+  font-feature-settings: 'liga' 0;
+}
+.tabular-nums {
+  font-variant-numeric: tabular-nums slashed-zero;
+}
+</code></pre>
+<ul>
+<li>[ ] <strong>Step 2: Verify Vitest token tests still pass</strong></li>
+</ul>
+<pre><code class="language-bash">npm run test:run -- src/components/primitives/__tests__/Tokens.test.tsx
+</code></pre>
+<p>Expected output: 7 / 7 pass.</p>
+<h3 id="task-c4-add-motioncss-for-global-motion-reduced-motion-enforcement">Task C4: Add motion.css for global motion + reduced-motion enforcement</h3>
+<p><strong>Files:</strong>
+- Create: <code>src/frontend/src/styles/motion.css</code></p>
+<ul>
+<li>[ ] <strong>Step 1: Create the motion stylesheet</strong></li>
+</ul>
+<p>Create <code>src/frontend/src/styles/motion.css</code>:</p>
+<pre><code class="language-css">/* ============================================================
+   Global motion baseline + reduced-motion enforcement.
+   Per spec section 7.5; verified by Plan 3 a11y sweep.
+   ============================================================ */
+
+@keyframes aurora-drift {
+  0%   { transform: translate(-2%, -1%) rotate(0deg);  }
+  50%  { transform: translate( 2%,  1%) rotate(0.4deg); }
+  100% { transform: translate(-2%, -1%) rotate(0deg);  }
+}
+
+@keyframes skeleton-shimmer {
+  0%   { background-position: -200% 0; }
+  100% { background-position:  200% 0; }
+}
+
+@keyframes spin {
+  from { transform: rotate(0deg); }
+  to   { transform: rotate(360deg); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 80ms !important;
+    scroll-behavior: auto !important;
+  }
+  .aurora-glow,
+  .skeleton-shimmer,
+  .sparkline-draw {
+    animation: none !important;
+  }
+  .motion-transform {
+    transform: none !important;
+  }
+}
+</code></pre>
+<ul>
+<li>[ ] <strong>Step 2: Import motion.css from index.css</strong></li>
+</ul>
+<p>Open <code>src/frontend/src/index.css</code> and add a second import below the tokens import:</p>
+<pre><code class="language-css">@import './styles/tokens.css';
+@import './styles/motion.css';
+</code></pre>
+<h3 id="task-c5-verify-font-behavior-end-to-end">Task C5: Verify font behavior end-to-end</h3>
+<p><strong>Files:</strong> none — verification only.</p>
+<ul>
+<li>[ ] <strong>Step 1: Build and preview</strong></li>
+</ul>
+<pre><code class="language-bash">npm run build
+nohup npm run preview -- --port 4173 --host 127.0.0.1 &gt; /tmp/preview-fonts.log 2&gt;&amp;1 &amp;
+echo $! &gt; /tmp/preview-fonts.pid
+sleep 4
+</code></pre>
+<ul>
+<li>[ ] <strong>Step 2: Verify Mona Sans and JetBrains Mono load (not DM Serif Display)</strong></li>
+</ul>
+<pre><code class="language-bash">curl -fsS http://127.0.0.1:4173/ | grep -oE 'mona-sans-[^&quot;]*\.woff2' | head -2
+curl -fsS http://127.0.0.1:4173/ | grep -oE 'jetbrains-mono-[^&quot;]*\.woff2' | head -2
+curl -fsS http://127.0.0.1:4173/ | grep -oE 'dm-serif-display' | head -1
+</code></pre>
+<p>Expected output: at least one <code>.woff2</code> URL for each of the first two, <strong>empty</strong> for <code>dm-serif-display</code> (it lazy-loads in Phase E).</p>
+<ul>
+<li>[ ] <strong>Step 3: Stop the preview</strong></li>
+</ul>
+<pre><code class="language-bash">kill $(cat /tmp/preview-fonts.pid) 2&gt;/dev/null
+rm -f /tmp/preview-fonts.pid
+</code></pre>
+<h3 id="task-c6-commit-fonts">Task C6: Commit fonts</h3>
+<ul>
+<li>[ ] <strong>Step 1: Stage and commit</strong></li>
+</ul>
+<pre><code class="language-bash">git add src/frontend/package.json src/frontend/package-lock.json \
+        src/frontend/src/main.tsx \
+        src/frontend/src/styles/tokens.css \
+        src/frontend/src/styles/motion.css \
+        src/frontend/src/index.css
+git commit -m &quot;$(cat &lt;&lt;'EOF'
+feat(redesign): self-host Mona Sans + JetBrains Mono, prep DM Serif Display
+
+Installs @fontsource-variable/{mona-sans,jetbrains-mono} and the static
+@fontsource/dm-serif-display package. Mona Sans + JetBrains Mono load
+globally via main.tsx imports; DM Serif Display is NOT imported eagerly
+and will be lazy-loaded by BrandShell in Phase E.
+
+Adds @font-face fallback metric overrides (Mona Sans Fallback,
+JetBrains Mono Fallback) so the swap-in does not shift layout.
+Introduces src/frontend/src/styles/motion.css with the global keyframes
+and the prefers-reduced-motion enforcement rule.
+
+Co-Authored-By: Claude Opus 4.7 (1M context) &lt;noreply@anthropic.com&gt;
+EOF
+)&quot;
+</code></pre>
+<hr />
+<h2 id="phase-d-primitives-commit-4">Phase D — Primitives (commit 4)</h2>
+<p>This phase builds 11 primitives (Surface, Button, Card, Input, Badge, Tabs, Dialog, Skeleton, Toast, Table, GradientField). Each follows the same shape: small <code>[TDD]</code> cycle for props/states, then commit. Pages are not yet importing these — the legacy <code>ui/Button</code> etc. stays in place; we redirect imports in Task D-final.</p>
+<blockquote>
+<p><strong>Test pattern.</strong> Every primitive's test file follows the same scaffold:
+<code>tsx
+import { render, screen } from '@testing-library/react';
+import { describe, it, expect } from 'vitest';
+// import { ComponentName } from '../ComponentName';</code></p>
+</blockquote>
+<h3 id="task-d1-tdd-surface-primitive">Task D1: [TDD] Surface primitive</h3>
+<p><strong>Files:</strong>
+- Create: <code>src/frontend/src/components/primitives/Surface.tsx</code>
+- Create: <code>src/frontend/src/components/primitives/__tests__/Surface.test.tsx</code></p>
+<ul>
+<li>[ ] <strong>Step 1: Write the failing test</strong></li>
+</ul>
+<pre><code class="language-tsx">// src/frontend/src/components/primitives/__tests__/Surface.test.tsx
+import { describe, it, expect } from 'vitest';
+import { render, screen } from '@testing-library/react';
+import { Surface } from '../Surface';
+
+describe('Surface', () =&gt; {
+  it('renders children', () =&gt; {
+    render(&lt;Surface data-testid=&quot;s&quot;&gt;hi&lt;/Surface&gt;);
+    expect(screen.getByTestId('s')).toHaveTextContent('hi');
+  });
+  it('applies elevation=&quot;raised&quot; → bg-surface-raised class', () =&gt; {
+    render(&lt;Surface elevation=&quot;raised&quot; data-testid=&quot;s&quot; /&gt;);
+    expect(screen.getByTestId('s').className).toMatch(/bg-surface-raised/);
+  });
+  it('applies elevation=&quot;overlay&quot; → bg-surface-overlay class', () =&gt; {
+    render(&lt;Surface elevation=&quot;overlay&quot; data-testid=&quot;s&quot; /&gt;);
+    expect(screen.getByTestId('s').className).toMatch(/bg-surface-overlay/);
+  });
+  it('default elevation is base', () =&gt; {
+    render(&lt;Surface data-testid=&quot;s&quot; /&gt;);
+    expect(screen.getByTestId('s').className).toMatch(/bg-surface-base/);
+  });
+});
+</code></pre>
+<ul>
+<li>[ ] <strong>Step 2: Run, confirm failure</strong></li>
+</ul>
+<pre><code class="language-bash">npm run test:run -- src/components/primitives/__tests__/Surface.test.tsx
+</code></pre>
+<p>Expected: 4 fails (<code>Surface</code> not exported).</p>
+<ul>
+<li>[ ] <strong>Step 3: Implement Surface</strong></li>
+</ul>
+<p>Create <code>src/frontend/src/components/primitives/Surface.tsx</code>:</p>
+<pre><code class="language-tsx">import { forwardRef, HTMLAttributes } from 'react';
+import { clsx } from 'clsx';
+
+export type SurfaceElevation = 'base' | 'raised' | 'overlay';
+
+export interface SurfaceProps extends HTMLAttributes&lt;HTMLDivElement&gt; {
+  elevation?: SurfaceElevation;
+}
+
+const elevationClass: Record&lt;SurfaceElevation, string&gt; = {
+  base:    'bg-surface-base',
+  raised:  'bg-surface-raised',
+  overlay: 'bg-surface-overlay',
+};
+
+export const Surface = forwardRef&lt;HTMLDivElement, SurfaceProps&gt;(
+  ({ elevation = 'base', className, ...rest }, ref) =&gt; (
+    &lt;div ref={ref} className={clsx(elevationClass[elevation], 'text-ink-primary', className)} {...rest} /&gt;
+  ),
+);
+
+Surface.displayName = 'Surface';
+</code></pre>
+<ul>
+<li>[ ] <strong>Step 4: Run, confirm pass</strong></li>
+</ul>
+<pre><code class="language-bash">npm run test:run -- src/components/primitives/__tests__/Surface.test.tsx
+</code></pre>
+<p>Expected: 4 / 4 pass.</p>
+<h3 id="task-d2-tdd-button-primitive">Task D2: [TDD] Button primitive</h3>
+<p><strong>Files:</strong>
+- Create: <code>src/frontend/src/components/primitives/Button.tsx</code>
+- Create: <code>src/frontend/src/components/primitives/__tests__/Button.test.tsx</code></p>
+<ul>
+<li>[ ] <strong>Step 1: Write the failing test</strong></li>
+</ul>
+<pre><code class="language-tsx">// src/frontend/src/components/primitives/__tests__/Button.test.tsx
+import { describe, it, expect, vi } from 'vitest';
+import { render, screen, fireEvent } from '@testing-library/react';
+import { Button } from '../Button';
+
+describe('Button', () =&gt; {
+  it('renders children and fires onClick', () =&gt; {
+    const onClick = vi.fn();
+    render(&lt;Button onClick={onClick}&gt;Save&lt;/Button&gt;);
+    fireEvent.click(screen.getByRole('button', { name: /save/i }));
+    expect(onClick).toHaveBeenCalledOnce();
+  });
+  it('variant=&quot;primary&quot; uses accent background', () =&gt; {
+    render(&lt;Button variant=&quot;primary&quot;&gt;go&lt;/Button&gt;);
+    expect(screen.getByRole('button').className).toMatch(/bg-accent/);
+  });
+  it('variant=&quot;ghost&quot; is text-only', () =&gt; {
+    render(&lt;Button variant=&quot;ghost&quot;&gt;go&lt;/Button&gt;);
+    expect(screen.getByRole('button').className).not.toMatch(/bg-accent/);
+  });
+  it('variant=&quot;danger&quot; uses signal-danger background', () =&gt; {
+    render(&lt;Button variant=&quot;danger&quot;&gt;remove&lt;/Button&gt;);
+    expect(screen.getByRole('button').className).toMatch(/bg-signal-danger/);
+  });
+  it('disabled prop adds aria-disabled and disables onClick', () =&gt; {
+    const onClick = vi.fn();
+    render(&lt;Button disabled onClick={onClick}&gt;x&lt;/Button&gt;);
+    fireEvent.click(screen.getByRole('button'));
+    expect(onClick).not.toHaveBeenCalled();
+    expect(screen.getByRole('button')).toHaveAttribute('aria-disabled', 'true');
+  });
+  it('loading prop replaces children with a Skeleton + retains accessible label', () =&gt; {
+    render(&lt;Button loading aria-label=&quot;Save&quot;&gt;Save&lt;/Button&gt;);
+    expect(screen.getByRole('button', { name: /save/i })).toBeInTheDocument();
+  });
+});
+</code></pre>
+<ul>
+<li>[ ] <strong>Step 2: Confirm failure</strong></li>
+</ul>
+<pre><code class="language-bash">npm run test:run -- src/components/primitives/__tests__/Button.test.tsx
+</code></pre>
+<p>Expected: 6 fails.</p>
+<ul>
+<li>[ ] <strong>Step 3: Implement Button</strong></li>
+</ul>
+<p>Create <code>src/frontend/src/components/primitives/Button.tsx</code>:</p>
+<pre><code class="language-tsx">import { forwardRef, ButtonHTMLAttributes, ReactNode } from 'react';
+import { clsx } from 'clsx';
+
+export type ButtonVariant = 'primary' | 'secondary' | 'ghost' | 'danger';
+export type ButtonSize = 'sm' | 'md' | 'lg';
+
+export interface ButtonProps extends Omit&lt;ButtonHTMLAttributes&lt;HTMLButtonElement&gt;, 'disabled'&gt; {
+  variant?: ButtonVariant;
+  size?: ButtonSize;
+  loading?: boolean;
+  disabled?: boolean;
+  leadingIcon?: ReactNode;
+  trailingIcon?: ReactNode;
+}
+
+const base =
+  'inline-flex items-center justify-center gap-2 rounded-md font-[520] ' +
+  'transition-[transform,background-color,box-shadow] duration-[80ms] ease-out ' +
+  'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring-focus ' +
+  'active:scale-[0.98] motion-transform select-none';
+
+const sizeClass: Record&lt;ButtonSize, string&gt; = {
+  sm: 'h-8  px-3 text-xs',
+  md: 'h-10 px-4 text-sm',
+  lg: 'h-12 px-5 text-base',
+};
+
+const variantClass: Record&lt;ButtonVariant, string&gt; = {
+  primary:
+    'bg-accent text-ink-inverse hover:brightness-110 ' +
+    'shadow-near hover:shadow-far',
+  secondary:
+    'bg-surface-raised text-ink-primary border border-surface-overlay hover:bg-surface-overlay',
+  ghost:
+    'bg-transparent text-ink-primary hover:bg-surface-raised',
+  danger:
+    'bg-signal-danger text-ink-inverse hover:brightness-110 shadow-near',
+};
+
+export const Button = forwardRef&lt;HTMLButtonElement, ButtonProps&gt;(
+  ({ variant = 'primary', size = 'md', loading, disabled, leadingIcon, trailingIcon, className, children, ...rest }, ref) =&gt; {
+    const isInert = disabled || loading;
+    return (
+      &lt;button
+        ref={ref}
+        type={rest.type ?? 'button'}
+        aria-disabled={isInert || undefined}
+        aria-busy={loading || undefined}
+        disabled={isInert}
+        className={clsx(base, sizeClass[size], variantClass[variant], isInert &amp;&amp; 'opacity-50 pointer-events-none', className)}
+        {...rest}
+      &gt;
+        {leadingIcon &amp;&amp; &lt;span aria-hidden&gt;{leadingIcon}&lt;/span&gt;}
+        &lt;span&gt;{children}&lt;/span&gt;
+        {trailingIcon &amp;&amp; &lt;span aria-hidden&gt;{trailingIcon}&lt;/span&gt;}
+      &lt;/button&gt;
+    );
+  },
+);
+
+Button.displayName = 'Button';
+</code></pre>
+<ul>
+<li>[ ] <strong>Step 4: Confirm pass</strong></li>
+</ul>
+<pre><code class="language-bash">npm run test:run -- src/components/primitives/__tests__/Button.test.tsx
+</code></pre>
+<p>Expected: 6 / 6 pass.</p>
+<h3 id="task-d3-tdd-card-primitive">Task D3: [TDD] Card primitive</h3>
+<p><strong>Files:</strong>
+- Create: <code>src/frontend/src/components/primitives/Card.tsx</code>
+- Create: <code>src/frontend/src/components/primitives/__tests__/Card.test.tsx</code></p>
+<ul>
+<li>[ ] <strong>Step 1: Failing test</strong></li>
+</ul>
+<pre><code class="language-tsx">// src/frontend/src/components/primitives/__tests__/Card.test.tsx
+import { describe, it, expect } from 'vitest';
+import { render, screen } from '@testing-library/react';
+import { Card } from '../Card';
+
+describe('Card', () =&gt; {
+  it('renders children', () =&gt; {
+    render(&lt;Card data-testid=&quot;c&quot;&gt;x&lt;/Card&gt;);
+    expect(screen.getByTestId('c')).toHaveTextContent('x');
+  });
+  it('hoverable adds the hover class', () =&gt; {
+    render(&lt;Card hoverable data-testid=&quot;c&quot;&gt;x&lt;/Card&gt;);
+    expect(screen.getByTestId('c').className).toMatch(/hover:translate-y-/);
+  });
+  it('density=&quot;dense&quot; → tighter padding', () =&gt; {
+    render(&lt;Card density=&quot;dense&quot; data-testid=&quot;c&quot;&gt;x&lt;/Card&gt;);
+    expect(screen.getByTestId('c').className).toMatch(/p-3/);
+  });
+  it('default density is comfortable (p-5)', () =&gt; {
+    render(&lt;Card data-testid=&quot;c&quot;&gt;x&lt;/Card&gt;);
+    expect(screen.getByTestId('c').className).toMatch(/p-5/);
+  });
+});
+</code></pre>
+<ul>
+<li>[ ] <strong>Step 2: Confirm failure</strong></li>
+</ul>
+<pre><code class="language-bash">npm run test:run -- src/components/primitives/__tests__/Card.test.tsx
+</code></pre>
+<p>Expected: 4 fails.</p>
+<ul>
+<li>[ ] <strong>Step 3: Implement</strong></li>
+</ul>
+<p>Create <code>src/frontend/src/components/primitives/Card.tsx</code>:</p>
+<pre><code class="language-tsx">import { forwardRef, HTMLAttributes } from 'react';
+import { clsx } from 'clsx';
+
+export type CardDensity = 'dense' | 'comfortable' | 'roomy';
+
+export interface CardProps extends HTMLAttributes&lt;HTMLDivElement&gt; {
+  hoverable?: boolean;
+  density?: CardDensity;
+}
+
+const densityClass: Record&lt;CardDensity, string&gt; = {
+  dense:        'p-3',
+  comfortable:  'p-5',
+  roomy:        'p-7',
+};
+
+const base =
+  'rounded-lg bg-surface-raised text-ink-primary border border-surface-overlay/40 ' +
+  'shadow-near transition-[transform,box-shadow] duration-200 ease-out';
+
+const hoverClass =
+  'hover:-translate-y-px hover:shadow-far motion-transform';
+
+export const Card = forwardRef&lt;HTMLDivElement, CardProps&gt;(
+  ({ hoverable, density = 'comfortable', className, ...rest }, ref) =&gt; (
+    &lt;div ref={ref} className={clsx(base, densityClass[density], hoverable &amp;&amp; hoverClass, className)} {...rest} /&gt;
+  ),
+);
+
+Card.displayName = 'Card';
+</code></pre>
+<ul>
+<li>[ ] <strong>Step 4: Confirm pass</strong></li>
+</ul>
+<pre><code class="language-bash">npm run test:run -- src/components/primitives/__tests__/Card.test.tsx
+</code></pre>
+<p>Expected: 4 / 4 pass.</p>
+<h3 id="task-d4-tdd-input-primitive">Task D4: [TDD] Input primitive</h3>
+<p><strong>Files:</strong>
+- Create: <code>src/frontend/src/components/primitives/Input.tsx</code>
+- Create: <code>src/frontend/src/components/primitives/__tests__/Input.test.tsx</code></p>
+<ul>
+<li>[ ] <strong>Step 1: Failing test</strong></li>
+</ul>
+<pre><code class="language-tsx">// src/frontend/src/components/primitives/__tests__/Input.test.tsx
+import { describe, it, expect, vi } from 'vitest';
+import { render, screen, fireEvent } from '@testing-library/react';
+import { Input } from '../Input';
+
+describe('Input', () =&gt; {
+  it('renders with label and forwards ref', () =&gt; {
+    render(&lt;Input label=&quot;Email&quot; name=&quot;email&quot; /&gt;);
+    expect(screen.getByLabelText('Email')).toBeInTheDocument();
+  });
+  it('forwards onChange', () =&gt; {
+    const onChange = vi.fn();
+    render(&lt;Input label=&quot;x&quot; onChange={onChange} /&gt;);
+    fireEvent.change(screen.getByLabelText('x'), { target: { value: 'hi' } });
+    expect(onChange).toHaveBeenCalled();
+  });
+  it('renders error helper text and aria-invalid', () =&gt; {
+    render(&lt;Input label=&quot;x&quot; error=&quot;required&quot; /&gt;);
+    expect(screen.getByText('required')).toBeInTheDocument();
+    expect(screen.getByLabelText('x')).toHaveAttribute('aria-invalid', 'true');
+  });
+});
+</code></pre>
+<ul>
+<li>[ ] <strong>Step 2: Confirm failure</strong></li>
+</ul>
+<pre><code class="language-bash">npm run test:run -- src/components/primitives/__tests__/Input.test.tsx
+</code></pre>
+<p>Expected: 3 fails.</p>
+<ul>
+<li>[ ] <strong>Step 3: Implement</strong></li>
+</ul>
+<p>Create <code>src/frontend/src/components/primitives/Input.tsx</code>:</p>
+<pre><code class="language-tsx">import { forwardRef, InputHTMLAttributes, useId } from 'react';
+import { clsx } from 'clsx';
+
+export interface InputProps extends InputHTMLAttributes&lt;HTMLInputElement&gt; {
+  label: string;
+  hint?: string;
+  error?: string;
+}
+
+export const Input = forwardRef&lt;HTMLInputElement, InputProps&gt;(
+  ({ label, hint, error, className, id, ...rest }, ref) =&gt; {
+    const reactId = useId();
+    const inputId = id ?? reactId;
+    return (
+      &lt;label htmlFor={inputId} className=&quot;flex flex-col gap-1 text-sm&quot;&gt;
+        &lt;span className=&quot;text-ink-secondary&quot;&gt;{label}&lt;/span&gt;
+        &lt;input
+          id={inputId}
+          ref={ref}
+          aria-invalid={!!error || undefined}
+          aria-describedby={(error || hint) ? `${inputId}-help` : undefined}
+          className={clsx(
+            'h-10 px-3 rounded-md bg-surface-base text-ink-primary placeholder:text-ink-muted',
+            'border border-surface-overlay focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring-focus',
+            error &amp;&amp; 'border-signal-danger',
+            className,
+          )}
+          {...rest}
+        /&gt;
+        {(error || hint) &amp;&amp; (
+          &lt;span id={`${inputId}-help`} className={clsx('text-xs', error ? 'text-signal-danger' : 'text-ink-tertiary')}&gt;
+            {error ?? hint}
+          &lt;/span&gt;
+        )}
+      &lt;/label&gt;
+    );
+  },
+);
+
+Input.displayName = 'Input';
+</code></pre>
+<ul>
+<li>[ ] <strong>Step 4: Confirm pass</strong></li>
+</ul>
+<pre><code class="language-bash">npm run test:run -- src/components/primitives/__tests__/Input.test.tsx
+</code></pre>
+<p>Expected: 3 / 3 pass.</p>
+<h3 id="task-d5-tdd-badge-primitive">Task D5: [TDD] Badge primitive</h3>
+<p><strong>Files:</strong>
+- Create: <code>src/frontend/src/components/primitives/Badge.tsx</code>
+- Create: <code>src/frontend/src/components/primitives/__tests__/Badge.test.tsx</code></p>
+<ul>
+<li>[ ] <strong>Step 1: Failing test</strong></li>
+</ul>
+<pre><code class="language-tsx">// src/frontend/src/components/primitives/__tests__/Badge.test.tsx
+import { describe, it, expect } from 'vitest';
+import { render, screen } from '@testing-library/react';
+import { Badge } from '../Badge';
+
+describe('Badge', () =&gt; {
+  it('default tone uses ink-secondary', () =&gt; {
+    render(&lt;Badge&gt;label&lt;/Badge&gt;);
+    expect(screen.getByText('label').className).toMatch(/text-ink-secondary/);
+  });
+  it.each(['critical', 'high', 'medium', 'low'] as const)('severity %s renders', (sev) =&gt; {
+    render(&lt;Badge severity={sev}&gt;{sev}&lt;/Badge&gt;);
+    expect(screen.getByText(sev)).toBeInTheDocument();
+  });
+});
+</code></pre>
+<ul>
+<li>[ ] <strong>Step 2: Confirm failure</strong></li>
+</ul>
+<pre><code class="language-bash">npm run test:run -- src/components/primitives/__tests__/Badge.test.tsx
+</code></pre>
+<p>Expected: 5 fails.</p>
+<ul>
+<li>[ ] <strong>Step 3: Implement</strong></li>
+</ul>
+<p>Create <code>src/frontend/src/components/primitives/Badge.tsx</code>:</p>
+<pre><code class="language-tsx">import { HTMLAttributes } from 'react';
+import { clsx } from 'clsx';
+
+export type BadgeSeverity = 'critical' | 'high' | 'medium' | 'low';
+
+export interface BadgeProps extends HTMLAttributes&lt;HTMLSpanElement&gt; {
+  severity?: BadgeSeverity;
+}
+
+const severityClass: Record&lt;BadgeSeverity, string&gt; = {
+  critical: 'bg-signal-danger/15  text-signal-danger  border-signal-danger/30',
+  high:     'bg-warm/15           text-warm           border-warm/30',
+  medium:   'bg-signal-warning/15 text-signal-warning border-signal-warning/30',
+  low:      'bg-ink-muted/20      text-ink-tertiary   border-ink-muted/30',
+};
+
+const base =
+  'inline-flex items-center gap-1 rounded-sm border px-2 py-0.5 ' +
+  'text-xs font-[520] uppercase tracking-wide';
+
+export const Badge = ({ severity, className, ...rest }: BadgeProps) =&gt; (
+  &lt;span
+    className={clsx(
+      base,
+      severity ? severityClass[severity] : 'bg-surface-raised text-ink-secondary border-surface-overlay',
+      className,
+    )}
+    {...rest}
+  /&gt;
+);
+</code></pre>
+<ul>
+<li>[ ] <strong>Step 4: Confirm pass</strong></li>
+</ul>
+<pre><code class="language-bash">npm run test:run -- src/components/primitives/__tests__/Badge.test.tsx
+</code></pre>
+<p>Expected: 5 / 5 pass.</p>
+<h3 id="task-d6-tdd-tabs-primitive-with-sliding-indicator">Task D6: [TDD] Tabs primitive (with sliding indicator)</h3>
+<p><strong>Files:</strong>
+- Create: <code>src/frontend/src/components/primitives/Tabs.tsx</code>
+- Create: <code>src/frontend/src/components/primitives/__tests__/Tabs.test.tsx</code></p>
+<ul>
+<li>[ ] <strong>Step 1: Failing test</strong></li>
+</ul>
+<pre><code class="language-tsx">// src/frontend/src/components/primitives/__tests__/Tabs.test.tsx
+import { describe, it, expect, vi } from 'vitest';
+import { render, screen, fireEvent } from '@testing-library/react';
+import { Tabs } from '../Tabs';
+
+describe('Tabs', () =&gt; {
+  it('renders the supplied items and marks the active one', () =&gt; {
+    render(
+      &lt;Tabs
+        items={[{ id: 'a', label: 'Alpha' }, { id: 'b', label: 'Beta' }]}
+        active=&quot;b&quot;
+        onChange={() =&gt; {}}
+      /&gt;,
+    );
+    expect(screen.getByRole('tab', { name: 'Beta' })).toHaveAttribute('aria-selected', 'true');
+  });
+  it('fires onChange with the clicked id', () =&gt; {
+    const onChange = vi.fn();
+    render(
+      &lt;Tabs
+        items={[{ id: 'a', label: 'Alpha' }, { id: 'b', label: 'Beta' }]}
+        active=&quot;a&quot;
+        onChange={onChange}
+      /&gt;,
+    );
+    fireEvent.click(screen.getByRole('tab', { name: 'Beta' }));
+    expect(onChange).toHaveBeenCalledWith('b');
+  });
+  it('arrow keys navigate', () =&gt; {
+    const onChange = vi.fn();
+    render(
+      &lt;Tabs
+        items={[{ id: 'a', label: 'A' }, { id: 'b', label: 'B' }, { id: 'c', label: 'C' }]}
+        active=&quot;a&quot;
+        onChange={onChange}
+      /&gt;,
+    );
+    fireEvent.keyDown(screen.getByRole('tab', { name: 'A' }), { key: 'ArrowRight' });
+    expect(onChange).toHaveBeenCalledWith('b');
+  });
+});
+</code></pre>
+<ul>
+<li>[ ] <strong>Step 2: Confirm failure</strong></li>
+</ul>
+<pre><code class="language-bash">npm run test:run -- src/components/primitives/__tests__/Tabs.test.tsx
+</code></pre>
+<p>Expected: 3 fails.</p>
+<ul>
+<li>[ ] <strong>Step 3: Implement</strong></li>
+</ul>
+<p>Create <code>src/frontend/src/components/primitives/Tabs.tsx</code>:</p>
+<pre><code class="language-tsx">import { KeyboardEvent } from 'react';
+import { clsx } from 'clsx';
+import { motion } from 'framer-motion';
+
+export interface TabItem {
+  id: string;
+  label: string;
+  disabled?: boolean;
+}
+
+export interface TabsProps {
+  items: TabItem[];
+  active: string;
+  onChange: (id: string) =&gt; void;
+  className?: string;
+  size?: 'sm' | 'md';
+}
+
+export const Tabs = ({ items, active, onChange, className, size = 'md' }: TabsProps) =&gt; {
+  const onKey = (e: KeyboardEvent&lt;HTMLButtonElement&gt;) =&gt; {
+    const idx = items.findIndex((t) =&gt; t.id === active);
+    if (idx &lt; 0) return;
+    let next = idx;
+    if (e.key === 'ArrowRight') next = Math.min(items.length - 1, idx + 1);
+    if (e.key === 'ArrowLeft')  next = Math.max(0, idx - 1);
+    if (e.key === 'Home')       next = 0;
+    if (e.key === 'End')        next = items.length - 1;
+    if (next !== idx) {
+      e.preventDefault();
+      onChange(items[next].id);
+    }
+  };
+
+  return (
+    &lt;div role=&quot;tablist&quot; className={clsx('flex items-stretch border-b border-surface-overlay', className)}&gt;
+      {items.map((t) =&gt; {
+        const selected = t.id === active;
+        return (
+          &lt;button
+            key={t.id}
+            role=&quot;tab&quot;
+            aria-selected={selected}
+            aria-disabled={t.disabled || undefined}
+            disabled={t.disabled}
+            tabIndex={selected ? 0 : -1}
+            onClick={() =&gt; !t.disabled &amp;&amp; onChange(t.id)}
+            onKeyDown={onKey}
+            className={clsx(
+              'relative px-4 py-2 text-sm font-[520] transition-colors',
+              size === 'sm' ? 'h-8' : 'h-10',
+              selected ? 'text-ink-primary' : 'text-ink-tertiary hover:text-ink-secondary',
+              t.disabled &amp;&amp; 'opacity-50 pointer-events-none',
+              'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring-focus',
+            )}
+          &gt;
+            {t.label}
+            {selected &amp;&amp; (
+              &lt;motion.span
+                layoutId=&quot;tabs-indicator&quot;
+                transition={{ type: 'spring', stiffness: 420, damping: 32 }}
+                className=&quot;absolute left-2 right-2 -bottom-px h-[2px] bg-accent&quot;
+              /&gt;
+            )}
+          &lt;/button&gt;
+        );
+      })}
+    &lt;/div&gt;
+  );
+};
+</code></pre>
+<ul>
+<li>[ ] <strong>Step 4: Confirm pass</strong></li>
+</ul>
+<pre><code class="language-bash">npm run test:run -- src/components/primitives/__tests__/Tabs.test.tsx
+</code></pre>
+<p>Expected: 3 / 3 pass.</p>
+<h3 id="task-d7-tdd-dialog-primitive">Task D7: [TDD] Dialog primitive</h3>
+<p><strong>Files:</strong>
+- Create: <code>src/frontend/src/components/primitives/Dialog.tsx</code>
+- Create: <code>src/frontend/src/components/primitives/__tests__/Dialog.test.tsx</code></p>
+<ul>
+<li>[ ] <strong>Step 1: Failing test</strong></li>
+</ul>
+<pre><code class="language-tsx">// src/frontend/src/components/primitives/__tests__/Dialog.test.tsx
+import { describe, it, expect, vi } from 'vitest';
+import { render, screen, fireEvent } from '@testing-library/react';
+import { Dialog } from '../Dialog';
+
+describe('Dialog', () =&gt; {
+  it('does not render when open=false', () =&gt; {
+    render(&lt;Dialog open={false} title=&quot;t&quot; onClose={() =&gt; {}}&gt;x&lt;/Dialog&gt;);
+    expect(screen.queryByRole('dialog')).toBeNull();
+  });
+  it('renders title and content when open', () =&gt; {
+    render(&lt;Dialog open title=&quot;Confirm&quot; onClose={() =&gt; {}}&gt;Body&lt;/Dialog&gt;);
+    expect(screen.getByRole('dialog')).toHaveTextContent('Confirm');
+    expect(screen.getByRole('dialog')).toHaveTextContent('Body');
+  });
+  it('Escape calls onClose', () =&gt; {
+    const onClose = vi.fn();
+    render(&lt;Dialog open title=&quot;t&quot; onClose={onClose}&gt;x&lt;/Dialog&gt;);
+    fireEvent.keyDown(screen.getByRole('dialog'), { key: 'Escape' });
+    expect(onClose).toHaveBeenCalled();
+  });
+  it('clicking the scrim calls onClose', () =&gt; {
+    const onClose = vi.fn();
+    render(&lt;Dialog open title=&quot;t&quot; onClose={onClose}&gt;x&lt;/Dialog&gt;);
+    fireEvent.click(screen.getByTestId('dialog-scrim'));
+    expect(onClose).toHaveBeenCalled();
+  });
+});
+</code></pre>
+<ul>
+<li>[ ] <strong>Step 2: Confirm failure</strong></li>
+</ul>
+<pre><code class="language-bash">npm run test:run -- src/components/primitives/__tests__/Dialog.test.tsx
+</code></pre>
+<p>Expected: 4 fails.</p>
+<ul>
+<li>[ ] <strong>Step 3: Implement</strong></li>
+</ul>
+<p>Create <code>src/frontend/src/components/primitives/Dialog.tsx</code>:</p>
+<pre><code class="language-tsx">import { ReactNode, useEffect, useRef } from 'react';
+import { createPortal } from 'react-dom';
+import { motion, AnimatePresence } from 'framer-motion';
+import { clsx } from 'clsx';
+
+export interface DialogProps {
+  open: boolean;
+  title: string;
+  onClose: () =&gt; void;
+  children: ReactNode;
+  width?: 'sm' | 'md' | 'lg';
+}
+
+const widthClass: Record&lt;NonNullable&lt;DialogProps['width']&gt;, string&gt; = {
+  sm: 'max-w-md',
+  md: 'max-w-lg',
+  lg: 'max-w-3xl',
+};
+
+export const Dialog = ({ open, title, onClose, children, width = 'md' }: DialogProps) =&gt; {
+  const ref = useRef&lt;HTMLDivElement&gt;(null);
+  useEffect(() =&gt; {
+    if (!open) return;
+    const onKey = (e: KeyboardEvent) =&gt; { if (e.key === 'Escape') onClose(); };
+    window.addEventListener('keydown', onKey);
+    return () =&gt; window.removeEventListener('keydown', onKey);
+  }, [open, onClose]);
+  if (typeof document === 'undefined') return null;
+  return createPortal(
+    &lt;AnimatePresence&gt;
+      {open &amp;&amp; (
+        &lt;div
+          role=&quot;dialog&quot;
+          aria-modal=&quot;true&quot;
+          aria-label={title}
+          ref={ref}
+          tabIndex={-1}
+          onKeyDown={(e) =&gt; { if (e.key === 'Escape') onClose(); }}
+          className=&quot;fixed inset-0 z-50 flex items-center justify-center p-4&quot;
+        &gt;
+          &lt;motion.div
+            data-testid=&quot;dialog-scrim&quot;
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.18, ease: [0.16, 1, 0.3, 1] }}
+            className=&quot;absolute inset-0 bg-surface-base/70 backdrop-blur-sm motion-transform&quot;
+            onClick={onClose}
+          /&gt;
+          &lt;motion.div
+            initial={{ opacity: 0, y: 8 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: 0 }}
+            transition={{ duration: 0.18, ease: [0.16, 1, 0.3, 1] }}
+            className={clsx('relative bg-surface-overlay text-ink-primary rounded-lg shadow-far w-full', widthClass[width], 'p-6 motion-transform')}
+          &gt;
+            &lt;h2 className=&quot;text-lg font-[680] mb-4&quot;&gt;{title}&lt;/h2&gt;
+            &lt;div&gt;{children}&lt;/div&gt;
+          &lt;/motion.div&gt;
+        &lt;/div&gt;
+      )}
+    &lt;/AnimatePresence&gt;,
+    document.body,
+  );
+};
+</code></pre>
+<ul>
+<li>[ ] <strong>Step 4: Confirm pass</strong></li>
+</ul>
+<pre><code class="language-bash">npm run test:run -- src/components/primitives/__tests__/Dialog.test.tsx
+</code></pre>
+<p>Expected: 4 / 4 pass.</p>
+<h3 id="task-d8-visual-skeleton-primitive">Task D8: [Visual] Skeleton primitive</h3>
+<p><strong>Files:</strong>
+- Create: <code>src/frontend/src/components/primitives/Skeleton.tsx</code></p>
+<ul>
+<li>[ ] <strong>Step 1: Implement (no TDD — pure visual)</strong></li>
+</ul>
+<p>Create <code>src/frontend/src/components/primitives/Skeleton.tsx</code>:</p>
+<pre><code class="language-tsx">import { HTMLAttributes } from 'react';
+import { clsx } from 'clsx';
+
+export interface SkeletonProps extends HTMLAttributes&lt;HTMLDivElement&gt; {
+  width?: string | number;
+  height?: string | number;
+  rounded?: 'sm' | 'md' | 'lg' | 'full';
+}
+
+const roundedClass = {
+  sm:   'rounded-sm',
+  md:   'rounded-md',
+  lg:   'rounded-lg',
+  full: 'rounded-full',
+};
+
+export const Skeleton = ({ width = '100%', height = 14, rounded = 'sm', className, style, ...rest }: SkeletonProps) =&gt; (
+  &lt;div
+    aria-hidden
+    className={clsx(
+      'skeleton-shimmer bg-surface-overlay',
+      roundedClass[rounded],
+      className,
+    )}
+    style={{
+      width,
+      height,
+      backgroundImage:
+        'linear-gradient(90deg, transparent 0%, rgba(255,255,255,0.06) 50%, transparent 100%)',
+      backgroundSize: '200% 100%',
+      animation: 'skeleton-shimmer 1400ms linear infinite',
+      ...style,
+    }}
+    {...rest}
+  /&gt;
+);
+</code></pre>
+<ul>
+<li>[ ] <strong>Step 2: Smoke test that the module loads</strong></li>
+</ul>
+<pre><code class="language-bash">npm run test:run -- --run src/components/primitives/Skeleton.tsx
+</code></pre>
+<p>Expected: tests don't reference it yet, but <code>tsc</code> should be happy. We verify in build.</p>
+<pre><code class="language-bash">npm run build
+</code></pre>
+<p>Expected output: build succeeds.</p>
+<h3 id="task-d9-visual-toast-primitive">Task D9: [Visual] Toast primitive</h3>
+<p><strong>Files:</strong>
+- Create: <code>src/frontend/src/components/primitives/Toast.tsx</code></p>
+<ul>
+<li>[ ] <strong>Step 1: Implement</strong></li>
+</ul>
+<p>Create <code>src/frontend/src/components/primitives/Toast.tsx</code>:</p>
+<pre><code class="language-tsx">import { ReactNode } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
+import { clsx } from 'clsx';
+
+export type ToastTone = 'default' | 'success' | 'warning' | 'danger';
+
+export interface ToastProps {
+  open: boolean;
+  tone?: ToastTone;
+  title: string;
+  description?: ReactNode;
+  onDismiss?: () =&gt; void;
+}
+
+const toneClass: Record&lt;ToastTone, string&gt; = {
+  default: 'border-surface-overlay',
+  success: 'border-signal-success/40',
+  warning: 'border-signal-warning/40',
+  danger:  'border-signal-danger/40',
+};
+
+export const Toast = ({ open, tone = 'default', title, description, onDismiss }: ToastProps) =&gt; (
+  &lt;AnimatePresence&gt;
+    {open &amp;&amp; (
+      &lt;motion.div
+        role=&quot;status&quot;
+        initial={{ opacity: 0, x: 24 }}
+        animate={{ opacity: 1, x: 0 }}
+        exit={{ opacity: 0, x: 16 }}
+        transition={{ type: 'spring', stiffness: 380, damping: 28 }}
+        className={clsx(
+          'fixed bottom-6 right-6 z-50 max-w-sm rounded-lg border p-4 bg-surface-overlay text-ink-primary shadow-far motion-transform',
+          toneClass[tone],
+        )}
+      &gt;
+        &lt;div className=&quot;flex items-start gap-3&quot;&gt;
+          &lt;div className=&quot;flex-1&quot;&gt;
+            &lt;div className=&quot;text-sm font-[520]&quot;&gt;{title}&lt;/div&gt;
+            {description &amp;&amp; &lt;div className=&quot;text-xs text-ink-tertiary mt-1&quot;&gt;{description}&lt;/div&gt;}
+          &lt;/div&gt;
+          {onDismiss &amp;&amp; (
+            &lt;button
+              type=&quot;button&quot;
+              aria-label=&quot;Dismiss&quot;
+              onClick={onDismiss}
+              className=&quot;text-ink-tertiary hover:text-ink-primary&quot;
+            &gt;
+              ×
+            &lt;/button&gt;
+          )}
+        &lt;/div&gt;
+      &lt;/motion.div&gt;
+    )}
+  &lt;/AnimatePresence&gt;
+);
+</code></pre>
+<ul>
+<li>[ ] <strong>Step 2: Build to confirm types</strong></li>
+</ul>
+<pre><code class="language-bash">npm run build
+</code></pre>
+<p>Expected: build succeeds.</p>
+<h3 id="task-d10-visual-table-primitive">Task D10: [Visual] Table primitive</h3>
+<p><strong>Files:</strong>
+- Create: <code>src/frontend/src/components/primitives/Table.tsx</code></p>
+<ul>
+<li>[ ] <strong>Step 1: Implement</strong></li>
+</ul>
+<p>Create <code>src/frontend/src/components/primitives/Table.tsx</code>:</p>
+<pre><code class="language-tsx">import { HTMLAttributes, ReactNode, ThHTMLAttributes, TdHTMLAttributes } from 'react';
+import { clsx } from 'clsx';
+
+export const Table = ({ className, ...rest }: HTMLAttributes&lt;HTMLTableElement&gt;) =&gt; (
+  &lt;table className={clsx('w-full text-sm tabular-nums', className)} {...rest} /&gt;
+);
+export const THead = ({ className, ...rest }: HTMLAttributes&lt;HTMLTableSectionElement&gt;) =&gt; (
+  &lt;thead className={clsx('text-ink-tertiary uppercase tracking-wide text-xs', className)} {...rest} /&gt;
+);
+export const TBody = (props: HTMLAttributes&lt;HTMLTableSectionElement&gt;) =&gt; &lt;tbody {...props} /&gt;;
+export const Tr = ({ className, ...rest }: HTMLAttributes&lt;HTMLTableRowElement&gt;) =&gt; (
+  &lt;tr className={clsx('border-b border-surface-overlay/40 hover:bg-surface-raised/40', className)} {...rest} /&gt;
+);
+export const Th = ({ className, ...rest }: ThHTMLAttributes&lt;HTMLTableHeaderCellElement&gt;) =&gt; (
+  &lt;th className={clsx('text-left font-[520] py-2 px-3', className)} {...rest} /&gt;
+);
+export const Td = ({ className, ...rest }: TdHTMLAttributes&lt;HTMLTableDataCellElement&gt;) =&gt; (
+  &lt;td className={clsx('py-2 px-3 text-ink-primary', className)} {...rest} /&gt;
+);
+
+export interface DataTableColumn&lt;T&gt; {
+  key: keyof T | string;
+  header: ReactNode;
+  cell: (row: T) =&gt; ReactNode;
+  align?: 'left' | 'right' | 'center';
+}
+
+export function DataTable&lt;T&gt;({ rows, columns, empty }: { rows: T[]; columns: DataTableColumn&lt;T&gt;[]; empty?: ReactNode }) {
+  return (
+    &lt;Table&gt;
+      &lt;THead&gt;
+        &lt;Tr&gt;
+          {columns.map((c) =&gt; (
+            &lt;Th key={String(c.key)} className={clsx(c.align === 'right' &amp;&amp; 'text-right', c.align === 'center' &amp;&amp; 'text-center')}&gt;
+              {c.header}
+            &lt;/Th&gt;
+          ))}
+        &lt;/Tr&gt;
+      &lt;/THead&gt;
+      &lt;TBody&gt;
+        {rows.length === 0 &amp;&amp; empty ? (
+          &lt;Tr&gt;
+            &lt;Td colSpan={columns.length} className=&quot;text-center text-ink-tertiary py-8&quot;&gt;{empty}&lt;/Td&gt;
+          &lt;/Tr&gt;
+        ) : (
+          rows.map((row, i) =&gt; (
+            &lt;Tr key={i}&gt;
+              {columns.map((c) =&gt; (
+                &lt;Td key={String(c.key)} className={clsx(c.align === 'right' &amp;&amp; 'text-right', c.align === 'center' &amp;&amp; 'text-center')}&gt;
+                  {c.cell(row)}
+                &lt;/Td&gt;
+              ))}
+            &lt;/Tr&gt;
+          ))
+        )}
+      &lt;/TBody&gt;
+    &lt;/Table&gt;
+  );
+}
+</code></pre>
+<ul>
+<li>[ ] <strong>Step 2: Build to confirm types</strong></li>
+</ul>
+<pre><code class="language-bash">npm run build
+</code></pre>
+<p>Expected: build succeeds.</p>
+<h3 id="task-d11-visual-gradientfield-aurora-glow-background-utility">Task D11: [Visual] GradientField (Aurora-glow background utility)</h3>
+<p><strong>Files:</strong>
+- Create: <code>src/frontend/src/components/primitives/GradientField.tsx</code></p>
+<ul>
+<li>[ ] <strong>Step 1: Implement</strong></li>
+</ul>
+<p>Create <code>src/frontend/src/components/primitives/GradientField.tsx</code>:</p>
+<pre><code class="language-tsx">import { HTMLAttributes } from 'react';
+import { clsx } from 'clsx';
+
+export interface GradientFieldProps extends HTMLAttributes&lt;HTMLDivElement&gt; {
+  intensity?: 'subtle' | 'full';
+}
+
+/**
+ * Aurora-glow gradient. Used by BrandShell as a fixed background.
+ * Full intensity = brand routes; subtle = optional decorative use elsewhere.
+ * Animation freezes under prefers-reduced-motion.
+ */
+export const GradientField = ({ intensity = 'full', className, style, ...rest }: GradientFieldProps) =&gt; (
+  &lt;div
+    aria-hidden
+    className={clsx('aurora-glow pointer-events-none fixed inset-[-20%] -z-10', className)}
+    style={{
+      backgroundImage: [
+        'radial-gradient(60vmax 60vmax at 30% 20%, var(--warm)   0%, transparent 60%)',
+        'radial-gradient(50vmax 50vmax at 70% 80%, var(--cool)   0%, transparent 60%)',
+        'radial-gradient(40vmax 40vmax at 50% 50%, var(--violet) 0%, transparent 70%)',
+      ].join(', '),
+      filter: 'blur(60px) saturate(1.2)',
+      opacity: intensity === 'full' ? 0.18 : 0.04,
+      animation: intensity === 'full' ? 'aurora-drift 60s linear infinite' : 'none',
+      ...style,
+    }}
+    {...rest}
+  /&gt;
+);
+</code></pre>
+<ul>
+<li>[ ] <strong>Step 2: Build</strong></li>
+</ul>
+<pre><code class="language-bash">npm run build
+</code></pre>
+<p>Expected: build succeeds.</p>
+<h3 id="task-d12-primitive-barrel-export-legacy-redirects">Task D12: Primitive barrel export + legacy redirects</h3>
+<p><strong>Files:</strong>
+- Create: <code>src/frontend/src/components/primitives/index.ts</code>
+- Modify: <code>src/frontend/src/components/ui/index.ts</code> (modify to re-export from primitives)
+- Delete: <code>src/frontend/src/components/ui/Button.tsx</code>, <code>Card.tsx</code>, <code>Spinner.tsx</code></p>
+<ul>
+<li>[ ] <strong>Step 1: Create the primitives barrel</strong></li>
+</ul>
+<p>Create <code>src/frontend/src/components/primitives/index.ts</code>:</p>
+<pre><code class="language-ts">export { Surface } from './Surface';
+export { Button } from './Button';
+export { Card } from './Card';
+export { Input } from './Input';
+export { Badge } from './Badge';
+export { Tabs } from './Tabs';
+export { Dialog } from './Dialog';
+export { Skeleton } from './Skeleton';
+export { Toast } from './Toast';
+export { Table, THead, TBody, Tr, Th, Td, DataTable } from './Table';
+export { GradientField } from './GradientField';
+
+export type { SurfaceProps, SurfaceElevation } from './Surface';
+export type { ButtonProps, ButtonVariant, ButtonSize } from './Button';
+export type { CardProps, CardDensity } from './Card';
+export type { InputProps } from './Input';
+export type { BadgeProps, BadgeSeverity } from './Badge';
+export type { TabsProps, TabItem } from './Tabs';
+export type { DialogProps } from './Dialog';
+export type { SkeletonProps } from './Skeleton';
+export type { ToastProps, ToastTone } from './Toast';
+export type { DataTableColumn } from './Table';
+export type { GradientFieldProps } from './GradientField';
+</code></pre>
+<ul>
+<li>[ ] <strong>Step 2: Replace the legacy ui barrel with redirects</strong></li>
+</ul>
+<p>Open <code>src/frontend/src/components/ui/index.ts</code> and replace its entire contents with:</p>
+<pre><code class="language-ts">// Compatibility shim — legacy callers import from components/ui.
+// Plan 2 will migrate these imports to components/primitives directly.
+export { Button } from '../primitives/Button';
+export { Card }   from '../primitives/Card';
+// Spinner is gone in the new system; consumers move to &lt;Skeleton /&gt; in Plan 2.
+</code></pre>
+<ul>
+<li>[ ] <strong>Step 3: Delete the legacy primitive files</strong></li>
+</ul>
+<pre><code class="language-bash">git rm src/components/ui/Button.tsx src/components/ui/Card.tsx src/components/ui/Spinner.tsx
+</code></pre>
+<p>(Adjust path prefix for the worktree root if needed; the actual paths are <code>src/frontend/src/components/ui/Button.tsx</code> etc.)</p>
+<pre><code class="language-bash">git rm src/frontend/src/components/ui/Button.tsx \
+       src/frontend/src/components/ui/Card.tsx \
+       src/frontend/src/components/ui/Spinner.tsx
+</code></pre>
+<ul>
+<li>[ ] <strong>Step 4: Run typecheck to find broken Spinner imports</strong></li>
+</ul>
+<pre><code class="language-bash">cd src/frontend
+npm run typecheck
+</code></pre>
+<p>Expected output: a list of files importing <code>Spinner</code> from <code>../ui</code> or similar. <strong>Note them down for Plan 2</strong> (those are page-level fixes), but for now, replace each <code>&lt;Spinner /&gt;</code> usage with <code>&lt;Skeleton width={24} height={24} rounded="full" /&gt;</code>. This may require touching a small number of legacy components — <strong>only fix what's blocking typecheck</strong>, not what's blocking visual correctness.</p>
+<p>If typecheck shows N errors, do the smallest possible substitution per file:
+- <code>import { Spinner } from '...';</code> → <code>import { Skeleton } from '../primitives';</code>
+- <code>&lt;Spinner /&gt;</code> → <code>&lt;Skeleton width={24} height={24} rounded="full" /&gt;</code></p>
+<ul>
+<li>[ ] <strong>Step 5: Confirm typecheck and build pass</strong></li>
+</ul>
+<pre><code class="language-bash">npm run typecheck
+npm run build
+</code></pre>
+<p>Expected output: both succeed.</p>
+<ul>
+<li>[ ] <strong>Step 6: Run all primitive tests</strong></li>
+</ul>
+<pre><code class="language-bash">npm run test:run -- src/components/primitives/__tests__
+</code></pre>
+<p>Expected output: all primitive tests green (Tokens 7, Surface 4, Button 6, Card 4, Input 3, Badge 5, Tabs 3, Dialog 4 = 36 / 36).</p>
+<h3 id="task-d13-commit-primitives">Task D13: Commit primitives</h3>
+<ul>
+<li>[ ] <strong>Step 1: Stage and commit</strong></li>
+</ul>
+<pre><code class="language-bash">git add src/frontend/src/components/primitives \
+        src/frontend/src/components/ui \
+        src/frontend/src/components
+git commit -m &quot;$(cat &lt;&lt;'EOF'
+feat(redesign): rebuild UI primitives against design tokens
+
+Adds 11 primitives under src/components/primitives — Surface, Button,
+Card, Input, Badge, Tabs, Dialog, Skeleton, Toast, Table, GradientField
+— all reading from the token system and following the spec's
+density/severity/tone conventions. Each primitive ships TDD coverage
+where the contract is testable; Skeleton/Toast/Table/GradientField are
+visual-only and verified by build.
+
+Replaces the legacy components/ui/{Button,Card,Spinner}.tsx primitives.
+ui/index.ts is now a compatibility shim re-exporting from primitives so
+Plan 2 can migrate page-level imports lazily. Spinner is deleted in
+favor of Skeleton.
+
+Co-Authored-By: Claude Opus 4.7 (1M context) &lt;noreply@anthropic.com&gt;
+EOF
+)&quot;
+</code></pre>
+<hr />
+<h2 id="phase-e-shells-commit-5">Phase E — Shells (commit 5)</h2>
+<p>The shells are the spine of the redesign. BrandShell wraps brand routes (Login, Register, etc.); OperatorShell wraps everything else and contains Sidebar + Topbar + RightRail (where applicable).</p>
+<h3 id="task-e1-tdd-brandshell-surface-attribute-glow">Task E1: [TDD] BrandShell — surface attribute + glow</h3>
+<p><strong>Files:</strong>
+- Create: <code>src/frontend/src/components/layout/BrandShell.tsx</code>
+- Create: <code>src/frontend/src/components/layout/__tests__/BrandShell.test.tsx</code></p>
+<ul>
+<li>[ ] <strong>Step 1: Failing test</strong></li>
+</ul>
+<pre><code class="language-tsx">// src/frontend/src/components/layout/__tests__/BrandShell.test.tsx
+import { describe, it, expect, beforeEach, afterEach } from 'vitest';
+import { render } from '@testing-library/react';
+import { BrandShell } from '../BrandShell';
+
+describe('BrandShell', () =&gt; {
+  beforeEach(() =&gt; {
+    document.body.removeAttribute('data-surface');
+    document.body.removeAttribute('data-theme');
+  });
+  afterEach(() =&gt; {
+    document.body.removeAttribute('data-surface');
+  });
+  it('sets data-surface=brand on body while mounted', () =&gt; {
+    const { unmount } = render(&lt;BrandShell&gt;&lt;div&gt;x&lt;/div&gt;&lt;/BrandShell&gt;);
+    expect(document.body.getAttribute('data-surface')).toBe('brand');
+    unmount();
+    expect(document.body.getAttribute('data-surface')).not.toBe('brand');
+  });
+  it('renders the GradientField (aurora-glow class)', () =&gt; {
+    const { container } = render(&lt;BrandShell&gt;&lt;div&gt;x&lt;/div&gt;&lt;/BrandShell&gt;);
+    expect(container.querySelector('.aurora-glow')).toBeTruthy();
+  });
+  it('renders children', () =&gt; {
+    const { getByText } = render(&lt;BrandShell&gt;&lt;div&gt;hello&lt;/div&gt;&lt;/BrandShell&gt;);
+    expect(getByText('hello')).toBeInTheDocument();
+  });
+});
+</code></pre>
+<ul>
+<li>[ ] <strong>Step 2: Confirm failure</strong></li>
+</ul>
+<pre><code class="language-bash">cd src/frontend
+npm run test:run -- src/components/layout/__tests__/BrandShell.test.tsx
+</code></pre>
+<p>Expected: 3 fails.</p>
+<ul>
+<li>[ ] <strong>Step 3: Implement BrandShell</strong></li>
+</ul>
+<p>Create <code>src/frontend/src/components/layout/BrandShell.tsx</code>:</p>
+<pre><code class="language-tsx">import { ReactNode, useEffect } from 'react';
+import { GradientField } from '../primitives/GradientField';
+
+let dmSerifLoaded = false;
+
+async function loadDMSerifOnce(): Promise&lt;void&gt; {
+  if (dmSerifLoaded) return;
+  dmSerifLoaded = true;
+  // Lazy import — only mounted on brand routes.
+  await import('@fontsource/dm-serif-display/400.css');
+}
+
+export const BrandShell = ({ children }: { children: ReactNode }) =&gt; {
+  useEffect(() =&gt; {
+    document.body.setAttribute('data-surface', 'brand');
+    void loadDMSerifOnce();
+    return () =&gt; {
+      document.body.removeAttribute('data-surface');
+    };
+  }, []);
+
+  return (
+    &lt;div className=&quot;relative min-h-screen flex flex-col items-center justify-center px-4 py-16&quot;&gt;
+      &lt;GradientField intensity=&quot;full&quot; /&gt;
+      &lt;main className=&quot;relative z-10 w-full max-w-[520px]&quot;&gt;{children}&lt;/main&gt;
+    &lt;/div&gt;
+  );
+};
+</code></pre>
+<ul>
+<li>[ ] <strong>Step 4: Confirm pass</strong></li>
+</ul>
+<pre><code class="language-bash">npm run test:run -- src/components/layout/__tests__/BrandShell.test.tsx
+</code></pre>
+<p>Expected: 3 / 3 pass.</p>
+<h3 id="task-e2-tdd-operatorshell-surface-theme-sidebar-slot">Task E2: [TDD] OperatorShell — surface + theme + sidebar slot</h3>
+<p><strong>Files:</strong>
+- Create: <code>src/frontend/src/components/layout/OperatorShell.tsx</code>
+- Create: <code>src/frontend/src/components/layout/__tests__/OperatorShell.test.tsx</code></p>
+<ul>
+<li>[ ] <strong>Step 1: Failing test</strong></li>
+</ul>
+<pre><code class="language-tsx">// src/frontend/src/components/layout/__tests__/OperatorShell.test.tsx
+import { describe, it, expect, beforeEach, afterEach } from 'vitest';
+import { render } from '@testing-library/react';
+import { OperatorShell } from '../OperatorShell';
+
+describe('OperatorShell', () =&gt; {
+  beforeEach(() =&gt; {
+    document.body.removeAttribute('data-surface');
+    document.body.removeAttribute('data-theme');
+  });
+  afterEach(() =&gt; {
+    document.body.removeAttribute('data-surface');
+    document.body.removeAttribute('data-theme');
+  });
+  it('sets data-surface=operator and data-theme=dark by default', () =&gt; {
+    render(&lt;OperatorShell&gt;&lt;div&gt;x&lt;/div&gt;&lt;/OperatorShell&gt;);
+    expect(document.body.getAttribute('data-surface')).toBe('operator');
+    expect(document.body.getAttribute('data-theme')).toBe('dark');
+  });
+  it('honors theme=&quot;light&quot;', () =&gt; {
+    render(&lt;OperatorShell theme=&quot;light&quot;&gt;&lt;div&gt;x&lt;/div&gt;&lt;/OperatorShell&gt;);
+    expect(document.body.getAttribute('data-theme')).toBe('light');
+  });
+  it('renders the children', () =&gt; {
+    const { getByText } = render(&lt;OperatorShell&gt;&lt;div&gt;hi&lt;/div&gt;&lt;/OperatorShell&gt;);
+    expect(getByText('hi')).toBeInTheDocument();
+  });
+});
+</code></pre>
+<ul>
+<li>[ ] <strong>Step 2: Confirm failure</strong></li>
+</ul>
+<pre><code class="language-bash">npm run test:run -- src/components/layout/__tests__/OperatorShell.test.tsx
+</code></pre>
+<p>Expected: 3 fails.</p>
+<ul>
+<li>[ ] <strong>Step 3: Implement OperatorShell</strong></li>
+</ul>
+<p>Create <code>src/frontend/src/components/layout/OperatorShell.tsx</code>:</p>
+<pre><code class="language-tsx">import { ReactNode, useEffect } from 'react';
+import { Sidebar } from './Sidebar';
+import { Topbar } from './Topbar';
+import { GradientField } from '../primitives/GradientField';
+
+export interface OperatorShellProps {
+  children: ReactNode;
+  theme?: 'dark' | 'light';
+  /** Optional sticky right-rail content (used by Pattern 4). */
+  rightRail?: ReactNode;
+  /** Hide the sidebar entirely (e.g., focused detail mode). */
+  hideSidebar?: boolean;
+}
+
+export const OperatorShell = ({ children, theme = 'dark', rightRail, hideSidebar }: OperatorShellProps) =&gt; {
+  useEffect(() =&gt; {
+    document.body.setAttribute('data-surface', 'operator');
+    document.body.setAttribute('data-theme', theme);
+    return () =&gt; {
+      document.body.removeAttribute('data-surface');
+      document.body.removeAttribute('data-theme');
+    };
+  }, [theme]);
+
+  return (
+    &lt;div className=&quot;relative min-h-screen flex bg-surface-base text-ink-primary&quot;&gt;
+      &lt;GradientField intensity=&quot;subtle&quot; /&gt;
+      {!hideSidebar &amp;&amp; &lt;Sidebar /&gt;}
+      &lt;div className=&quot;flex-1 flex flex-col min-w-0&quot;&gt;
+        &lt;Topbar /&gt;
+        &lt;div className=&quot;flex-1 flex&quot;&gt;
+          &lt;main className=&quot;flex-1 px-6 py-6 min-w-0&quot;&gt;{children}&lt;/main&gt;
+          {rightRail &amp;&amp; (
+            &lt;aside className=&quot;hidden lg:block w-[280px] shrink-0 border-l border-surface-overlay/40 px-5 py-6&quot;&gt;
+              {rightRail}
+            &lt;/aside&gt;
+          )}
+        &lt;/div&gt;
+      &lt;/div&gt;
+    &lt;/div&gt;
+  );
+};
+</code></pre>
+<ul>
+<li>[ ] <strong>Step 4: Implement Sidebar</strong></li>
+</ul>
+<p>Create <code>src/frontend/src/components/layout/Sidebar.tsx</code>:</p>
+<pre><code class="language-tsx">import { useState } from 'react';
+import { NavLink } from 'react-router-dom';
+import { clsx } from 'clsx';
+
+interface NavItem {
+  to: string;
+  label: string;
+  icon?: string;
+}
+
+const NAV: NavItem[] = [
+  { to: '/dashboard',     label: 'Dashboard' },
+  { to: '/scripts',       label: 'Scripts' },
+  { to: '/search',        label: 'Search' },
+  { to: '/categories',    label: 'Categories' },
+  { to: '/documentation', label: 'Documentation' },
+  { to: '/chat',          label: 'Chat' },
+  { to: '/agentic',       label: 'Agentic' },
+  { to: '/analytics',     label: 'Analytics' },
+  { to: '/settings',      label: 'Settings' },
+];
+
+export const Sidebar = () =&gt; {
+  const [collapsed, setCollapsed] = useState(false);
+  return (
+    &lt;nav
+      className={clsx(
+        'shrink-0 border-r border-surface-overlay/40 bg-surface-base/60 backdrop-blur-sm transition-[width] duration-220',
+        collapsed ? 'w-[64px]' : 'w-[240px]',
+      )}
+      aria-label=&quot;Primary navigation&quot;
+    &gt;
+      &lt;div className=&quot;h-14 flex items-center px-4 border-b border-surface-overlay/40&quot;&gt;
+        &lt;span className=&quot;font-display text-ink-primary text-lg&quot;&gt;PSScript&lt;/span&gt;
+      &lt;/div&gt;
+      &lt;ul className=&quot;py-3&quot;&gt;
+        {NAV.map((n) =&gt; (
+          &lt;li key={n.to}&gt;
+            &lt;NavLink
+              to={n.to}
+              className={({ isActive }) =&gt;
+                clsx(
+                  'relative flex items-center h-10 px-4 text-sm text-ink-secondary hover:text-ink-primary',
+                  isActive &amp;&amp; 'text-ink-primary before:absolute before:left-0 before:top-1.5 before:bottom-1.5 before:w-[2px] before:bg-accent before:rounded-r',
+                )
+              }
+            &gt;
+              {!collapsed ? n.label : n.label[0]}
+            &lt;/NavLink&gt;
+          &lt;/li&gt;
+        ))}
+      &lt;/ul&gt;
+      &lt;button
+        type=&quot;button&quot;
+        onClick={() =&gt; setCollapsed((v) =&gt; !v)}
+        className=&quot;absolute bottom-4 left-4 text-xs text-ink-tertiary hover:text-ink-primary&quot;
+        aria-pressed={collapsed}
+      &gt;
+        {collapsed ? '›' : '‹ collapse'}
+      &lt;/button&gt;
+    &lt;/nav&gt;
+  );
+};
+</code></pre>
+<ul>
+<li>[ ] <strong>Step 5: Implement Topbar</strong></li>
+</ul>
+<p>Create <code>src/frontend/src/components/layout/Topbar.tsx</code>:</p>
+<pre><code class="language-tsx">export const Topbar = () =&gt; (
+  &lt;header className=&quot;h-14 flex items-center justify-between px-6 border-b border-surface-overlay/40 bg-surface-base/60 backdrop-blur-sm&quot;&gt;
+    &lt;div className=&quot;text-xs text-ink-tertiary tabular-nums&quot; aria-live=&quot;polite&quot; /&gt;
+    &lt;div className=&quot;flex items-center gap-3&quot;&gt;
+      &lt;button
+        type=&quot;button&quot;
+        className=&quot;text-xs text-ink-tertiary hover:text-ink-primary border border-surface-overlay/60 rounded px-2 py-1&quot;
+        aria-label=&quot;Open command palette&quot;
+      &gt;
+        ⌘K
+      &lt;/button&gt;
+    &lt;/div&gt;
+  &lt;/header&gt;
+);
+</code></pre>
+<ul>
+<li>[ ] <strong>Step 6: Implement RightRail (slot wrapper)</strong></li>
+</ul>
+<p>Create <code>src/frontend/src/components/layout/RightRail.tsx</code>:</p>
+<pre><code class="language-tsx">import { ReactNode } from 'react';
+
+export const RightRail = ({ children }: { children: ReactNode }) =&gt; (
+  &lt;div className=&quot;sticky top-6 space-y-6 text-sm text-ink-secondary&quot;&gt;{children}&lt;/div&gt;
+);
+</code></pre>
+<ul>
+<li>[ ] <strong>Step 7: Layout barrel</strong></li>
+</ul>
+<p>Create <code>src/frontend/src/components/layout/index.ts</code>:</p>
+<pre><code class="language-ts">export { BrandShell } from './BrandShell';
+export { OperatorShell } from './OperatorShell';
+export { Sidebar } from './Sidebar';
+export { Topbar } from './Topbar';
+export { RightRail } from './RightRail';
+export type { OperatorShellProps } from './OperatorShell';
+</code></pre>
+<ul>
+<li>[ ] <strong>Step 8: Confirm OperatorShell test passes</strong></li>
+</ul>
+<pre><code class="language-bash">npm run test:run -- src/components/layout/__tests__/OperatorShell.test.tsx
+</code></pre>
+<p>Expected: 3 / 3 pass.</p>
+<h3 id="task-e3-wire-shells-into-apptsx-routing-minimal-plan-2-finishes-the-per-page-reflow">Task E3: Wire shells into App.tsx routing (minimal — Plan 2 finishes the per-page reflow)</h3>
+<p><strong>Files:</strong> <code>src/frontend/src/App.tsx</code> (modified)</p>
+<p>The goal of this task is <strong>only</strong> to make the shells available in the route tree without yet reflowing pages. Plan 2 will wrap individual routes in <code>&lt;BrandShell&gt;</code> / <code>&lt;OperatorShell&gt;</code> per pattern; here we just import them and replace the legacy <code>Layout</code> component used by the authenticated route group with <code>OperatorShell</code> to confirm the wiring works.</p>
+<ul>
+<li>[ ] <strong>Step 1: Find the legacy <code>Layout</code> usage</strong></li>
+</ul>
+<pre><code class="language-bash">grep -n &quot;Layout&quot; src/App.tsx | head -10
+</code></pre>
+<p>Note any line numbers where <code>&lt;Layout&gt;</code> wraps a <code>&lt;Routes&gt;</code> or route group.</p>
+<ul>
+<li>[ ] <strong>Step 2: Add new shell imports near the top of App.tsx</strong></li>
+</ul>
+<p>Open <code>src/frontend/src/App.tsx</code>. Below the existing imports, add:</p>
+<pre><code class="language-tsx">import { BrandShell, OperatorShell } from './components/layout';
+</code></pre>
+<ul>
+<li>[ ] <strong>Step 3: Replace <code>&lt;Layout&gt;</code> wrapper with <code>&lt;OperatorShell&gt;</code></strong></li>
+</ul>
+<p>Locate the <code>&lt;Layout&gt;...&lt;/Layout&gt;</code> JSX that wraps the protected route group. Replace <code>Layout</code> with <code>OperatorShell</code> in both the opening and closing tags. Leave brand routes (Login, Register, AuthCallback, PendingApproval, NotFound, LandingPage) as they are — they'll be wrapped in <code>&lt;BrandShell&gt;</code> per-page in Plan 2 task by task.</p>
+<p>If the legacy Layout pulled in <code>Sidebar</code> / <code>Navbar</code> separately, <strong>leave the legacy Sidebar/Navbar imports for now</strong> — <code>OperatorShell</code> renders its own. Plan 2 task L1 will delete the legacy imports.</p>
+<ul>
+<li>[ ] <strong>Step 4: Build and run the dev server briefly</strong></li>
+</ul>
+<pre><code class="language-bash">npm run typecheck
+npm run build
+nohup npm run preview -- --port 4173 --host 127.0.0.1 &gt; /tmp/preview-shells.log 2&gt;&amp;1 &amp;
+echo $! &gt; /tmp/preview-shells.pid
+sleep 4
+curl -fsS http://127.0.0.1:4173/dashboard -o /dev/null &amp;&amp; echo OK_DASHBOARD || echo FAIL_DASHBOARD
+curl -fsS http://127.0.0.1:4173/login -o /dev/null &amp;&amp; echo OK_LOGIN || echo FAIL_LOGIN
+kill $(cat /tmp/preview-shells.pid)
+rm -f /tmp/preview-shells.pid
+</code></pre>
+<p>Expected output: <code>OK_DASHBOARD</code> and <code>OK_LOGIN</code>. The dashboard now renders inside <code>OperatorShell</code> (it'll look "off" because the page itself is still legacy, but the shell is correct). Login is unaffected — Plan 2 wraps it in <code>BrandShell</code>.</p>
+<h3 id="task-e4-run-the-full-vitest-suite">Task E4: Run the full Vitest suite</h3>
+<ul>
+<li>[ ] <strong>Step 1: Run everything</strong></li>
+</ul>
+<pre><code class="language-bash">npm run test:run
+</code></pre>
+<p>Expected output: prior suite count + new Plan 1 tests, all green. Note the count and durations for the PR description.</p>
+<h3 id="task-e5-commit-shells">Task E5: Commit shells</h3>
+<ul>
+<li>[ ] <strong>Step 1: Stage and commit</strong></li>
+</ul>
+<pre><code class="language-bash">git add src/frontend/src/components/layout \
+        src/frontend/src/App.tsx
+git commit -m &quot;$(cat &lt;&lt;'EOF'
+feat(redesign): introduce BrandShell + OperatorShell
+
+Wraps the route tree in two new shells: BrandShell sets
+[data-surface=brand] and lazy-loads DM Serif Display, with the
+GradientField rendering the animated Aurora-glow background;
+OperatorShell sets [data-surface=operator][data-theme=dark|light],
+mounts Sidebar + Topbar, and exposes an optional rightRail slot
+consumed by Pattern 4 (ScriptDetail / ScriptAnalysis) in Plan 2.
+
+App.tsx swaps the legacy &lt;Layout&gt; wrapper for &lt;OperatorShell&gt; across
+the protected route group. Brand routes stay unwrapped here — Plan 2
+wraps each one in &lt;BrandShell&gt; as part of the per-page reflow.
+
+Co-Authored-By: Claude Opus 4.7 (1M context) &lt;noreply@anthropic.com&gt;
+EOF
+)&quot;
+</code></pre>
+<hr />
+<h2 id="self-review">Self-Review</h2>
+<p>Run this checklist before handing off to execution.</p>
+<h3 id="spec-coverage">Spec coverage</h3>
+<table>
+<thead>
+<tr>
+<th style="text-align: left;">Spec section</th>
+<th style="text-align: left;">Plan 1 task(s)</th>
+<th style="text-align: left;">Notes</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: left;">§4 architecture (3 layers)</td>
+<td style="text-align: left;">Phases B, D, E</td>
+<td style="text-align: left;">Tokens → primitives → shells</td>
+</tr>
+<tr>
+<td style="text-align: left;">§5 design tokens (full palette + soft light)</td>
+<td style="text-align: left;">B1–B7</td>
+<td style="text-align: left;">Brand + operator dark + operator light all in tokens.css</td>
+</tr>
+<tr>
+<td style="text-align: left;">§5.6 killed conventions (legacy SaaS blue, fuchsia)</td>
+<td style="text-align: left;">B5</td>
+<td style="text-align: left;">Tailwind colors object replaced wholesale</td>
+</tr>
+<tr>
+<td style="text-align: left;">§5.7 Tailwind shim</td>
+<td style="text-align: left;">B5</td>
+<td style="text-align: left;">colors/boxShadow/borderRadius all read var(--*)</td>
+</tr>
+<tr>
+<td style="text-align: left;">§6 typography (DM Serif, Mona Sans, JetBrains Mono)</td>
+<td style="text-align: left;">C1–C5</td>
+<td style="text-align: left;">Self-hosted via @fontsource; DM Serif lazy in BrandShell</td>
+</tr>
+<tr>
+<td style="text-align: left;">§6.5 tabular numerals</td>
+<td style="text-align: left;">C3</td>
+<td style="text-align: left;"><code>.tabular-nums</code> utility defined; Plan 2 applies it</td>
+</tr>
+<tr>
+<td style="text-align: left;">§6.6 README colophon diff</td>
+<td style="text-align: left;"><strong>Plan 3, commit 14</strong></td>
+<td style="text-align: left;">Out of scope for Plan 1</td>
+</tr>
+<tr>
+<td style="text-align: left;">§7 motion (principles + per-interaction spec)</td>
+<td style="text-align: left;">C4</td>
+<td style="text-align: left;">motion.css with keyframes + reduced-motion enforcement</td>
+</tr>
+<tr>
+<td style="text-align: left;">§7.6 Aurora-glow gradient</td>
+<td style="text-align: left;">D11 (GradientField), E1 (BrandShell)</td>
+<td style="text-align: left;">Component + integration</td>
+</tr>
+<tr>
+<td style="text-align: left;">§8 page patterns</td>
+<td style="text-align: left;"><strong>Plan 2</strong></td>
+<td style="text-align: left;">Plan 1 only ships shells</td>
+</tr>
+<tr>
+<td style="text-align: left;">§9 verification (route-sweep baseline)</td>
+<td style="text-align: left;">A1–A5</td>
+<td style="text-align: left;">Baseline captured pre-redesign</td>
+</tr>
+<tr>
+<td style="text-align: left;">§9.4 axe-core gate</td>
+<td style="text-align: left;"><strong>Plan 3, commit 12</strong></td>
+<td style="text-align: left;">Plan 1 doesn't gate yet</td>
+</tr>
+<tr>
+<td style="text-align: left;">§9.5 manual a11y on 4 critical pages</td>
+<td style="text-align: left;"><strong>Plan 3, commit 15</strong></td>
+<td style="text-align: left;">Plan 1 doesn't manual-pass</td>
+</tr>
+<tr>
+<td style="text-align: left;">§10 shipping plan (commits 1–5)</td>
+<td style="text-align: left;">All of Plan 1</td>
+<td style="text-align: left;">Commits 1, 2, 3, 4, 5 mapped</td>
+</tr>
+<tr>
+<td style="text-align: left;">§10.5 rollback</td>
+<td style="text-align: left;">All commits</td>
+<td style="text-align: left;">Each commit independently revertable</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Gaps surfaced for Plan 2:</strong> None of the 36 routes are reflowed yet. Plan 2 will pick them up.
+<strong>Gaps surfaced for Plan 3:</strong> axe-core integration, manual a11y pass, README colophon update, visual diff sweep, motion + reduced-motion verification on shipped routes.</p>
+<h3 id="placeholder-scan">Placeholder scan</h3>
+<ul>
+<li>No "TBD", "TODO", "implement later" anywhere — every step has working code or an exact command.</li>
+<li>"Add appropriate error handling" / "handle edge cases" — none.</li>
+<li>All test file scaffolds are complete code.</li>
+<li>All file paths are absolute or worktree-relative.</li>
+</ul>
+<h3 id="type-api-consistency">Type / API consistency</h3>
+<ul>
+<li><code>Button</code> exposes <code>variant: 'primary'|'secondary'|'ghost'|'danger'</code> — same set referenced by tests and shell usages.</li>
+<li><code>Card</code> exposes <code>density: 'dense'|'comfortable'|'roomy'</code> — Plan 2 page reflow specs match.</li>
+<li><code>Tabs</code> items have <code>id, label, disabled?</code> — matches Plan 2 ScriptAnalysis criteria-tab usage.</li>
+<li><code>OperatorShellProps.rightRail</code> is <code>ReactNode</code> — matches Pattern 4 usage in Plan 2.</li>
+<li>Token CSS variable names (<code>--surface-base</code>, <code>--accent</code>, etc.) match the Tailwind shim's <code>var(--*)</code> references.</li>
+</ul>
+<h3 id="scope-check">Scope check</h3>
+<p>Plan 1 produces working, testable software on its own:
+- A redesigned token system that any consumer can read.
+- 11 working primitives with TDD coverage.
+- Two working shells wrapping the route tree.
+- A captured visual baseline that Plan 3 will diff against.</p>
+<p>The app will look "half-redesigned" between Plans 1 and 2 — the shells will be modern but the inner pages still reference legacy classes that no longer resolve. That's expected and called out in the spec's risk table.</p>
+<hr />
+<h2 id="execution-handoff">Execution Handoff</h2>
+<p>Plan complete and saved to <code>docs/superpowers/plans/2026-04-28-frontend-modernization-plan-1-foundation.md</code>. Two execution options:</p>
+<ol>
+<li><strong>Subagent-Driven (recommended)</strong> — Dispatch a fresh subagent per phase (or per task for the trickier phases B and D). Each subagent reviews the plan, executes its assigned scope, and reports back. The two-stage review pattern from <code>superpowers:subagent-driven-development</code> keeps quality high without requiring you to babysit each commit.</li>
+<li><strong>Inline Execution</strong> — Execute tasks in this session using <code>superpowers:executing-plans</code> with batch execution and checkpoints between phases. Slower per-task but you see everything happen.</li>
+</ol>
+<p>Once Plan 1 is complete and merged into the worktree branch, <strong>Plan 2 — Page Reflow</strong> is generated next via <code>superpowers:writing-plans</code> against the same spec, picking up where this plan left off (commits 6–10).</p>
+<p><strong>Which approach?</strong></p>
+    <div class="footer">Generated 2026-04-29 14:08 UTC</div>
+  </div>
+</body>
+</html>

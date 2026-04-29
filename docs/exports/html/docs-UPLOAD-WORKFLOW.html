@@ -13,19 +13,23 @@ body {
   font-family: "Segoe UI", "Helvetica Neue", Arial, sans-serif;
   margin: 0;
   padding: 0;
-  background: #ffffff;
+  background: #f4f7fb;
   color: #0f172a;
 }
 .markdown-body {
   max-width: 980px;
-  margin: 40px auto 60px;
-  padding: 0 32px;
+  margin: 0 auto;
+  padding: 36px 42px 64px;
   line-height: 1.65;
+  background: #ffffff;
+  box-shadow: 0 24px 70px rgba(15, 23, 42, 0.08);
 }
 .markdown-body h1 {
-  font-size: 32px;
+  font-size: 34px;
+  line-height: 1.12;
   margin-bottom: 12px;
-  border-bottom: 2px solid #e2e8f0;
+  color: #07111f;
+  border-bottom: 3px solid #0ea5e9;
   padding-bottom: 12px;
   page-break-before: always;
   page-break-after: avoid;
@@ -37,18 +41,19 @@ body {
   break-before: avoid;
 }
 .markdown-body h2 {
-  font-size: 24px;
-  margin-top: 28px;
-  border-bottom: 1px solid #e2e8f0;
+  font-size: 23px;
+  line-height: 1.2;
+  margin-top: 34px;
+  color: #102a43;
+  border-bottom: 1px solid #d7e2ee;
   padding-bottom: 8px;
-  page-break-before: always;
   page-break-after: avoid;
-  break-before: page;
   break-after: avoid;
 }
 .markdown-body h3 {
   font-size: 18px;
   margin-top: 20px;
+  color: #1e3a5f;
   page-break-after: avoid;
   break-after: avoid;
 }
@@ -59,19 +64,26 @@ body {
 .markdown-body table {
   width: 100%;
   border-collapse: collapse;
-  margin: 16px 0;
-  font-size: 14px;
+  margin: 18px 0 24px;
+  font-size: 13px;
   page-break-inside: avoid;
   break-inside: avoid;
+  box-shadow: 0 1px 0 #e2e8f0;
 }
 .markdown-body th,
 .markdown-body td {
   border: 1px solid #e2e8f0;
-  padding: 8px 10px;
+  padding: 9px 11px;
   text-align: left;
+  vertical-align: top;
 }
 .markdown-body th {
-  background: #f8fafc;
+  background: #eef6ff;
+  color: #0f3157;
+  font-weight: 700;
+}
+.markdown-body tr:nth-child(even) td {
+  background: #fbfdff;
 }
 .markdown-body tr {
   page-break-inside: avoid;
@@ -85,11 +97,12 @@ body {
   font-size: 0.92em;
 }
 .markdown-body pre {
-  background: #0f172a;
-  color: #e2e8f0;
+  background: #111827;
+  color: #e5eef8;
   padding: 16px;
-  border-radius: 8px;
+  border-radius: 10px;
   overflow-x: auto;
+  border: 1px solid #243244;
   page-break-inside: avoid;
   break-inside: avoid;
 }
@@ -98,11 +111,12 @@ body {
   color: inherit;
 }
 .markdown-body blockquote {
-  border-left: 4px solid #38bdf8;
-  margin: 16px 0;
-  padding: 8px 16px;
-  background: #f8fafc;
-  color: #334155;
+  border-left: 5px solid #0ea5e9;
+  margin: 18px 0;
+  padding: 12px 18px;
+  background: #eff8ff;
+  color: #18324f;
+  border-radius: 0 10px 10px 0;
 }
 .markdown-body img {
   max-width: 100%;
@@ -127,25 +141,66 @@ body {
   text-decoration: underline;
 }
 .cover {
-  padding: 80px 60px 60px;
-  background: linear-gradient(135deg, #0b1220 0%, #1e3a8a 100%);
+  min-height: 760px;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+  padding: 72px 60px 64px;
+  background:
+    linear-gradient(135deg, rgba(9, 30, 66, 0.96) 0%, rgba(12, 74, 110, 0.94) 54%, rgba(20, 83, 45, 0.9) 100%),
+    radial-gradient(circle at 18% 18%, rgba(14, 165, 233, 0.25), transparent 36%);
   color: #f8fafc;
-  border-radius: 18px;
-  margin-bottom: 32px;
+  border-radius: 0;
+  margin: -36px -42px 40px;
+  position: relative;
+  overflow: hidden;
 }
-.cover-title {
-  font-size: 36px;
-  font-weight: 700;
-  margin: 0 0 12px;
+.cover::before {
+  content: "PSScript";
+  position: absolute;
+  top: 46px;
+  left: 60px;
+  font-size: 12px;
+  font-weight: 800;
+  letter-spacing: 0.24em;
+  text-transform: uppercase;
+  color: rgba(226, 246, 255, 0.82);
+}
+.cover::after {
+  content: "";
+  position: absolute;
+  right: -120px;
+  top: -120px;
+  width: 360px;
+  height: 360px;
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  transform: rotate(28deg);
+}
+.markdown-body .cover-title {
+  font-size: 48px;
+  line-height: 1.04;
+  font-weight: 800;
+  color: #f8fafc;
+  border-bottom: 3px solid #38bdf8;
+  margin: 0 0 16px;
+  max-width: 720px;
 }
 .cover-subtitle {
-  font-size: 18px;
-  color: #cbd5f5;
-  margin: 0 0 16px;
+  font-size: 20px;
+  line-height: 1.42;
+  color: #dbeafe;
+  margin: 0 0 22px;
+  max-width: 720px;
 }
 .cover-meta {
+  display: inline-block;
+  width: fit-content;
   font-size: 13px;
-  color: #94a3b8;
+  color: #e0f2fe;
+  background: rgba(255, 255, 255, 0.12);
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  border-radius: 999px;
+  padding: 7px 13px;
 }
 .page-break {
   page-break-after: always;
@@ -155,12 +210,27 @@ body {
   margin-top: 40px;
   font-size: 12px;
   color: #64748b;
+  border-top: 1px solid #e2e8f0;
+  padding-top: 14px;
 }
 /* Print and PDF-specific styles */
 @page {
-  margin: 20mm 18mm;
+  size: A4;
+  margin: 18mm 16mm 20mm;
 }
 @media print {
+  body {
+    background: #ffffff;
+  }
+  .markdown-body {
+    max-width: none;
+    margin: 0;
+    padding: 0;
+    box-shadow: none;
+  }
+  .cover {
+    margin: 0 0 28px;
+  }
   .markdown-body {
     orphans: 3;
     widows: 3;
@@ -192,571 +262,173 @@ body {
 <body>
   <div class="markdown-body">
     
-    <h1 id="file-upload-workflow-documentation">File Upload Workflow Documentation</h1>
-<p><em>Last updated: April 2, 2026</em></p>
-<h2 id="overview">Overview</h2>
-<p>The upload workflow handles PowerShell script files from the user's browser to persistent storage in PostgreSQL. It supports drag-and-drop, file picker, and paste-based input with automatic AI analysis.</p>
-<h2 id="flow-diagram">Flow Diagram</h2>
-<pre><code>User selects .ps1 file
-       |
-       v
-[Frontend: ScriptUpload.tsx]
-  1. FileReader reads content into state
-  2. File metadata extracted (name, size, type)
-  3. Content preview rendered (14-line preview)
-  4. User fills title, description, tags, category
-       |
-       v
-[Frontend: prepareFormData()]
-  5. Builds FormData with fields:
-     - title (string)
-     - description (string)
-     - content (string - file text)
-     - category_id (string, optional)
-     - tags (JSON string array, optional)
-     - is_public (string: 'true'/'false')
-     - analyze_with_ai (string: 'true'/'false')
-     - script_file (File blob from input or content)
-       |
-       v
-[Frontend: api.ts uploadScript()]
-  6. Sends POST to /api/scripts/upload (FormData)
-     - Or /api/scripts/upload/large for files &gt; 2MB
-     - Auth token in Authorization header
-     - Browser auto-sets Content-Type: multipart/form-data
-       |
-       v
-[Backend: routes/scripts.ts]
-  7. Middleware chain:
-     uploadCorsMiddleware -&gt; authenticateJWT -&gt;
-     handleNetworkErrors -&gt; handleUploadProgress -&gt;
-     multer.single('script_file') -&gt; handleMulterError -&gt;
-     ScriptExportController.uploadScript
-       |
-       v
-[Backend: export.ts uploadScript()]
-  8. Extract file content:
-     - Primary: req.file.buffer (multer memory storage)
-     - Fallback: req.body.content (FormData text field)
-  9. Calculate MD5 hash for deduplication
-  10. Check for duplicate hash in scripts table
-  11. Validate UTF-8 readability (reject binary)
-  12. Validate PowerShell structure for .ps1 files
-       |
-       v
-[Database: PostgreSQL]
-  13. BEGIN TRANSACTION
-  14. INSERT INTO scripts (title, content, user_id, file_hash, ...)
-  15. INSERT INTO script_versions (script_id, version=1, content, ...)
-  16. INSERT INTO tags + script_tags (if tags provided)
-  17. COMMIT
-  18. Save file to uploads/ directory
-       |
-       v
-[Response: 201 Created]
-  19. Return { success, script, message, filePath }
-       |
-       v
-[Async: AI Analysis]
-  20. If analyze_with_ai=true, fire-and-forget with 2 retries
-  21. POST to AI service /analyze
-  22. UPSERT into script_analysis table
+    <h1 id="hosted-upload-and-script-editing-workflow">Hosted Upload And Script Editing Workflow</h1>
+<p>Last updated: April 29, 2026.</p>
+<p>This document describes the current hosted workflow. The production path is Netlify Functions plus hosted Supabase Postgres. The retired Express/multer/local-upload path is historical only and should not be used as the active runbook.</p>
+<h2 id="what-the-user-sees">What The User Sees</h2>
+<ol>
+<li>The user opens <strong>Scripts -&gt; Upload Script</strong>.</li>
+<li>The user selects or pastes a PowerShell file: <code>.ps1</code>, <code>.psm1</code>, <code>.psd1</code>, or <code>.ps1xml</code>.</li>
+<li>The UI reads the file as text, shows metadata, and blocks hosted uploads above 4 MB.</li>
+<li>The user adds title, description, category, tags, visibility, and optional analysis.</li>
+<li>The frontend sends one JSON payload to <code>/api/scripts/upload</code> with the Supabase bearer token.</li>
+<li>The API creates or identifies the hosted script record in Supabase.</li>
+<li>The user can open script detail, edit the hosted record, run/view analysis, export PDF analysis, or delete disposable test scripts they own.</li>
+</ol>
+<h2 id="hosted-flow">Hosted Flow</h2>
+<pre><code class="language-text">Browser upload form
+  -&gt; src/frontend/src/pages/ScriptUpload.tsx
+  -&gt; src/frontend/src/services/api.ts scriptService.uploadScript()
+  -&gt; POST /api/scripts/upload
+  -&gt; netlify/functions/api.ts handleScriptUpload()
+  -&gt; Supabase Auth token validation
+  -&gt; app_profiles.is_enabled approval gate
+  -&gt; content validation and SHA-256 hash
+  -&gt; scripts + script_versions + tags/script_tags
+  -&gt; optional hosted AI analysis
+  -&gt; JSON response with script, duplicate state, or analysisError
 </code></pre>
-<h2 id="database-schema">Database Schema</h2>
-<h3 id="scripts-table">scripts table</h3>
+<h2 id="current-api-contract">Current API Contract</h2>
+<h3 id="post-apiscriptsupload"><code>POST /api/scripts/upload</code></h3>
+<p>The hosted frontend sends JSON, not a doubled multipart body:</p>
+<pre><code class="language-json">{
+  &quot;title&quot;: &quot;Setup_OpenWebUI_LM_Studio&quot;,
+  &quot;description&quot;: &quot;No description provided&quot;,
+  &quot;content&quot;: &quot;# PowerShell script body&quot;,
+  &quot;category_id&quot;: 1,
+  &quot;tags&quot;: [&quot;setup&quot;, &quot;windows&quot;],
+  &quot;is_public&quot;: false,
+  &quot;analyze_with_ai&quot;: true
+}
+</code></pre>
+<p>The API returns:</p>
 <table>
 <thead>
 <tr>
-<th>Column</th>
-<th>Type</th>
-<th>Nullable</th>
-<th>Default</th>
-<th>Notes</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td>id</td>
-<td>integer</td>
-<td>NOT NULL</td>
-<td>auto-increment</td>
-<td>Primary key</td>
-</tr>
-<tr>
-<td>title</td>
-<td>varchar(255)</td>
-<td>NOT NULL</td>
-<td>-</td>
-<td>Script display name</td>
-</tr>
-<tr>
-<td>description</td>
-<td>text</td>
-<td>YES</td>
-<td>-</td>
-<td>User description</td>
-</tr>
-<tr>
-<td>content</td>
-<td>text</td>
-<td>NOT NULL</td>
-<td>-</td>
-<td>Full script content</td>
-</tr>
-<tr>
-<td>user_id</td>
-<td>integer</td>
-<td>YES</td>
-<td>-</td>
-<td>FK to users.id (CASCADE delete)</td>
-</tr>
-<tr>
-<td>category_id</td>
-<td>integer</td>
-<td>YES</td>
-<td>-</td>
-<td>FK to categories.id (SET NULL delete)</td>
-</tr>
-<tr>
-<td>version</td>
-<td>integer</td>
-<td>NOT NULL</td>
-<td>1</td>
-<td>Current version number</td>
-</tr>
-<tr>
-<td>is_public</td>
-<td>boolean</td>
-<td>NOT NULL</td>
-<td>false</td>
-<td>Visibility flag</td>
-</tr>
-<tr>
-<td>execution_count</td>
-<td>integer</td>
-<td>NOT NULL</td>
-<td>0</td>
-<td>Times executed</td>
-</tr>
-<tr>
-<td>file_hash</td>
-<td>varchar(255)</td>
-<td>YES</td>
-<td>-</td>
-<td>MD5 for dedup (model maps to STRING(64))</td>
-</tr>
-<tr>
-<td>views</td>
-<td>integer</td>
-<td>NOT NULL</td>
-<td>0</td>
-<td>View count</td>
-</tr>
-<tr>
-<td>created_at</td>
-<td>timestamptz</td>
-<td>YES</td>
-<td>CURRENT_TIMESTAMP</td>
-<td>Auto-set</td>
-</tr>
-<tr>
-<td>updated_at</td>
-<td>timestamptz</td>
-<td>YES</td>
-<td>CURRENT_TIMESTAMP</td>
-<td>Auto-updated via trigger</td>
-</tr>
-</tbody>
-</table>
-<h3 id="script_versions-table">script_versions table</h3>
-<table>
-<thead>
-<tr>
-<th>Column</th>
-<th>Type</th>
-<th>Nullable</th>
-<th>Default</th>
-<th>Notes</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td>id</td>
-<td>integer</td>
-<td>NOT NULL</td>
-<td>auto-increment</td>
-<td>Primary key</td>
-</tr>
-<tr>
-<td>script_id</td>
-<td>integer</td>
-<td>YES</td>
-<td>-</td>
-<td>FK to scripts.id (CASCADE delete)</td>
-</tr>
-<tr>
-<td>version</td>
-<td>integer</td>
-<td>NOT NULL</td>
-<td>-</td>
-<td>Version number</td>
-</tr>
-<tr>
-<td>content</td>
-<td>text</td>
-<td>NOT NULL</td>
-<td>-</td>
-<td>Full content at this version</td>
-</tr>
-<tr>
-<td>commit_message</td>
-<td>text</td>
-<td>YES</td>
-<td>-</td>
-<td>Changelog (model field: <code>changelog</code>)</td>
-</tr>
-<tr>
-<td>user_id</td>
-<td>integer</td>
-<td>YES</td>
-<td>-</td>
-<td>FK to users.id (SET NULL delete)</td>
-</tr>
-<tr>
-<td>created_at</td>
-<td>timestamptz</td>
-<td>YES</td>
-<td>CURRENT_TIMESTAMP</td>
-<td>Auto-set</td>
-</tr>
-</tbody>
-</table>
-<p><strong>Unique constraint:</strong> (script_id, version)</p>
-<h3 id="script_analysis-table">script_analysis table</h3>
-<table>
-<thead>
-<tr>
-<th>Column</th>
-<th>Type</th>
-<th>Nullable</th>
-<th>Default</th>
-<th>Notes</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td>id</td>
-<td>integer</td>
-<td>NOT NULL</td>
-<td>auto-increment</td>
-<td>Primary key</td>
-</tr>
-<tr>
-<td>script_id</td>
-<td>integer</td>
-<td>YES</td>
-<td>-</td>
-<td>FK to scripts.id (CASCADE delete), UNIQUE</td>
-</tr>
-<tr>
-<td>purpose</td>
-<td>text</td>
-<td>YES</td>
-<td>-</td>
-<td>AI-detected purpose</td>
-</tr>
-<tr>
-<td>security_score</td>
-<td>double</td>
-<td>YES</td>
-<td>-</td>
-<td>0-10 scale</td>
-</tr>
-<tr>
-<td>quality_score</td>
-<td>double</td>
-<td>YES</td>
-<td>-</td>
-<td>0-10 scale</td>
-</tr>
-<tr>
-<td>risk_score</td>
-<td>double</td>
-<td>YES</td>
-<td>-</td>
-<td>0-10 scale</td>
-</tr>
-<tr>
-<td>parameter_docs</td>
-<td>jsonb</td>
-<td>YES</td>
-<td>{}</td>
-<td>Detected parameters</td>
-</tr>
-<tr>
-<td>suggestions</td>
-<td>jsonb</td>
-<td>YES</td>
-<td>[]</td>
-<td>Optimization suggestions</td>
-</tr>
-<tr>
-<td>command_details</td>
-<td>jsonb</td>
-<td>YES</td>
-<td>[]</td>
-<td>PowerShell commands found</td>
-</tr>
-<tr>
-<td>ms_docs_references</td>
-<td>jsonb</td>
-<td>YES</td>
-<td>[]</td>
-<td>Microsoft docs links</td>
-</tr>
-<tr>
-<td>security_issues</td>
-<td>jsonb</td>
-<td>YES</td>
-<td>[]</td>
-<td>Detailed security findings</td>
-</tr>
-<tr>
-<td>best_practice_violations</td>
-<td>jsonb</td>
-<td>YES</td>
-<td>[]</td>
-<td>PSScriptAnalyzer-style violations</td>
-</tr>
-<tr>
-<td>performance_insights</td>
-<td>jsonb</td>
-<td>YES</td>
-<td>[]</td>
-<td>Performance recommendations</td>
-</tr>
-<tr>
-<td>potential_risks</td>
-<td>jsonb</td>
-<td>YES</td>
-<td>[]</td>
-<td>Identified risks</td>
-</tr>
-<tr>
-<td>code_complexity_metrics</td>
-<td>jsonb</td>
-<td>YES</td>
-<td>{}</td>
-<td>Complexity scores</td>
-</tr>
-<tr>
-<td>compatibility_notes</td>
-<td>jsonb</td>
-<td>YES</td>
-<td>[]</td>
-<td>PS version compatibility</td>
-</tr>
-<tr>
-<td>execution_summary</td>
-<td>jsonb</td>
-<td>YES</td>
-<td>{}</td>
-<td>Execution behavior summary</td>
-</tr>
-<tr>
-<td>analysis_version</td>
-<td>varchar(50)</td>
-<td>YES</td>
-<td>'1.0'</td>
-<td>Analysis engine version</td>
-</tr>
-</tbody>
-</table>
-<h2 id="field-name-mappings">Field Name Mappings</h2>
-<h3 id="frontend-formdata-backend-reqbody">Frontend FormData -&gt; Backend req.body</h3>
-<table>
-<thead>
-<tr>
-<th>FormData Key</th>
-<th>req.body Field</th>
-<th>Type</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td><code>title</code></td>
-<td><code>title</code></td>
-<td>string</td>
-</tr>
-<tr>
-<td><code>description</code></td>
-<td><code>description</code></td>
-<td>string</td>
-</tr>
-<tr>
-<td><code>content</code></td>
-<td><code>content</code></td>
-<td>string</td>
-</tr>
-<tr>
-<td><code>category_id</code></td>
-<td><code>category_id</code></td>
-<td>string (numeric)</td>
-</tr>
-<tr>
-<td><code>tags</code></td>
-<td><code>tags</code></td>
-<td>string (JSON array)</td>
-</tr>
-<tr>
-<td><code>is_public</code></td>
-<td><code>is_public</code></td>
-<td>string ('true'/'false')</td>
-</tr>
-<tr>
-<td><code>analyze_with_ai</code></td>
-<td><code>analyze_with_ai</code></td>
-<td>string ('true'/'false')</td>
-</tr>
-<tr>
-<td><code>script_file</code></td>
-<td><code>req.file</code> (multer)</td>
-<td>File object</td>
-</tr>
-</tbody>
-</table>
-<h3 id="backend-model-database-column">Backend Model -&gt; Database Column</h3>
-<table>
-<thead>
-<tr>
-<th>Model Field</th>
-<th>DB Column</th>
-<th>Sequelize Mapping</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td><code>userId</code></td>
-<td><code>user_id</code></td>
-<td><code>underscored: true</code></td>
-</tr>
-<tr>
-<td><code>categoryId</code></td>
-<td><code>category_id</code></td>
-<td><code>underscored: true</code></td>
-</tr>
-<tr>
-<td><code>isPublic</code></td>
-<td><code>is_public</code></td>
-<td><code>underscored: true</code></td>
-</tr>
-<tr>
-<td><code>fileHash</code></td>
-<td><code>file_hash</code></td>
-<td><code>field: 'file_hash'</code></td>
-</tr>
-<tr>
-<td><code>executionCount</code></td>
-<td><code>execution_count</code></td>
-<td><code>underscored: true</code></td>
-</tr>
-<tr>
-<td><code>changelog</code></td>
-<td><code>commit_message</code></td>
-<td><code>field: 'commit_message'</code></td>
-</tr>
-<tr>
-<td><code>scriptId</code></td>
-<td><code>script_id</code></td>
-<td><code>field: 'script_id'</code></td>
-</tr>
-</tbody>
-</table>
-<h2 id="error-handling">Error Handling</h2>
-<table>
-<thead>
-<tr>
-<th>Error</th>
 <th>Status</th>
-<th>Cause</th>
+<th>Meaning</th>
 </tr>
 </thead>
 <tbody>
 <tr>
-<td><code>missing_file</code></td>
-<td>400</td>
-<td>No file attachment AND no content in FormData</td>
+<td><code>201</code></td>
+<td>Script created</td>
 </tr>
 <tr>
-<td><code>missing_file_content</code></td>
-<td>400</td>
-<td>File attachment present but unreadable</td>
+<td><code>200</code> or <code>409</code> duplicate response</td>
+<td>Same script hash already exists for the user or visible scope</td>
 </tr>
 <tr>
-<td><code>duplicate_file</code></td>
-<td>409</td>
-<td>MD5 hash matches existing script</td>
+<td><code>400</code></td>
+<td>Missing content, invalid content, unsupported extension, or malformed tags</td>
 </tr>
 <tr>
-<td><code>file_read_error</code></td>
-<td>400</td>
-<td>File content not valid UTF-8</td>
+<td><code>401</code></td>
+<td>Missing/invalid Supabase token</td>
 </tr>
 <tr>
-<td><code>invalid_content</code></td>
-<td>400</td>
-<td>.ps1 file fails PowerShell validation</td>
+<td><code>403</code></td>
+<td>Supabase profile exists but is not enabled</td>
 </tr>
 <tr>
-<td><code>authentication_required</code></td>
-<td>401</td>
-<td>No valid JWT token</td>
+<td><code>413</code></td>
+<td>Hosted upload exceeds the 4 MB application limit</td>
 </tr>
 <tr>
-<td><code>server_error</code></td>
-<td>500</td>
-<td>Unexpected database or server error</td>
+<td><code>429</code></td>
+<td>Too many upload attempts</td>
+</tr>
+<tr>
+<td><code>500</code></td>
+<td>Hosted API or database failure</td>
 </tr>
 </tbody>
 </table>
-<h2 id="multer-configuration">Multer Configuration</h2>
+<h3 id="get-apiscriptsid"><code>GET /api/scripts/:id</code></h3>
+<p>Returns the hosted script for an authorized owner or public viewer. The edit screen uses this route to load real title, description, content, version, category, and analysis score fields.</p>
+<h3 id="put-apiscriptsid"><code>PUT /api/scripts/:id</code></h3>
+<p>Updates title, description, content, category, and version state for the script owner. If content changes, the API increments <code>version</code> and writes a <code>script_versions</code> row.</p>
+<h2 id="edit-and-vs-code-export">Edit And VS Code Export</h2>
+<p>The script edit page now works against the hosted API:</p>
+<ol>
+<li>Open <code>/scripts/:id/edit</code>.</li>
+<li>The frontend loads the script with <code>scriptService.getScript(id)</code>.</li>
+<li>The user edits title, description, or content.</li>
+<li><strong>Save</strong> sends <code>PUT /api/scripts/:id</code>.</li>
+<li><strong>Open in VS Code</strong> downloads the current editor buffer as a <code>.ps1</code> file.</li>
+</ol>
+<p>The VS Code behavior is intentionally an export. A hosted Netlify page cannot directly open an unsaved database record as a local <code>vscode://file/...</code> path because it does not know or own the user's local filesystem path.</p>
+<p><img alt="Script editor with VS Code export" src="docs/screenshots/readme/script-edit-vscode.png" /></p>
+<h2 id="analysis-runtime-requirements">Analysis Runtime Requirements</h2>
+<p>Analysis pages now show runtime requirements before or after full AI analysis:</p>
+<ul>
+<li>PowerShell version guidance from saved analysis fields or script directives.</li>
+<li>Modules from <code>#Requires -Modules</code>, <code>Import-Module</code>, analysis JSON, and common command patterns.</li>
+<li>.NET assemblies from <code>Add-Type -AssemblyName</code>, displayed as assembly requirements.</li>
+</ul>
+<p>Example: a script with <code>Add-Type -AssemblyName PresentationFramework</code> shows <code>PresentationFramework (.NET assembly)</code>.</p>
+<p><img alt="Runtime requirements panel" src="docs/screenshots/readme/analysis-runtime-requirements.png" /></p>
+<h2 id="database-tables">Database Tables</h2>
 <table>
 <thead>
 <tr>
-<th>Setting</th>
-<th>Memory Upload</th>
-<th>Disk Upload</th>
+<th>Table</th>
+<th>Role</th>
 </tr>
 </thead>
 <tbody>
 <tr>
-<td>Storage</td>
-<td><code>memoryStorage()</code></td>
-<td><code>diskStorage(./uploads)</code></td>
+<td><code>scripts</code></td>
+<td>Current script title, description, content, owner, category, visibility, hash, version, and lifecycle flags</td>
 </tr>
 <tr>
-<td>Field name</td>
-<td><code>script_file</code></td>
-<td><code>script_file</code></td>
+<td><code>script_versions</code></td>
+<td>Version history for content changes</td>
 </tr>
 <tr>
-<td>Max file size</td>
-<td>10 MB</td>
-<td>20 MB</td>
+<td><code>script_analysis</code></td>
+<td>Latest analysis scores and JSON payloads</td>
 </tr>
 <tr>
-<td>Allowed extensions</td>
-<td>.ps1, .psm1, .psd1, .ps1xml, .txt, .json</td>
-<td>Same</td>
+<td><code>categories</code></td>
+<td>Hosted taxonomy</td>
 </tr>
 <tr>
-<td>Used when</td>
-<td>File &lt; 2MB</td>
-<td>File &gt;= 2MB</td>
+<td><code>tags</code> / <code>script_tags</code></td>
+<td>Many-to-many tags</td>
+</tr>
+<tr>
+<td><code>app_profiles</code></td>
+<td>Supabase profile gate and roles</td>
+</tr>
+<tr>
+<td><code>ai_metrics</code></td>
+<td>Best-effort provider/model/token/cost telemetry</td>
 </tr>
 </tbody>
 </table>
-    <div class="footer">Generated 2026-04-24 01:27 UTC</div>
+<h2 id="operational-rules">Operational Rules</h2>
+<ul>
+<li>Hosted Supabase is the database of record.</li>
+<li>Do not introduce a local database for production or training.</li>
+<li>Do not expose <code>SUPABASE_SERVICE_ROLE_KEY</code>, <code>DATABASE_URL</code>, or AI provider keys to the browser.</li>
+<li>Treat uploads as sensitive code until the owner intentionally shares them.</li>
+<li>Use disposable test records for smoke tests and clean them up through the app or API.</li>
+<li>Include Netlify deploy ID, route, user role, and screenshot when filing support issues.</li>
+</ul>
+<h2 id="verification-checklist">Verification Checklist</h2>
+<ul>
+<li>Upload rejects files larger than 4 MB with a clear error.</li>
+<li>Upload creates a script and initial version.</li>
+<li>Duplicate content routes to the existing script instead of creating confusing copies.</li>
+<li>Edit page loads real hosted data.</li>
+<li>Save persists title, description, and content.</li>
+<li><strong>Open in VS Code</strong> downloads a <code>.ps1</code> copy of the current editor buffer.</li>
+<li>Analysis page shows runtime requirements.</li>
+<li>PDF export downloads <code>application/pdf</code>.</li>
+<li>Delete and bulk delete affect only intended authorized records.</li>
+</ul>
+    <div class="footer">Generated 2026-04-29 14:08 UTC</div>
   </div>
 </body>
 </html>

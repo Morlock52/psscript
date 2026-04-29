@@ -1,4 +1,4 @@
-# Documentation Refresh - April 28, 2026
+# Documentation Refresh - April 28-29, 2026
 
 ## Scope
 
@@ -10,6 +10,8 @@ Updated active project documentation and training material to match the current 
 - admin approval gate
 - working agentic route aliases
 - analysis PDF export
+- hosted script editing and VS Code `.ps1` export
+- analysis runtime requirements for PowerShell version, modules, and assemblies
 - script delete and bulk delete behavior
 - admin Data Maintenance workflow
 - mobile responsive shell
@@ -34,12 +36,20 @@ New dated screenshots live in `docs/screenshots/current-2026-04-28/`:
 
 README frames in `docs/screenshots/readme/` were regenerated with `npm run screenshots:readme`.
 
+April 29 feature screenshots live in `docs/screenshots/current-2026-04-29/` and `docs/screenshots/readme/`:
+
+- `script-edit-vscode.png`
+- `analysis-runtime-requirements.png`
+- `settings-appearance.png`
+
 ## Files Updated
 
 - `README.md`
 - `docs/index.md`
 - `docs/CURRENT-STATUS-2026-04-24.md`
 - `docs/GETTING-STARTED.md`
+- `docs/UPLOAD-WORKFLOW.md`
+- `docs/AI-ANALYSIS-CRITERIA-2026-04-26.md`
 - `docs/SETUP-WITH-SCREENSHOTS.md`
 - `docs/NETLIFY-SUPABASE-DEPLOYMENT.md`
 - `docs/DATA-MAINTENANCE.md`
@@ -59,6 +69,8 @@ README frames in `docs/screenshots/readme/` were regenerated with `npm run scree
 - Supabase Auth: https://supabase.com/docs/guides/auth
 - Supabase Google OAuth: https://supabase.com/docs/guides/auth/social-login/auth-google
 - Supabase Row Level Security: https://supabase.com/docs/guides/database/postgres/row-level-security
+- Diataxis documentation framework: https://diataxis.fr/
+- Google developer documentation image guidance: https://developers.google.com/style/images
 
 ## Validation
 
@@ -66,6 +78,8 @@ README frames in `docs/screenshots/readme/` were regenerated with `npm run scree
 - Stale local-service terms were searched across active docs.
 - Current screenshots were captured from the local mock UI and production login.
 - README screenshot frames were regenerated.
+- April 29 screenshots were captured from the hosted Chrome session for script edit, runtime requirements, and Settings -> Appearance.
+- Edit/runtime feature docs were updated to match production deploy `69f209d8b588750a558017be`.
 - During local screenshot capture, Vite logged expected `502` proxy errors for API calls because no local backend was running; the screenshots were used only for non-mutating UI state and the production login capture came from the live site.
 
 ## Remaining Follow-Up

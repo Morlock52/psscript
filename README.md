@@ -37,6 +37,7 @@
     <a href="#how-its-wired">Wiring</a> &nbsp;·&nbsp;
     <a href="#the-brains">Brains</a> &nbsp;·&nbsp;
     <a href="#what-it-looks-like">Screens</a> &nbsp;·&nbsp;
+    <a href="#edit-and-runtime-notes">Edit + Runtime</a> &nbsp;·&nbsp;
     <a href="#run-it-yourself">Run it</a> &nbsp;·&nbsp;
     <a href="#did-it-work">Verify</a> &nbsp;·&nbsp;
     <a href="#common-questions">FAQ</a> &nbsp;·&nbsp;
@@ -78,8 +79,8 @@ Eight modules. The teal tiles are the standard product surface. The peach tile i
 
 Briefly, in the order people usually meet them:
 
-- **A workspace for every script.** Drop a `.ps1` in. Hosted uploads now travel as one JSON script payload instead of a doubled multipart body, with a clear 4MB hosted limit that matches Netlify Functions. We hash the body (SHA-256), check if we've seen it before, route you back to the existing script if we have, and create an initial `script_versions` row if we haven't. History is kept. Nothing gets lost.
-- **An AI that grades against a rubric.** A frontier model reads each script and returns a structured **analysis criteria v2026-04-26** payload — security score, quality score, a beginner-friendly summary, a management summary, command-by-command details, **prioritized findings** (each tagged `critical` / `high` / `medium` / `low`), a **remediation plan**, and **test recommendations**. The criteria version and a model confidence number ride along so reviewers can see exactly what they're looking at. We use `gpt-5.4-mini` as the structured-analysis primary, fall back to `claude-sonnet-4-6` text parsed back into JSON, and — if both providers fail or return malformed output — fall back to a deterministic static analyzer that produces the same shape.
+- **A workspace for every script.** Drop a `.ps1` in. Hosted uploads now travel as one JSON script payload instead of a doubled multipart body, with a clear 4MB hosted limit that matches Netlify Functions. We hash the body (SHA-256), check if we've seen it before, route you back to the existing script if we have, and create an initial `script_versions` row if we haven't. Edit pages load and save real hosted script data, and **Open in VS Code** exports the current editor buffer as a `.ps1` file for local review. History is kept. Nothing gets lost.
+- **An AI that grades against a rubric.** A frontier model reads each script and returns a structured **analysis criteria v2026-04-26** payload — security score, quality score, a beginner-friendly summary, a management summary, command-by-command details, **runtime requirements**, **prioritized findings** (each tagged `critical` / `high` / `medium` / `low`), a **remediation plan**, and **test recommendations**. The criteria version and a model confidence number ride along so reviewers can see exactly what they're looking at. We use `gpt-5.4-mini` as the structured-analysis primary, fall back to `claude-sonnet-4-6` text parsed back into JSON, and — if both providers fail or return malformed output — fall back to a deterministic static analyzer that produces the same shape.
 - **Search by what you mean.** We embed every script with `text-embedding-3-small` and store the vectors in Postgres via `pgvector(1536)`. Hosted search now combines `websearch_to_tsquery` full-text scoring with an `ILIKE` fallback, paginated and ownership-checked, so you can search for *"the script that rotates the service-account password"* instead of remembering whether someone called it `rotate-svc-pwd.ps1` or `pwd_cycle_FINAL2.ps1`.
 - **A door you control.** Google sign-in works — but new identities arrive **disabled**. An admin has to enable them. There is no other way in. (The sub-section below walks through this in detail. It's the most important thing on the page.)
 - **Hands-free, if you want.** Voice in (`gpt-4o-mini-transcribe`), voice out (`gpt-4o-mini-tts`). Useful when you're at a whiteboard, not so useful in a quiet office. Optional.
@@ -105,11 +106,11 @@ Most READMEs list features. We thought it'd be more useful to walk you through w
 
 **3. We hash it.** SHA-256, server-side. If we've seen this exact script body before, we don't duplicate it — the API returns a duplicate response that the UI can use to route you back to the existing script. If it's new, we welcome it as a fresh script and write the initial `script_versions` row.
 
-**4. The AI reads it against a rubric.** We send the script body to the configured model (`gpt-5.4-mini` by default for structured analysis) with a prompt anchored to **analysis criteria v2026-04-26**. The response must include `criteria_version`, `confidence`, security/quality scores, a beginner explanation, a management summary, command-level details, an execution summary, prioritized findings, a remediation plan, and test recommendations. If OpenAI is down or the JSON won't parse, we fall back to `claude-sonnet-4-6` and re-parse the text. If *that* fails too, `shouldUseStaticAnalysisFallback` flips on and a deterministic PowerShell static analyzer produces the same payload shape — a degraded answer is still a structured answer.
+**4. The AI reads it against a rubric.** We send the script body to the configured model (`gpt-5.4-mini` by default for structured analysis) with a prompt anchored to **analysis criteria v2026-04-26**. The response must include `criteria_version`, `confidence`, security/quality scores, a beginner explanation, a management summary, command-level details, runtime requirements, an execution summary, prioritized findings, a remediation plan, and test recommendations. If OpenAI is down or the JSON won't parse, we fall back to `claude-sonnet-4-6` and re-parse the text. If *that* fails too, `shouldUseStaticAnalysisFallback` flips on and a deterministic PowerShell static analyzer produces the same payload shape — a degraded answer is still a structured answer.
 
 **5. We embed it for search.** A separate call to `text-embedding-3-small` produces a 1536-dimension vector. We upsert that into Supabase via `pgvector` so the next person searching for "the script that does X" finds it without remembering the filename. We also record per-call `ai_metrics` (prompt / completion / total tokens, estimated cost, provider, model, latency, success or failure) on a best-effort write — analytics never block a user request.
 
-**6. You see the result.** The frontend renders scores side-by-side with the script source, the summary above the code, a dedicated **Criteria tab** showing the rubric version and confidence, prioritized findings as a triaged list, the remediation plan as a checklist, test recommendations beneath, and **version history** one click away on the script-detail page. From upload to visible: usually a couple of seconds.
+**6. You see the result.** The frontend renders scores side-by-side with the script source, the summary above the code, a dedicated **Criteria tab** showing the rubric version and confidence, runtime requirements showing PowerShell version plus modules or assemblies, prioritized findings as a triaged list, the remediation plan as a checklist, test recommendations beneath, and **version history** one click away on the script-detail page. From upload to visible: usually a couple of seconds.
 
 > **One quiet thing worth noticing:** every step above happens *behind* the approval gate. If you weren't enabled by an admin, your upload is rejected at step 2 and the AI never sees your script. That's the whole point.
 
@@ -191,7 +192,7 @@ We re-checked the upstream model docs while writing this:
 
 ## What it looks like.
 
-A small four-up — the door, the workspace it protects, the analysis that justifies the door, and the admin tool that operates it. These captures were refreshed from the live Netlify deployment on April 29, 2026 with temporary Supabase seed data that was removed after capture. The full capture set is in the collapsible block below.
+A small four-up — the door, the workspace it protects, the analysis that justifies the door, and the admin tool that operates it. These captures were refreshed from the live Netlify deployment on April 29, 2026. The edit and runtime-requirement captures use an existing safe sample script so no new production data had to be created for this refresh. The full capture set is in the collapsible block below.
 
 <table>
   <tr>
@@ -295,6 +296,39 @@ A small four-up — the door, the workspace it protects, the analysis that justi
 
 ---
 
+## Edit and runtime notes.
+
+The edit and analysis surfaces are part of the same lifecycle now: edit the hosted record, export a local `.ps1` copy for VS Code when you need desktop tooling, and check the runtime note before anybody runs the script.
+
+<table>
+  <tr>
+    <td width="50%" valign="top">
+      <a href="./docs/screenshots/readme/script-edit-vscode.png">
+        <img src="./docs/screenshots/readme/script-edit-vscode.png" alt="Script editor with Open in VS Code export, editable title, description, and script body." width="100%" />
+      </a>
+      <br/>
+      <sub><strong>The editor.</strong> Real hosted script data, save controls, and a VS Code export path for local review.</sub>
+    </td>
+    <td width="50%" valign="top">
+      <a href="./docs/screenshots/readme/analysis-runtime-requirements.png">
+        <img src="./docs/screenshots/readme/analysis-runtime-requirements.png" alt="Runtime requirements panel showing PowerShell version and PresentationFramework .NET assembly detection." width="100%" />
+      </a>
+      <br/>
+      <sub><strong>The runtime note.</strong> PowerShell version guidance plus detected modules and assemblies, even before full AI analysis exists.</sub>
+    </td>
+  </tr>
+</table>
+
+The theme controls live in Settings and keep the current restrained operator palette:
+
+<p align="center">
+  <a href="./docs/screenshots/readme/settings-appearance.png">
+    <img src="./docs/screenshots/readme/settings-appearance.png" alt="Appearance settings showing dark mode, muted accent color, font size, and accessibility options." width="82%" />
+  </a>
+</p>
+
+---
+
 ## Run it yourself.
 
 If you want to bring this up locally or push it to your own Netlify + Supabase, here's the short version. The long version is in [Setup Guide With Screenshots](./docs/SETUP-WITH-SCREENSHOTS.md), [Getting Started](./docs/GETTING-STARTED.md), and [Netlify + Supabase Deployment](./docs/NETLIFY-SUPABASE-DEPLOYMENT.md).
@@ -373,7 +407,7 @@ npm run build:netlify
 npx --yes netlify-cli@26.0.0 dev
 ```
 
-Production deploys currently publish the same React app and the `netlify/functions/api.ts` function to `https://pstest.morloksmaze.com`. The latest production deploy in this working tree is `69f1900c175d2fbc3e5aba70`, published April 29, 2026.
+Production deploys currently publish the same React app and the `netlify/functions/api.ts` function to `https://pstest.morloksmaze.com`. The latest production deploy in this working tree is `69f209d8b588750a558017be`, published April 29, 2026.
 
 ---
 
@@ -409,15 +443,17 @@ node scripts/smoke-upload-delete-hosted.mjs
 
 | What we ran | How it went |
 | :--- | :--- |
+| Edit/runtime patch build         | <code>● passed</code> · `npm run build` in `src/frontend` |
+| Focused shell/token tests         | <code>● 31 / 31 passed</code> |
 | Frontend hosted-contract test      | <code>● 11 / 11 passed</code> |
 | Full frontend unit suite           | <code>● 110 / 110 passed</code> |
 | Frontend + Netlify production build | <code>● passed</code> |
 | Netlify function TypeScript check  | <code>● passed</code> |
-| Netlify production deploy          | <code>● live</code> at `https://pstest.morloksmaze.com` · deploy `69f1900c175d2fbc3e5aba70` |
+| Netlify production deploy          | <code>● live</code> at `https://pstest.morloksmaze.com` · deploy `69f209d8b588750a558017be` |
 | Hosted health check                | <code>● healthy</code> · database connected |
 | Hosted upload/delete smoke         | <code>● passed</code> · uploaded/deleted IDs `27`, `28`, `29`; repeat delete returned `404` |
 | Smoke-test cleanup                 | <code>● clean</code> · remaining smoke scripts `0`, profiles `0` |
-| README screenshots                 | <code>● captured from hosted app</code> and reframed via `npm run screenshots:readme` |
+| README screenshots                 | <code>● refreshed from hosted app</code> for edit, runtime requirements, and appearance settings |
 
 <details>
 <summary><strong>How to refresh the screenshots yourself</strong></summary>

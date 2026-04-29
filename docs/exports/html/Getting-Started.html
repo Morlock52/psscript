@@ -269,45 +269,25 @@ body {
   </section>
   
     <h1 id="psscript-getting-started">PSScript Getting Started</h1>
-<p><em>Last updated: April 27, 2026</em></p>
-<p>Use <a href="./SETUP-WITH-SCREENSHOTS.md">Setup Guide With Screenshots</a> for the full component-by-component setup. This page is the short path.</p>
+<p>Last updated: April 29, 2026.</p>
+<p>Use this as the short path. Use <a href="./SETUP-WITH-SCREENSHOTS.md">Setup Guide With Screenshots</a> for the longer walkthrough.</p>
 <h2 id="current-posture">Current Posture</h2>
 <ul>
-<li>Production path: Netlify frontend + Netlify Functions + hosted Supabase.</li>
-<li>Local development path: Vite frontend, Express backend, FastAPI AI service, hosted Supabase <code>DATABASE_URL</code>.</li>
-<li>Docker is retired from active setup and preserved only under <code>retired/docker/</code>.</li>
-<li>Google OAuth users are disabled by default until an admin enables them in Settings -&gt; User Management.</li>
+<li>Production: <code>https://pstest.morloksmaze.com</code></li>
+<li>Hosting: Netlify static site plus Netlify Functions.</li>
+<li>Database: hosted Supabase Postgres only.</li>
+<li>Auth: Supabase Auth plus admin approval in <code>app_profiles</code>.</li>
+<li>Local development: frontend can run locally, but database state should still point to hosted Supabase.</li>
+<li>Docker and local Postgres are retired from the active path and preserved only as history.</li>
 </ul>
-<h2 id="local-urls">Local URLs</h2>
-<table>
-<thead>
-<tr>
-<th>Component</th>
-<th>URL</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td>Frontend</td>
-<td><code>https://127.0.0.1:3090</code></td>
-</tr>
-<tr>
-<td>Backend API</td>
-<td><code>https://127.0.0.1:4000</code></td>
-</tr>
-<tr>
-<td>AI service</td>
-<td><code>http://127.0.0.1:8000</code></td>
-</tr>
-</tbody>
-</table>
 <h2 id="prerequisites">Prerequisites</h2>
 <ul>
 <li>Node.js 20+</li>
-<li>Python 3.10+</li>
-<li>hosted Supabase project with migrations applied</li>
+<li>Python 3.10+ only if you are working on local AI service code</li>
+<li>Netlify CLI for deploy work</li>
+<li>hosted Supabase project with all migrations applied</li>
 <li>Supabase pooler <code>DATABASE_URL</code></li>
-<li>OpenAI and/or Anthropic API keys</li>
+<li>OpenAI and/or Anthropic keys for AI-backed analysis and chat</li>
 </ul>
 <h2 id="install">Install</h2>
 <pre><code class="language-bash">npm install
@@ -316,7 +296,7 @@ npm install --prefix src/backend
 python3 -m pip install -r src/ai/requirements.txt
 </code></pre>
 <h2 id="configure">Configure</h2>
-<p>Create <code>.env</code> at the repo root:</p>
+<p>Create <code>.env</code> at the repo root for local development and mirror production secrets in Netlify environment variables.</p>
 <pre><code class="language-bash">DATABASE_URL=postgresql://...supabase-pooler-url...
 DB_PROFILE=supabase
 DB_SSL=true
@@ -325,53 +305,52 @@ SUPABASE_URL=https://your-project.supabase.co
 SUPABASE_ANON_KEY=...
 SUPABASE_SERVICE_ROLE_KEY=...
 DEFAULT_ADMIN_EMAIL=admin@example.com
+DEFAULT_ADMIN_PASSWORD=...
+DEFAULT_ADMIN_BOOTSTRAP_TOKEN=...
 OPENAI_API_KEY=...
 ANTHROPIC_API_KEY=...
 VITE_SUPABASE_URL=https://your-project.supabase.co
 VITE_SUPABASE_ANON_KEY=...
 VITE_HOSTED_STATIC_ANALYSIS_ONLY=true
 </code></pre>
-<p>Apply Supabase migrations in filename order from <code>supabase/migrations/</code>.</p>
-<h2 id="run">Run</h2>
-<p>Recommended validation startup:</p>
-<pre><code class="language-bash">npx playwright test tests/e2e/project-review-validation.spec.ts --project=chromium
+<p>Never expose <code>SUPABASE_SERVICE_ROLE_KEY</code>, <code>DATABASE_URL</code>, or provider keys as <code>VITE_*</code> values.</p>
+<h2 id="run-the-frontend-locally">Run The Frontend Locally</h2>
+<p>For UI work with mock data and no hosted mutations:</p>
+<pre><code class="language-bash">cd src/frontend
+VITE_DISABLE_AUTH=true VITE_USE_MOCKS=true npm run dev -- --host 127.0.0.1 --port 5173
 </code></pre>
-<p>Manual startup:</p>
-<pre><code class="language-bash"># terminal 1
-cd src/ai
-python3 -m uvicorn main:app --host 0.0.0.0 --port 8000
+<p>For hosted-auth testing, use real Supabase browser keys and keep auth enabled:</p>
+<pre><code class="language-bash">cd src/frontend
+VITE_DISABLE_AUTH=false \
+VITE_SUPABASE_URL=https://your-project.supabase.co \
+VITE_SUPABASE_ANON_KEY=... \
+npm run dev -- --host 127.0.0.1 --port 5173
 </code></pre>
-<pre><code class="language-bash"># terminal 2
-cd src/backend
-npm run dev
-</code></pre>
-<pre><code class="language-bash"># terminal 3
-cd src/frontend
-npm run dev -- --host 0.0.0.0 --port 3090
+<h2 id="deploy">Deploy</h2>
+<pre><code class="language-bash">npm run build:netlify
+netlify deploy --prod
 </code></pre>
 <h2 id="validate">Validate</h2>
-<pre><code class="language-bash">cd src/backend
-npm run build
-npm test -- --runInBand --forceExit
-</code></pre>
 <pre><code class="language-bash">cd src/frontend
+npm test -- --run --maxWorkers=1
 npm run build
 </code></pre>
-<pre><code class="language-bash">cd /Users/morlock/fun/02_PowerShell_Projects/psscript
-npx playwright test --project=chromium
+<pre><code class="language-bash">curl -fsS https://pstest.morloksmaze.com/api/health
 </code></pre>
-<h2 id="screenshots-and-setup-details">Screenshots And Setup Details</h2>
-<p>See <a href="./SETUP-WITH-SCREENSHOTS.md">Setup Guide With Screenshots</a> for:</p>
+<h2 id="current-screenshots">Current Screenshots</h2>
+<p>Fresh screenshots are stored in:</p>
 <ul>
-<li>Supabase setup</li>
-<li>Google OAuth approval gate</li>
-<li>Netlify setup</li>
-<li>AI model defaults</li>
-<li>documentation AI scanning</li>
-<li>PDF report export</li>
-<li>screenshots for login, pending approval, scripts, analysis, documentation, settings, and data maintenance</li>
+<li><code>docs/screenshots/current-2026-04-29/</code></li>
+<li><code>docs/screenshots/readme/</code></li>
 </ul>
-    <div class="footer">Generated 2026-04-27 08:51 UTC</div>
+<p>They cover production login, desktop dashboard/scripts/upload/settings, agentic alias behavior, mobile dashboard/navigation/scripts, the real hosted script editor, the <strong>Open in VS Code</strong> export action, runtime requirements on analysis pages, and Settings -&gt; Appearance.</p>
+<h2 id="current-feature-notes">Current Feature Notes</h2>
+<ul>
+<li>Edit pages load and save hosted script records through <code>/api/scripts/:id</code>.</li>
+<li><strong>Open in VS Code</strong> exports the current editor buffer as a <code>.ps1</code> file. This is the correct hosted behavior because Netlify cannot directly open an unsaved database record in a local VS Code file path.</li>
+<li>Analysis pages show runtime requirements from script content and saved analysis fields. The panel reports PowerShell version guidance and detected modules or assemblies such as <code>PresentationFramework (.NET assembly)</code>.</li>
+</ul>
+    <div class="footer">Generated 2026-04-29 14:08 UTC</div>
   </div>
 </body>
 </html>

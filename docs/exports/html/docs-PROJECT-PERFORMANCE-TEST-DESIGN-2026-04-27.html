@@ -1,0 +1,390 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <base href="file:///Users/morlock/fun/02_PowerShell_Projects/psscript/" />
+  <title>docs-PROJECT-PERFORMANCE-TEST-DESIGN-2026-04-27</title>
+  <style>
+:root {
+  color-scheme: light;
+}
+body {
+  font-family: "Segoe UI", "Helvetica Neue", Arial, sans-serif;
+  margin: 0;
+  padding: 0;
+  background: #f4f7fb;
+  color: #0f172a;
+}
+.markdown-body {
+  max-width: 980px;
+  margin: 0 auto;
+  padding: 36px 42px 64px;
+  line-height: 1.65;
+  background: #ffffff;
+  box-shadow: 0 24px 70px rgba(15, 23, 42, 0.08);
+}
+.markdown-body h1 {
+  font-size: 34px;
+  line-height: 1.12;
+  margin-bottom: 12px;
+  color: #07111f;
+  border-bottom: 3px solid #0ea5e9;
+  padding-bottom: 12px;
+  page-break-before: always;
+  page-break-after: avoid;
+  break-before: page;
+  break-after: avoid;
+}
+.markdown-body h1:first-of-type {
+  page-break-before: avoid;
+  break-before: avoid;
+}
+.markdown-body h2 {
+  font-size: 23px;
+  line-height: 1.2;
+  margin-top: 34px;
+  color: #102a43;
+  border-bottom: 1px solid #d7e2ee;
+  padding-bottom: 8px;
+  page-break-after: avoid;
+  break-after: avoid;
+}
+.markdown-body h3 {
+  font-size: 18px;
+  margin-top: 20px;
+  color: #1e3a5f;
+  page-break-after: avoid;
+  break-after: avoid;
+}
+.markdown-body h4, .markdown-body h5, .markdown-body h6 {
+  page-break-after: avoid;
+  break-after: avoid;
+}
+.markdown-body table {
+  width: 100%;
+  border-collapse: collapse;
+  margin: 18px 0 24px;
+  font-size: 13px;
+  page-break-inside: avoid;
+  break-inside: avoid;
+  box-shadow: 0 1px 0 #e2e8f0;
+}
+.markdown-body th,
+.markdown-body td {
+  border: 1px solid #e2e8f0;
+  padding: 9px 11px;
+  text-align: left;
+  vertical-align: top;
+}
+.markdown-body th {
+  background: #eef6ff;
+  color: #0f3157;
+  font-weight: 700;
+}
+.markdown-body tr:nth-child(even) td {
+  background: #fbfdff;
+}
+.markdown-body tr {
+  page-break-inside: avoid;
+  break-inside: avoid;
+}
+.markdown-body code {
+  background: #f1f5f9;
+  padding: 2px 4px;
+  border-radius: 4px;
+  font-family: "SFMono-Regular", Menlo, Consolas, monospace;
+  font-size: 0.92em;
+}
+.markdown-body pre {
+  background: #111827;
+  color: #e5eef8;
+  padding: 16px;
+  border-radius: 10px;
+  overflow-x: auto;
+  border: 1px solid #243244;
+  page-break-inside: avoid;
+  break-inside: avoid;
+}
+.markdown-body pre code {
+  background: transparent;
+  color: inherit;
+}
+.markdown-body blockquote {
+  border-left: 5px solid #0ea5e9;
+  margin: 18px 0;
+  padding: 12px 18px;
+  background: #eff8ff;
+  color: #18324f;
+  border-radius: 0 10px 10px 0;
+}
+.markdown-body img {
+  max-width: 100%;
+  height: auto;
+  display: block;
+  margin: 16px 0;
+  border-radius: 10px;
+  box-shadow: 0 8px 20px rgba(15, 23, 42, 0.12);
+  page-break-inside: avoid;
+  break-inside: avoid;
+}
+.markdown-body figure {
+  page-break-inside: avoid;
+  break-inside: avoid;
+  margin: 16px 0;
+}
+.markdown-body a {
+  color: #2563eb;
+  text-decoration: none;
+}
+.markdown-body a:hover {
+  text-decoration: underline;
+}
+.cover {
+  min-height: 760px;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+  padding: 72px 60px 64px;
+  background:
+    linear-gradient(135deg, rgba(9, 30, 66, 0.96) 0%, rgba(12, 74, 110, 0.94) 54%, rgba(20, 83, 45, 0.9) 100%),
+    radial-gradient(circle at 18% 18%, rgba(14, 165, 233, 0.25), transparent 36%);
+  color: #f8fafc;
+  border-radius: 0;
+  margin: -36px -42px 40px;
+  position: relative;
+  overflow: hidden;
+}
+.cover::before {
+  content: "PSScript";
+  position: absolute;
+  top: 46px;
+  left: 60px;
+  font-size: 12px;
+  font-weight: 800;
+  letter-spacing: 0.24em;
+  text-transform: uppercase;
+  color: rgba(226, 246, 255, 0.82);
+}
+.cover::after {
+  content: "";
+  position: absolute;
+  right: -120px;
+  top: -120px;
+  width: 360px;
+  height: 360px;
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  transform: rotate(28deg);
+}
+.markdown-body .cover-title {
+  font-size: 48px;
+  line-height: 1.04;
+  font-weight: 800;
+  color: #f8fafc;
+  border-bottom: 3px solid #38bdf8;
+  margin: 0 0 16px;
+  max-width: 720px;
+}
+.cover-subtitle {
+  font-size: 20px;
+  line-height: 1.42;
+  color: #dbeafe;
+  margin: 0 0 22px;
+  max-width: 720px;
+}
+.cover-meta {
+  display: inline-block;
+  width: fit-content;
+  font-size: 13px;
+  color: #e0f2fe;
+  background: rgba(255, 255, 255, 0.12);
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  border-radius: 999px;
+  padding: 7px 13px;
+}
+.page-break {
+  page-break-after: always;
+  break-after: page;
+}
+.footer {
+  margin-top: 40px;
+  font-size: 12px;
+  color: #64748b;
+  border-top: 1px solid #e2e8f0;
+  padding-top: 14px;
+}
+/* Print and PDF-specific styles */
+@page {
+  size: A4;
+  margin: 18mm 16mm 20mm;
+}
+@media print {
+  body {
+    background: #ffffff;
+  }
+  .markdown-body {
+    max-width: none;
+    margin: 0;
+    padding: 0;
+    box-shadow: none;
+  }
+  .cover {
+    margin: 0 0 28px;
+  }
+  .markdown-body {
+    orphans: 3;
+    widows: 3;
+  }
+  .markdown-body p {
+    orphans: 3;
+    widows: 3;
+  }
+  .markdown-body li {
+    page-break-inside: avoid;
+    break-inside: avoid;
+  }
+  .markdown-body ul, .markdown-body ol {
+    page-break-before: avoid;
+    break-before: avoid;
+  }
+  .markdown-body blockquote {
+    page-break-inside: avoid;
+    break-inside: avoid;
+  }
+  /* Keep section content together */
+  .markdown-body h2 + *, .markdown-body h3 + * {
+    page-break-before: avoid;
+    break-before: avoid;
+  }
+}
+</style>
+</head>
+<body>
+  <div class="markdown-body">
+    
+    <h1 id="psscript-performance-and-test-design">PSScript Performance And Test Design</h1>
+<p>Research baseline: April 27, 2026. Authored from local review on April 28, 2026.</p>
+<h2 id="goal">Goal</h2>
+<p>Validate that PSScript works as a Netlify-hosted application using Supabase Postgres as the database, with enough smoke, UI, API, database, and stress coverage to expose deployment blockers before refactoring.</p>
+<h2 id="current-architecture-under-test">Current Architecture Under Test</h2>
+<ul>
+<li>Frontend: Vite React app built from <code>src/frontend</code> and published by Netlify from <code>src/frontend/dist</code>.</li>
+<li>Hosted API: Netlify Function router at <code>netlify/functions/api.ts</code>, mapped by <code>netlify.toml</code> from <code>/api/*</code> to <code>/.netlify/functions/api/:splat</code>.</li>
+<li>Database: Supabase Postgres via <code>DATABASE_URL</code>, <code>SUPABASE_URL</code>, <code>SUPABASE_ANON_KEY</code>, and <code>SUPABASE_SERVICE_ROLE_KEY</code>.</li>
+<li>Local UI e2e path: run the frontend against mock data for non-mutating browser checks, or run hosted-auth tests against the Netlify/Supabase production path. Do not introduce a local database; <code>DATABASE_URL</code> must point at hosted Supabase when database-backed tests are used.</li>
+<li>Linked Netlify site: <code>psscript</code>, project id <code>a6cb54b5-b3f7-4f01-a756-70b127f07e19</code>, primary URL <code>https://pstest.morloksmaze.com</code>.</li>
+</ul>
+<h2 id="external-guidance-used">External Guidance Used</h2>
+<ul>
+<li>Netlify Functions documentation: use Functions for server-side code without managing servers, keep routing explicit, and validate build output before deploy.</li>
+<li>Netlify environment variable documentation: production secrets should be configured in Netlify, not committed. Source: <a href="https://docs.netlify.com/build/environment-variables/overview/">https://docs.netlify.com/build/environment-variables/overview/</a></li>
+<li>Supabase connection string documentation: use hosted Supabase direct or pooler connection strings for app/server access. Source: <a href="https://supabase.com/docs/reference/postgres/connection-strings">https://supabase.com/docs/reference/postgres/connection-strings</a></li>
+<li>OpenAI Responses API usage documentation: track input tokens, output tokens, token details, and total tokens from the response usage object. Source: <a href="https://platform.openai.com/docs/api-reference/responses/retrieve">https://platform.openai.com/docs/api-reference/responses/retrieve</a></li>
+<li>Anthropic Messages API examples: track usage with input token and output token counters. Source: <a href="https://docs.anthropic.com/en/api/messages-examples">https://docs.anthropic.com/en/api/messages-examples</a></li>
+<li>Supabase RLS documentation: RLS must be enabled and policies must be explicit for exposed tables.</li>
+<li>Supabase database performance guidance: add indexes for foreign keys and common filters; verify RLS and query plans with realistic queries.</li>
+<li>Playwright best practices: use user-visible locators, isolate tests, collect traces/screenshots on failure, and test critical flows across browser projects.</li>
+<li>Lighthouse CI guidance: track performance/accessibility/best-practice budgets from built production assets, not only dev server behavior.</li>
+</ul>
+<h2 id="success-criteria">Success Criteria</h2>
+<ul>
+<li>Netlify build completes from the repo root using the configured <code>netlify.toml</code>.</li>
+<li>Built frontend calls same-origin <code>/api</code> in production unless an explicit environment override is set.</li>
+<li>Netlify API health reports Supabase database connectivity when required env vars are present.</li>
+<li>Playwright smoke tests pass for frontend, backend health, authentication behavior, script management, categories/settings, AI analytics, and route-level UI load.</li>
+<li>UI routes render without blank pages, fatal console errors, or inaccessible primary controls.</li>
+<li>Database stress and maintenance smoke tests complete without destructive behavior outside their intended test path.</li>
+<li>Any failure is captured with command, observed output, likely cause, and proposed fix before refactoring.</li>
+</ul>
+<h2 id="test-matrix">Test Matrix</h2>
+<table>
+<thead>
+<tr>
+<th>Area</th>
+<th>Command Or Method</th>
+<th>Primary Risk Covered</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Static config review</td>
+<td>inspect <code>netlify.toml</code>, env names, API URL logic, Supabase migrations</td>
+<td>Wrong host path, missing env, local-only assumptions</td>
+</tr>
+<tr>
+<td>Netlify project/link check</td>
+<td><code>netlify status</code> and Netlify project connector</td>
+<td>Wrong project or unlinked deployment target</td>
+</tr>
+<tr>
+<td>Production build</td>
+<td><code>netlify build</code> or equivalent direct build</td>
+<td>Type errors, Vite build failure, missing publish output</td>
+</tr>
+<tr>
+<td>Hosted API smoke</td>
+<td><code>/api/health</code> on Netlify and local Netlify path</td>
+<td>Netlify Function routing, Supabase connectivity</td>
+</tr>
+<tr>
+<td>Unit tests</td>
+<td>frontend Vitest tests</td>
+<td>Component/API utility regressions</td>
+</tr>
+<tr>
+<td>E2E smoke</td>
+<td>Playwright <code>health-checks</code>, <code>authentication</code>, <code>script-management</code>, <code>categories-settings</code>, <code>ai-analytics</code></td>
+<td>Main workflows and UI rendering</td>
+</tr>
+<tr>
+<td>UI walkthrough</td>
+<td>Browser route sweep and screenshots at desktop/mobile sizes</td>
+<td>Blank pages, layout overlap, console errors</td>
+</tr>
+<tr>
+<td>Supabase review</td>
+<td>migrations, indexes, RLS policies, health checks</td>
+<td>Unsafe policies, missing indexes, query performance</td>
+</tr>
+<tr>
+<td>Stress smoke</td>
+<td>existing maintenance/stress scripts in smoke mode</td>
+<td>Data-maintenance and load behavior</td>
+</tr>
+<tr>
+<td>Performance audit</td>
+<td>production build size and Lighthouse-style route checks when browser target is available</td>
+<td>Bundle bloat and slow first load</td>
+</tr>
+</tbody>
+</table>
+<h2 id="performance-targets">Performance Targets</h2>
+<ul>
+<li>Build: completes without TypeScript or Vite errors.</li>
+<li>Frontend bundle: no unexplained large chunk warnings beyond intentionally bundled Monaco/highlight assets.</li>
+<li>API health: reachable and returns structured JSON within the test timeout.</li>
+<li>UI smoke: each critical route reaches <code>domcontentloaded</code> and visible body content within Playwright timeouts.</li>
+<li>E2E stability: no test should depend on hidden local-only state unless it declares the skip condition.</li>
+<li>Database: queries used by list/search/detail views should have supporting indexes for joins, ownership filters, and pagination.</li>
+</ul>
+<h2 id="execution-order">Execution Order</h2>
+<ol>
+<li>Review project structure, Netlify link, env contract, Supabase schema, and test harness.</li>
+<li>Run build and fast unit/static tests.</li>
+<li>Run API and UI smoke tests against the local stack backed by Supabase.</li>
+<li>Run targeted stress/performance smoke tests that already exist in the repo.</li>
+<li>Record observed results in a separate markdown report.</li>
+<li>Refactor only confirmed problems, with changes scoped to the failing behavior.</li>
+<li>Re-run the relevant tests and update final results.</li>
+</ol>
+<h2 id="open-questions-to-resolve-from-evidence">Open Questions To Resolve From Evidence</h2>
+<ul>
+<li>Whether the Netlify production environment has all Supabase and AI provider variables set.</li>
+<li>Whether local <code>.env</code> points at the same Supabase project as Netlify production.</li>
+<li>Whether the existing backend path on port <code>4000</code> is still required, or whether Netlify Functions are now the intended only hosted API.</li>
+<li>Whether stress tests may mutate shared Supabase data; destructive tests should run only if they isolate fixtures or restore state.</li>
+</ul>
+    <div class="footer">Generated 2026-04-29 14:08 UTC</div>
+  </div>
+</body>
+</html>

@@ -1,6 +1,6 @@
 # PSScript Getting Started
 
-Last updated: April 28, 2026.
+Last updated: April 29, 2026.
 
 Use this as the short path. Use [Setup Guide With Screenshots](./SETUP-WITH-SCREENSHOTS.md) for the longer walkthrough.
 
@@ -97,7 +97,13 @@ curl -fsS https://pstest.morloksmaze.com/api/health
 
 Fresh screenshots are stored in:
 
-- `docs/screenshots/current-2026-04-28/`
+- `docs/screenshots/current-2026-04-29/`
 - `docs/screenshots/readme/`
 
-They cover production login, desktop dashboard/scripts/upload/settings, agentic alias behavior, and mobile dashboard/navigation/scripts.
+They cover production login, desktop dashboard/scripts/upload/settings, agentic alias behavior, mobile dashboard/navigation/scripts, the real hosted script editor, the **Open in VS Code** export action, runtime requirements on analysis pages, and Settings -> Appearance.
+
+## Current Feature Notes
+
+- Edit pages load and save hosted script records through `/api/scripts/:id`.
+- **Open in VS Code** exports the current editor buffer as a `.ps1` file. This is the correct hosted behavior because Netlify cannot directly open an unsaved database record in a local VS Code file path.
+- Analysis pages show runtime requirements from script content and saved analysis fields. The panel reports PowerShell version guidance and detected modules or assemblies such as `PresentationFramework (.NET assembly)`.

@@ -1,182 +1,129 @@
-# File Upload Workflow Documentation
+# Hosted Upload And Script Editing Workflow
 
-_Last updated: April 2, 2026_
+Last updated: April 29, 2026.
 
-## Overview
+This document describes the current hosted workflow. The production path is Netlify Functions plus hosted Supabase Postgres. The retired Express/multer/local-upload path is historical only and should not be used as the active runbook.
 
-The upload workflow handles PowerShell script files from the user's browser to persistent storage in PostgreSQL. It supports drag-and-drop, file picker, and paste-based input with automatic AI analysis.
+## What The User Sees
 
-## Flow Diagram
+1. The user opens **Scripts -> Upload Script**.
+2. The user selects or pastes a PowerShell file: `.ps1`, `.psm1`, `.psd1`, or `.ps1xml`.
+3. The UI reads the file as text, shows metadata, and blocks hosted uploads above 4 MB.
+4. The user adds title, description, category, tags, visibility, and optional analysis.
+5. The frontend sends one JSON payload to `/api/scripts/upload` with the Supabase bearer token.
+6. The API creates or identifies the hosted script record in Supabase.
+7. The user can open script detail, edit the hosted record, run/view analysis, export PDF analysis, or delete disposable test scripts they own.
 
-```
-User selects .ps1 file
-       |
-       v
-[Frontend: ScriptUpload.tsx]
-  1. FileReader reads content into state
-  2. File metadata extracted (name, size, type)
-  3. Content preview rendered (14-line preview)
-  4. User fills title, description, tags, category
-       |
-       v
-[Frontend: prepareFormData()]
-  5. Builds FormData with fields:
-     - title (string)
-     - description (string)
-     - content (string - file text)
-     - category_id (string, optional)
-     - tags (JSON string array, optional)
-     - is_public (string: 'true'/'false')
-     - analyze_with_ai (string: 'true'/'false')
-     - script_file (File blob from input or content)
-       |
-       v
-[Frontend: api.ts uploadScript()]
-  6. Sends POST to /api/scripts/upload (FormData)
-     - Or /api/scripts/upload/large for files > 2MB
-     - Auth token in Authorization header
-     - Browser auto-sets Content-Type: multipart/form-data
-       |
-       v
-[Backend: routes/scripts.ts]
-  7. Middleware chain:
-     uploadCorsMiddleware -> authenticateJWT ->
-     handleNetworkErrors -> handleUploadProgress ->
-     multer.single('script_file') -> handleMulterError ->
-     ScriptExportController.uploadScript
-       |
-       v
-[Backend: export.ts uploadScript()]
-  8. Extract file content:
-     - Primary: req.file.buffer (multer memory storage)
-     - Fallback: req.body.content (FormData text field)
-  9. Calculate MD5 hash for deduplication
-  10. Check for duplicate hash in scripts table
-  11. Validate UTF-8 readability (reject binary)
-  12. Validate PowerShell structure for .ps1 files
-       |
-       v
-[Database: PostgreSQL]
-  13. BEGIN TRANSACTION
-  14. INSERT INTO scripts (title, content, user_id, file_hash, ...)
-  15. INSERT INTO script_versions (script_id, version=1, content, ...)
-  16. INSERT INTO tags + script_tags (if tags provided)
-  17. COMMIT
-  18. Save file to uploads/ directory
-       |
-       v
-[Response: 201 Created]
-  19. Return { success, script, message, filePath }
-       |
-       v
-[Async: AI Analysis]
-  20. If analyze_with_ai=true, fire-and-forget with 2 retries
-  21. POST to AI service /analyze
-  22. UPSERT into script_analysis table
+## Hosted Flow
+
+```text
+Browser upload form
+  -> src/frontend/src/pages/ScriptUpload.tsx
+  -> src/frontend/src/services/api.ts scriptService.uploadScript()
+  -> POST /api/scripts/upload
+  -> netlify/functions/api.ts handleScriptUpload()
+  -> Supabase Auth token validation
+  -> app_profiles.is_enabled approval gate
+  -> content validation and SHA-256 hash
+  -> scripts + script_versions + tags/script_tags
+  -> optional hosted AI analysis
+  -> JSON response with script, duplicate state, or analysisError
 ```
 
-## Database Schema
+## Current API Contract
 
-### scripts table
+### `POST /api/scripts/upload`
 
-| Column | Type | Nullable | Default | Notes |
-|--------|------|----------|---------|-------|
-| id | integer | NOT NULL | auto-increment | Primary key |
-| title | varchar(255) | NOT NULL | - | Script display name |
-| description | text | YES | - | User description |
-| content | text | NOT NULL | - | Full script content |
-| user_id | integer | YES | - | FK to users.id (CASCADE delete) |
-| category_id | integer | YES | - | FK to categories.id (SET NULL delete) |
-| version | integer | NOT NULL | 1 | Current version number |
-| is_public | boolean | NOT NULL | false | Visibility flag |
-| execution_count | integer | NOT NULL | 0 | Times executed |
-| file_hash | varchar(255) | YES | - | MD5 for dedup (model maps to STRING(64)) |
-| views | integer | NOT NULL | 0 | View count |
-| created_at | timestamptz | YES | CURRENT_TIMESTAMP | Auto-set |
-| updated_at | timestamptz | YES | CURRENT_TIMESTAMP | Auto-updated via trigger |
+The hosted frontend sends JSON, not a doubled multipart body:
 
-### script_versions table
+```json
+{
+  "title": "Setup_OpenWebUI_LM_Studio",
+  "description": "No description provided",
+  "content": "# PowerShell script body",
+  "category_id": 1,
+  "tags": ["setup", "windows"],
+  "is_public": false,
+  "analyze_with_ai": true
+}
+```
 
-| Column | Type | Nullable | Default | Notes |
-|--------|------|----------|---------|-------|
-| id | integer | NOT NULL | auto-increment | Primary key |
-| script_id | integer | YES | - | FK to scripts.id (CASCADE delete) |
-| version | integer | NOT NULL | - | Version number |
-| content | text | NOT NULL | - | Full content at this version |
-| commit_message | text | YES | - | Changelog (model field: `changelog`) |
-| user_id | integer | YES | - | FK to users.id (SET NULL delete) |
-| created_at | timestamptz | YES | CURRENT_TIMESTAMP | Auto-set |
+The API returns:
 
-**Unique constraint:** (script_id, version)
+| Status | Meaning |
+| --- | --- |
+| `201` | Script created |
+| `200` or `409` duplicate response | Same script hash already exists for the user or visible scope |
+| `400` | Missing content, invalid content, unsupported extension, or malformed tags |
+| `401` | Missing/invalid Supabase token |
+| `403` | Supabase profile exists but is not enabled |
+| `413` | Hosted upload exceeds the 4 MB application limit |
+| `429` | Too many upload attempts |
+| `500` | Hosted API or database failure |
 
-### script_analysis table
+### `GET /api/scripts/:id`
 
-| Column | Type | Nullable | Default | Notes |
-|--------|------|----------|---------|-------|
-| id | integer | NOT NULL | auto-increment | Primary key |
-| script_id | integer | YES | - | FK to scripts.id (CASCADE delete), UNIQUE |
-| purpose | text | YES | - | AI-detected purpose |
-| security_score | double | YES | - | 0-10 scale |
-| quality_score | double | YES | - | 0-10 scale |
-| risk_score | double | YES | - | 0-10 scale |
-| parameter_docs | jsonb | YES | {} | Detected parameters |
-| suggestions | jsonb | YES | [] | Optimization suggestions |
-| command_details | jsonb | YES | [] | PowerShell commands found |
-| ms_docs_references | jsonb | YES | [] | Microsoft docs links |
-| security_issues | jsonb | YES | [] | Detailed security findings |
-| best_practice_violations | jsonb | YES | [] | PSScriptAnalyzer-style violations |
-| performance_insights | jsonb | YES | [] | Performance recommendations |
-| potential_risks | jsonb | YES | [] | Identified risks |
-| code_complexity_metrics | jsonb | YES | {} | Complexity scores |
-| compatibility_notes | jsonb | YES | [] | PS version compatibility |
-| execution_summary | jsonb | YES | {} | Execution behavior summary |
-| analysis_version | varchar(50) | YES | '1.0' | Analysis engine version |
+Returns the hosted script for an authorized owner or public viewer. The edit screen uses this route to load real title, description, content, version, category, and analysis score fields.
 
-## Field Name Mappings
+### `PUT /api/scripts/:id`
 
-### Frontend FormData -> Backend req.body
+Updates title, description, content, category, and version state for the script owner. If content changes, the API increments `version` and writes a `script_versions` row.
 
-| FormData Key | req.body Field | Type |
-|-------------|---------------|------|
-| `title` | `title` | string |
-| `description` | `description` | string |
-| `content` | `content` | string |
-| `category_id` | `category_id` | string (numeric) |
-| `tags` | `tags` | string (JSON array) |
-| `is_public` | `is_public` | string ('true'/'false') |
-| `analyze_with_ai` | `analyze_with_ai` | string ('true'/'false') |
-| `script_file` | `req.file` (multer) | File object |
+## Edit And VS Code Export
 
-### Backend Model -> Database Column
+The script edit page now works against the hosted API:
 
-| Model Field | DB Column | Sequelize Mapping |
-|------------|-----------|-------------------|
-| `userId` | `user_id` | `underscored: true` |
-| `categoryId` | `category_id` | `underscored: true` |
-| `isPublic` | `is_public` | `underscored: true` |
-| `fileHash` | `file_hash` | `field: 'file_hash'` |
-| `executionCount` | `execution_count` | `underscored: true` |
-| `changelog` | `commit_message` | `field: 'commit_message'` |
-| `scriptId` | `script_id` | `field: 'script_id'` |
+1. Open `/scripts/:id/edit`.
+2. The frontend loads the script with `scriptService.getScript(id)`.
+3. The user edits title, description, or content.
+4. **Save** sends `PUT /api/scripts/:id`.
+5. **Open in VS Code** downloads the current editor buffer as a `.ps1` file.
 
-## Error Handling
+The VS Code behavior is intentionally an export. A hosted Netlify page cannot directly open an unsaved database record as a local `vscode://file/...` path because it does not know or own the user's local filesystem path.
 
-| Error | Status | Cause |
-|-------|--------|-------|
-| `missing_file` | 400 | No file attachment AND no content in FormData |
-| `missing_file_content` | 400 | File attachment present but unreadable |
-| `duplicate_file` | 409 | MD5 hash matches existing script |
-| `file_read_error` | 400 | File content not valid UTF-8 |
-| `invalid_content` | 400 | .ps1 file fails PowerShell validation |
-| `authentication_required` | 401 | No valid JWT token |
-| `server_error` | 500 | Unexpected database or server error |
+![Script editor with VS Code export](./screenshots/readme/script-edit-vscode.png)
 
-## Multer Configuration
+## Analysis Runtime Requirements
 
-| Setting | Memory Upload | Disk Upload |
-|---------|--------------|-------------|
-| Storage | `memoryStorage()` | `diskStorage(./uploads)` |
-| Field name | `script_file` | `script_file` |
-| Max file size | 10 MB | 20 MB |
-| Allowed extensions | .ps1, .psm1, .psd1, .ps1xml, .txt, .json | Same |
-| Used when | File < 2MB | File >= 2MB |
+Analysis pages now show runtime requirements before or after full AI analysis:
+
+- PowerShell version guidance from saved analysis fields or script directives.
+- Modules from `#Requires -Modules`, `Import-Module`, analysis JSON, and common command patterns.
+- .NET assemblies from `Add-Type -AssemblyName`, displayed as assembly requirements.
+
+Example: a script with `Add-Type -AssemblyName PresentationFramework` shows `PresentationFramework (.NET assembly)`.
+
+![Runtime requirements panel](./screenshots/readme/analysis-runtime-requirements.png)
+
+## Database Tables
+
+| Table | Role |
+| --- | --- |
+| `scripts` | Current script title, description, content, owner, category, visibility, hash, version, and lifecycle flags |
+| `script_versions` | Version history for content changes |
+| `script_analysis` | Latest analysis scores and JSON payloads |
+| `categories` | Hosted taxonomy |
+| `tags` / `script_tags` | Many-to-many tags |
+| `app_profiles` | Supabase profile gate and roles |
+| `ai_metrics` | Best-effort provider/model/token/cost telemetry |
+
+## Operational Rules
+
+- Hosted Supabase is the database of record.
+- Do not introduce a local database for production or training.
+- Do not expose `SUPABASE_SERVICE_ROLE_KEY`, `DATABASE_URL`, or AI provider keys to the browser.
+- Treat uploads as sensitive code until the owner intentionally shares them.
+- Use disposable test records for smoke tests and clean them up through the app or API.
+- Include Netlify deploy ID, route, user role, and screenshot when filing support issues.
+
+## Verification Checklist
+
+- Upload rejects files larger than 4 MB with a clear error.
+- Upload creates a script and initial version.
+- Duplicate content routes to the existing script instead of creating confusing copies.
+- Edit page loads real hosted data.
+- Save persists title, description, and content.
+- **Open in VS Code** downloads a `.ps1` copy of the current editor buffer.
+- Analysis page shows runtime requirements.
+- PDF export downloads `application/pdf`.
+- Delete and bulk delete affect only intended authorized records.

@@ -2,7 +2,7 @@
 
 Last updated: April 29, 2026.
 
-This training suite is aligned to the current hosted PSScript app: Netlify for the UI/API, hosted Supabase for Auth/Postgres, admin approval for access, responsive desktop/mobile UI, upload/delete management, AI analysis, PDF analysis export, and support operations.
+This training suite is aligned to the current hosted PSScript app: Netlify for the UI/API, hosted Supabase for Auth/Postgres, admin approval for access, responsive desktop/mobile UI, upload/delete management, hosted script editing, VS Code `.ps1` export, AI runtime requirements, PDF analysis export, and support operations.
 
 The suite teaches the full lifecycle of script design and management: intake, design review, upload, metadata, analysis, remediation, discovery, export, deletion, governance, and support.
 
@@ -22,7 +22,8 @@ The operating model follows three rules:
 | --- | --- | --- |
 | Access | Supabase login, pending approval, enabled profile gate | `../screenshots/readme/login.png` |
 | Script intake | Uploads, metadata, versioning, delete, bulk delete | `../screenshots/readme/scripts.png` |
-| AI analysis | Criteria payload, security score, remediation, PDF export | `../screenshots/readme/analysis.png` |
+| Script edit | Hosted edit, save, and VS Code `.ps1` export | `../screenshots/readme/script-edit-vscode.png` |
+| AI analysis | Criteria payload, security score, runtime requirements, remediation, PDF export | `../screenshots/readme/analysis-runtime-requirements.png` |
 | Discovery | Keyword/vector search and documentation-assisted review | `../screenshots/readme/documentation.png` |
 | Assistant | Chat and agentic route aliases through `/ai/assistant` | `../screenshots/readme/agentic-assistant.png` |
 | Operations | Netlify deploy health, Supabase-backed data maintenance | `../screenshots/readme/data-maintenance.png` |
@@ -60,7 +61,11 @@ Use the screenshot atlas when building training decks or support runbooks: [`SCR
 
 ![Script detail](../screenshots/readme/script-detail.png)
 
+![Script editor with VS Code export](../screenshots/readme/script-edit-vscode.png)
+
 ![Analysis](../screenshots/readme/analysis.png)
+
+![Runtime requirements](../screenshots/readme/analysis-runtime-requirements.png)
 
 ![Documentation](../screenshots/readme/documentation.png)
 
@@ -69,6 +74,8 @@ Use the screenshot atlas when building training decks or support runbooks: [`SCR
 ![Data maintenance](../screenshots/readme/data-maintenance.png)
 
 ![Settings profile](../screenshots/readme/settings-profile.png)
+
+![Settings appearance](../screenshots/readme/settings-appearance.png)
 
 ## Curriculum Map
 
@@ -105,7 +112,7 @@ Use the screenshot atlas when building training decks or support runbooks: [`SCR
 | --- | --- | --- | --- |
 | Access | Signs in and recognizes pending approval | Explains enabled-profile gate | Troubleshoots redirects and profile state |
 | Script hygiene | Uploads and tags scripts | Uses versioning and dedup signals | Safely deletes/bulk deletes test data |
-| AI analysis | Reads scores | Applies remediation | Exports and shares PDF evidence |
+| AI analysis | Reads scores and runtime notes | Applies remediation | Exports and shares PDF evidence |
 | Search | Uses keyword search | Applies filters | Explains embedding-backed similarity |
 | Operations | Reads health state | Uses Netlify/Supabase logs | Runs safe backup-first maintenance |
 | Mobile | Opens key screens | Uses drawer navigation | Confirms no overlap at phone width |

@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <base href="file:///Users/morlock/fun/psscript/" />
+  <base href="file:///Users/morlock/fun/02_PowerShell_Projects/psscript/" />
   <title>docs-training-suite-modules-module-01-foundations</title>
   <style>
 :root {
@@ -13,19 +13,23 @@ body {
   font-family: "Segoe UI", "Helvetica Neue", Arial, sans-serif;
   margin: 0;
   padding: 0;
-  background: #ffffff;
+  background: #f4f7fb;
   color: #0f172a;
 }
 .markdown-body {
   max-width: 980px;
-  margin: 40px auto 60px;
-  padding: 0 32px;
+  margin: 0 auto;
+  padding: 36px 42px 64px;
   line-height: 1.65;
+  background: #ffffff;
+  box-shadow: 0 24px 70px rgba(15, 23, 42, 0.08);
 }
 .markdown-body h1 {
-  font-size: 32px;
+  font-size: 34px;
+  line-height: 1.12;
   margin-bottom: 12px;
-  border-bottom: 2px solid #e2e8f0;
+  color: #07111f;
+  border-bottom: 3px solid #0ea5e9;
   padding-bottom: 12px;
   page-break-before: always;
   page-break-after: avoid;
@@ -37,18 +41,19 @@ body {
   break-before: avoid;
 }
 .markdown-body h2 {
-  font-size: 24px;
-  margin-top: 28px;
-  border-bottom: 1px solid #e2e8f0;
+  font-size: 23px;
+  line-height: 1.2;
+  margin-top: 34px;
+  color: #102a43;
+  border-bottom: 1px solid #d7e2ee;
   padding-bottom: 8px;
-  page-break-before: always;
   page-break-after: avoid;
-  break-before: page;
   break-after: avoid;
 }
 .markdown-body h3 {
   font-size: 18px;
   margin-top: 20px;
+  color: #1e3a5f;
   page-break-after: avoid;
   break-after: avoid;
 }
@@ -59,19 +64,26 @@ body {
 .markdown-body table {
   width: 100%;
   border-collapse: collapse;
-  margin: 16px 0;
-  font-size: 14px;
+  margin: 18px 0 24px;
+  font-size: 13px;
   page-break-inside: avoid;
   break-inside: avoid;
+  box-shadow: 0 1px 0 #e2e8f0;
 }
 .markdown-body th,
 .markdown-body td {
   border: 1px solid #e2e8f0;
-  padding: 8px 10px;
+  padding: 9px 11px;
   text-align: left;
+  vertical-align: top;
 }
 .markdown-body th {
-  background: #f8fafc;
+  background: #eef6ff;
+  color: #0f3157;
+  font-weight: 700;
+}
+.markdown-body tr:nth-child(even) td {
+  background: #fbfdff;
 }
 .markdown-body tr {
   page-break-inside: avoid;
@@ -85,11 +97,12 @@ body {
   font-size: 0.92em;
 }
 .markdown-body pre {
-  background: #0f172a;
-  color: #e2e8f0;
+  background: #111827;
+  color: #e5eef8;
   padding: 16px;
-  border-radius: 8px;
+  border-radius: 10px;
   overflow-x: auto;
+  border: 1px solid #243244;
   page-break-inside: avoid;
   break-inside: avoid;
 }
@@ -98,11 +111,12 @@ body {
   color: inherit;
 }
 .markdown-body blockquote {
-  border-left: 4px solid #38bdf8;
-  margin: 16px 0;
-  padding: 8px 16px;
-  background: #f8fafc;
-  color: #334155;
+  border-left: 5px solid #0ea5e9;
+  margin: 18px 0;
+  padding: 12px 18px;
+  background: #eff8ff;
+  color: #18324f;
+  border-radius: 0 10px 10px 0;
 }
 .markdown-body img {
   max-width: 100%;
@@ -127,25 +141,66 @@ body {
   text-decoration: underline;
 }
 .cover {
-  padding: 80px 60px 60px;
-  background: linear-gradient(135deg, #0b1220 0%, #1e3a8a 100%);
+  min-height: 760px;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+  padding: 72px 60px 64px;
+  background:
+    linear-gradient(135deg, rgba(9, 30, 66, 0.96) 0%, rgba(12, 74, 110, 0.94) 54%, rgba(20, 83, 45, 0.9) 100%),
+    radial-gradient(circle at 18% 18%, rgba(14, 165, 233, 0.25), transparent 36%);
   color: #f8fafc;
-  border-radius: 18px;
-  margin-bottom: 32px;
+  border-radius: 0;
+  margin: -36px -42px 40px;
+  position: relative;
+  overflow: hidden;
 }
-.cover-title {
-  font-size: 36px;
-  font-weight: 700;
-  margin: 0 0 12px;
+.cover::before {
+  content: "PSScript";
+  position: absolute;
+  top: 46px;
+  left: 60px;
+  font-size: 12px;
+  font-weight: 800;
+  letter-spacing: 0.24em;
+  text-transform: uppercase;
+  color: rgba(226, 246, 255, 0.82);
+}
+.cover::after {
+  content: "";
+  position: absolute;
+  right: -120px;
+  top: -120px;
+  width: 360px;
+  height: 360px;
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  transform: rotate(28deg);
+}
+.markdown-body .cover-title {
+  font-size: 48px;
+  line-height: 1.04;
+  font-weight: 800;
+  color: #f8fafc;
+  border-bottom: 3px solid #38bdf8;
+  margin: 0 0 16px;
+  max-width: 720px;
 }
 .cover-subtitle {
-  font-size: 18px;
-  color: #cbd5f5;
-  margin: 0 0 16px;
+  font-size: 20px;
+  line-height: 1.42;
+  color: #dbeafe;
+  margin: 0 0 22px;
+  max-width: 720px;
 }
 .cover-meta {
+  display: inline-block;
+  width: fit-content;
   font-size: 13px;
-  color: #94a3b8;
+  color: #e0f2fe;
+  background: rgba(255, 255, 255, 0.12);
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  border-radius: 999px;
+  padding: 7px 13px;
 }
 .page-break {
   page-break-after: always;
@@ -155,12 +210,27 @@ body {
   margin-top: 40px;
   font-size: 12px;
   color: #64748b;
+  border-top: 1px solid #e2e8f0;
+  padding-top: 14px;
 }
 /* Print and PDF-specific styles */
 @page {
-  margin: 20mm 18mm;
+  size: A4;
+  margin: 18mm 16mm 20mm;
 }
 @media print {
+  body {
+    background: #ffffff;
+  }
+  .markdown-body {
+    max-width: none;
+    margin: 0;
+    padding: 0;
+    box-shadow: none;
+  }
+  .cover {
+    margin: 0 0 28px;
+  }
   .markdown-body {
     orphans: 3;
     widows: 3;
@@ -193,69 +263,77 @@ body {
   <div class="markdown-body">
     
     <h1 id="module-01-platform-foundations">Module 01: Platform Foundations</h1>
+<p>Last updated: April 29, 2026.</p>
 <h2 id="objectives">Objectives</h2>
 <ul>
-<li>Log in and navigate the main UI</li>
-<li>Understand core services and data flow</li>
-<li>Locate documentation and training resources</li>
+<li>Sign in through Supabase Auth.</li>
+<li>Understand the enabled-profile approval gate.</li>
+<li>Navigate the current desktop and mobile shell.</li>
+<li>Identify Netlify Functions and hosted Supabase as the production architecture.</li>
 </ul>
 <h2 id="prerequisites">Prerequisites</h2>
 <ul>
-<li>Services running on localhost</li>
-<li>Demo credentials available in <code>docs/LOGIN-CREDENTIALS.md</code></li>
+<li>Approved account for <code>https://pstest.morloksmaze.com</code>, or local mock UI mode for non-mutating classroom demos.</li>
+<li>No local database requirement.</li>
 </ul>
 <h2 id="walkthrough">Walkthrough</h2>
 <ol>
-<li>Sign in with the default login button on the login screen.</li>
-<li>Review the dashboard stats cards and recent scripts.</li>
-<li>Open the Scripts page and inspect metadata, tags, and scores.</li>
-<li>Visit Settings and locate the Training Suite link.</li>
+<li>Open the production app.</li>
+<li>Sign in and confirm you are not on pending approval.</li>
+<li>Review the dashboard cards.</li>
+<li>On mobile width, open the navigation drawer and confirm routes are reachable.</li>
+<li>Open Scripts, Assistant, Analytics, and Settings.</li>
 </ol>
-<h2 id="visual-references">Visual references</h2>
-<p><img alt="Login Screen" src="docs/screenshots/login.png" /></p>
-<p><img alt="Dashboard" src="docs/screenshots/dashboard.png" /></p>
-<p><img alt="Settings" src="docs/screenshots/settings.png" /></p>
-<p><img alt="Architecture Diagram" src="docs/graphics/architecture.svg" /></p>
-<h2 id="service-map">Service map</h2>
+<h2 id="visual-references">Visual References</h2>
+<p><img alt="Production login" src="docs/screenshots/readme/login.png" /></p>
+<p><img alt="Dashboard" src="docs/screenshots/readme/dashboard.png" /></p>
+<p><img alt="Settings profile" src="docs/screenshots/readme/settings-profile.png" /></p>
+<h2 id="service-map">Service Map</h2>
 <table>
 <thead>
 <tr>
 <th>Service</th>
 <th>Role</th>
-<th>Default URL</th>
+<th>Production</th>
 </tr>
 </thead>
 <tbody>
 <tr>
-<td>Frontend</td>
-<td>UI for scripts and analytics</td>
-<td>http://localhost:3002</td>
+<td>Netlify site</td>
+<td>React app and SPA routing</td>
+<td><code>https://pstest.morloksmaze.com</code></td>
 </tr>
 <tr>
-<td>Backend API</td>
-<td>Auth, scripts, docs</td>
-<td>http://localhost:4000/api</td>
+<td>Netlify Functions</td>
+<td>same-origin API</td>
+<td><code>/api/*</code></td>
 </tr>
 <tr>
-<td>AI service</td>
-<td>Analysis and chat</td>
-<td>http://localhost:8000</td>
+<td>Supabase Auth</td>
+<td>identity/session</td>
+<td>hosted Supabase</td>
+</tr>
+<tr>
+<td>Supabase Postgres</td>
+<td>scripts, analyses, vectors, backups</td>
+<td>hosted Supabase</td>
 </tr>
 </tbody>
 </table>
-<h2 id="key-concepts">Key concepts</h2>
+<h2 id="key-concepts">Key Concepts</h2>
 <ul>
-<li>Scripts are stored in Postgres with file hash deduplication</li>
-<li>Analysis results are stored as separate records and linked to scripts</li>
-<li>Vector embeddings enable similarity search</li>
+<li>Enabled Supabase profile access is required for protected app/API routes.</li>
+<li>Hosted Supabase Postgres is the canonical database.</li>
+<li>Netlify Functions are the production API.</li>
+<li>Local mock UI mode is for demos and screenshots, not production data.</li>
 </ul>
-<h2 id="verification-checklist">Verification checklist</h2>
+<h2 id="verification-checklist">Verification Checklist</h2>
 <ul>
-<li>You can navigate between Dashboard, Scripts, Analytics, and Settings</li>
-<li>You can open at least one script detail view</li>
-<li>You can locate the Training Suite and Documentation links</li>
+<li>You can reach Dashboard, Scripts, Assistant, Analytics, and Settings.</li>
+<li>Mobile navigation opens and closes without covering unreadable content.</li>
+<li>You can explain why disabled users cannot access protected APIs.</li>
 </ul>
-    <div class="footer">Generated 2026-01-16 23:34 UTC</div>
+    <div class="footer">Generated 2026-04-29 14:08 UTC</div>
   </div>
 </body>
 </html>

@@ -22,6 +22,10 @@ def rewrite_image_sources(html_content: str) -> str:
     abs_path = (ROOT / clean_src).resolve()
     if abs_path.exists():
       img.set("src", str(abs_path))
+    for attr in ("width", "height"):
+      value = img.get(attr)
+      if value and not value.isdigit():
+        del img.attrib[attr]
   return lxml_html.tostring(document, encoding="unicode", method="html")
 
 

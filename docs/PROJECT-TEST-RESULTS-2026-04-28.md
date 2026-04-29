@@ -102,6 +102,24 @@ Run date: April 28, 2026. Environment: local checkout backed by hosted Supabase,
   - `GET /api/scripts?limit=5&page=1`: 401, `missing_or_invalid_token`
 - Netlify Lighthouse after criteria deploy: Performance 75, Accessibility 97, Best Practices 100, SEO 81, PWA 30.
 
+## April 29 Edit And Runtime Requirements Update
+
+- Production URL: `https://pstest.morloksmaze.com`
+- Unique deploy URL: `https://69f209d8b588750a558017be--psscript.netlify.app`
+- Deploy logs: `https://app.netlify.com/projects/psscript/deploys/69f209d8b588750a558017be`
+- Commit: `01c0aab`
+- Frontend build: passed with `npm run build` in `src/frontend`.
+- Focused tests: passed, 31 tests across `OperatorShell` and token coverage.
+- Netlify Lighthouse after deploy: Performance 37, Accessibility 100, Best Practices 100, SEO 81, PWA 30.
+- Browser/desktop verification:
+  - `/scripts/33/edit` shows real hosted script data and the **Open in VS Code** export action.
+  - `/scripts/33/analysis` shows **Runtime Requirements** without requiring a saved full analysis.
+  - The runtime panel detected `PresentationFramework (.NET assembly)` from `Add-Type -AssemblyName PresentationFramework`.
+- Screenshot refresh:
+  - `docs/screenshots/current-2026-04-29/script-edit-vscode.png`
+  - `docs/screenshots/current-2026-04-29/analysis-runtime-requirements.png`
+  - `docs/screenshots/current-2026-04-29/settings-appearance.png`
+
 ## Remaining Risks
 
 - The current production admin password may have been reset by the previously vulnerable endpoint during verification. Rotate `DEFAULT_ADMIN_PASSWORD` and set a strong `DEFAULT_ADMIN_BOOTSTRAP_TOKEN`.

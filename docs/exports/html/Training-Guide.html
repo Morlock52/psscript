@@ -269,287 +269,210 @@ body {
   </section>
   
     <h1 id="psscript-training-guide">PSScript Training Guide</h1>
-<p>End-to-end walkthrough of the PowerShell Script Manager. Includes flows, screenshots, labs, tables, sample actions, and operational checklists. Built for hands-on enablement and printable exports.</p>
-<h2 id="table-of-contents">Table of Contents</h2>
+<p>Last updated: April 29, 2026.</p>
+<p>This guide trains users on the current hosted app at <code>https://pstest.morloksmaze.com</code>.</p>
+<h2 id="program-overview">Program Overview</h2>
+<p>PSScript is a governed workspace for PowerShell scripts. The current training path covers:</p>
 <ul>
-<li><a href="#program-overview">Program overview</a></li>
-<li><a href="#system-overview">System overview</a></li>
-<li><a href="#feature-cheat-sheet">Feature cheat sheet</a></li>
-<li><a href="#training-roadmap">Training roadmap</a></li>
-<li><a href="#environment-setup">Environment setup</a></li>
-<li><a href="#guided-walkthrough">Guided walkthrough</a></li>
-<li><a href="#role-based-paths">Role-based paths</a></li>
-<li><a href="#module-breakdown">Module breakdown</a></li>
-<li><a href="#hands-on-labs">Hands-on labs</a></li>
-<li><a href="#sample-actions">Sample actions</a></li>
-<li><a href="#operational-readiness">Operational readiness</a></li>
-<li><a href="#appendix">Appendix</a></li>
+<li>Supabase Auth and admin approval</li>
+<li>script upload, metadata, versioning, delete, and bulk delete</li>
+<li>hosted script editing and VS Code <code>.ps1</code> export</li>
+<li>full script design and management lifecycle</li>
+<li>AI analysis using the current criteria payload</li>
+<li>runtime requirements for PowerShell version, modules, and assemblies</li>
+<li>PDF analysis export</li>
+<li>keyword and vector-backed discovery</li>
+<li>assistant and agentic route aliases</li>
+<li>hosted operations through Netlify and Supabase</li>
+<li>mobile navigation and responsive pages</li>
 </ul>
-<h2 id="program-overview">Program overview</h2>
-<p>PSScript Manager is a full workflow platform for PowerShell scripts—intake, AI analysis, discovery, agentic chat, and governance. This guide delivers:
-- Organized, tagged, versioned scripts with deduplication by hash
-- AI-backed analysis with scores, recommendations, and remediation notes
-- Dual-mode discovery (keyword + vector search) plus documentation crawler
-- Analytics and audit trails for compliance and release readiness</p>
-<p>Management rollout details live in <code>../MANAGEMENT-PLAYBOOK.md</code>.</p>
-<h2 id="system-overview">System overview</h2>
-<p><img alt="Architecture Diagram" src="docs/graphics/architecture.svg" /></p>
-<p><img alt="Analysis Pipeline" src="docs/graphics/analysis-pipeline.svg" /></p>
-<p><img alt="Script Lifecycle" src="docs/graphics/lifecycle.svg" /></p>
-<p><img alt="Search Modes" src="docs/graphics/search-modes.svg" /></p>
-<p><img alt="Usage Metrics" src="docs/graphics/usage-metrics.svg" /></p>
-<h2 id="feature-cheat-sheet">Feature cheat sheet</h2>
+<p><img alt="Training support suite map" src="docs/graphics/training-support-suite-map-2026-04-29.svg" /></p>
+<h2 id="system-overview">System Overview</h2>
+<table>
+<thead>
+<tr>
+<th>Layer</th>
+<th>Current implementation</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>UI</td>
+<td>React/Vite on Netlify</td>
+</tr>
+<tr>
+<td>API</td>
+<td>Netlify Functions under <code>/api/*</code></td>
+</tr>
+<tr>
+<td>Auth</td>
+<td>Supabase Auth plus <code>app_profiles.is_enabled</code></td>
+</tr>
+<tr>
+<td>Data</td>
+<td>hosted Supabase Postgres with RLS and <code>pgvector</code></td>
+</tr>
+<tr>
+<td>AI</td>
+<td>hosted provider calls through Netlify Functions</td>
+</tr>
+<tr>
+<td>Backups</td>
+<td>admin-only hosted data maintenance</td>
+</tr>
+</tbody>
+</table>
+<h2 id="feature-cheat-sheet">Feature Cheat Sheet</h2>
 <table>
 <thead>
 <tr>
 <th>Area</th>
-<th>What to look for</th>
+<th>What to verify</th>
 <th>Screenshot</th>
 </tr>
 </thead>
 <tbody>
 <tr>
-<td>Dashboard</td>
-<td>Stats, recent scripts, security trends</td>
-<td><img alt="Dashboard" src="docs/screenshots/dashboard.png" /></td>
+<td>Login</td>
+<td>Supabase login and Google OAuth entry</td>
+<td><code>../screenshots/readme/login.png</code></td>
 </tr>
 <tr>
-<td>Script library</td>
-<td>Categories, owners, version history</td>
-<td><img alt="Scripts" src="docs/screenshots/scripts.png" /></td>
+<td>Dashboard</td>
+<td>Desktop and mobile cards render without overlap</td>
+<td><code>../screenshots/readme/dashboard.png</code></td>
+</tr>
+<tr>
+<td>Scripts</td>
+<td>List, filters, delete, bulk selection</td>
+<td><code>../screenshots/readme/scripts.png</code></td>
 </tr>
 <tr>
 <td>Upload</td>
-<td>Live preview, tags, dedup hints</td>
-<td><img alt="Upload" src="docs/screenshots/upload.png" /></td>
+<td>File intake, metadata, and hosted 4 MB limit</td>
+<td><code>../screenshots/readme/upload.png</code></td>
+</tr>
+<tr>
+<td>Edit</td>
+<td>Hosted script editing and VS Code <code>.ps1</code> export</td>
+<td><code>../screenshots/readme/script-edit-vscode.png</code></td>
 </tr>
 <tr>
 <td>Analysis</td>
-<td>Scores, findings, remediation</td>
-<td><img alt="Analysis" src="docs/screenshots/analysis.png" /></td>
+<td>Scores, criteria, runtime requirements, remediation, PDF export</td>
+<td><code>../screenshots/readme/analysis-runtime-requirements.png</code></td>
 </tr>
 <tr>
-<td>Docs + crawl</td>
-<td>Cmdlet search, crawling, saved excerpts</td>
-<td><img alt="Documentation" src="docs/screenshots/documentation.png" /></td>
-</tr>
-<tr>
-<td>Chat/agents</td>
-<td>Quick prompts, agentic orchestration</td>
-<td><img alt="Chat" src="docs/screenshots/chat.png" /></td>
-</tr>
-<tr>
-<td>Analytics</td>
-<td>Adoption, usage, training exports</td>
-<td><img alt="Analytics" src="docs/screenshots/analytics.png" /></td>
+<td>Assistant</td>
+<td><code>/agentic</code> resolves to assistant instead of 404</td>
+<td><code>../screenshots/readme/agentic-assistant.png</code></td>
 </tr>
 <tr>
 <td>Settings</td>
-<td>API usage, notifications, training links</td>
-<td><img alt="Settings" src="docs/screenshots/settings.png" /></td>
+<td>Profile and admin surfaces</td>
+<td><code>../screenshots/readme/settings-profile.png</code></td>
+</tr>
+<tr>
+<td>Data maintenance</td>
+<td>Backup-first admin maintenance</td>
+<td><code>../screenshots/readme/data-maintenance.png</code></td>
 </tr>
 </tbody>
 </table>
-<h2 id="training-roadmap">Training roadmap</h2>
-<p><img alt="Training Roadmap" src="docs/graphics/training-roadmap.svg" /></p>
-<h2 id="environment-setup">Environment setup</h2>
-<p>Recommended mock mode so every lab works offline:</p>
-<pre><code class="language-bash">./start-all-mock.sh
+<h2 id="environment-setup">Environment Setup</h2>
+<p>Use production for training with approved accounts:</p>
+<pre><code class="language-text">https://pstest.morloksmaze.com
 </code></pre>
-<p>Ports:
-- Frontend: http://localhost:3002
-- Backend API: http://localhost:4000/api
-- AI service: http://localhost:8000</p>
-<p>Verify:
-- <code>curl http://localhost:4000/health</code> → 200 OK
-- Open http://localhost:3002 and click <strong>Use Default Login</strong>
-- Confirm dashboard counters populate with mock data</p>
-<h2 id="guided-walkthrough">Guided walkthrough</h2>
-<p>Ship a vetted script in ~15 minutes:
-1. <strong>Sign in</strong> → use Default Login on the login screen.
-2. <strong>Scan the dashboard</strong> → note total scripts, AI analyses, and security score trend.
-3. <strong>Upload</strong> → go to Upload, add <code>test-script.ps1</code>, tags, and category; note dedup hints.
-4. <strong>Review detail</strong> → open the new script, confirm metadata, owner, and activity feed.
-5. <strong>Analyze</strong> → open Analysis, read findings, and log remediation notes.
-6. <strong>Search</strong> → find a similar script via keyword + vector search.
-7. <strong>Consult docs</strong> → open Documentation, search for a related cmdlet, and save an excerpt.
-8. <strong>Chat</strong> → ask the assistant “safest way to schedule this script weekly?” and record the answer.
-9. <strong>Analytics</strong> → confirm the run shows up in usage metrics and training exports.
-10. <strong>Settings</strong> → open Documentation &amp; Training and verify the PDF/DOCX links load.</p>
-<h2 id="role-based-paths">Role-based paths</h2>
+<p>Use local mock mode only for screenshot rehearsal or non-mutating classroom demos:</p>
+<pre><code class="language-bash">cd src/frontend
+VITE_DISABLE_AUTH=true VITE_USE_MOCKS=true npm run dev -- --host 127.0.0.1 --port 5173
+</code></pre>
+<p>Do not configure a local database for training. Database-backed exercises use hosted Supabase.</p>
+<h2 id="guided-walkthrough">Guided Walkthrough</h2>
+<ol>
+<li>Sign in with an approved account.</li>
+<li>If you land on pending approval, ask an admin to enable your profile.</li>
+<li>Review dashboard status on desktop or mobile.</li>
+<li>Open Scripts and inspect list controls.</li>
+<li>Design a safe test <code>.ps1</code> file with purpose, owner, examples, and test expectation.</li>
+<li>Upload the script with category, tags, and description.</li>
+<li>Open the script detail page.</li>
+<li>Open the edit page, make a safe metadata-only change if the record is disposable, and confirm the <strong>Open in VS Code</strong> export downloads a <code>.ps1</code> copy.</li>
+<li>Run or view AI analysis.</li>
+<li>Read the runtime requirements panel before approving execution.</li>
+<li>Export the analysis report and confirm the download is a PDF.</li>
+<li>Search for the script by keyword and by meaning.</li>
+<li>Open <code>/agentic</code> and confirm it routes to the assistant.</li>
+<li>Open Settings -&gt; Data Maintenance as an admin and review backup controls without running destructive actions.</li>
+<li>Delete only disposable test scripts and record cleanup evidence.</li>
+</ol>
+<h2 id="role-based-paths">Role-Based Paths</h2>
 <table>
 <thead>
 <tr>
 <th>Role</th>
 <th>Focus</th>
-<th>Primary modules</th>
 </tr>
 </thead>
 <tbody>
 <tr>
 <td>Script author</td>
-<td>Upload, analyze, improve</td>
-<td>01, 02, 03</td>
+<td>upload, metadata, analysis, PDF export</td>
 </tr>
 <tr>
 <td>Security reviewer</td>
-<td>Risk review, approvals</td>
-<td>03, 04, 05</td>
+<td>criteria payload, findings, remediation, evidence</td>
 </tr>
 <tr>
 <td>Platform admin</td>
-<td>Operations, reliability</td>
-<td>01, 05</td>
+<td>approval gate, backups, logs, data maintenance</td>
+</tr>
+<tr>
+<td>Mobile reviewer</td>
+<td>topbar, drawer, dashboard, script list, settings</td>
+</tr>
+<tr>
+<td>Support analyst</td>
+<td>reproduction notes, screenshots, deploy id, Function logs, Supabase logs</td>
 </tr>
 </tbody>
 </table>
-<h2 id="module-breakdown">Module breakdown</h2>
-<table>
-<thead>
-<tr>
-<th>Module</th>
-<th>Objectives</th>
-<th>Key screen</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td>Module 01: Foundations</td>
-<td>Navigate UI, find docs, understand services</td>
-<td>Dashboard</td>
-</tr>
-<tr>
-<td>Module 02: Script Lifecycle</td>
-<td>Upload, tag, version scripts</td>
-<td>Upload</td>
-</tr>
-<tr>
-<td>Module 03: AI Analysis</td>
-<td>Read scores and recommendations</td>
-<td>Analysis</td>
-</tr>
-<tr>
-<td>Module 04: Search</td>
-<td>Use keyword + vector search</td>
-<td>Scripts</td>
-</tr>
-<tr>
-<td>Module 05: Operations</td>
-<td>Review analytics and logs</td>
-<td>Analytics</td>
-</tr>
-</tbody>
-</table>
-<h2 id="hands-on-labs">Hands-on labs</h2>
-<h3 id="lab-01-sign-in-and-orient">Lab 01: Sign in and orient</h3>
+<h2 id="hands-on-labs">Hands-On Labs</h2>
+<h3 id="lab-01-upload-analyze-export">Lab 01: Upload, Analyze, Export</h3>
 <ol>
-<li>Open the login screen and use Default Login.</li>
-<li>Review stats cards and activity feed on the dashboard.</li>
-<li>Find Scripts, Documentation, Analytics in the sidebar.</li>
+<li>Upload a safe test script.</li>
+<li>Open the edit page and export a <code>.ps1</code> copy for local VS Code review.</li>
+<li>Review scores, runtime requirements, and findings.</li>
+<li>Export the analysis PDF.</li>
+<li>Confirm the file is a PDF, not JSON.</li>
 </ol>
-<p><img alt="Login Screen" src="docs/screenshots/login.png" />
-<img alt="Dashboard" src="docs/screenshots/dashboard.png" /></p>
-<h3 id="lab-02-upload-and-analyze-a-script">Lab 02: Upload and analyze a script</h3>
+<h3 id="lab-02-search-and-similarity">Lab 02: Search And Similarity</h3>
 <ol>
-<li>Go to Upload and add <code>test-script.ps1</code> with tags + category.</li>
-<li>Observe dedup hints; submit the script.</li>
-<li>Open the script detail view and verify metadata.</li>
-<li>Run AI analysis and capture recommendations.</li>
+<li>Search by cmdlet or title.</li>
+<li>Search by a natural-language description.</li>
+<li>Compare ranking and relevance.</li>
 </ol>
-<p><img alt="Script Upload" src="docs/screenshots/upload.png" />
-<img alt="Script Detail" src="docs/screenshots/script-detail.png" />
-<img alt="Script Analysis" src="docs/screenshots/analysis.png" /></p>
-<h3 id="lab-03-documentation-and-ai-chat">Lab 03: Documentation and AI chat</h3>
+<h3 id="lab-03-assistant-and-documentation">Lab 03: Assistant And Documentation</h3>
 <ol>
-<li>Open Documentation; search for a cmdlet (e.g., <code>Get-Process</code>).</li>
-<li>Save an excerpt to your notes.</li>
-<li>Open Chat and ask for safe usage patterns.</li>
+<li>Open the assistant.</li>
+<li>Ask for a safe remediation pattern.</li>
+<li>Open <code>/agentic</code> and confirm it lands in the assistant experience.</li>
 </ol>
-<p><img alt="Documentation Explorer" src="docs/screenshots/documentation.png" />
-<img alt="AI Chat" src="docs/screenshots/chat.png" /></p>
-<h3 id="lab-04-analytics-and-governance">Lab 04: Analytics and governance</h3>
+<h3 id="lab-04-operations-and-governance">Lab 04: Operations And Governance</h3>
 <ol>
-<li>Open Analytics; review usage metrics and trend lines.</li>
-<li>Identify top activity areas and any gaps.</li>
-<li>Draft a governance checklist for releases.</li>
+<li>Check <code>https://pstest.morloksmaze.com/api/health</code>.</li>
+<li>Review Netlify deploy state and Function logs.</li>
+<li>Review Supabase logs for API/database failures.</li>
+<li>Open Settings -&gt; Data Maintenance and confirm backup list access as an admin.</li>
 </ol>
-<p><img alt="Analytics" src="docs/screenshots/analytics.png" />
-<img alt="Sample Usage Metrics" src="docs/graphics/usage-metrics.svg" /></p>
-<h3 id="lab-05-settings-and-training-resources">Lab 05: Settings and training resources</h3>
+<h3 id="lab-05-governance-support-cleanup">Lab 05: Governance, Support, Cleanup</h3>
 <ol>
-<li>Open Settings; review API usage and notifications.</li>
-<li>Locate Documentation &amp; Training and open the Training Suite.</li>
-<li>Open the local PDF export at <code>http://localhost:4000/docs/exports/pdf/Training-Guide.pdf</code>.</li>
+<li>Capture a support-ready screenshot and route.</li>
+<li>Verify PDF export and delete behavior on disposable test data.</li>
+<li>Record Netlify/Supabase evidence fields for the case.</li>
+<li>Confirm cleanup without touching unrelated production records.</li>
 </ol>
-<p><img alt="Settings" src="docs/screenshots/settings.png" /></p>
-<h2 id="sample-actions">Sample actions</h2>
-<h3 id="upload-via-api">Upload via API</h3>
-<pre><code class="language-bash">curl -X POST http://localhost:4000/api/scripts \
-  -H &quot;Authorization: Bearer &lt;token&gt;&quot; \
-  -F &quot;file=@test-script.ps1&quot; \
-  -F &quot;title=Reset-UserPassword&quot; \
-  -F &quot;description=Reset AD user password&quot; \
-  -F &quot;tags=security,active-directory&quot;
-</code></pre>
-<h3 id="run-analysis">Run analysis</h3>
-<pre><code class="language-bash">curl -X POST http://localhost:8000/analyze \
-  -H &quot;Content-Type: application/json&quot; \
-  -d '{&quot;content&quot;: &quot;Get-ADUser -Filter *&quot;, &quot;type&quot;: &quot;security&quot;}'
-</code></pre>
-<h3 id="vector-search">Vector search</h3>
-<pre><code class="language-bash">curl -X POST http://localhost:8000/similar \
-  -H &quot;Content-Type: application/json&quot; \
-  -d '{&quot;content&quot;: &quot;active directory onboarding&quot;, &quot;limit&quot;: 5}'
-</code></pre>
-<h2 id="operational-readiness">Operational readiness</h2>
-<h3 id="governance-checklist">Governance checklist</h3>
-<ul>
-<li>Scripts are tagged, categorized, and have an owner</li>
-<li>Security score is reviewed and exceptions are documented</li>
-<li>Duplicates are prevented by hash check</li>
-<li>Analysis results are logged and stored</li>
-<li>Analytics reflect script usage and review cadence</li>
-</ul>
-<h3 id="security-scorecard">Security scorecard</h3>
-<p><img alt="Security Scorecard" src="docs/graphics/security-scorecard.svg" /></p>
-<h3 id="scorecard-rubric">Scorecard rubric</h3>
-<table>
-<thead>
-<tr>
-<th>Signal</th>
-<th>Description</th>
-<th>Target</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td>Security score</td>
-<td>Weighted risk score from AI analysis</td>
-<td>&gt;= 7.5</td>
-</tr>
-<tr>
-<td>High-risk findings</td>
-<td>Count of high severity issues</td>
-<td>0</td>
-</tr>
-<tr>
-<td>Remediation SLA</td>
-<td>Days to close high-risk findings</td>
-<td>&lt;= 7</td>
-</tr>
-<tr>
-<td>Ownership coverage</td>
-<td>Scripts with owner tag</td>
-<td>100%</td>
-</tr>
-<tr>
-<td>Review cadence</td>
-<td>Days between audits</td>
-<td>&lt;= 30</td>
-</tr>
-</tbody>
-</table>
-<h3 id="operational-checks">Operational checks</h3>
+<h2 id="operational-readiness">Operational Readiness</h2>
 <table>
 <thead>
 <tr>
@@ -560,39 +483,63 @@ body {
 </thead>
 <tbody>
 <tr>
-<td>Backend</td>
-<td>Health endpoint</td>
-<td>200 OK</td>
+<td>Netlify app</td>
+<td>production URL loads</td>
+<td>200/app shell</td>
 </tr>
 <tr>
-<td>Database</td>
-<td>pgvector enabled</td>
-<td>true</td>
+<td>Netlify Functions</td>
+<td><code>/api/health</code> returns hosted status</td>
+<td>healthy/degraded with reason</td>
 </tr>
 <tr>
-<td>AI service</td>
-<td>Analyze endpoint</td>
-<td>200 OK</td>
+<td>Supabase</td>
+<td>Auth and database reachable</td>
+<td>no auth/DB errors</td>
 </tr>
 <tr>
-<td>Cache</td>
-<td>Redis reachable</td>
-<td>Optional</td>
+<td>RLS</td>
+<td>disabled users blocked</td>
+<td><code>403 account_pending_approval</code></td>
 </tr>
 <tr>
-<td>UI</td>
-<td>Dashboard load</td>
-<td>&lt; 3 seconds</td>
+<td>Export</td>
+<td>analysis report download</td>
+<td>PDF content type</td>
+</tr>
+<tr>
+<td>Edit export</td>
+<td>script editor export</td>
+<td><code>.ps1</code> file for local VS Code</td>
+</tr>
+<tr>
+<td>Runtime requirements</td>
+<td>analysis route</td>
+<td>PowerShell version and modules/assemblies visible</td>
+</tr>
+<tr>
+<td>Mobile</td>
+<td>dashboard/navigation readable</td>
+<td>no overlap</td>
+</tr>
+<tr>
+<td>Data maintenance</td>
+<td>backup list/create</td>
+<td>admin only</td>
+</tr>
+<tr>
+<td>Upload size</td>
+<td>hosted upload route</td>
+<td>UI blocks files above 4 MB</td>
+</tr>
+<tr>
+<td>Delete</td>
+<td>disposable test scripts</td>
+<td>intended records removed only</td>
 </tr>
 </tbody>
 </table>
-<h2 id="appendix">Appendix</h2>
-<ul>
-<li>Troubleshooting and support: <code>../SUPPORT.md</code></li>
-<li>Screenshot capture: <code>./scripts/capture-readme-screenshots.sh</code></li>
-<li>Exports (HTML/PDF/DOCX): <code>scripts/export-docs.sh --all</code></li>
-</ul>
-<h2 id="appendix-troubleshooting">Appendix: Troubleshooting</h2>
+<h2 id="troubleshooting">Troubleshooting</h2>
 <table>
 <thead>
 <tr>
@@ -603,28 +550,68 @@ body {
 </thead>
 <tbody>
 <tr>
-<td>Upload fails</td>
-<td>Backend not running</td>
-<td>Start backend on port 4000</td>
+<td>Pending approval</td>
+<td>profile exists but is disabled</td>
+<td>admin enables user in Settings -&gt; User Management</td>
 </tr>
 <tr>
-<td>Analysis empty</td>
-<td>AI service down</td>
-<td>Start AI service or mock mode</td>
+<td><code>/agentic</code> 404</td>
+<td>stale deploy or redirect mismatch</td>
+<td>redeploy Netlify and verify redirects</td>
 </tr>
 <tr>
-<td>Search returns none</td>
-<td>Embeddings missing</td>
-<td>Run embedding generation</td>
+<td>Export is JSON</td>
+<td>old frontend/API build</td>
+<td>redeploy and verify <code>/api/scripts/:id/export-analysis</code> headers</td>
 </tr>
 <tr>
-<td>Docs empty</td>
-<td>Crawl not completed</td>
-<td>Run documentation crawl</td>
+<td>Runtime requirements missing</td>
+<td>stale frontend deploy or script still loading</td>
+<td>verify deploy ID, reload route, and check script content</td>
+</tr>
+<tr>
+<td>VS Code export missing</td>
+<td>stale frontend deploy or route not loaded</td>
+<td>verify <code>/scripts/:id/edit</code> and latest assets</td>
+</tr>
+<tr>
+<td>Delete fails</td>
+<td>auth/ownership/admin mismatch</td>
+<td>inspect API response and user role</td>
+</tr>
+<tr>
+<td>Data maintenance fails</td>
+<td>non-admin user or Supabase route error</td>
+<td>check Netlify Function logs and Supabase logs</td>
+</tr>
+<tr>
+<td>Mobile overlap</td>
+<td>stale frontend deploy</td>
+<td>verify latest production deploy and screenshots</td>
 </tr>
 </tbody>
 </table>
-    <div class="footer">Generated 2026-04-27 08:51 UTC</div>
+<h2 id="source-guided-training-notes">Source-Guided Training Notes</h2>
+<ul>
+<li>PowerShell lifecycle training should emphasize static analysis, documentation, examples, tests, versioning, and code signing where appropriate.</li>
+<li>Netlify support training should tie issues to the active deploy because functions and frontend assets are deployed together and are immutable per deploy.</li>
+<li>Supabase training should treat RLS, explicit policies, hosted backups, MFA, and service-key protection as core operating controls.</li>
+</ul>
+<p>Primary sources:</p>
+<ul>
+<li><a href="https://learn.microsoft.com/en-us/powershell/gallery/concepts/publishing-guidelines?view=powershellget-3.x">https://learn.microsoft.com/en-us/powershell/gallery/concepts/publishing-guidelines?view=powershellget-3.x</a></li>
+<li><a href="https://docs.netlify.com/build/functions/overview/">https://docs.netlify.com/build/functions/overview/</a></li>
+<li><a href="https://supabase.com/docs/guides/database/postgres/row-level-security">https://supabase.com/docs/guides/database/postgres/row-level-security</a></li>
+<li><a href="https://supabase.com/docs/guides/deployment/going-into-prod">https://supabase.com/docs/guides/deployment/going-into-prod</a></li>
+</ul>
+<h2 id="appendix">Appendix</h2>
+<ul>
+<li>Support: <code>../SUPPORT.md</code></li>
+<li>Deployment: <code>../NETLIFY-SUPABASE-DEPLOYMENT.md</code></li>
+<li>Data maintenance: <code>../DATA-MAINTENANCE.md</code></li>
+<li>Screenshots: <code>SCREENSHOT-ATLAS.md</code></li>
+</ul>
+    <div class="footer">Generated 2026-04-29 14:08 UTC</div>
   </div>
 </body>
 </html>

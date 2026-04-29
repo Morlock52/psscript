@@ -7,6 +7,7 @@ Last updated: April 29, 2026.
 - Design a PowerShell script with clear purpose, safety, examples, and test expectations.
 - Upload scripts and validate metadata.
 - Understand hash-based deduplication and versioning.
+- Edit hosted script records and export the current buffer for VS Code.
 - Use AI analysis and PDF export as lifecycle evidence.
 - Verify delete and bulk delete behavior on safe test data.
 
@@ -21,10 +22,12 @@ Last updated: April 29, 2026.
 5. Upload a safe test `.ps1` file.
 6. Add title, description, tags, category, and owner metadata.
 7. Open the script detail page.
-8. Review metadata, scores, version state, and analysis state.
-9. Run or review AI analysis and export the PDF report.
-10. For a disposable test script only, verify single delete.
-11. For disposable test scripts only, verify bulk selection and bulk delete.
+8. Open the script edit page and verify title, description, and content load from hosted Supabase.
+9. Use **Open in VS Code** to download the current editor buffer as a `.ps1` file for local review.
+10. Review metadata, scores, version state, and analysis state.
+11. Run or review AI analysis and export the PDF report.
+12. For a disposable test script only, verify single delete.
+13. For disposable test scripts only, verify bulk selection and bulk delete.
 
 ## Screenshots
 
@@ -33,6 +36,8 @@ Last updated: April 29, 2026.
 ![Upload](../../screenshots/readme/upload.png)
 
 ![Script detail](../../screenshots/readme/script-detail.png)
+
+![Script editor with VS Code export](../../screenshots/readme/script-edit-vscode.png)
 
 ## Metadata Checklist
 
@@ -56,12 +61,15 @@ Last updated: April 29, 2026.
 | Tests or verification steps exist | Gives reviewers a concrete acceptance path |
 | Secrets are externalized | Prevents credentials from entering the library |
 | Owner and category are known | Supports future support and cleanup decisions |
+| Runtime requirements are known | Helps reviewers confirm PowerShell version, modules, and assemblies before execution |
 
 ## Integrity And Deduplication
 
 - The hosted API calculates file hashes.
 - Duplicate content should be detected instead of silently creating confusing copies.
 - Version history preserves prior uploads.
+- Edit saves create a new version when script content changes.
+- The **Open in VS Code** action downloads a `.ps1` file; it does not claim direct local filesystem access from the hosted browser.
 - The hosted app uses Supabase as the database of record.
 - Netlify Function payload limits are why hosted uploads are capped at 4 MB in the UI.
 
@@ -70,5 +78,7 @@ Last updated: April 29, 2026.
 - Uploaded script appears in the list.
 - Metadata is visible on list/detail surfaces.
 - Analysis results show criteria, scores, findings, remediation, and confidence.
+- Runtime requirements show PowerShell version and modules or assemblies where detected.
+- Script edit export downloads a `.ps1` file.
 - PDF export downloads a PDF file.
 - Delete and bulk delete work only for intended test records and authorized users.

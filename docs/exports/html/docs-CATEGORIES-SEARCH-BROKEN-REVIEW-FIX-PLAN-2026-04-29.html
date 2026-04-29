@@ -1,0 +1,645 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <base href="file:///Users/morlock/fun/02_PowerShell_Projects/psscript/" />
+  <title>docs-CATEGORIES-SEARCH-BROKEN-REVIEW-FIX-PLAN-2026-04-29</title>
+  <style>
+:root {
+  color-scheme: light;
+}
+body {
+  font-family: "Segoe UI", "Helvetica Neue", Arial, sans-serif;
+  margin: 0;
+  padding: 0;
+  background: #f4f7fb;
+  color: #0f172a;
+}
+.markdown-body {
+  max-width: 980px;
+  margin: 0 auto;
+  padding: 36px 42px 64px;
+  line-height: 1.65;
+  background: #ffffff;
+  box-shadow: 0 24px 70px rgba(15, 23, 42, 0.08);
+}
+.markdown-body h1 {
+  font-size: 34px;
+  line-height: 1.12;
+  margin-bottom: 12px;
+  color: #07111f;
+  border-bottom: 3px solid #0ea5e9;
+  padding-bottom: 12px;
+  page-break-before: always;
+  page-break-after: avoid;
+  break-before: page;
+  break-after: avoid;
+}
+.markdown-body h1:first-of-type {
+  page-break-before: avoid;
+  break-before: avoid;
+}
+.markdown-body h2 {
+  font-size: 23px;
+  line-height: 1.2;
+  margin-top: 34px;
+  color: #102a43;
+  border-bottom: 1px solid #d7e2ee;
+  padding-bottom: 8px;
+  page-break-after: avoid;
+  break-after: avoid;
+}
+.markdown-body h3 {
+  font-size: 18px;
+  margin-top: 20px;
+  color: #1e3a5f;
+  page-break-after: avoid;
+  break-after: avoid;
+}
+.markdown-body h4, .markdown-body h5, .markdown-body h6 {
+  page-break-after: avoid;
+  break-after: avoid;
+}
+.markdown-body table {
+  width: 100%;
+  border-collapse: collapse;
+  margin: 18px 0 24px;
+  font-size: 13px;
+  page-break-inside: avoid;
+  break-inside: avoid;
+  box-shadow: 0 1px 0 #e2e8f0;
+}
+.markdown-body th,
+.markdown-body td {
+  border: 1px solid #e2e8f0;
+  padding: 9px 11px;
+  text-align: left;
+  vertical-align: top;
+}
+.markdown-body th {
+  background: #eef6ff;
+  color: #0f3157;
+  font-weight: 700;
+}
+.markdown-body tr:nth-child(even) td {
+  background: #fbfdff;
+}
+.markdown-body tr {
+  page-break-inside: avoid;
+  break-inside: avoid;
+}
+.markdown-body code {
+  background: #f1f5f9;
+  padding: 2px 4px;
+  border-radius: 4px;
+  font-family: "SFMono-Regular", Menlo, Consolas, monospace;
+  font-size: 0.92em;
+}
+.markdown-body pre {
+  background: #111827;
+  color: #e5eef8;
+  padding: 16px;
+  border-radius: 10px;
+  overflow-x: auto;
+  border: 1px solid #243244;
+  page-break-inside: avoid;
+  break-inside: avoid;
+}
+.markdown-body pre code {
+  background: transparent;
+  color: inherit;
+}
+.markdown-body blockquote {
+  border-left: 5px solid #0ea5e9;
+  margin: 18px 0;
+  padding: 12px 18px;
+  background: #eff8ff;
+  color: #18324f;
+  border-radius: 0 10px 10px 0;
+}
+.markdown-body img {
+  max-width: 100%;
+  height: auto;
+  display: block;
+  margin: 16px 0;
+  border-radius: 10px;
+  box-shadow: 0 8px 20px rgba(15, 23, 42, 0.12);
+  page-break-inside: avoid;
+  break-inside: avoid;
+}
+.markdown-body figure {
+  page-break-inside: avoid;
+  break-inside: avoid;
+  margin: 16px 0;
+}
+.markdown-body a {
+  color: #2563eb;
+  text-decoration: none;
+}
+.markdown-body a:hover {
+  text-decoration: underline;
+}
+.cover {
+  min-height: 760px;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+  padding: 72px 60px 64px;
+  background:
+    linear-gradient(135deg, rgba(9, 30, 66, 0.96) 0%, rgba(12, 74, 110, 0.94) 54%, rgba(20, 83, 45, 0.9) 100%),
+    radial-gradient(circle at 18% 18%, rgba(14, 165, 233, 0.25), transparent 36%);
+  color: #f8fafc;
+  border-radius: 0;
+  margin: -36px -42px 40px;
+  position: relative;
+  overflow: hidden;
+}
+.cover::before {
+  content: "PSScript";
+  position: absolute;
+  top: 46px;
+  left: 60px;
+  font-size: 12px;
+  font-weight: 800;
+  letter-spacing: 0.24em;
+  text-transform: uppercase;
+  color: rgba(226, 246, 255, 0.82);
+}
+.cover::after {
+  content: "";
+  position: absolute;
+  right: -120px;
+  top: -120px;
+  width: 360px;
+  height: 360px;
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  transform: rotate(28deg);
+}
+.markdown-body .cover-title {
+  font-size: 48px;
+  line-height: 1.04;
+  font-weight: 800;
+  color: #f8fafc;
+  border-bottom: 3px solid #38bdf8;
+  margin: 0 0 16px;
+  max-width: 720px;
+}
+.cover-subtitle {
+  font-size: 20px;
+  line-height: 1.42;
+  color: #dbeafe;
+  margin: 0 0 22px;
+  max-width: 720px;
+}
+.cover-meta {
+  display: inline-block;
+  width: fit-content;
+  font-size: 13px;
+  color: #e0f2fe;
+  background: rgba(255, 255, 255, 0.12);
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  border-radius: 999px;
+  padding: 7px 13px;
+}
+.page-break {
+  page-break-after: always;
+  break-after: page;
+}
+.footer {
+  margin-top: 40px;
+  font-size: 12px;
+  color: #64748b;
+  border-top: 1px solid #e2e8f0;
+  padding-top: 14px;
+}
+/* Print and PDF-specific styles */
+@page {
+  size: A4;
+  margin: 18mm 16mm 20mm;
+}
+@media print {
+  body {
+    background: #ffffff;
+  }
+  .markdown-body {
+    max-width: none;
+    margin: 0;
+    padding: 0;
+    box-shadow: none;
+  }
+  .cover {
+    margin: 0 0 28px;
+  }
+  .markdown-body {
+    orphans: 3;
+    widows: 3;
+  }
+  .markdown-body p {
+    orphans: 3;
+    widows: 3;
+  }
+  .markdown-body li {
+    page-break-inside: avoid;
+    break-inside: avoid;
+  }
+  .markdown-body ul, .markdown-body ol {
+    page-break-before: avoid;
+    break-before: avoid;
+  }
+  .markdown-body blockquote {
+    page-break-inside: avoid;
+    break-inside: avoid;
+  }
+  /* Keep section content together */
+  .markdown-body h2 + *, .markdown-body h3 + * {
+    page-break-before: avoid;
+    break-before: avoid;
+  }
+}
+</style>
+</head>
+<body>
+  <div class="markdown-body">
+    
+    <h1 id="categories-and-search-broken-review-and-fix-plan">Categories and Search Broken Review and Fix Plan</h1>
+<p>Date: 2026-04-29
+Production URL: https://pstest.morloksmaze.com
+Scope: <code>/search</code>, <code>/categories</code>, category browse, category settings counts, and hosted <code>/api/scripts/search</code>.</p>
+<h2 id="current-verdict">Current Verdict</h2>
+<p>Categories and search are still broken in production from the user-facing navigation.</p>
+<p>The previous backend/API patch made the hosted search endpoint capable of answering category and search queries, but the frontend app never mounts the <code>/search</code> or <code>/categories</code> pages. The sidebar links exist, but the React router sends both paths to the wildcard fallback and redirects to <code>/404</code>.</p>
+<h2 id="evidence">Evidence</h2>
+<h3 id="browser-evidence">Browser evidence</h3>
+<p>Using the Browser Use in-app browser, the login page loaded and exposed the expected DOM. Browser Use could inspect the page state, but its click translation failed on the default login button, so I used a local Playwright browser pass for the live authenticated route checks.</p>
+<p>Authenticated production checks:</p>
+<pre><code class="language-text">/search     -&gt; https://pstest.morloksmaze.com/404
+/categories -&gt; https://pstest.morloksmaze.com/404
+</code></pre>
+<p>Observed page content:</p>
+<pre><code class="language-text">404
+Page Not Found
+The page you are looking for might have been removed, had its name changed, or is temporarily unavailable.
+</code></pre>
+<h3 id="code-evidence">Code evidence</h3>
+<p><code>src/frontend/src/components/layouts/Sidebar.tsx</code> links to:</p>
+<pre><code class="language-ts">{ to: '/search', label: 'Search' },
+{ to: '/categories', label: 'Categories' },
+</code></pre>
+<p><code>src/frontend/src/App.tsx</code> does not import or route the existing pages:</p>
+<pre><code class="language-text">src/frontend/src/pages/Search.tsx
+src/frontend/src/pages/Categories.tsx
+</code></pre>
+<p>The router has script routes, AI routes, documentation routes, and settings routes, but no:</p>
+<pre><code class="language-text">/search
+/categories
+/categories/:id
+</code></pre>
+<p>The wildcard route catches those paths and sends them to <code>/404</code>.</p>
+<h3 id="api-evidence">API evidence</h3>
+<p>The API now responds:</p>
+<pre><code class="language-text">GET /api/scripts/search?q=process&amp;limit=5&amp;sort=relevance -&gt; 200
+GET /api/categories -&gt; 200 and includes scriptCount
+GET /api/scripts/search?category_id=3&amp;limit=10 -&gt; 200
+</code></pre>
+<p>So the main current break is frontend route wiring. There are also secondary quality issues that should be fixed in the same pass because they will make the mounted pages look partially broken.</p>
+<h2 id="internet-research-used">Internet Research Used</h2>
+<h3 id="supabase-postgres">Supabase / Postgres</h3>
+<p>Supabase recommends Postgres full-text search for database-backed search, including <code>tsvector</code> documents, generated searchable columns, and GIN indexes for performance. It also documents <code>websearch_to_tsquery()</code> as suitable for user-facing search syntax.</p>
+<p>Source: https://supabase.com/docs/guides/database/full-text-search</p>
+<p>PostgreSQL documents <code>websearch_to_tsquery</code>, <code>ts_rank</code>, and <code>ts_rank_cd</code> for text-search matching and ranking. This supports keeping search in hosted Supabase Postgres rather than adding a separate search service for the current scale.</p>
+<p>Source: https://www.postgresql.org/docs/current/functions-textsearch.html</p>
+<h3 id="ux-research">UX Research</h3>
+<p>Baymard's search/category guidance says search should guide users to matching category scopes when relevant. For PSScript, that means category browse and search filtering should be one connected discovery experience, not two disconnected pages.</p>
+<p>Source: https://baymard.com/blog/autodirect-searches-matching-category-scopes</p>
+<p>NN/g's search guidance emphasizes visible, simple search access. For PSScript, the sidebar Search link must actually land on a working search page, and the search box should remain obvious and directly usable.</p>
+<p>Source: https://www.nngroup.com/articles/search-visible-and-simple/</p>
+<h2 id="findings">Findings</h2>
+<h3 id="finding-1-sidebar-links-point-to-unmounted-routes">Finding 1 - Sidebar links point to unmounted routes</h3>
+<p>Severity: P1</p>
+<p>User impact:</p>
+<ul>
+<li>Clicking Search from the main navigation lands on 404.</li>
+<li>Clicking Categories from the main navigation lands on 404.</li>
+<li>Users correctly experience both features as broken even though the underlying API can respond.</li>
+</ul>
+<p>Root cause:</p>
+<ul>
+<li><code>Search.tsx</code> and <code>Categories.tsx</code> exist but are not lazy imported or routed in <code>App.tsx</code>.</li>
+</ul>
+<p>Fix:</p>
+<ul>
+<li>Add lazy imports:</li>
+<li><code>const Search = lazyWithRetry(() =&gt; import('./pages/Search'));</code></li>
+<li><code>const Categories = lazyWithRetry(() =&gt; import('./pages/Categories'));</code></li>
+<li>Add protected routes:</li>
+<li><code>/search</code></li>
+<li><code>/categories</code></li>
+<li><code>/categories/:id</code></li>
+</ul>
+<p>Verification:</p>
+<ul>
+<li>Browser check <code>/search</code> shows search UI, not 404.</li>
+<li>Browser check <code>/categories</code> shows category browse UI, not 404.</li>
+<li>Sidebar click checks navigate to those pages without fallback.</li>
+</ul>
+<h3 id="finding-2-category-selection-does-not-update-url-or-support-deep-links-fully">Finding 2 - Category selection does not update URL or support deep links fully</h3>
+<p>Severity: P2</p>
+<p>User impact:</p>
+<ul>
+<li>A category can be selected, but the URL does not reflect it.</li>
+<li>Sharing or refreshing a selected category workflow is weak.</li>
+</ul>
+<p>Root cause:</p>
+<ul>
+<li><code>Categories.tsx</code> reads <code>categoryId</code> from <code>useParams</code>, but <code>handleCategorySelect()</code> only updates local state.</li>
+</ul>
+<p>Fix:</p>
+<ul>
+<li>Use <code>useNavigate()</code>.</li>
+<li>On category click, navigate to <code>/categories/${category.id}</code>.</li>
+<li>Keep <code>/categories</code> as the empty category selection state.</li>
+<li>When <code>categoryId</code> changes, select the matching category from loaded data.</li>
+</ul>
+<p>Verification:</p>
+<ul>
+<li>Click a category; URL becomes <code>/categories/:id</code>.</li>
+<li>Refresh; the same category remains selected.</li>
+<li>Invalid category id shows a clear "category not found" state.</li>
+</ul>
+<h3 id="finding-3-category-page-analysis-score-mapping-is-wrong">Finding 3 - Category page analysis score mapping is wrong</h3>
+<p>Severity: P2</p>
+<p>User impact:</p>
+<ul>
+<li>Quality score can show <code>N/A</code> or wrong red/yellow state despite analysis existing.</li>
+</ul>
+<p>Root cause:</p>
+<ul>
+<li><code>Categories.tsx</code> reads <code>script.analysis?.code_quality_score</code>.</li>
+<li>Hosted API search results return <code>analysis.quality_score</code> and <code>analysis.qualityScore</code>.</li>
+</ul>
+<p>Fix:</p>
+<ul>
+<li>Normalize a helper:</li>
+</ul>
+<pre><code class="language-ts">const getQualityScore = (script: Script) =&gt;
+  script.analysis?.quality_score ?? script.analysis?.qualityScore ?? script.analysis?.code_quality_score;
+</code></pre>
+<ul>
+<li>Use this helper for category and search result cards.</li>
+</ul>
+<p>Verification:</p>
+<ul>
+<li>Category browse and search show the same quality score for the same script.</li>
+<li>No analyzed script shows <code>N/A</code> only because of naming mismatch.</li>
+</ul>
+<h3 id="finding-4-search-page-does-not-preserve-query-state-in-url">Finding 4 - Search page does not preserve query state in URL</h3>
+<p>Severity: P2</p>
+<p>User impact:</p>
+<ul>
+<li>Search/filter state is lost on refresh.</li>
+<li>Search results cannot be shared.</li>
+<li>Browser back/forward does not map cleanly to previous searches.</li>
+</ul>
+<p>Root cause:</p>
+<ul>
+<li><code>Search.tsx</code> keeps all filters in component state.</li>
+<li>It does not read or write <code>URLSearchParams</code>.</li>
+</ul>
+<p>Fix:</p>
+<ul>
+<li>Make URL query params the source of truth:</li>
+<li><code>q</code></li>
+<li><code>category_id</code></li>
+<li><code>tags</code></li>
+<li><code>sort</code></li>
+<li><code>mine</code></li>
+<li><code>view</code></li>
+<li>Update the URL on form submit and filter changes.</li>
+<li>Read initial state from <code>useSearchParams()</code>.</li>
+</ul>
+<p>Verification:</p>
+<ul>
+<li><code>/search?q=process&amp;category_id=3</code> opens with controls populated.</li>
+<li>Refresh preserves filters.</li>
+<li>Back/forward restores prior search states.</li>
+</ul>
+<h3 id="finding-5-search-result-count-is-not-a-real-total">Finding 5 - Search result count is not a real total</h3>
+<p>Severity: P2</p>
+<p>User impact:</p>
+<ul>
+<li>The UI says "Showing X of X" even when more pages exist.</li>
+<li>Future pagination would be incorrect.</li>
+</ul>
+<p>Root cause:</p>
+<ul>
+<li><code>handleScriptSearch()</code> returns <code>total: scripts.length</code>.</li>
+<li>It does not run a total count query or use <code>COUNT(*) OVER()</code>.</li>
+</ul>
+<p>Fix:</p>
+<ul>
+<li>Update API search SQL to return <code>COUNT(*) OVER() AS total_count</code>.</li>
+<li>Map <code>total</code> from the first row total or <code>0</code>.</li>
+<li>Keep <code>limit</code> and <code>offset</code> in the response.</li>
+</ul>
+<p>Verification:</p>
+<ul>
+<li><code>limit=1</code> can return <code>scripts.length === 1</code> and <code>total &gt; 1</code> when more matches exist.</li>
+</ul>
+<h3 id="finding-6-search-and-category-pages-duplicate-script-result-ui">Finding 6 - Search and category pages duplicate script result UI</h3>
+<p>Severity: P3</p>
+<p>User impact:</p>
+<ul>
+<li>Same script can look different across Scripts, Search, and Categories.</li>
+<li>Bugs like <code>quality_score</code> vs <code>code_quality_score</code> recur.</li>
+</ul>
+<p>Root cause:</p>
+<ul>
+<li><code>Search.tsx</code>, <code>Categories.tsx</code>, and <code>ScriptManagement.tsx</code> each render their own result rows/cards.</li>
+</ul>
+<p>Fix:</p>
+<ul>
+<li>Create or reuse a <code>ScriptResultCard</code> and a <code>ScriptResultTable</code>.</li>
+<li>Normalize script fields once:</li>
+<li>title</li>
+<li>description</li>
+<li>category</li>
+<li>author</li>
+<li>quality score</li>
+<li>updated date</li>
+<li>execution count</li>
+</ul>
+<p>Verification:</p>
+<ul>
+<li>Search and category pages render the same metadata for the same script.</li>
+<li>Unit tests cover missing category, missing analysis, and analyzed script states.</li>
+</ul>
+<h2 id="fix-plan">Fix Plan</h2>
+<h3 id="phase-1-restore-routes">Phase 1 - Restore routes</h3>
+<p>Files:</p>
+<ul>
+<li><code>src/frontend/src/App.tsx</code></li>
+</ul>
+<p>Work:</p>
+<ul>
+<li>Import <code>Search</code> and <code>Categories</code>.</li>
+<li>Add protected routes for <code>/search</code>, <code>/categories</code>, and <code>/categories/:id</code>.</li>
+</ul>
+<p>Tests:</p>
+<ul>
+<li>Add route smoke assertions or Playwright smoke:</li>
+<li><code>/search</code> is not 404.</li>
+<li><code>/categories</code> is not 404.</li>
+</ul>
+<h3 id="phase-2-make-category-browse-reliable">Phase 2 - Make category browse reliable</h3>
+<p>Files:</p>
+<ul>
+<li><code>src/frontend/src/pages/Categories.tsx</code></li>
+</ul>
+<p>Work:</p>
+<ul>
+<li>Add <code>useNavigate</code>.</li>
+<li>Navigate to <code>/categories/:id</code> on category select.</li>
+<li>Handle invalid category ids.</li>
+<li>Normalize quality score mapping.</li>
+<li>Show category counts next to category names using <code>scriptCount</code>.</li>
+</ul>
+<p>Tests:</p>
+<ul>
+<li>Category select changes URL.</li>
+<li>Refresh on <code>/categories/:id</code> restores category.</li>
+<li>Category result rows all match selected category.</li>
+</ul>
+<h3 id="phase-3-make-search-state-durable">Phase 3 - Make search state durable</h3>
+<p>Files:</p>
+<ul>
+<li><code>src/frontend/src/pages/Search.tsx</code></li>
+</ul>
+<p>Work:</p>
+<ul>
+<li>Use <code>useSearchParams</code>.</li>
+<li>Map URL params to filter controls.</li>
+<li>Update params on submit/reset/filter changes.</li>
+<li>Keep <code>view</code> in URL or local storage.</li>
+<li>Show applied filter chips.</li>
+</ul>
+<p>Tests:</p>
+<ul>
+<li><code>/search?q=process</code> opens with the query field populated.</li>
+<li>Selecting a category updates <code>category_id</code> in the URL.</li>
+<li>Reset clears URL filters.</li>
+</ul>
+<h3 id="phase-4-fix-total-counts-and-pagination-foundation">Phase 4 - Fix total counts and pagination foundation</h3>
+<p>Files:</p>
+<ul>
+<li><code>netlify/functions/api.ts</code></li>
+</ul>
+<p>Work:</p>
+<ul>
+<li>Add <code>COUNT(*) OVER() AS total_count</code> to hosted search.</li>
+<li>Return real <code>total</code>.</li>
+<li>Keep existing Supabase/Postgres FTS, category, tag, mine, and sort filters.</li>
+</ul>
+<p>Tests:</p>
+<ul>
+<li><code>limit=1</code> returns one script but <code>total</code> reflects all matches.</li>
+<li>Category filter total matches category count for empty query.</li>
+</ul>
+<h3 id="phase-5-consolidate-result-presentation">Phase 5 - Consolidate result presentation</h3>
+<p>Files:</p>
+<ul>
+<li><code>src/frontend/src/components/ScriptCard.tsx</code> or new <code>ScriptResultCard.tsx</code></li>
+<li><code>src/frontend/src/pages/Search.tsx</code></li>
+<li><code>src/frontend/src/pages/Categories.tsx</code></li>
+</ul>
+<p>Work:</p>
+<ul>
+<li>Reuse one card/list component.</li>
+<li>Normalize analysis score access.</li>
+<li>Avoid broad ad hoc display logic.</li>
+</ul>
+<p>Tests:</p>
+<ul>
+<li>Search and category pages render same title/category/quality values for the same fixture.</li>
+</ul>
+<h2 id="acceptance-criteria">Acceptance Criteria</h2>
+<ul>
+<li>Sidebar Search opens <code>/search</code> and never redirects to <code>/404</code>.</li>
+<li>Sidebar Categories opens <code>/categories</code> and never redirects to <code>/404</code>.</li>
+<li><code>/categories/:id</code> deep links to the selected category.</li>
+<li>Search query, category, tags, sort, and mine filters survive refresh.</li>
+<li>Category browse results use the same hosted <code>/api/scripts/search</code> contract.</li>
+<li>Search API returns a real <code>total</code>, not just page length.</li>
+<li>Browser smoke proves:</li>
+<li>login</li>
+<li>open Search</li>
+<li>search a known script title</li>
+<li>filter by category</li>
+<li>open Categories</li>
+<li>select the same category</li>
+<li>verify only matching scripts appear</li>
+</ul>
+<h2 id="recommended-next-step">Recommended Next Step</h2>
+<p>Implement Phase 1 and Phase 2 first. Those two phases address the user-visible break immediately. Then implement Phase 3 and Phase 4 in the same branch before redeploy, because durable URL state and real totals are what make search feel correct instead of just technically reachable.</p>
+<h2 id="implemented-fixes-and-verification-results">Implemented Fixes and Verification Results</h2>
+<p>Date completed: 2026-04-29</p>
+<h3 id="code-changes-completed">Code changes completed</h3>
+<ul>
+<li>Mounted the existing Search and Categories pages in <code>src/frontend/src/App.tsx</code>.</li>
+<li>Added protected routes for <code>/search</code>, <code>/categories</code>, and <code>/categories/:id</code>.</li>
+<li>Updated category browsing so category selection navigates to <code>/categories/:id</code>.</li>
+<li>Added category deep-link restore and invalid-category handling.</li>
+<li>Displayed category <code>scriptCount</code> values when the hosted API provides them.</li>
+<li>Normalized analysis quality score display across category and search results.</li>
+<li>Moved Search page state into URL params for <code>q</code>, <code>category_id</code>, <code>tags</code>, <code>sort</code>, <code>mine</code>, and <code>view</code>.</li>
+<li>Replaced raw result anchors with React Router links.</li>
+<li>Updated hosted <code>/api/scripts/search</code> to return <code>COUNT(*) OVER() AS total_count</code>.</li>
+<li>Kept the hosted API response shape backward compatible as <code>{ scripts, total, filters }</code>.</li>
+</ul>
+<h3 id="local-verification">Local verification</h3>
+<pre><code class="language-text">npm run build
+Result: passed
+
+/Users/morlock/node_modules/.bin/esbuild netlify/functions/api.ts --bundle --platform=node --format=esm --outfile=/tmp/psscript-netlify-api-check.mjs
+Result: passed
+
+npm run test:run -- --pool=forks --maxWorkers=1 src/api/__tests__/hostedAiClient.test.ts src/contexts/__tests__/AuthContext.test.tsx
+Result: passed, 2 files, 21 tests
+</code></pre>
+<h3 id="production-deployment">Production deployment</h3>
+<pre><code class="language-text">Production URL: https://pstest.morloksmaze.com
+Unique deploy URL: https://69f1df48242141400a013fd2--psscript.netlify.app
+Deploy ID: 69f1df48242141400a013fd2
+Build logs: https://app.netlify.com/projects/psscript/deploys/69f1df48242141400a013fd2
+</code></pre>
+<p>Netlify Lighthouse plugin result for <code>/</code>:</p>
+<pre><code class="language-text">Performance: 40
+Accessibility: 100
+Best Practices: 100
+SEO: 81
+PWA: 30
+</code></pre>
+<h3 id="production-smoke-verification">Production smoke verification</h3>
+<p>Browser Use could not control the Codex in-app browser directly because Computer Use is blocked from the Codex app, so the same browser lifecycle was verified with Playwright.</p>
+<pre><code class="language-text">/search?q=process -&gt; not 404
+Search query field populated from q=process
+/api/scripts/search?q=process&amp;limit=1&amp;sort=relevance -&gt; 200
+Search API returned scripts.length &lt;= 1 and total = 2
+/api/categories -&gt; 200 with scriptCount fields
+/search?category_id=3&amp;view=list -&gt; not 404
+Search category select populated from category_id=3
+/api/scripts/search?category_id=3&amp;limit=10 -&gt; 200
+/categories -&gt; not 404
+/categories/3 -&gt; not 404
+Refresh on /categories/3 preserved the selected category route
+/scripts/4 from search results -&gt; not 404
+</code></pre>
+<h3 id="remaining-notes">Remaining notes</h3>
+<ul>
+<li>The smoke category used <code>Automation</code> (<code>id=3</code>) because the current production category list returned no category with <code>scriptCount &gt; 0</code>. The category filter API still returned 200 and scoped an empty result correctly.</li>
+<li>The Netlify Lighthouse Performance score is still low at 40. That is outside this category/search functional repair and should be tracked as a separate performance task.</li>
+</ul>
+    <div class="footer">Generated 2026-04-29 14:08 UTC</div>
+  </div>
+</body>
+</html>

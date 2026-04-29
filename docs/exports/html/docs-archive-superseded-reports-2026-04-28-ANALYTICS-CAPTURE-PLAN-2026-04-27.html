@@ -1,0 +1,968 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <base href="file:///Users/morlock/fun/02_PowerShell_Projects/psscript/" />
+  <title>docs-archive-superseded-reports-2026-04-28-ANALYTICS-CAPTURE-PLAN-2026-04-27</title>
+  <style>
+:root {
+  color-scheme: light;
+}
+body {
+  font-family: "Segoe UI", "Helvetica Neue", Arial, sans-serif;
+  margin: 0;
+  padding: 0;
+  background: #f4f7fb;
+  color: #0f172a;
+}
+.markdown-body {
+  max-width: 980px;
+  margin: 0 auto;
+  padding: 36px 42px 64px;
+  line-height: 1.65;
+  background: #ffffff;
+  box-shadow: 0 24px 70px rgba(15, 23, 42, 0.08);
+}
+.markdown-body h1 {
+  font-size: 34px;
+  line-height: 1.12;
+  margin-bottom: 12px;
+  color: #07111f;
+  border-bottom: 3px solid #0ea5e9;
+  padding-bottom: 12px;
+  page-break-before: always;
+  page-break-after: avoid;
+  break-before: page;
+  break-after: avoid;
+}
+.markdown-body h1:first-of-type {
+  page-break-before: avoid;
+  break-before: avoid;
+}
+.markdown-body h2 {
+  font-size: 23px;
+  line-height: 1.2;
+  margin-top: 34px;
+  color: #102a43;
+  border-bottom: 1px solid #d7e2ee;
+  padding-bottom: 8px;
+  page-break-after: avoid;
+  break-after: avoid;
+}
+.markdown-body h3 {
+  font-size: 18px;
+  margin-top: 20px;
+  color: #1e3a5f;
+  page-break-after: avoid;
+  break-after: avoid;
+}
+.markdown-body h4, .markdown-body h5, .markdown-body h6 {
+  page-break-after: avoid;
+  break-after: avoid;
+}
+.markdown-body table {
+  width: 100%;
+  border-collapse: collapse;
+  margin: 18px 0 24px;
+  font-size: 13px;
+  page-break-inside: avoid;
+  break-inside: avoid;
+  box-shadow: 0 1px 0 #e2e8f0;
+}
+.markdown-body th,
+.markdown-body td {
+  border: 1px solid #e2e8f0;
+  padding: 9px 11px;
+  text-align: left;
+  vertical-align: top;
+}
+.markdown-body th {
+  background: #eef6ff;
+  color: #0f3157;
+  font-weight: 700;
+}
+.markdown-body tr:nth-child(even) td {
+  background: #fbfdff;
+}
+.markdown-body tr {
+  page-break-inside: avoid;
+  break-inside: avoid;
+}
+.markdown-body code {
+  background: #f1f5f9;
+  padding: 2px 4px;
+  border-radius: 4px;
+  font-family: "SFMono-Regular", Menlo, Consolas, monospace;
+  font-size: 0.92em;
+}
+.markdown-body pre {
+  background: #111827;
+  color: #e5eef8;
+  padding: 16px;
+  border-radius: 10px;
+  overflow-x: auto;
+  border: 1px solid #243244;
+  page-break-inside: avoid;
+  break-inside: avoid;
+}
+.markdown-body pre code {
+  background: transparent;
+  color: inherit;
+}
+.markdown-body blockquote {
+  border-left: 5px solid #0ea5e9;
+  margin: 18px 0;
+  padding: 12px 18px;
+  background: #eff8ff;
+  color: #18324f;
+  border-radius: 0 10px 10px 0;
+}
+.markdown-body img {
+  max-width: 100%;
+  height: auto;
+  display: block;
+  margin: 16px 0;
+  border-radius: 10px;
+  box-shadow: 0 8px 20px rgba(15, 23, 42, 0.12);
+  page-break-inside: avoid;
+  break-inside: avoid;
+}
+.markdown-body figure {
+  page-break-inside: avoid;
+  break-inside: avoid;
+  margin: 16px 0;
+}
+.markdown-body a {
+  color: #2563eb;
+  text-decoration: none;
+}
+.markdown-body a:hover {
+  text-decoration: underline;
+}
+.cover {
+  min-height: 760px;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+  padding: 72px 60px 64px;
+  background:
+    linear-gradient(135deg, rgba(9, 30, 66, 0.96) 0%, rgba(12, 74, 110, 0.94) 54%, rgba(20, 83, 45, 0.9) 100%),
+    radial-gradient(circle at 18% 18%, rgba(14, 165, 233, 0.25), transparent 36%);
+  color: #f8fafc;
+  border-radius: 0;
+  margin: -36px -42px 40px;
+  position: relative;
+  overflow: hidden;
+}
+.cover::before {
+  content: "PSScript";
+  position: absolute;
+  top: 46px;
+  left: 60px;
+  font-size: 12px;
+  font-weight: 800;
+  letter-spacing: 0.24em;
+  text-transform: uppercase;
+  color: rgba(226, 246, 255, 0.82);
+}
+.cover::after {
+  content: "";
+  position: absolute;
+  right: -120px;
+  top: -120px;
+  width: 360px;
+  height: 360px;
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  transform: rotate(28deg);
+}
+.markdown-body .cover-title {
+  font-size: 48px;
+  line-height: 1.04;
+  font-weight: 800;
+  color: #f8fafc;
+  border-bottom: 3px solid #38bdf8;
+  margin: 0 0 16px;
+  max-width: 720px;
+}
+.cover-subtitle {
+  font-size: 20px;
+  line-height: 1.42;
+  color: #dbeafe;
+  margin: 0 0 22px;
+  max-width: 720px;
+}
+.cover-meta {
+  display: inline-block;
+  width: fit-content;
+  font-size: 13px;
+  color: #e0f2fe;
+  background: rgba(255, 255, 255, 0.12);
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  border-radius: 999px;
+  padding: 7px 13px;
+}
+.page-break {
+  page-break-after: always;
+  break-after: page;
+}
+.footer {
+  margin-top: 40px;
+  font-size: 12px;
+  color: #64748b;
+  border-top: 1px solid #e2e8f0;
+  padding-top: 14px;
+}
+/* Print and PDF-specific styles */
+@page {
+  size: A4;
+  margin: 18mm 16mm 20mm;
+}
+@media print {
+  body {
+    background: #ffffff;
+  }
+  .markdown-body {
+    max-width: none;
+    margin: 0;
+    padding: 0;
+    box-shadow: none;
+  }
+  .cover {
+    margin: 0 0 28px;
+  }
+  .markdown-body {
+    orphans: 3;
+    widows: 3;
+  }
+  .markdown-body p {
+    orphans: 3;
+    widows: 3;
+  }
+  .markdown-body li {
+    page-break-inside: avoid;
+    break-inside: avoid;
+  }
+  .markdown-body ul, .markdown-body ol {
+    page-break-before: avoid;
+    break-before: avoid;
+  }
+  .markdown-body blockquote {
+    page-break-inside: avoid;
+    break-inside: avoid;
+  }
+  /* Keep section content together */
+  .markdown-body h2 + *, .markdown-body h3 + * {
+    page-break-before: avoid;
+    break-before: avoid;
+  }
+}
+</style>
+</head>
+<body>
+  <div class="markdown-body">
+    
+    <h1 id="script-and-ai-search-analytics-capture-plan">Script and AI Search Analytics Capture Plan</h1>
+<p><strong>Date:</strong> April 27, 2026<br />
+<strong>User requested freshness target:</strong> April 26, 2026<br />
+<strong>Target app:</strong> <code>https://pstest.morloksmaze.com</code><br />
+<strong>Hosting:</strong> Netlify Functions<br />
+<strong>Database:</strong> Supabase Postgres<br />
+<strong>Primary goal:</strong> Capture useful analytics from scripts, script searches, documentation searches, AI assistant searches, and AI provider usage without storing raw script content, raw prompts, or raw search text by default.</p>
+<h2 id="sources-used">Sources Used</h2>
+<ul>
+<li>Supabase Row Level Security docs: https://supabase.com/docs/guides/database/postgres/row-level-security</li>
+<li>Supabase query optimization docs: https://supabase.com/docs/guides/database/query-optimization</li>
+<li>Supabase pg_stat_statements docs: https://supabase.com/docs/guides/database/extensions/pg_stat_statements</li>
+<li>Supabase Cron docs: https://supabase.com/docs/guides/cron</li>
+<li>Netlify Scheduled Functions docs: https://docs.netlify.com/functions/scheduled-functions/</li>
+<li>Netlify Functions environment variable docs: https://docs.netlify.com/functions/environment-variables/</li>
+<li>OpenAI Usage and Costs API docs: https://platform.openai.com/docs/api-reference/usage/costs?api-mode=responses&amp;lang=curl</li>
+<li>OpenAI token and billing usage reference: https://help.openai.com/en/articles/4936856-what-are-tokens-and-how-to-count-them</li>
+<li>Snowplow tracking plans and event specifications: https://docs.snowplow.io/docs/fundamentals/tracking-plans/</li>
+<li>Algolia click and conversion event guidance: https://www.algolia.com/doc/guides/sending-events</li>
+</ul>
+<h2 id="local-findings">Local Findings</h2>
+<p>The codebase already has partial analytics support:</p>
+<table>
+<thead>
+<tr>
+<th>Existing surface</th>
+<th>Location</th>
+<th>What it captures</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>ai_metrics</code> hosted schema</td>
+<td><code>supabase/migrations/20260424_hosted_schema.sql</code></td>
+<td>AI endpoint, model, tokens, cost, latency, success</td>
+</tr>
+<tr>
+<td>Hosted AI metric recorder</td>
+<td><code>netlify/functions/api.ts</code></td>
+<td>Records OpenAI/Anthropic calls for hosted routes</td>
+</tr>
+<tr>
+<td>Local AI analytics middleware</td>
+<td><code>src/backend/src/middleware/aiAnalytics.ts</code></td>
+<td>Sequelize model and aggregation helpers, but route usage is incomplete</td>
+</tr>
+<tr>
+<td><code>scripts</code></td>
+<td><code>src/db/schema.sql</code> and hosted schema</td>
+<td>Script owner/category/public/version/hash timestamps</td>
+</tr>
+<tr>
+<td><code>script_analysis</code></td>
+<td><code>src/db/schema.sql</code> and hosted schema</td>
+<td>Security, quality, risk, suggestions, command details</td>
+</tr>
+<tr>
+<td><code>chat_history</code></td>
+<td><code>src/db/schema.sql</code> and hosted schema</td>
+<td>Conversation records and optional embedding field</td>
+</tr>
+<tr>
+<td>Script execution fields/logs</td>
+<td><code>src/db/schema.sql</code></td>
+<td><code>execution_count</code>, <code>average_execution_time</code>, <code>last_executed_at</code>, <code>execution_logs</code> in local schema</td>
+</tr>
+</tbody>
+</table>
+<p>Current gaps:</p>
+<ul>
+<li>No general <code>analytics_events</code> or <code>user_events</code> table exists.</li>
+<li>Script searches are not recorded as analytics events.</li>
+<li>Documentation searches are not recorded as analytics events.</li>
+<li>Search results are not linked to later result clicks, script views, downloads, copies, analyses, or saves.</li>
+<li>AI searches/chat are tracked for provider cost in hosted <code>ai_metrics</code>, but not as product behavior events.</li>
+<li>Local Express AI metrics are partly unwired; hosted Netlify should remain the first target.</li>
+<li>Direct prompt/query/content capture would be high risk, so default analytics should use hashes and buckets.</li>
+</ul>
+<h2 id="design-principles">Design Principles</h2>
+<ol>
+<li>Keep raw events append-only. Do not mutate analytics facts after insert except for retention cleanup.</li>
+<li>Keep <code>ai_metrics</code> focused on provider cost, token, latency, success, and model accounting.</li>
+<li>Add a separate <code>analytics_events</code> table for product behavior.</li>
+<li>Use server-side capture first because it is more trustworthy and keeps secrets off the browser.</li>
+<li>Add frontend capture only for actions the server cannot see, such as copy, local download click, filter change, or result click before navigation.</li>
+<li>Never store raw script content, raw prompts, raw search queries, raw transcripts, full IP addresses, or full user agents by default.</li>
+<li>Use <code>search_id</code> to connect a search event to later click/conversion events, following the same pattern used by search analytics systems that tie clicks back to a query.</li>
+<li>Enforce tenant privacy with Supabase RLS and indexed <code>user_id</code> filters.</li>
+<li>Roll up dashboards from aggregates, not from unbounded raw scans.</li>
+</ol>
+<h2 id="recommended-data-model">Recommended Data Model</h2>
+<h3 id="1-keep-ai_metrics">1. Keep <code>ai_metrics</code></h3>
+<p>Keep the current <code>ai_metrics</code> table for provider billing and performance.</p>
+<p>Recommended additive columns:</p>
+<pre><code class="language-sql">alter table public.ai_metrics
+  add column if not exists request_id uuid,
+  add column if not exists session_id uuid,
+  add column if not exists provider text,
+  add column if not exists cached_tokens integer not null default 0,
+  add column if not exists fallback_used boolean not null default false;
+
+create index if not exists idx_ai_metrics_user_created
+  on public.ai_metrics (user_id, created_at desc);
+
+create index if not exists idx_ai_metrics_request_id
+  on public.ai_metrics (request_id)
+  where request_id is not null;
+</code></pre>
+<p>Reason: local cost estimates should come from response <code>usage</code>, but finance reconciliation should compare against OpenAI's Costs endpoint because OpenAI documents that Costs is the finance-grade source.</p>
+<h3 id="2-add-analytics_events">2. Add <code>analytics_events</code></h3>
+<p>Use one narrow event ledger for product behavior:</p>
+<pre><code class="language-sql">create table if not exists public.analytics_events (
+  id uuid primary key default gen_random_uuid(),
+  occurred_at timestamptz not null default now(),
+  received_at timestamptz not null default now(),
+  user_id uuid references public.app_profiles(id) on delete set null,
+  session_id uuid,
+  request_id uuid,
+  search_id uuid,
+  event_name text not null,
+  event_version smallint not null default 1,
+  source text not null check (source in ('frontend', 'netlify', 'backend', 'system')),
+  route text,
+  script_id bigint references public.scripts(id) on delete set null,
+  category_id bigint references public.categories(id) on delete set null,
+  success boolean,
+  latency_ms integer,
+  result_count integer,
+  rank_position integer,
+  query_hash text,
+  properties jsonb not null default '{}'::jsonb,
+  privacy_tier text not null default 'standard'
+    check (privacy_tier in ('standard', 'diagnostic_opt_in', 'system')),
+  check (jsonb_typeof(properties) = 'object'),
+  check (pg_column_size(properties) &lt;= 4096)
+);
+</code></pre>
+<p>Indexes:</p>
+<pre><code class="language-sql">create index if not exists idx_analytics_events_user_time
+  on public.analytics_events (user_id, occurred_at desc);
+
+create index if not exists idx_analytics_events_name_time
+  on public.analytics_events (event_name, occurred_at desc);
+
+create index if not exists idx_analytics_events_script_time
+  on public.analytics_events (script_id, occurred_at desc)
+  where script_id is not null;
+
+create index if not exists idx_analytics_events_search_id
+  on public.analytics_events (search_id)
+  where search_id is not null;
+
+create index if not exists idx_analytics_events_request_id
+  on public.analytics_events (request_id)
+  where request_id is not null;
+</code></pre>
+<p>Add a GIN index only when dashboard filters prove it is needed:</p>
+<pre><code class="language-sql">create index if not exists idx_analytics_events_properties_gin
+  on public.analytics_events using gin (properties jsonb_path_ops);
+</code></pre>
+<p>Partitioning: start with this single table and composite indexes. Move to monthly range partitioning on <code>occurred_at</code> before the table reaches tens of millions of rows or if retention deletes become expensive. The Supabase/Postgres guidance supports partitioning for very large time-series tables, but it adds operational complexity.</p>
+<h3 id="3-optional-search-impressions-table">3. Optional Search Impressions Table</h3>
+<p>Only add this if you need result-position analytics beyond clicked items:</p>
+<pre><code class="language-sql">create table if not exists public.analytics_search_impressions (
+  id bigserial primary key,
+  search_id uuid not null,
+  occurred_at timestamptz not null default now(),
+  user_id uuid references public.app_profiles(id) on delete set null,
+  result_type text not null check (result_type in ('script', 'documentation', 'ai_example')),
+  result_id text not null,
+  rank_position integer not null,
+  score_bucket text,
+  clicked boolean not null default false
+);
+</code></pre>
+<p>Phase 1 can skip this. For most dashboards, <code>search_performed</code> plus <code>result_clicked</code> is enough.</p>
+<h2 id="rls-and-privacy">RLS and Privacy</h2>
+<p>Enable RLS:</p>
+<pre><code class="language-sql">alter table public.analytics_events enable row level security;
+
+create policy &quot;analytics events readable by owner&quot;
+on public.analytics_events
+for select
+to authenticated
+using ((select auth.uid()) = user_id);
+
+create policy &quot;analytics events insertable by owner&quot;
+on public.analytics_events
+for insert
+to authenticated
+with check ((select auth.uid()) = user_id);
+</code></pre>
+<p>Important notes:</p>
+<ul>
+<li>Netlify server-side inserts should use validated user identity from <code>requireUser(req)</code>.</li>
+<li>If direct browser inserts are allowed, route them through <code>POST /api/analytics/events</code> anyway so event names and properties can be allowlisted.</li>
+<li>Admin analytics should be served by Netlify endpoints after an admin check, not by broad client-side RLS policies.</li>
+<li>Use <code>(select auth.uid())</code> in policies and indexes on <code>user_id</code> to follow Supabase RLS performance guidance.</li>
+<li>Store <code>query_hash = hmac_sha256(normalized_query, ANALYTICS_HASH_SECRET)</code>, not the raw query.</li>
+<li>Store coarse buckets: <code>query_length_bucket</code>, <code>result_count_bucket</code>, <code>line_count_bucket</code>, <code>file_size_bucket</code>.</li>
+<li>Keep full prompts, transcript text, raw script content, and raw search queries out of <code>properties</code>.</li>
+</ul>
+<p>Required Netlify environment variable:</p>
+<pre><code class="language-text">ANALYTICS_HASH_SECRET=&lt;random 32+ byte secret in Netlify Functions scope&gt;
+</code></pre>
+<p>Netlify docs state function runtime environment variables must be available to the Functions scope, and should be read with <code>process.env</code> or the Netlify runtime env APIs.</p>
+<h2 id="event-taxonomy">Event Taxonomy</h2>
+<p>Use stable names and versioned properties. This follows the tracking-plan style recommended by analytics platforms like Snowplow: document event meaning, trigger, source, and valid properties before implementing.</p>
+<h3 id="script-lifecycle">Script Lifecycle</h3>
+<table>
+<thead>
+<tr>
+<th>Event</th>
+<th>Trigger</th>
+<th>Required properties</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>script_uploaded</code></td>
+<td><code>/api/scripts</code> create or upload</td>
+<td><code>file_size_bucket</code>, <code>line_count_bucket</code>, <code>is_public</code>, <code>duplicate_detected</code></td>
+</tr>
+<tr>
+<td><code>script_viewed</code></td>
+<td>Script detail route loads</td>
+<td><code>view_source</code></td>
+</tr>
+<tr>
+<td><code>script_updated</code></td>
+<td>Script update succeeds</td>
+<td><code>changed_fields</code>, <code>version</code></td>
+</tr>
+<tr>
+<td><code>script_deleted</code></td>
+<td>Script delete succeeds</td>
+<td><code>delete_mode</code></td>
+</tr>
+<tr>
+<td><code>script_downloaded</code></td>
+<td>User downloads <code>.ps1</code>, <code>.psm1</code>, or zip</td>
+<td><code>format</code>, <code>source</code></td>
+</tr>
+<tr>
+<td><code>script_copied</code></td>
+<td>User copies generated or saved script</td>
+<td><code>source</code>, <code>line_count_bucket</code></td>
+</tr>
+<tr>
+<td><code>script_analyzed</code></td>
+<td>Static or AI analysis finishes</td>
+<td><code>analysis_type</code>, <code>security_score_bucket</code>, <code>risk_score_bucket</code>, <code>quality_score_bucket</code></td>
+</tr>
+<tr>
+<td><code>script_execute_attempted</code></td>
+<td>Hosted execute endpoint is hit</td>
+<td><code>hosted_supported</code>, <code>result</code></td>
+</tr>
+<tr>
+<td><code>script_similar_requested</code></td>
+<td>Similar scripts requested</td>
+<td><code>threshold_bucket</code>, <code>result_count_bucket</code></td>
+</tr>
+</tbody>
+</table>
+<h3 id="search">Search</h3>
+<table>
+<thead>
+<tr>
+<th>Event</th>
+<th>Trigger</th>
+<th>Required properties</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>script_search_performed</code></td>
+<td><code>/api/scripts/search</code></td>
+<td><code>query_hash</code>, <code>query_length_bucket</code>, <code>filters</code>, <code>result_count_bucket</code>, <code>search_mode</code></td>
+</tr>
+<tr>
+<td><code>documentation_search_performed</code></td>
+<td><code>/api/documentation/search</code></td>
+<td><code>query_hash</code>, <code>source_filter</code>, <code>result_count_bucket</code></td>
+</tr>
+<tr>
+<td><code>chat_history_search_performed</code></td>
+<td><code>/api/chat/search</code></td>
+<td><code>query_hash</code>, <code>result_count_bucket</code></td>
+</tr>
+<tr>
+<td><code>ai_example_search_performed</code></td>
+<td><code>/api/scripts/examples</code> or <code>/api/ai-agent/examples</code></td>
+<td><code>query_hash</code>, <code>result_count_bucket</code>, <code>model</code></td>
+</tr>
+<tr>
+<td><code>search_result_clicked</code></td>
+<td>User clicks any search result</td>
+<td><code>search_type</code>, <code>result_type</code>, <code>rank_position</code>, <code>target_id</code></td>
+</tr>
+<tr>
+<td><code>search_result_converted</code></td>
+<td>Search leads to analyze/save/download/copy</td>
+<td><code>conversion_type</code>, <code>search_type</code>, <code>rank_position</code></td>
+</tr>
+</tbody>
+</table>
+<p>Each search response should include:</p>
+<pre><code class="language-json">{
+  &quot;search_id&quot;: &quot;1a96a4a6-70c9-4a9e-97ec-dbcf8cf49f51&quot;,
+  &quot;results&quot;: []
+}
+</code></pre>
+<p>The frontend must pass that <code>search_id</code> into click/conversion events. This is the same core idea as Algolia's <code>queryID</code>: a later click is only useful for search analytics if it can be connected back to the originating search.</p>
+<h3 id="ai">AI</h3>
+<table>
+<thead>
+<tr>
+<th>Event</th>
+<th>Trigger</th>
+<th>Required properties</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>ai_request_started</code></td>
+<td>Chat, stream, generate, explain, analyze starts</td>
+<td><code>endpoint</code>, <code>agent_type</code>, <code>request_id</code></td>
+</tr>
+<tr>
+<td><code>ai_request_succeeded</code></td>
+<td>Provider response succeeds</td>
+<td><code>endpoint</code>, <code>provider</code>, <code>model</code>, <code>request_id</code>, <code>metric_id</code></td>
+</tr>
+<tr>
+<td><code>ai_request_failed</code></td>
+<td>Provider response fails</td>
+<td><code>endpoint</code>, <code>provider</code>, <code>model</code>, <code>error_code</code>, <code>request_id</code></td>
+</tr>
+<tr>
+<td><code>ai_fallback_used</code></td>
+<td>OpenAI falls back to Anthropic or local fallback</td>
+<td><code>from_provider</code>, <code>to_provider</code>, <code>endpoint</code></td>
+</tr>
+<tr>
+<td><code>ai_output_saved_as_script</code></td>
+<td>User saves generated script</td>
+<td><code>source_endpoint</code>, <code>line_count_bucket</code>, <code>script_id</code></td>
+</tr>
+<tr>
+<td><code>ai_voice_synthesized</code></td>
+<td>TTS route succeeds/fails</td>
+<td><code>voice</code>, <code>speed_bucket</code>, <code>success</code></td>
+</tr>
+<tr>
+<td><code>ai_voice_recognized</code></td>
+<td>STT route succeeds/fails</td>
+<td><code>duration_bucket</code>, <code>success</code></td>
+</tr>
+</tbody>
+</table>
+<p><code>ai_metrics</code> should hold token/cost numbers. <code>analytics_events</code> should hold product behavior and link to the same <code>request_id</code>.</p>
+<h2 id="instrumentation-points">Instrumentation Points</h2>
+<h3 id="netlify-function-first">Netlify Function First</h3>
+<p>Add a reusable helper in <code>netlify/functions/api.ts</code> or a shared module:</p>
+<pre><code class="language-ts">type AnalyticsEventInput = {
+  userId?: string;
+  sessionId?: string;
+  requestId?: string;
+  searchId?: string;
+  eventName: string;
+  source: 'frontend' | 'netlify' | 'backend' | 'system';
+  route?: string;
+  scriptId?: number;
+  categoryId?: number;
+  success?: boolean;
+  latencyMs?: number;
+  resultCount?: number;
+  rankPosition?: number;
+  query?: string;
+  properties?: Record&lt;string, unknown&gt;;
+};
+
+async function recordAnalyticsEvent(event: AnalyticsEventInput): Promise&lt;void&gt; {
+  // Validate eventName against an allowlist.
+  // Normalize and HMAC query into query_hash.
+  // Drop raw prompt, content, transcript, and query fields.
+  // Insert best-effort; never block the user path on analytics failure.
+}
+</code></pre>
+<p>Call it from:</p>
+<ul>
+<li><code>handleScripts</code> on GET/POST for list/create.</li>
+<li><code>handleScriptSearch</code> for <code>script_search_performed</code>.</li>
+<li><code>handleScriptById</code> for view, similar, analyze, execute attempted.</li>
+<li>Hosted AI routes: please, generate, explain, examples, analysis assistant.</li>
+<li><code>handleChat</code> and <code>handleChatStream</code>.</li>
+<li><code>handleDocumentation</code> for documentation search.</li>
+<li>Voice routes for voice product events, keeping transcripts out.</li>
+</ul>
+<h3 id="frontend-gaps">Frontend Gaps</h3>
+<p>Add a small frontend service:</p>
+<pre><code class="language-ts">analytics.track('search_result_clicked', {
+  search_id,
+  search_type: 'script',
+  result_type: 'script',
+  target_id: script.id,
+  rank_position: index + 1,
+});
+</code></pre>
+<p>Use it only where the server cannot know the action:</p>
+<ul>
+<li>Search result click.</li>
+<li>Copy script.</li>
+<li>Download script.</li>
+<li>Filter changed.</li>
+<li>Dashboard card opened.</li>
+<li>Command palette navigation.</li>
+</ul>
+<p>Batch browser events:</p>
+<pre><code class="language-ts">navigator.sendBeacon('/api/analytics/events', blob)
+</code></pre>
+<p>Fallback to <code>fetch(..., { keepalive: true })</code> when <code>sendBeacon</code> is unavailable. Keep batches small and validate again on the server.</p>
+<h2 id="aggregations-and-dashboards">Aggregations and Dashboards</h2>
+<h3 id="raw-drill-down">Raw Drill-Down</h3>
+<p>Keep raw <code>analytics_events</code> for 90 days. Use it for debugging and event-level validation.</p>
+<h3 id="daily-rollups">Daily Rollups</h3>
+<p>Use SQL views first. Promote to materialized views or rollup tables when query latency needs it.</p>
+<p>Recommended rollups:</p>
+<pre><code class="language-sql">create materialized view if not exists public.analytics_daily_user as
+select
+  date_trunc('day', occurred_at)::date as day,
+  user_id,
+  count(*) as events,
+  count(distinct session_id) as sessions,
+  count(*) filter (where event_name = 'script_uploaded') as uploads,
+  count(*) filter (where event_name = 'script_analyzed') as analyses,
+  count(*) filter (where event_name like '%search_performed') as searches,
+  count(*) filter (where success = false) as failures,
+  avg(latency_ms) filter (where latency_ms is not null) as avg_latency_ms
+from public.analytics_events
+group by 1, 2;
+</code></pre>
+<pre><code class="language-sql">create materialized view if not exists public.analytics_daily_search as
+select
+  date_trunc('day', occurred_at)::date as day,
+  event_name,
+  user_id,
+  count(*) as searches,
+  count(*) filter (where coalesce(result_count, 0) = 0) as zero_result_searches,
+  avg(result_count) as avg_results
+from public.analytics_events
+where event_name in (
+  'script_search_performed',
+  'documentation_search_performed',
+  'chat_history_search_performed',
+  'ai_example_search_performed'
+)
+group by 1, 2, 3;
+</code></pre>
+<pre><code class="language-sql">create materialized view if not exists public.analytics_daily_script as
+select
+  date_trunc('day', occurred_at)::date as day,
+  script_id,
+  count(*) filter (where event_name = 'script_viewed') as views,
+  count(*) filter (where event_name = 'script_downloaded') as downloads,
+  count(*) filter (where event_name = 'script_copied') as copies,
+  count(*) filter (where event_name = 'script_analyzed') as analyses,
+  count(*) filter (where event_name = 'script_execute_attempted') as execute_attempts
+from public.analytics_events
+where script_id is not null
+group by 1, 2;
+</code></pre>
+<p>AI cost dashboards should continue to aggregate from <code>ai_metrics</code>, with optional joins on <code>request_id</code> into <code>analytics_events</code>.</p>
+<h2 id="scheduled-jobs">Scheduled Jobs</h2>
+<p>Use Supabase Cron for database-local cleanup and materialized view refresh:</p>
+<pre><code class="language-sql">select cron.schedule(
+  'refresh-analytics-hourly',
+  '15 * * * *',
+  $$refresh materialized view concurrently public.analytics_daily_user;$$
+);
+</code></pre>
+<p>Use Netlify Scheduled Functions for external reconciliation:</p>
+<ul>
+<li>Daily OpenAI Usage/Costs API pull.</li>
+<li>Compare OpenAI organization/project spend to local <code>ai_metrics</code>.</li>
+<li>Alert if local estimated cost differs from provider cost by more than a threshold.</li>
+</ul>
+<p>Netlify scheduled functions run on published deploys and have a 30 second execution limit, so keep them narrow. For longer DB-only jobs, prefer Supabase Cron.</p>
+<h2 id="dashboard-metrics">Dashboard Metrics</h2>
+<h3 id="script-analytics">Script Analytics</h3>
+<ul>
+<li>Active users and active sessions.</li>
+<li>Uploads by day, category, public/private.</li>
+<li>Duplicate upload rate.</li>
+<li>Analysis runs by type.</li>
+<li>Security/risk/quality score distribution.</li>
+<li>Top scripts by views, downloads, copies, analyses.</li>
+<li>Hosted execution attempts, currently useful because hosted execution returns unavailable.</li>
+<li>Category growth and category drift.</li>
+<li>Search-to-script-view and search-to-analysis conversion.</li>
+</ul>
+<h3 id="search-analytics">Search Analytics</h3>
+<ul>
+<li>Script search volume.</li>
+<li>Documentation search volume.</li>
+<li>AI examples search volume.</li>
+<li>Zero-result rate.</li>
+<li>Repeat query hashes.</li>
+<li>Result click-through rate.</li>
+<li>Average clicked rank.</li>
+<li>Searches that lead to script save/analyze/download.</li>
+<li>Filters that cause zero results.</li>
+</ul>
+<h3 id="ai-analytics">AI Analytics</h3>
+<ul>
+<li>Requests by endpoint, model, provider.</li>
+<li>Tokens and cost by endpoint/model/provider.</li>
+<li>p95 latency and error rate.</li>
+<li>Fallback rate.</li>
+<li>Cost per successful script analysis.</li>
+<li>Cost per saved generated script.</li>
+<li>Budget alerts.</li>
+<li>Provider reconciliation delta from OpenAI Costs API.</li>
+</ul>
+<h2 id="implementation-phases">Implementation Phases</h2>
+<h3 id="phase-1-tracking-contract-and-schema">Phase 1: Tracking Contract and Schema</h3>
+<p>Files:</p>
+<ul>
+<li>New migration in <code>supabase/migrations/</code>.</li>
+<li>Optional matching migration in <code>src/db/migrations/</code> for local parity.</li>
+<li>New docs file for event taxonomy if this plan becomes code.</li>
+</ul>
+<p>Tasks:</p>
+<ol>
+<li>Add <code>analytics_events</code>.</li>
+<li>Add indexes and RLS policies.</li>
+<li>Add <code>request_id</code>, <code>session_id</code>, <code>provider</code>, <code>cached_tokens</code>, and <code>fallback_used</code> to <code>ai_metrics</code>.</li>
+<li>Add <code>ANALYTICS_HASH_SECRET</code> to Netlify Functions environment.</li>
+<li>Define event allowlist and property allowlist in code.</li>
+</ol>
+<p>Verify:</p>
+<ul>
+<li>RLS blocks cross-user reads.</li>
+<li>Insert rejects invalid event names.</li>
+<li>Raw prompts, raw queries, and script content are not inserted.</li>
+</ul>
+<h3 id="phase-2-server-side-capture">Phase 2: Server-Side Capture</h3>
+<p>Files:</p>
+<ul>
+<li><code>netlify/functions/api.ts</code></li>
+<li>Possible shared helper under <code>netlify/functions/_shared/analytics.ts</code></li>
+</ul>
+<p>Tasks:</p>
+<ol>
+<li>Add <code>recordAnalyticsEvent</code>.</li>
+<li>Add <code>request_id</code> to AI call flow and <code>ai_metrics</code>.</li>
+<li>Return <code>search_id</code> from script/documentation/example search routes.</li>
+<li>Record searches, zero results, script creates/views/analyses, AI starts/success/failure, and hosted execution attempts.</li>
+<li>Make analytics writes best-effort and non-blocking.</li>
+</ol>
+<p>Verify:</p>
+<ul>
+<li>Existing AI and script routes still return the same user-facing payloads plus additive IDs.</li>
+<li>Analytics write failure does not fail the product request.</li>
+<li>Search response includes <code>search_id</code>.</li>
+</ul>
+<h3 id="phase-3-frontend-ui-events">Phase 3: Frontend UI Events</h3>
+<p>Files:</p>
+<ul>
+<li>New <code>src/frontend/src/services/analytics.ts</code>.</li>
+<li>Search pages, script cards, download/copy controls, AI example viewer.</li>
+</ul>
+<p>Tasks:</p>
+<ol>
+<li>Add <code>analytics.track</code> with batching.</li>
+<li>Capture result clicks with <code>search_id</code>.</li>
+<li>Capture copy/download/export actions.</li>
+<li>Capture filter changes only after debounce.</li>
+</ol>
+<p>Verify:</p>
+<ul>
+<li>Browser never sends raw script content or raw prompt text.</li>
+<li>Events include auth token and fail quietly on network errors.</li>
+</ul>
+<h3 id="phase-4-dashboards-and-api">Phase 4: Dashboards and API</h3>
+<p>Files:</p>
+<ul>
+<li><code>netlify/functions/api.ts</code></li>
+<li><code>src/frontend/src/pages/Analytics.tsx</code></li>
+</ul>
+<p>Tasks:</p>
+<ol>
+<li>Add <code>GET /api/analytics/product/summary</code>.</li>
+<li>Add <code>GET /api/analytics/search/summary</code>.</li>
+<li>Extend existing AI analytics page with provider/cost/search conversion panels.</li>
+<li>Add admin-only cross-user views.</li>
+</ol>
+<p>Verify:</p>
+<ul>
+<li>Normal users only see their analytics.</li>
+<li>Admin sees aggregate analytics through admin-checked Netlify route.</li>
+<li>Queries use indexed filters on <code>user_id</code> and date range.</li>
+</ul>
+<h3 id="phase-5-rollups-retention-reconciliation">Phase 5: Rollups, Retention, Reconciliation</h3>
+<p>Tasks:</p>
+<ol>
+<li>Add Supabase Cron job for materialized view refresh.</li>
+<li>Add retention job for raw event cleanup.</li>
+<li>Add Netlify scheduled function for OpenAI Costs API reconciliation.</li>
+<li>Add alert thresholds for daily/monthly budget and local/provider cost mismatch.</li>
+</ol>
+<p>Retention defaults:</p>
+<table>
+<thead>
+<tr>
+<th>Dataset</th>
+<th>Retention</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Raw <code>analytics_events</code></td>
+<td>90 days</td>
+</tr>
+<tr>
+<td>Raw <code>ai_metrics</code></td>
+<td>180 days</td>
+</tr>
+<tr>
+<td>Daily rollups</td>
+<td>24 months</td>
+</tr>
+<tr>
+<td>Diagnostic opt-in payloads</td>
+<td>7 days</td>
+</tr>
+</tbody>
+</table>
+<h2 id="test-plan">Test Plan</h2>
+<p>Database:</p>
+<ul>
+<li>Migration applies cleanly.</li>
+<li>RLS permits owner reads and blocks another user.</li>
+<li>Indexes support <code>user_id + occurred_at</code>, <code>event_name + occurred_at</code>, <code>script_id + occurred_at</code>, and <code>search_id</code>.</li>
+<li><code>EXPLAIN</code> dashboard queries before shipping.</li>
+</ul>
+<p>Netlify:</p>
+<ul>
+<li><code>POST /api/analytics/events</code> accepts valid batches and rejects unknown event names.</li>
+<li>Script search writes one <code>script_search_performed</code> event.</li>
+<li>Search route returns <code>search_id</code>.</li>
+<li>Script result click writes <code>search_result_clicked</code>.</li>
+<li>AI chat/generate/explain/analyze writes both <code>analytics_events</code> and <code>ai_metrics</code>.</li>
+<li>Analytics write failure is logged but does not fail the original route.</li>
+</ul>
+<p>Frontend:</p>
+<ul>
+<li>Unit tests prove no raw prompt/script/query is sent in analytics events.</li>
+<li>Click/download/copy events include <code>search_id</code> when available.</li>
+<li>Beacon fallback works.</li>
+</ul>
+<p>Hosted:</p>
+<ul>
+<li>Deploy to Netlify.</li>
+<li>Confirm <code>/api/health</code>.</li>
+<li>Run authenticated probes for search, chat, script analyze, download/copy event.</li>
+<li>Confirm rows in Supabase for the admin account.</li>
+<li>Confirm <code>/api/analytics/ai/summary</code> and new product/search summaries return 200.</li>
+</ul>
+<h2 id="acceptance-criteria">Acceptance Criteria</h2>
+<ul>
+<li>Product analytics and AI cost analytics are separate but linkable by <code>request_id</code>.</li>
+<li>Script searches have <code>search_id</code>.</li>
+<li>Clicks/conversions can be attributed to the originating search.</li>
+<li>Zero-result search rate is measurable.</li>
+<li>AI cost by endpoint/model/provider is measurable.</li>
+<li>No raw script content, raw prompts, raw transcripts, or raw search strings are stored in default analytics.</li>
+<li>RLS prevents users from reading other users' raw events.</li>
+<li>Admin dashboards use server-side authorization.</li>
+<li>Dashboard queries do not scan unbounded raw events.</li>
+</ul>
+<h2 id="recommended-first-implementation-slice">Recommended First Implementation Slice</h2>
+<p>Implement this first:</p>
+<ol>
+<li>Add <code>analytics_events</code> migration with RLS and indexes.</li>
+<li>Add <code>recordAnalyticsEvent</code> to Netlify.</li>
+<li>Instrument only:</li>
+<li><code>/api/scripts/search</code></li>
+<li><code>/api/documentation/search</code></li>
+<li><code>/api/chat</code></li>
+<li><code>/api/chat/stream</code></li>
+<li><code>/api/scripts/analyze/assistant</code></li>
+<li><code>/api/scripts/generate</code></li>
+<li><code>/api/scripts/explain</code></li>
+<li>Return <code>search_id</code> from search routes.</li>
+<li>Add a small frontend analytics service for <code>search_result_clicked</code>, <code>script_downloaded</code>, and <code>script_copied</code>.</li>
+<li>Add <code>GET /api/analytics/search/summary</code>.</li>
+</ol>
+<p>This slice gives immediate visibility into the most important behavior: what users search for, whether searches return results, what results they click, what AI routes cost, and whether AI output turns into saved/analyzed scripts.</p>
+    <div class="footer">Generated 2026-04-29 14:08 UTC</div>
+  </div>
+</body>
+</html>

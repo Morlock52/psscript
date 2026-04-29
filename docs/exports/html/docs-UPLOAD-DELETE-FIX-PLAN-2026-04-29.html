@@ -1,0 +1,382 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <base href="file:///Users/morlock/fun/02_PowerShell_Projects/psscript/" />
+  <title>docs-UPLOAD-DELETE-FIX-PLAN-2026-04-29</title>
+  <style>
+:root {
+  color-scheme: light;
+}
+body {
+  font-family: "Segoe UI", "Helvetica Neue", Arial, sans-serif;
+  margin: 0;
+  padding: 0;
+  background: #f4f7fb;
+  color: #0f172a;
+}
+.markdown-body {
+  max-width: 980px;
+  margin: 0 auto;
+  padding: 36px 42px 64px;
+  line-height: 1.65;
+  background: #ffffff;
+  box-shadow: 0 24px 70px rgba(15, 23, 42, 0.08);
+}
+.markdown-body h1 {
+  font-size: 34px;
+  line-height: 1.12;
+  margin-bottom: 12px;
+  color: #07111f;
+  border-bottom: 3px solid #0ea5e9;
+  padding-bottom: 12px;
+  page-break-before: always;
+  page-break-after: avoid;
+  break-before: page;
+  break-after: avoid;
+}
+.markdown-body h1:first-of-type {
+  page-break-before: avoid;
+  break-before: avoid;
+}
+.markdown-body h2 {
+  font-size: 23px;
+  line-height: 1.2;
+  margin-top: 34px;
+  color: #102a43;
+  border-bottom: 1px solid #d7e2ee;
+  padding-bottom: 8px;
+  page-break-after: avoid;
+  break-after: avoid;
+}
+.markdown-body h3 {
+  font-size: 18px;
+  margin-top: 20px;
+  color: #1e3a5f;
+  page-break-after: avoid;
+  break-after: avoid;
+}
+.markdown-body h4, .markdown-body h5, .markdown-body h6 {
+  page-break-after: avoid;
+  break-after: avoid;
+}
+.markdown-body table {
+  width: 100%;
+  border-collapse: collapse;
+  margin: 18px 0 24px;
+  font-size: 13px;
+  page-break-inside: avoid;
+  break-inside: avoid;
+  box-shadow: 0 1px 0 #e2e8f0;
+}
+.markdown-body th,
+.markdown-body td {
+  border: 1px solid #e2e8f0;
+  padding: 9px 11px;
+  text-align: left;
+  vertical-align: top;
+}
+.markdown-body th {
+  background: #eef6ff;
+  color: #0f3157;
+  font-weight: 700;
+}
+.markdown-body tr:nth-child(even) td {
+  background: #fbfdff;
+}
+.markdown-body tr {
+  page-break-inside: avoid;
+  break-inside: avoid;
+}
+.markdown-body code {
+  background: #f1f5f9;
+  padding: 2px 4px;
+  border-radius: 4px;
+  font-family: "SFMono-Regular", Menlo, Consolas, monospace;
+  font-size: 0.92em;
+}
+.markdown-body pre {
+  background: #111827;
+  color: #e5eef8;
+  padding: 16px;
+  border-radius: 10px;
+  overflow-x: auto;
+  border: 1px solid #243244;
+  page-break-inside: avoid;
+  break-inside: avoid;
+}
+.markdown-body pre code {
+  background: transparent;
+  color: inherit;
+}
+.markdown-body blockquote {
+  border-left: 5px solid #0ea5e9;
+  margin: 18px 0;
+  padding: 12px 18px;
+  background: #eff8ff;
+  color: #18324f;
+  border-radius: 0 10px 10px 0;
+}
+.markdown-body img {
+  max-width: 100%;
+  height: auto;
+  display: block;
+  margin: 16px 0;
+  border-radius: 10px;
+  box-shadow: 0 8px 20px rgba(15, 23, 42, 0.12);
+  page-break-inside: avoid;
+  break-inside: avoid;
+}
+.markdown-body figure {
+  page-break-inside: avoid;
+  break-inside: avoid;
+  margin: 16px 0;
+}
+.markdown-body a {
+  color: #2563eb;
+  text-decoration: none;
+}
+.markdown-body a:hover {
+  text-decoration: underline;
+}
+.cover {
+  min-height: 760px;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+  padding: 72px 60px 64px;
+  background:
+    linear-gradient(135deg, rgba(9, 30, 66, 0.96) 0%, rgba(12, 74, 110, 0.94) 54%, rgba(20, 83, 45, 0.9) 100%),
+    radial-gradient(circle at 18% 18%, rgba(14, 165, 233, 0.25), transparent 36%);
+  color: #f8fafc;
+  border-radius: 0;
+  margin: -36px -42px 40px;
+  position: relative;
+  overflow: hidden;
+}
+.cover::before {
+  content: "PSScript";
+  position: absolute;
+  top: 46px;
+  left: 60px;
+  font-size: 12px;
+  font-weight: 800;
+  letter-spacing: 0.24em;
+  text-transform: uppercase;
+  color: rgba(226, 246, 255, 0.82);
+}
+.cover::after {
+  content: "";
+  position: absolute;
+  right: -120px;
+  top: -120px;
+  width: 360px;
+  height: 360px;
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  transform: rotate(28deg);
+}
+.markdown-body .cover-title {
+  font-size: 48px;
+  line-height: 1.04;
+  font-weight: 800;
+  color: #f8fafc;
+  border-bottom: 3px solid #38bdf8;
+  margin: 0 0 16px;
+  max-width: 720px;
+}
+.cover-subtitle {
+  font-size: 20px;
+  line-height: 1.42;
+  color: #dbeafe;
+  margin: 0 0 22px;
+  max-width: 720px;
+}
+.cover-meta {
+  display: inline-block;
+  width: fit-content;
+  font-size: 13px;
+  color: #e0f2fe;
+  background: rgba(255, 255, 255, 0.12);
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  border-radius: 999px;
+  padding: 7px 13px;
+}
+.page-break {
+  page-break-after: always;
+  break-after: page;
+}
+.footer {
+  margin-top: 40px;
+  font-size: 12px;
+  color: #64748b;
+  border-top: 1px solid #e2e8f0;
+  padding-top: 14px;
+}
+/* Print and PDF-specific styles */
+@page {
+  size: A4;
+  margin: 18mm 16mm 20mm;
+}
+@media print {
+  body {
+    background: #ffffff;
+  }
+  .markdown-body {
+    max-width: none;
+    margin: 0;
+    padding: 0;
+    box-shadow: none;
+  }
+  .cover {
+    margin: 0 0 28px;
+  }
+  .markdown-body {
+    orphans: 3;
+    widows: 3;
+  }
+  .markdown-body p {
+    orphans: 3;
+    widows: 3;
+  }
+  .markdown-body li {
+    page-break-inside: avoid;
+    break-inside: avoid;
+  }
+  .markdown-body ul, .markdown-body ol {
+    page-break-before: avoid;
+    break-before: avoid;
+  }
+  .markdown-body blockquote {
+    page-break-inside: avoid;
+    break-inside: avoid;
+  }
+  /* Keep section content together */
+  .markdown-body h2 + *, .markdown-body h3 + * {
+    page-break-before: avoid;
+    break-before: avoid;
+  }
+}
+</style>
+</head>
+<body>
+  <div class="markdown-body">
+    
+    <h1 id="upload-and-delete-fix-plan-april-29-2026">Upload And Delete Fix Plan - April 29, 2026</h1>
+<h2 id="scope">Scope</h2>
+<p>Fix the hosted file upload and script delete issues on the Netlify + Supabase path.</p>
+<h2 id="research-notes">Research Notes</h2>
+<ul>
+<li>Netlify synchronous Functions have a buffered request/response payload limit, and binary request payloads have lower effective capacity because they are base64 encoded before reaching the function runtime.</li>
+<li>Supabase RLS should remain enabled for exposed tables, and delete policies should use explicit ownership checks. The hosted API also enforces ownership/admin checks before issuing SQL.</li>
+</ul>
+<p>References reviewed:</p>
+<ul>
+<li>Netlify Functions limits: https://docs.netlify.com/build/functions/overview/</li>
+<li>Supabase RLS policies: https://supabase.com/docs/guides/database/postgres/row-level-security</li>
+</ul>
+<h2 id="issue-1-upload-fails-in-hosted-mode">Issue 1: Upload Fails In Hosted Mode</h2>
+<h3 id="core-issue">Core issue</h3>
+<p>The upload form currently builds a multipart request containing both:</p>
+<ul>
+<li><code>script_file</code> with the file bytes</li>
+<li><code>content</code> with the full script text</li>
+</ul>
+<p>That duplicates the script payload. On Netlify Functions this is fragile because multipart/binary uploads hit a lower effective payload ceiling than plain text/JSON. The UI also allows sizes that the hosted function cannot reliably accept.</p>
+<h3 id="fix">Fix</h3>
+<ol>
+<li>Prefer JSON upload for PowerShell text content that the browser has already read.</li>
+<li>Keep multipart support in the API for compatibility, but do not require it for normal uploads.</li>
+<li>Add server-side hosted content-size validation with a clear <code>413 upload_too_large</code> error.</li>
+<li>Preserve upload-time AI analysis behavior for both JSON and multipart inputs.</li>
+<li>Return duplicate metadata consistently so the UI can route to the existing script.</li>
+</ol>
+<h2 id="issue-2-delete-appears-successful-when-nothing-was-deleted">Issue 2: Delete Appears Successful When Nothing Was Deleted</h2>
+<h3 id="core-issue_1">Core issue</h3>
+<p>The hosted delete path can return <code>{ success: true, deleted: 0 }</code>. The frontend treats that as success, so not-owned, already-deleted, or inaccessible scripts can look like they were deleted even when the row remains.</p>
+<h3 id="fix_1">Fix</h3>
+<ol>
+<li>Make delete authorization explicit:</li>
+<li>owners can delete their own scripts</li>
+<li>admins can delete any script returned by the hosted API</li>
+<li>Return <code>404 script_not_found_or_not_deletable</code> when no requested script can be deleted.</li>
+<li>For bulk deletes, return <code>requested</code>, <code>deleted</code>, <code>deletedIds</code>, and <code>notDeletedIds</code>.</li>
+<li>Keep child cleanup idempotent and rely on Supabase/Postgres cascades as a safety net.</li>
+<li>Update the frontend success/error handling to report actual delete counts.</li>
+</ol>
+<h2 id="test-plan">Test Plan</h2>
+<ol>
+<li>Add focused frontend service tests for:</li>
+<li>JSON upload payload selection</li>
+<li>duplicate upload metadata propagation</li>
+<li>delete zero-count response handling</li>
+<li>Run frontend unit tests.</li>
+<li>Run frontend build.</li>
+<li>Type-check Netlify function files.</li>
+<li>Deploy to Netlify.</li>
+<li>Run a hosted smoke script:</li>
+<li>create a temporary Supabase auth user</li>
+<li>upload a unique test script through production <code>/api/scripts/upload</code></li>
+<li>verify the script is listed</li>
+<li>delete the script through production <code>/api/scripts/:id</code></li>
+<li>verify the script no longer appears</li>
+<li>create a temporary second script</li>
+<li>clear test data through admin maintenance or direct test cleanup</li>
+<li>delete the temporary auth/profile data created for the test</li>
+</ol>
+<h2 id="clear-test-data-plan">Clear-Test-Data Plan</h2>
+<p>Only records created by the hosted smoke test should be removed automatically. Broad production data wipe is not part of this fix. If the admin Data Maintenance <code>clear-test-data</code> route is exercised, it must run with <code>backupFirst: true</code> and test-only identifiers.</p>
+<h2 id="implementation-results">Implementation Results</h2>
+<p>Completed on April 29, 2026.</p>
+<h3 id="changes-made">Changes Made</h3>
+<ul>
+<li><code>src/frontend/src/pages/ScriptUpload.tsx</code></li>
+<li>Replaced multipart upload construction with a JSON payload for hosted uploads.</li>
+<li>Added a 4MB hosted upload limit in the UI to match the Netlify Functions path.</li>
+<li>Kept upload-time AI analysis behavior through the hosted upload endpoint.</li>
+<li><code>src/frontend/src/services/api.ts</code></li>
+<li>Routed JSON uploads to <code>/scripts/upload</code> instead of <code>/scripts</code>, so hosted upload behavior is consistent for file and pasted content.</li>
+<li>Updated hosted <code>413</code> handling to surface the server's upload-size message.</li>
+<li><code>netlify/functions/api.ts</code></li>
+<li>Added JSON and multipart parsing for <code>/scripts/upload</code>.</li>
+<li>Added server-side PowerShell extension validation and <code>4MB</code> content-size validation.</li>
+<li>Changed single and bulk delete responses to report <code>requested</code>, <code>deleted</code>, <code>deletedIds</code>, and <code>notDeletedIds</code>.</li>
+<li>Changed zero-row delete results to <code>404 script_not_found_or_not_deletable</code>.</li>
+<li>Allowed admins to delete any script while preserving owner-only deletes for normal users.</li>
+<li><code>src/frontend/src/pages/ManageFiles.tsx</code></li>
+<li>Restricted delete selection and delete buttons to script owners and admins.</li>
+<li>Removed optimistic UI deletion before the server confirms the row was deleted.</li>
+<li><code>src/frontend/src/api/__tests__/hostedAiClient.test.ts</code></li>
+<li>Added contract coverage for hosted upload/delete behavior.</li>
+<li><code>scripts/smoke-upload-delete-hosted.mjs</code></li>
+<li>Added a repeatable production smoke that creates a temporary Supabase auth user, uploads/deletes scripts through Netlify, and cleans up only its own test records.</li>
+</ul>
+<h3 id="verification">Verification</h3>
+<ul>
+<li>Focused frontend contract test: passed.</li>
+<li><code>npm test -- --run src/api/__tests__/hostedAiClient.test.ts</code></li>
+<li>Full frontend test suite: passed.</li>
+<li><code>npm run test:frontend</code></li>
+<li>16 test files passed, 110 tests passed.</li>
+<li>Netlify function TypeScript check: passed.</li>
+<li><code>npx tsc --noEmit --target ES2020 --module commonjs --moduleResolution node --esModuleInterop --skipLibCheck --types node --lib ES2022,DOM netlify/functions/api.ts netlify/functions/_shared/auth.ts netlify/functions/_shared/db.ts netlify/functions/_shared/env.ts netlify/functions/_shared/http.ts</code></li>
+<li>Netlify production build: passed.</li>
+<li><code>npm run build:netlify</code></li>
+<li>Netlify deploy: passed.</li>
+<li>Deploy ID: <code>69f18b243b1897b139fb5b9a</code></li>
+<li>Site URL: <code>https://pstest.morloksmaze.com</code></li>
+<li>Hosted health check: passed.</li>
+<li><code>/api/health</code> returned healthy with database connected.</li>
+<li>Hosted upload/delete smoke: passed.</li>
+<li>Uploaded and deleted script IDs <code>18</code>, <code>19</code>, and <code>20</code>.</li>
+<li>Verified repeat delete returns <code>404</code>.</li>
+<li>Test data cleanup: passed.</li>
+<li>Remaining smoke scripts: <code>0</code>.</li>
+<li>Remaining smoke profiles: <code>0</code>.</li>
+</ul>
+<h3 id="notes">Notes</h3>
+<p>The broad Data Maintenance clear route was not used because it is designed to clear whole tables. This fix needed exact cleanup of smoke-test records only, so the smoke script removed only records with its unique title prefix and temporary auth/profile identity.</p>
+    <div class="footer">Generated 2026-04-29 14:08 UTC</div>
+  </div>
+</body>
+</html>

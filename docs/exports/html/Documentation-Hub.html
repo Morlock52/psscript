@@ -269,8 +269,8 @@ body {
   </section>
   
     <h1 id="psscript-documentation-hub">PSScript Documentation Hub</h1>
-<p><em>Last updated: April 27, 2026</em></p>
-<p>This index points to the active documentation set for the current validated repo state.</p>
+<p>Last updated: April 29, 2026.</p>
+<p>This index points to active documentation for the current Netlify + hosted Supabase production state. Archive folders are historical and preserved, but they are not the current runbook.</p>
 <h2 id="start-here">Start Here</h2>
 <table>
 <thead>
@@ -282,47 +282,43 @@ body {
 <tbody>
 <tr>
 <td><a href="../README.md">../README.md</a></td>
-<td>Repo overview, architecture, AI models, validation</td>
+<td>Product overview, architecture, screenshots, validation</td>
 </tr>
 <tr>
 <td><a href="./CURRENT-STATUS-2026-04-24.md">CURRENT-STATUS-2026-04-24.md</a></td>
-<td>Current runtime, QA, deployment, and known caveats</td>
+<td>Current production status, caveats, and verification</td>
 </tr>
 <tr>
 <td><a href="./GETTING-STARTED.md">GETTING-STARTED.md</a></td>
-<td>Local bootstrap and first-run steps</td>
-</tr>
-<tr>
-<td><a href="./SETUP-WITH-SCREENSHOTS.md">SETUP-WITH-SCREENSHOTS.md</a></td>
-<td>Full component setup with screenshots, Supabase, Netlify, AI services, validation, and PDF export</td>
-</tr>
-<tr>
-<td><a href="./REPOSITORY-ORGANIZATION.md">REPOSITORY-ORGANIZATION.md</a></td>
-<td>Active paths, docs taxonomy, and cleanup backlog</td>
-</tr>
-<tr>
-<td><a href="./DATA-MAINTENANCE.md">DATA-MAINTENANCE.md</a></td>
-<td>Admin backup, restore, and cleanup operations</td>
-</tr>
-<tr>
-<td><a href="./README-VOICE-API.md">README-VOICE-API.md</a></td>
-<td>Voice/listening implementation and API behavior</td>
-</tr>
-<tr>
-<td><a href="./AUTHENTICATION-IMPROVEMENTS.md">AUTHENTICATION-IMPROVEMENTS.md</a></td>
-<td>Auth model and local auth-disabled behavior</td>
+<td>Short local/deploy bootstrap</td>
 </tr>
 <tr>
 <td><a href="./NETLIFY-SUPABASE-DEPLOYMENT.md">NETLIFY-SUPABASE-DEPLOYMENT.md</a></td>
-<td>Current hosted Netlify + Supabase deployment path</td>
+<td>Hosted deployment, env vars, redirects, Supabase Auth</td>
 </tr>
 <tr>
-<td><a href="./DEPLOYMENT-PLATFORMS.md">DEPLOYMENT-PLATFORMS.md</a></td>
-<td>Deployment alternatives and legacy split-service notes</td>
+<td><a href="./SETUP-WITH-SCREENSHOTS.md">SETUP-WITH-SCREENSHOTS.md</a></td>
+<td>Full setup guide and screenshots</td>
+</tr>
+<tr>
+<td><a href="./DATA-MAINTENANCE.md">DATA-MAINTENANCE.md</a></td>
+<td>Admin backup, restore, and clear-test-data workflow</td>
+</tr>
+<tr>
+<td><a href="./SUPPORT.md">SUPPORT.md</a></td>
+<td>Production support and escalation</td>
+</tr>
+<tr>
+<td><a href="./PROJECT-TEST-RESULTS-2026-04-28.md">PROJECT-TEST-RESULTS-2026-04-28.md</a></td>
+<td>Latest test and deploy evidence</td>
+</tr>
+<tr>
+<td><a href="./DOCUMENTATION-REFRESH-2026-04-28.md">DOCUMENTATION-REFRESH-2026-04-28.md</a></td>
+<td>Documentation refresh scope, screenshot inventory, and validation</td>
 </tr>
 </tbody>
 </table>
-<h2 id="service-readmes">Service READMEs</h2>
+<h2 id="training">Training</h2>
 <table>
 <thead>
 <tr>
@@ -332,20 +328,36 @@ body {
 </thead>
 <tbody>
 <tr>
-<td><a href="../src/backend/README.md">../src/backend/README.md</a></td>
-<td>Backend routes, middleware, validation</td>
+<td><a href="./training-suite/README.md">training-suite/README.md</a></td>
+<td>Training suite overview</td>
 </tr>
 <tr>
-<td><a href="../src/frontend/README.md">../src/frontend/README.md</a></td>
-<td>Frontend components, pages, state</td>
+<td><a href="./training-suite/TRAINING-GUIDE.md">training-suite/TRAINING-GUIDE.md</a></td>
+<td>End-to-end guided curriculum</td>
 </tr>
 <tr>
-<td><a href="../src/ai/README.md">../src/ai/README.md</a></td>
-<td>AI service, LangGraph, models, guardrails</td>
+<td><a href="./training-suite/modules/module-01-foundations.md">training-suite/modules/module-01-foundations.md</a></td>
+<td>Platform foundations</td>
+</tr>
+<tr>
+<td><a href="./training-suite/modules/module-02-lifecycle.md">training-suite/modules/module-02-lifecycle.md</a></td>
+<td>Script lifecycle</td>
+</tr>
+<tr>
+<td><a href="./training-suite/modules/module-03-analysis.md">training-suite/modules/module-03-analysis.md</a></td>
+<td>AI analysis and PDF export</td>
+</tr>
+<tr>
+<td><a href="./training-suite/modules/module-04-search.md">training-suite/modules/module-04-search.md</a></td>
+<td>Search and discovery</td>
+</tr>
+<tr>
+<td><a href="./training-suite/modules/module-05-operations.md">training-suite/modules/module-05-operations.md</a></td>
+<td>Operations and governance</td>
 </tr>
 </tbody>
 </table>
-<h2 id="april-2026-reviews">April 2026 Reviews</h2>
+<h2 id="reviews-and-plans">Reviews And Plans</h2>
 <table>
 <thead>
 <tr>
@@ -355,24 +367,24 @@ body {
 </thead>
 <tbody>
 <tr>
-<td><a href="../BROWSER_USE_QA.md">../BROWSER_USE_QA.md</a></td>
-<td>Latest Browser Use QA matrix and retest results</td>
+<td><a href="./CODEBASE-REVIEW-2026-04-28.md">CODEBASE-REVIEW-2026-04-28.md</a></td>
+<td>Codebase review findings and risks</td>
 </tr>
 <tr>
-<td><a href="../QA_AI_APP_ISSUES.md">../QA_AI_APP_ISSUES.md</a></td>
-<td>AI/auth/hosted issue log and fixes</td>
+<td><a href="./REPAIR-EXECUTION-PLAN-2026-04-28.md">REPAIR-EXECUTION-PLAN-2026-04-28.md</a></td>
+<td>Repair plan and strategy</td>
 </tr>
 <tr>
-<td><a href="./UI-BRANDING-REFRESH-2026-04-23.md">UI-BRANDING-REFRESH-2026-04-23.md</a></td>
-<td>Current muted PSScript UI brand status</td>
+<td><a href="./REPAIR-TEST-RESULTS-2026-04-28.md">REPAIR-TEST-RESULTS-2026-04-28.md</a></td>
+<td>Post-repair validation results</td>
 </tr>
 <tr>
-<td><a href="./PROJECT-REVIEW-2026-04-01.md">PROJECT-REVIEW-2026-04-01.md</a></td>
-<td>Comprehensive project review: 22 fixes across DB, API, architecture</td>
+<td><a href="./AI-ANALYSIS-CRITERIA-2026-04-26.md">AI-ANALYSIS-CRITERIA-2026-04-26.md</a></td>
+<td>Current AI analysis criteria</td>
 </tr>
 <tr>
-<td><a href="./AI-FUNCTIONS-REVIEW-2026-04-02.md">AI-FUNCTIONS-REVIEW-2026-04-02.md</a></td>
-<td>AI functions audit: model migration, SDK updates, shared client</td>
+<td><a href="./PROJECT-PERFORMANCE-TEST-DESIGN-2026-04-27.md">PROJECT-PERFORMANCE-TEST-DESIGN-2026-04-27.md</a></td>
+<td>Performance test design</td>
 </tr>
 </tbody>
 </table>
@@ -386,46 +398,59 @@ body {
 </thead>
 <tbody>
 <tr>
+<td><a href="./AUTHENTICATION-IMPROVEMENTS.md">AUTHENTICATION-IMPROVEMENTS.md</a></td>
+<td>Auth behavior and approval gate notes</td>
+</tr>
+<tr>
+<td><a href="./DATABASE_DOCUMENTATION.md">DATABASE_DOCUMENTATION.md</a></td>
+<td>Schema reference; hosted Supabase is authoritative</td>
+</tr>
+<tr>
 <td><a href="./LOGIN-CREDENTIALS.md">LOGIN-CREDENTIALS.md</a></td>
-<td>Local auth-mode guidance</td>
+<td>Local/demo credential guidance</td>
 </tr>
 <tr>
 <td><a href="./MANAGEMENT-PLAYBOOK.md">MANAGEMENT-PLAYBOOK.md</a></td>
-<td>Operator runbook</td>
+<td>Operator playbook</td>
 </tr>
 <tr>
-<td><a href="./SUPPORT.md">SUPPORT.md</a></td>
-<td>Support and escalation info</td>
+<td><a href="./REPOSITORY-ORGANIZATION.md">REPOSITORY-ORGANIZATION.md</a></td>
+<td>Repo layout and cleanup notes</td>
+</tr>
+<tr>
+<td><a href="./SECURITY_INCIDENT_RESPONSE.md">SECURITY_INCIDENT_RESPONSE.md</a></td>
+<td>Security response process</td>
 </tr>
 <tr>
 <td><a href="./UPDATES.md">UPDATES.md</a></td>
-<td>Engineering changes and validation history</td>
+<td>Engineering change log</td>
 </tr>
-</tbody>
-</table>
-<h2 id="validation-artifacts">Validation Artifacts</h2>
-<table>
-<thead>
 <tr>
-<th>Document</th>
-<th>Purpose</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td><a href="../BROWSER_USE_QA.md">../BROWSER_USE_QA.md</a></td>
-<td>Browser Use test matrix, pass/fail results, safety skips, and retest notes</td>
+<td><a href="./UPLOAD-WORKFLOW.md">UPLOAD-WORKFLOW.md</a></td>
+<td>Upload behavior and data model notes</td>
 </tr>
 <tr>
 <td><a href="./VOICE-TESTS-1-8-LATEST.md">VOICE-TESTS-1-8-LATEST.md</a></td>
-<td>Latest voice test report</td>
+<td>Latest voice test artifact</td>
 </tr>
 </tbody>
 </table>
-<h2 id="historical-docs">Historical Docs</h2>
-<p>Many files in this folder are historical reports or duplicated workspace artifacts (filenames with <code>(1)</code>).
-Treat those as archive material unless linked from this page or the root README.</p>
-    <div class="footer">Generated 2026-04-27 08:51 UTC</div>
+<h2 id="screenshot-sets">Screenshot Sets</h2>
+<ul>
+<li>Current dated captures: <code>docs/screenshots/current-2026-04-29/</code></li>
+<li>README framed captures: <code>docs/screenshots/readme/</code></li>
+<li>New April 29 feature captures: script editor VS Code export, analysis runtime requirements, and Settings -&gt; Appearance.</li>
+<li>Older screenshot files are preserved for history unless a current doc links to them.</li>
+</ul>
+<h2 id="archives">Archives</h2>
+<p>Previous-run and superseded reports live under:</p>
+<ul>
+<li><code>docs/archive/previous-run-reports-2026-04-28/</code></li>
+<li><code>docs/archive/superseded-reports-2026-04-28/</code></li>
+<li><code>archive/unused-files-2026-04-26/</code></li>
+</ul>
+<p>Do not delete these files. Move newly retired docs into an archive folder with a date.</p>
+    <div class="footer">Generated 2026-04-29 14:08 UTC</div>
   </div>
 </body>
 </html>

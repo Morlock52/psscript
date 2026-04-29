@@ -10,8 +10,10 @@ PSScript is a governed workspace for PowerShell scripts. The current training pa
 
 - Supabase Auth and admin approval
 - script upload, metadata, versioning, delete, and bulk delete
+- hosted script editing and VS Code `.ps1` export
 - full script design and management lifecycle
 - AI analysis using the current criteria payload
+- runtime requirements for PowerShell version, modules, and assemblies
 - PDF analysis export
 - keyword and vector-backed discovery
 - assistant and agentic route aliases
@@ -39,7 +41,8 @@ PSScript is a governed workspace for PowerShell scripts. The current training pa
 | Dashboard | Desktop and mobile cards render without overlap | `../screenshots/readme/dashboard.png` |
 | Scripts | List, filters, delete, bulk selection | `../screenshots/readme/scripts.png` |
 | Upload | File intake, metadata, and hosted 4 MB limit | `../screenshots/readme/upload.png` |
-| Analysis | Scores, criteria, remediation, PDF export | `../screenshots/readme/analysis.png` |
+| Edit | Hosted script editing and VS Code `.ps1` export | `../screenshots/readme/script-edit-vscode.png` |
+| Analysis | Scores, criteria, runtime requirements, remediation, PDF export | `../screenshots/readme/analysis-runtime-requirements.png` |
 | Assistant | `/agentic` resolves to assistant instead of 404 | `../screenshots/readme/agentic-assistant.png` |
 | Settings | Profile and admin surfaces | `../screenshots/readme/settings-profile.png` |
 | Data maintenance | Backup-first admin maintenance | `../screenshots/readme/data-maintenance.png` |
@@ -70,12 +73,14 @@ Do not configure a local database for training. Database-backed exercises use ho
 5. Design a safe test `.ps1` file with purpose, owner, examples, and test expectation.
 6. Upload the script with category, tags, and description.
 7. Open the script detail page.
-8. Run or view AI analysis.
-9. Export the analysis report and confirm the download is a PDF.
-10. Search for the script by keyword and by meaning.
-11. Open `/agentic` and confirm it routes to the assistant.
-12. Open Settings -> Data Maintenance as an admin and review backup controls without running destructive actions.
-13. Delete only disposable test scripts and record cleanup evidence.
+8. Open the edit page, make a safe metadata-only change if the record is disposable, and confirm the **Open in VS Code** export downloads a `.ps1` copy.
+9. Run or view AI analysis.
+10. Read the runtime requirements panel before approving execution.
+11. Export the analysis report and confirm the download is a PDF.
+12. Search for the script by keyword and by meaning.
+13. Open `/agentic` and confirm it routes to the assistant.
+14. Open Settings -> Data Maintenance as an admin and review backup controls without running destructive actions.
+15. Delete only disposable test scripts and record cleanup evidence.
 
 ## Role-Based Paths
 
@@ -92,9 +97,10 @@ Do not configure a local database for training. Database-backed exercises use ho
 ### Lab 01: Upload, Analyze, Export
 
 1. Upload a safe test script.
-2. Review scores and findings.
-3. Export the analysis PDF.
-4. Confirm the file is a PDF, not JSON.
+2. Open the edit page and export a `.ps1` copy for local VS Code review.
+3. Review scores, runtime requirements, and findings.
+4. Export the analysis PDF.
+5. Confirm the file is a PDF, not JSON.
 
 ### Lab 02: Search And Similarity
 
@@ -131,6 +137,8 @@ Do not configure a local database for training. Database-backed exercises use ho
 | Supabase | Auth and database reachable | no auth/DB errors |
 | RLS | disabled users blocked | `403 account_pending_approval` |
 | Export | analysis report download | PDF content type |
+| Edit export | script editor export | `.ps1` file for local VS Code |
+| Runtime requirements | analysis route | PowerShell version and modules/assemblies visible |
 | Mobile | dashboard/navigation readable | no overlap |
 | Data maintenance | backup list/create | admin only |
 | Upload size | hosted upload route | UI blocks files above 4 MB |
@@ -143,6 +151,8 @@ Do not configure a local database for training. Database-backed exercises use ho
 | Pending approval | profile exists but is disabled | admin enables user in Settings -> User Management |
 | `/agentic` 404 | stale deploy or redirect mismatch | redeploy Netlify and verify redirects |
 | Export is JSON | old frontend/API build | redeploy and verify `/api/scripts/:id/export-analysis` headers |
+| Runtime requirements missing | stale frontend deploy or script still loading | verify deploy ID, reload route, and check script content |
+| VS Code export missing | stale frontend deploy or route not loaded | verify `/scripts/:id/edit` and latest assets |
 | Delete fails | auth/ownership/admin mismatch | inspect API response and user role |
 | Data maintenance fails | non-admin user or Supabase route error | check Netlify Function logs and Supabase logs |
 | Mobile overlap | stale frontend deploy | verify latest production deploy and screenshots |

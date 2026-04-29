@@ -2,6 +2,8 @@
 
 This document defines the current PSScript AI analysis output contract for PowerShell script review. The criteria are designed for hosted Netlify execution and hosted Supabase persistence without requiring a database schema migration.
 
+Updated April 29, 2026: the UI now surfaces runtime requirements even when a saved full analysis does not exist yet. The same contract remains backward compatible: runtime details can come from analysis JSON fields, `execution_summary`, or direct script parsing.
+
 ## Research Sources
 
 - Microsoft Learn, PSScriptAnalyzer rules: static PowerShell analysis surfaces common issues as Error, Warning, and Information findings.
@@ -74,15 +76,30 @@ Every new hosted analysis should include:
     }
   ],
   "test_recommendations": [],
+  "required_modules": [],
+  "required_powershell_version": "PowerShell 7+ or Windows PowerShell 5.1 with notes",
   "confidence": 0.75,
   "execution_summary": {
     "what_it_does": "Summary",
     "business_value": "Value",
     "key_actions": [],
+    "required_modules": [],
+    "required_powershell_version": "PowerShell version guidance",
     "operational_risk": "Risk summary"
   }
 }
 ```
+
+## Runtime Requirements Display
+
+The frontend displays a **Runtime Requirements** panel on analysis routes:
+
+- PowerShell version guidance from `requiredPowerShellVersion`, `required_powershell_version`, `runtimeRequirements.powerShellVersion`, `runtime_requirements.powershell_version`, or `execution_summary.required_powershell_version`.
+- Required modules from `requiredModules`, `required_modules`, `runtimeRequirements.modules`, `runtime_requirements.modules`, `execution_summary.required_modules`, or `execution_summary.modules`.
+- Script-derived fallbacks from `#Requires -Version`, `#Requires -PSEdition`, `#Requires -Modules`, `Import-Module`, `Add-Type -AssemblyName`, and common command/module patterns.
+- If full AI analysis is missing, the panel still renders from script content so reviewers can see likely PowerShell version and module/assembly needs before running analysis.
+
+The detector is advisory. Operators should confirm requirements on the target host before production execution, especially for Windows-only assemblies, Active Directory, Exchange, Microsoft Graph, Azure, VMware PowerCLI, or Pester dependencies.
 
 ## Persistence Strategy
 
@@ -93,6 +110,8 @@ The hosted Supabase `script_analysis` table already stores JSONB fields for `com
 - `execution_summary.prioritized_findings`
 - `execution_summary.remediation_plan`
 - `execution_summary.test_recommendations`
+- `execution_summary.required_modules`
+- `execution_summary.required_powershell_version`
 - `execution_summary.confidence`
 
 The Netlify API maps those fields to camelCase for the frontend and the Markdown export.

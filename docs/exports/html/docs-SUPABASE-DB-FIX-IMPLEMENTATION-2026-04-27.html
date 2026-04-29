@@ -1,0 +1,343 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <base href="file:///Users/morlock/fun/02_PowerShell_Projects/psscript/" />
+  <title>docs-SUPABASE-DB-FIX-IMPLEMENTATION-2026-04-27</title>
+  <style>
+:root {
+  color-scheme: light;
+}
+body {
+  font-family: "Segoe UI", "Helvetica Neue", Arial, sans-serif;
+  margin: 0;
+  padding: 0;
+  background: #f4f7fb;
+  color: #0f172a;
+}
+.markdown-body {
+  max-width: 980px;
+  margin: 0 auto;
+  padding: 36px 42px 64px;
+  line-height: 1.65;
+  background: #ffffff;
+  box-shadow: 0 24px 70px rgba(15, 23, 42, 0.08);
+}
+.markdown-body h1 {
+  font-size: 34px;
+  line-height: 1.12;
+  margin-bottom: 12px;
+  color: #07111f;
+  border-bottom: 3px solid #0ea5e9;
+  padding-bottom: 12px;
+  page-break-before: always;
+  page-break-after: avoid;
+  break-before: page;
+  break-after: avoid;
+}
+.markdown-body h1:first-of-type {
+  page-break-before: avoid;
+  break-before: avoid;
+}
+.markdown-body h2 {
+  font-size: 23px;
+  line-height: 1.2;
+  margin-top: 34px;
+  color: #102a43;
+  border-bottom: 1px solid #d7e2ee;
+  padding-bottom: 8px;
+  page-break-after: avoid;
+  break-after: avoid;
+}
+.markdown-body h3 {
+  font-size: 18px;
+  margin-top: 20px;
+  color: #1e3a5f;
+  page-break-after: avoid;
+  break-after: avoid;
+}
+.markdown-body h4, .markdown-body h5, .markdown-body h6 {
+  page-break-after: avoid;
+  break-after: avoid;
+}
+.markdown-body table {
+  width: 100%;
+  border-collapse: collapse;
+  margin: 18px 0 24px;
+  font-size: 13px;
+  page-break-inside: avoid;
+  break-inside: avoid;
+  box-shadow: 0 1px 0 #e2e8f0;
+}
+.markdown-body th,
+.markdown-body td {
+  border: 1px solid #e2e8f0;
+  padding: 9px 11px;
+  text-align: left;
+  vertical-align: top;
+}
+.markdown-body th {
+  background: #eef6ff;
+  color: #0f3157;
+  font-weight: 700;
+}
+.markdown-body tr:nth-child(even) td {
+  background: #fbfdff;
+}
+.markdown-body tr {
+  page-break-inside: avoid;
+  break-inside: avoid;
+}
+.markdown-body code {
+  background: #f1f5f9;
+  padding: 2px 4px;
+  border-radius: 4px;
+  font-family: "SFMono-Regular", Menlo, Consolas, monospace;
+  font-size: 0.92em;
+}
+.markdown-body pre {
+  background: #111827;
+  color: #e5eef8;
+  padding: 16px;
+  border-radius: 10px;
+  overflow-x: auto;
+  border: 1px solid #243244;
+  page-break-inside: avoid;
+  break-inside: avoid;
+}
+.markdown-body pre code {
+  background: transparent;
+  color: inherit;
+}
+.markdown-body blockquote {
+  border-left: 5px solid #0ea5e9;
+  margin: 18px 0;
+  padding: 12px 18px;
+  background: #eff8ff;
+  color: #18324f;
+  border-radius: 0 10px 10px 0;
+}
+.markdown-body img {
+  max-width: 100%;
+  height: auto;
+  display: block;
+  margin: 16px 0;
+  border-radius: 10px;
+  box-shadow: 0 8px 20px rgba(15, 23, 42, 0.12);
+  page-break-inside: avoid;
+  break-inside: avoid;
+}
+.markdown-body figure {
+  page-break-inside: avoid;
+  break-inside: avoid;
+  margin: 16px 0;
+}
+.markdown-body a {
+  color: #2563eb;
+  text-decoration: none;
+}
+.markdown-body a:hover {
+  text-decoration: underline;
+}
+.cover {
+  min-height: 760px;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+  padding: 72px 60px 64px;
+  background:
+    linear-gradient(135deg, rgba(9, 30, 66, 0.96) 0%, rgba(12, 74, 110, 0.94) 54%, rgba(20, 83, 45, 0.9) 100%),
+    radial-gradient(circle at 18% 18%, rgba(14, 165, 233, 0.25), transparent 36%);
+  color: #f8fafc;
+  border-radius: 0;
+  margin: -36px -42px 40px;
+  position: relative;
+  overflow: hidden;
+}
+.cover::before {
+  content: "PSScript";
+  position: absolute;
+  top: 46px;
+  left: 60px;
+  font-size: 12px;
+  font-weight: 800;
+  letter-spacing: 0.24em;
+  text-transform: uppercase;
+  color: rgba(226, 246, 255, 0.82);
+}
+.cover::after {
+  content: "";
+  position: absolute;
+  right: -120px;
+  top: -120px;
+  width: 360px;
+  height: 360px;
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  transform: rotate(28deg);
+}
+.markdown-body .cover-title {
+  font-size: 48px;
+  line-height: 1.04;
+  font-weight: 800;
+  color: #f8fafc;
+  border-bottom: 3px solid #38bdf8;
+  margin: 0 0 16px;
+  max-width: 720px;
+}
+.cover-subtitle {
+  font-size: 20px;
+  line-height: 1.42;
+  color: #dbeafe;
+  margin: 0 0 22px;
+  max-width: 720px;
+}
+.cover-meta {
+  display: inline-block;
+  width: fit-content;
+  font-size: 13px;
+  color: #e0f2fe;
+  background: rgba(255, 255, 255, 0.12);
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  border-radius: 999px;
+  padding: 7px 13px;
+}
+.page-break {
+  page-break-after: always;
+  break-after: page;
+}
+.footer {
+  margin-top: 40px;
+  font-size: 12px;
+  color: #64748b;
+  border-top: 1px solid #e2e8f0;
+  padding-top: 14px;
+}
+/* Print and PDF-specific styles */
+@page {
+  size: A4;
+  margin: 18mm 16mm 20mm;
+}
+@media print {
+  body {
+    background: #ffffff;
+  }
+  .markdown-body {
+    max-width: none;
+    margin: 0;
+    padding: 0;
+    box-shadow: none;
+  }
+  .cover {
+    margin: 0 0 28px;
+  }
+  .markdown-body {
+    orphans: 3;
+    widows: 3;
+  }
+  .markdown-body p {
+    orphans: 3;
+    widows: 3;
+  }
+  .markdown-body li {
+    page-break-inside: avoid;
+    break-inside: avoid;
+  }
+  .markdown-body ul, .markdown-body ol {
+    page-break-before: avoid;
+    break-before: avoid;
+  }
+  .markdown-body blockquote {
+    page-break-inside: avoid;
+    break-inside: avoid;
+  }
+  /* Keep section content together */
+  .markdown-body h2 + *, .markdown-body h3 + * {
+    page-break-before: avoid;
+    break-before: avoid;
+  }
+}
+</style>
+</head>
+<body>
+  <div class="markdown-body">
+    
+    <h1 id="supabase-db-fix-implementation-2026-04-27">Supabase DB Fix Implementation - 2026-04-27</h1>
+<h2 id="scope">Scope</h2>
+<p>This implements the fix package from <code>docs/SUPABASE-DB-REVIEW-2026-04-27.md</code> as local repo changes. It does not apply the migration to hosted Supabase by itself.</p>
+<p>Target production stack:</p>
+<ul>
+<li>Netlify project: <code>psscript</code></li>
+<li>Netlify site ID: <code>a6cb54b5-b3f7-4f01-a756-70b127f07e19</code></li>
+<li>Production URL: <code>https://pstest.morloksmaze.com</code></li>
+<li>Supabase project: <code>picxiqcekyfgjlrknfds</code></li>
+</ul>
+<h2 id="changes-made">Changes Made</h2>
+<ul>
+<li>Added <code>supabase/migrations/20260427_hosted_search_similarity_rls_fixes.sql</code>.</li>
+<li>Added matching local parity migration at <code>src/db/migrations/20260427_hosted_search_similarity_rls_fixes.sql</code>.</li>
+<li>Reworked hosted script search to use <code>websearch_to_tsquery</code>, generated <code>search_vector</code>, rank ordering, and an <code>ILIKE</code> fallback.</li>
+<li>Reworked hosted documentation search to use the same indexed full-text path.</li>
+<li>Replaced the hosted <code>/api/scripts/:id/similar</code> placeholder with pgvector cosine similarity over <code>script_embeddings</code>.</li>
+<li>Changed script embedding writes to <code>ON CONFLICT (script_id) DO UPDATE</code>, so re-analysis refreshes embeddings instead of failing on duplicates.</li>
+<li>Added static regression coverage in <code>src/frontend/src/api/__tests__/hostedAiClient.test.ts</code>.</li>
+</ul>
+<h2 id="migration-contents">Migration Contents</h2>
+<p>The new migration:</p>
+<ul>
+<li>Enables <code>pg_trgm</code> and keeps <code>vector</code> in the <code>extensions</code> schema.</li>
+<li>Adds generated full-text <code>search_vector</code> columns and GIN indexes for <code>scripts</code> and <code>documentation_items</code>.</li>
+<li>Adds trigram indexes for script/document titles and script descriptions.</li>
+<li>Adds dashboard/search indexes for <code>ai_metrics</code>, scripts by owner/update time, public scripts, category/update time, and <code>app_profiles.approved_by</code>.</li>
+<li>Standardizes <code>script_embeddings.embedding_model</code> while preserving legacy <code>model_version</code> data if present.</li>
+<li>Adds an HNSW vector index for <code>script_embeddings.embedding</code>.</li>
+<li>Adds <code>current_app_profile_is_admin()</code>.</li>
+<li>Rewrites direct Supabase RLS policies to use <code>TO authenticated</code> and <code>(SELECT public.current_app_profile_is_enabled())</code> so Supabase can init-plan the stable helper once per statement.</li>
+<li>Limits direct reads of <code>schema_migrations</code> and <code>script_file_hash_duplicate_audit</code> to enabled admins.</li>
+<li>Changes categories, tags, and documentation direct reads from anonymous public access to authenticated enabled users.</li>
+</ul>
+<h2 id="deployment-order">Deployment Order</h2>
+<ol>
+<li>Apply the Supabase migration to project <code>picxiqcekyfgjlrknfds</code>.</li>
+<li>Confirm the migration created:</li>
+<li><code>idx_scripts_search_vector</code></li>
+<li><code>idx_documentation_items_search_vector</code></li>
+<li><code>idx_script_embeddings_hnsw</code></li>
+<li><code>current_app_profile_is_admin()</code></li>
+<li>Deploy Netlify site <code>a6cb54b5-b3f7-4f01-a756-70b127f07e19</code>.</li>
+<li>Verify hosted API and UI.</li>
+</ol>
+<p>The code has a fallback for missing <code>search_vector</code>, but the intended production path is migration first, deploy second.</p>
+<h2 id="verification-checklist">Verification Checklist</h2>
+<ul>
+<li><code>curl https://pstest.morloksmaze.com/api/health</code> returns healthy.</li>
+<li>Authenticated <code>GET /api/scripts/search?q=service</code> returns 200.</li>
+<li>Authenticated <code>GET /api/documentation/search?q=powershell</code> returns 200.</li>
+<li>Authenticated <code>GET /api/scripts/:id/similar</code> returns 200 with <code>similar_scripts</code> and no placeholder.</li>
+<li><code>GET /api/analytics/ai/summary</code> returns 200 for an authenticated user.</li>
+<li>Dashboard, Chat Assistant, Agentic Assistant, AI Agents template chat, voice settings, script analysis, script generation, and explanation still load through Netlify Functions.</li>
+</ul>
+<h2 id="production-application-log">Production Application Log</h2>
+<ul>
+<li>Applied the Supabase migration to project <code>picxiqcekyfgjlrknfds</code>.</li>
+<li>Verified <code>idx_scripts_search_vector</code>, <code>idx_documentation_items_search_vector</code>, <code>idx_script_embeddings_hnsw</code>, <code>current_app_profile_is_admin()</code>, and both generated <code>search_vector</code> columns.</li>
+<li>Deployed Netlify production deploy <code>69eff953e9bcfc82c43b3cad</code>.</li>
+<li>Verified production URL <code>https://pstest.morloksmaze.com</code>.</li>
+<li>Backfilled script embeddings for 7 hosted scripts.</li>
+<li>Verified vector similarity returns results for embedded scripts.</li>
+<li>Confirmed AI Agents chat sends and receives a hosted AI response.</li>
+<li>Confirmed AI metrics captured the hosted chat request at <code>2026-04-28T00:11:40.356Z</code>.</li>
+</ul>
+<h2 id="sources-used">Sources Used</h2>
+<ul>
+<li>Supabase RLS guidance: https://supabase.com/docs/guides/database/postgres/row-level-security</li>
+<li>Supabase query optimization guidance: https://supabase.com/docs/guides/database/query-optimization</li>
+<li>Supabase pgvector/HNSW guidance: https://supabase.com/docs/guides/troubleshooting/increase-vector-lookup-speeds-by-applying-an-hsnw-index-ohLHUM</li>
+<li>PostgreSQL full-text search controls: https://www.postgresql.org/docs/current/textsearch-controls.html</li>
+<li>PostgreSQL <code>pg_trgm</code>: https://www.postgresql.org/docs/current/pgtrgm.html</li>
+<li>Netlify Functions guidance: https://docs.netlify.com/build/functions/overview/</li>
+</ul>
+    <div class="footer">Generated 2026-04-29 14:08 UTC</div>
+  </div>
+</body>
+</html>

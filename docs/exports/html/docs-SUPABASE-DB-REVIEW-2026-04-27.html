@@ -1,0 +1,873 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <base href="file:///Users/morlock/fun/02_PowerShell_Projects/psscript/" />
+  <title>docs-SUPABASE-DB-REVIEW-2026-04-27</title>
+  <style>
+:root {
+  color-scheme: light;
+}
+body {
+  font-family: "Segoe UI", "Helvetica Neue", Arial, sans-serif;
+  margin: 0;
+  padding: 0;
+  background: #f4f7fb;
+  color: #0f172a;
+}
+.markdown-body {
+  max-width: 980px;
+  margin: 0 auto;
+  padding: 36px 42px 64px;
+  line-height: 1.65;
+  background: #ffffff;
+  box-shadow: 0 24px 70px rgba(15, 23, 42, 0.08);
+}
+.markdown-body h1 {
+  font-size: 34px;
+  line-height: 1.12;
+  margin-bottom: 12px;
+  color: #07111f;
+  border-bottom: 3px solid #0ea5e9;
+  padding-bottom: 12px;
+  page-break-before: always;
+  page-break-after: avoid;
+  break-before: page;
+  break-after: avoid;
+}
+.markdown-body h1:first-of-type {
+  page-break-before: avoid;
+  break-before: avoid;
+}
+.markdown-body h2 {
+  font-size: 23px;
+  line-height: 1.2;
+  margin-top: 34px;
+  color: #102a43;
+  border-bottom: 1px solid #d7e2ee;
+  padding-bottom: 8px;
+  page-break-after: avoid;
+  break-after: avoid;
+}
+.markdown-body h3 {
+  font-size: 18px;
+  margin-top: 20px;
+  color: #1e3a5f;
+  page-break-after: avoid;
+  break-after: avoid;
+}
+.markdown-body h4, .markdown-body h5, .markdown-body h6 {
+  page-break-after: avoid;
+  break-after: avoid;
+}
+.markdown-body table {
+  width: 100%;
+  border-collapse: collapse;
+  margin: 18px 0 24px;
+  font-size: 13px;
+  page-break-inside: avoid;
+  break-inside: avoid;
+  box-shadow: 0 1px 0 #e2e8f0;
+}
+.markdown-body th,
+.markdown-body td {
+  border: 1px solid #e2e8f0;
+  padding: 9px 11px;
+  text-align: left;
+  vertical-align: top;
+}
+.markdown-body th {
+  background: #eef6ff;
+  color: #0f3157;
+  font-weight: 700;
+}
+.markdown-body tr:nth-child(even) td {
+  background: #fbfdff;
+}
+.markdown-body tr {
+  page-break-inside: avoid;
+  break-inside: avoid;
+}
+.markdown-body code {
+  background: #f1f5f9;
+  padding: 2px 4px;
+  border-radius: 4px;
+  font-family: "SFMono-Regular", Menlo, Consolas, monospace;
+  font-size: 0.92em;
+}
+.markdown-body pre {
+  background: #111827;
+  color: #e5eef8;
+  padding: 16px;
+  border-radius: 10px;
+  overflow-x: auto;
+  border: 1px solid #243244;
+  page-break-inside: avoid;
+  break-inside: avoid;
+}
+.markdown-body pre code {
+  background: transparent;
+  color: inherit;
+}
+.markdown-body blockquote {
+  border-left: 5px solid #0ea5e9;
+  margin: 18px 0;
+  padding: 12px 18px;
+  background: #eff8ff;
+  color: #18324f;
+  border-radius: 0 10px 10px 0;
+}
+.markdown-body img {
+  max-width: 100%;
+  height: auto;
+  display: block;
+  margin: 16px 0;
+  border-radius: 10px;
+  box-shadow: 0 8px 20px rgba(15, 23, 42, 0.12);
+  page-break-inside: avoid;
+  break-inside: avoid;
+}
+.markdown-body figure {
+  page-break-inside: avoid;
+  break-inside: avoid;
+  margin: 16px 0;
+}
+.markdown-body a {
+  color: #2563eb;
+  text-decoration: none;
+}
+.markdown-body a:hover {
+  text-decoration: underline;
+}
+.cover {
+  min-height: 760px;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+  padding: 72px 60px 64px;
+  background:
+    linear-gradient(135deg, rgba(9, 30, 66, 0.96) 0%, rgba(12, 74, 110, 0.94) 54%, rgba(20, 83, 45, 0.9) 100%),
+    radial-gradient(circle at 18% 18%, rgba(14, 165, 233, 0.25), transparent 36%);
+  color: #f8fafc;
+  border-radius: 0;
+  margin: -36px -42px 40px;
+  position: relative;
+  overflow: hidden;
+}
+.cover::before {
+  content: "PSScript";
+  position: absolute;
+  top: 46px;
+  left: 60px;
+  font-size: 12px;
+  font-weight: 800;
+  letter-spacing: 0.24em;
+  text-transform: uppercase;
+  color: rgba(226, 246, 255, 0.82);
+}
+.cover::after {
+  content: "";
+  position: absolute;
+  right: -120px;
+  top: -120px;
+  width: 360px;
+  height: 360px;
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  transform: rotate(28deg);
+}
+.markdown-body .cover-title {
+  font-size: 48px;
+  line-height: 1.04;
+  font-weight: 800;
+  color: #f8fafc;
+  border-bottom: 3px solid #38bdf8;
+  margin: 0 0 16px;
+  max-width: 720px;
+}
+.cover-subtitle {
+  font-size: 20px;
+  line-height: 1.42;
+  color: #dbeafe;
+  margin: 0 0 22px;
+  max-width: 720px;
+}
+.cover-meta {
+  display: inline-block;
+  width: fit-content;
+  font-size: 13px;
+  color: #e0f2fe;
+  background: rgba(255, 255, 255, 0.12);
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  border-radius: 999px;
+  padding: 7px 13px;
+}
+.page-break {
+  page-break-after: always;
+  break-after: page;
+}
+.footer {
+  margin-top: 40px;
+  font-size: 12px;
+  color: #64748b;
+  border-top: 1px solid #e2e8f0;
+  padding-top: 14px;
+}
+/* Print and PDF-specific styles */
+@page {
+  size: A4;
+  margin: 18mm 16mm 20mm;
+}
+@media print {
+  body {
+    background: #ffffff;
+  }
+  .markdown-body {
+    max-width: none;
+    margin: 0;
+    padding: 0;
+    box-shadow: none;
+  }
+  .cover {
+    margin: 0 0 28px;
+  }
+  .markdown-body {
+    orphans: 3;
+    widows: 3;
+  }
+  .markdown-body p {
+    orphans: 3;
+    widows: 3;
+  }
+  .markdown-body li {
+    page-break-inside: avoid;
+    break-inside: avoid;
+  }
+  .markdown-body ul, .markdown-body ol {
+    page-break-before: avoid;
+    break-before: avoid;
+  }
+  .markdown-body blockquote {
+    page-break-inside: avoid;
+    break-inside: avoid;
+  }
+  /* Keep section content together */
+  .markdown-body h2 + *, .markdown-body h3 + * {
+    page-break-before: avoid;
+    break-before: avoid;
+  }
+}
+</style>
+</head>
+<body>
+  <div class="markdown-body">
+    
+    <h1 id="supabase-database-configuration-schema-test-log-and-fix-plan">Supabase Database Configuration, Schema, Test Log, and Fix Plan</h1>
+<p><strong>Date:</strong> April 27, 2026<br />
+<strong>Requested freshness target:</strong> April 26, 2026<br />
+<strong>Project:</strong> PSScript<br />
+<strong>Hosted app:</strong> https://pstest.morloksmaze.com<br />
+<strong>Netlify site:</strong> <code>psscript</code> / <code>a6cb54b5-b3f7-4f01-a756-70b127f07e19</code><br />
+<strong>Supabase project referenced by prior setup:</strong> <code>picxiqcekyfgjlrknfds</code></p>
+<h2 id="sources-and-tools-used">Sources and Tools Used</h2>
+<ul>
+<li>Supabase Postgres best-practices skill: <code>build-web-apps:supabase-postgres-best-practices</code></li>
+<li>Netlify connector: confirmed project/deploy state</li>
+<li>Computer Use: confirmed production app browser state</li>
+<li>Live Supabase/Postgres read-only metadata probes through <code>DATABASE_URL</code></li>
+<li>Existing Jest tests for DB runtime compatibility, AI analytics routes, and admin DB route behavior</li>
+<li>Supabase RLS docs: https://supabase.com/docs/guides/database/postgres/row-level-security</li>
+<li>Supabase query optimization docs: https://supabase.com/docs/guides/database/query-optimization</li>
+<li>Supabase connection pooling docs: https://supabase.com/docs/guides/database/connecting-to-postgres#connection-pooler</li>
+<li>Supabase pg_stat_statements docs: https://supabase.com/docs/guides/database/extensions/pg_stat_statements</li>
+<li>Supabase pgvector docs: https://supabase.com/docs/guides/database/extensions/pgvector</li>
+<li>Supabase Cron docs: https://supabase.com/docs/guides/cron</li>
+<li>PostgreSQL materialized view docs: https://www.postgresql.org/docs/current/rules-materializedviews.html</li>
+<li>Netlify Functions environment docs: https://docs.netlify.com/functions/environment-variables/</li>
+</ul>
+<h2 id="netlify-and-browser-confirmation">Netlify and Browser Confirmation</h2>
+<p>Netlify connector returned:</p>
+<ul>
+<li>Project name: <code>psscript</code></li>
+<li>Site ID: <code>a6cb54b5-b3f7-4f01-a756-70b127f07e19</code></li>
+<li>Primary URL: <code>https://pstest.morloksmaze.com</code></li>
+<li>Current deploy: <code>69efe2d9eb552c3ef21786ee</code></li>
+<li>Deploy state: <code>ready</code></li>
+<li>Project access controls: no site password, no SSO team login requirement</li>
+</ul>
+<p>Computer Use confirmed Chrome is on <code>pstest.morloksmaze.com/ai/agents</code>, the app is logged in, the Agent Orchestration chat page renders, and Voice Copilot is visible.</p>
+<h2 id="configuration-inventory">Configuration Inventory</h2>
+<p>Local env files found:</p>
+<ul>
+<li><code>.env</code></li>
+<li><code>.env.example</code></li>
+<li><code>src/backend/.env</code></li>
+<li><code>src/backend/.env.example</code></li>
+<li><code>src/frontend/.env</code></li>
+<li><code>src/ai-service/.env.template</code></li>
+</ul>
+<p>Sensitive values were not printed. Relevant keys are present locally:</p>
+<ul>
+<li><code>DATABASE_URL</code></li>
+<li><code>SUPABASE_URL</code></li>
+<li><code>SUPABASE_ANON_KEY</code></li>
+<li><code>SUPABASE_SERVICE_ROLE_KEY</code></li>
+<li><code>VITE_SUPABASE_URL</code> / <code>VITE_SUPABASE_ANON_KEY</code> in examples</li>
+<li>legacy <code>POSTGRES_*</code> local Docker variables, which are no longer part of the active production path</li>
+<li><code>JWT_SECRET</code></li>
+<li><code>OPENAI_API_KEY</code>, <code>ANTHROPIC_API_KEY</code></li>
+</ul>
+<p>Netlify Function DB config:</p>
+<ul>
+<li><code>netlify/functions/_shared/db.ts</code> uses <code>pg.Pool</code></li>
+<li>Default <code>DB_POOL_MAX</code> is <code>3</code></li>
+<li>SSL defaults to enabled</li>
+<li><code>DB_SSL_REJECT_UNAUTHORIZED</code> defaults to <code>true</code></li>
+<li>Optional <code>DB_SSL_CA</code> / <code>DB_SSL_CA_PATH</code> are supported</li>
+</ul>
+<p>Frontend Supabase auth config:</p>
+<ul>
+<li><code>src/frontend/src/services/supabase.ts</code> requires <code>VITE_SUPABASE_URL</code> and <code>VITE_SUPABASE_ANON_KEY</code></li>
+<li>Hosted remote app fails closed when those are missing</li>
+<li>Localhost can use disabled auth only when explicitly configured</li>
+</ul>
+<h2 id="live-database-connection-result">Live Database Connection Result</h2>
+<p>First strict TLS probe failed:</p>
+<pre><code class="language-text">SELF_SIGNED_CERT_IN_CHAIN
+</code></pre>
+<p>Then a metadata-only fallback probe used encrypted SSL with certificate verification disabled. That fallback is acceptable for this review log only, not a recommended production posture.</p>
+<p>Live DB metadata:</p>
+<ul>
+<li>Host kind: Supabase pooler</li>
+<li>Database: <code>postgres</code></li>
+<li>Server version: PostgreSQL <code>17.6</code></li>
+<li>Search path: <code>"$user", public, extensions</code></li>
+<li>Extensions:</li>
+<li><code>vector</code> <code>0.8.0</code> in <code>extensions</code></li>
+<li><code>pgcrypto</code> in <code>extensions</code></li>
+<li><code>pg_stat_statements</code> in <code>extensions</code></li>
+<li><code>uuid-ossp</code> in <code>extensions</code></li>
+</ul>
+<h2 id="hosted-tables-confirmed">Hosted Tables Confirmed</h2>
+<p>Expected hosted app tables present:</p>
+<table>
+<thead>
+<tr>
+<th>Table</th>
+<th>Exists</th>
+<th>RLS</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>app_profiles</code></td>
+<td>yes</td>
+<td>enabled</td>
+</tr>
+<tr>
+<td><code>categories</code></td>
+<td>yes</td>
+<td>enabled</td>
+</tr>
+<tr>
+<td><code>tags</code></td>
+<td>yes</td>
+<td>enabled</td>
+</tr>
+<tr>
+<td><code>scripts</code></td>
+<td>yes</td>
+<td>enabled</td>
+</tr>
+<tr>
+<td><code>script_versions</code></td>
+<td>yes</td>
+<td>enabled</td>
+</tr>
+<tr>
+<td><code>script_tags</code></td>
+<td>yes</td>
+<td>enabled</td>
+</tr>
+<tr>
+<td><code>script_analysis</code></td>
+<td>yes</td>
+<td>enabled</td>
+</tr>
+<tr>
+<td><code>script_embeddings</code></td>
+<td>yes</td>
+<td>enabled</td>
+</tr>
+<tr>
+<td><code>chat_history</code></td>
+<td>yes</td>
+<td>enabled</td>
+</tr>
+<tr>
+<td><code>ai_metrics</code></td>
+<td>yes</td>
+<td>enabled</td>
+</tr>
+<tr>
+<td><code>documentation_items</code></td>
+<td>yes</td>
+<td>enabled</td>
+</tr>
+<tr>
+<td><code>hosted_artifacts</code></td>
+<td>yes</td>
+<td>enabled</td>
+</tr>
+<tr>
+<td><code>script_file_hash_duplicate_audit</code></td>
+<td>yes</td>
+<td>enabled</td>
+</tr>
+<tr>
+<td><code>schema_migrations</code></td>
+<td>yes</td>
+<td>enabled</td>
+</tr>
+<tr>
+<td><code>analytics_events</code></td>
+<td>no</td>
+<td>not implemented</td>
+</tr>
+</tbody>
+</table>
+<p>Row counts from live read-only probe:</p>
+<table>
+<thead>
+<tr>
+<th>Table</th>
+<th style="text-align: right;">Rows</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>app_profiles</code></td>
+<td style="text-align: right;">3</td>
+</tr>
+<tr>
+<td><code>categories</code></td>
+<td style="text-align: right;">13</td>
+</tr>
+<tr>
+<td><code>tags</code></td>
+<td style="text-align: right;">3</td>
+</tr>
+<tr>
+<td><code>scripts</code></td>
+<td style="text-align: right;">7</td>
+</tr>
+<tr>
+<td><code>script_versions</code></td>
+<td style="text-align: right;">3</td>
+</tr>
+<tr>
+<td><code>script_tags</code></td>
+<td style="text-align: right;">0</td>
+</tr>
+<tr>
+<td><code>script_analysis</code></td>
+<td style="text-align: right;">5</td>
+</tr>
+<tr>
+<td><code>script_embeddings</code></td>
+<td style="text-align: right;">0</td>
+</tr>
+<tr>
+<td><code>chat_history</code></td>
+<td style="text-align: right;">0</td>
+</tr>
+<tr>
+<td><code>ai_metrics</code></td>
+<td style="text-align: right;">6</td>
+</tr>
+<tr>
+<td><code>documentation_items</code></td>
+<td style="text-align: right;">10</td>
+</tr>
+<tr>
+<td><code>hosted_artifacts</code></td>
+<td style="text-align: right;">0</td>
+</tr>
+<tr>
+<td><code>script_file_hash_duplicate_audit</code></td>
+<td style="text-align: right;">0</td>
+</tr>
+</tbody>
+</table>
+<h2 id="migration-state">Migration State</h2>
+<p>The live <code>schema_migrations</code> table exists and contains these app migration names:</p>
+<ul>
+<li><code>04_create_chat_history_table.sql</code></li>
+<li><code>20260412_create_ai_metrics_table.sql</code></li>
+<li><code>20260426_supabase_runtime_compatibility.sql</code></li>
+<li><code>20260412_fix_script_analysis_score_types.sql</code></li>
+<li><code>20260426_supabase_advisor_fixes.sql</code></li>
+<li><code>20260426_z_google_oauth_approval_gate.sql</code></li>
+</ul>
+<p>There are migrations in <code>supabase/migrations/</code> that are part of the hosted schema source:</p>
+<ul>
+<li><code>20260424_hosted_schema.sql</code></li>
+<li><code>20260425_scripts_file_hash_uniqueness.sql</code></li>
+<li><code>20260425_user_management_schema_fixes.sql</code></li>
+<li><code>20260426_supabase_advisor_fixes.sql</code></li>
+<li><code>20260426_z_google_oauth_approval_gate.sql</code></li>
+</ul>
+<p>There are also local/legacy migrations in <code>src/db/migrations/</code>. The project currently has two schema tracks: hosted Supabase UUID/app_profiles and local legacy integer/users.</p>
+<h2 id="rls-and-policy-review">RLS and Policy Review</h2>
+<p>Good:</p>
+<ul>
+<li>All expected hosted public tables have RLS enabled.</li>
+<li>Owner/public script access is enforced in table policies.</li>
+<li>Disabled Google users are blocked with <code>current_app_profile_is_enabled()</code>.</li>
+<li><code>auth.uid()</code> is mostly wrapped as <code>(select auth.uid())</code> in the newer OAuth approval migration, matching Supabase RLS performance recommendations.</li>
+<li><code>current_app_profile_is_enabled()</code> is <code>SECURITY DEFINER</code> with explicit <code>search_path</code>.</li>
+</ul>
+<p>Issues:</p>
+<ul>
+<li><code>schema_migrations</code> has RLS enabled but no policies.</li>
+<li><code>script_file_hash_duplicate_audit</code> has RLS enabled but no policies.</li>
+<li>Several policies call <code>public.current_app_profile_is_enabled()</code> directly instead of wrapping it as <code>(select public.current_app_profile_is_enabled())</code>. Supabase recommends wrapping stable helper functions in a subquery to avoid per-row execution.</li>
+<li>Policies are created for <code>{public}</code> role. The expressions protect user data, but using explicit <code>to authenticated</code> is clearer and safer for private user tables.</li>
+<li><code>documentation_items</code> is readable by everyone. This is acceptable only if documentation content is intentionally public and never includes private/customer script details.</li>
+</ul>
+<h2 id="index-and-query-review">Index and Query Review</h2>
+<p>Good:</p>
+<ul>
+<li>Foreign key columns are mostly indexed.</li>
+<li><code>script_analysis.script_id</code> is covered by its unique constraint.</li>
+<li><code>scripts.user_id</code>, <code>scripts.category_id</code>, and file hash indexes exist.</li>
+<li><code>script_embeddings</code> has a vector index.</li>
+<li><code>chat_history</code> has an HNSW vector index.</li>
+<li><code>pg_stat_statements</code> is enabled for query monitoring.</li>
+</ul>
+<p>Issues:</p>
+<ul>
+<li>Missing FK index: <code>app_profiles.approved_by</code>.</li>
+<li><code>scripts</code> lacks a composite or partial index for the production query shape:</li>
+<li><code>WHERE user_id = $1 OR is_public = true ORDER BY updated_at DESC LIMIT ...</code></li>
+<li><code>scripts</code> keyword search uses <code>ILIKE</code> across <code>title</code>, <code>description</code>, and <code>content</code>; this will not scale without full-text or trigram indexes.</li>
+<li><code>documentation_items</code> search uses <code>ILIKE</code> across <code>title</code> and <code>content</code>; live DB has only the vector index and primary key for this table.</li>
+<li><code>ai_metrics</code> analytics filters by <code>created_at</code> plus <code>user_id</code>, but only has separate single-column indexes. A composite <code>(user_id, created_at desc)</code> index will match dashboard queries better.</li>
+<li><code>script_embeddings</code> and <code>documentation_items</code> use IVFFlat indexes. With pgvector <code>0.8.0</code>, HNSW is usually the better default for incremental inserts. IVFFlat should be created after enough data exists or reindexed after backfill.</li>
+</ul>
+<p>Read-only <code>EXPLAIN</code> summary:</p>
+<ul>
+<li>Script list/search and documentation search plans show sort nodes and are currently cheap only because data volume is tiny.</li>
+<li>AI metrics summary uses <code>idx_ai_metrics_created_at</code> plus filter on user/null; this should become a composite or partial-indexed query before metric volume grows.</li>
+</ul>
+<h2 id="schema-drift">Schema Drift</h2>
+<p>The hosted DB has:</p>
+<ul>
+<li><code>script_embeddings.embedding_model</code></li>
+</ul>
+<p>The local base schema has:</p>
+<ul>
+<li><code>script_embeddings.embedding_type</code></li>
+<li><code>script_embeddings.model_version</code></li>
+</ul>
+<p>Netlify code writes <code>embedding_model</code>, so hosted runtime is aligned with production, but the local base schema is not aligned with hosted. This is a source of future migration confusion.</p>
+<h2 id="functional-data-gaps">Functional Data Gaps</h2>
+<ul>
+<li><code>script_embeddings</code> has <code>0</code> rows while <code>scripts</code> has <code>7</code> rows.</li>
+<li><code>/api/scripts/:id/similar</code> in Netlify currently returns an empty hosted placeholder.</li>
+<li>Current hosted upload attempts to generate embeddings, but existing scripts are not backfilled.</li>
+<li><code>chat_history</code> has <code>0</code> rows; hosted chat works but persistence is not currently populated through the Netlify chat path.</li>
+<li><code>analytics_events</code> does not exist yet, which matches the separate analytics capture plan but is still a missing table for script/search product analytics.</li>
+</ul>
+<h2 id="hosted-api-probe">Hosted API Probe</h2>
+<p>Unauthenticated hosted route probe:</p>
+<table>
+<thead>
+<tr>
+<th>Route</th>
+<th style="text-align: right;">Status</th>
+<th>Interpretation</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>/api/health</code></td>
+<td style="text-align: right;">200</td>
+<td>Hosted function and basic env checks respond</td>
+</tr>
+<tr>
+<td><code>/api/analytics/summary</code></td>
+<td style="text-align: right;">401</td>
+<td>Correctly auth-gated</td>
+</tr>
+<tr>
+<td><code>/api/analytics/usage</code></td>
+<td style="text-align: right;">401</td>
+<td>Correctly auth-gated</td>
+</tr>
+<tr>
+<td><code>/api/analytics/security</code></td>
+<td style="text-align: right;">401</td>
+<td>Correctly auth-gated</td>
+</tr>
+<tr>
+<td><code>/api/analytics/categories</code></td>
+<td style="text-align: right;">401</td>
+<td>Correctly auth-gated</td>
+</tr>
+<tr>
+<td><code>/api/analytics/ai/summary</code></td>
+<td style="text-align: right;">401</td>
+<td>Correctly auth-gated</td>
+</tr>
+</tbody>
+</table>
+<h2 id="test-log">Test Log</h2>
+<p>Read-only/mocked backend DB-related tests:</p>
+<pre><code class="language-text">PATH=/opt/homebrew/bin:$PATH npm test -- --runInBand \
+  src/__tests__/database.runtime-compatibility.test.ts \
+  src/routes/__tests__/analytics-ai.test.ts \
+  src/routes/__tests__/admin-db.test.ts
+</code></pre>
+<p>Result:</p>
+<ul>
+<li>3 test suites passed</li>
+<li>16 tests passed</li>
+</ul>
+<p>The opt-in live integration suite <code>RUN_DB_TESTS=true jest</code> was not run because it creates and deletes database rows. That is not appropriate against the hosted Supabase DB without explicit action-time confirmation.</p>
+<p>CLI notes:</p>
+<ul>
+<li><code>npx supabase --version</code> and <code>npx netlify env:list --plain</code> did not return output in this desktop session and were stopped.</li>
+<li>Netlify connector was used instead for project/deploy state.</li>
+</ul>
+<h2 id="issues-list">Issues List</h2>
+<h3 id="p1-strict-local-tls-verification-fails-for-database_url">P1: Strict local TLS verification fails for <code>DATABASE_URL</code></h3>
+<p>Evidence: Node <code>pg</code> read-only probe failed with <code>SELF_SIGNED_CERT_IN_CHAIN</code> when <code>rejectUnauthorized</code> was true.</p>
+<p>Risk: Local and Netlify environments can drift. If Netlify does not have a valid CA path/value, server-side DB connections may fail under stricter SSL.</p>
+<p>Fix:</p>
+<ul>
+<li>Add the Supabase pooler CA to <code>DB_SSL_CA</code> or <code>DB_SSL_CA_PATH</code>.</li>
+<li>Keep <code>DB_SSL_REJECT_UNAUTHORIZED=true</code> in production.</li>
+<li>Add a startup health check that fails if production connects only with certificate verification disabled.</li>
+</ul>
+<h3 id="p1-search-tables-are-not-indexed-for-current-search-behavior">P1: Search tables are not indexed for current search behavior</h3>
+<p>Evidence:</p>
+<ul>
+<li><code>/scripts/search</code> uses <code>ILIKE</code> over title/description/content.</li>
+<li><code>/documentation/search</code> uses <code>ILIKE</code> over title/content.</li>
+<li>Live <code>documentation_items</code> lacks GIN/trigram/full-text indexes.</li>
+</ul>
+<p>Risk: Search becomes slow and expensive as scripts/docs grow.</p>
+<p>Fix:</p>
+<ul>
+<li>Add <code>pg_trgm</code> or generated <code>tsvector</code> columns.</li>
+<li>Prefer full-text search for documents and scripts, with trigram for fuzzy fallback.</li>
+<li>Add date/order indexes for search result ordering.</li>
+</ul>
+<h3 id="p1-script-embeddings-are-empty-and-similar-script-hosted-route-is-still-placeholder">P1: Script embeddings are empty and similar-script hosted route is still placeholder</h3>
+<p>Evidence:</p>
+<ul>
+<li><code>scripts</code>: 7 rows.</li>
+<li><code>script_embeddings</code>: 0 rows.</li>
+<li>Netlify <code>/scripts/:id/similar</code> returns an empty array placeholder.</li>
+</ul>
+<p>Risk: Semantic search/similar script features appear present but do not work end-to-end.</p>
+<p>Fix:</p>
+<ul>
+<li>Backfill embeddings for existing scripts.</li>
+<li>Add <code>ON CONFLICT (script_id) DO UPDATE</code> to embedding save.</li>
+<li>Implement hosted <code>/scripts/:id/similar</code> using pgvector with owner/public filtering.</li>
+<li>Add metrics for embedding generation failures.</li>
+</ul>
+<h3 id="p1-schema-drift-between-hosted-and-local-script-embedding-columns">P1: Schema drift between hosted and local script embedding columns</h3>
+<p>Evidence:</p>
+<ul>
+<li>Hosted DB has <code>embedding_model</code>.</li>
+<li>Local base schema has <code>embedding_type</code> and <code>model_version</code>.</li>
+<li>Netlify writes <code>embedding_model</code>.</li>
+</ul>
+<p>Risk: New environments created from the wrong schema fail embedding writes or carry inconsistent metadata.</p>
+<p>Fix:</p>
+<ul>
+<li>Standardize on one column name, preferably <code>embedding_model</code>.</li>
+<li>Add compatibility migration to local schema.</li>
+<li>Update docs and tests to expect the hosted shape.</li>
+</ul>
+<h3 id="p2-app_profilesapproved_by-fk-lacks-an-index">P2: <code>app_profiles.approved_by</code> FK lacks an index</h3>
+<p>Evidence: Missing-FK-index heuristic found <code>app_profiles.approved_by</code>.</p>
+<p>Risk: Admin approval queries/deletes can become slower at scale.</p>
+<p>Fix:</p>
+<pre><code class="language-sql">create index if not exists idx_app_profiles_approved_by
+  on public.app_profiles(approved_by)
+  where approved_by is not null;
+</code></pre>
+<h3 id="p2-rls-helper-should-be-wrapped-consistently">P2: RLS helper should be wrapped consistently</h3>
+<p>Evidence: Policies call <code>public.current_app_profile_is_enabled()</code> directly.</p>
+<p>Risk: Potential per-row function execution overhead on large tables.</p>
+<p>Fix:</p>
+<ul>
+<li>Replace direct calls in policies with <code>(select public.current_app_profile_is_enabled())</code>.</li>
+<li>Keep helper <code>SECURITY DEFINER</code> and explicit <code>search_path</code>.</li>
+</ul>
+<h3 id="p2-rls-enabled-maintenance-tables-have-no-policies">P2: RLS-enabled maintenance tables have no policies</h3>
+<p>Evidence:</p>
+<ul>
+<li><code>schema_migrations</code></li>
+<li><code>script_file_hash_duplicate_audit</code></li>
+</ul>
+<p>Risk: This is secure-by-default for direct clients but should be intentional and documented. It may surprise admin tooling if direct reads are expected.</p>
+<p>Fix:</p>
+<ul>
+<li>Either document them as server-only/no direct access, or add admin-only SELECT policies backed by a security-definer admin check.</li>
+</ul>
+<h3 id="p2-ai_metrics-needs-dashboard-oriented-composite-indexes">P2: <code>ai_metrics</code> needs dashboard-oriented composite indexes</h3>
+<p>Evidence: Analytics summary scans by date and filters by user/null.</p>
+<p>Fix:</p>
+<pre><code class="language-sql">create index if not exists idx_ai_metrics_user_created
+  on public.ai_metrics(user_id, created_at desc);
+
+create index if not exists idx_ai_metrics_global_created
+  on public.ai_metrics(created_at desc)
+  where user_id is null;
+</code></pre>
+<h3 id="p2-product-analytics-table-is-missing">P2: Product analytics table is missing</h3>
+<p>Evidence: <code>analytics_events</code> does not exist.</p>
+<p>Risk: Script/search behavior cannot be measured beyond AI provider costs.</p>
+<p>Fix: Implement <code>analytics_events</code> using the hosted Netlify + Supabase pattern described in current architecture docs. The older analytics capture plan is archived for history.</p>
+<h3 id="p3-public-read-policies-need-explicit-product-decision">P3: Public read policies need explicit product decision</h3>
+<p>Evidence:</p>
+<ul>
+<li><code>categories</code>: readable by everyone.</li>
+<li><code>tags</code>: readable by everyone.</li>
+<li><code>documentation_items</code>: readable by everyone.</li>
+</ul>
+<p>Risk: Fine for public metadata, risky if documentation imports ever contain customer/private content.</p>
+<p>Fix:</p>
+<ul>
+<li>Keep categories/tags public if intended.</li>
+<li>Move documentation to authenticated read if content may contain private imported docs.</li>
+</ul>
+<h2 id="complete-project-fix-plan">Complete Project Fix Plan</h2>
+<h3 id="phase-1-lock-db-connection-and-schema-drift">Phase 1: Lock DB Connection and Schema Drift</h3>
+<ol>
+<li>Add Supabase CA config for strict TLS in local and Netlify.</li>
+<li>Add a read-only health check that confirms strict TLS works.</li>
+<li>Standardize <code>script_embeddings</code> metadata columns on <code>embedding_model</code>.</li>
+<li>Add tests for hosted schema column names.</li>
+</ol>
+<p>Verify:</p>
+<ul>
+<li>Strict TLS metadata probe succeeds.</li>
+<li><code>/api/health</code> remains 200.</li>
+<li>Netlify deploy logs show no DB TLS warnings.</li>
+<li><code>script_embeddings</code> insert works in a focused test.</li>
+</ul>
+<h3 id="phase-2-search-and-index-fixes">Phase 2: Search and Index Fixes</h3>
+<ol>
+<li>Add <code>pg_trgm</code> or full-text search support.</li>
+<li>Add script search indexes:</li>
+</ol>
+<pre><code class="language-sql">create extension if not exists pg_trgm with schema extensions;
+
+create index if not exists idx_scripts_user_updated
+  on public.scripts(user_id, updated_at desc);
+
+create index if not exists idx_scripts_public_updated
+  on public.scripts(updated_at desc)
+  where is_public = true;
+
+create index if not exists idx_scripts_title_trgm
+  on public.scripts using gin (title extensions.gin_trgm_ops);
+
+create index if not exists idx_scripts_description_trgm
+  on public.scripts using gin (description extensions.gin_trgm_ops);
+</code></pre>
+<ol>
+<li>Add documentation search indexes:</li>
+</ol>
+<pre><code class="language-sql">create index if not exists idx_documentation_items_updated
+  on public.documentation_items(updated_at desc);
+
+create index if not exists idx_documentation_items_title_trgm
+  on public.documentation_items using gin (title extensions.gin_trgm_ops);
+
+create index if not exists idx_documentation_items_content_trgm
+  on public.documentation_items using gin (content extensions.gin_trgm_ops);
+</code></pre>
+<p>Verify:</p>
+<ul>
+<li><code>EXPLAIN</code> for script and documentation searches uses indexes at realistic row counts.</li>
+<li>Existing search UI still returns the same response shape.</li>
+</ul>
+<h3 id="phase-3-semantic-search-completion">Phase 3: Semantic Search Completion</h3>
+<ol>
+<li>Backfill <code>script_embeddings</code> for all existing scripts.</li>
+<li>Add <code>ON CONFLICT (script_id) DO UPDATE</code> to hosted embedding save.</li>
+<li>Replace <code>/scripts/:id/similar</code> placeholder with pgvector query.</li>
+<li>Prefer HNSW for live incremental vector indexes on pgvector 0.8.0.</li>
+</ol>
+<p>Verify:</p>
+<ul>
+<li><code>script_embeddings</code> count matches scripts with non-empty content.</li>
+<li><code>/api/scripts/:id/similar</code> returns owner/public filtered results.</li>
+<li>A private script cannot discover another user's private script through similarity search.</li>
+</ul>
+<h3 id="phase-4-rls-and-policy-cleanup">Phase 4: RLS and Policy Cleanup</h3>
+<ol>
+<li>Add <code>idx_app_profiles_approved_by</code>.</li>
+<li>Wrap <code>current_app_profile_is_enabled()</code> in <code>select</code> inside policies.</li>
+<li>Convert private-table policies from implicit <code>{public}</code> to explicit <code>to authenticated</code>.</li>
+<li>Decide and document whether <code>documentation_items</code> is public or authenticated.</li>
+<li>Add admin-only policy or explicit server-only documentation for <code>schema_migrations</code> and duplicate audit table.</li>
+</ol>
+<p>Verify:</p>
+<ul>
+<li>Owner can read own script and analysis.</li>
+<li>Disabled Google account cannot read/write app tables.</li>
+<li>Other user cannot read private scripts/analysis/embeddings.</li>
+<li>Public scripts remain readable if that product behavior is intended.</li>
+</ul>
+<h3 id="phase-5-analytics-schema">Phase 5: Analytics Schema</h3>
+<ol>
+<li>Add <code>analytics_events</code>.</li>
+<li>Add <code>request_id</code> to <code>ai_metrics</code>.</li>
+<li>Add Netlify <code>recordAnalyticsEvent</code>.</li>
+<li>Capture script search, documentation search, AI search, result click, analysis, upload, download, and copy events without raw prompts/content.</li>
+<li>Add daily rollups with Supabase Cron.</li>
+</ol>
+<p>Verify:</p>
+<ul>
+<li>Analytics inserts are best-effort and never fail user requests.</li>
+<li>RLS blocks cross-user raw events.</li>
+<li>Search routes return <code>search_id</code>.</li>
+<li>Dashboards use aggregate queries.</li>
+</ul>
+<h3 id="phase-6-monitoring-and-maintenance">Phase 6: Monitoring and Maintenance</h3>
+<ol>
+<li>Add <code>pg_stat_statements</code> review query to admin DB health output.</li>
+<li>Add table/index bloat and dead tuple checks.</li>
+<li>Add scheduled <code>analyze</code>/maintenance notes for large imports.</li>
+<li>Add migration smoke test that applies hosted migrations to a clean database.</li>
+</ol>
+<p>Verify:</p>
+<ul>
+<li>Admin DB panel shows slow/frequent query candidates.</li>
+<li><code>schema_migrations</code> accurately reflects applied hosted migrations.</li>
+<li>Clean-database migration test passes.</li>
+</ul>
+<h2 id="recommended-next-implementation-slice">Recommended Next Implementation Slice</h2>
+<p>Start with the smallest high-impact patch:</p>
+<ol>
+<li>Add <code>idx_app_profiles_approved_by</code>.</li>
+<li>Add script/doc search indexes.</li>
+<li>Add <code>idx_ai_metrics_user_created</code>.</li>
+<li>Add strict TLS CA configuration documentation and validation.</li>
+<li>Add a read-only schema verification script/test that does not mutate hosted data.</li>
+</ol>
+<p>Then move to the embedding backfill and <code>/scripts/:id/similar</code> implementation.</p>
+<h2 id="final-status">Final Status</h2>
+<p>The hosted Supabase database is connected, live, and broadly healthy: expected core tables exist, RLS is enabled, extensions are in place, and the production Netlify deploy is ready. The main issues are not basic setup failures; they are correctness/performance gaps that will matter as data grows: strict TLS trust configuration, search indexing, schema drift cleanup, empty embeddings/similarity placeholder, and missing product analytics events.</p>
+    <div class="footer">Generated 2026-04-29 14:08 UTC</div>
+  </div>
+</body>
+</html>

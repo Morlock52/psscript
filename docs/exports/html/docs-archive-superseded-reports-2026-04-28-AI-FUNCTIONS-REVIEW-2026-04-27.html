@@ -1,0 +1,640 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <base href="file:///Users/morlock/fun/02_PowerShell_Projects/psscript/" />
+  <title>docs-archive-superseded-reports-2026-04-28-AI-FUNCTIONS-REVIEW-2026-04-27</title>
+  <style>
+:root {
+  color-scheme: light;
+}
+body {
+  font-family: "Segoe UI", "Helvetica Neue", Arial, sans-serif;
+  margin: 0;
+  padding: 0;
+  background: #f4f7fb;
+  color: #0f172a;
+}
+.markdown-body {
+  max-width: 980px;
+  margin: 0 auto;
+  padding: 36px 42px 64px;
+  line-height: 1.65;
+  background: #ffffff;
+  box-shadow: 0 24px 70px rgba(15, 23, 42, 0.08);
+}
+.markdown-body h1 {
+  font-size: 34px;
+  line-height: 1.12;
+  margin-bottom: 12px;
+  color: #07111f;
+  border-bottom: 3px solid #0ea5e9;
+  padding-bottom: 12px;
+  page-break-before: always;
+  page-break-after: avoid;
+  break-before: page;
+  break-after: avoid;
+}
+.markdown-body h1:first-of-type {
+  page-break-before: avoid;
+  break-before: avoid;
+}
+.markdown-body h2 {
+  font-size: 23px;
+  line-height: 1.2;
+  margin-top: 34px;
+  color: #102a43;
+  border-bottom: 1px solid #d7e2ee;
+  padding-bottom: 8px;
+  page-break-after: avoid;
+  break-after: avoid;
+}
+.markdown-body h3 {
+  font-size: 18px;
+  margin-top: 20px;
+  color: #1e3a5f;
+  page-break-after: avoid;
+  break-after: avoid;
+}
+.markdown-body h4, .markdown-body h5, .markdown-body h6 {
+  page-break-after: avoid;
+  break-after: avoid;
+}
+.markdown-body table {
+  width: 100%;
+  border-collapse: collapse;
+  margin: 18px 0 24px;
+  font-size: 13px;
+  page-break-inside: avoid;
+  break-inside: avoid;
+  box-shadow: 0 1px 0 #e2e8f0;
+}
+.markdown-body th,
+.markdown-body td {
+  border: 1px solid #e2e8f0;
+  padding: 9px 11px;
+  text-align: left;
+  vertical-align: top;
+}
+.markdown-body th {
+  background: #eef6ff;
+  color: #0f3157;
+  font-weight: 700;
+}
+.markdown-body tr:nth-child(even) td {
+  background: #fbfdff;
+}
+.markdown-body tr {
+  page-break-inside: avoid;
+  break-inside: avoid;
+}
+.markdown-body code {
+  background: #f1f5f9;
+  padding: 2px 4px;
+  border-radius: 4px;
+  font-family: "SFMono-Regular", Menlo, Consolas, monospace;
+  font-size: 0.92em;
+}
+.markdown-body pre {
+  background: #111827;
+  color: #e5eef8;
+  padding: 16px;
+  border-radius: 10px;
+  overflow-x: auto;
+  border: 1px solid #243244;
+  page-break-inside: avoid;
+  break-inside: avoid;
+}
+.markdown-body pre code {
+  background: transparent;
+  color: inherit;
+}
+.markdown-body blockquote {
+  border-left: 5px solid #0ea5e9;
+  margin: 18px 0;
+  padding: 12px 18px;
+  background: #eff8ff;
+  color: #18324f;
+  border-radius: 0 10px 10px 0;
+}
+.markdown-body img {
+  max-width: 100%;
+  height: auto;
+  display: block;
+  margin: 16px 0;
+  border-radius: 10px;
+  box-shadow: 0 8px 20px rgba(15, 23, 42, 0.12);
+  page-break-inside: avoid;
+  break-inside: avoid;
+}
+.markdown-body figure {
+  page-break-inside: avoid;
+  break-inside: avoid;
+  margin: 16px 0;
+}
+.markdown-body a {
+  color: #2563eb;
+  text-decoration: none;
+}
+.markdown-body a:hover {
+  text-decoration: underline;
+}
+.cover {
+  min-height: 760px;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+  padding: 72px 60px 64px;
+  background:
+    linear-gradient(135deg, rgba(9, 30, 66, 0.96) 0%, rgba(12, 74, 110, 0.94) 54%, rgba(20, 83, 45, 0.9) 100%),
+    radial-gradient(circle at 18% 18%, rgba(14, 165, 233, 0.25), transparent 36%);
+  color: #f8fafc;
+  border-radius: 0;
+  margin: -36px -42px 40px;
+  position: relative;
+  overflow: hidden;
+}
+.cover::before {
+  content: "PSScript";
+  position: absolute;
+  top: 46px;
+  left: 60px;
+  font-size: 12px;
+  font-weight: 800;
+  letter-spacing: 0.24em;
+  text-transform: uppercase;
+  color: rgba(226, 246, 255, 0.82);
+}
+.cover::after {
+  content: "";
+  position: absolute;
+  right: -120px;
+  top: -120px;
+  width: 360px;
+  height: 360px;
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  transform: rotate(28deg);
+}
+.markdown-body .cover-title {
+  font-size: 48px;
+  line-height: 1.04;
+  font-weight: 800;
+  color: #f8fafc;
+  border-bottom: 3px solid #38bdf8;
+  margin: 0 0 16px;
+  max-width: 720px;
+}
+.cover-subtitle {
+  font-size: 20px;
+  line-height: 1.42;
+  color: #dbeafe;
+  margin: 0 0 22px;
+  max-width: 720px;
+}
+.cover-meta {
+  display: inline-block;
+  width: fit-content;
+  font-size: 13px;
+  color: #e0f2fe;
+  background: rgba(255, 255, 255, 0.12);
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  border-radius: 999px;
+  padding: 7px 13px;
+}
+.page-break {
+  page-break-after: always;
+  break-after: page;
+}
+.footer {
+  margin-top: 40px;
+  font-size: 12px;
+  color: #64748b;
+  border-top: 1px solid #e2e8f0;
+  padding-top: 14px;
+}
+/* Print and PDF-specific styles */
+@page {
+  size: A4;
+  margin: 18mm 16mm 20mm;
+}
+@media print {
+  body {
+    background: #ffffff;
+  }
+  .markdown-body {
+    max-width: none;
+    margin: 0;
+    padding: 0;
+    box-shadow: none;
+  }
+  .cover {
+    margin: 0 0 28px;
+  }
+  .markdown-body {
+    orphans: 3;
+    widows: 3;
+  }
+  .markdown-body p {
+    orphans: 3;
+    widows: 3;
+  }
+  .markdown-body li {
+    page-break-inside: avoid;
+    break-inside: avoid;
+  }
+  .markdown-body ul, .markdown-body ol {
+    page-break-before: avoid;
+    break-before: avoid;
+  }
+  .markdown-body blockquote {
+    page-break-inside: avoid;
+    break-inside: avoid;
+  }
+  /* Keep section content together */
+  .markdown-body h2 + *, .markdown-body h3 + * {
+    page-break-before: avoid;
+    break-before: avoid;
+  }
+}
+</style>
+</head>
+<body>
+  <div class="markdown-body">
+    
+    <h1 id="ai-functions-review-fixes-and-hosted-test-report">AI Functions Review, Fixes, and Hosted Test Report</h1>
+<p><strong>Date:</strong> April 27, 2026<br />
+<strong>Production target:</strong> https://pstest.morloksmaze.com<br />
+<strong>Netlify site:</strong> <code>psscript</code> / <code>a6cb54b5-b3f7-4f01-a756-70b127f07e19</code><br />
+<strong>Supabase project:</strong> <code>picxiqcekyfgjlrknfds</code><br />
+<strong>Admin account under test:</strong> <code>morlok52@gmail.com</code></p>
+<h2 id="scope">Scope</h2>
+<p>This pass focused on the hosted Netlify application and the AI features that users can reach from production:</p>
+<ul>
+<li>Chat Assistant</li>
+<li>Agentic Assistant</li>
+<li>AI Agents / Agent Orchestration chat</li>
+<li>PowerShell script generation, explanation, and analysis</li>
+<li>AI examples routes</li>
+<li>Voice settings, speech synthesis, and speech recognition routes</li>
+<li>AI analytics summary, metrics, and budget alert routes</li>
+<li>Documentation AI crawl/summarization routes where hosted AI calls are used</li>
+</ul>
+<p>The goal was pragmatic hosted parity first. I did not rebuild the legacy full <code>/api/agents</code> thread/run backend because the current production need is a working AI chat surface through Netlify Functions.</p>
+<h2 id="external-sources-used">External Sources Used</h2>
+<ul>
+<li>OpenAI latest model and Responses API guidance: https://developers.openai.com/api/docs/guides/latest-model</li>
+<li>OpenAI Structured Outputs guidance for <code>text.format</code> / JSON schema responses: https://developers.openai.com/api/docs/guides/structured-outputs</li>
+<li>OpenAI streaming Responses events guidance: https://developers.openai.com/api/docs/guides/streaming-responses#read-the-responses</li>
+<li>OpenAI text-to-speech voice options: https://developers.openai.com/api/docs/guides/text-to-speech#voice-options</li>
+<li>Netlify Functions docs: https://docs.netlify.com/functions/get-started/</li>
+<li>Netlify Functions API docs: https://docs.netlify.com/build/functions/api/</li>
+<li>OWASP SSRF Prevention Cheat Sheet: https://cheatsheetseries.owasp.org/cheatsheets/Server_Side_Request_Forgery_Prevention_Cheat_Sheet.html</li>
+</ul>
+<h2 id="review-method">Review Method</h2>
+<ul>
+<li>Used Netlify plugin tooling to confirm the active site and production deploy state.</li>
+<li>Used Computer Use to inspect the production browser session at <code>https://pstest.morloksmaze.com/ai/agents</code>.</li>
+<li>Used local code search and focused tests to map active frontend calls.</li>
+<li>Used two delegated review agents:</li>
+<li>Backend AI route review for Netlify Function behavior, security, and observability.</li>
+<li>Frontend AI workflow review for active browser flows, legacy route usage, and error handling.</li>
+<li>Used official OpenAI, Netlify, and OWASP documentation for implementation direction.</li>
+</ul>
+<h2 id="hosted-ai-route-matrix">Hosted AI Route Matrix</h2>
+<table>
+<thead>
+<tr>
+<th>Area</th>
+<th>Route</th>
+<th>Expected hosted behavior</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Chat</td>
+<td><code>POST /api/chat</code></td>
+<td>Authenticated PowerShell assistant response through server-side provider keys</td>
+</tr>
+<tr>
+<td>Chat streaming</td>
+<td><code>POST /api/chat/stream</code></td>
+<td>Authenticated SSE stream using OpenAI Responses streaming when available</td>
+</tr>
+<tr>
+<td>Script assistant</td>
+<td><code>POST /api/scripts/please</code></td>
+<td>Authenticated assistant response via Netlify Function</td>
+</tr>
+<tr>
+<td>Script assistant alias</td>
+<td><code>POST /api/ai-agent/please</code></td>
+<td>Same behavior as <code>/scripts/please</code></td>
+</tr>
+<tr>
+<td>Script generation</td>
+<td><code>POST /api/scripts/generate</code></td>
+<td>Authenticated PowerShell script generation</td>
+</tr>
+<tr>
+<td>Script generation alias</td>
+<td><code>POST /api/ai-agent/generate</code></td>
+<td>Same behavior as <code>/scripts/generate</code></td>
+</tr>
+<tr>
+<td>Script explanation</td>
+<td><code>POST /api/scripts/explain</code></td>
+<td>Authenticated simple/detailed/security explanations</td>
+</tr>
+<tr>
+<td>Script explanation alias</td>
+<td><code>POST /api/ai-agent/explain</code></td>
+<td>Same behavior as <code>/scripts/explain</code></td>
+</tr>
+<tr>
+<td>Script analysis</td>
+<td><code>POST /api/scripts/analyze/assistant</code></td>
+<td>Authenticated structured PowerShell analysis</td>
+</tr>
+<tr>
+<td>Script analysis alias</td>
+<td><code>POST /api/ai-agent/analyze/assistant</code></td>
+<td>Same behavior as <code>/scripts/analyze/assistant</code></td>
+</tr>
+<tr>
+<td>Examples</td>
+<td><code>GET /api/scripts/examples</code></td>
+<td>Authenticated example prompts/scripts</td>
+</tr>
+<tr>
+<td>Examples alias</td>
+<td><code>GET /api/ai-agent/examples</code></td>
+<td>Same behavior as <code>/scripts/examples</code></td>
+</tr>
+<tr>
+<td>AI analytics</td>
+<td><code>GET /api/analytics/ai</code></td>
+<td>Authenticated metrics list or stable empty response</td>
+</tr>
+<tr>
+<td>AI analytics summary</td>
+<td><code>GET /api/analytics/ai/summary</code></td>
+<td>Authenticated zero-safe summary instead of 404/500</td>
+</tr>
+<tr>
+<td>AI budget alerts</td>
+<td><code>GET /api/analytics/ai/budget-alerts</code></td>
+<td>Authenticated alert list or stable empty response</td>
+</tr>
+<tr>
+<td>Voice list</td>
+<td><code>GET /api/voice/voices</code></td>
+<td>Authenticated voice list using hosted OpenAI-compatible options</td>
+</tr>
+<tr>
+<td>Voice settings</td>
+<td><code>GET /api/voice/settings</code></td>
+<td>Authenticated voice settings response</td>
+</tr>
+<tr>
+<td>Voice synthesis</td>
+<td><code>POST /api/voice/synthesize</code></td>
+<td>Authenticated server-side TTS call</td>
+</tr>
+<tr>
+<td>Voice recognition</td>
+<td><code>POST /api/voice/recognize</code></td>
+<td>Authenticated server-side speech recognition call</td>
+</tr>
+</tbody>
+</table>
+<h2 id="findings-fixed">Findings Fixed</h2>
+<h3 id="1-saved-analysis-access-could-cross-user-boundaries">1. Saved analysis access could cross user boundaries</h3>
+<p><strong>Risk:</strong> <code>GET /scripts/:id/analysis</code> read saved <code>script_analysis</code> rows by script id without first proving the authenticated user could access the script.<br />
+<strong>Fix:</strong> The route now calls <code>fetchScriptForUser(id, user.id)</code> before reading analysis data.</p>
+<h3 id="2-documentation-ai-import-had-ssrf-gaps">2. Documentation AI import had SSRF gaps</h3>
+<p><strong>Risk:</strong> The hosted documentation crawler accepted user-supplied URLs, followed redirects automatically, and did not fully reject private/link-local/internal network targets.<br />
+<strong>Fix:</strong> URL validation is now DNS-aware, rejects unsafe hostnames and private IP ranges, and follows redirects manually only after re-validating each redirected URL.</p>
+<h3 id="3-voice-and-documentation-ai-calls-were-not-consistently-observable">3. Voice and documentation AI calls were not consistently observable</h3>
+<p><strong>Risk:</strong> TTS, speech recognition, and documentation AI summaries could call providers without recording AI metrics.<br />
+<strong>Fix:</strong> These routes now record <code>ai_metrics</code> best-effort on success and failure without blocking user responses if metric writes fail.</p>
+<h3 id="4-chatstream-was-not-truly-streaming">4. <code>/chat/stream</code> was not truly streaming</h3>
+<p><strong>Risk:</strong> The endpoint waited for a full completion and emitted a single SSE token, so production UI could not benefit from incremental streaming.<br />
+<strong>Fix:</strong> Added <code>streamText(...)</code> using OpenAI Responses streaming events and emitting <code>response.output_text.delta</code> as SSE <code>token</code> events. Anthropic remains a fallback as a single response if OpenAI streaming fails.</p>
+<h3 id="5-agentic-assistant-follow-up-questions-did-not-submit">5. Agentic Assistant follow-up questions did not submit</h3>
+<p><strong>Risk:</strong> "Ask AI Assistant" on the agentic page switched tabs and claimed the question was sent, but it did not actually call the assistant.<br />
+<strong>Fix:</strong> The page now carries a pending question into <code>PleaseMethodAgent</code>, which submits it after tab switch.</p>
+<h3 id="6-chat-save-generated-script-was-mock-only">6. Chat "save generated script" was mock-only</h3>
+<p><strong>Risk:</strong> Saved scripts from the Chat Assistant were routed to a mock upload function and could navigate to nonexistent script IDs.<br />
+<strong>Fix:</strong> <code>scriptService.uploadScript</code> now posts to the hosted <code>/api/scripts</code> route in production and only uses the mock path in mock/dev mode.</p>
+<h3 id="7-ai-agent-client-error-handling-lost-useful-status-data">7. AI Agent client error handling lost useful status data</h3>
+<p><strong>Risk:</strong> <code>apiClient</code> rejects normalized service errors, but <code>aiAgent</code> handled mostly Axios errors, hiding status/retry information.<br />
+<strong>Fix:</strong> <code>handleApiError</code> now preserves normalized <code>status</code>, <code>code</code>, <code>details</code>, retryability, and user-facing auth/rate-limit/server messages.</p>
+<h3 id="8-generated-script-extraction-was-too-brittle">8. Generated script extraction was too brittle</h3>
+<p><strong>Risk:</strong> The editor only loaded generated scripts for narrow prompts and exact code fences.<br />
+<strong>Fix:</strong> Script generation detection and extraction now handles <code>powershell</code>, <code>ps1</code>, <code>pwsh</code>, unlabeled fences, mixed case, and PowerShell-like raw output.</p>
+<h2 id="key-files-changed">Key Files Changed</h2>
+<table>
+<thead>
+<tr>
+<th>File</th>
+<th>Purpose</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>netlify/functions/api.ts</code></td>
+<td>Hosted AI route parity, analysis authorization, SSRF hardening, voice/docs metrics, real chat streaming</td>
+</tr>
+<tr>
+<td><code>src/frontend/src/api/aiAgent.ts</code></td>
+<td>Production AI error normalization</td>
+</tr>
+<tr>
+<td><code>src/frontend/src/components/Agentic/PleaseMethodAgent.tsx</code></td>
+<td>Pending question submission and generated script extraction</td>
+</tr>
+<tr>
+<td><code>src/frontend/src/pages/AgenticAIPage.tsx</code></td>
+<td>Agentic follow-up handoff into assistant chat</td>
+</tr>
+<tr>
+<td><code>src/frontend/src/services/api-simple.ts</code></td>
+<td>Real production script upload from chat</td>
+</tr>
+<tr>
+<td><code>src/frontend/src/api/__tests__/hostedAiClient.test.ts</code></td>
+<td>Focused tests for hosted AI routing, server-only keys, SSRF protections, streaming, and follow-up behavior</td>
+</tr>
+</tbody>
+</table>
+<p>There are additional local OAuth/login and production agent UI changes already present in the worktree from the earlier hosted auth/AI work. I left unrelated artifacts alone, including the untracked <code>deno.lock</code>.</p>
+<h2 id="verification-commands">Verification Commands</h2>
+<table>
+<thead>
+<tr>
+<th>Check</th>
+<th>Result</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>npm run test:run -- src/api/__tests__/hostedAiClient.test.ts --pool=threads --maxWorkers=1</code> from <code>src/frontend</code></td>
+<td>Passed, 6 tests</td>
+</tr>
+<tr>
+<td><code>npx tsc --noEmit --pretty false</code> from <code>src/frontend</code></td>
+<td>Passed</td>
+</tr>
+<tr>
+<td><code>npx netlify build</code></td>
+<td>Passed build and function bundling; local Lighthouse document request 404 did not fail the command</td>
+</tr>
+<tr>
+<td><code>npm run test:run -- --pool=threads --maxWorkers=1</code> from <code>src/frontend</code></td>
+<td>Passed, 42 tests</td>
+</tr>
+<tr>
+<td><code>npm test -- --runInBand src/routes/__tests__/analytics-ai.test.ts src/middleware/__tests__/aiAnalytics.test.ts src/services/__tests__/documentationAnalysis.test.ts src/controllers/script/__tests__/analysis.test.ts</code> from <code>src/backend</code></td>
+<td>Passed, 13 tests</td>
+</tr>
+<tr>
+<td><code>git diff --check</code></td>
+<td>Passed before deploy; should be re-run after this report</td>
+</tr>
+</tbody>
+</table>
+<h2 id="hosted-production-verification">Hosted Production Verification</h2>
+<p>Production deploy completed with Netlify CLI:</p>
+<ul>
+<li>Production URL: https://pstest.morloksmaze.com</li>
+<li>Deploy URL: https://69efe2d9eb552c3ef21786ee--psscript.netlify.app</li>
+<li>Deploy logs: https://app.netlify.com/projects/psscript/deploys/69efe2d9eb552c3ef21786ee</li>
+<li>Function logs: https://app.netlify.com/projects/psscript/logs/functions</li>
+<li>Netlify deploy state from plugin: <code>ready</code></li>
+<li>Function runtime: <code>nodejs22.x</code></li>
+<li>Function routes: <code>/api</code>, <code>/api/*</code></li>
+</ul>
+<p>Unauthenticated hosted probes after deploy:</p>
+<table>
+<thead>
+<tr>
+<th>Route</th>
+<th>Status</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>/api/health</code></td>
+<td>200</td>
+</tr>
+<tr>
+<td><code>/api/scripts/please</code></td>
+<td>401</td>
+</tr>
+<tr>
+<td><code>/api/scripts/generate</code></td>
+<td>401</td>
+</tr>
+<tr>
+<td><code>/api/scripts/explain</code></td>
+<td>401</td>
+</tr>
+<tr>
+<td><code>/api/scripts/analyze/assistant</code></td>
+<td>401</td>
+</tr>
+<tr>
+<td><code>/api/scripts/examples?description=services</code></td>
+<td>401</td>
+</tr>
+<tr>
+<td><code>/api/chat</code></td>
+<td>401</td>
+</tr>
+<tr>
+<td><code>/api/chat/stream</code></td>
+<td>401</td>
+</tr>
+<tr>
+<td><code>/api/voice/voices</code></td>
+<td>401</td>
+</tr>
+<tr>
+<td><code>/api/voice/settings</code></td>
+<td>401</td>
+</tr>
+<tr>
+<td><code>/api/analytics/ai</code></td>
+<td>401</td>
+</tr>
+<tr>
+<td><code>/api/analytics/ai/summary</code></td>
+<td>401</td>
+</tr>
+<tr>
+<td><code>/api/analytics/ai/budget-alerts</code></td>
+<td>401</td>
+</tr>
+</tbody>
+</table>
+<p>These 401 responses are expected without a bearer token and prove the deployed routes exist behind authentication rather than returning 404 or 500.</p>
+<p>Computer Use browser inspection confirmed the production app is logged in at <code>/ai/agents</code>, the Agent chat page loads, Voice Copilot opens, and the visible prompt "Give one safe PowerShell command to list stopped services." has an AI answer rendered in the chat.</p>
+<h2 id="current-residual-risks">Current Residual Risks</h2>
+<ol>
+<li>Authenticated API probes still need a bearer token for direct <code>curl</code> verification of 200 responses on every AI route. I verified route existence and auth gating without extracting the user's browser token.</li>
+<li>Netlify Lighthouse performance remains poor on production (<code>Performance: 18</code>) because of existing frontend bundle size and render cost. This needs a separate performance/code-splitting pass.</li>
+<li>Vite still reports large chunks during production build. This is related to the Lighthouse performance issue.</li>
+<li><code>src/frontend/src/api/agentOrchestrator.ts</code> still contains the legacy <code>/api/agents</code> client, but active production Agent UI files no longer import its runtime functions. The remaining imports are type-only.</li>
+<li>Voice settings are currently returned by the hosted API but are not persisted as durable user preferences.</li>
+<li>Some older <code>api-simple</code> helper methods still point at legacy AI operation names for less-used flows. I did not remove them because the current production pages covered by this pass do not call them.</li>
+<li><code>deno.lock</code> is still untracked and was not removed because it existed outside this AI fix scope.</li>
+</ol>
+<h2 id="follow-up-plan">Follow-Up Plan</h2>
+<table>
+<thead>
+<tr>
+<th>Priority</th>
+<th>Task</th>
+<th>Verify</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>P1</td>
+<td>Add authenticated hosted probes that use a test bearer token for all AI routes</td>
+<td>Each route returns expected 200/4xx validation response, never 404/500</td>
+</tr>
+<tr>
+<td>P1</td>
+<td>Add Netlify Function tests for script analysis ownership and documentation SSRF rejection</td>
+<td>Tests cover private IPs, localhost, redirects, and unauthorized script analysis</td>
+</tr>
+<tr>
+<td>P2</td>
+<td>Split heavy frontend chunks and profile first load</td>
+<td>Netlify Lighthouse performance improves materially</td>
+</tr>
+<tr>
+<td>P2</td>
+<td>Remove or isolate unused legacy <code>agentOrchestrator</code> runtime functions</td>
+<td><code>rg "/api/agents"</code> only finds archived/docs/test references or no production bundle code</td>
+</tr>
+<tr>
+<td>P2</td>
+<td>Persist voice settings per user</td>
+<td>Settings survive reload and new session</td>
+</tr>
+<tr>
+<td>P3</td>
+<td>Replace remaining legacy <code>api-simple</code> AI helper methods or prove they are dead code</td>
+<td>Static search and focused UI tests show no broken production workflows</td>
+</tr>
+</tbody>
+</table>
+<h2 id="conclusion">Conclusion</h2>
+<p>The hosted Netlify AI surface is now deployed with the missing route parity, safer hosted AI operations, better observability, real chat streaming, working agent follow-up behavior, and production script saving. The main remaining gap is authenticated end-to-end probing with a safe test token; without that token, direct hosted probes can only verify route existence and auth gating.</p>
+    <div class="footer">Generated 2026-04-29 14:08 UTC</div>
+  </div>
+</body>
+</html>

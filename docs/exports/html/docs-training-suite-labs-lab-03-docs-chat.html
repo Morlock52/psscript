@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <base href="file:///Users/morlock/fun/psscript/" />
+  <base href="file:///Users/morlock/fun/02_PowerShell_Projects/psscript/" />
   <title>docs-training-suite-labs-lab-03-docs-chat</title>
   <style>
 :root {
@@ -13,19 +13,23 @@ body {
   font-family: "Segoe UI", "Helvetica Neue", Arial, sans-serif;
   margin: 0;
   padding: 0;
-  background: #ffffff;
+  background: #f4f7fb;
   color: #0f172a;
 }
 .markdown-body {
   max-width: 980px;
-  margin: 40px auto 60px;
-  padding: 0 32px;
+  margin: 0 auto;
+  padding: 36px 42px 64px;
   line-height: 1.65;
+  background: #ffffff;
+  box-shadow: 0 24px 70px rgba(15, 23, 42, 0.08);
 }
 .markdown-body h1 {
-  font-size: 32px;
+  font-size: 34px;
+  line-height: 1.12;
   margin-bottom: 12px;
-  border-bottom: 2px solid #e2e8f0;
+  color: #07111f;
+  border-bottom: 3px solid #0ea5e9;
   padding-bottom: 12px;
   page-break-before: always;
   page-break-after: avoid;
@@ -37,18 +41,19 @@ body {
   break-before: avoid;
 }
 .markdown-body h2 {
-  font-size: 24px;
-  margin-top: 28px;
-  border-bottom: 1px solid #e2e8f0;
+  font-size: 23px;
+  line-height: 1.2;
+  margin-top: 34px;
+  color: #102a43;
+  border-bottom: 1px solid #d7e2ee;
   padding-bottom: 8px;
-  page-break-before: always;
   page-break-after: avoid;
-  break-before: page;
   break-after: avoid;
 }
 .markdown-body h3 {
   font-size: 18px;
   margin-top: 20px;
+  color: #1e3a5f;
   page-break-after: avoid;
   break-after: avoid;
 }
@@ -59,19 +64,26 @@ body {
 .markdown-body table {
   width: 100%;
   border-collapse: collapse;
-  margin: 16px 0;
-  font-size: 14px;
+  margin: 18px 0 24px;
+  font-size: 13px;
   page-break-inside: avoid;
   break-inside: avoid;
+  box-shadow: 0 1px 0 #e2e8f0;
 }
 .markdown-body th,
 .markdown-body td {
   border: 1px solid #e2e8f0;
-  padding: 8px 10px;
+  padding: 9px 11px;
   text-align: left;
+  vertical-align: top;
 }
 .markdown-body th {
-  background: #f8fafc;
+  background: #eef6ff;
+  color: #0f3157;
+  font-weight: 700;
+}
+.markdown-body tr:nth-child(even) td {
+  background: #fbfdff;
 }
 .markdown-body tr {
   page-break-inside: avoid;
@@ -85,11 +97,12 @@ body {
   font-size: 0.92em;
 }
 .markdown-body pre {
-  background: #0f172a;
-  color: #e2e8f0;
+  background: #111827;
+  color: #e5eef8;
   padding: 16px;
-  border-radius: 8px;
+  border-radius: 10px;
   overflow-x: auto;
+  border: 1px solid #243244;
   page-break-inside: avoid;
   break-inside: avoid;
 }
@@ -98,11 +111,12 @@ body {
   color: inherit;
 }
 .markdown-body blockquote {
-  border-left: 4px solid #38bdf8;
-  margin: 16px 0;
-  padding: 8px 16px;
-  background: #f8fafc;
-  color: #334155;
+  border-left: 5px solid #0ea5e9;
+  margin: 18px 0;
+  padding: 12px 18px;
+  background: #eff8ff;
+  color: #18324f;
+  border-radius: 0 10px 10px 0;
 }
 .markdown-body img {
   max-width: 100%;
@@ -127,25 +141,66 @@ body {
   text-decoration: underline;
 }
 .cover {
-  padding: 80px 60px 60px;
-  background: linear-gradient(135deg, #0b1220 0%, #1e3a8a 100%);
+  min-height: 760px;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+  padding: 72px 60px 64px;
+  background:
+    linear-gradient(135deg, rgba(9, 30, 66, 0.96) 0%, rgba(12, 74, 110, 0.94) 54%, rgba(20, 83, 45, 0.9) 100%),
+    radial-gradient(circle at 18% 18%, rgba(14, 165, 233, 0.25), transparent 36%);
   color: #f8fafc;
-  border-radius: 18px;
-  margin-bottom: 32px;
+  border-radius: 0;
+  margin: -36px -42px 40px;
+  position: relative;
+  overflow: hidden;
 }
-.cover-title {
-  font-size: 36px;
-  font-weight: 700;
-  margin: 0 0 12px;
+.cover::before {
+  content: "PSScript";
+  position: absolute;
+  top: 46px;
+  left: 60px;
+  font-size: 12px;
+  font-weight: 800;
+  letter-spacing: 0.24em;
+  text-transform: uppercase;
+  color: rgba(226, 246, 255, 0.82);
+}
+.cover::after {
+  content: "";
+  position: absolute;
+  right: -120px;
+  top: -120px;
+  width: 360px;
+  height: 360px;
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  transform: rotate(28deg);
+}
+.markdown-body .cover-title {
+  font-size: 48px;
+  line-height: 1.04;
+  font-weight: 800;
+  color: #f8fafc;
+  border-bottom: 3px solid #38bdf8;
+  margin: 0 0 16px;
+  max-width: 720px;
 }
 .cover-subtitle {
-  font-size: 18px;
-  color: #cbd5f5;
-  margin: 0 0 16px;
+  font-size: 20px;
+  line-height: 1.42;
+  color: #dbeafe;
+  margin: 0 0 22px;
+  max-width: 720px;
 }
 .cover-meta {
+  display: inline-block;
+  width: fit-content;
   font-size: 13px;
-  color: #94a3b8;
+  color: #e0f2fe;
+  background: rgba(255, 255, 255, 0.12);
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  border-radius: 999px;
+  padding: 7px 13px;
 }
 .page-break {
   page-break-after: always;
@@ -155,12 +210,27 @@ body {
   margin-top: 40px;
   font-size: 12px;
   color: #64748b;
+  border-top: 1px solid #e2e8f0;
+  padding-top: 14px;
 }
 /* Print and PDF-specific styles */
 @page {
-  margin: 20mm 18mm;
+  size: A4;
+  margin: 18mm 16mm 20mm;
 }
 @media print {
+  body {
+    background: #ffffff;
+  }
+  .markdown-body {
+    max-width: none;
+    margin: 0;
+    padding: 0;
+    box-shadow: none;
+  }
+  .cover {
+    margin: 0 0 28px;
+  }
   .markdown-body {
     orphans: 3;
     widows: 3;
@@ -192,27 +262,30 @@ body {
 <body>
   <div class="markdown-body">
     
-    <h1 id="lab-03-documentation-and-ai-chat">Lab 03: Documentation and AI Chat</h1>
+    <h1 id="lab-03-documentation-and-assistant">Lab 03: Documentation And Assistant</h1>
 <h2 id="goal">Goal</h2>
-<p>Use the documentation explorer and AI chat to answer a script question.</p>
+<p>Use documentation and the assistant to answer a script safety question.</p>
 <h2 id="steps">Steps</h2>
 <ol>
 <li>Open Documentation and search for a PowerShell cmdlet.</li>
-<li>Copy a relevant example into your notes.</li>
-<li>Open AI Chat and ask for a safe usage pattern.</li>
-<li>Compare the response to the documentation.</li>
+<li>Capture the relevant documentation note.</li>
+<li>Open the assistant.</li>
+<li>Ask for a safe usage or remediation pattern.</li>
+<li>Open <code>/agentic</code> and confirm it routes to the assistant instead of a 404.</li>
 </ol>
-<h2 id="expected-results">Expected results</h2>
+<h2 id="expected-results">Expected Results</h2>
 <ul>
-<li>Documentation results show relevant cmdlets</li>
-<li>Chat response includes safety guidance or best practices</li>
+<li>Documentation results are relevant.</li>
+<li>Assistant response includes safety guidance or best practices.</li>
+<li>Agentic alias routes land on the assistant experience.</li>
 </ul>
 <h2 id="troubleshooting">Troubleshooting</h2>
 <ul>
-<li>If search results are empty, check the documentation crawler status</li>
-<li>If chat responses fail, verify AI service or mock mode</li>
+<li>If documentation fails, check the API response and Netlify Function logs.</li>
+<li>If assistant responses fail, check provider env vars and Function logs.</li>
+<li>If <code>/agentic</code> 404s, verify the latest Netlify deploy and redirects.</li>
 </ul>
-    <div class="footer">Generated 2026-01-16 23:34 UTC</div>
+    <div class="footer">Generated 2026-04-29 14:08 UTC</div>
   </div>
 </body>
 </html>

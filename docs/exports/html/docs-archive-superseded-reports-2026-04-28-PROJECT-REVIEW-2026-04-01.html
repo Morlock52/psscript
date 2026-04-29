@@ -1,0 +1,1254 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <base href="file:///Users/morlock/fun/02_PowerShell_Projects/psscript/" />
+  <title>docs-archive-superseded-reports-2026-04-28-PROJECT-REVIEW-2026-04-01</title>
+  <style>
+:root {
+  color-scheme: light;
+}
+body {
+  font-family: "Segoe UI", "Helvetica Neue", Arial, sans-serif;
+  margin: 0;
+  padding: 0;
+  background: #f4f7fb;
+  color: #0f172a;
+}
+.markdown-body {
+  max-width: 980px;
+  margin: 0 auto;
+  padding: 36px 42px 64px;
+  line-height: 1.65;
+  background: #ffffff;
+  box-shadow: 0 24px 70px rgba(15, 23, 42, 0.08);
+}
+.markdown-body h1 {
+  font-size: 34px;
+  line-height: 1.12;
+  margin-bottom: 12px;
+  color: #07111f;
+  border-bottom: 3px solid #0ea5e9;
+  padding-bottom: 12px;
+  page-break-before: always;
+  page-break-after: avoid;
+  break-before: page;
+  break-after: avoid;
+}
+.markdown-body h1:first-of-type {
+  page-break-before: avoid;
+  break-before: avoid;
+}
+.markdown-body h2 {
+  font-size: 23px;
+  line-height: 1.2;
+  margin-top: 34px;
+  color: #102a43;
+  border-bottom: 1px solid #d7e2ee;
+  padding-bottom: 8px;
+  page-break-after: avoid;
+  break-after: avoid;
+}
+.markdown-body h3 {
+  font-size: 18px;
+  margin-top: 20px;
+  color: #1e3a5f;
+  page-break-after: avoid;
+  break-after: avoid;
+}
+.markdown-body h4, .markdown-body h5, .markdown-body h6 {
+  page-break-after: avoid;
+  break-after: avoid;
+}
+.markdown-body table {
+  width: 100%;
+  border-collapse: collapse;
+  margin: 18px 0 24px;
+  font-size: 13px;
+  page-break-inside: avoid;
+  break-inside: avoid;
+  box-shadow: 0 1px 0 #e2e8f0;
+}
+.markdown-body th,
+.markdown-body td {
+  border: 1px solid #e2e8f0;
+  padding: 9px 11px;
+  text-align: left;
+  vertical-align: top;
+}
+.markdown-body th {
+  background: #eef6ff;
+  color: #0f3157;
+  font-weight: 700;
+}
+.markdown-body tr:nth-child(even) td {
+  background: #fbfdff;
+}
+.markdown-body tr {
+  page-break-inside: avoid;
+  break-inside: avoid;
+}
+.markdown-body code {
+  background: #f1f5f9;
+  padding: 2px 4px;
+  border-radius: 4px;
+  font-family: "SFMono-Regular", Menlo, Consolas, monospace;
+  font-size: 0.92em;
+}
+.markdown-body pre {
+  background: #111827;
+  color: #e5eef8;
+  padding: 16px;
+  border-radius: 10px;
+  overflow-x: auto;
+  border: 1px solid #243244;
+  page-break-inside: avoid;
+  break-inside: avoid;
+}
+.markdown-body pre code {
+  background: transparent;
+  color: inherit;
+}
+.markdown-body blockquote {
+  border-left: 5px solid #0ea5e9;
+  margin: 18px 0;
+  padding: 12px 18px;
+  background: #eff8ff;
+  color: #18324f;
+  border-radius: 0 10px 10px 0;
+}
+.markdown-body img {
+  max-width: 100%;
+  height: auto;
+  display: block;
+  margin: 16px 0;
+  border-radius: 10px;
+  box-shadow: 0 8px 20px rgba(15, 23, 42, 0.12);
+  page-break-inside: avoid;
+  break-inside: avoid;
+}
+.markdown-body figure {
+  page-break-inside: avoid;
+  break-inside: avoid;
+  margin: 16px 0;
+}
+.markdown-body a {
+  color: #2563eb;
+  text-decoration: none;
+}
+.markdown-body a:hover {
+  text-decoration: underline;
+}
+.cover {
+  min-height: 760px;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+  padding: 72px 60px 64px;
+  background:
+    linear-gradient(135deg, rgba(9, 30, 66, 0.96) 0%, rgba(12, 74, 110, 0.94) 54%, rgba(20, 83, 45, 0.9) 100%),
+    radial-gradient(circle at 18% 18%, rgba(14, 165, 233, 0.25), transparent 36%);
+  color: #f8fafc;
+  border-radius: 0;
+  margin: -36px -42px 40px;
+  position: relative;
+  overflow: hidden;
+}
+.cover::before {
+  content: "PSScript";
+  position: absolute;
+  top: 46px;
+  left: 60px;
+  font-size: 12px;
+  font-weight: 800;
+  letter-spacing: 0.24em;
+  text-transform: uppercase;
+  color: rgba(226, 246, 255, 0.82);
+}
+.cover::after {
+  content: "";
+  position: absolute;
+  right: -120px;
+  top: -120px;
+  width: 360px;
+  height: 360px;
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  transform: rotate(28deg);
+}
+.markdown-body .cover-title {
+  font-size: 48px;
+  line-height: 1.04;
+  font-weight: 800;
+  color: #f8fafc;
+  border-bottom: 3px solid #38bdf8;
+  margin: 0 0 16px;
+  max-width: 720px;
+}
+.cover-subtitle {
+  font-size: 20px;
+  line-height: 1.42;
+  color: #dbeafe;
+  margin: 0 0 22px;
+  max-width: 720px;
+}
+.cover-meta {
+  display: inline-block;
+  width: fit-content;
+  font-size: 13px;
+  color: #e0f2fe;
+  background: rgba(255, 255, 255, 0.12);
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  border-radius: 999px;
+  padding: 7px 13px;
+}
+.page-break {
+  page-break-after: always;
+  break-after: page;
+}
+.footer {
+  margin-top: 40px;
+  font-size: 12px;
+  color: #64748b;
+  border-top: 1px solid #e2e8f0;
+  padding-top: 14px;
+}
+/* Print and PDF-specific styles */
+@page {
+  size: A4;
+  margin: 18mm 16mm 20mm;
+}
+@media print {
+  body {
+    background: #ffffff;
+  }
+  .markdown-body {
+    max-width: none;
+    margin: 0;
+    padding: 0;
+    box-shadow: none;
+  }
+  .cover {
+    margin: 0 0 28px;
+  }
+  .markdown-body {
+    orphans: 3;
+    widows: 3;
+  }
+  .markdown-body p {
+    orphans: 3;
+    widows: 3;
+  }
+  .markdown-body li {
+    page-break-inside: avoid;
+    break-inside: avoid;
+  }
+  .markdown-body ul, .markdown-body ol {
+    page-break-before: avoid;
+    break-before: avoid;
+  }
+  .markdown-body blockquote {
+    page-break-inside: avoid;
+    break-inside: avoid;
+  }
+  /* Keep section content together */
+  .markdown-body h2 + *, .markdown-body h3 + * {
+    page-break-before: avoid;
+    break-before: avoid;
+  }
+}
+</style>
+</head>
+<body>
+  <div class="markdown-body">
+    
+    <h1 id="psscript-project-review-improvement-plan">PSScript Project Review &amp; Improvement Plan</h1>
+<p><strong>Date:</strong> April 1, 2026
+<strong>Scope:</strong> Full-stack review of backend, frontend, AI service, database, and API
+<strong>Goal:</strong> Identify 20+ improvements, fix all API and database table issues, ensure backend correctness</p>
+<hr />
+<h2 id="table-of-contents">Table of Contents</h2>
+<ol>
+<li><a href="#executive-summary">Executive Summary</a></li>
+<li><a href="#database--model-issues-found">Database &amp; Model Issues Found</a></li>
+<li><a href="#api-issues-found">API Issues Found</a></li>
+<li><a href="#backend-correctness-issues">Backend Correctness Issues</a></li>
+<li><a href="#20-improvements-with-best-practices">20 Improvements with Best Practices</a></li>
+<li><a href="#comprehensive-implementation-plan">Comprehensive Implementation Plan</a></li>
+</ol>
+<hr />
+<h2 id="executive-summary">Executive Summary</h2>
+<p>The PSScript project is a well-structured multi-service application (Express/TypeScript backend, React/Vite frontend, FastAPI AI service, PostgreSQL + Redis). After thorough review, we identified <strong>critical database schema gaps</strong>, <strong>API consistency issues</strong>, <strong>TypeScript safety bypasses</strong>, and <strong>architectural improvements</strong> that should be addressed holistically.</p>
+<h3 id="key-findings-at-a-glance">Key Findings at a Glance</h3>
+<table>
+<thead>
+<tr>
+<th>Category</th>
+<th>Critical</th>
+<th>Major</th>
+<th>Minor</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Database/Models</td>
+<td>3</td>
+<td>4</td>
+<td>2</td>
+</tr>
+<tr>
+<td>API Endpoints</td>
+<td>2</td>
+<td>3</td>
+<td>3</td>
+</tr>
+<tr>
+<td>Backend Code</td>
+<td>2</td>
+<td>4</td>
+<td>3</td>
+</tr>
+<tr>
+<td>Security</td>
+<td>1</td>
+<td>2</td>
+<td>2</td>
+</tr>
+<tr>
+<td>Architecture</td>
+<td>0</td>
+<td>3</td>
+<td>2</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="database-model-issues-found">Database &amp; Model Issues Found</h2>
+<h3 id="critical-db-001-executionlog-missing-output-column">CRITICAL: DB-001 - ExecutionLog Missing <code>output</code> Column</h3>
+<p><strong>File:</strong> <code>src/backend/src/models/ExecutionLog.ts:11-13</code>
+<strong>Impact:</strong> The controller at <code>execution.ts:61</code> and <code>execution.ts:133</code> references <code>log.output</code> but the column doesn't exist in the database or model.</p>
+<p><strong>Problem:</strong></p>
+<pre><code class="language-typescript">// ExecutionLog.ts - field is missing
+// TODO: Add 'output' field once database migration is created
+// The ScriptController.ts references log.output but the column doesn't exist in DB
+</code></pre>
+<p><strong>Fix:</strong> Add <code>output</code> field to the model:</p>
+<pre><code class="language-typescript">output: {
+  type: DataTypes.TEXT,
+  allowNull: true,
+  comment: 'Command output or execution result'
+}
+</code></pre>
+<hr />
+<h3 id="critical-db-002-script-filehash-column-too-short-for-sha-256">CRITICAL: DB-002 - Script <code>fileHash</code> Column Too Short for SHA-256</h3>
+<p><strong>File:</strong> <code>src/backend/src/models/Script.ts:78-81</code>
+<strong>Impact:</strong> CLAUDE.md documents SHA-256 hashing for deduplication, but <code>fileHash</code> is <code>STRING(32)</code> which can only hold MD5 hashes (32 hex chars). SHA-256 requires 64 hex characters.</p>
+<p><strong>Problem:</strong></p>
+<pre><code class="language-typescript">fileHash: {
+  type: DataTypes.STRING(32), // SHA-256 = 64 hex chars, this truncates!
+  allowNull: true,
+  field: 'file_hash'
+}
+</code></pre>
+<p><strong>Fix:</strong> Change to <code>DataTypes.STRING(64)</code> or <code>DataTypes.STRING(128)</code> for future-proofing.</p>
+<hr />
+<h3 id="critical-db-003-chathistory-uses-different-model-pattern">CRITICAL: DB-003 - ChatHistory Uses Different Model Pattern</h3>
+<p><strong>File:</strong> <code>src/backend/src/models/ChatHistory.ts</code>
+<strong>Impact:</strong> ChatHistory uses a factory function pattern (<code>ChatHistory(sequelize)</code>) while all other models use static class pattern (<code>Model.initialize(sequelize)</code>). This causes inconsistency and the <code>safeAssociate</code> call in <code>models/index.ts</code> may silently fail because the returned model instance has the <code>associate</code> method attached dynamically.</p>
+<p><strong>Problem:</strong></p>
+<pre><code class="language-typescript">// ChatHistory uses factory pattern - different from all other models
+const ChatHistory = function(sequelize: Sequelize) {
+  const ChatHistoryModel = sequelize.define&lt;ChatHistoryInstance&gt;(...);
+  // @ts-ignore - Dynamic association assignment pattern
+  ChatHistoryModel.associate = function() { ... };
+  return ChatHistoryModel;
+};
+
+// Then monkey-patches initialize:
+ChatHistory.initialize = function(sequelize: Sequelize) {
+  return ChatHistory(sequelize);
+};
+</code></pre>
+<p><strong>Fix:</strong> Refactor to use the same static class pattern as other models.</p>
+<hr />
+<h3 id="major-db-004-missing-database-indexes">MAJOR: DB-004 - Missing Database Indexes</h3>
+<p><strong>Files:</strong> Multiple models
+<strong>Impact:</strong> Performance degradation on common queries.</p>
+<p>Missing indexes:
+| Model | Column(s) | Query Pattern |
+|-------|-----------|---------------|
+| Script | <code>file_hash</code> | Deduplication lookup |
+| Script | <code>is_public, user_id</code> | Visibility filtering (compound) |
+| ScriptAnalysis | <code>script_id</code> (already unique, but no index on scores) | Score-based filtering |
+| ScriptVersion | <code>script_id, version</code> | Already has unique constraint (good) |
+| Comment | <code>created_at</code> | Time-ordered listing |</p>
+<hr />
+<h3 id="major-db-005-inconsistent-foreign-key-naming">MAJOR: DB-005 - Inconsistent Foreign Key Naming</h3>
+<p><strong>Files:</strong> Multiple models
+<strong>Impact:</strong> Confusing codebase, potential query bugs.</p>
+<table>
+<thead>
+<tr>
+<th>Model</th>
+<th>Association FK</th>
+<th>Field Mapping</th>
+<th>Issue</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Comment</td>
+<td><code>foreignKey: 'script_id'</code></td>
+<td>Uses snake_case directly</td>
+<td>Other models use camelCase <code>scriptId</code></td>
+</tr>
+<tr>
+<td>Comment</td>
+<td><code>foreignKey: 'user_id'</code></td>
+<td>Uses snake_case directly</td>
+<td>Inconsistent with Script's <code>foreignKey: 'userId'</code></td>
+</tr>
+<tr>
+<td>ScriptDependency</td>
+<td><code>foreignKey: 'parent_script_id'</code></td>
+<td>Uses snake_case</td>
+<td>Should use camelCase <code>parentScriptId</code></td>
+</tr>
+<tr>
+<td>ExecutionLog</td>
+<td>Missing <code>field: 'script_id'</code></td>
+<td>No explicit field mapping</td>
+<td>Relies on <code>underscored: true</code></td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h3 id="major-db-006-no-cascade-on-scriptanalysis-delete">MAJOR: DB-006 - No CASCADE on ScriptAnalysis Delete</h3>
+<p><strong>File:</strong> <code>src/backend/src/models/ScriptAnalysis.ts:46-48</code>
+<strong>Impact:</strong> When a Script is deleted, the ScriptAnalysis must be manually deleted. The <code>crud.ts:379</code> handles this manually, but if any other code path deletes a script, orphan analyses remain.</p>
+<p><strong>Problem:</strong> No <code>onDelete: 'CASCADE'</code> on ScriptAnalysis.scriptId reference.</p>
+<hr />
+<h3 id="major-db-007-scriptversion-timestamps-false-but-model-declares-createdat-and-updatedat">MAJOR: DB-007 - ScriptVersion <code>timestamps: false</code> But Model Declares <code>createdAt</code> and <code>updatedAt</code></h3>
+<p><strong>File:</strong> <code>src/backend/src/models/ScriptVersion.ts:59-60</code>
+<strong>Impact:</strong> The model class declares <code>public readonly createdAt!: Date; public readonly updatedAt!: Date;</code> but the Sequelize config has <code>timestamps: false</code>. Accessing these properties will return <code>undefined</code>.</p>
+<hr />
+<h3 id="minor-db-008-embedding-model-uses-outdated-default">MINOR: DB-008 - Embedding Model Uses Outdated Default</h3>
+<p><strong>File:</strong> <code>src/backend/src/models/ScriptEmbedding.ts:42</code>
+<strong>Impact:</strong> Default embedding model <code>text-embedding-ada-002</code> is deprecated. Current best practice (2026) is <code>text-embedding-3-small</code> or <code>text-embedding-3-large</code>.</p>
+<hr />
+<h3 id="minor-db-009-no-pagination-limit-guard">MINOR: DB-009 - No Pagination Limit Guard</h3>
+<p><strong>File:</strong> <code>src/backend/src/controllers/script/shared.ts:386-391</code>
+<strong>Impact:</strong> <code>parsePaginationParams</code> doesn't cap the <code>limit</code> value. A client can request <code>?limit=999999</code> and pull all records.</p>
+<pre><code class="language-typescript">// No max limit enforced
+const limit = parseInt(query.limit as string) || 10;
+</code></pre>
+<hr />
+<h2 id="api-issues-found">API Issues Found</h2>
+<h3 id="critical-api-001-inconsistent-response-shapes">CRITICAL: API-001 - Inconsistent Response Shapes</h3>
+<p><strong>Files:</strong> Multiple controllers
+<strong>Impact:</strong> Frontend must handle different response structures for different endpoints, increasing complexity and bugs.</p>
+<table>
+<thead>
+<tr>
+<th>Endpoint</th>
+<th>Success Shape</th>
+<th>Error Shape</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Auth routes</td>
+<td><code>{ success: true, token, user }</code></td>
+<td><code>{ success: false, message, error }</code></td>
+</tr>
+<tr>
+<td>Script CRUD</td>
+<td>Raw script object</td>
+<td><code>{ message: '...' }</code></td>
+</tr>
+<tr>
+<td>Script delete</td>
+<td><code>{ message, id, success }</code></td>
+<td><code>{ message, error, success }</code></td>
+</tr>
+<tr>
+<td>Analytics</td>
+<td><code>{ message: '...' }</code> or raw data</td>
+<td><code>{ message, status: 'error' }</code></td>
+</tr>
+<tr>
+<td>Health</td>
+<td>Custom format</td>
+<td>Custom format</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Best Practice (2026):</strong> Use consistent envelope:</p>
+<pre><code class="language-typescript">// Success
+{ success: true, data: { ... }, meta?: { page, total } }
+
+// Error
+{ success: false, error: { code: 'ERROR_CODE', message: '...' } }
+</code></pre>
+<hr />
+<h3 id="critical-api-002-analytics-summary-endpoint-returns-stub">CRITICAL: API-002 - Analytics Summary Endpoint Returns Stub</h3>
+<p><strong>File:</strong> <code>src/backend/src/routes/analytics.ts:60-63</code>
+<strong>Impact:</strong> Production endpoint returns a TODO placeholder.</p>
+<pre><code class="language-typescript">router.get('/summary', (req, res) =&gt; {
+  // TODO: Implement comprehensive analytics summary
+  res.json({ message: 'Analytics summary endpoint (to be implemented)' });
+});
+</code></pre>
+<hr />
+<h3 id="major-api-003-serializable-isolation-on-script-create-is-overkill">MAJOR: API-003 - SERIALIZABLE Isolation on Script Create Is Overkill</h3>
+<p><strong>File:</strong> <code>src/backend/src/controllers/script/crud.ts:193-195</code>
+<strong>Impact:</strong> <code>SERIALIZABLE</code> isolation level causes maximum lock contention and can lead to serialization failures under concurrent load. Script creation doesn't need this - <code>READ COMMITTED</code> (Sequelize default) is sufficient.</p>
+<pre><code class="language-typescript">transaction = await sequelize.transaction({
+  isolationLevel: Transaction.ISOLATION_LEVELS.SERIALIZABLE // Overkill
+});
+</code></pre>
+<hr />
+<h3 id="major-api-004-fire-and-forget-analysis-with-no-error-recovery">MAJOR: API-004 - Fire-and-Forget Analysis With No Error Recovery</h3>
+<p><strong>File:</strong> <code>src/backend/src/controllers/script/crud.ts:262-310</code>
+<strong>Impact:</strong> On script create, AI analysis is fired and forgotten with <code>void (async () =&gt; { ... })()</code>. If it fails, the user gets no analysis and no notification. There's no retry mechanism.</p>
+<hr />
+<h3 id="major-api-005-script-update-re-analysis-blocks-the-response">MAJOR: API-005 - Script Update Re-analysis Blocks the Response</h3>
+<p><strong>File:</strong> <code>src/backend/src/controllers/script/crud.ts:462-505</code>
+<strong>Impact:</strong> Unlike create (which is fire-and-forget), the update path calls AI analysis <strong>synchronously within the transaction</strong>. If the AI service is slow, the user waits and the transaction holds locks.</p>
+<hr />
+<h3 id="minor-api-006-user-email-exposed-in-execution-history">MINOR: API-006 - User Email Exposed in Execution History</h3>
+<p><strong>File:</strong> <code>src/backend/src/controllers/script/execution.ts:113</code>
+<strong>Impact:</strong> The query includes <code>email</code> in user attributes, which is then filtered out in the response. But the raw data fetched from DB includes it unnecessarily.</p>
+<pre><code class="language-typescript">attributes: ['id', 'username', 'email'] // 'email' fetched but not returned
+</code></pre>
+<hr />
+<h3 id="minor-api-007-no-input-validation-on-script-routes">MINOR: API-007 - No Input Validation on Script Routes</h3>
+<p><strong>File:</strong> <code>src/backend/src/routes/scripts.ts</code>
+<strong>Impact:</strong> Script creation/update doesn't use <code>express-validator</code> like auth routes do. Validation is done manually in controllers, which is less robust.</p>
+<hr />
+<h3 id="minor-api-008-analytics-controller-instantiated-per-request">MINOR: API-008 - Analytics Controller Instantiated Per Request</h3>
+<p><strong>File:</strong> <code>src/backend/src/routes/analytics.ts:15-19</code>
+<strong>Impact:</strong> <code>new analyticsController()</code> creates a new instance for every request. This is wasteful if the controller is stateless.</p>
+<pre><code class="language-typescript">router.get('/security', async (req, res) =&gt; {
+  const controller = new analyticsController(); // New instance each time
+  await controller.getSecurityMetrics(req, res);
+});
+</code></pre>
+<hr />
+<h2 id="backend-correctness-issues">Backend Correctness Issues</h2>
+<h3 id="be-001-massive-ts-nocheck-usage">BE-001 - Massive <code>@ts-nocheck</code> Usage</h3>
+<p><strong>Files:</strong> <code>index.ts</code>, <code>scripts.ts</code>, <code>documentation.ts</code>, <code>chat.ts</code>, <code>uploadMiddleware.ts</code>, <code>redisMiddleware.ts</code>, <code>models/index.ts</code>
+<strong>Impact:</strong> TypeScript safety completely bypassed in 7 files. This means type errors, null access, and incorrect argument passing are not caught at compile time.</p>
+<p><strong>Root Cause:</strong> Most <code>@ts-nocheck</code> comments cite "Express middleware chain loses type info when JWT adds req.user". This is solvable with proper interface extension.</p>
+<p><strong>Fix:</strong> Create a shared type declaration:</p>
+<pre><code class="language-typescript">// src/backend/src/types/express.d.ts
+declare namespace Express {
+  interface Request {
+    user?: { id: number; username: string; email: string; role: string };
+    authInfo?: { tokenType: string; requestId: string; ... };
+  }
+}
+</code></pre>
+<hr />
+<h3 id="be-002-default-port-mismatch">BE-002 - Default Port Mismatch</h3>
+<p><strong>File:</strong> <code>src/backend/src/index.ts:62</code>
+<strong>Impact:</strong> Default port is <code>4001</code> but CLAUDE.md says backend is port <code>4000</code>.</p>
+<pre><code class="language-typescript">const port = process.env.PORT ? parseInt(process.env.PORT, 10) : 4001; // Should be 4000
+</code></pre>
+<hr />
+<h3 id="be-003-custom-in-memory-cache-instead-of-using-redis">BE-003 - Custom In-Memory Cache Instead of Using Redis</h3>
+<p><strong>File:</strong> <code>src/backend/src/index.ts:94-250+</code>
+<strong>Impact:</strong> ~200 lines of custom LRU cache with TTL, persistence, memory monitoring. Redis is already in the stack but the in-memory cache is always used instead. This means cache is lost on restart and isn't shared across potential multiple backend instances.</p>
+<hr />
+<h3 id="be-004-require-inside-module-circular-dependency-workaround">BE-004 - <code>require()</code> Inside Module (Circular Dependency Workaround)</h3>
+<p><strong>File:</strong> <code>src/backend/src/controllers/script/shared.ts:73-76</code>
+<strong>Impact:</strong> Uses <code>require('../../index')</code> at runtime to avoid circular dependency. This is fragile and breaks ES module compatibility.</p>
+<pre><code class="language-typescript">export const getCache = (): CacheService =&gt; {
+  const mod = require('../../index') as { cache?: CacheService } | undefined;
+  // ...
+};
+</code></pre>
+<hr />
+<h3 id="be-005-error-handler-catches-validationerror-mongoose-but-uses-sequelize">BE-005 - Error Handler Catches <code>ValidationError</code> (Mongoose) But Uses Sequelize</h3>
+<p><strong>File:</strong> <code>src/backend/src/middleware/errorHandler.ts:48-50</code>
+<strong>Impact:</strong> The error handler checks for <code>ValidationError</code> with comment "Mongoose or other validation error" but this project uses Sequelize, not Mongoose. Dead code path.</p>
+<hr />
+<h3 id="be-006-unhandledrejection-handler-throws">BE-006 - <code>unhandledRejection</code> Handler Throws</h3>
+<p><strong>File:</strong> <code>src/backend/src/middleware/errorHandler.ts:110-118</code>
+<strong>Impact:</strong> The <code>unhandledRejection</code> handler does <code>throw reason</code> to convert to <code>uncaughtException</code>. This is a known anti-pattern in Node.js 18+ because <code>unhandledRejection</code> defaults to <code>throw</code> mode already, and re-throwing can cause double-logging or mask the original rejection.</p>
+<hr />
+<h3 id="be-007-security-logger-uses-consolewarn-instead-of-winston">BE-007 - Security Logger Uses <code>console.warn</code> Instead of Winston</h3>
+<p><strong>File:</strong> <code>src/backend/src/middleware/security.ts:296</code>
+<strong>Impact:</strong> Security-critical events like path traversal and XSS detection use <code>console.warn</code> instead of the structured <code>logger</code> used everywhere else. These events won't appear in log files.</p>
+<hr />
+<h3 id="be-008-password-hash-field-size-may-be-insufficient">BE-008 - Password Hash Field Size May Be Insufficient</h3>
+<p><strong>File:</strong> <code>src/backend/src/models/User.ts:228</code>
+<strong>Impact:</strong> <code>DataTypes.STRING(100)</code> for password_hash. Bcrypt hashes are exactly 60 chars, so 100 is fine for bcrypt. But if switching to argon2id (recommended by OWASP 2025+), hashes can be 97+ chars. Consider <code>STRING(255)</code>.</p>
+<hr />
+<h3 id="be-009-stale-scriptcontrollerfixts-file">BE-009 - Stale <code>ScriptController.fix.ts</code> File</h3>
+<p><strong>File:</strong> <code>src/backend/src/controllers/ScriptController.fix.ts</code>
+<strong>Impact:</strong> This appears to be a leftover fix file that should have been cleaned up.</p>
+<hr />
+<h2 id="20-improvements-with-best-practices">20 Improvements with Best Practices</h2>
+<h3 id="improvement-1-add-missing-output-column-to-executionlog">Improvement 1: Add Missing <code>output</code> Column to ExecutionLog</h3>
+<ul>
+<li><strong>Type:</strong> Critical Fix</li>
+<li><strong>Best Practice:</strong> Every model field referenced in controllers must exist in the schema</li>
+<li><strong>Action:</strong> Add <code>output: DataTypes.TEXT</code> to ExecutionLog model</li>
+</ul>
+<h3 id="improvement-2-fix-script-filehash-length-for-sha-256">Improvement 2: Fix Script <code>fileHash</code> Length for SHA-256</h3>
+<ul>
+<li><strong>Type:</strong> Critical Fix</li>
+<li><strong>Best Practice:</strong> Column sizes must accommodate the hash algorithm used (SHA-256 = 64 hex chars)</li>
+<li><strong>Action:</strong> Change <code>STRING(32)</code> to <code>STRING(64)</code></li>
+</ul>
+<h3 id="improvement-3-standardize-chathistory-model-pattern">Improvement 3: Standardize ChatHistory Model Pattern</h3>
+<ul>
+<li><strong>Type:</strong> Critical Fix</li>
+<li><strong>Best Practice:</strong> All models should follow the same initialization pattern (static class method)</li>
+<li><strong>Action:</strong> Refactor ChatHistory to use <code>class extends Model { static initialize() {} }</code></li>
+</ul>
+<h3 id="improvement-4-remove-all-ts-nocheck-directives">Improvement 4: Remove All <code>@ts-nocheck</code> Directives</h3>
+<ul>
+<li><strong>Type:</strong> Major Fix</li>
+<li><strong>Best Practice:</strong> TypeScript strict mode catches bugs at compile time; never disable it file-wide</li>
+<li><strong>Action:</strong> Create proper Express.Request type extensions, fix type errors</li>
+</ul>
+<h3 id="improvement-5-fix-default-port-to-match-claudemd-4000">Improvement 5: Fix Default Port to Match CLAUDE.md (4000)</h3>
+<ul>
+<li><strong>Type:</strong> Critical Fix</li>
+<li><strong>Best Practice:</strong> Default values must match documentation</li>
+<li><strong>Action:</strong> Change fallback port from 4001 to 4000</li>
+</ul>
+<h3 id="improvement-6-standardize-api-response-envelope">Improvement 6: Standardize API Response Envelope</h3>
+<ul>
+<li><strong>Type:</strong> Major Improvement</li>
+<li><strong>Best Practice:</strong> RFC 7807 Problem Details + consistent success wrapper (2026 standard)</li>
+<li><strong>Action:</strong> Create response helpers, migrate all endpoints</li>
+</ul>
+<h3 id="improvement-7-add-pagination-limit-guard">Improvement 7: Add Pagination Limit Guard</h3>
+<ul>
+<li><strong>Type:</strong> Major Fix</li>
+<li><strong>Best Practice:</strong> Always cap pagination limit (max 100) to prevent resource exhaustion</li>
+<li><strong>Action:</strong> Add <code>Math.min(limit, 100)</code> guard in <code>parsePaginationParams</code></li>
+</ul>
+<h3 id="improvement-8-implement-analytics-summary-endpoint">Improvement 8: Implement Analytics Summary Endpoint</h3>
+<ul>
+<li><strong>Type:</strong> Critical Fix</li>
+<li><strong>Best Practice:</strong> No production endpoints should return TODO stubs</li>
+<li><strong>Action:</strong> Implement actual aggregation query</li>
+</ul>
+<h3 id="improvement-9-fix-transaction-isolation-level-on-script-create">Improvement 9: Fix Transaction Isolation Level on Script Create</h3>
+<ul>
+<li><strong>Type:</strong> Major Fix</li>
+<li><strong>Best Practice:</strong> Use minimum necessary isolation level; SERIALIZABLE only for financial transactions</li>
+<li><strong>Action:</strong> Remove explicit isolation level (use READ COMMITTED default)</li>
+</ul>
+<h3 id="improvement-10-add-cascade-on-scriptanalysis-foreign-key">Improvement 10: Add CASCADE on ScriptAnalysis Foreign Key</h3>
+<ul>
+<li><strong>Type:</strong> Major Fix</li>
+<li><strong>Best Practice:</strong> Use database-level cascades instead of application-level manual deletes</li>
+<li><strong>Action:</strong> Add <code>onDelete: 'CASCADE'</code> to ScriptAnalysis.scriptId</li>
+</ul>
+<h3 id="improvement-11-add-missing-database-indexes">Improvement 11: Add Missing Database Indexes</h3>
+<ul>
+<li><strong>Type:</strong> Major Improvement</li>
+<li><strong>Best Practice:</strong> Index all columns used in WHERE clauses and JOIN conditions</li>
+<li><strong>Action:</strong> Add indexes on Script.file_hash, compound index on (is_public, user_id)</li>
+</ul>
+<h3 id="improvement-12-fix-foreign-key-naming-consistency">Improvement 12: Fix Foreign Key Naming Consistency</h3>
+<ul>
+<li><strong>Type:</strong> Minor Fix</li>
+<li><strong>Best Practice:</strong> Use consistent naming convention (camelCase for Sequelize, snake_case for DB)</li>
+<li><strong>Action:</strong> Standardize all foreignKey references to camelCase</li>
+</ul>
+<h3 id="improvement-13-fix-scriptversion-timestamp-mismatch">Improvement 13: Fix ScriptVersion Timestamp Mismatch</h3>
+<ul>
+<li><strong>Type:</strong> Minor Fix</li>
+<li><strong>Best Practice:</strong> Model class properties must reflect actual Sequelize configuration</li>
+<li><strong>Action:</strong> Either enable timestamps or remove the property declarations</li>
+</ul>
+<h3 id="improvement-14-update-default-embedding-model">Improvement 14: Update Default Embedding Model</h3>
+<ul>
+<li><strong>Type:</strong> Minor Improvement</li>
+<li><strong>Best Practice:</strong> Use current-generation models (text-embedding-3-small as of 2026)</li>
+<li><strong>Action:</strong> Update default in ScriptEmbedding model</li>
+</ul>
+<h3 id="improvement-15-replace-custom-cache-with-redis-integration">Improvement 15: Replace Custom Cache with Redis Integration</h3>
+<ul>
+<li><strong>Type:</strong> Major Improvement</li>
+<li><strong>Best Practice:</strong> Use the cache service already in your stack; don't reinvent LRU caches</li>
+<li><strong>Action:</strong> Use ioredis client with proper TTL instead of 200-line custom Map cache</li>
+</ul>
+<h3 id="improvement-16-fix-circular-dependency-with-dependency-injection">Improvement 16: Fix Circular Dependency with Dependency Injection</h3>
+<ul>
+<li><strong>Type:</strong> Major Improvement</li>
+<li><strong>Best Practice:</strong> Use dependency injection or service locator pattern instead of runtime require()</li>
+<li><strong>Action:</strong> Extract cache into a standalone module, inject into controllers</li>
+</ul>
+<h3 id="improvement-17-use-winston-for-security-logger">Improvement 17: Use Winston for Security Logger</h3>
+<ul>
+<li><strong>Type:</strong> Minor Fix</li>
+<li><strong>Best Practice:</strong> All production logging should go through the structured logger</li>
+<li><strong>Action:</strong> Replace <code>console.warn</code> with <code>logger.warn</code> in security middleware</li>
+</ul>
+<h3 id="improvement-18-remove-dead-mongoose-error-handling">Improvement 18: Remove Dead Mongoose Error Handling</h3>
+<ul>
+<li><strong>Type:</strong> Minor Fix</li>
+<li><strong>Best Practice:</strong> Don't handle errors from frameworks you don't use</li>
+<li><strong>Action:</strong> Remove <code>ValidationError</code> (Mongoose) handling from errorHandler</li>
+</ul>
+<h3 id="improvement-19-fix-unhandledrejection-handler">Improvement 19: Fix <code>unhandledRejection</code> Handler</h3>
+<ul>
+<li><strong>Type:</strong> Major Fix</li>
+<li><strong>Best Practice (Node.js 22+):</strong> Don't re-throw in unhandledRejection; log and exit gracefully</li>
+<li><strong>Action:</strong> Replace <code>throw reason</code> with <code>process.exit(1)</code> after logging</li>
+</ul>
+<h3 id="improvement-20-add-input-validation-to-script-routes">Improvement 20: Add Input Validation to Script Routes</h3>
+<ul>
+<li><strong>Type:</strong> Major Improvement</li>
+<li><strong>Best Practice:</strong> Use express-validator on ALL user-facing endpoints, not just auth</li>
+<li><strong>Action:</strong> Add validation middleware for title, content, categoryId, tags</li>
+</ul>
+<h3 id="improvement-21-bonus-clean-up-stale-files">Improvement 21 (Bonus): Clean Up Stale Files</h3>
+<ul>
+<li><strong>Type:</strong> Minor Cleanup</li>
+<li><strong>Best Practice:</strong> No dead code or abandoned fix files in production</li>
+<li><strong>Action:</strong> Remove <code>ScriptController.fix.ts</code></li>
+</ul>
+<h3 id="improvement-22-bonus-increase-password-hash-field-size">Improvement 22 (Bonus): Increase Password Hash Field Size</h3>
+<ul>
+<li><strong>Type:</strong> Minor Future-Proofing</li>
+<li><strong>Best Practice:</strong> Accommodate argon2id hashes (OWASP 2025+ recommendation)</li>
+<li><strong>Action:</strong> Change <code>STRING(100)</code> to <code>STRING(255)</code> for password_hash</li>
+</ul>
+<hr />
+<h2 id="comprehensive-implementation-plan">Comprehensive Implementation Plan</h2>
+<h3 id="philosophy">Philosophy</h3>
+<p>This plan attacks the project as a <strong>single cohesive entity</strong> rather than fixing individual errors. All changes are grouped into <strong>waves</strong> that build on each other, ensuring the foundation (types, models, database) is solid before fixing the layers above (controllers, routes, API responses).</p>
+<h3 id="wave-1-foundation-types-models-must-do-first">Wave 1: Foundation - Types &amp; Models (Must Do First)</h3>
+<p><strong>Goal:</strong> Establish type safety and fix all database schema issues.</p>
+<table>
+<thead>
+<tr>
+<th>#</th>
+<th>Task</th>
+<th>Files</th>
+<th>Depends On</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>1.1</td>
+<td>Create Express.Request type declaration</td>
+<td><code>src/types/express.d.ts</code></td>
+<td>-</td>
+</tr>
+<tr>
+<td>1.2</td>
+<td>Remove all <code>@ts-nocheck</code> / <code>@ts-ignore</code></td>
+<td>7 files across backend</td>
+<td>1.1</td>
+</tr>
+<tr>
+<td>1.3</td>
+<td>Add <code>output</code> field to ExecutionLog model</td>
+<td><code>models/ExecutionLog.ts</code></td>
+<td>-</td>
+</tr>
+<tr>
+<td>1.4</td>
+<td>Fix Script.fileHash to STRING(64)</td>
+<td><code>models/Script.ts</code></td>
+<td>-</td>
+</tr>
+<tr>
+<td>1.5</td>
+<td>Refactor ChatHistory to class pattern</td>
+<td><code>models/ChatHistory.ts</code></td>
+<td>-</td>
+</tr>
+<tr>
+<td>1.6</td>
+<td>Add CASCADE to ScriptAnalysis FK</td>
+<td><code>models/ScriptAnalysis.ts</code></td>
+<td>-</td>
+</tr>
+<tr>
+<td>1.7</td>
+<td>Fix ScriptVersion timestamps</td>
+<td><code>models/ScriptVersion.ts</code></td>
+<td>-</td>
+</tr>
+<tr>
+<td>1.8</td>
+<td>Standardize FK naming (Comment, ScriptDependency)</td>
+<td>2 model files</td>
+<td>-</td>
+</tr>
+<tr>
+<td>1.9</td>
+<td>Add missing indexes (Script.file_hash, compound)</td>
+<td><code>models/Script.ts</code> + others</td>
+<td>-</td>
+</tr>
+<tr>
+<td>1.10</td>
+<td>Update embedding model default</td>
+<td><code>models/ScriptEmbedding.ts</code></td>
+<td>-</td>
+</tr>
+<tr>
+<td>1.11</td>
+<td>Increase password hash field size</td>
+<td><code>models/User.ts</code></td>
+<td>-</td>
+</tr>
+<tr>
+<td>1.12</td>
+<td>Fix default port 4001 -&gt; 4000</td>
+<td><code>src/index.ts</code></td>
+<td>-</td>
+</tr>
+</tbody>
+</table>
+<h3 id="wave-2-core-backend-controllers-middleware">Wave 2: Core Backend - Controllers &amp; Middleware</h3>
+<p><strong>Goal:</strong> Fix all controller logic, error handling, and middleware issues.</p>
+<table>
+<thead>
+<tr>
+<th>#</th>
+<th>Task</th>
+<th>Files</th>
+<th>Depends On</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>2.1</td>
+<td>Fix SERIALIZABLE -&gt; READ COMMITTED</td>
+<td><code>controllers/script/crud.ts</code></td>
+<td>Wave 1</td>
+</tr>
+<tr>
+<td>2.2</td>
+<td>Add pagination limit guard (max 100)</td>
+<td><code>controllers/script/shared.ts</code></td>
+<td>Wave 1</td>
+</tr>
+<tr>
+<td>2.3</td>
+<td>Fix fire-and-forget analysis (add job queue or status tracking)</td>
+<td><code>controllers/script/crud.ts</code></td>
+<td>Wave 1</td>
+</tr>
+<tr>
+<td>2.4</td>
+<td>Make update analysis async (non-blocking)</td>
+<td><code>controllers/script/crud.ts</code></td>
+<td>2.3</td>
+</tr>
+<tr>
+<td>2.5</td>
+<td>Remove email from execution history query</td>
+<td><code>controllers/script/execution.ts</code></td>
+<td>-</td>
+</tr>
+<tr>
+<td>2.6</td>
+<td>Fix unhandledRejection handler</td>
+<td><code>middleware/errorHandler.ts</code></td>
+<td>-</td>
+</tr>
+<tr>
+<td>2.7</td>
+<td>Remove Mongoose error handling</td>
+<td><code>middleware/errorHandler.ts</code></td>
+<td>-</td>
+</tr>
+<tr>
+<td>2.8</td>
+<td>Use Winston in security logger</td>
+<td><code>middleware/security.ts</code></td>
+<td>-</td>
+</tr>
+<tr>
+<td>2.9</td>
+<td>Add express-validator to script routes</td>
+<td><code>routes/scripts.ts</code></td>
+<td>1.1</td>
+</tr>
+<tr>
+<td>2.10</td>
+<td>Implement analytics summary endpoint</td>
+<td><code>routes/analytics.ts</code></td>
+<td>Wave 1</td>
+</tr>
+<tr>
+<td>2.11</td>
+<td>Fix analytics controller instantiation</td>
+<td><code>routes/analytics.ts</code></td>
+<td>-</td>
+</tr>
+<tr>
+<td>2.12</td>
+<td>Remove ScriptController.fix.ts</td>
+<td><code>controllers/</code></td>
+<td>-</td>
+</tr>
+</tbody>
+</table>
+<h3 id="wave-3-architecture-cache-dependencies">Wave 3: Architecture - Cache &amp; Dependencies</h3>
+<p><strong>Goal:</strong> Fix architectural issues (cache, circular deps).</p>
+<table>
+<thead>
+<tr>
+<th>#</th>
+<th>Task</th>
+<th>Files</th>
+<th>Depends On</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>3.1</td>
+<td>Extract cache into standalone module</td>
+<td>New: <code>services/cache.ts</code></td>
+<td>Wave 2</td>
+</tr>
+<tr>
+<td>3.2</td>
+<td>Replace custom Map cache with Redis wrapper</td>
+<td><code>services/cache.ts</code>, <code>index.ts</code></td>
+<td>3.1</td>
+</tr>
+<tr>
+<td>3.3</td>
+<td>Fix circular dependency (remove require())</td>
+<td><code>controllers/script/shared.ts</code></td>
+<td>3.1</td>
+</tr>
+<tr>
+<td>3.4</td>
+<td>Remove 200+ lines of custom cache code from index.ts</td>
+<td><code>src/index.ts</code></td>
+<td>3.2</td>
+</tr>
+</tbody>
+</table>
+<h3 id="wave-4-api-consistency">Wave 4: API Consistency</h3>
+<p><strong>Goal:</strong> Standardize all API responses.</p>
+<table>
+<thead>
+<tr>
+<th>#</th>
+<th>Task</th>
+<th>Files</th>
+<th>Depends On</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>4.1</td>
+<td>Create response envelope helpers</td>
+<td>New: <code>utils/responseHelpers.ts</code></td>
+<td>-</td>
+</tr>
+<tr>
+<td>4.2</td>
+<td>Migrate auth routes to envelope</td>
+<td><code>routes/auth.ts</code></td>
+<td>4.1</td>
+</tr>
+<tr>
+<td>4.3</td>
+<td>Migrate script CRUD to envelope</td>
+<td><code>controllers/script/crud.ts</code></td>
+<td>4.1</td>
+</tr>
+<tr>
+<td>4.4</td>
+<td>Migrate all other controllers to envelope</td>
+<td>Multiple files</td>
+<td>4.1</td>
+</tr>
+</tbody>
+</table>
+<h3 id="wave-5-verification">Wave 5: Verification</h3>
+<p><strong>Goal:</strong> Verify everything works.</p>
+<table>
+<thead>
+<tr>
+<th>#</th>
+<th>Task</th>
+<th>Approach</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>5.1</td>
+<td>Run TypeScript compiler (no errors)</td>
+<td><code>npm run typecheck</code></td>
+</tr>
+<tr>
+<td>5.2</td>
+<td>Run linter</td>
+<td><code>npm run lint</code></td>
+</tr>
+<tr>
+<td>5.3</td>
+<td>Run test suite</td>
+<td><code>npm test</code></td>
+</tr>
+<tr>
+<td>5.4</td>
+<td>Manual smoke test (start backend, hit key endpoints)</td>
+<td><code>npm run dev</code> + curl</td>
+</tr>
+<tr>
+<td>5.5</td>
+<td>Verify database sync works</td>
+<td>Check Sequelize sync output</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="research-references-april-2026-best-practices">Research References (April 2026 Best Practices)</h2>
+<h3 id="expressjs-typescript">Express.js / TypeScript</h3>
+<ul>
+<li><strong>Never use <code>@ts-nocheck</code></strong> - Use proper type declarations instead (Express.Request augmentation)</li>
+<li><strong>Use <code>express-validator</code> on all endpoints</strong> - Not just auth routes</li>
+<li><strong>Structured error responses</strong> - RFC 7807 Problem Details standard</li>
+<li><strong>Response envelope pattern</strong> - Consistent <code>{ success, data, error }</code> wrapping</li>
+</ul>
+<h3 id="sequelize-postgresql">Sequelize / PostgreSQL</h3>
+<ul>
+<li><strong>Index strategy</strong> - Index all FK columns, compound indexes for common WHERE patterns</li>
+<li><strong>CASCADE deletes</strong> - Prefer database-level cascading over application-level cleanup</li>
+<li><strong>READ COMMITTED default</strong> - Only escalate isolation for actual concurrency conflicts</li>
+<li><strong>Pagination guards</strong> - Always cap <code>limit</code> at a reasonable maximum (50-100)</li>
+<li><strong>Column sizing</strong> - Size hash columns for the actual algorithm (SHA-256 = 64 chars)</li>
+</ul>
+<h3 id="nodejs-security-owasp-2026">Node.js Security (OWASP 2026)</h3>
+<ul>
+<li><strong>Helmet.js</strong> - Already well-configured in this project</li>
+<li><strong>Rate limiting</strong> - Good implementation with per-endpoint limits</li>
+<li><strong>CSRF protection</strong> - Origin-based validation is appropriate for API-first backends</li>
+<li><strong>Password hashing</strong> - bcrypt with 12 rounds is acceptable; consider argon2id for new projects</li>
+<li><strong>JWT</strong> - Current implementation follows best practices (refresh tokens, constant-time comparison)</li>
+</ul>
+<h3 id="architecture">Architecture</h3>
+<ul>
+<li><strong>Single cache layer</strong> - Don't maintain both Redis and in-memory when Redis is available</li>
+<li><strong>Dependency injection</strong> - Avoid <code>require()</code> in handler functions for testability</li>
+<li><strong>Consistent model patterns</strong> - All models should follow the same initialization convention</li>
+<li><strong>Clean code</strong> - Remove dead files, stubs, and commented-out code</li>
+</ul>
+<hr />
+<p><em>Generated by full project review on April 1, 2026</em></p>
+<hr />
+<h2 id="implementation-status-updated-april-2-2026">Implementation Status (Updated April 2, 2026)</h2>
+<h3 id="all-22-improvements-final-status">All 22 Improvements - Final Status</h3>
+<table>
+<thead>
+<tr>
+<th>#</th>
+<th>Improvement</th>
+<th>Status</th>
+<th>Session</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>1</td>
+<td>ExecutionLog <code>output</code> column</td>
+<td>DONE</td>
+<td>Apr 1</td>
+</tr>
+<tr>
+<td>2</td>
+<td>Script fileHash STRING(64)</td>
+<td>DONE</td>
+<td>Apr 1</td>
+</tr>
+<tr>
+<td>3</td>
+<td>ChatHistory class pattern</td>
+<td>DONE</td>
+<td>Apr 1</td>
+</tr>
+<tr>
+<td>4</td>
+<td>Remove @ts-nocheck (7 files)</td>
+<td>DONE</td>
+<td>Apr 1</td>
+</tr>
+<tr>
+<td>5</td>
+<td>Fix port 4001 -&gt; 4000</td>
+<td>DONE</td>
+<td>Apr 1</td>
+</tr>
+<tr>
+<td>6</td>
+<td><strong>API Response Envelope</strong></td>
+<td><strong>DONE</strong></td>
+<td>Apr 2</td>
+</tr>
+<tr>
+<td>7</td>
+<td>Pagination limit guard (max 100)</td>
+<td>DONE</td>
+<td>Apr 1</td>
+</tr>
+<tr>
+<td>8</td>
+<td>Analytics summary endpoint</td>
+<td>DONE</td>
+<td>Apr 1</td>
+</tr>
+<tr>
+<td>9</td>
+<td>SERIALIZABLE -&gt; READ COMMITTED</td>
+<td>DONE</td>
+<td>Apr 1</td>
+</tr>
+<tr>
+<td>10</td>
+<td>ScriptAnalysis CASCADE</td>
+<td>DONE</td>
+<td>Apr 1</td>
+</tr>
+<tr>
+<td>11</td>
+<td>Missing database indexes</td>
+<td>DONE</td>
+<td>Apr 1</td>
+</tr>
+<tr>
+<td>12</td>
+<td>FK naming consistency</td>
+<td>DONE</td>
+<td>Apr 1</td>
+</tr>
+<tr>
+<td>13</td>
+<td>ScriptVersion timestamps</td>
+<td>DONE</td>
+<td>Apr 1</td>
+</tr>
+<tr>
+<td>14</td>
+<td>Embedding model default</td>
+<td>DONE</td>
+<td>Apr 1</td>
+</tr>
+<tr>
+<td>15</td>
+<td><strong>Redis cache integration</strong></td>
+<td><strong>DONE</strong></td>
+<td>Apr 2</td>
+</tr>
+<tr>
+<td>16</td>
+<td>Circular dependency fix</td>
+<td>DONE</td>
+<td>Apr 1</td>
+</tr>
+<tr>
+<td>17</td>
+<td>Winston for security logger</td>
+<td>DONE</td>
+<td>Apr 1</td>
+</tr>
+<tr>
+<td>18</td>
+<td>Remove Mongoose error handling</td>
+<td>DONE</td>
+<td>Apr 1</td>
+</tr>
+<tr>
+<td>19</td>
+<td>unhandledRejection fix</td>
+<td>DONE</td>
+<td>Apr 1</td>
+</tr>
+<tr>
+<td>20</td>
+<td>Input validation on scripts</td>
+<td>DONE</td>
+<td>Apr 1</td>
+</tr>
+<tr>
+<td>21</td>
+<td>Clean stale files</td>
+<td>DONE</td>
+<td>Apr 1</td>
+</tr>
+<tr>
+<td>22</td>
+<td>Password hash field size</td>
+<td>DONE</td>
+<td>Apr 1</td>
+</tr>
+</tbody>
+</table>
+<h3 id="additional-fixes-april-2">Additional Fixes (April 2)</h3>
+<table>
+<thead>
+<tr>
+<th>Fix</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>AI analysis retry</strong></td>
+<td>Added exponential backoff retry (max 2 retries) to fire-and-forget AI analysis in both create and update paths. Fixes API-004.</td>
+</tr>
+<tr>
+<td><strong>Response helpers</strong></td>
+<td>Created <code>utils/responseHelpers.ts</code> with <code>ok()</code>, <code>created()</code>, <code>paginated()</code>, <code>fail()</code>, and <code>errors.*</code> convenience methods.</td>
+</tr>
+<tr>
+<td><strong>CRUD error envelope</strong></td>
+<td>Migrated all script CRUD error responses to use standardized envelope.</td>
+</tr>
+<tr>
+<td><strong>Redis + fallback cache</strong></td>
+<td>Replaced pure in-memory cache with ioredis (when REDIS_URL set) + in-memory fallback. Both layers kept in sync.</td>
+</tr>
+<tr>
+<td><strong>Last @ts-ignore</strong></td>
+<td>Fixed remaining <code>@ts-ignore</code> in AsyncUploadController.</td>
+</tr>
+</tbody>
+</table>
+<h3 id="verification-results">Verification Results</h3>
+<table>
+<thead>
+<tr>
+<th>Check</th>
+<th>Result</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>TypeScript (<code>npx tsc --noEmit</code>)</td>
+<td>0 errors</td>
+</tr>
+<tr>
+<td>ESLint (<code>npm run lint</code>)</td>
+<td>0 errors, 2 warnings (pre-existing in test file)</td>
+</tr>
+</tbody>
+</table>
+<h3 id="files-modified-total-across-both-sessions">Files Modified (Total across both sessions)</h3>
+<p><strong>30+ files</strong> across models, controllers, routes, middleware, services, types, and utilities.</p>
+<p>Key new files created:
+- <code>src/backend/src/services/cacheService.ts</code> - Centralized Redis+memory cache
+- <code>src/backend/src/utils/responseHelpers.ts</code> - API response envelope helpers</p>
+    <div class="footer">Generated 2026-04-29 14:08 UTC</div>
+  </div>
+</body>
+</html>

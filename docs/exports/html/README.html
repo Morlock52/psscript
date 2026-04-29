@@ -281,18 +281,20 @@ body {
 
 <p align="center">
   <a href="./docs/graphics/hero-aurora.svg">
-    <img src="./docs/graphics/hero-aurora.svg" alt="PSScript — PowerShell, finally explained. A quiet console for a loud corner of your infrastructure. Live April 27, 2026." width="100%" />
+    <img src="./docs/graphics/hero-aurora.svg" alt="PSScript — PowerShell, finally explained. A quiet console for a loud corner of your infrastructure. Live April 29, 2026." width="100%" />
   </a>
 </p>
 
 <p align="center">
-  <img src="https://img.shields.io/badge/live-2026.04.27-FCA5A5?style=for-the-badge&labelColor=0E1525" alt="live 2026.04.27" />
+  <img src="https://img.shields.io/badge/live-2026.04.29-FCA5A5?style=for-the-badge&labelColor=0E1525" alt="live 2026.04.29" />
   &nbsp;
   <img src="https://img.shields.io/badge/hosted-Netlify_+_Supabase-5EEAD4?style=for-the-badge&labelColor=0E1525" alt="Netlify + Supabase" />
   &nbsp;
   <img src="https://img.shields.io/badge/door-OAuth_+_admin_approval-C4B5FD?style=for-the-badge&labelColor=0E1525" alt="OAuth + admin approval" />
   &nbsp;
   <img src="https://img.shields.io/badge/brain-gpt--5.5_·_sonnet--4--6-F5F1E8?style=for-the-badge&labelColor=0E1525" alt="gpt-5.5 + sonnet-4-6" />
+  &nbsp;
+  <img src="https://img.shields.io/badge/criteria-v2026.04.26-C4B5FD?style=for-the-badge&labelColor=0E1525" alt="analysis criteria v2026.04.26" />
 </p>
 
 <p align="center">
@@ -305,6 +307,7 @@ body {
     <a href="#how-its-wired">Wiring</a> &nbsp;·&nbsp;
     <a href="#the-brains">Brains</a> &nbsp;·&nbsp;
     <a href="#what-it-looks-like">Screens</a> &nbsp;·&nbsp;
+    <a href="#edit-and-runtime-notes">Edit + Runtime</a> &nbsp;·&nbsp;
     <a href="#run-it-yourself">Run it</a> &nbsp;·&nbsp;
     <a href="#did-it-work">Verify</a> &nbsp;·&nbsp;
     <a href="#common-questions">FAQ</a> &nbsp;·&nbsp;
@@ -320,7 +323,7 @@ body {
 <h2 id="the-story">The story.</h2>
 <p>It's Tuesday morning. Somewhere, a script you've never seen is creating accounts, moving mailboxes, restarting a service, or quietly emptying a folder you'd rather it didn't. Maybe it was written in 2019 by a contractor who left in 2021. Maybe it was forked into <code>cleanup_v3_DO_NOT_DELETE.ps1</code> six months ago because nobody felt confident enough to edit the original. Maybe it lives on a share drive with its three slightly-different cousins.</p>
 <p>If you're an IT lead, a security engineer, or the person who gets paged when something breaks, you know exactly which scripts we're talking about. You know they exist. You don't know what's in them. You don't know who wrote them. You don't know who can run them. And you definitely don't know which of them are quietly logging credentials, hardcoding tokens, or assuming a permission level nobody granted.</p>
-<p><strong>That's the gap PSScript closes.</strong> Every script lands in one workspace. Every script gets read by an AI that grades it for security and quality, explains what it does in plain English, and points out what to fix. Every script is searchable by <em>meaning</em>, not just keywords. And — crucially — none of this is visible to anyone an administrator hasn't explicitly let in.</p>
+<p><strong>That's the gap PSScript closes.</strong> Every script lands in one workspace. Every script gets read by an AI that grades it for security and quality, explains what it does in plain English, and points out what to fix. Every script is searchable by <em>meaning</em>, not just keywords. And — crucially — none of this is visible without a valid, enabled Supabase profile.</p>
 <p>It's a small thing in a way. We're not trying to replace your shell or rewrite PowerShell. We just thought it was strange that the most-trusted automation language on the planet had no central, governed home. So we made one.</p>
 <hr />
 <h2 id="whats-actually-inside">What's actually inside.</h2>
@@ -333,13 +336,13 @@ body {
 <p>Eight modules. The teal tiles are the standard product surface. The peach tile is the moat — it's why we exist as a hosted product, and it's why your data stays your data.</p>
 <p>Briefly, in the order people usually meet them:</p>
 <ul>
-<li><strong>A workspace for every script.</strong> Drop a <code>.ps1</code> in. We hash it (SHA-256), check if we've seen it before, version it if we have, welcome it if we haven't. History is kept. Nothing gets lost.</li>
-<li><strong>An AI that explains itself.</strong> A frontier model reads each script and returns four artifacts: a security score, a quality score, a beginner-friendly summary, and a remediation list. We use <code>gpt-5.4-mini</code> for structured analysis and fall back to <code>claude-sonnet-4-6</code> if the primary path fails.</li>
-<li><strong>Search by what you mean.</strong> We embed every script with <code>text-embedding-3-small</code> and store the vectors in Postgres via <code>pgvector(1536)</code>. So you can search for <em>"the script that rotates the service-account password"</em> instead of remembering whether someone called it <code>rotate-svc-pwd.ps1</code> or <code>pwd_cycle_FINAL2.ps1</code>.</li>
+<li><strong>A workspace for every script.</strong> Drop a <code>.ps1</code> in. Hosted uploads now travel as one JSON script payload instead of a doubled multipart body, with a clear 4MB hosted limit that matches Netlify Functions. We hash the body (SHA-256), check if we've seen it before, route you back to the existing script if we have, and create an initial <code>script_versions</code> row if we haven't. Edit pages load and save real hosted script data, and <strong>Open in VS Code</strong> exports the current editor buffer as a <code>.ps1</code> file for local review. History is kept. Nothing gets lost.</li>
+<li><strong>An AI that grades against a rubric.</strong> A frontier model reads each script and returns a structured <strong>analysis criteria v2026-04-26</strong> payload — security score, quality score, a beginner-friendly summary, a management summary, command-by-command details, <strong>runtime requirements</strong>, <strong>prioritized findings</strong> (each tagged <code>critical</code> / <code>high</code> / <code>medium</code> / <code>low</code>), a <strong>remediation plan</strong>, and <strong>test recommendations</strong>. The criteria version and a model confidence number ride along so reviewers can see exactly what they're looking at. We use <code>gpt-5.4-mini</code> as the structured-analysis primary, fall back to <code>claude-sonnet-4-6</code> text parsed back into JSON, and — if both providers fail or return malformed output — fall back to a deterministic static analyzer that produces the same shape.</li>
+<li><strong>Search by what you mean.</strong> We embed every script with <code>text-embedding-3-small</code> and store the vectors in Postgres via <code>pgvector(1536)</code>. Hosted search now combines <code>websearch_to_tsquery</code> full-text scoring with an <code>ILIKE</code> fallback, paginated and ownership-checked, so you can search for <em>"the script that rotates the service-account password"</em> instead of remembering whether someone called it <code>rotate-svc-pwd.ps1</code> or <code>pwd_cycle_FINAL2.ps1</code>.</li>
 <li><strong>A door you control.</strong> Google sign-in works — but new identities arrive <strong>disabled</strong>. An admin has to enable them. There is no other way in. (The sub-section below walks through this in detail. It's the most important thing on the page.)</li>
 <li><strong>Hands-free, if you want.</strong> Voice in (<code>gpt-4o-mini-transcribe</code>), voice out (<code>gpt-4o-mini-tts</code>). Useful when you're at a whiteboard, not so useful in a quiet office. Optional.</li>
-<li><strong>Multi-step review, when one pass isn't enough.</strong> A FastAPI + LangGraph agent that thinks twice for higher-stakes scripts. Local-only for now.</li>
-<li><strong>Admin tools that don't hide the gun-buttons.</strong> User management, enable/disable, categories, settings, backup, restore. With safety rails: you can't disable yourself, and you can't remove the last enabled admin.</li>
+<li><strong>Multi-step review, when one pass isn't enough.</strong> The current hosted app keeps the agentic entry points alive: <code>/agentic</code>, <code>/agentic-ai</code>, and <code>/ai/agentic</code> land on the assistant experience instead of 404ing. The older FastAPI + LangGraph service remains a development-only runtime for deeper local experiments.</li>
+<li><strong>Admin tools that don't hide the gun-buttons.</strong> User management, enable/disable, categories, settings, backup, restore, and exact delete reporting. With safety rails: you can't disable yourself, you can't remove the last enabled admin, and delete calls now report the exact <code>deletedIds</code> / <code>notDeletedIds</code> instead of pretending a zero-row delete worked.</li>
 <li><strong>Hosted on rails we trust.</strong> Netlify Functions for the API, Supabase for everything stateful. Docker has been retired from the active path — see <em>retired/docker/</em> if you want the history.</li>
 </ul>
 <hr />
@@ -351,12 +354,12 @@ body {
   </a>
 </p>
 
-<p><strong>1. You upload it.</strong> Drag a <code>.ps1</code> in, paste the body, or push a batch via the API. The frontend hands it to <code>/api/scripts</code> with your bearer token.</p>
+<p><strong>1. You upload it.</strong> Drag a <code>.ps1</code>, <code>.psm1</code>, <code>.psd1</code>, or <code>.ps1xml</code> in, paste the body, or push a script via the API. The frontend reads the text and hands one JSON payload to <code>/api/scripts/upload</code> with your bearer token. The hosted path caps script content at 4MB and returns a plain <code>413 upload_too_large</code> if you exceed it, which is deliberate: Netlify's buffered synchronous functions have a 6MB request limit, and binary/multipart requests have lower effective headroom.</p>
 <p><strong>2. We make sure you're allowed to be here.</strong> The hosted API checks two things: (a) your Supabase JWT is valid, and (b) your <code>app_profiles</code> row has <code>is_enabled = true</code>. If either fails you get <code>403 account_pending_approval</code> and nothing else happens. (More on that below.)</p>
-<p><strong>3. We hash it.</strong> SHA-256, server-side. If we've seen this exact script body before, we don't duplicate — we add a new version under the existing record. If it's new, we welcome it as a fresh script.</p>
-<p><strong>4. The AI reads it.</strong> We send the script body to the configured model (<code>gpt-5.4-mini</code> by default for structured analysis), with a prompt that asks for a security score, a quality score, a plain-English explanation, a "what would a beginner need to know" note, and a remediation list. If OpenAI is down or the response can't be parsed, we fall back to <code>claude-sonnet-4-6</code> and parse the text response as JSON.</p>
-<p><strong>5. We embed it for search.</strong> A separate call to <code>text-embedding-3-small</code> produces a 1536-dimension vector. We upsert that into Supabase via <code>pgvector</code> so the next person searching for "the script that does X" finds it without remembering the filename.</p>
-<p><strong>6. You see the result.</strong> The frontend renders the scores side-by-side with the script source, the summary above the code, the remediation as a checklist below, and the version history one click away. From upload to visible: usually a couple of seconds.</p>
+<p><strong>3. We hash it.</strong> SHA-256, server-side. If we've seen this exact script body before, we don't duplicate it — the API returns a duplicate response that the UI can use to route you back to the existing script. If it's new, we welcome it as a fresh script and write the initial <code>script_versions</code> row.</p>
+<p><strong>4. The AI reads it against a rubric.</strong> We send the script body to the configured model (<code>gpt-5.4-mini</code> by default for structured analysis) with a prompt anchored to <strong>analysis criteria v2026-04-26</strong>. The response must include <code>criteria_version</code>, <code>confidence</code>, security/quality scores, a beginner explanation, a management summary, command-level details, runtime requirements, an execution summary, prioritized findings, a remediation plan, and test recommendations. If OpenAI is down or the JSON won't parse, we fall back to <code>claude-sonnet-4-6</code> and re-parse the text. If <em>that</em> fails too, <code>shouldUseStaticAnalysisFallback</code> flips on and a deterministic PowerShell static analyzer produces the same payload shape — a degraded answer is still a structured answer.</p>
+<p><strong>5. We embed it for search.</strong> A separate call to <code>text-embedding-3-small</code> produces a 1536-dimension vector. We upsert that into Supabase via <code>pgvector</code> so the next person searching for "the script that does X" finds it without remembering the filename. We also record per-call <code>ai_metrics</code> (prompt / completion / total tokens, estimated cost, provider, model, latency, success or failure) on a best-effort write — analytics never block a user request.</p>
+<p><strong>6. You see the result.</strong> The frontend renders scores side-by-side with the script source, the summary above the code, a dedicated <strong>Criteria tab</strong> showing the rubric version and confidence, runtime requirements showing PowerShell version plus modules or assemblies, prioritized findings as a triaged list, the remediation plan as a checklist, test recommendations beneath, and <strong>version history</strong> one click away on the script-detail page. From upload to visible: usually a couple of seconds.</p>
 <blockquote>
 <p><strong>One quiet thing worth noticing:</strong> every step above happens <em>behind</em> the approval gate. If you weren't enabled by an admin, your upload is rejected at step 2 and the AI never sees your script. That's the whole point.</p>
 </blockquote>
@@ -375,14 +378,15 @@ body {
 <li>Password login and Google OAuth both go through <strong>Supabase Auth</strong> in the browser.</li>
 <li>The hosted API validates the bearer token against Supabase Auth on <strong>every</strong> request.</li>
 <li>The first time a user signs in, <code>/api/auth/me</code> creates an <code>app_profiles</code> row for them.</li>
-<li>New profiles default to <code>is_enabled = false</code>. Always. The only exception is the email listed in <code>DEFAULT_ADMIN_EMAIL</code> — that one comes up enabled so the system has a first administrator.</li>
-<li>Disabled users see exactly one thing: a <code>/pending-approval</code> page that says "ask your admin to enable you." Every protected API returns <code>403 account_pending_approval</code> for them.</li>
+<li>Google-created profiles default to <code>is_enabled = false</code>. Password-created profiles are enabled by default for the hosted password flow, and the email listed in <code>DEFAULT_ADMIN_EMAIL</code> comes up as an enabled admin so the system has a first administrator.</li>
+<li>Disabled Google/OAuth users see exactly one thing: a <code>/pending-approval</code> page that says "ask your admin to enable you." Every protected API returns <code>403 account_pending_approval</code> for them.</li>
 <li>An admin enables a user by ticking a checkbox in <strong>Settings → User Management</strong>. That's it. No extra steps. No emails. No tokens.</li>
 <li>The backend will not let you disable your own admin account, and it will not let you remove the last enabled admin. We checked, you'll get an error and a polite explanation.</li>
-<li>Underneath, Supabase <strong>Row Level Security</strong> policies check <code>current_app_profile_is_enabled()</code> — so even if an attacker bypassed the API somehow, the database itself wouldn't return rows to a disabled identity.</li>
+<li>The <strong>first</strong> administrator is no longer free for the taking. The default-admin bootstrap now requires <code>DEFAULT_ADMIN_EMAIL</code>, <code>DEFAULT_ADMIN_PASSWORD</code>, <em>and</em> a one-time <code>x-bootstrap-token</code> header that has to match <code>DEFAULT_ADMIN_BOOTSTRAP_TOKEN</code>. Forgetting any of the three returns a hard error and the bootstrap path stays closed.</li>
+<li>Underneath, Supabase <strong>Row Level Security</strong> policies check <code>current_app_profile_is_enabled()</code> — so even if an attacker bypassed the API somehow, the database itself wouldn't return rows to a disabled identity. The 2026-04-27 RLS migration also tightened search and similarity policies so vector lookups respect the same gate.</li>
 </ul>
 <blockquote>
-<p><strong>Heads up:</strong> Google OAuth credentials and your redirect allow-list still need to be configured on the Supabase side. The full setup is in <a href="./docs/NETLIFY-SUPABASE-DEPLOYMENT.md">Netlify + Supabase Deployment</a>.</p>
+<p><strong>Heads up:</strong> Google OAuth credentials and the Supabase redirect allow-list still need to be configured outside this repo. Google Cloud should redirect to Supabase Auth (<code>/auth/v1/callback</code>); Supabase should redirect back to this app (<code>/auth/callback</code>). The full setup is in <a href="./docs/NETLIFY-SUPABASE-DEPLOYMENT.md">Netlify + Supabase Deployment</a>.</p>
 </blockquote>
 <hr />
 <h2 id="how-its-wired">How it's wired.</h2>
@@ -441,7 +445,7 @@ body {
 </blockquote>
 <hr />
 <h2 id="the-brains">The brains.</h2>
-<p>The defaults below reflect the <strong>state of this repo on April 27, 2026</strong>. Provider model availability moves around — by account, by region, by week — so we keep model IDs overrideable through environment variables. If you upgrade or change a provider, update one env var and you're done.</p>
+<p>The defaults below reflect the <strong>state of this repo on April 29, 2026</strong>. Provider model availability moves around — by account, by region, by week — so we keep model IDs overrideable through environment variables. If you upgrade or change a provider, update one env var and you're done.</p>
 <table>
 <thead>
 <tr>
@@ -495,11 +499,11 @@ body {
 <li>OpenAI &middot; <a href="https://platform.openai.com/docs/models">https://platform.openai.com/docs/models</a></li>
 <li>Anthropic &middot; <a href="https://docs.anthropic.com/en/docs/about-claude/models">https://docs.anthropic.com/en/docs/about-claude/models</a></li>
 <li>Supabase Google Auth &middot; <a href="https://supabase.com/docs/guides/auth/social-login/auth-google">https://supabase.com/docs/guides/auth/social-login/auth-google</a></li>
-<li>Netlify Functions &middot; <a href="https://docs.netlify.com/functions/overview/">https://docs.netlify.com/functions/overview/</a></li>
+<li>Netlify Functions &middot; <a href="https://docs.netlify.com/build/functions/overview/">https://docs.netlify.com/build/functions/overview/</a></li>
 </ul>
 <hr />
 <h2 id="what-it-looks-like">What it looks like.</h2>
-<p>A small four-up — the door, the workspace it protects, the analysis that justifies the door, and the admin tool that operates it. The full capture set is in the collapsible block below.</p>
+<p>A small four-up — the door, the workspace it protects, the analysis that justifies the door, and the admin tool that operates it. These captures were refreshed from the live Netlify deployment on April 29, 2026. The edit and runtime-requirement captures use an existing safe sample script so no new production data had to be created for this refresh. The full capture set is in the collapsible block below.</p>
 <table>
   <tr>
     <td width="50%" valign="top">
@@ -553,11 +557,11 @@ body {
   <tr>
     <td width="50%" valign="top">
       <a href="./docs/screenshots/upload.png"><img src="./docs/screenshots/readme/upload.png" alt="Upload" width="100%"/></a>
-      <br/><sub><strong>Upload.</strong> Script intake with metadata and preview.</sub>
+      <br/><sub><strong>Upload.</strong> JSON-backed hosted intake with metadata, preview, and a 4MB limit.</sub>
     </td>
     <td width="50%" valign="top">
       <a href="./docs/screenshots/script-detail.png"><img src="./docs/screenshots/readme/script-detail.png" alt="Script detail" width="100%"/></a>
-      <br/><sub><strong>Script detail.</strong> Version history alongside the source.</sub>
+      <br/><sub><strong>Script detail.</strong> Version history, source, and owner-scoped actions.</sub>
     </td>
   </tr>
   <tr>
@@ -573,7 +577,7 @@ body {
   <tr>
     <td width="50%" valign="top">
       <a href="./docs/screenshots/agentic-assistant.png"><img src="./docs/screenshots/readme/agentic-assistant.png" alt="Agentic assistant" width="100%"/></a>
-      <br/><sub><strong>Agentic assistant.</strong> Multi-step review workspace.</sub>
+      <br/><sub><strong>Agentic assistant.</strong> Hosted route aliases land on the assistant instead of 404ing.</sub>
     </td>
     <td width="50%" valign="top">
       <a href="./docs/screenshots/agent-orchestration.png"><img src="./docs/screenshots/readme/agent-orchestration.png" alt="Agent orchestration" width="100%"/></a>
@@ -601,6 +605,35 @@ body {
 </details>
 
 <hr />
+<h2 id="edit-and-runtime-notes">Edit and runtime notes.</h2>
+<p>The edit and analysis surfaces are part of the same lifecycle now: edit the hosted record, export a local <code>.ps1</code> copy for VS Code when you need desktop tooling, and check the runtime note before anybody runs the script.</p>
+<table>
+  <tr>
+    <td width="50%" valign="top">
+      <a href="./docs/screenshots/readme/script-edit-vscode.png">
+        <img src="./docs/screenshots/readme/script-edit-vscode.png" alt="Script editor with Open in VS Code export, editable title, description, and script body." width="100%" />
+      </a>
+      <br/>
+      <sub><strong>The editor.</strong> Real hosted script data, save controls, and a VS Code export path for local review.</sub>
+    </td>
+    <td width="50%" valign="top">
+      <a href="./docs/screenshots/readme/analysis-runtime-requirements.png">
+        <img src="./docs/screenshots/readme/analysis-runtime-requirements.png" alt="Runtime requirements panel showing PowerShell version and PresentationFramework .NET assembly detection." width="100%" />
+      </a>
+      <br/>
+      <sub><strong>The runtime note.</strong> PowerShell version guidance plus detected modules and assemblies, even before full AI analysis exists.</sub>
+    </td>
+  </tr>
+</table>
+
+<p>The theme controls live in Settings and keep the current restrained operator palette:</p>
+<p align="center">
+  <a href="./docs/screenshots/readme/settings-appearance.png">
+    <img src="./docs/screenshots/readme/settings-appearance.png" alt="Appearance settings showing dark mode, muted accent color, font size, and accessibility options." width="82%" />
+  </a>
+</p>
+
+<hr />
 <h2 id="run-it-yourself">Run it yourself.</h2>
 <p>If you want to bring this up locally or push it to your own Netlify + Supabase, here's the short version. The long version is in <a href="./docs/SETUP-WITH-SCREENSHOTS.md">Setup Guide With Screenshots</a>, <a href="./docs/GETTING-STARTED.md">Getting Started</a>, and <a href="./docs/NETLIFY-SUPABASE-DEPLOYMENT.md">Netlify + Supabase Deployment</a>.</p>
 <h3 id="youll-need">You'll need</h3>
@@ -626,16 +659,22 @@ SUPABASE_URL=https://your-project.supabase.co
 SUPABASE_ANON_KEY=...
 SUPABASE_SERVICE_ROLE_KEY=...
 DEFAULT_ADMIN_EMAIL=admin@example.com
+DEFAULT_ADMIN_PASSWORD=change-me                # required since 2026-04-28
+DEFAULT_ADMIN_BOOTSTRAP_TOKEN=change-me         # required; sent as x-bootstrap-token
 VITE_SUPABASE_URL=https://your-project.supabase.co
 VITE_SUPABASE_ANON_KEY=...
 VITE_HOSTED_STATIC_ANALYSIS_ONLY=true
 </code></pre>
+<blockquote>
+<p>The local Postgres fallback that used to be implicit was retired in the 2026-04-28 hardening — <code>DATABASE_URL</code> must point at Supabase (or a Supabase-compatible Postgres) for the hosted code path to come up.</p>
+</blockquote>
 <h3 id="apply-the-migrations-in-order">Apply the migrations (in order)</h3>
 <pre><code class="language-text">supabase/migrations/20260424_hosted_schema.sql
 supabase/migrations/20260425_scripts_file_hash_uniqueness.sql
 supabase/migrations/20260425_user_management_schema_fixes.sql
 supabase/migrations/20260426_supabase_advisor_fixes.sql
 supabase/migrations/20260426_z_google_oauth_approval_gate.sql
+supabase/migrations/20260427_hosted_search_similarity_rls_fixes.sql
 </code></pre>
 <h3 id="run-it-locally">Run it locally</h3>
 <pre><code class="language-bash"># AI service — only needed if you're testing local AI workflows
@@ -653,29 +692,35 @@ npm run dev
 <p>Open <code>https://127.0.0.1:3090</code> if you've set TLS cert env vars, or follow the URL the Vite dev server prints. (The first thing you'll see is the login screen — sign in with <code>DEFAULT_ADMIN_EMAIL</code> and you're in.)</p>
 <h3 id="run-it-hosted">Run it hosted</h3>
 <pre><code class="language-bash">npm run build:netlify
-netlify dev
+npx --yes netlify-cli@26.0.0 dev
 </code></pre>
+<p>Production deploys currently publish the same React app and the <code>netlify/functions/api.ts</code> function to <code>https://pstest.morloksmaze.com</code>. The latest production deploy in this working tree is <code>69f209d8b588750a558017be</code>, published April 29, 2026.</p>
 <hr />
 <h2 id="did-it-work">Did it work?</h2>
 <p>Recent verification from this working tree:</p>
-<pre><code class="language-bash"># Frontend focused auth tests
+<pre><code class="language-bash"># Frontend hosted-contract tests
 cd src/frontend
-npm run test:run -- --pool=threads --maxWorkers=1 \
-  src/pages/__tests__/Login.test.tsx \
-  src/contexts/__tests__/AuthContext.test.tsx
+npm test -- --run src/api/__tests__/hostedAiClient.test.ts
+
+# Full frontend suite
+cd ../..
+npm run test:frontend
 
 # Frontend production build
-cd src/frontend
-npm run build
+npm run build:netlify
 
 # Netlify function TypeScript check
 npx tsc --noEmit --target ES2020 --module commonjs \
   --moduleResolution node --esModuleInterop --skipLibCheck --types node \
+  --lib ES2022,DOM \
   netlify/functions/api.ts \
   netlify/functions/_shared/auth.ts \
   netlify/functions/_shared/db.ts \
   netlify/functions/_shared/env.ts \
   netlify/functions/_shared/http.ts
+
+# Hosted upload/delete smoke against Netlify + Supabase
+node scripts/smoke-upload-delete-hosted.mjs
 </code></pre>
 <table>
 <thead>
@@ -686,24 +731,48 @@ npx tsc --noEmit --target ES2020 --module commonjs \
 </thead>
 <tbody>
 <tr>
-<td style="text-align: left;">Focused frontend auth tests</td>
-<td style="text-align: left;"><code>● 10 / 10 passed</code></td>
+<td style="text-align: left;">Edit/runtime patch build</td>
+<td style="text-align: left;"><code>● passed</code> · <code>npm run build</code> in <code>src/frontend</code></td>
 </tr>
 <tr>
-<td style="text-align: left;">Frontend production build</td>
-<td style="text-align: left;"><code>● passed</code> &middot; <code>src/frontend/dist</code> regenerated</td>
+<td style="text-align: left;">Focused shell/token tests</td>
+<td style="text-align: left;"><code>● 31 / 31 passed</code></td>
+</tr>
+<tr>
+<td style="text-align: left;">Frontend hosted-contract test</td>
+<td style="text-align: left;"><code>● 11 / 11 passed</code></td>
+</tr>
+<tr>
+<td style="text-align: left;">Full frontend unit suite</td>
+<td style="text-align: left;"><code>● 110 / 110 passed</code></td>
+</tr>
+<tr>
+<td style="text-align: left;">Frontend + Netlify production build</td>
+<td style="text-align: left;"><code>● passed</code></td>
 </tr>
 <tr>
 <td style="text-align: left;">Netlify function TypeScript check</td>
 <td style="text-align: left;"><code>● passed</code></td>
 </tr>
 <tr>
-<td style="text-align: left;">README image framing</td>
-<td style="text-align: left;"><code>● regenerated</code> via <code>npm run screenshots:readme</code></td>
+<td style="text-align: left;">Netlify production deploy</td>
+<td style="text-align: left;"><code>● live</code> at <code>https://pstest.morloksmaze.com</code> · deploy <code>69f209d8b588750a558017be</code></td>
 </tr>
 <tr>
-<td style="text-align: left;">Login / pending screenshots</td>
-<td style="text-align: left;"><code>● recaptured</code> from the current frontend build</td>
+<td style="text-align: left;">Hosted health check</td>
+<td style="text-align: left;"><code>● healthy</code> · database connected</td>
+</tr>
+<tr>
+<td style="text-align: left;">Hosted upload/delete smoke</td>
+<td style="text-align: left;"><code>● passed</code> · uploaded/deleted IDs <code>27</code>, <code>28</code>, <code>29</code>; repeat delete returned <code>404</code></td>
+</tr>
+<tr>
+<td style="text-align: left;">Smoke-test cleanup</td>
+<td style="text-align: left;"><code>● clean</code> · remaining smoke scripts <code>0</code>, profiles <code>0</code></td>
+</tr>
+<tr>
+<td style="text-align: left;">README screenshots</td>
+<td style="text-align: left;"><code>● refreshed from hosted app</code> for edit, runtime requirements, and appearance settings</td>
 </tr>
 </tbody>
 </table>
@@ -711,10 +780,10 @@ npx tsc --noEmit --target ES2020 --module commonjs \
 <summary><strong>How to refresh the screenshots yourself</strong></summary>
 
 
-<pre><code class="language-bash"># Capture app screenshots from a running app target
-SCREENSHOT_BASE_URL=https://127.0.0.1:3090 \
-SCREENSHOT_LOGIN_URL=http://127.0.0.1:3191 \
-node scripts/capture-screenshots.js
+<pre><code class="language-bash"># Capture current README screenshots from the hosted Netlify app.
+# This creates a temporary Supabase user + scripts, captures the UI,
+# and removes only those temporary records when it exits.
+node scripts/capture-hosted-readme-screenshots.mjs
 
 # Generate README frames
 npm run screenshots:readme
@@ -724,14 +793,16 @@ node scripts/generate-readme-graphics.mjs
 </code></pre>
 
 
-To capture the login and pending-approval screens specifically, bring the frontend up against your real Supabase project:
+To capture non-mutating app surfaces from a local frontend instead, bring the UI up with auth disabled and point the capture script at it:
 
 
 <pre><code class="language-bash">cd src/frontend
-VITE_DISABLE_AUTH=false \
-VITE_SUPABASE_URL=https://your-project.supabase.co \
-VITE_SUPABASE_ANON_KEY=... \
-npm run dev -- --host 127.0.0.1 --port 3191
+VITE_DISABLE_AUTH=true VITE_USE_MOCKS=true npm run dev -- --host 127.0.0.1 --port 5173
+
+cd ../..
+SCREENSHOT_BASE_URL=http://127.0.0.1:5173 \
+SCREENSHOT_LOGIN_URL=https://pstest.morloksmaze.com \
+node scripts/capture-screenshots.js
 </code></pre>
 
 
@@ -773,7 +844,7 @@ PSScriptAnalyzer is a static-analysis linter. We use it conceptually as one of s
 <details>
 <summary><strong>"Can a non-admin do anything destructive?"</strong></summary>
 <br/>
-Not in the hosted path, no. Non-admin users can upload, view, search, and run AI analysis on scripts they're allowed to see. They cannot enable other users, cannot disable existing users, cannot delete other users' data, cannot edit categories, and cannot run data-maintenance backups or restores. The Settings → User Management surface is admin-only and the backend enforces it.
+Not in the hosted path, no. Non-admin users can upload, view, search, analyze, and delete scripts they own. They cannot enable other users, cannot disable existing users, cannot delete other users' data, cannot edit categories, and cannot run data-maintenance backups or restores. The Settings → User Management surface is admin-only and the backend enforces it. Delete responses now report exactly what happened — `deletedIds` when a row was removed, `notDeletedIds` and a `404` when nothing was eligible.
 </details>
 
 <hr />
@@ -811,20 +882,48 @@ Not in the hosted path, no. Non-admin users can upload, view, search, and run AI
 <td style="text-align: left;">Admin backup, restore, cleanup</td>
 </tr>
 <tr>
-<td style="text-align: left;"><a href="./docs/README-VOICE-API.md">Voice API</a></td>
-<td style="text-align: left;">Voice / listening implementation</td>
+<td style="text-align: left;"><a href="./docs/VOICE-TESTS-1-8-LATEST.md">Voice Test Status</a></td>
+<td style="text-align: left;">Latest voice endpoint validation artifact</td>
 </tr>
 <tr>
 <td style="text-align: left;"><a href="./docs/DEPLOYMENT-PLATFORMS.md">Deployment Platforms</a></td>
 <td style="text-align: left;">Alternatives and legacy split-service notes</td>
 </tr>
 <tr>
-<td style="text-align: left;"><a href="./docs/PROJECT-REVIEW-2026-04-01.md">Project Review · 2026-04-01</a></td>
-<td style="text-align: left;">April 2026 comprehensive review</td>
+<td style="text-align: left;"><a href="./docs/AI-ANALYSIS-CRITERIA-2026-04-26.md">AI Analysis Criteria · 2026-04-26</a></td>
+<td style="text-align: left;">The graded rubric — weighted criteria, output shape, persistence strategy</td>
 </tr>
 <tr>
-<td style="text-align: left;"><a href="./docs/AI-FUNCTIONS-REVIEW-2026-04-02.md">AI Functions Review · 2026-04-02</a></td>
-<td style="text-align: left;">AI audit and model migration notes</td>
+<td style="text-align: left;"><a href="./docs/SUPABASE-DB-REVIEW-2026-04-27.md">Supabase DB Review · 2026-04-27</a></td>
+<td style="text-align: left;">Database review covering search, similarity, and RLS</td>
+</tr>
+<tr>
+<td style="text-align: left;"><a href="./docs/SUPABASE-DB-FIX-IMPLEMENTATION-2026-04-27.md">Supabase DB Fix Implementation · 2026-04-27</a></td>
+<td style="text-align: left;">What landed in the 2026-04-27 RLS / search migration</td>
+</tr>
+<tr>
+<td style="text-align: left;"><a href="./docs/PROJECT-PERFORMANCE-TEST-DESIGN-2026-04-27.md">Performance Test Design · 2026-04-27</a></td>
+<td style="text-align: left;">How we plan to load-test the hosted path</td>
+</tr>
+<tr>
+<td style="text-align: left;"><a href="./docs/PROJECT-TEST-RESULTS-2026-04-28.md">Project Test Results · 2026-04-28</a></td>
+<td style="text-align: left;">The latest pass — including criteria-payload validation</td>
+</tr>
+<tr>
+<td style="text-align: left;"><a href="./docs/CURRENT-STATUS-2026-04-24.md">Current Status · refreshed 2026-04-28</a></td>
+<td style="text-align: left;">Current production state, mobile fix, export/delete/data-maintenance status</td>
+</tr>
+<tr>
+<td style="text-align: left;"><a href="./docs/DOCUMENTATION-REFRESH-2026-04-28.md">Documentation Refresh · 2026-04-28</a></td>
+<td style="text-align: left;">Current docs refresh scope, screenshot inventory, and validation</td>
+</tr>
+<tr>
+<td style="text-align: left;"><a href="./docs/UPLOAD-DELETE-FIX-PLAN-2026-04-29.md">Upload/Delete Fix Plan · 2026-04-29</a></td>
+<td style="text-align: left;">Hosted upload/delete root cause, fix plan, deployment, and smoke results</td>
+</tr>
+<tr>
+<td style="text-align: left;"><a href="./docs/training-suite/README.md">Training Suite</a></td>
+<td style="text-align: left;">Hosted-state training, labs, and screenshots</td>
 </tr>
 <tr>
 <td style="text-align: left;"><a href="./docs/index.md">Documentation Hub</a></td>
@@ -838,7 +937,7 @@ Not in the hosted path, no. Non-admin users can upload, view, search, and run AI
 <summary><strong>The approval gate, in detail</strong></summary>
 
 - `app_profiles.is_enabled` gates hosted app access.
-- Google-created profiles default to disabled.
+- Google-created profiles default to disabled; hosted password profiles are enabled by default.
 - `/auth/me` may return disabled profile status so the pending page can render.
 - All protected hosted APIs require an enabled profile.
 - Admin user management can enable pending profiles.
@@ -899,9 +998,9 @@ The Docker configuration was retired from the active root project and moved unde
 </p>
 
 <p align="center">
-  <sub>Verified April 27, 2026 &nbsp;·&nbsp; Hosted on Netlify &nbsp;·&nbsp; Data on Supabase &nbsp;·&nbsp; Audited by gpt-5.5 with sonnet-4-6 fallback &nbsp;·&nbsp; Made with care.</sub>
+  <sub>Verified April 29, 2026 &nbsp;·&nbsp; Hosted on Netlify &nbsp;·&nbsp; Data on Supabase &nbsp;·&nbsp; Graded against analysis criteria v2026-04-26 &nbsp;·&nbsp; Audited by gpt-5.5 with sonnet-4-6 fallback &nbsp;·&nbsp; Made with care.</sub>
 </p>
-    <div class="footer">Generated 2026-04-27 08:51 UTC</div>
+    <div class="footer">Generated 2026-04-29 14:08 UTC</div>
   </div>
 </body>
 </html>

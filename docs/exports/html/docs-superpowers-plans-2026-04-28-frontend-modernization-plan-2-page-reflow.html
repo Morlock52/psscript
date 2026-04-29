@@ -1,0 +1,703 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <base href="file:///Users/morlock/fun/02_PowerShell_Projects/psscript/" />
+  <title>docs-superpowers-plans-2026-04-28-frontend-modernization-plan-2-page-reflow</title>
+  <style>
+:root {
+  color-scheme: light;
+}
+body {
+  font-family: "Segoe UI", "Helvetica Neue", Arial, sans-serif;
+  margin: 0;
+  padding: 0;
+  background: #f4f7fb;
+  color: #0f172a;
+}
+.markdown-body {
+  max-width: 980px;
+  margin: 0 auto;
+  padding: 36px 42px 64px;
+  line-height: 1.65;
+  background: #ffffff;
+  box-shadow: 0 24px 70px rgba(15, 23, 42, 0.08);
+}
+.markdown-body h1 {
+  font-size: 34px;
+  line-height: 1.12;
+  margin-bottom: 12px;
+  color: #07111f;
+  border-bottom: 3px solid #0ea5e9;
+  padding-bottom: 12px;
+  page-break-before: always;
+  page-break-after: avoid;
+  break-before: page;
+  break-after: avoid;
+}
+.markdown-body h1:first-of-type {
+  page-break-before: avoid;
+  break-before: avoid;
+}
+.markdown-body h2 {
+  font-size: 23px;
+  line-height: 1.2;
+  margin-top: 34px;
+  color: #102a43;
+  border-bottom: 1px solid #d7e2ee;
+  padding-bottom: 8px;
+  page-break-after: avoid;
+  break-after: avoid;
+}
+.markdown-body h3 {
+  font-size: 18px;
+  margin-top: 20px;
+  color: #1e3a5f;
+  page-break-after: avoid;
+  break-after: avoid;
+}
+.markdown-body h4, .markdown-body h5, .markdown-body h6 {
+  page-break-after: avoid;
+  break-after: avoid;
+}
+.markdown-body table {
+  width: 100%;
+  border-collapse: collapse;
+  margin: 18px 0 24px;
+  font-size: 13px;
+  page-break-inside: avoid;
+  break-inside: avoid;
+  box-shadow: 0 1px 0 #e2e8f0;
+}
+.markdown-body th,
+.markdown-body td {
+  border: 1px solid #e2e8f0;
+  padding: 9px 11px;
+  text-align: left;
+  vertical-align: top;
+}
+.markdown-body th {
+  background: #eef6ff;
+  color: #0f3157;
+  font-weight: 700;
+}
+.markdown-body tr:nth-child(even) td {
+  background: #fbfdff;
+}
+.markdown-body tr {
+  page-break-inside: avoid;
+  break-inside: avoid;
+}
+.markdown-body code {
+  background: #f1f5f9;
+  padding: 2px 4px;
+  border-radius: 4px;
+  font-family: "SFMono-Regular", Menlo, Consolas, monospace;
+  font-size: 0.92em;
+}
+.markdown-body pre {
+  background: #111827;
+  color: #e5eef8;
+  padding: 16px;
+  border-radius: 10px;
+  overflow-x: auto;
+  border: 1px solid #243244;
+  page-break-inside: avoid;
+  break-inside: avoid;
+}
+.markdown-body pre code {
+  background: transparent;
+  color: inherit;
+}
+.markdown-body blockquote {
+  border-left: 5px solid #0ea5e9;
+  margin: 18px 0;
+  padding: 12px 18px;
+  background: #eff8ff;
+  color: #18324f;
+  border-radius: 0 10px 10px 0;
+}
+.markdown-body img {
+  max-width: 100%;
+  height: auto;
+  display: block;
+  margin: 16px 0;
+  border-radius: 10px;
+  box-shadow: 0 8px 20px rgba(15, 23, 42, 0.12);
+  page-break-inside: avoid;
+  break-inside: avoid;
+}
+.markdown-body figure {
+  page-break-inside: avoid;
+  break-inside: avoid;
+  margin: 16px 0;
+}
+.markdown-body a {
+  color: #2563eb;
+  text-decoration: none;
+}
+.markdown-body a:hover {
+  text-decoration: underline;
+}
+.cover {
+  min-height: 760px;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+  padding: 72px 60px 64px;
+  background:
+    linear-gradient(135deg, rgba(9, 30, 66, 0.96) 0%, rgba(12, 74, 110, 0.94) 54%, rgba(20, 83, 45, 0.9) 100%),
+    radial-gradient(circle at 18% 18%, rgba(14, 165, 233, 0.25), transparent 36%);
+  color: #f8fafc;
+  border-radius: 0;
+  margin: -36px -42px 40px;
+  position: relative;
+  overflow: hidden;
+}
+.cover::before {
+  content: "PSScript";
+  position: absolute;
+  top: 46px;
+  left: 60px;
+  font-size: 12px;
+  font-weight: 800;
+  letter-spacing: 0.24em;
+  text-transform: uppercase;
+  color: rgba(226, 246, 255, 0.82);
+}
+.cover::after {
+  content: "";
+  position: absolute;
+  right: -120px;
+  top: -120px;
+  width: 360px;
+  height: 360px;
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  transform: rotate(28deg);
+}
+.markdown-body .cover-title {
+  font-size: 48px;
+  line-height: 1.04;
+  font-weight: 800;
+  color: #f8fafc;
+  border-bottom: 3px solid #38bdf8;
+  margin: 0 0 16px;
+  max-width: 720px;
+}
+.cover-subtitle {
+  font-size: 20px;
+  line-height: 1.42;
+  color: #dbeafe;
+  margin: 0 0 22px;
+  max-width: 720px;
+}
+.cover-meta {
+  display: inline-block;
+  width: fit-content;
+  font-size: 13px;
+  color: #e0f2fe;
+  background: rgba(255, 255, 255, 0.12);
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  border-radius: 999px;
+  padding: 7px 13px;
+}
+.page-break {
+  page-break-after: always;
+  break-after: page;
+}
+.footer {
+  margin-top: 40px;
+  font-size: 12px;
+  color: #64748b;
+  border-top: 1px solid #e2e8f0;
+  padding-top: 14px;
+}
+/* Print and PDF-specific styles */
+@page {
+  size: A4;
+  margin: 18mm 16mm 20mm;
+}
+@media print {
+  body {
+    background: #ffffff;
+  }
+  .markdown-body {
+    max-width: none;
+    margin: 0;
+    padding: 0;
+    box-shadow: none;
+  }
+  .cover {
+    margin: 0 0 28px;
+  }
+  .markdown-body {
+    orphans: 3;
+    widows: 3;
+  }
+  .markdown-body p {
+    orphans: 3;
+    widows: 3;
+  }
+  .markdown-body li {
+    page-break-inside: avoid;
+    break-inside: avoid;
+  }
+  .markdown-body ul, .markdown-body ol {
+    page-break-before: avoid;
+    break-before: avoid;
+  }
+  .markdown-body blockquote {
+    page-break-inside: avoid;
+    break-inside: avoid;
+  }
+  /* Keep section content together */
+  .markdown-body h2 + *, .markdown-body h3 + * {
+    page-break-before: avoid;
+    break-before: avoid;
+  }
+}
+</style>
+</head>
+<body>
+  <div class="markdown-body">
+    
+    <h1 id="frontend-modernization-plan-2-page-reflow-legacy-teardown">Frontend Modernization — Plan 2 (Page Reflow + Legacy Teardown)</h1>
+<blockquote>
+<p><strong>For agentic workers:</strong> REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (<code>- [ ]</code>) syntax for tracking.</p>
+</blockquote>
+<p><strong>Goal:</strong> Wrap brand routes in BrandShell, migrate the three legacy-Layout-importing pages to the new shell pattern, then delete the legacy <code>Layout</code>/<code>Navbar</code>/<code>Sidebar</code> components, the bespoke <code>.btn</code>/<code>.card</code>/<code>.input</code>/<code>.glass</code>/<code>.markdown-body</code>/etc. utilities in <code>index.css</code>, and the legacy variable shim in <code>tokens.css</code>. Leaves the codebase fully on the new token + primitive + shell system.</p>
+<p><strong>Architecture:</strong> Plan 1 introduced tokens, fonts, primitives, and shells but kept legacy machinery alive behind a compatibility shim. Audit (recorded in this plan's "Discovery" section below) shows zero external consumers of the bespoke utilities and only three pages importing the legacy <code>Layout</code> wrapper. Plan 2 closes that gap: it wraps the brand routes in <code>BrandShell</code> (currently they bypass shells entirely via the <code>isAuthPage</code> guard), migrates the three legacy <code>Layout</code> pages, then deletes the legacy machinery. After Plan 2, <code>OperatorShell</code> and <code>BrandShell</code> are the only layout primitives in the tree, the Tailwind shim becomes the only color source (no more <code>--color-*</code> aliases), and <code>index.css</code> is a small base stylesheet plus a few animation utility classes.</p>
+<p><strong>Tech Stack:</strong> React 18 + Vite + Tailwind + framer-motion + Vitest. No new deps.</p>
+<hr />
+<h2 id="discovery-audit-already-performed-recorded-for-the-executor">Discovery (audit already performed; recorded for the executor)</h2>
+<p>Run by the plan author against <code>redesign/2026-04-28-frontend-modernization</code> HEAD <code>1d75e8d</code> (post-Phase-E):</p>
+<table>
+<thead>
+<tr>
+<th>Selector / pattern</th>
+<th>Code consumers (<code>.tsx</code>/<code>.ts</code>)</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>\.btn[^-a-zA-Z]</code>, <code>\.btn-*</code></td>
+<td>0</td>
+</tr>
+<tr>
+<td><code>\.card[^-a-zA-Z]</code></td>
+<td>0</td>
+</tr>
+<tr>
+<td><code>\.input[^-a-zA-Z]</code></td>
+<td>0</td>
+</tr>
+<tr>
+<td><code>\.glass[^-a-zA-Z]</code></td>
+<td>0</td>
+</tr>
+<tr>
+<td><code>\.markdown-body</code></td>
+<td>0</td>
+</tr>
+<tr>
+<td><code>surface-primary</code> / <code>surface-secondary</code></td>
+<td>0</td>
+</tr>
+<tr>
+<td><code>gradient-text</code></td>
+<td>0</td>
+</tr>
+<tr>
+<td><code>animate-fade-in</code></td>
+<td>2</td>
+</tr>
+<tr>
+<td><code>animate-slide-up</code></td>
+<td>1</td>
+</tr>
+<tr>
+<td><code>animate-scale-in</code></td>
+<td>1</td>
+</tr>
+<tr>
+<td><code>animate-pulse</code></td>
+<td>7</td>
+</tr>
+<tr>
+<td><code>skeleton</code> (CSS class, not the primitive)</td>
+<td>5</td>
+</tr>
+<tr>
+<td><code>import Layout from '../components/Layout'</code></td>
+<td>3 (<code>ChatHistory.tsx</code>, <code>LandingPage.tsx</code>, <code>ChatWithAI.tsx</code>)</td>
+</tr>
+<tr>
+<td><code>import Navbar from './components/Navbar'</code></td>
+<td>1 (<code>App.tsx</code> — unused after Phase E)</td>
+</tr>
+<tr>
+<td><code>import Sidebar from './components/Sidebar'</code></td>
+<td>1 (<code>App.tsx</code> — unused after Phase E)</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Implication:</strong> the legacy CSS utilities (.btn, .card, .input, .glass, .markdown-body, surface-*, gradient-text) can be deleted outright. The animations (<code>animate-*</code>, <code>skeleton</code>) still have consumers; their keyframes need to survive the move from <code>index.css</code> to <code>motion.css</code> (or stay in place if simpler). The three legacy-Layout pages each need a small migration. App.tsx needs its dead Navbar/Sidebar imports removed and its brand routes wrapped in BrandShell.</p>
+<hr />
+<h2 id="file-structure">File Structure</h2>
+<p><strong>Modify:</strong>
+- <code>src/frontend/src/App.tsx</code> — remove dead Navbar/Sidebar imports; wrap brand routes (<code>/login</code>, <code>/register</code>, <code>/auth/callback</code>, <code>/pending-approval</code>, <code>/landing</code>, <code>/404</code>) in <code>&lt;BrandShell&gt;</code> instead of bare <code>&lt;&gt;{children}&lt;/&gt;</code>.
+- <code>src/frontend/src/pages/LandingPage.tsx</code> — drop <code>import Layout</code> and the <code>&lt;Layout&gt;</code> wrapper; let routing-level BrandShell handle chrome.
+- <code>src/frontend/src/pages/ChatHistory.tsx</code> — drop <code>import Layout</code> and the <code>&lt;Layout&gt;</code> wrapper; OperatorShell already wraps it at the routing level.
+- <code>src/frontend/src/pages/ChatWithAI.tsx</code> — same as ChatHistory.
+- <code>src/frontend/src/index.css</code> — delete bespoke utility blocks: <code>.btn</code>, <code>.btn-primary</code>, <code>.btn-secondary</code>, <code>.btn-ghost</code>, <code>.btn:focus-visible</code>, <code>.card</code>, <code>.card:hover</code>, <code>.card-interactive:hover</code>, <code>.input</code>, <code>.input:hover</code>, <code>.input:focus</code>, <code>.input::placeholder</code>, <code>.divider</code>, <code>.surface-primary</code>, <code>.surface-secondary</code>, <code>.surface-tertiary</code>, <code>.surface-elevated</code>, <code>.text-primary</code>, <code>.text-secondary</code>, <code>.text-tertiary</code>, <code>.text-muted</code>, <code>.glass</code>, <code>.gradient-text</code>, <code>.markdown-body</code> and all <code>.markdown-body *</code> descendants. Keep: base <code>body</code> rule, scrollbar styles, <code>::selection</code>, <code>:focus-visible</code>, the animation classes (<code>animate-fade-in</code>, etc.) and their keyframes (5 still consumed), <code>.skeleton</code> (5 consumed), <code>@media print</code>.
+- <code>src/frontend/src/styles/tokens.css</code> — delete the entire legacy compatibility shim block (the <code>:root { --color-bg-primary: var(--surface-base); ... }</code> block from the "Legacy variable compatibility shim" header through the end of <code>:root</code>). Font tokens (<code>--font-sans</code>, <code>--font-mono</code>, <code>--font-display</code>) and the <code>body</code>/<code>code,kbd,...</code>/<code>.tabular-nums</code> rules added by Phase C <strong>stay</strong>.</p>
+<p><strong>Delete:</strong>
+- <code>src/frontend/src/components/Layout.tsx</code>
+- <code>src/frontend/src/components/Navbar.tsx</code> (verify no remaining importers first)
+- <code>src/frontend/src/components/Sidebar.tsx</code> (verify no remaining importers first)</p>
+<p><strong>Test (extend):</strong>
+- <code>src/frontend/src/components/primitives/__tests__/Tokens.test.tsx</code> — add a regression test that the legacy shim is gone (<code>getPropertyValue('--color-bg-primary')</code> returns empty string after the shim is deleted). This locks the teardown in.</p>
+<hr />
+<h2 id="task-l1-remove-dead-navbarsidebar-imports-from-apptsx">Task L1: Remove dead Navbar/Sidebar imports from App.tsx</h2>
+<p><strong>Files:</strong> <code>src/frontend/src/App.tsx</code> (modify)</p>
+<ul>
+<li>[ ] <strong>Step 1: Confirm Navbar/Sidebar are truly unreferenced in App.tsx body</strong></li>
+</ul>
+<pre><code class="language-bash">cd /Users/morlock/fun/02_PowerShell_Projects/psscript-redesign-2026-04-28 &amp;&amp; grep -nE '&lt;Navbar|&lt;Sidebar' src/frontend/src/App.tsx
+</code></pre>
+<p>Expected: no matches (Phase E replaced the inline JSX with <code>&lt;OperatorShell&gt;</code>).</p>
+<ul>
+<li>[ ] <strong>Step 2: Delete the imports</strong></li>
+</ul>
+<p>In <code>src/frontend/src/App.tsx</code>, delete lines 9–10:</p>
+<pre><code class="language-ts">import Navbar from './components/Navbar';
+import Sidebar from './components/Sidebar';
+</code></pre>
+<ul>
+<li>[ ] <strong>Step 3: Confirm typecheck still clean</strong></li>
+</ul>
+<pre><code class="language-bash">cd /Users/morlock/fun/02_PowerShell_Projects/psscript-redesign-2026-04-28/src/frontend &amp;&amp; npx tsc --noEmit 2&gt;&amp;1 | tail -5
+</code></pre>
+<p>Expected: empty output (no errors).</p>
+<hr />
+<h2 id="task-l2-wrap-brand-routes-in-brandshell-at-the-applayout-boundary">Task L2: Wrap brand routes in BrandShell at the AppLayout boundary</h2>
+<p><strong>Files:</strong> <code>src/frontend/src/App.tsx</code> (modify)</p>
+<p>The current <code>AppLayout</code> short-circuits brand routes to <code>&lt;&gt;{children}&lt;/&gt;</code>. Plan 1 task E3 deferred shell-wrapping for these to Plan 2 (per the implementer's report). This task closes that gap.</p>
+<ul>
+<li>[ ] <strong>Step 1: Update the brand-route branch in AppLayout</strong></li>
+</ul>
+<p>Find this block in <code>src/frontend/src/App.tsx</code>:</p>
+<pre><code class="language-tsx">const isAuthPage = location.pathname === '/login' || location.pathname === '/register' || location.pathname === '/auth/callback' || location.pathname === '/pending-approval';
+
+if (isAuthPage) {
+  return &lt;&gt;{children}&lt;/&gt;;
+}
+</code></pre>
+<p>Replace it with:</p>
+<pre><code class="language-tsx">const isBrandRoute =
+  location.pathname === '/login' ||
+  location.pathname === '/register' ||
+  location.pathname === '/auth/callback' ||
+  location.pathname === '/pending-approval' ||
+  location.pathname === '/landing' ||
+  location.pathname === '/404';
+
+if (isBrandRoute) {
+  return &lt;BrandShell&gt;{children}&lt;/BrandShell&gt;;
+}
+</code></pre>
+<p>The <code>landing</code> and <code>404</code> additions match the manifest's brand-surface route list.</p>
+<ul>
+<li>[ ] <strong>Step 2: Confirm dev preview boots &amp; brand routes render</strong></li>
+</ul>
+<pre><code class="language-bash">cd /Users/morlock/fun/02_PowerShell_Projects/psscript-redesign-2026-04-28/src/frontend &amp;&amp; (lsof -ti :3091 | xargs kill 2&gt;/dev/null; nohup npm run dev -- --port 3091 --host 127.0.0.1 &gt; /tmp/dev-l2.log 2&gt;&amp;1 &amp; echo $! &gt; /tmp/dev-l2.pid); sleep 5; for path in '/' '/login' '/register' '/auth/callback' '/pending-approval' '/404'; do printf &quot;%-22s &quot; &quot;$path:&quot;; curl -fsS -o /dev/null -m 4 -w &quot;%{http_code}\n&quot; http://127.0.0.1:3091${path}; done; kill $(cat /tmp/dev-l2.pid) 2&gt;/dev/null; rm -f /tmp/dev-l2.pid
+</code></pre>
+<p>Expected: all return <code>200</code>.</p>
+<hr />
+<h2 id="task-l3-migrate-landingpagetsx-off-legacy-layout-brand-surface">Task L3: Migrate LandingPage.tsx off legacy Layout (brand surface)</h2>
+<p><strong>Files:</strong> <code>src/frontend/src/pages/LandingPage.tsx</code> (modify)</p>
+<p>LandingPage is a brand-surface route. After Task L2 it gets <code>BrandShell</code> automatically; the inner <code>&lt;Layout&gt;</code> wrapper is now redundant (and would produce double chrome).</p>
+<ul>
+<li>[ ] <strong>Step 1: Read the file's current shape</strong></li>
+</ul>
+<pre><code class="language-bash">cd /Users/morlock/fun/02_PowerShell_Projects/psscript-redesign-2026-04-28 &amp;&amp; head -40 src/frontend/src/pages/LandingPage.tsx
+</code></pre>
+<ul>
+<li>[ ] <strong>Step 2: Remove the Layout import + wrapper</strong></li>
+</ul>
+<p>Delete the line <code>import Layout from '../components/Layout';</code>. Find the JSX root <code>&lt;Layout&gt;...&lt;/Layout&gt;</code> and replace with a fragment <code>&lt;&gt;...&lt;/&gt;</code> or a <code>&lt;div&gt;</code> if the file's structure needs a single child element. The shell wrapper now lives at the route boundary.</p>
+<ul>
+<li>[ ] <strong>Step 3: Confirm LandingPage renders cleanly</strong></li>
+</ul>
+<pre><code class="language-bash">cd /Users/morlock/fun/02_PowerShell_Projects/psscript-redesign-2026-04-28/src/frontend &amp;&amp; npx tsc --noEmit 2&gt;&amp;1 | tail -5
+</code></pre>
+<p>Expected: empty.</p>
+<hr />
+<h2 id="task-l4-migrate-chathistorytsx-off-legacy-layout-operator-surface">Task L4: Migrate ChatHistory.tsx off legacy Layout (operator surface)</h2>
+<p><strong>Files:</strong> <code>src/frontend/src/pages/ChatHistory.tsx</code> (modify)</p>
+<p>ChatHistory is an operator route. <code>OperatorShell</code> already wraps it via <code>AppLayout</code>; the inner <code>&lt;Layout&gt;</code> produces double chrome.</p>
+<ul>
+<li>[ ] <strong>Step 1: Remove import + wrapper</strong></li>
+</ul>
+<p>Delete <code>import Layout from '../components/Layout';</code>. Replace the <code>&lt;Layout&gt;...&lt;/Layout&gt;</code> JSX root with a fragment.</p>
+<ul>
+<li>[ ] <strong>Step 2: Confirm typecheck</strong></li>
+</ul>
+<pre><code class="language-bash">cd /Users/morlock/fun/02_PowerShell_Projects/psscript-redesign-2026-04-28/src/frontend &amp;&amp; npx tsc --noEmit 2&gt;&amp;1 | tail -5
+</code></pre>
+<p>Expected: empty.</p>
+<hr />
+<h2 id="task-l5-migrate-chatwithaitsx-off-legacy-layout-operator-surface">Task L5: Migrate ChatWithAI.tsx off legacy Layout (operator surface)</h2>
+<p><strong>Files:</strong> <code>src/frontend/src/pages/ChatWithAI.tsx</code> (modify)</p>
+<p>Same shape as L4.</p>
+<ul>
+<li>[ ] <strong>Step 1: Remove import + wrapper</strong></li>
+</ul>
+<p>Delete <code>import Layout from '../components/Layout';</code> and the <code>&lt;Layout&gt;...&lt;/Layout&gt;</code> JSX root (replace with fragment).</p>
+<ul>
+<li>[ ] <strong>Step 2: Confirm typecheck</strong></li>
+</ul>
+<pre><code class="language-bash">cd /Users/morlock/fun/02_PowerShell_Projects/psscript-redesign-2026-04-28/src/frontend &amp;&amp; npx tsc --noEmit 2&gt;&amp;1 | tail -5
+</code></pre>
+<p>Expected: empty.</p>
+<hr />
+<h2 id="task-l6-delete-legacy-layoutnavbarsidebar-component-files">Task L6: Delete legacy Layout/Navbar/Sidebar component files</h2>
+<p><strong>Files (delete):</strong>
+- <code>src/frontend/src/components/Layout.tsx</code>
+- <code>src/frontend/src/components/Navbar.tsx</code>
+- <code>src/frontend/src/components/Sidebar.tsx</code></p>
+<ul>
+<li>[ ] <strong>Step 1: Verify zero remaining importers</strong></li>
+</ul>
+<pre><code class="language-bash">cd /Users/morlock/fun/02_PowerShell_Projects/psscript-redesign-2026-04-28 &amp;&amp; grep -rEn &quot;from '.*components/(Layout|Navbar|Sidebar)'|from '\\.\\./components/(Layout|Navbar|Sidebar)'|from '\\./Layout'|from '\\./Navbar'|from '\\./Sidebar'&quot; src/frontend/src 2&gt;&amp;1
+</code></pre>
+<p>Expected: only matches inside the legacy files themselves (e.g., <code>Layout.tsx</code> importing <code>./Navbar</code> — that's fine because the whole file is being deleted). If any consumer outside <code>Layout.tsx</code>/<code>Navbar.tsx</code>/<code>Sidebar.tsx</code> is found, <strong>stop</strong> and report — that consumer must be migrated first.</p>
+<ul>
+<li>[ ] <strong>Step 2: Delete the files</strong></li>
+</ul>
+<pre><code class="language-bash">cd /Users/morlock/fun/02_PowerShell_Projects/psscript-redesign-2026-04-28 &amp;&amp; git rm src/frontend/src/components/Layout.tsx src/frontend/src/components/Navbar.tsx src/frontend/src/components/Sidebar.tsx
+</code></pre>
+<ul>
+<li>[ ] <strong>Step 3: Confirm typecheck and build still clean</strong></li>
+</ul>
+<pre><code class="language-bash">cd /Users/morlock/fun/02_PowerShell_Projects/psscript-redesign-2026-04-28/src/frontend &amp;&amp; npx tsc --noEmit 2&gt;&amp;1 | tail -5 &amp;&amp; npm run build 2&gt;&amp;1 | tail -3
+</code></pre>
+<p>Expected: typecheck empty, build <code>✓ built in &lt;N&gt;s</code>.</p>
+<hr />
+<h2 id="task-l7-delete-bespoke-utility-blocks-from-indexcss">Task L7: Delete bespoke utility blocks from index.css</h2>
+<p><strong>Files:</strong> <code>src/frontend/src/index.css</code> (modify)</p>
+<p>Delete all utility blocks that have zero consumers (per Discovery audit). <strong>Keep</strong>: base <code>body</code> rule, scrollbar styles, <code>::selection</code>, <code>:focus-visible</code>, animation classes + their keyframes, <code>.skeleton</code>, <code>@media print</code>.</p>
+<ul>
+<li>[ ] <strong>Step 1: Read current index.css to confirm shape</strong></li>
+</ul>
+<pre><code class="language-bash">cd /Users/morlock/fun/02_PowerShell_Projects/psscript-redesign-2026-04-28 &amp;&amp; wc -l src/frontend/src/index.css
+</code></pre>
+<p>Pre-Plan-2 the file is ~480 lines. After this task, it should be ~180 lines.</p>
+<ul>
+<li>[ ] <strong>Step 2: Delete the unused blocks</strong></li>
+</ul>
+<p>In <code>src/frontend/src/index.css</code>, delete these blocks in their entirety (the headers tell you the boundaries):</p>
+<ol>
+<li><code>.surface-primary</code> / <code>.surface-secondary</code> / <code>.surface-tertiary</code> / <code>.surface-elevated</code> — under <code>/* Surface variants */</code>. ~16 lines.</li>
+<li><code>.text-primary</code> / <code>.text-secondary</code> / <code>.text-tertiary</code> / <code>.text-muted</code> — under <code>/* Text variants */</code>. ~16 lines.</li>
+<li><code>.glass</code> — under <code>/* Glass effect */</code>. ~6 lines.</li>
+<li><code>.gradient-text</code> — under <code>/* Gradient text */</code>. ~7 lines.</li>
+<li><code>.card</code> / <code>.card:hover</code> / <code>.card-interactive:hover</code> — under <code>/* Card styles */</code>. ~16 lines.</li>
+<li><code>.btn</code> / <code>.btn:focus-visible</code> / <code>.btn-primary</code> / <code>.btn-primary:hover</code> / <code>.btn-secondary</code> / <code>.btn-secondary:hover</code> / <code>.btn-ghost</code> / <code>.btn-ghost:hover</code> — under <code>/* Button base */</code>. ~50 lines.</li>
+<li><code>.input</code> / <code>.input:hover</code> / <code>.input:focus</code> / <code>.input::placeholder</code> — under <code>/* Input styles */</code>. ~24 lines.</li>
+<li><code>.divider</code> — under <code>/* Divider */</code>. ~7 lines.</li>
+<li>The entire <code>/* Markdown Viewer Styles */</code> block — <code>.markdown-body</code> and all <code>.markdown-body *</code> rules. ~140 lines.</li>
+</ol>
+<p>Do <strong>not</strong> delete the <code>/* Animation Classes */</code> block (still 11 consumers) or <code>.skeleton</code> (5 consumers).</p>
+<ul>
+<li>[ ] <strong>Step 3: Verify the kept blocks still resolve</strong></li>
+</ul>
+<pre><code class="language-bash">cd /Users/morlock/fun/02_PowerShell_Projects/psscript-redesign-2026-04-28/src/frontend &amp;&amp; npm run build 2&gt;&amp;1 | tail -3 &amp;&amp; grep -cE '^(\.skeleton|@keyframes|\.animate-)' src/index.css
+</code></pre>
+<p>Expected: build green; grep returns ≥6 (5 keyframes + a few animate utilities + skeleton).</p>
+<hr />
+<h2 id="task-l8-delete-legacy-variable-shim-from-tokenscss">Task L8: Delete legacy variable shim from tokens.css</h2>
+<p><strong>Files:</strong> <code>src/frontend/src/styles/tokens.css</code> (modify)</p>
+<p>The shim was added at task <code>a2bb6df</code> to keep the bespoke utilities in <code>index.css</code> rendering after Phase B's deletion of the legacy <code>:root</code> palette. With Task L7 those utilities are gone — the shim has no consumers.</p>
+<ul>
+<li>[ ] <strong>Step 1: Identify shim boundaries</strong></li>
+</ul>
+<p>The shim block starts with the comment header <code>/* Legacy variable compatibility shim — bridges bespoke utilities ... */</code> and is the FIRST <code>:root { ... }</code> block in the file (palette scopes are on <code>[data-surface]</code>, not <code>:root</code>). After it comes the Phase C font block (also under <code>:root</code>, distinct, with its own <code>--font-sans</code>/<code>--font-mono</code>/<code>--font-display</code>).</p>
+<ul>
+<li>[ ] <strong>Step 2: Verify shim block is unconsumed</strong></li>
+</ul>
+<pre><code class="language-bash">cd /Users/morlock/fun/02_PowerShell_Projects/psscript-redesign-2026-04-28 &amp;&amp; for var in --color-bg-primary --color-text-primary --color-border-default --color-primary --color-success --color-error --shadow-sm --shadow-lg --gradient-primary --glass-bg --space-4 --transition-fast --radius-md --radius-full --blur-md; do
+  printf &quot;%-25s &quot; &quot;$var:&quot;
+  grep -rE &quot;var\\(\\Q$var\\E\\)&quot; --include='*.tsx' --include='*.ts' --include='*.css' src/frontend/src 2&gt;/dev/null | grep -v &quot;tokens.css&quot; | wc -l
+done
+</code></pre>
+<p>Expected: every count is <code>0</code>. If any is non-zero, that var still has a consumer outside <code>tokens.css</code> — report which file:line and ask before proceeding.</p>
+<ul>
+<li>[ ] <strong>Step 3: Delete the shim block</strong></li>
+</ul>
+<p>In <code>src/frontend/src/styles/tokens.css</code>, delete from the comment header <code>/* ============================================================
+   Legacy variable compatibility shim ...</code> through the closing <code>}</code> of the <code>:root</code> block that defines <code>--color-*</code> etc. <strong>Do NOT delete the second <code>:root</code> block</strong> (Phase C font tokens — has <code>--font-sans</code>, <code>--font-mono</code>, <code>--font-display</code>).</p>
+<p>After deletion, the file's structure should be:
+1. <code>[data-surface="brand"] { ... }</code>
+2. <code>[data-surface="operator"] { ... }</code>
+3. <code>[data-surface="operator"][data-theme="light"] { ... }</code>
+4. <code>@font-face</code> fallback metric overrides (Phase C)
+5. <code>:root { --font-sans, --font-mono, --font-display }</code> (Phase C)
+6. <code>body { ... }</code>, <code>code, kbd, pre, samp, .font-mono { ... }</code>, <code>.tabular-nums { ... }</code> (Phase C)</p>
+<p>Nothing else.</p>
+<ul>
+<li>[ ] <strong>Step 4: Confirm tests still pass and build is clean</strong></li>
+</ul>
+<pre><code class="language-bash">cd /Users/morlock/fun/02_PowerShell_Projects/psscript-redesign-2026-04-28/src/frontend &amp;&amp; npm run test:run -- src/components/primitives/__tests__/Tokens.test.tsx 2&gt;&amp;1 | tail -5 &amp;&amp; npm run build 2&gt;&amp;1 | tail -3
+</code></pre>
+<p>Expected: 11/11 tests green; build green.</p>
+<hr />
+<h2 id="task-l9-add-regression-test-that-the-shim-is-gone">Task L9: Add regression test that the shim is gone</h2>
+<p><strong>Files:</strong> <code>src/frontend/src/components/primitives/__tests__/Tokens.test.tsx</code> (modify)</p>
+<p>Lock in the teardown so a future "let's add the shim back temporarily" doesn't quietly revive it.</p>
+<ul>
+<li>[ ] <strong>Step 1: Append a new describe block to Tokens.test.tsx</strong></li>
+</ul>
+<p>Add at the bottom of the file (after the <code>typography cascade integration</code> describe):</p>
+<pre><code class="language-ts">/*
+ * Plan 2 deleted the legacy variable shim. This test locks that in so
+ * a future revival is caught.
+ */
+describe('legacy shim removal', () =&gt; {
+  const shimVars = [
+    '--color-bg-primary',
+    '--color-text-primary',
+    '--color-border-default',
+    '--color-primary',
+    '--color-success',
+    '--color-error',
+    '--shadow-sm',
+    '--shadow-lg',
+    '--gradient-primary',
+    '--glass-bg',
+    '--space-4',
+    '--transition-fast',
+    '--radius-md',
+    '--blur-md',
+  ];
+  shimVars.forEach((name) =&gt; {
+    it(`legacy shim variable ${name} is no longer defined`, () =&gt; {
+      const declared = getComputedStyle(document.documentElement).getPropertyValue(name).trim();
+      expect(declared).toBe('');
+    });
+  });
+});
+</code></pre>
+<ul>
+<li>[ ] <strong>Step 2: Run the test file</strong></li>
+</ul>
+<pre><code class="language-bash">cd /Users/morlock/fun/02_PowerShell_Projects/psscript-redesign-2026-04-28/src/frontend &amp;&amp; npm run test:run -- src/components/primitives/__tests__/Tokens.test.tsx 2&gt;&amp;1 | tail -5
+</code></pre>
+<p>Expected: 25/25 pass (11 existing + 14 new shim-removal cases).</p>
+<hr />
+<h2 id="task-l10-full-verification">Task L10: Full verification</h2>
+<p><strong>Files:</strong> none — verification only.</p>
+<ul>
+<li>[ ] <strong>Step 1: Full Vitest suite</strong></li>
+</ul>
+<pre><code class="language-bash">cd /Users/morlock/fun/02_PowerShell_Projects/psscript-redesign-2026-04-28/src/frontend &amp;&amp; npm run test:run 2&gt;&amp;1 | tail -10
+</code></pre>
+<p>Expected: 15/16 files pass (<code>AuthContext.test.tsx</code> pre-existing flake unchanged), 99/106 tests pass (85 from Plan 1 + 14 new shim-removal cases).</p>
+<ul>
+<li>[ ] <strong>Step 2: Build clean</strong></li>
+</ul>
+<pre><code class="language-bash">cd /Users/morlock/fun/02_PowerShell_Projects/psscript-redesign-2026-04-28/src/frontend &amp;&amp; npm run build 2&gt;&amp;1 | tail -5
+</code></pre>
+<p>Expected: <code>✓ built in &lt;N&gt;s</code>.</p>
+<ul>
+<li>[ ] <strong>Step 3: Typecheck clean</strong></li>
+</ul>
+<pre><code class="language-bash">cd /Users/morlock/fun/02_PowerShell_Projects/psscript-redesign-2026-04-28/src/frontend &amp;&amp; npx tsc --noEmit 2&gt;&amp;1 | tail -5
+</code></pre>
+<p>Expected: empty.</p>
+<ul>
+<li>[ ] <strong>Step 4: Smoke each surface in dev preview</strong></li>
+</ul>
+<pre><code class="language-bash">cd /Users/morlock/fun/02_PowerShell_Projects/psscript-redesign-2026-04-28/src/frontend &amp;&amp; (lsof -ti :3091 | xargs kill 2&gt;/dev/null; nohup npm run dev -- --port 3091 --host 127.0.0.1 &gt; /tmp/dev-l10.log 2&gt;&amp;1 &amp; echo $! &gt; /tmp/dev-l10.pid); sleep 5; for path in '/' '/login' '/dashboard' '/scripts' '/settings/profile' '/landing' '/404'; do printf &quot;%-22s &quot; &quot;$path:&quot;; curl -fsS -o /dev/null -m 4 -w &quot;%{http_code}\n&quot; http://127.0.0.1:3091${path}; done; kill $(cat /tmp/dev-l10.pid) 2&gt;/dev/null; rm -f /tmp/dev-l10.pid
+</code></pre>
+<p>Expected: every path returns <code>200</code>.</p>
+<hr />
+<h2 id="task-l11-single-commit-for-plan-2">Task L11: Single commit for Plan 2</h2>
+<ul>
+<li>[ ] <strong>Step 1: Stage all Plan 2 changes</strong></li>
+</ul>
+<pre><code class="language-bash">cd /Users/morlock/fun/02_PowerShell_Projects/psscript-redesign-2026-04-28 &amp;&amp; git add src/frontend/src/App.tsx src/frontend/src/pages/LandingPage.tsx src/frontend/src/pages/ChatHistory.tsx src/frontend/src/pages/ChatWithAI.tsx src/frontend/src/index.css src/frontend/src/styles/tokens.css src/frontend/src/components/primitives/__tests__/Tokens.test.tsx &amp;&amp; git status --short
+</code></pre>
+<p>Expected:</p>
+<pre><code>M  src/frontend/src/App.tsx
+M  src/frontend/src/pages/LandingPage.tsx
+M  src/frontend/src/pages/ChatHistory.tsx
+M  src/frontend/src/pages/ChatWithAI.tsx
+D  src/frontend/src/components/Layout.tsx
+D  src/frontend/src/components/Navbar.tsx
+D  src/frontend/src/components/Sidebar.tsx
+M  src/frontend/src/index.css
+M  src/frontend/src/styles/tokens.css
+M  src/frontend/src/components/primitives/__tests__/Tokens.test.tsx
+</code></pre>
+<ul>
+<li>[ ] <strong>Step 2: Commit</strong></li>
+</ul>
+<pre><code class="language-bash">cd /Users/morlock/fun/02_PowerShell_Projects/psscript-redesign-2026-04-28 &amp;&amp; git commit -m &quot;$(cat &lt;&lt;'EOF'
+feat(redesign): reflow brand routes onto BrandShell, retire legacy machinery
+
+Plan 2 of the 2026-04-28 frontend modernization. Wraps brand routes
+(/login, /register, /auth/callback, /pending-approval, /landing, /404)
+in BrandShell at the AppLayout boundary. Migrates the three pages still
+importing the legacy Layout component (LandingPage, ChatHistory,
+ChatWithAI) to drop their inner Layout wrapper — shells now live at the
+route boundary.
+
+Deletes the legacy machinery once consumers are gone:
+- src/frontend/src/components/Layout.tsx
+- src/frontend/src/components/Navbar.tsx
+- src/frontend/src/components/Sidebar.tsx
+- bespoke utility blocks in src/frontend/src/index.css (.btn, .card,
+  .input, .glass, .markdown-body, .surface-*, .gradient-text, .text-*,
+  .divider) — none of which have any external consumer per audit.
+- legacy variable compatibility shim in src/frontend/src/styles/tokens.css
+  (the :root { --color-*, --shadow-*, --gradient-*, --glass-*, --space-*,
+  --transition-*, --radius-*, --blur-* } block added at a2bb6df)
+
+Adds a 14-case regression test in Tokens.test.tsx that asserts the
+shim variables are gone — locks the teardown in.
+
+After Plan 2, OperatorShell + BrandShell are the only layout primitives
+in the tree, the Tailwind shim is the only color source, and index.css
+is a small base stylesheet plus the still-consumed animation utilities
+and .skeleton class.
+
+Co-Authored-By: Claude Opus 4.7 (1M context) &lt;noreply@anthropic.com&gt;
+EOF
+)&quot; &amp;&amp; git log --oneline -3
+</code></pre>
+<hr />
+<h2 id="self-review">Self-Review</h2>
+<ul>
+<li><strong>Spec coverage:</strong> Plan 2's brief from the design spec is "reflow the 36 routes onto the new system + delete legacy machinery." Audit shows 36 routes already split correctly — operator routes are already wrapped by <code>OperatorShell</code> (Phase E E3); brand routes are not (deferred to this plan). Tasks L2 + L3 cover the gap. Bespoke utility deletion is covered by L7. Variable shim deletion is L8. Component file deletion is L6. Test regression is L9. All boxes ticked.</li>
+<li><strong>Placeholder scan:</strong> every step has exact paths, exact commands, exact expected output. No "implement appropriately" or "similar to above". Code-deletion tasks identify the blocks by header comment and line-count expectation rather than verbatim source (the source is in the file; pasting it would just duplicate).</li>
+<li><strong>Type consistency:</strong> Plan 2 adds no new types. The <code>BrandShell</code> API used in L2 (<code>&lt;BrandShell&gt;{children}&lt;/BrandShell&gt;</code>) matches the signature defined in Plan 1 task E1.</li>
+<li><strong>Risk:</strong> the heaviest task is L7 (delete utility blocks). The audit shows zero consumers, but if a stray consumer exists in JSX as <code>className={\</code>card${suffix}`}<code>style template literals, the audit's regex (</code>.card[^-a-zA-Z]`) might miss it. L10 step 4 (curl smoke) catches catastrophic visual regressions; Plan 3's visual diff is the comprehensive net.</li>
+</ul>
+<hr />
+<h2 id="execution-handoff">Execution Handoff</h2>
+<p>After Plan 2's L11 commit, the redesign branch will have 9 functional commits ahead of main and the codebase will be fully on the new system. Plan 3 (verification — visual diff, a11y sweep, perf budget) is the final plan; it adds no new product code, only verification artifacts.</p>
+<p><strong>Two execution options:</strong></p>
+<ol>
+<li>
+<p><strong>Subagent-Driven</strong> — <code>superpowers:subagent-driven-development</code>. Best when the plan's tasks are independent enough to dispatch separately. For Plan 2, most tasks share <code>App.tsx</code> or <code>index.css</code> and the work is short — subagent ceremony has less ROI here.</p>
+</li>
+<li>
+<p><strong>Inline Execution</strong> — <code>superpowers:executing-plans</code>. Better fit for this plan's tight, mechanical scope. Recommended.</p>
+</li>
+</ol>
+    <div class="footer">Generated 2026-04-29 14:08 UTC</div>
+  </div>
+</body>
+</html>

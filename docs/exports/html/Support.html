@@ -269,148 +269,176 @@ body {
   </section>
   
     <h1 id="psscript-support-and-operations">PSScript Support and Operations</h1>
-<p>This guide defines how to get help, how issues are triaged, and what operational checks should be performed before escalation.</p>
-<h2 id="support-entry-points">Support entry points</h2>
+<p>Last updated: April 29, 2026.</p>
+<p>This guide reflects the active hosted app at <code>https://pstest.morloksmaze.com</code>.</p>
+<p><img alt="Support escalation ladder" src="docs/graphics/support-escalation-ladder-2026-04-29.svg" /></p>
+<h2 id="before-opening-an-issue">Before Opening An Issue</h2>
+<ul>
+<li>Reproduce the issue and write exact steps.</li>
+<li>Capture the expected behavior and actual behavior.</li>
+<li>Include screenshots for UI problems.</li>
+<li>Include the production URL or preview deploy URL.</li>
+<li>Include Netlify Function logs and Supabase logs for the failure window when the issue involves data, auth, or API behavior.</li>
+<li>Confirm whether the record is disposable test data or production data before attempting delete, bulk delete, restore, or cleanup actions.</li>
+</ul>
+<h2 id="operational-checks">Operational Checks</h2>
 <table>
 <thead>
 <tr>
-<th>Channel</th>
-<th>Purpose</th>
-<th>Best for</th>
+<th>Area</th>
+<th>Check</th>
 </tr>
 </thead>
 <tbody>
 <tr>
-<td>GitHub Issues</td>
-<td>Bug reports and feature requests</td>
-<td>Product issues and reproducible defects</td>
+<td>Production app</td>
+<td>Open <code>https://pstest.morloksmaze.com</code></td>
 </tr>
 <tr>
-<td>Docs and Training</td>
-<td>Self-service guides</td>
-<td>Onboarding, workflows, and troubleshooting</td>
+<td>Hosted API</td>
+<td><code>curl -fsS https://pstest.morloksmaze.com/api/health</code></td>
 </tr>
 <tr>
-<td>Logs and health checks</td>
-<td>Operational diagnostics</td>
-<td>Service availability and performance</td>
+<td>Auth</td>
+<td>Sign in through Supabase Auth and confirm enabled profile access</td>
+</tr>
+<tr>
+<td>Database</td>
+<td>Confirm Supabase connection from the health payload and Supabase dashboard logs</td>
+</tr>
+<tr>
+<td>Deploy</td>
+<td>Review the latest Netlify production deploy and Function logs</td>
+</tr>
+<tr>
+<td>Mobile</td>
+<td>Check dashboard, navigation drawer, scripts, and settings at phone width</td>
+</tr>
+<tr>
+<td>Upload</td>
+<td>Confirm file size is below the hosted 4 MB limit</td>
+</tr>
+<tr>
+<td>Export</td>
+<td>Confirm analysis export returns a PDF content type</td>
 </tr>
 </tbody>
 </table>
-<h2 id="before-you-open-an-issue">Before you open an issue</h2>
-<ul>
-<li>Confirm the problem is reproducible</li>
-<li>Capture steps, expected behavior, and actual behavior</li>
-<li>Include logs from backend and AI service</li>
-<li>Include screenshots if UI related</li>
-</ul>
-<h2 id="issue-triage-checklist">Issue triage checklist</h2>
+<p>Local Express and FastAPI services can still be used by developers, but they are not the production support path.</p>
+<h2 id="common-escalations">Common Escalations</h2>
 <table>
 <thead>
 <tr>
-<th>Step</th>
-<th>Owner</th>
-<th>Outcome</th>
+<th>Symptom</th>
+<th>First check</th>
+<th>Evidence to attach</th>
 </tr>
 </thead>
 <tbody>
 <tr>
-<td>Reproduce</td>
-<td>Reporter</td>
-<td>Clear reproduction steps</td>
+<td>Login loop or pending approval</td>
+<td>Supabase redirect allow-list and <code>app_profiles.is_enabled</code></td>
+<td>user email, callback URL, API response</td>
 </tr>
 <tr>
-<td>Classify</td>
-<td>Maintainer</td>
-<td>Bug, feature, or support</td>
+<td><code>/agentic</code> returns 404</td>
+<td>Netlify redirects and current deploy id</td>
+<td>URL, deploy id, browser screenshot</td>
 </tr>
 <tr>
-<td>Assign</td>
-<td>Maintainer</td>
-<td>Owner and priority set</td>
+<td>Analysis export downloads wrong type</td>
+<td><code>/api/scripts/:id/export-analysis</code> response headers</td>
+<td>script id, headers, downloaded filename</td>
 </tr>
 <tr>
-<td>Verify fix</td>
-<td>Maintainer</td>
-<td>Regression or unit test added</td>
+<td>Script delete or bulk delete fails</td>
+<td>enabled profile, ownership/admin role, route response</td>
+<td>script ids, request id, route payload</td>
+</tr>
+<tr>
+<td>Data maintenance fails</td>
+<td>admin role and Supabase backup record</td>
+<td>backup id, route response, Netlify logs</td>
+</tr>
+<tr>
+<td>Mobile layout overlaps</td>
+<td>viewport width and route</td>
+<td>screenshot, device/browser</td>
 </tr>
 </tbody>
 </table>
-<h2 id="operational-checks">Operational checks</h2>
-<h3 id="health-endpoints">Health endpoints</h3>
-<ul>
-<li>Backend: http://localhost:4000/health</li>
-<li>Backend API: http://localhost:4000/api/health</li>
-<li>AI service: http://localhost:8000/health</li>
-</ul>
-<h3 id="log-locations">Log locations</h3>
-<ul>
-<li>Backend logs: <code>src/backend/logs/</code></li>
-<li>AI service logs: <code>src/ai/logs/</code> (if configured)</li>
-<li>Netlify deploy logs: Netlify project deploy log for <code>psscript</code></li>
-</ul>
-<h3 id="common-recovery-actions">Common recovery actions</h3>
-<pre><code class="language-bash"># Restart all services
-./restart-all.sh
-
-# Restart backend only
-./restart-backend.sh
+<h2 id="intake-template">Intake Template</h2>
+<pre><code class="language-text">Summary:
+Severity:
+Environment URL:
+Netlify deploy id:
+User email/role:
+Route:
+Timestamp and timezone:
+Expected behavior:
+Actual behavior:
+Steps to reproduce:
+Screenshots:
+API response/status:
+Netlify Function log window:
+Supabase Auth/database log window:
+Data involved:
+Cleanup or rollback needed:
 </code></pre>
-<h3 id="data-maintenance-escalation">Data Maintenance Escalation</h3>
-<p>If maintenance actions fail:</p>
+<h2 id="data-maintenance-escalation">Data Maintenance Escalation</h2>
+<p>For Settings -&gt; Data Maintenance issues, collect:</p>
 <ol>
-<li>Save the exact API request/response payload for:</li>
-<li><code>POST /api/admin/db/backup</code></li>
-<li><code>POST /api/admin/db/restore</code></li>
-<li><code>POST /api/admin/db/clear-test-data</code></li>
-<li>Capture backup directory state:<ul>
-<li>run <code>ls -l $(echo $DB_BACKUP_DIR || echo /tmp/psscript-db-backups)</code></li>
-</ul>
-</li>
-<li>Collect recent server logs:<ul>
-<li><code>tail -n 200 src/backend/logs/backend.log</code></li>
-</ul>
-</li>
-<li>Open a support ticket with:<ul>
-<li>environment (<code>netlify</code> / hosted API / local),</li>
-<li>user role used,</li>
-<li>endpoint payload,</li>
-<li>and backup filename involved.</li>
-</ul>
-</li>
-<li>Include smoke-check output (<code>--smoke-only</code> / <code>--no-smoke</code>) or the <code>DB_STRESS_REPORT_FILE</code> artifact for endpoint-level diagnostics.</li>
-<li>If testing rollback behavior, include the <code>--restore-after-clear</code> mode output and note whether <code>restoredAfterClear.success</code> stayed true.</li>
+<li>Admin user email.</li>
+<li>Exact action: list backups, backup, restore, or clear test data.</li>
+<li>Route response payload.</li>
+<li>Netlify Function log lines for <code>/api/admin/db/*</code>.</li>
+<li>Supabase logs and backup row status.</li>
+<li>Confirmation text and <code>backupFirst</code> value for destructive actions.</li>
 </ol>
-<h3 id="data-maintenance-stress-test-failures">Data Maintenance Stress Test Failures</h3>
-<p>If the stress test script fails:</p>
-<ol>
-<li>Save the generated report:</li>
-<li><code>export DB_STRESS_REPORT_FILE=/tmp/data-maintenance-stress.json</code></li>
-<li>rerun <code>npm run stress:data-maintenance</code></li>
-<li>or run <code>npm run verify:data-maintenance:e2e -- --base-url http://localhost:3001</code> for full startup + smoke+restore verification</li>
-<li>Attach API request log and the report file to the ticket.</li>
-<li>If failure occurred in GitHub Actions, include artifacts from <code>maintenance-smoke-logs</code>.</li>
-<li>If you see <code>Created backup was not listed by /api/admin/db/backups</code>, verify all maintenance requests hit the same backend instance and that <code>DB_BACKUP_DIR</code> is shared/persistent for that instance.</li>
-</ol>
-<h3 id="voice-api-tests-1-8-failures">Voice API Tests 1-8 Failures</h3>
-<p>If voice tests fail:</p>
-<ol>
-<li>Run the local report command:</li>
-<li><code>npm run test:voice:1-8:report</code></li>
-<li>Attach both artifacts to the support ticket:</li>
-<li><code>/tmp/voice-tests-1-8-latest.json</code></li>
-<li><code>docs/VOICE-TESTS-1-8-LATEST.md</code></li>
-<li>Include the backend and AI service logs around the failure window:</li>
-<li>backend and AI service deploy/runtime logs for the same timestamp window</li>
-<li>If authentication checks fail unexpectedly, include:</li>
-<li><code>AUTH_ENABLED</code>, <code>DISABLE_AUTH</code>, and route middleware config details.</li>
-<li>If invalid-key behavior fails (expected <code>401</code>), include:</li>
-<li>whether <code>x-openai-api-key</code> was provided,</li>
-<li>and whether the same text was used in previous synth requests.</li>
-<li>If telemetry checks fail, include output from:</li>
-<li><code>GET /api/analytics/ai/summary</code> before and after one synth+recognize call.</li>
-</ol>
-<h2 id="severity-guide">Severity guide</h2>
+<p>Do not run a production restore or cleanup as a diagnostic step without explicit approval.</p>
+<h2 id="upload-export-and-delete-escalation">Upload, Export, And Delete Escalation</h2>
+<p>For script lifecycle failures, collect:</p>
+<table>
+<thead>
+<tr>
+<th>Workflow</th>
+<th>Evidence</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Upload</td>
+<td>file size, filename, route, response status, Function logs</td>
+</tr>
+<tr>
+<td>AI analysis</td>
+<td>script id, criteria version, provider/fallback state, Function logs</td>
+</tr>
+<tr>
+<td>PDF export</td>
+<td>script id, response headers, downloaded filename, screenshot</td>
+</tr>
+<tr>
+<td>Single delete</td>
+<td>script id, title, owner, user role, response status</td>
+</tr>
+<tr>
+<td>Bulk delete</td>
+<td>selected ids, confirmation, response payload, remaining records</td>
+</tr>
+</tbody>
+</table>
+<p>Delete and cleanup diagnostics must use disposable test records unless the user explicitly approves work against production records.</p>
+<h2 id="voice-and-ai-escalation">Voice And AI Escalation</h2>
+<p>Collect:</p>
+<ul>
+<li>route or UI surface used</li>
+<li>model/provider configured in Netlify env</li>
+<li>Netlify Function logs</li>
+<li>provider error payload, if present</li>
+<li>whether deterministic fallback rendered a structured analysis</li>
+</ul>
+<h2 id="severity-guide">Severity Guide</h2>
 <table>
 <thead>
 <tr>
@@ -422,35 +450,64 @@ body {
 <tbody>
 <tr>
 <td>Sev 1</td>
-<td>Production down or data loss</td>
-<td>Cannot log in, data missing</td>
+<td>Production down or data-loss risk</td>
+<td>Cannot log in; data missing after maintenance</td>
 </tr>
 <tr>
 <td>Sev 2</td>
 <td>Critical workflow blocked</td>
-<td>Upload or analysis failing</td>
+<td>Upload, analysis, export, or delete is failing</td>
 </tr>
 <tr>
 <td>Sev 3</td>
 <td>Degraded experience</td>
-<td>Slow responses, partial UI</td>
+<td>Slow responses, partial UI, one route broken</td>
 </tr>
 <tr>
 <td>Sev 4</td>
-<td>Cosmetic or enhancement</td>
-<td>UI polish, copy changes</td>
+<td>Cosmetic or documentation issue</td>
+<td>Copy, screenshot, or minor layout polish</td>
 </tr>
 </tbody>
 </table>
-<h2 id="security-reporting">Security reporting</h2>
-<p>If you believe you have found a security issue, do not open a public issue. Share details privately with the project owner.</p>
-<h2 id="reference-docs">Reference docs</h2>
+<h2 id="training-and-screenshot-references">Training And Screenshot References</h2>
 <ul>
-<li><code>docs/GETTING-STARTED.md</code></li>
-<li><code>docs/training-suite/README.md</code></li>
-<li><code>docs/training-suite/TRAINING-GUIDE.md</code></li>
+<li><a href="./training-suite/SCRIPT-LIFECYCLE-SUITE-2026-04-29.md"><code>training-suite/SCRIPT-LIFECYCLE-SUITE-2026-04-29.md</code></a></li>
+<li><a href="./training-suite/SCREENSHOT-ATLAS.md"><code>training-suite/SCREENSHOT-ATLAS.md</code></a></li>
+<li><a href="./training-suite/TRAINING-GUIDE.md"><code>training-suite/TRAINING-GUIDE.md</code></a></li>
 </ul>
-    <div class="footer">Generated 2026-04-27 08:51 UTC</div>
+<h2 id="developer-only-appendix">Developer-Only Appendix</h2>
+<p>The production support path is Netlify plus hosted Supabase. The older local Express/FastAPI services are still useful for developer diagnostics, but they are not the database or API path for hosted training.</p>
+<h3 id="local-health-checks">Local Health Checks</h3>
+<pre><code class="language-text">Backend: http://localhost:4000/health
+Backend API: http://localhost:4000/api/health
+AI service: http://localhost:8000/health
+</code></pre>
+<h3 id="local-log-and-recovery-notes">Local Log And Recovery Notes</h3>
+<pre><code class="language-bash"># Restart all local services
+./restart-all.sh
+
+# Restart local backend only
+./restart-backend.sh
+</code></pre>
+<p>Developer logs may exist under <code>src/backend/logs/</code> and <code>src/ai/logs/</code> depending on local configuration.</p>
+<h3 id="historical-maintenance-stress-artifacts">Historical Maintenance Stress Artifacts</h3>
+<p>When debugging local maintenance scripts or CI-only diagnostics, keep generated reports attached to the issue:</p>
+<ul>
+<li><code>DB_STRESS_REPORT_FILE</code></li>
+<li><code>/tmp/data-maintenance-stress.json</code></li>
+<li><code>/tmp/voice-tests-1-8-latest.json</code></li>
+<li><code>docs/VOICE-TESTS-1-8-LATEST.md</code></li>
+</ul>
+<p>These artifacts do not replace hosted Netlify Function logs or Supabase logs for production incidents.</p>
+<h2 id="references">References</h2>
+<ul>
+<li><a href="./GETTING-STARTED.md"><code>GETTING-STARTED.md</code></a></li>
+<li><a href="./NETLIFY-SUPABASE-DEPLOYMENT.md"><code>NETLIFY-SUPABASE-DEPLOYMENT.md</code></a></li>
+<li><a href="./DATA-MAINTENANCE.md"><code>DATA-MAINTENANCE.md</code></a></li>
+<li><a href="./training-suite/README.md"><code>training-suite/README.md</code></a></li>
+</ul>
+    <div class="footer">Generated 2026-04-29 14:08 UTC</div>
   </div>
 </body>
 </html>

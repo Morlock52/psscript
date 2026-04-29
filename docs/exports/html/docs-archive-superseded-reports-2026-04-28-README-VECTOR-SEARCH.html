@@ -1,0 +1,360 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <base href="file:///Users/morlock/fun/02_PowerShell_Projects/psscript/" />
+  <title>docs-archive-superseded-reports-2026-04-28-README-VECTOR-SEARCH</title>
+  <style>
+:root {
+  color-scheme: light;
+}
+body {
+  font-family: "Segoe UI", "Helvetica Neue", Arial, sans-serif;
+  margin: 0;
+  padding: 0;
+  background: #f4f7fb;
+  color: #0f172a;
+}
+.markdown-body {
+  max-width: 980px;
+  margin: 0 auto;
+  padding: 36px 42px 64px;
+  line-height: 1.65;
+  background: #ffffff;
+  box-shadow: 0 24px 70px rgba(15, 23, 42, 0.08);
+}
+.markdown-body h1 {
+  font-size: 34px;
+  line-height: 1.12;
+  margin-bottom: 12px;
+  color: #07111f;
+  border-bottom: 3px solid #0ea5e9;
+  padding-bottom: 12px;
+  page-break-before: always;
+  page-break-after: avoid;
+  break-before: page;
+  break-after: avoid;
+}
+.markdown-body h1:first-of-type {
+  page-break-before: avoid;
+  break-before: avoid;
+}
+.markdown-body h2 {
+  font-size: 23px;
+  line-height: 1.2;
+  margin-top: 34px;
+  color: #102a43;
+  border-bottom: 1px solid #d7e2ee;
+  padding-bottom: 8px;
+  page-break-after: avoid;
+  break-after: avoid;
+}
+.markdown-body h3 {
+  font-size: 18px;
+  margin-top: 20px;
+  color: #1e3a5f;
+  page-break-after: avoid;
+  break-after: avoid;
+}
+.markdown-body h4, .markdown-body h5, .markdown-body h6 {
+  page-break-after: avoid;
+  break-after: avoid;
+}
+.markdown-body table {
+  width: 100%;
+  border-collapse: collapse;
+  margin: 18px 0 24px;
+  font-size: 13px;
+  page-break-inside: avoid;
+  break-inside: avoid;
+  box-shadow: 0 1px 0 #e2e8f0;
+}
+.markdown-body th,
+.markdown-body td {
+  border: 1px solid #e2e8f0;
+  padding: 9px 11px;
+  text-align: left;
+  vertical-align: top;
+}
+.markdown-body th {
+  background: #eef6ff;
+  color: #0f3157;
+  font-weight: 700;
+}
+.markdown-body tr:nth-child(even) td {
+  background: #fbfdff;
+}
+.markdown-body tr {
+  page-break-inside: avoid;
+  break-inside: avoid;
+}
+.markdown-body code {
+  background: #f1f5f9;
+  padding: 2px 4px;
+  border-radius: 4px;
+  font-family: "SFMono-Regular", Menlo, Consolas, monospace;
+  font-size: 0.92em;
+}
+.markdown-body pre {
+  background: #111827;
+  color: #e5eef8;
+  padding: 16px;
+  border-radius: 10px;
+  overflow-x: auto;
+  border: 1px solid #243244;
+  page-break-inside: avoid;
+  break-inside: avoid;
+}
+.markdown-body pre code {
+  background: transparent;
+  color: inherit;
+}
+.markdown-body blockquote {
+  border-left: 5px solid #0ea5e9;
+  margin: 18px 0;
+  padding: 12px 18px;
+  background: #eff8ff;
+  color: #18324f;
+  border-radius: 0 10px 10px 0;
+}
+.markdown-body img {
+  max-width: 100%;
+  height: auto;
+  display: block;
+  margin: 16px 0;
+  border-radius: 10px;
+  box-shadow: 0 8px 20px rgba(15, 23, 42, 0.12);
+  page-break-inside: avoid;
+  break-inside: avoid;
+}
+.markdown-body figure {
+  page-break-inside: avoid;
+  break-inside: avoid;
+  margin: 16px 0;
+}
+.markdown-body a {
+  color: #2563eb;
+  text-decoration: none;
+}
+.markdown-body a:hover {
+  text-decoration: underline;
+}
+.cover {
+  min-height: 760px;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+  padding: 72px 60px 64px;
+  background:
+    linear-gradient(135deg, rgba(9, 30, 66, 0.96) 0%, rgba(12, 74, 110, 0.94) 54%, rgba(20, 83, 45, 0.9) 100%),
+    radial-gradient(circle at 18% 18%, rgba(14, 165, 233, 0.25), transparent 36%);
+  color: #f8fafc;
+  border-radius: 0;
+  margin: -36px -42px 40px;
+  position: relative;
+  overflow: hidden;
+}
+.cover::before {
+  content: "PSScript";
+  position: absolute;
+  top: 46px;
+  left: 60px;
+  font-size: 12px;
+  font-weight: 800;
+  letter-spacing: 0.24em;
+  text-transform: uppercase;
+  color: rgba(226, 246, 255, 0.82);
+}
+.cover::after {
+  content: "";
+  position: absolute;
+  right: -120px;
+  top: -120px;
+  width: 360px;
+  height: 360px;
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  transform: rotate(28deg);
+}
+.markdown-body .cover-title {
+  font-size: 48px;
+  line-height: 1.04;
+  font-weight: 800;
+  color: #f8fafc;
+  border-bottom: 3px solid #38bdf8;
+  margin: 0 0 16px;
+  max-width: 720px;
+}
+.cover-subtitle {
+  font-size: 20px;
+  line-height: 1.42;
+  color: #dbeafe;
+  margin: 0 0 22px;
+  max-width: 720px;
+}
+.cover-meta {
+  display: inline-block;
+  width: fit-content;
+  font-size: 13px;
+  color: #e0f2fe;
+  background: rgba(255, 255, 255, 0.12);
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  border-radius: 999px;
+  padding: 7px 13px;
+}
+.page-break {
+  page-break-after: always;
+  break-after: page;
+}
+.footer {
+  margin-top: 40px;
+  font-size: 12px;
+  color: #64748b;
+  border-top: 1px solid #e2e8f0;
+  padding-top: 14px;
+}
+/* Print and PDF-specific styles */
+@page {
+  size: A4;
+  margin: 18mm 16mm 20mm;
+}
+@media print {
+  body {
+    background: #ffffff;
+  }
+  .markdown-body {
+    max-width: none;
+    margin: 0;
+    padding: 0;
+    box-shadow: none;
+  }
+  .cover {
+    margin: 0 0 28px;
+  }
+  .markdown-body {
+    orphans: 3;
+    widows: 3;
+  }
+  .markdown-body p {
+    orphans: 3;
+    widows: 3;
+  }
+  .markdown-body li {
+    page-break-inside: avoid;
+    break-inside: avoid;
+  }
+  .markdown-body ul, .markdown-body ol {
+    page-break-before: avoid;
+    break-before: avoid;
+  }
+  .markdown-body blockquote {
+    page-break-inside: avoid;
+    break-inside: avoid;
+  }
+  /* Keep section content together */
+  .markdown-body h2 + *, .markdown-body h3 + * {
+    page-break-before: avoid;
+    break-before: avoid;
+  }
+}
+</style>
+</head>
+<body>
+  <div class="markdown-body">
+    
+    <h1 id="vector-search-and-file-integrity">Vector Search and File Integrity</h1>
+<p>This document describes the implementation of vector search and file integrity verification features in the PSScript platform.</p>
+<h2 id="overview">Overview</h2>
+<p>We've added two key features to enhance the platform's capabilities:</p>
+<ol>
+<li><strong>File Integrity Verification</strong>: Ensures script files are not duplicated and maintains data integrity through MD5 hash verification.</li>
+<li><strong>Vector Search</strong>: Enables semantic similarity search for PowerShell scripts using vector embeddings.</li>
+</ol>
+<h2 id="file-integrity-features">File Integrity Features</h2>
+<h3 id="key-components">Key Components</h3>
+<ul>
+<li><strong>Hash Calculation</strong>: MD5 hash generation for file content to uniquely identify scripts.</li>
+<li><strong>Duplicate Detection</strong>: Prevents uploading identical scripts by comparing file hashes.</li>
+<li><strong>Integrity Verification</strong>: Ensures scripts haven't been tampered with by comparing stored and calculated hashes.</li>
+</ul>
+<h3 id="implementation-files">Implementation Files</h3>
+<ul>
+<li><code>src/backend/src/utils/fileIntegrity.ts</code>: Utility functions for file hash calculation and verification.</li>
+<li><code>src/db/migrations/add_file_hash_to_scripts.sql</code>: Database migration to add file hash column.</li>
+<li><code>run-file-hash-migration.sh</code>: Script to run the migration and update existing scripts.</li>
+</ul>
+<h2 id="vector-search-features">Vector Search Features</h2>
+<h3 id="key-components_1">Key Components</h3>
+<ul>
+<li><strong>Embedding Generation</strong>: Creates vector embeddings for script content using OpenAI's embedding models.</li>
+<li><strong>Similarity Search</strong>: Finds semantically similar scripts using cosine similarity.</li>
+<li><strong>Hybrid Search</strong>: Combines vector similarity with keyword search for better results.</li>
+</ul>
+<h3 id="implementation-files_1">Implementation Files</h3>
+<ul>
+<li><code>src/backend/src/utils/vectorUtils.ts</code>: Utility functions for vector operations and search.</li>
+<li><code>src/backend/src/controllers/ScriptController.ts</code>: Updated controller with vector search integration.</li>
+</ul>
+<h2 id="database-changes">Database Changes</h2>
+<p>The following changes were made to the database schema:</p>
+<pre><code class="language-sql">-- Add file_hash column to scripts table
+ALTER TABLE scripts ADD COLUMN IF NOT EXISTS file_hash VARCHAR(255);
+
+-- Add index on file_hash for faster duplicate detection
+CREATE INDEX IF NOT EXISTS idx_scripts_file_hash ON scripts(file_hash);
+
+-- Add embedding column for vector search
+ALTER TABLE scripts ADD COLUMN IF NOT EXISTS embedding vector(1536);
+
+-- Create vector index for faster similarity search
+CREATE INDEX IF NOT EXISTS idx_scripts_embedding ON scripts USING ivfflat (embedding vector_cosine_ops) WITH (lists = 100);
+</code></pre>
+<h2 id="usage-examples">Usage Examples</h2>
+<h3 id="file-integrity">File Integrity</h3>
+<pre><code class="language-typescript">// Calculate hash for a file
+const fileHash = calculateBufferMD5(fileBuffer);
+
+// Check if a file with the same hash exists
+const existingScriptId = await checkFileExists(fileHash, sequelize);
+if (existingScriptId) {
+  // Handle duplicate file
+}
+
+// Verify file integrity
+const isValid = verifyFileIntegrity(content, expectedHash);
+</code></pre>
+<h3 id="vector-search">Vector Search</h3>
+<pre><code class="language-typescript">// Find similar scripts
+const similarScripts = await findSimilarScripts(scriptId, 5, 0.7);
+
+// Perform hybrid search with keywords and vectors
+const searchResults = await hybridSearch(query, 10, 0.7, {
+  categoryId: 5,
+  isPublic: true
+});
+</code></pre>
+<h2 id="testing">Testing</h2>
+<p>Use the <code>test-file-hash-vector.sh</code> script to test the implementation:</p>
+<pre><code class="language-bash">./test-file-hash-vector.sh
+</code></pre>
+<p>This script tests:
+1. File hash migration
+2. Hash calculation
+3. Vector search functionality</p>
+<h2 id="performance-considerations">Performance Considerations</h2>
+<ul>
+<li>Vector search operations can be computationally intensive. The implementation uses PostgreSQL's vector operators with indexes to optimize performance.</li>
+<li>File hash calculation is performed once during upload and stored for future reference.</li>
+<li>Batch operations are provided for updating file hashes and embeddings for existing scripts.</li>
+</ul>
+<h2 id="future-improvements">Future Improvements</h2>
+<ul>
+<li>Implement periodic integrity checks to ensure all scripts maintain their integrity.</li>
+<li>Add more sophisticated vector search algorithms like Hierarchical Navigable Small World (HNSW).</li>
+<li>Explore using different embedding models for different types of PowerShell scripts.</li>
+<li>Implement caching for frequently accessed vector search results.</li>
+</ul>
+    <div class="footer">Generated 2026-04-29 14:08 UTC</div>
+  </div>
+</body>
+</html>

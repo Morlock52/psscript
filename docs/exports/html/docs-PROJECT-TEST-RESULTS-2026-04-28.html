@@ -1,0 +1,570 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <base href="file:///Users/morlock/fun/02_PowerShell_Projects/psscript/" />
+  <title>docs-PROJECT-TEST-RESULTS-2026-04-28</title>
+  <style>
+:root {
+  color-scheme: light;
+}
+body {
+  font-family: "Segoe UI", "Helvetica Neue", Arial, sans-serif;
+  margin: 0;
+  padding: 0;
+  background: #f4f7fb;
+  color: #0f172a;
+}
+.markdown-body {
+  max-width: 980px;
+  margin: 0 auto;
+  padding: 36px 42px 64px;
+  line-height: 1.65;
+  background: #ffffff;
+  box-shadow: 0 24px 70px rgba(15, 23, 42, 0.08);
+}
+.markdown-body h1 {
+  font-size: 34px;
+  line-height: 1.12;
+  margin-bottom: 12px;
+  color: #07111f;
+  border-bottom: 3px solid #0ea5e9;
+  padding-bottom: 12px;
+  page-break-before: always;
+  page-break-after: avoid;
+  break-before: page;
+  break-after: avoid;
+}
+.markdown-body h1:first-of-type {
+  page-break-before: avoid;
+  break-before: avoid;
+}
+.markdown-body h2 {
+  font-size: 23px;
+  line-height: 1.2;
+  margin-top: 34px;
+  color: #102a43;
+  border-bottom: 1px solid #d7e2ee;
+  padding-bottom: 8px;
+  page-break-after: avoid;
+  break-after: avoid;
+}
+.markdown-body h3 {
+  font-size: 18px;
+  margin-top: 20px;
+  color: #1e3a5f;
+  page-break-after: avoid;
+  break-after: avoid;
+}
+.markdown-body h4, .markdown-body h5, .markdown-body h6 {
+  page-break-after: avoid;
+  break-after: avoid;
+}
+.markdown-body table {
+  width: 100%;
+  border-collapse: collapse;
+  margin: 18px 0 24px;
+  font-size: 13px;
+  page-break-inside: avoid;
+  break-inside: avoid;
+  box-shadow: 0 1px 0 #e2e8f0;
+}
+.markdown-body th,
+.markdown-body td {
+  border: 1px solid #e2e8f0;
+  padding: 9px 11px;
+  text-align: left;
+  vertical-align: top;
+}
+.markdown-body th {
+  background: #eef6ff;
+  color: #0f3157;
+  font-weight: 700;
+}
+.markdown-body tr:nth-child(even) td {
+  background: #fbfdff;
+}
+.markdown-body tr {
+  page-break-inside: avoid;
+  break-inside: avoid;
+}
+.markdown-body code {
+  background: #f1f5f9;
+  padding: 2px 4px;
+  border-radius: 4px;
+  font-family: "SFMono-Regular", Menlo, Consolas, monospace;
+  font-size: 0.92em;
+}
+.markdown-body pre {
+  background: #111827;
+  color: #e5eef8;
+  padding: 16px;
+  border-radius: 10px;
+  overflow-x: auto;
+  border: 1px solid #243244;
+  page-break-inside: avoid;
+  break-inside: avoid;
+}
+.markdown-body pre code {
+  background: transparent;
+  color: inherit;
+}
+.markdown-body blockquote {
+  border-left: 5px solid #0ea5e9;
+  margin: 18px 0;
+  padding: 12px 18px;
+  background: #eff8ff;
+  color: #18324f;
+  border-radius: 0 10px 10px 0;
+}
+.markdown-body img {
+  max-width: 100%;
+  height: auto;
+  display: block;
+  margin: 16px 0;
+  border-radius: 10px;
+  box-shadow: 0 8px 20px rgba(15, 23, 42, 0.12);
+  page-break-inside: avoid;
+  break-inside: avoid;
+}
+.markdown-body figure {
+  page-break-inside: avoid;
+  break-inside: avoid;
+  margin: 16px 0;
+}
+.markdown-body a {
+  color: #2563eb;
+  text-decoration: none;
+}
+.markdown-body a:hover {
+  text-decoration: underline;
+}
+.cover {
+  min-height: 760px;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+  padding: 72px 60px 64px;
+  background:
+    linear-gradient(135deg, rgba(9, 30, 66, 0.96) 0%, rgba(12, 74, 110, 0.94) 54%, rgba(20, 83, 45, 0.9) 100%),
+    radial-gradient(circle at 18% 18%, rgba(14, 165, 233, 0.25), transparent 36%);
+  color: #f8fafc;
+  border-radius: 0;
+  margin: -36px -42px 40px;
+  position: relative;
+  overflow: hidden;
+}
+.cover::before {
+  content: "PSScript";
+  position: absolute;
+  top: 46px;
+  left: 60px;
+  font-size: 12px;
+  font-weight: 800;
+  letter-spacing: 0.24em;
+  text-transform: uppercase;
+  color: rgba(226, 246, 255, 0.82);
+}
+.cover::after {
+  content: "";
+  position: absolute;
+  right: -120px;
+  top: -120px;
+  width: 360px;
+  height: 360px;
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  transform: rotate(28deg);
+}
+.markdown-body .cover-title {
+  font-size: 48px;
+  line-height: 1.04;
+  font-weight: 800;
+  color: #f8fafc;
+  border-bottom: 3px solid #38bdf8;
+  margin: 0 0 16px;
+  max-width: 720px;
+}
+.cover-subtitle {
+  font-size: 20px;
+  line-height: 1.42;
+  color: #dbeafe;
+  margin: 0 0 22px;
+  max-width: 720px;
+}
+.cover-meta {
+  display: inline-block;
+  width: fit-content;
+  font-size: 13px;
+  color: #e0f2fe;
+  background: rgba(255, 255, 255, 0.12);
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  border-radius: 999px;
+  padding: 7px 13px;
+}
+.page-break {
+  page-break-after: always;
+  break-after: page;
+}
+.footer {
+  margin-top: 40px;
+  font-size: 12px;
+  color: #64748b;
+  border-top: 1px solid #e2e8f0;
+  padding-top: 14px;
+}
+/* Print and PDF-specific styles */
+@page {
+  size: A4;
+  margin: 18mm 16mm 20mm;
+}
+@media print {
+  body {
+    background: #ffffff;
+  }
+  .markdown-body {
+    max-width: none;
+    margin: 0;
+    padding: 0;
+    box-shadow: none;
+  }
+  .cover {
+    margin: 0 0 28px;
+  }
+  .markdown-body {
+    orphans: 3;
+    widows: 3;
+  }
+  .markdown-body p {
+    orphans: 3;
+    widows: 3;
+  }
+  .markdown-body li {
+    page-break-inside: avoid;
+    break-inside: avoid;
+  }
+  .markdown-body ul, .markdown-body ol {
+    page-break-before: avoid;
+    break-before: avoid;
+  }
+  .markdown-body blockquote {
+    page-break-inside: avoid;
+    break-inside: avoid;
+  }
+  /* Keep section content together */
+  .markdown-body h2 + *, .markdown-body h3 + * {
+    page-break-before: avoid;
+    break-before: avoid;
+  }
+}
+</style>
+</head>
+<body>
+  <div class="markdown-body">
+    
+    <h1 id="psscript-test-results">PSScript Test Results</h1>
+<p>Run date: April 28, 2026. Environment: local checkout backed by hosted Supabase, plus Netlify production smoke at <code>https://pstest.morloksmaze.com</code>.</p>
+<h2 id="summary">Summary</h2>
+<ul>
+<li>Overall local smoke/e2e status: passed for the runnable non-destructive suite.</li>
+<li>Production Netlify status: frontend and <code>/api/health</code> are reachable after the final deploy; Supabase database reports connected.</li>
+<li>Critical issue found: production <code>POST /api/auth/default-user</code> accepted unauthenticated requests and reset/created the default admin user. This was patched and deployed to production.</li>
+<li>AI analysis tracking was refactored to report prompt tokens, completion tokens, total tokens, estimated cost, failures, success/error rates, p95 latency, and provider/model/endpoint rollups.</li>
+<li>Database tooling now fails closed unless <code>DATABASE_URL</code> points at hosted Supabase Postgres.</li>
+<li>Performance issue found and partially fixed: the main app chunk was about 4.0 MB minified and 1.09 MB gzip; route-level code splitting reduced the initial app chunk to about 117 KB minified and 36 KB gzip. Heavy editor/highlight chunks remain lazy-loaded.</li>
+<li>Destructive stress test status: not run because the existing maintenance stress script clears/restores database data and needs explicit action-time approval before touching Supabase data.</li>
+</ul>
+<h2 id="commands-run">Commands Run</h2>
+<table>
+<thead>
+<tr>
+<th>Area</th>
+<th>Command</th>
+<th>Result</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Frontend unit tests</td>
+<td><code>npm run test:run</code> in <code>src/frontend</code></td>
+<td>Passed: 6 files, 46 tests</td>
+</tr>
+<tr>
+<td>Frontend production build</td>
+<td><code>npm run build</code> in <code>src/frontend</code></td>
+<td>Passed, with large chunk warning</td>
+</tr>
+<tr>
+<td>Netlify build</td>
+<td><code>netlify build</code></td>
+<td>Build passed; Lighthouse plugin reported <code>/</code> 404 but exited successfully</td>
+</tr>
+<tr>
+<td>Smoke e2e</td>
+<td><code>playwright test tests/e2e/health-checks.spec.ts tests/e2e/authentication.spec.ts --project=chromium</code></td>
+<td>Passed: 10 passed, 3 skipped</td>
+</tr>
+<tr>
+<td>Workflow e2e</td>
+<td><code>playwright test tests/e2e/script-management.spec.ts tests/e2e/categories-settings.spec.ts tests/e2e/ai-analytics.spec.ts --project=chromium</code></td>
+<td>Passed: 17 passed</td>
+</tr>
+<tr>
+<td>Full Chromium e2e</td>
+<td><code>npm run test:e2e:chromium</code></td>
+<td>Passed: 37 passed, 3 skipped</td>
+</tr>
+<tr>
+<td>Focused AI analytics e2e after tracking refactor</td>
+<td><code>playwright test tests/e2e/ai-analytics.spec.ts --project=chromium</code></td>
+<td>Passed: 10 passed</td>
+</tr>
+<tr>
+<td>Backend TypeScript build</td>
+<td><code>npm run build</code> in <code>src/backend</code></td>
+<td>Passed</td>
+</tr>
+<tr>
+<td>Root audit fix</td>
+<td><code>npm audit fix</code></td>
+<td>Reduced root audit to 14 moderate vulnerabilities; remaining fixes require <code>--force</code> breaking changes</td>
+</tr>
+<tr>
+<td>Frontend audit fix</td>
+<td><code>npm audit fix</code> in <code>src/frontend</code></td>
+<td>Reduced frontend audit to 1 low and 5 moderate vulnerabilities; remaining fixes require <code>--force</code> breaking changes</td>
+</tr>
+<tr>
+<td>Visual UI check</td>
+<td>Computer Use + Chrome at <code>https://127.0.0.1:3090/dashboard</code> and <code>/scripts</code></td>
+<td>Dashboard and script table rendered correctly</td>
+</tr>
+<tr>
+<td>Route sweep</td>
+<td>Playwright route load across dashboard, scripts, chat, docs, settings</td>
+<td>All returned 200; documentation routes logged backend 500 errors</td>
+</tr>
+<tr>
+<td>Non-destructive API load</td>
+<td>25 concurrent requests per endpoint against local backend</td>
+<td>0 failures across health, scripts, categories, analytics summary</td>
+</tr>
+<tr>
+<td>Netlify production smoke before fix</td>
+<td><code>GET /</code>, <code>GET /api/health</code>, <code>GET /api/scripts</code>, <code>POST /api/auth/default-user</code></td>
+<td>Frontend 200, health 200 connected, scripts 401 as expected, default-user 200 vulnerable</td>
+</tr>
+<tr>
+<td>Netlify production smoke after deploy</td>
+<td><code>GET /</code>, <code>GET /api/health</code>, <code>GET /api/scripts</code>, <code>POST /api/auth/default-user</code></td>
+<td>Frontend 200, health 200 connected, scripts 401 as expected, default-user 401 fixed</td>
+</tr>
+<tr>
+<td>Final Netlify production deploy</td>
+<td><code>netlify deploy --prod --site a6cb54b5-b3f7-4f01-a756-70b127f07e19</code></td>
+<td>Passed; deploy live at <code>69f0817deb552c25511786d4</code></td>
+</tr>
+<tr>
+<td>Final production smoke</td>
+<td><code>GET /</code>, <code>GET /api/health</code>, <code>GET /api/scripts</code>, <code>POST /api/auth/default-user</code></td>
+<td>Frontend 200, health 200 connected, scripts 401 as expected, default-user 401 fixed</td>
+</tr>
+<tr>
+<td>Route code-splitting build</td>
+<td><code>npm run build</code> in <code>src/frontend</code></td>
+<td>Passed; initial app chunk reduced from ~4,011 KB to ~117 KB minified</td>
+</tr>
+<tr>
+<td>AI analytics e2e after lazy-route wait fix</td>
+<td><code>playwright test tests/e2e/ai-analytics.spec.ts --project=chromium</code></td>
+<td>Passed: 10 passed</td>
+</tr>
+<tr>
+<td>Production browser smoke after route splitting</td>
+<td>Playwright Chromium on <code>/login</code> and <code>/documentation</code></td>
+<td>Passed; lazy route chunks loaded with no asset errors</td>
+</tr>
+<tr>
+<td>Full Chromium e2e after backend cold-start wait fix</td>
+<td><code>npm run test:e2e:chromium</code></td>
+<td>Passed cleanly: 37 passed, 3 skipped</td>
+</tr>
+<tr>
+<td>AI analysis criteria update</td>
+<td>Research-backed review as of 2026-04-26; updated Netlify API, backend fallback, Python analyzer, frontend criteria UI, and Markdown export</td>
+<td>Passed local validation</td>
+</tr>
+<tr>
+<td>Frontend build after criteria UI</td>
+<td><code>npm run build</code> in <code>src/frontend</code></td>
+<td>Passed</td>
+</tr>
+<tr>
+<td>Frontend unit tests after criteria UI</td>
+<td><code>npm test -- --run</code> in <code>src/frontend</code></td>
+<td>Passed: 46 passed</td>
+</tr>
+<tr>
+<td>Backend TypeScript build after criteria prompt update</td>
+<td><code>npm run build</code> in <code>src/backend</code></td>
+<td>Passed</td>
+</tr>
+<tr>
+<td>Netlify build after hosted analysis schema update</td>
+<td><code>npm run netlify:build</code></td>
+<td>Passed build and function bundling; local Lighthouse plugin reported 404 for <code>/</code></td>
+</tr>
+<tr>
+<td>Production deploy after criteria update</td>
+<td><code>./node_modules/.bin/netlify deploy --prod</code></td>
+<td>Passed; deploy live at <code>69f0a2ac3170e28b6fc70d44</code></td>
+</tr>
+<tr>
+<td>Production smoke after criteria deploy</td>
+<td><code>GET /</code>, <code>GET /api/health</code>, <code>GET /api/scripts</code>, <code>POST /api/auth/default-user</code></td>
+<td>Frontend 200, health 200 connected, scripts 401 as expected, default-user 401 fixed</td>
+</tr>
+</tbody>
+</table>
+<h2 id="non-destructive-load-results">Non-Destructive Load Results</h2>
+<table>
+<thead>
+<tr>
+<th>Endpoint</th>
+<th style="text-align: right;">Requests</th>
+<th style="text-align: right;">Failures</th>
+<th>Status</th>
+<th style="text-align: right;">p50</th>
+<th style="text-align: right;">p95</th>
+<th style="text-align: right;">Max</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>/api/health</code></td>
+<td style="text-align: right;">25</td>
+<td style="text-align: right;">0</td>
+<td>200</td>
+<td style="text-align: right;">373 ms</td>
+<td style="text-align: right;">389 ms</td>
+<td style="text-align: right;">435 ms</td>
+</tr>
+<tr>
+<td><code>/api/scripts?limit=20&amp;page=1</code></td>
+<td style="text-align: right;">25</td>
+<td style="text-align: right;">0</td>
+<td>200</td>
+<td style="text-align: right;">197 ms</td>
+<td style="text-align: right;">216 ms</td>
+<td style="text-align: right;">221 ms</td>
+</tr>
+<tr>
+<td><code>/api/categories</code></td>
+<td style="text-align: right;">25</td>
+<td style="text-align: right;">0</td>
+<td>200</td>
+<td style="text-align: right;">30 ms</td>
+<td style="text-align: right;">33 ms</td>
+<td style="text-align: right;">33 ms</td>
+</tr>
+<tr>
+<td><code>/api/analytics/summary</code></td>
+<td style="text-align: right;">25</td>
+<td style="text-align: right;">0</td>
+<td>200</td>
+<td style="text-align: right;">225 ms</td>
+<td style="text-align: right;">242 ms</td>
+<td style="text-align: right;">244 ms</td>
+</tr>
+</tbody>
+</table>
+<h2 id="production-netlifysupabase-findings">Production Netlify/Supabase Findings</h2>
+<ul>
+<li><code>GET https://pstest.morloksmaze.com/</code> returned 200.</li>
+<li><code>GET https://pstest.morloksmaze.com/api/health</code> returned 200 with <code>runtime: netlify-functions</code>, <code>database: connected</code>, and all checked Supabase/OpenAI/Anthropic env flags present.</li>
+<li><code>GET https://pstest.morloksmaze.com/api/scripts?limit=5&amp;page=1</code> returned 401, which is expected without an auth token.</li>
+<li><code>POST https://pstest.morloksmaze.com/api/auth/default-user</code> returned 200 without auth. This confirmed the public admin bootstrap vulnerability.</li>
+</ul>
+<h2 id="fixes-executed">Fixes Executed</h2>
+<ul>
+<li><code>netlify/functions/api.ts</code>: <code>POST /api/auth/default-user</code> now requires <code>DEFAULT_ADMIN_BOOTSTRAP_TOKEN</code> via <code>x-bootstrap-token</code>, and <code>DEFAULT_ADMIN_EMAIL</code> / <code>DEFAULT_ADMIN_PASSWORD</code> no longer have unsafe fallbacks.</li>
+<li><code>src/frontend/src/contexts/AuthContext.tsx</code>: removed the browser-side call that invoked <code>/auth/default-user</code> during demo login.</li>
+<li><code>.env.example</code>: documented <code>DEFAULT_ADMIN_PASSWORD</code> and <code>DEFAULT_ADMIN_BOOTSTRAP_TOKEN</code>.</li>
+<li><code>package.json</code>: added canonical root scripts: <code>test</code>, <code>test:frontend</code>, <code>test:e2e</code>, and <code>test:e2e:chromium</code>.</li>
+<li><code>docs/PROJECT-PERFORMANCE-TEST-DESIGN-2026-04-27.md</code>: added the requested test/performance design document.</li>
+<li><code>netlify/functions/api.ts</code>, <code>src/backend/src/middleware/aiAnalytics.ts</code>, <code>src/frontend/src/pages/Analytics.tsx</code>, and <code>src/frontend/src/services/api.ts</code>: aligned AI usage tracking with current provider usage objects by separating prompt/input tokens, completion/output tokens, total tokens, failures, cost, success rate, and p95 latency.</li>
+<li><code>scripts/lib/hosted-supabase-db.js</code>, backend database connection code, AI service DB connection code, and DB maintenance scripts: require hosted Supabase <code>DATABASE_URL</code> instead of local Postgres defaults.</li>
+<li><code>src/frontend/src/App.tsx</code>: converted route page imports to retrying lazy imports under the existing <code>Suspense</code> boundary, reducing initial JavaScript substantially while preserving route behavior.</li>
+<li><code>scripts/playwright-stack.sh</code>: increased the backend health wait for cold ts-node + hosted Supabase startup so the full Playwright suite does not time out before tests begin.</li>
+<li>Older previous-run Markdown reports were moved into <code>docs/archive/previous-run-reports-2026-04-28/</code>; nothing was deleted.</li>
+<li>Generated Playwright output logs/screenshots were moved into <code>docs/archive/generated-test-artifacts-2026-04-28/</code>; nothing was deleted.</li>
+</ul>
+<h2 id="production-deploy">Production Deploy</h2>
+<ul>
+<li>Production URL: <code>https://pstest.morloksmaze.com</code></li>
+<li>Unique deploy URL: <code>https://69f0817deb552c25511786d4--psscript.netlify.app</code></li>
+<li>Deploy logs: <code>https://app.netlify.com/projects/psscript/deploys/69f0817deb552c25511786d4</code></li>
+<li>Post-deploy verification:</li>
+<li><code>GET /</code>: 200</li>
+<li><code>GET /api/health</code>: 200, <code>status: healthy</code>, <code>database: connected</code></li>
+<li><code>POST /api/auth/default-user</code>: 401, <code>bootstrap_token_required</code></li>
+<li><code>GET /api/scripts?limit=5&amp;page=1</code>: 401, <code>missing_or_invalid_token</code></li>
+<li>Netlify Lighthouse after route-splitting deploy: Performance 81, Accessibility 97, Best Practices 100, SEO 81, PWA 30.</li>
+</ul>
+<h2 id="ai-analysis-criteria-update">AI Analysis Criteria Update</h2>
+<ul>
+<li>Criteria design source: <a href="./AI-ANALYSIS-CRITERIA-2026-04-26.md">AI-ANALYSIS-CRITERIA-2026-04-26.md</a>.</li>
+<li>Updated analysis contract: <code>criteria_version</code>, weighted <code>analysis_criteria</code>, <code>prioritized_findings</code>, <code>remediation_plan</code>, <code>test_recommendations</code>, and <code>confidence</code>.</li>
+<li>Persistence strategy: richer criteria are saved inside <code>execution_summary</code> JSONB, so hosted Supabase does not need a local or production database migration.</li>
+<li>Production URL: <code>https://pstest.morloksmaze.com</code></li>
+<li>Unique deploy URL: <code>https://69f0a2ac3170e28b6fc70d44--psscript.netlify.app</code></li>
+<li>Deploy logs: <code>https://app.netlify.com/projects/psscript/deploys/69f0a2ac3170e28b6fc70d44</code></li>
+<li>Post-deploy verification:</li>
+<li><code>GET /</code>: 200</li>
+<li><code>GET /api/health</code>: 200, <code>status: healthy</code>, <code>database: connected</code></li>
+<li><code>POST /api/auth/default-user</code>: 401, <code>bootstrap_token_required</code></li>
+<li><code>GET /api/scripts?limit=5&amp;page=1</code>: 401, <code>missing_or_invalid_token</code></li>
+<li>Netlify Lighthouse after criteria deploy: Performance 75, Accessibility 97, Best Practices 100, SEO 81, PWA 30.</li>
+</ul>
+<h2 id="april-29-edit-and-runtime-requirements-update">April 29 Edit And Runtime Requirements Update</h2>
+<ul>
+<li>Production URL: <code>https://pstest.morloksmaze.com</code></li>
+<li>Unique deploy URL: <code>https://69f209d8b588750a558017be--psscript.netlify.app</code></li>
+<li>Deploy logs: <code>https://app.netlify.com/projects/psscript/deploys/69f209d8b588750a558017be</code></li>
+<li>Commit: <code>01c0aab</code></li>
+<li>Frontend build: passed with <code>npm run build</code> in <code>src/frontend</code>.</li>
+<li>Focused tests: passed, 31 tests across <code>OperatorShell</code> and token coverage.</li>
+<li>Netlify Lighthouse after deploy: Performance 37, Accessibility 100, Best Practices 100, SEO 81, PWA 30.</li>
+<li>Browser/desktop verification:</li>
+<li><code>/scripts/33/edit</code> shows real hosted script data and the <strong>Open in VS Code</strong> export action.</li>
+<li><code>/scripts/33/analysis</code> shows <strong>Runtime Requirements</strong> without requiring a saved full analysis.</li>
+<li>The runtime panel detected <code>PresentationFramework (.NET assembly)</code> from <code>Add-Type -AssemblyName PresentationFramework</code>.</li>
+<li>Screenshot refresh:</li>
+<li><code>docs/screenshots/current-2026-04-29/script-edit-vscode.png</code></li>
+<li><code>docs/screenshots/current-2026-04-29/analysis-runtime-requirements.png</code></li>
+<li><code>docs/screenshots/current-2026-04-29/settings-appearance.png</code></li>
+</ul>
+<h2 id="remaining-risks">Remaining Risks</h2>
+<ul>
+<li>The current production admin password may have been reset by the previously vulnerable endpoint during verification. Rotate <code>DEFAULT_ADMIN_PASSWORD</code> and set a strong <code>DEFAULT_ADMIN_BOOTSTRAP_TOKEN</code>.</li>
+<li>Netlify build initially completed while the Lighthouse plugin reported <code>ERRORED_DOCUMENT_REQUEST</code> with status 404 for <code>/</code>. The production deploy later ran Lighthouse successfully, but performance is poor.</li>
+<li>The frontend initial route bundle is much smaller after lazy route splitting, but Monaco/editor and highlight-language chunks are still large when those routes are opened.</li>
+<li>Dependency audit is improved but not clean. Root has 14 moderate transitive vulnerabilities, mostly Netlify CLI / <code>uuid</code> chains requiring forced breaking changes. Frontend has 1 low and 5 moderate issues in Vite/esbuild and syntax highlighting chains, also requiring forced breaking changes.</li>
+<li>Documentation routes render but make API calls that return 500 locally. Those routes need backend/API follow-up.</li>
+<li>Several existing Playwright tests are weak because they allow missing UI via conditional assertions. Passing e2e results should be read as smoke coverage, not full workflow proof.</li>
+<li>Active database execution paths now require <code>DATABASE_URL</code> pointed at hosted Supabase. Legacy local schema material remains in the repository for reference, but the tested Netlify/local dev path does not use a local Postgres database.</li>
+</ul>
+<h2 id="gated-tests-not-run">Gated Tests Not Run</h2>
+<p><code>scripts/db-maintenance-stress-test.mjs --smoke-only --restore-after-clear</code> was not run. It performs backup, restore, and <code>clear-test-data</code> operations. Because that can delete or mutate Supabase data, it requires explicit confirmation immediately before execution.</p>
+<h2 id="recommended-next-fix-plan">Recommended Next Fix Plan</h2>
+<ol>
+<li>Rotate the production default admin password and add <code>DEFAULT_ADMIN_BOOTSTRAP_TOKEN</code> in Netlify environment variables.</li>
+<li>Reintroduce safe route-level code splitting for heavy pages while preserving the Cloudflare Access asset-cookie constraint.</li>
+<li>Convert weak conditional Playwright assertions into required user-visible assertions for upload, analysis, analytics, and public route coverage.</li>
+<li>Keep hosted Supabase migrations as the authoritative database path and retire or archive remaining legacy local-only setup scripts when no longer needed for reference.</li>
+<li>Plan a controlled major-upgrade pass for Vite/react-syntax-highlighter/Netlify CLI/UUID transitive chains instead of using blind <code>npm audit fix --force</code>.</li>
+</ol>
+    <div class="footer">Generated 2026-04-29 14:08 UTC</div>
+  </div>
+</body>
+</html>

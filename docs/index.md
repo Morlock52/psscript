@@ -1,6 +1,6 @@
 # PSScript Documentation Hub
 
-Last updated: April 28, 2026.
+Last updated: April 29, 2026.
 
 This index points to active documentation for the current Netlify + hosted Supabase production state. Archive folders are historical and preserved, but they are not the current runbook.
 
@@ -56,8 +56,9 @@ This index points to active documentation for the current Netlify + hosted Supab
 
 ## Screenshot Sets
 
-- Current dated captures: `docs/screenshots/current-2026-04-28/`
+- Current dated captures: `docs/screenshots/current-2026-04-29/`
 - README framed captures: `docs/screenshots/readme/`
+- New April 29 feature captures: script editor VS Code export, analysis runtime requirements, and Settings -> Appearance.
 - Older screenshot files are preserved for history unless a current doc links to them.
 
 ## Archives
