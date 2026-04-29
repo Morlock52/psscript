@@ -86,6 +86,22 @@ const ScriptDetail: React.FC = () => {
     }
   });
 
+  const deleteScriptMutation = useMutation({
+    mutationFn: () => scriptService.deleteScript(id || ''),
+    onSuccess: (data) => {
+      if (data.success) {
+        toast.success('Script deleted successfully');
+        navigate('/scripts');
+      } else {
+        toast.error('Failed to delete script');
+      }
+    },
+    onError: (error) => {
+      console.error('Error deleting script:', error);
+      toast.error('Failed to delete script');
+    }
+  });
+
   const handleExecute = () => {
     executeMutation.mutate(parameters);
   };
@@ -108,6 +124,12 @@ const ScriptDetail: React.FC = () => {
   const handleAnalyzeScript = () => {
     setIsAnalyzing(true);
     analyzeScriptMutation.mutate();
+  };
+
+  const handleDeleteScript = () => {
+    if (window.confirm(`Are you sure you want to delete "${script.title}"?`)) {
+      deleteScriptMutation.mutate();
+    }
   };
 
   // Reusable styles
@@ -180,6 +202,13 @@ const ScriptDetail: React.FC = () => {
             onClick={() => navigate('/scripts')}
           >
             Back to Scripts
+          </button>
+          <button
+            className="px-4 py-2 bg-red-700 text-white rounded-lg hover:bg-red-800 disabled:opacity-50 transition-colors"
+            onClick={handleDeleteScript}
+            disabled={deleteScriptMutation.isPending}
+          >
+            {deleteScriptMutation.isPending ? 'Deleting...' : 'Delete'}
           </button>
           <button
             className="px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition-colors"

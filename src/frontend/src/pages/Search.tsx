@@ -23,9 +23,8 @@ const Search: React.FC = () => {
   });
   
   // Prepare query parameters
-  const queryParams = {
-    query: filters.query,
-    category: filters.category || undefined,
+  const searchFilters = {
+    category_id: filters.category || undefined,
     tags: filters.tags.length > 0 ? filters.tags.join(',') : undefined,
     sort: filters.sortBy,
     mine: filters.onlyMine ? 'true' : undefined,
@@ -33,8 +32,8 @@ const Search: React.FC = () => {
   
   // Fetch scripts with filters
   const { data: scriptsData, isLoading, refetch } = useQuery({
-    queryKey: ['scripts', queryParams],
-    queryFn: () => scriptService.getScripts(queryParams),
+    queryKey: ['scriptSearch', filters.query, searchFilters],
+    queryFn: () => scriptService.searchScripts(filters.query, searchFilters),
     placeholderData: (previousData) => previousData,
   });
 

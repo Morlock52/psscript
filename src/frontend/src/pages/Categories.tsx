@@ -66,8 +66,9 @@ const Categories: React.FC = () => {
       
       setIsLoading(true);
       try {
-        const result = await scriptService.getScripts({ 
-          categoryId: selectedCategory.id,
+        const result = await scriptService.searchScripts('', {
+          category_id: selectedCategory.id,
+          sort: 'updated',
           limit: 50
         });
         setScripts(result.scripts);

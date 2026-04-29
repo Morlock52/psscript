@@ -16,6 +16,81 @@ interface Message {
   content: string;
 }
 
+interface CommandDetail {
+  name?: string;
+  description?: string;
+  purpose?: string;
+  parameters?: Array<{ name?: string; description?: string }>;
+  example?: string;
+  alternatives?: string;
+  alternativeNote?: string;
+}
+
+const buildCommandAnalysisMarkdown = (scriptTitle: string, analysis: any): string | null => {
+  const commandDetails = Array.isArray(analysis?.commandDetails) ? analysis.commandDetails as CommandDetail[] : [];
+  if (commandDetails.length === 0) {
+    return null;
+  }
+
+  const commandNames = commandDetails
+    .map((command) => command.name)
+    .filter((name): name is string => Boolean(name));
+  const securityConcerns = Array.isArray(analysis?.securityConcerns) ? analysis.securityConcerns : [];
+  const performanceSuggestions = Array.isArray(analysis?.performanceSuggestions) ? analysis.performanceSuggestions : [];
+  const securityScore = Number(analysis?.securityScore ?? analysis?.security_score ?? 0);
+  const codeQualityScore = Number(analysis?.codeQualityScore ?? analysis?.code_quality_score ?? 0);
+
+  const lines = [
+    `# Command Analysis for ${scriptTitle}`,
+    '',
+    '## Commands Found',
+    commandNames.length > 0
+      ? commandNames.map((name) => `* ${name}`).join('\n')
+      : '* No named PowerShell commands were extracted.',
+    '',
+    '## Command Notes',
+    ...commandDetails.flatMap((command) => {
+      const commandName = command.name || 'Unnamed command';
+      const notes = [`* ${commandName}: ${command.description || command.purpose || 'No description was provided by the analyzer.'}`];
+
+      if (command.parameters?.length) {
+        const parameterNames = command.parameters
+          .map((param) => param.name)
+          .filter(Boolean)
+          .join(', ');
+        if (parameterNames) {
+          notes.push(`  * Parameters: ${parameterNames}`);
+        }
+      }
+
+      if (command.example) {
+        notes.push(`  * Example seen: ${command.example}`);
+      }
+
+      if (command.alternatives) {
+        notes.push(`  * Alternative: ${command.alternatives}${command.alternativeNote ? ` (${command.alternativeNote})` : ''}`);
+      }
+
+      return notes;
+    }),
+    '',
+    '## Safety and Quality Signals',
+    `* Security score: ${Number.isFinite(securityScore) && securityScore > 0 ? `${securityScore}/10` : 'Not scored'}`,
+    `* Code quality score: ${Number.isFinite(codeQualityScore) && codeQualityScore > 0 ? `${codeQualityScore}/10` : 'Not scored'}`,
+    securityConcerns.length > 0
+      ? `* Security concerns: ${securityConcerns.length}`
+      : '* Security concerns: none reported',
+    performanceSuggestions.length > 0
+      ? `* Performance suggestions: ${performanceSuggestions.length}`
+      : '* Performance suggestions: none reported',
+    '',
+    '## Tracking Note',
+    '* This section is generated from the analyzer output for this script. It does not add sample commands or assumptions that were not extracted from the uploaded file.'
+  ];
+
+  return lines.join('\n');
+};
+
 const ScriptAnalysis: React.FC = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
@@ -487,6 +562,7 @@ When generating or modifying scripts:
   const testRecommendations = analysis.testRecommendations || analysis.executionSummary?.test_recommendations || [];
   const criteriaVersion = analysis.criteriaVersion || analysis.executionSummary?.criteria_version || '2026-04-26';
   const confidence = analysis.confidence ?? analysis.executionSummary?.confidence;
+  const commandAnalysisMarkdown = buildCommandAnalysisMarkdown(script.title, analysis);
   
   return (
     <div className="container mx-auto pb-8">
@@ -957,45 +1033,19 @@ When generating or modifying scripts:
                     </div>
                   )}
                   
-                  <div className="mt-6 pt-6 border-t border-gray-600">
-                    <h3 className="text-lg font-medium mb-3 flex items-center">
-                      <FaRobot className="mr-2 text-blue-400" />
-                      AI Command Analysis
-                    </h3>
-                    <div className="bg-gray-800 p-4 rounded-lg border border-gray-700 overflow-auto">
-                      <pre className="text-sm text-gray-300 whitespace-pre-wrap font-mono">
-{`# AI Command Analysis for ${script.title}
-
-## Command Structure
-This script follows the PowerShell cmdlet naming convention "Verb-Noun" and uses approved verbs.
-* Primary Command: Get-SystemInfo
-* Parameter Binding: Uses standard PowerShell parameter binding with [Parameter()] attributes
-* Pipeline Support: Returns objects that can be passed through the pipeline
-
-## Command Safety
-* Execution Scope: Runs in the user's security context
-* Network Activity: ${analysis.securityScore > 7 ? 'Limited to specified computers' : 'May access undefined network resources'}
-* Permissions: Requires standard WMI query permissions
-* Error Handling: ${analysis.codeQualityScore > 7 ? 'Comprehensive' : 'Basic'} error handling implemented
-
-## Command Performance
-* Resource Usage: ${analysis.performanceSuggestions?.length ? 'Moderate to high on large environments' : 'Efficient for most environments'}
-* Execution Time: Expected to complete within 1-5 seconds per target system
-* Memory Impact: Low to moderate depending on number of network adapters
-
-## Command Output
-* Output Type: PSCustomObject with system information properties
-* Formatting: Raw object output suitable for pipeline processing
-* Consistency: Maintains consistent property naming and data types
-
-## Improvement Opportunities
-* Consider adding -Credential parameter for remote system authentication
-* Implement support for pipeline input (multiple computer names)
-* Add verbose output for troubleshooting
-* Implement timeout parameter for WMI queries`}
-                      </pre>
+                  {commandAnalysisMarkdown && (
+                    <div className="mt-6 pt-6 border-t border-gray-600">
+                      <h3 className="text-lg font-medium mb-3 flex items-center">
+                        <FaRobot className="mr-2 text-blue-400" />
+                        Command Analysis
+                      </h3>
+                      <div className="bg-gray-800 p-4 rounded-lg border border-gray-700 overflow-auto">
+                        <pre className="text-sm text-gray-300 whitespace-pre-wrap font-mono">
+                          {commandAnalysisMarkdown}
+                        </pre>
+                      </div>
                     </div>
-                  </div>
+                  )}
                 </div>
               </div>
               </div>

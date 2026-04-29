@@ -280,10 +280,14 @@ const scriptSelect = `
   SELECT s.id, s.title, s.description, s.content, s.user_id, s.category_id, s.version,
          s.is_public, s.execution_count, s.file_hash, s.created_at, s.updated_at,
          c.name AS category_name,
-         p.username AS author_username
+         p.username AS author_username,
+         sa.quality_score AS analysis_quality_score,
+         sa.security_score AS analysis_security_score,
+         sa.risk_score AS analysis_risk_score
   FROM scripts s
   LEFT JOIN categories c ON c.id = s.category_id
   LEFT JOIN app_profiles p ON p.id = s.user_id
+  LEFT JOIN script_analysis sa ON sa.script_id = s.id
 `;
 
 export default async function handleRequest(req: Request, context: Context): Promise<Response> {
@@ -631,7 +635,19 @@ async function handleUserById(req: Request, route: RouteParams): Promise<Respons
 
 async function handleCategories(req: Request): Promise<Response> {
   if (req.method === 'GET') {
-    const result = await query('SELECT id, name, description, created_at, updated_at FROM categories ORDER BY name');
+    const result = await query(`
+      SELECT
+        c.id,
+        c.name,
+        c.description,
+        c.created_at,
+        c.updated_at,
+        COUNT(s.id)::int AS "scriptCount"
+      FROM categories c
+      LEFT JOIN scripts s ON s.category_id = c.id
+      GROUP BY c.id, c.name, c.description, c.created_at, c.updated_at
+      ORDER BY c.name
+    `);
     return json({ categories: result.rows });
   }
 
@@ -717,57 +733,156 @@ async function handleScriptSearch(req: Request, route: RouteParams): Promise<Res
   const user = await requireUser(req);
   const queryText = (route.url.searchParams.get('q') || '').trim();
   const limit = Math.min(Math.max(Number(route.url.searchParams.get('limit') || '50'), 1), 100);
+  const offset = Math.max(Number(route.url.searchParams.get('offset') || '0'), 0);
+  const rawCategory = route.url.searchParams.get('category_id') || route.url.searchParams.get('categoryId') || route.url.searchParams.get('category');
+  const categoryId = rawCategory ? Number(rawCategory) : null;
+  const tags = (route.url.searchParams.get('tags') || '')
+    .split(',')
+    .map(tag => tag.trim().toLowerCase())
+    .filter(Boolean);
+  const onlyMine = route.url.searchParams.get('mine') === 'true';
+  const requestedSort = (route.url.searchParams.get('sort') || '').toLowerCase();
+  const sort = ['relevance', 'updated', 'created', 'name', 'quality', 'executions'].includes(requestedSort)
+    ? requestedSort
+    : queryText
+      ? 'relevance'
+      : 'updated';
 
-  if (!queryText) {
-    const result = await query(
-      `${scriptSelect}
-       WHERE s.user_id = $1 OR s.is_public = true
-       ORDER BY s.updated_at DESC
-       LIMIT $2`,
-      [user.id, limit]
-    );
-    const scripts = result.rows.map(toFrontendScript);
-    return json({ scripts, total: scripts.length });
+  if (categoryId !== null && !Number.isFinite(categoryId)) {
+    return json({ error: 'invalid_category_id', message: 'Invalid category id' }, { status: 400 });
   }
 
-  const likeSearch = `%${queryText}%`;
+  const params: any[] = [user.id];
+  const where: string[] = [onlyMine ? 's.user_id = $1' : '(s.user_id = $1 OR s.is_public = true)'];
+  let searchQueryIndex: number | null = null;
+  let likeSearchIndex: number | null = null;
+
+  if (categoryId !== null) {
+    params.push(categoryId);
+    where.push(`s.category_id = $${params.length}`);
+  }
+
+  if (tags.length > 0) {
+    params.push(tags);
+    where.push(`EXISTS (
+      SELECT 1
+      FROM script_tags st
+      JOIN tags t ON t.id = st.tag_id
+      WHERE st.script_id = s.id
+        AND lower(t.name) = ANY($${params.length}::text[])
+    )`);
+  }
+
+  if (queryText) {
+    params.push(queryText);
+    searchQueryIndex = params.length;
+    params.push(`%${queryText}%`);
+    likeSearchIndex = params.length;
+    where.push(`(
+      s.search_vector @@ search_query.tsq
+      OR s.title ILIKE $${likeSearchIndex}
+      OR s.description ILIKE $${likeSearchIndex}
+      OR s.content ILIKE $${likeSearchIndex}
+      OR c.name ILIKE $${likeSearchIndex}
+    )`);
+  }
+
+  const orderBy = (() => {
+    if (queryText && sort === 'relevance') {
+      return `
+        CASE WHEN s.search_vector @@ search_query.tsq THEN 0 ELSE 1 END,
+        ts_rank_cd(s.search_vector, search_query.tsq) DESC,
+        s.updated_at DESC
+      `;
+    }
+    if (sort === 'created') return 's.created_at DESC';
+    if (sort === 'name') return 'lower(s.title) ASC, s.updated_at DESC';
+    if (sort === 'quality') return 'sa.quality_score DESC NULLS LAST, s.updated_at DESC';
+    if (sort === 'executions') return 's.execution_count DESC NULLS LAST, s.updated_at DESC';
+    return 's.updated_at DESC';
+  })();
+
+  params.push(limit);
+  const limitIndex = params.length;
+  params.push(offset);
+  const offsetIndex = params.length;
+
+  const fromClause = queryText && searchQueryIndex
+    ? `${scriptSelect} CROSS JOIN (SELECT websearch_to_tsquery('simple', $${searchQueryIndex}) AS tsq) search_query`
+    : scriptSelect;
+
   let result;
   try {
     result = await query(
-      `WITH search_query AS (
-         SELECT websearch_to_tsquery('simple', $2) AS tsq
-       )
-       ${scriptSelect}
-       CROSS JOIN search_query
-       WHERE (s.user_id = $1 OR s.is_public = true)
-         AND (
-           s.search_vector @@ search_query.tsq
-           OR s.title ILIKE $3
-           OR s.description ILIKE $3
-           OR s.content ILIKE $3
-         )
-       ORDER BY
-         CASE WHEN s.search_vector @@ search_query.tsq THEN 0 ELSE 1 END,
-         ts_rank_cd(s.search_vector, search_query.tsq) DESC,
-         s.updated_at DESC
-       LIMIT $4`,
-      [user.id, queryText, likeSearch, limit]
+      `${fromClause}
+       WHERE ${where.join(' AND ')}
+       ORDER BY ${orderBy}
+       LIMIT $${limitIndex}
+       OFFSET $${offsetIndex}`,
+      params
     );
   } catch (error) {
     if ((error as { code?: string }).code !== '42703') throw error;
     console.warn('[netlify-api] search_vector missing, falling back to ILIKE search');
+    const fallbackParams: any[] = [user.id];
+    const fallbackWhere: string[] = [onlyMine ? 's.user_id = $1' : '(s.user_id = $1 OR s.is_public = true)'];
+
+    if (categoryId !== null) {
+      fallbackParams.push(categoryId);
+      fallbackWhere.push(`s.category_id = $${fallbackParams.length}`);
+    }
+
+    if (tags.length > 0) {
+      fallbackParams.push(tags);
+      fallbackWhere.push(`EXISTS (
+        SELECT 1
+        FROM script_tags st
+        JOIN tags t ON t.id = st.tag_id
+        WHERE st.script_id = s.id
+          AND lower(t.name) = ANY($${fallbackParams.length}::text[])
+      )`);
+    }
+
+    if (queryText) {
+      fallbackParams.push(`%${queryText}%`);
+      const fallbackLikeIndex = fallbackParams.length;
+      fallbackWhere.push(`(
+        s.title ILIKE $${fallbackLikeIndex}
+        OR s.description ILIKE $${fallbackLikeIndex}
+        OR s.content ILIKE $${fallbackLikeIndex}
+        OR c.name ILIKE $${fallbackLikeIndex}
+      )`);
+    }
+
+    fallbackParams.push(limit);
+    const fallbackLimitIndex = fallbackParams.length;
+    fallbackParams.push(offset);
+    const fallbackOffsetIndex = fallbackParams.length;
+
     result = await query(
       `${scriptSelect}
-       WHERE (s.user_id = $1 OR s.is_public = true)
-         AND (s.title ILIKE $2 OR s.description ILIKE $2 OR s.content ILIKE $2)
-       ORDER BY s.updated_at DESC
-       LIMIT $3`,
-      [user.id, likeSearch, limit]
+       WHERE ${fallbackWhere.join(' AND ')}
+       ORDER BY ${orderBy.includes('search_query') ? 's.updated_at DESC' : orderBy}
+       LIMIT $${fallbackLimitIndex}
+       OFFSET $${fallbackOffsetIndex}`,
+      fallbackParams
     );
   }
 
   const scripts = result.rows.map(toFrontendScript);
-  return json({ scripts, total: scripts.length });
+  return json({
+    scripts,
+    total: scripts.length,
+    filters: {
+      q: queryText,
+      category_id: categoryId,
+      tags,
+      mine: onlyMine,
+      sort,
+      limit,
+      offset,
+    },
+  });
 }
 
 async function handleScriptById(req: Request, route: RouteParams): Promise<Response> {
@@ -3829,6 +3944,16 @@ function toFrontendScript(row: any) {
     updatedAt: row.updated_at,
     category: row.category_name ? { id: row.category_id, name: row.category_name } : null,
     user: row.author_username ? { id: row.user_id, username: row.author_username } : null,
+    analysis: row.analysis_quality_score == null && row.analysis_security_score == null && row.analysis_risk_score == null
+      ? null
+      : {
+          quality_score: row.analysis_quality_score,
+          qualityScore: row.analysis_quality_score,
+          security_score: row.analysis_security_score,
+          securityScore: row.analysis_security_score,
+          risk_score: row.analysis_risk_score,
+          riskScore: row.analysis_risk_score,
+        },
   };
 }
 

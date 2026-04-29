@@ -63,6 +63,11 @@ describe('hosted AI client routing', () => {
     expect(netlifyApi).toContain("websearch_to_tsquery('simple'");
     expect(netlifyApi).toContain('s.search_vector @@ search_query.tsq');
     expect(netlifyApi).toContain('search_vector @@ search_query.tsq');
+    expect(netlifyApi).toContain("route.url.searchParams.get('category_id')");
+    expect(netlifyApi).toContain("route.url.searchParams.get('tags')");
+    expect(netlifyApi).toContain("route.url.searchParams.get('mine') === 'true'");
+    expect(netlifyApi).toContain('lower(t.name) = ANY');
+    expect(netlifyApi).toContain('sa.quality_score DESC NULLS LAST');
     expect(netlifyApi).toContain('WITH target AS (');
     expect(netlifyApi).toContain('JOIN script_embeddings se');
     expect(netlifyApi).toContain('ON CONFLICT (script_id) DO UPDATE');
