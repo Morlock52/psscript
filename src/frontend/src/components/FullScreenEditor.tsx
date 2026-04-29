@@ -1,5 +1,6 @@
 import React, { useState, useRef, useEffect } from 'react';
 import MonacoEditor from 'react-monaco-editor';
+import { loadMonacoCss } from '../utils/loadMonacoCss';
 
 interface FullScreenEditorProps {
   isOpen: boolean;
@@ -23,6 +24,12 @@ const FullScreenEditor: React.FC<FullScreenEditorProps> = ({
   const [showEditInfo, setShowEditInfo] = useState(false);
   const editorRef = useRef<any>(null);
   const modalRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    if (isOpen) {
+      loadMonacoCss();
+    }
+  }, [isOpen]);
 
   useEffect(() => {
     // Set initial content when the editor opens

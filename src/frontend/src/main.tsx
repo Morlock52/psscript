@@ -11,7 +11,6 @@ import App from './App'
 import { AuthProvider } from './contexts/AuthContext'
 import { ThemeProvider } from './contexts/ThemeContext'
 import ErrorBoundary from './components/ErrorBoundary'
-import 'monaco-editor/min/vs/editor/editor.main.css'
 import './index.css'
 
 const showStartupError = (error: unknown) => {

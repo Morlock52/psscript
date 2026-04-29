@@ -69,6 +69,11 @@ export default defineConfig({
     }
   },
   build: {
+    modulePreload: {
+      resolveDependencies(_url, deps) {
+        return deps.filter((dep) => !dep.includes('vendor-monaco'));
+      },
+    },
     // Target browsers that support ES2020 for broad compatibility
     // ES2020 supports: optional chaining, nullish coalescing, dynamic imports
     // Safari 14+, Chrome 87+, Firefox 78+, Edge 88+, iOS Safari 14+

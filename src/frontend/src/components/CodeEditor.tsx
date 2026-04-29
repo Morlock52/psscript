@@ -1,6 +1,7 @@
 import React, { useEffect, useRef } from 'react';
 import MonacoEditor from 'react-monaco-editor';
 import { useTheme } from '../contexts/ThemeContext';
+import { loadMonacoCss } from '../utils/loadMonacoCss';
 import './CodeEditor.css';
 
 interface CodeEditorProps {
@@ -24,6 +25,10 @@ const CodeEditor: React.FC<CodeEditorProps> = ({
   readOnly = false
 }) => {
   const { isDark } = useTheme();
+
+  useEffect(() => {
+    loadMonacoCss();
+  }, []);
 
   // Editor options
   const editorOptions = {
