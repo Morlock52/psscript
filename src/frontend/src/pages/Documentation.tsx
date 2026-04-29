@@ -1,9 +1,51 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import { Link } from 'react-router-dom';
-import documentationApi, { DocItem, DocStats } from '../services/documentationApi';
+import { marked } from 'marked';
+import documentationApi, { DocItem, DocStats, ManualDocPayload } from '../services/documentationApi';
 import SummaryCard from '../components/SummaryCard';
+import SafeHtml from '../components/SafeHtml';
+import { useAuth } from '../contexts/AuthContext';
+
+type DocumentationFormState = {
+  id?: number;
+  title: string;
+  url: string;
+  source: string;
+  tags: string;
+  content: string;
+};
+
+const emptyDocumentationForm: DocumentationFormState = {
+  title: '',
+  url: '',
+  source: 'manual',
+  tags: '',
+  content: '',
+};
+
+const docToFormState = (doc: DocItem): DocumentationFormState => ({
+  id: doc.id,
+  title: doc.title || '',
+  url: doc.url || '',
+  source: doc.source || 'manual',
+  tags: Array.isArray(doc.tags) ? doc.tags.join(', ') : '',
+  content: doc.content || '',
+});
+
+const formToPayload = (form: DocumentationFormState): ManualDocPayload => ({
+  title: form.title.trim(),
+  url: form.url.trim(),
+  source: form.source.trim() || 'manual',
+  content: form.content.trim(),
+  tags: form.tags
+    .split(',')
+    .map(tag => tag.trim())
+    .filter(Boolean),
+});
 
 const Documentation: React.FC = () => {
+  const { user } = useAuth();
+  const isAdmin = user?.role === 'admin';
   const [query, setQuery] = useState<string>('');
   const [isSearching, setIsSearching] = useState<boolean>(false);
   const [isLoading, setIsLoading] = useState<boolean>(true);
@@ -22,6 +64,15 @@ const Documentation: React.FC = () => {
   const [selectedDoc, setSelectedDoc] = useState<DocItem | null>(null);
   const [deleteConfirm, setDeleteConfirm] = useState<DocItem | null>(null);
   const [isDeleting, setIsDeleting] = useState<boolean>(false);
+  const [formState, setFormState] = useState<DocumentationFormState | null>(null);
+  const [formError, setFormError] = useState<string | null>(null);
+  const [isSavingDoc, setIsSavingDoc] = useState<boolean>(false);
+
+  const renderedFormPreview = useMemo(() => {
+    if (!formState?.content.trim()) return '';
+    const html = marked.parse(formState.content, { gfm: true, breaks: false });
+    return typeof html === 'string' ? html : '';
+  }, [formState?.content]);
 
   // Load initial data
   useEffect(() => {
@@ -42,9 +93,7 @@ const Documentation: React.FC = () => {
         setTags(tagsData);
         setStats(statsData);
 
-        // Extract unique categories from documents
-        const uniqueCategories = [...new Set(docsData.map(d => d.category || 'General').filter(Boolean))];
-        setCategories(uniqueCategories.sort());
+        refreshDerivedFilters(docsData);
       } catch (err) {
         console.error('Error loading documentation:', err);
         setError('Failed to load documentation. Please try again later.');
@@ -148,6 +197,73 @@ const Documentation: React.FC = () => {
         ? prev.filter(t => t !== tag)
         : [...prev, tag]
     );
+  };
+
+  const refreshDerivedFilters = (items: DocItem[]) => {
+    const uniqueCategories = [...new Set(items.map(d => d.category || 'General').filter(Boolean))];
+    const uniqueSources = [...new Set(items.map(d => d.source).filter(Boolean))];
+    const uniqueTags = [...new Set(items.flatMap(d => Array.isArray(d.tags) ? d.tags : []))];
+    setCategories(uniqueCategories.sort());
+    setSources(prev => [...new Set([...prev, ...uniqueSources])].sort());
+    setTags(prev => [...new Set([...prev, ...uniqueTags])].sort());
+  };
+
+  const openCreateForm = () => {
+    if (isLoading) return;
+    setFormError(null);
+    setFormState(emptyDocumentationForm);
+  };
+
+  const openEditForm = (doc: DocItem) => {
+    setFormError(null);
+    setFormState(docToFormState(doc));
+  };
+
+  const handleDocumentationSave = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!formState) return;
+
+    const payload = formToPayload(formState);
+    if (!payload.title) {
+      setFormError('Title is required.');
+      return;
+    }
+    if (!payload.content) {
+      setFormError('Content is required.');
+      return;
+    }
+
+    setIsSavingDoc(true);
+    setFormError(null);
+    try {
+      const savedDoc = formState.id
+        ? await documentationApi.update(formState.id, payload)
+        : await documentationApi.upsert(payload);
+
+      if (!savedDoc) {
+        setFormError('Documentation could not be saved. Please try again.');
+        return;
+      }
+
+      setDocItems(prev => {
+        const exists = prev.some(item => item.id === savedDoc.id);
+        const next = exists
+          ? prev.map(item => item.id === savedDoc.id ? savedDoc : item)
+          : [savedDoc, ...prev];
+        refreshDerivedFilters(next);
+        return next;
+      });
+      setSelectedDoc(current => current?.id === savedDoc.id ? savedDoc : current);
+      if (stats && !formState.id) {
+        setStats({ ...stats, total: stats.total + 1 });
+      }
+      setFormState(null);
+    } catch (err) {
+      console.error('Error saving documentation:', err);
+      setFormError('Documentation could not be saved. Please try again.');
+    } finally {
+      setIsSavingDoc(false);
+    }
   };
 
   // Handle document deletion
@@ -275,7 +391,20 @@ const Documentation: React.FC = () => {
             </p>
           )}
         </div>
-        <div className="flex space-x-4">
+        <div className="flex flex-wrap justify-end gap-3">
+          {isAdmin && (
+            <button
+              type="button"
+              onClick={openCreateForm}
+              disabled={isLoading}
+              className="inline-flex items-center px-3 py-1 bg-blue-600 text-white text-sm font-medium rounded hover:bg-blue-700 disabled:cursor-not-allowed disabled:opacity-50 transition duration-150"
+            >
+              <svg className="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
+              </svg>
+              Add Documentation
+            </button>
+          )}
           <Link
             to="/dashboard"
             className="inline-flex items-center px-3 py-1 bg-indigo-600 text-white text-sm font-medium rounded hover:bg-indigo-700 transition duration-150"
@@ -573,10 +702,14 @@ const Documentation: React.FC = () => {
               key={item.id}
               doc={item}
               onClick={() => setSelectedDoc(item)}
-              onDelete={(e) => {
+              onEdit={isAdmin ? (e) => {
+                e.stopPropagation();
+                openEditForm(item);
+              } : undefined}
+              onDelete={isAdmin ? (e) => {
                 e.stopPropagation();
                 setDeleteConfirm(item);
-              }}
+              } : undefined}
             />
           ))}
         </div>
@@ -936,15 +1069,28 @@ const Documentation: React.FC = () => {
                     Open Original
                   </a>
                 )}
-                <button
-                  onClick={() => setDeleteConfirm(selectedDoc)}
-                  className="inline-flex items-center px-4 py-2.5 bg-red-600/80 text-white rounded-xl hover:bg-red-600 transition-colors font-medium"
-                >
-                  <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-                  </svg>
-                  Delete
-                </button>
+                {isAdmin && (
+                  <>
+                    <button
+                      onClick={() => openEditForm(selectedDoc)}
+                      className="inline-flex items-center px-4 py-2.5 bg-blue-600/80 text-white rounded-xl hover:bg-blue-600 transition-colors font-medium"
+                    >
+                      <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z" />
+                      </svg>
+                      Edit
+                    </button>
+                    <button
+                      onClick={() => setDeleteConfirm(selectedDoc)}
+                      className="inline-flex items-center px-4 py-2.5 bg-red-600/80 text-white rounded-xl hover:bg-red-600 transition-colors font-medium"
+                    >
+                      <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                      </svg>
+                      Delete
+                    </button>
+                  </>
+                )}
               </div>
               <button
                 onClick={() => setSelectedDoc(null)}
@@ -954,6 +1100,141 @@ const Documentation: React.FC = () => {
               </button>
             </div>
           </div>
+        </div>
+      )}
+
+      {/* Documentation Create/Edit Dialog */}
+      {formState && (
+        <div
+          className="fixed inset-0 bg-black/80 flex items-center justify-center z-[70] p-4"
+          onClick={() => !isSavingDoc && setFormState(null)}
+        >
+          <form
+            className="bg-gray-800 rounded-2xl shadow-2xl max-w-5xl w-full max-h-[92vh] overflow-hidden"
+            onClick={(e) => e.stopPropagation()}
+            onSubmit={handleDocumentationSave}
+            noValidate
+          >
+            <div className="px-6 py-5 border-b border-gray-700 bg-gray-900/60">
+              <p className="text-xs font-semibold uppercase tracking-wide text-blue-300">
+                {formState.id ? 'Edit documentation tile' : 'Manual documentation input'}
+              </p>
+              <h2 className="text-2xl font-bold text-white">
+                {formState.id ? 'Update Documentation' : 'Add Documentation'}
+              </h2>
+            </div>
+
+            <div className="grid gap-6 p-6 overflow-y-auto max-h-[68vh] lg:grid-cols-[minmax(0,1fr)_minmax(0,1fr)]">
+              <div className="space-y-4">
+                {formError && (
+                  <div className="rounded-lg border border-red-700 bg-red-950/50 px-4 py-3 text-sm text-red-100">
+                    {formError}
+                  </div>
+                )}
+
+                <div>
+                  <label htmlFor="doc-title" className="block text-sm font-medium text-gray-200 mb-1">
+                    Title
+                  </label>
+                  <input
+                    id="doc-title"
+                    value={formState.title}
+                    onChange={(e) => setFormState({ ...formState, title: e.target.value })}
+                    className="w-full rounded-lg border border-gray-600 bg-gray-900 px-3 py-2 text-white focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500/40"
+                    maxLength={500}
+                    required
+                  />
+                </div>
+
+                <div className="grid gap-4 sm:grid-cols-2">
+                  <div>
+                    <label htmlFor="doc-source" className="block text-sm font-medium text-gray-200 mb-1">
+                      Source
+                    </label>
+                    <input
+                      id="doc-source"
+                      value={formState.source}
+                      onChange={(e) => setFormState({ ...formState, source: e.target.value })}
+                      className="w-full rounded-lg border border-gray-600 bg-gray-900 px-3 py-2 text-white focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500/40"
+                      placeholder="manual"
+                    />
+                  </div>
+                  <div>
+                    <label htmlFor="doc-tags" className="block text-sm font-medium text-gray-200 mb-1">
+                      Tags
+                    </label>
+                    <input
+                      id="doc-tags"
+                      value={formState.tags}
+                      onChange={(e) => setFormState({ ...formState, tags: e.target.value })}
+                      className="w-full rounded-lg border border-gray-600 bg-gray-900 px-3 py-2 text-white focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500/40"
+                      placeholder="powershell, modules"
+                    />
+                  </div>
+                </div>
+
+                <div>
+                  <label htmlFor="doc-url" className="block text-sm font-medium text-gray-200 mb-1">
+                    URL
+                  </label>
+                  <input
+                    id="doc-url"
+                    value={formState.url}
+                    onChange={(e) => setFormState({ ...formState, url: e.target.value })}
+                    className="w-full rounded-lg border border-gray-600 bg-gray-900 px-3 py-2 text-white focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500/40"
+                    placeholder="https://optional.example/doc"
+                    type="url"
+                  />
+                </div>
+
+                <div>
+                  <label htmlFor="doc-content" className="block text-sm font-medium text-gray-200 mb-1">
+                    Markdown Content
+                  </label>
+                  <textarea
+                    id="doc-content"
+                    value={formState.content}
+                    onChange={(e) => setFormState({ ...formState, content: e.target.value })}
+                    className="min-h-[320px] w-full rounded-lg border border-gray-600 bg-gray-950 px-3 py-2 font-mono text-sm text-gray-100 focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500/40"
+                    required
+                  />
+                </div>
+              </div>
+
+              <div className="rounded-xl border border-gray-700 bg-gray-900/70 p-4">
+                <h3 className="mb-3 text-sm font-semibold uppercase tracking-wide text-gray-300">
+                  Preview
+                </h3>
+                {renderedFormPreview ? (
+                  <SafeHtml
+                    html={renderedFormPreview}
+                    variant="markdown"
+                    className="prose prose-sm prose-invert max-w-none text-gray-100 prose-a:text-blue-300 prose-pre:bg-gray-950"
+                  />
+                ) : (
+                  <p className="text-sm text-gray-500">Markdown preview appears here as you type.</p>
+                )}
+              </div>
+            </div>
+
+            <div className="flex justify-end gap-3 border-t border-gray-700 bg-gray-900/60 px-6 py-4">
+              <button
+                type="button"
+                onClick={() => setFormState(null)}
+                disabled={isSavingDoc}
+                className="rounded-lg bg-gray-700 px-4 py-2 text-white hover:bg-gray-600 disabled:opacity-50"
+              >
+                Cancel
+              </button>
+              <button
+                type="submit"
+                disabled={isSavingDoc}
+                className="rounded-lg bg-blue-600 px-4 py-2 font-medium text-white hover:bg-blue-700 disabled:opacity-50"
+              >
+                {isSavingDoc ? 'Saving...' : 'Save Documentation'}
+              </button>
+            </div>
+          </form>
         </div>
       )}
 

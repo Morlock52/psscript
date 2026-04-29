@@ -41,6 +41,7 @@ export interface SummaryCardDoc {
 interface SummaryCardProps {
   doc: SummaryCardDoc;
   onClick?: () => void;
+  onEdit?: (e: React.MouseEvent) => void;
   onDelete?: (e: React.MouseEvent) => void;
 }
 
@@ -256,7 +257,7 @@ function getQualityIndicator(doc: SummaryCardDoc): { level: 'high' | 'medium' | 
 /**
  * SummaryCard - Enhanced documentation card component
  */
-const SummaryCard: React.FC<SummaryCardProps> = ({ doc, onClick, onDelete }) => {
+const SummaryCard: React.FC<SummaryCardProps> = ({ doc, onClick, onEdit, onDelete }) => {
   const category = doc.category || 'General';
   const config = CATEGORY_CONFIG[category] || CATEGORY_CONFIG['General'];
   const { main: mainTitle, subtitle } = formatTitle(doc.title, category);
@@ -300,6 +301,19 @@ const SummaryCard: React.FC<SummaryCardProps> = ({ doc, onClick, onDelete }) => 
                 </svg>
                 Code
               </span>
+            )}
+            {onEdit && (
+              <button
+                onClick={onEdit}
+                className="p-1.5 rounded-full hover:bg-black/30 text-white/70 hover:text-blue-200
+                           transition-colors opacity-0 group-hover:opacity-100"
+                title="Edit document"
+                aria-label={`Edit ${doc.title}`}
+              >
+                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z" />
+                </svg>
+              </button>
             )}
             {/* Delete Button */}
             {onDelete && (

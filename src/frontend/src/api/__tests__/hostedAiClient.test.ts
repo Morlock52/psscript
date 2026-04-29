@@ -121,6 +121,17 @@ describe('hosted AI client routing', () => {
     expect(netlifyApi).toContain("code: 'private_import_url'");
   });
 
+  it('guards manual documentation writes behind admin auth', () => {
+    const netlifyApi = readWorkspaceFile('netlify/functions/api.ts');
+
+    expect(netlifyApi).toMatch(/route\.path === '\/documentation' && req\.method === 'POST'[\s\S]*?await requireAdmin\(req\)/);
+    expect(netlifyApi).toMatch(/route\.segments\[1\] && req\.method === 'PUT'[\s\S]*?await requireAdmin\(req\)/);
+    expect(netlifyApi).toMatch(/route\.segments\[1\] && req\.method === 'DELETE'[\s\S]*?await requireAdmin\(req\)/);
+    expect(netlifyApi).toContain('function parseDocumentationBody');
+    expect(netlifyApi).toContain('UPDATE documentation_items');
+    expect(netlifyApi).toContain('RETURNING *');
+  });
+
   it('keeps voice and streaming AI calls observable through hosted metrics', () => {
     const netlifyApi = readWorkspaceFile('netlify/functions/api.ts');
 

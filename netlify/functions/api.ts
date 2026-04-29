@@ -1599,6 +1599,51 @@ function normalizeBackupName(rawName: unknown): string {
   return `${base}.json`;
 }
 
+function normalizeDocumentationTags(rawTags: unknown): string[] {
+  if (Array.isArray(rawTags)) {
+    return rawTags
+      .map(tag => String(tag || '').trim())
+      .filter(Boolean)
+      .slice(0, 24);
+  }
+
+  if (typeof rawTags === 'string') {
+    return rawTags
+      .split(',')
+      .map(tag => tag.trim())
+      .filter(Boolean)
+      .slice(0, 24);
+  }
+
+  return [];
+}
+
+function parseDocumentationBody(body: Record<string, unknown>) {
+  const title = String(body.title || '').trim();
+  const content = String(body.content || '').trim();
+  const url = String(body.url || '').trim() || null;
+  const source = String(body.source || 'manual').trim() || 'manual';
+  const tags = normalizeDocumentationTags(body.tags);
+
+  if (title.length < 2) {
+    throw Object.assign(new Error('Documentation title is required'), { status: 400, code: 'title_required' });
+  }
+
+  if (title.length > 500) {
+    throw Object.assign(new Error('Documentation title must be 500 characters or less'), { status: 400, code: 'title_too_long' });
+  }
+
+  if (content.length < 1) {
+    throw Object.assign(new Error('Documentation content is required'), { status: 400, code: 'content_required' });
+  }
+
+  if (content.length > 500000) {
+    throw Object.assign(new Error('Documentation content is too large'), { status: 400, code: 'content_too_large' });
+  }
+
+  return { title, url, content, source, tags };
+}
+
 function quoteIdentifier(identifier: string): string {
   return `"${identifier.replace(/"/g, '""')}"`;
 }
@@ -1690,15 +1735,16 @@ async function handleDocumentation(req: Request, route: RouteParams): Promise<Re
   }
 
   if (route.path === '/documentation' && req.method === 'POST') {
-    await requireUser(req);
+    await requireAdmin(req);
     const body = await req.json().catch(() => ({}));
+    const doc = parseDocumentationBody(body);
     const result = await query(
       `
         INSERT INTO documentation_items (title, url, content, source, tags)
         VALUES ($1, $2, $3, $4, $5)
         RETURNING *
       `,
-      [body.title, body.url || null, body.content || '', body.source || 'manual', body.tags || []]
+      [doc.title, doc.url, doc.content, doc.source, doc.tags]
     );
     return json({ success: true, data: result.rows[0], document: result.rows[0] }, { status: 201 });
   }
@@ -1734,8 +1780,34 @@ async function handleDocumentation(req: Request, route: RouteParams): Promise<Re
     return json({ success: true, data: result.rows[0] });
   }
 
+  if (route.segments[1] && req.method === 'PUT') {
+    await requireAdmin(req);
+    const id = Number(route.segments[1]);
+    if (!Number.isFinite(id)) {
+      return json({ success: false, error: 'invalid_documentation_id', message: 'Invalid documentation item id' }, { status: 400 });
+    }
+    const body = await req.json().catch(() => ({}));
+    const doc = parseDocumentationBody(body);
+    const result = await query(
+      `
+        UPDATE documentation_items
+        SET title = $2,
+            url = $3,
+            content = $4,
+            source = $5,
+            tags = $6,
+            updated_at = now()
+        WHERE id = $1
+        RETURNING *
+      `,
+      [id, doc.title, doc.url, doc.content, doc.source, doc.tags]
+    );
+    if (!result.rows[0]) return json({ error: 'documentation_not_found', message: 'Documentation item not found' }, { status: 404 });
+    return json({ success: true, data: result.rows[0], document: result.rows[0] });
+  }
+
   if (route.segments[1] && req.method === 'DELETE') {
-    await requireUser(req);
+    await requireAdmin(req);
     const id = Number(route.segments[1]);
     const result = await query('DELETE FROM documentation_items WHERE id = $1 RETURNING id', [id]);
     return json({ success: true, deleted: result.rowCount || 0 });

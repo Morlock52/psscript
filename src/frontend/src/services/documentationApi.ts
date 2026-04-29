@@ -96,6 +96,30 @@ export interface DocStats {
   lastCrawled: string | null;
 }
 
+type HostedDocRow = Partial<DocItem> & Pick<DocItem, 'id' | 'title' | 'content'> & {
+  created_at?: string;
+  updated_at?: string;
+  crawled_at?: string;
+  content_type?: string;
+  extracted_commands?: string[];
+  extracted_functions?: string[];
+  extracted_modules?: string[];
+};
+
+export type ManualDocPayload = Pick<DocItem, 'title' | 'content'> & Partial<Pick<DocItem, 'url' | 'source' | 'tags'>>;
+
+export const normalizeDocItem = (row: HostedDocRow): DocItem => ({
+  ...row,
+  url: row.url || '',
+  source: row.source || 'manual',
+  tags: Array.isArray(row.tags) ? row.tags : [],
+  contentType: row.contentType || row.content_type,
+  crawledAt: row.crawledAt || row.crawled_at || row.updated_at || row.created_at || new Date(0).toISOString(),
+  extractedCommands: row.extractedCommands || row.extracted_commands || [],
+  extractedFunctions: row.extractedFunctions || row.extracted_functions || [],
+  extractedModules: row.extractedModules || row.extracted_modules || [],
+});
+
 // Documentation API service
 const documentationApi = {
   // Get recent documentation
@@ -103,7 +127,7 @@ const documentationApi = {
     try {
       const response = await axios.get(`${getApiUrl()}/documentation?limit=${limit}`);
       if (response.data.success) {
-        return response.data.data;
+        return response.data.data.map(normalizeDocItem);
       }
       throw new Error(response.data.error || 'Failed to fetch documentation');
     } catch (error) {
@@ -128,7 +152,7 @@ const documentationApi = {
       const response = await axios.get(`${getApiUrl()}/documentation/search?${queryParams.toString()}`);
       if (response.data.success) {
         return {
-          items: response.data.data,
+          items: response.data.data.map(normalizeDocItem),
           total: response.data.total,
           limit: response.data.limit,
           offset: response.data.offset
@@ -189,7 +213,7 @@ const documentationApi = {
     try {
       const response = await axios.get(`${getApiUrl()}/documentation/${id}`);
       if (response.data.success) {
-        return response.data.data;
+        return normalizeDocItem(response.data.data);
       }
       throw new Error(response.data.error || 'Failed to fetch documentation');
     } catch (error) {
@@ -233,15 +257,28 @@ const documentationApi = {
   },
 
   // Create or update documentation
-  upsert: async (doc: Partial<DocItem>): Promise<DocItem | null> => {
+  upsert: async (doc: ManualDocPayload): Promise<DocItem | null> => {
     try {
       const response = await axios.post(`${getApiUrl()}/documentation`, doc, { headers: getAuthHeaders() });
       if (response.data.success) {
-        return response.data.data;
+        return normalizeDocItem(response.data.data);
       }
       throw new Error(response.data.error || 'Failed to save documentation');
     } catch (error) {
       console.error('Error upserting documentation:', error);
+      return null;
+    }
+  },
+
+  update: async (id: number, doc: ManualDocPayload): Promise<DocItem | null> => {
+    try {
+      const response = await axios.put(`${getApiUrl()}/documentation/${id}`, doc, { headers: getAuthHeaders() });
+      if (response.data.success) {
+        return normalizeDocItem(response.data.data);
+      }
+      throw new Error(response.data.error || 'Failed to update documentation');
+    } catch (error) {
+      console.error('Error updating documentation:', error);
       return null;
     }
   },
