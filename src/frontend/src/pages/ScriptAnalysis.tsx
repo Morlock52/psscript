@@ -528,7 +528,7 @@ When generating or modifying scripts:
     );
   }
   
-  if (!script || !analysis) {
+  if (!script) {
     return (
       <div className="bg-gray-700 rounded-lg p-8 shadow text-center">
         <h2 className="text-2xl font-bold text-white mb-4">Analysis Not Available</h2>
@@ -541,6 +541,82 @@ When generating or modifying scripts:
         >
           Back to Script
         </button>
+      </div>
+    );
+  }
+
+  if (!analysis) {
+    const runtimeRequirements = inferRuntimeRequirements(script.content || '', null);
+
+    return (
+      <div className="container mx-auto pb-8">
+        <div className="mb-6 flex justify-between items-center">
+          <div>
+            <h1 className="text-2xl font-bold">AI Analysis: {script.title}</h1>
+            <p className="text-gray-400">Runtime requirements detected from the script content. Run analysis for full scoring and recommendations.</p>
+          </div>
+          <div className="flex space-x-2">
+            <button
+              className="px-4 py-2 bg-gray-600 text-white rounded-lg hover:bg-gray-700"
+              onClick={() => navigate(`/scripts/${id}`)}
+            >
+              Back to Script
+            </button>
+            <button
+              className="px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 disabled:opacity-60"
+              onClick={handleLangGraphAnalysis}
+              disabled={isAnalyzing}
+            >
+              {isAnalyzing ? 'Analyzing...' : 'Run AI Analysis'}
+            </button>
+          </div>
+        </div>
+
+        <div className="bg-slate-900/70 border border-slate-700 rounded-lg p-4 mb-6">
+          <h2 className="text-sm uppercase tracking-wide text-blue-300 font-semibold mb-3">
+            Runtime Requirements
+          </h2>
+          <div className="space-y-4 text-sm">
+            <div>
+              <div className="text-gray-400 mb-1">PowerShell version</div>
+              <p className="text-gray-200">{runtimeRequirements.powerShellVersion}</p>
+            </div>
+            <div>
+              <div className="text-gray-400 mb-2">Modules needed</div>
+              {runtimeRequirements.modules.length > 0 ? (
+                <div className="flex flex-wrap gap-2">
+                  {runtimeRequirements.modules.map((moduleName) => (
+                    <span
+                      key={moduleName}
+                      className="px-2 py-1 rounded bg-gray-800 text-gray-200 border border-gray-700"
+                    >
+                      {moduleName}
+                    </span>
+                  ))}
+                </div>
+              ) : (
+                <p className="text-gray-300">
+                  No external modules were detected from #Requires, Import-Module, analyzer fields, or common command patterns.
+                </p>
+              )}
+            </div>
+            <p className="text-xs text-gray-500">
+              Confirm these requirements on the target machine before production execution.
+            </p>
+          </div>
+        </div>
+
+        {analysisError && (
+          <div className="bg-red-900 bg-opacity-20 border border-red-700 rounded-lg p-4">
+            <div className="flex items-center">
+              <FaExclamationTriangle className="text-red-400 mr-3" size={20} />
+              <div>
+                <h3 className="font-medium text-red-300">Analysis Failed</h3>
+                <p className="text-sm text-gray-300">{analysisError}</p>
+              </div>
+            </div>
+          </div>
+        )}
       </div>
     );
   }
