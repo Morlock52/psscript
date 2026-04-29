@@ -99,6 +99,101 @@ const getConfidenceLabel = (confidence: unknown, analysisSource?: string): strin
   return 'Needs manual review';
 };
 
+const normalizeStringList = (value: unknown): string[] => {
+  if (Array.isArray(value)) {
+    return value
+      .flatMap((item) => normalizeStringList(item))
+      .filter(Boolean);
+  }
+
+  if (typeof value === 'string') {
+    return value
+      .split(/[,;\n]/)
+      .map((item) => item.trim())
+      .filter(Boolean);
+  }
+
+  return [];
+};
+
+const addModule = (modules: Set<string>, moduleName: string) => {
+  const cleaned = moduleName
+    .replace(/^['"]|['"]$/g, '')
+    .replace(/\s+-.*$/g, '')
+    .trim();
+
+  if (cleaned && !/^[\[\](),]+$/.test(cleaned)) {
+    modules.add(cleaned);
+  }
+};
+
+const inferRuntimeRequirements = (content: string, analysis: any) => {
+  const modules = new Set<string>();
+  const scriptContent = content || '';
+
+  [
+    analysis?.requiredModules,
+    analysis?.required_modules,
+    analysis?.runtimeRequirements?.modules,
+    analysis?.runtime_requirements?.modules,
+    analysis?.executionSummary?.required_modules,
+    analysis?.executionSummary?.modules,
+  ].forEach((value) => normalizeStringList(value).forEach((moduleName) => addModule(modules, moduleName)));
+
+  for (const match of scriptContent.matchAll(/#Requires\s+-Modules?\s+([^\r\n]+)/gi)) {
+    normalizeStringList(match[1]).forEach((moduleName) => addModule(modules, moduleName));
+  }
+
+  for (const match of scriptContent.matchAll(/Import-Module\s+(?:-Name\s+)?['"]?([A-Za-z0-9_.-]+)/gi)) {
+    addModule(modules, match[1]);
+  }
+
+  const commandModuleHints: Array<[RegExp, string]> = [
+    [/\b(?:Get|Set|New|Remove|Add|Disable|Enable|Move|Search|Unlock|Lock)-AD[A-Za-z]+\b/i, 'ActiveDirectory'],
+    [/\b(?:Connect|Get|Set|New|Remove|Update|Start|Stop)-Az[A-Za-z]*\b|\bAz\.[A-Za-z.]+/i, 'Az'],
+    [/\b(?:Connect|Get|Set|New|Remove|Update)-Mg[A-Za-z]+\b/i, 'Microsoft.Graph'],
+    [/\b(?:Connect|Get|Set|New|Remove)-Exchange[A-Za-z]*\b|\bExchangeOnlineManagement\b/i, 'ExchangeOnlineManagement'],
+    [/\b(?:Describe|Context|It|Invoke-Pester)\b/i, 'Pester'],
+    [/\b(?:Connect|Get|Set|New|Remove)-VI[A-Za-z]+\b|\bPowerCLI\b/i, 'VMware.PowerCLI'],
+  ];
+
+  commandModuleHints.forEach(([pattern, moduleName]) => {
+    if (pattern.test(scriptContent)) {
+      modules.add(moduleName);
+    }
+  });
+
+  const explicitVersion = scriptContent.match(/#Requires\s+-Version\s+([0-9.]+)/i)?.[1];
+  const explicitEdition = scriptContent.match(/#Requires\s+-PSEdition\s+([A-Za-z]+)/i)?.[1];
+  const analysisVersion =
+    analysis?.requiredPowerShellVersion ||
+    analysis?.required_powershell_version ||
+    analysis?.runtimeRequirements?.powerShellVersion ||
+    analysis?.runtime_requirements?.powershell_version ||
+    analysis?.executionSummary?.required_powershell_version;
+
+  let powerShellVersion = typeof analysisVersion === 'string' && analysisVersion.trim()
+    ? analysisVersion.trim()
+    : 'Windows PowerShell 5.1 or PowerShell 7+; no explicit #Requires version found.';
+
+  if (explicitVersion && explicitEdition) {
+    powerShellVersion = `PowerShell ${explicitVersion}+ (${explicitEdition} edition required by #Requires).`;
+  } else if (explicitVersion) {
+    powerShellVersion = `PowerShell ${explicitVersion}+ required by #Requires.`;
+  } else if (explicitEdition) {
+    powerShellVersion = `PowerShell ${explicitEdition} edition required by #Requires.`;
+  } else if (/\bForEach-Object\s+-Parallel\b|\bGet-Error\b|\bTernary\b|\?\?|\?\?\=/.test(scriptContent)) {
+    powerShellVersion = 'PowerShell 7+ recommended; the script uses syntax or commands commonly associated with modern PowerShell.';
+  } else if (/\bGet-WmiObject\b|\bSet-WmiInstance\b|\bInvoke-WmiMethod\b/.test(scriptContent)) {
+    powerShellVersion = 'Windows PowerShell 5.1 compatibility likely; WMI cmdlets may need CIM replacements for PowerShell 7+.';
+  }
+
+  return {
+    modules: Array.from(modules).sort((a, b) => a.localeCompare(b)),
+    powerShellVersion,
+  };
+};
+
 const ScriptAnalysis: React.FC = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
@@ -573,6 +668,7 @@ When generating or modifying scripts:
   const analysisSource = analysis.analysisSource || analysis.analysis_source || analysis.executionSummary?.analysis_source;
   const isCurrentAnalysis = analysis.isCurrent !== false;
   const commandAnalysisMarkdown = buildCommandAnalysisMarkdown(script.title, analysis);
+  const runtimeRequirements = inferRuntimeRequirements(script.content || '', analysis);
   
   return (
     <div className="container mx-auto pb-8">
@@ -801,6 +897,40 @@ When generating or modifying scripts:
                       }`}>
                         {getConfidenceLabel(confidence, analysisSource)}
                       </span>
+                    </div>
+                  </div>
+
+                  <div className="bg-slate-900/70 border border-slate-700 rounded-lg p-4 mb-6">
+                    <h3 className="text-sm uppercase tracking-wide text-blue-300 font-semibold mb-3">
+                      Runtime Requirements
+                    </h3>
+                    <div className="space-y-4 text-sm">
+                      <div>
+                        <div className="text-gray-400 mb-1">PowerShell version</div>
+                        <p className="text-gray-200">{runtimeRequirements.powerShellVersion}</p>
+                      </div>
+                      <div>
+                        <div className="text-gray-400 mb-2">Modules needed</div>
+                        {runtimeRequirements.modules.length > 0 ? (
+                          <div className="flex flex-wrap gap-2">
+                            {runtimeRequirements.modules.map((moduleName) => (
+                              <span
+                                key={moduleName}
+                                className="px-2 py-1 rounded bg-gray-800 text-gray-200 border border-gray-700"
+                              >
+                                {moduleName}
+                              </span>
+                            ))}
+                          </div>
+                        ) : (
+                          <p className="text-gray-300">
+                            No external modules were detected from #Requires, Import-Module, analyzer fields, or common command patterns.
+                          </p>
+                        )}
+                      </div>
+                      <p className="text-xs text-gray-500">
+                        Confirm these requirements on the target machine before production execution.
+                      </p>
                     </div>
                   </div>
 
