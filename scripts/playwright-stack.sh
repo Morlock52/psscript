@@ -230,7 +230,7 @@ start_local_stack() {
       DB_SSL="${DB_SSL:-true}" \
       REDIS_URL="${REDIS_URL:-}" \
       AI_SERVICE_URL=http://127.0.0.1:8000 \
-      JWT_SECRET=development_jwt_secret_key_change_in_production \
+      JWT_SECRET="${JWT_SECRET:-dev-only-playwright-jwt-secret}" \
       TLS_CERT="$backend_cert" \
       TLS_KEY="$backend_key" \
       npm run dev
