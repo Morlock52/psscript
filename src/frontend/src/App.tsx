@@ -22,6 +22,8 @@ const ScriptUpload = lazyWithRetry(() => import('./pages/ScriptUpload'));
 const ScriptDetail = lazyWithRetry(() => import('./pages/ScriptDetail'));
 const ScriptEditor = lazyWithRetry(() => import('./pages/ScriptEditor'));
 const ScriptAnalysis = lazyWithRetry(() => import('./pages/ScriptAnalysis'));
+const Search = lazyWithRetry(() => import('./pages/Search'));
+const Categories = lazyWithRetry(() => import('./pages/Categories'));
 const SimpleChatWithAI = lazyWithRetry(() => import('./pages/SimpleChatWithAI'));
 const ChatHistory = lazyWithRetry(() => import('./pages/ChatHistory'));
 const AgenticAIPage = lazyWithRetry(() => import('./pages/AgenticAIPage'));
@@ -124,6 +126,9 @@ const App: React.FC = () => {
               <Route path="/scripts/:id" element={<ProtectedRoute><ScriptDetail /></ProtectedRoute>} />
               <Route path="/scripts/:id/edit" element={<ProtectedRoute><ScriptEditor /></ProtectedRoute>} />
               <Route path="/scripts/:id/analysis" element={<ProtectedRoute><ScriptAnalysis /></ProtectedRoute>} />
+              <Route path="/search" element={<ProtectedRoute><Search /></ProtectedRoute>} />
+              <Route path="/categories" element={<ProtectedRoute><Categories /></ProtectedRoute>} />
+              <Route path="/categories/:id" element={<ProtectedRoute><Categories /></ProtectedRoute>} />
 
               {/* AI Features */}
               <Route path="/chat" element={<ProtectedRoute><SimpleChatWithAI /></ProtectedRoute>} />

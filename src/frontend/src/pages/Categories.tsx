@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { useParams, Link } from 'react-router-dom';
+import { useParams, Link, useNavigate } from 'react-router-dom';
 import { categoryService, scriptService } from '../services/api';
 
 interface Category {
@@ -7,6 +7,7 @@ interface Category {
   name: string;
   description: string;
   iconName?: string;
+  scriptCount?: number;
 }
 
 interface Script {
@@ -18,33 +19,50 @@ interface Script {
     username: string;
   };
   analysis?: {
-    code_quality_score: number;
+    code_quality_score?: number;
+    quality_score?: number;
+    qualityScore?: number;
   };
   executionCount: number;
   updatedAt: string;
 }
 
+const getQualityScore = (script: Script): number | null => {
+  const score = script.analysis?.quality_score ?? script.analysis?.qualityScore ?? script.analysis?.code_quality_score;
+  return typeof score === 'number' ? score : null;
+};
+
 const Categories: React.FC = () => {
   const { id: categoryId } = useParams<{ id: string }>();
+  const navigate = useNavigate();
   const [categories, setCategories] = useState<Category[]>([]);
   const [selectedCategory, setSelectedCategory] = useState<Category | null>(null);
   const [scripts, setScripts] = useState<Script[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [categoryNotFound, setCategoryNotFound] = useState(false);
   
   // Fetch all categories
   useEffect(() => {
     const fetchCategories = async () => {
       try {
         const result = await categoryService.getCategories();
-        setCategories(result.categories);
+        const fetchedCategories = result.categories || [];
+        setCategories(fetchedCategories);
         
         // If we have a categoryId in the URL, set it as selected
         if (categoryId) {
-          const selected = result.categories.find(c => c.id.toString() === categoryId);
+          const selected = fetchedCategories.find((c: Category) => c.id.toString() === categoryId);
           if (selected) {
             setSelectedCategory(selected);
+            setCategoryNotFound(false);
+          } else {
+            setSelectedCategory(null);
+            setCategoryNotFound(true);
           }
+        } else {
+          setSelectedCategory(null);
+          setCategoryNotFound(false);
         }
       } catch (err) {
         console.error('Error fetching categories:', err);
@@ -88,6 +106,8 @@ const Categories: React.FC = () => {
   // Handle category selection
   const handleCategorySelect = (category: Category) => {
     setSelectedCategory(category);
+    setCategoryNotFound(false);
+    navigate(`/categories/${category.id}`);
   };
   
   // Get icon component based on category name
@@ -141,7 +161,12 @@ const Categories: React.FC = () => {
                 }`}
               >
                 <span className="mr-3">{getCategoryIcon(category)}</span>
-                <span>{category.name}</span>
+                <span className="flex-1">{category.name}</span>
+                {typeof category.scriptCount === 'number' && (
+                  <span className="ml-3 rounded-full bg-gray-800 px-2 py-0.5 text-xs text-gray-300">
+                    {category.scriptCount}
+                  </span>
+                )}
               </button>
             ))}
           </div>
@@ -149,7 +174,18 @@ const Categories: React.FC = () => {
         
         {/* Scripts List */}
         <div className="lg:col-span-2 bg-gray-700 rounded-lg shadow overflow-hidden">
-          {selectedCategory ? (
+          {categoryNotFound ? (
+            <div className="p-6 text-center text-gray-400">
+              <p>Category not found.</p>
+              <button
+                type="button"
+                onClick={() => navigate('/categories')}
+                className="mt-4 rounded-md bg-blue-600 px-4 py-2 text-sm font-medium text-white hover:bg-blue-700"
+              >
+                View All Categories
+              </button>
+            </div>
+          ) : selectedCategory ? (
             <>
               <div className="p-6 border-b border-gray-600">
                 <h2 className="text-xl font-bold">{selectedCategory.name}</h2>
@@ -196,20 +232,27 @@ const Categories: React.FC = () => {
                           </td>
                           <td className="px-4 py-3 text-gray-300">{script.user?.username || 'Unknown'}</td>
                           <td className="px-4 py-3">
-                            <div className="flex items-center">
-                              <span
-                                className={`inline-block w-2 h-2 rounded-full mr-2 ${
-                                  script.analysis?.code_quality_score >= 7
-                                    ? 'bg-green-500'
-                                    : script.analysis?.code_quality_score >= 4
-                                    ? 'bg-yellow-500'
-                                    : 'bg-red-500'
-                                }`}
-                              ></span>
-                              <span className="text-gray-300">
-                                {script.analysis?.code_quality_score?.toFixed(1) || 'N/A'}
-                              </span>
-                            </div>
+                            {(() => {
+                              const qualityScore = getQualityScore(script);
+                              return (
+                                <div className="flex items-center">
+                                  <span
+                                    className={`inline-block w-2 h-2 rounded-full mr-2 ${
+                                      qualityScore === null
+                                        ? 'bg-gray-500'
+                                        : qualityScore >= 7
+                                        ? 'bg-green-500'
+                                        : qualityScore >= 4
+                                        ? 'bg-yellow-500'
+                                        : 'bg-red-500'
+                                    }`}
+                                  ></span>
+                                  <span className="text-gray-300">
+                                    {qualityScore !== null ? qualityScore.toFixed(1) : 'N/A'}
+                                  </span>
+                                </div>
+                              );
+                            })()}
                           </td>
                           <td className="px-4 py-3 text-gray-300">{script.executionCount}</td>
                           <td className="px-4 py-3 text-gray-300">

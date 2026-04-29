@@ -68,6 +68,8 @@ describe('hosted AI client routing', () => {
     expect(netlifyApi).toContain("route.url.searchParams.get('mine') === 'true'");
     expect(netlifyApi).toContain('lower(t.name) = ANY');
     expect(netlifyApi).toContain('sa.quality_score DESC NULLS LAST');
+    expect(netlifyApi).toContain('COUNT(*) OVER() AS total_count');
+    expect(netlifyApi).toContain("total: Number(result.rows[0]?.total_count || 0)");
     expect(netlifyApi).toContain('WITH target AS (');
     expect(netlifyApi).toContain('JOIN script_embeddings se');
     expect(netlifyApi).toContain('ON CONFLICT (script_id) DO UPDATE');
@@ -79,6 +81,33 @@ describe('hosted AI client routing', () => {
     expect(migration).toContain('idx_script_embeddings_hnsw');
     expect(migration).toContain('current_app_profile_is_admin');
     expect(migration).toContain('TO authenticated');
+  });
+
+  it('mounts hosted search and category discovery routes used by the sidebar', () => {
+    const app = readWorkspaceFile('src/frontend/src/App.tsx');
+    const sidebar = readWorkspaceFile('src/frontend/src/components/layouts/Sidebar.tsx');
+    const searchPage = readWorkspaceFile('src/frontend/src/pages/Search.tsx');
+    const categoriesPage = readWorkspaceFile('src/frontend/src/pages/Categories.tsx');
+
+    expect(sidebar).toContain("to: '/search'");
+    expect(sidebar).toContain("to: '/categories'");
+
+    expect(app).toContain("import('./pages/Search')");
+    expect(app).toContain("import('./pages/Categories')");
+    expect(app).toContain('path="/search"');
+    expect(app).toContain('path="/categories"');
+    expect(app).toContain('path="/categories/:id"');
+
+    expect(searchPage).toContain('useSearchParams');
+    expect(searchPage).toContain("params.set('q'");
+    expect(searchPage).toContain("params.set('category_id'");
+    expect(searchPage).toContain("params.set('tags'");
+    expect(searchPage).toContain("params.set('mine', 'true')");
+
+    expect(categoriesPage).toContain('useNavigate');
+    expect(categoriesPage).toContain('navigate(`/categories/${category.id}`)');
+    expect(categoriesPage).toContain('Category not found.');
+    expect(categoriesPage).toContain('scriptCount');
   });
 
   it('guards hosted AI data access and documentation imports', () => {

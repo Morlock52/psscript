@@ -807,9 +807,10 @@ async function handleScriptSearch(req: Request, route: RouteParams): Promise<Res
   params.push(offset);
   const offsetIndex = params.length;
 
+  const scriptSearchSelect = scriptSelect.replace('SELECT s.id', 'SELECT COUNT(*) OVER() AS total_count, s.id');
   const fromClause = queryText && searchQueryIndex
-    ? `${scriptSelect} CROSS JOIN (SELECT websearch_to_tsquery('simple', $${searchQueryIndex}) AS tsq) search_query`
-    : scriptSelect;
+    ? `${scriptSearchSelect} CROSS JOIN (SELECT websearch_to_tsquery('simple', $${searchQueryIndex}) AS tsq) search_query`
+    : scriptSearchSelect;
 
   let result;
   try {
@@ -860,7 +861,7 @@ async function handleScriptSearch(req: Request, route: RouteParams): Promise<Res
     const fallbackOffsetIndex = fallbackParams.length;
 
     result = await query(
-      `${scriptSelect}
+      `${scriptSearchSelect}
        WHERE ${fallbackWhere.join(' AND ')}
        ORDER BY ${orderBy.includes('search_query') ? 's.updated_at DESC' : orderBy}
        LIMIT $${fallbackLimitIndex}
@@ -872,7 +873,7 @@ async function handleScriptSearch(req: Request, route: RouteParams): Promise<Res
   const scripts = result.rows.map(toFrontendScript);
   return json({
     scripts,
-    total: scripts.length,
+    total: Number(result.rows[0]?.total_count || 0),
     filters: {
       q: queryText,
       category_id: categoryId,

@@ -1,5 +1,5 @@
-import React, { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import React, { useEffect, useMemo, useState } from 'react';
+import { Link, useNavigate, useSearchParams } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import { scriptService, categoryService, tagService } from '../services/api';
 
@@ -11,16 +11,50 @@ interface FilterState {
   onlyMine: boolean;
 }
 
+const defaultFilters: FilterState = {
+  query: '',
+  category: '',
+  tags: [],
+  sortBy: 'updated',
+  onlyMine: false,
+};
+
+const getQualityScore = (script: any): number | null => {
+  const score = script.analysis?.quality_score ?? script.analysis?.qualityScore ?? script.analysis?.code_quality_score;
+  return typeof score === 'number' ? score : null;
+};
+
 const Search: React.FC = () => {
   const navigate = useNavigate();
-  const [view, setView] = useState<'grid' | 'list'>('grid');
-  const [filters, setFilters] = useState<FilterState>({
-    query: '',
-    category: '',
-    tags: [],
-    sortBy: 'updated',
-    onlyMine: false,
-  });
+  const [searchParams, setSearchParams] = useSearchParams();
+  const searchParamsKey = searchParams.toString();
+  const view = searchParams.get('view') === 'list' ? 'list' : 'grid';
+  const filters = useMemo<FilterState>(() => ({
+    query: searchParams.get('q') || '',
+    category: searchParams.get('category_id') || '',
+    tags: (searchParams.get('tags') || '')
+      .split(',')
+      .map(tag => tag.trim())
+      .filter(Boolean),
+    sortBy: searchParams.get('sort') || 'updated',
+    onlyMine: searchParams.get('mine') === 'true',
+  }), [searchParamsKey]);
+  const [draftFilters, setDraftFilters] = useState<FilterState>(filters);
+
+  useEffect(() => {
+    setDraftFilters(filters);
+  }, [filters]);
+
+  const updateUrl = (nextFilters: FilterState, nextView: 'grid' | 'list' = view) => {
+    const params = new URLSearchParams();
+    if (nextFilters.query.trim()) params.set('q', nextFilters.query.trim());
+    if (nextFilters.category) params.set('category_id', nextFilters.category);
+    if (nextFilters.tags.length > 0) params.set('tags', nextFilters.tags.join(','));
+    if (nextFilters.sortBy && nextFilters.sortBy !== defaultFilters.sortBy) params.set('sort', nextFilters.sortBy);
+    if (nextFilters.onlyMine) params.set('mine', 'true');
+    if (nextView !== 'grid') params.set('view', nextView);
+    setSearchParams(params);
+  };
   
   // Prepare query parameters
   const searchFilters = {
@@ -50,34 +84,36 @@ const Search: React.FC = () => {
   });
   
   const handleFilterChange = (key: keyof FilterState, value: any) => {
-    setFilters((prev) => ({
-      ...prev,
+    const next = {
+      ...draftFilters,
       [key]: value,
-    }));
+    };
+    setDraftFilters(next);
+    if (key !== 'query') {
+      updateUrl(next);
+    }
   };
   
   const toggleTag = (tag: string) => {
-    setFilters((prev) => ({
-      ...prev,
-      tags: prev.tags.includes(tag)
-        ? prev.tags.filter((t) => t !== tag)
-        : [...prev.tags, tag],
-    }));
+    const next = {
+      ...draftFilters,
+      tags: draftFilters.tags.includes(tag)
+        ? draftFilters.tags.filter((t) => t !== tag)
+        : [...draftFilters.tags, tag],
+    };
+    setDraftFilters(next);
+    updateUrl(next);
   };
   
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();
+    updateUrl(draftFilters);
     refetch();
   };
   
   const resetFilters = () => {
-    setFilters({
-      query: '',
-      category: '',
-      tags: [],
-      sortBy: 'updated',
-      onlyMine: false,
-    });
+    setDraftFilters(defaultFilters);
+    updateUrl(defaultFilters);
   };
   
   return (
@@ -121,7 +157,7 @@ const Search: React.FC = () => {
                   id="query"
                   className="block w-full pl-10 pr-3 py-2 border border-gray-600 rounded-md leading-5 bg-gray-800 text-gray-300 placeholder-gray-400 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
                   placeholder="Search scripts..."
-                  value={filters.query}
+                  value={draftFilters.query}
                   onChange={(e) => handleFilterChange('query', e.target.value)}
                 />
               </div>
@@ -134,7 +170,7 @@ const Search: React.FC = () => {
               <select
                 id="category"
                 className="block w-full pl-3 pr-10 py-2 text-base border border-gray-600 rounded-md leading-5 bg-gray-800 text-gray-300 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
-                value={filters.category}
+                value={draftFilters.category}
                 onChange={(e) => handleFilterChange('category', e.target.value)}
               >
                 <option value="">All Categories</option>
@@ -153,7 +189,7 @@ const Search: React.FC = () => {
               <select
                 id="sortBy"
                 className="block w-full pl-3 pr-10 py-2 text-base border border-gray-600 rounded-md leading-5 bg-gray-800 text-gray-300 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
-                value={filters.sortBy}
+                value={draftFilters.sortBy}
                 onChange={(e) => handleFilterChange('sortBy', e.target.value)}
               >
                 <option value="updated">Recently Updated</option>
@@ -173,7 +209,7 @@ const Search: React.FC = () => {
                   key={tag.id}
                   type="button"
                   className={`text-xs px-2 py-1 rounded-full ${
-                    filters.tags.includes(tag.name)
+                    draftFilters.tags.includes(tag.name)
                       ? 'bg-blue-600 text-white'
                       : 'bg-gray-800 text-gray-300 hover:bg-gray-700'
                   }`}
@@ -190,7 +226,7 @@ const Search: React.FC = () => {
                 id="onlyMine"
                 type="checkbox"
                 className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-600 rounded"
-                checked={filters.onlyMine}
+                checked={draftFilters.onlyMine}
                 onChange={(e) => handleFilterChange('onlyMine', e.target.checked)}
               />
               <label htmlFor="onlyMine" className="ml-2 block text-sm text-gray-300">
@@ -229,7 +265,7 @@ const Search: React.FC = () => {
             className={`p-2 rounded-md ${
               view === 'grid' ? 'bg-gray-700 text-white' : 'text-gray-400 hover:bg-gray-800'
             }`}
-            onClick={() => setView('grid')}
+            onClick={() => updateUrl(draftFilters, 'grid')}
           >
             <svg
               xmlns="http://www.w3.org/2000/svg"
@@ -244,7 +280,7 @@ const Search: React.FC = () => {
             className={`p-2 rounded-md ${
               view === 'list' ? 'bg-gray-700 text-white' : 'text-gray-400 hover:bg-gray-800'
             }`}
-            onClick={() => setView('list')}
+            onClick={() => updateUrl(draftFilters, 'list')}
           >
             <svg
               xmlns="http://www.w3.org/2000/svg"
@@ -310,35 +346,36 @@ const Search: React.FC = () => {
                 <div className="flex justify-between items-start">
                   <div>
                     <h3 className="text-lg font-medium">
-                      <a
-                        href={`/scripts/${script.id}`}
+                      <Link
+                        to={`/scripts/${script.id}`}
                         className="text-white hover:text-blue-400"
-                        onClick={(e) => {
-                          e.preventDefault();
-                          navigate(`/scripts/${script.id}`);
-                        }}
                       >
                         {script.title}
-                      </a>
+                      </Link>
                     </h3>
                     <p className="text-sm text-gray-400">
                       By {script.user?.username || 'Unknown'} • Updated{' '}
                       {new Date(script.updatedAt).toLocaleDateString()}
                     </p>
                   </div>
-                  <div
-                    className={`px-2 py-1 text-xs rounded-full ${
-                      script.analysis?.quality_score >= 7
-                        ? 'bg-green-900 text-green-300'
-                        : script.analysis?.quality_score >= 4
-                        ? 'bg-yellow-900 text-yellow-300'
-                        : 'bg-red-900 text-red-300'
-                    }`}
-                  >
-                    {script.analysis?.quality_score
-                      ? `${script.analysis.quality_score.toFixed(1)}/10`
-                      : 'Not Analyzed'}
-                  </div>
+                  {(() => {
+                    const qualityScore = getQualityScore(script);
+                    return (
+                      <div
+                        className={`px-2 py-1 text-xs rounded-full ${
+                          qualityScore === null
+                            ? 'bg-gray-800 text-gray-400'
+                            : qualityScore >= 7
+                            ? 'bg-green-900 text-green-300'
+                            : qualityScore >= 4
+                            ? 'bg-yellow-900 text-yellow-300'
+                            : 'bg-red-900 text-red-300'
+                        }`}
+                      >
+                        {qualityScore !== null ? `${qualityScore.toFixed(1)}/10` : 'Not Analyzed'}
+                      </div>
+                    );
+                  })()}
                 </div>
                 
                 <p className="mt-2 text-sm text-gray-300 line-clamp-2">
@@ -394,16 +431,12 @@ const Search: React.FC = () => {
                     <div className="flex items-center">
                       <div>
                         <div className="text-sm font-medium text-white">
-                          <a
-                            href={`/scripts/${script.id}`}
+                          <Link
+                            to={`/scripts/${script.id}`}
                             className="hover:text-blue-400"
-                            onClick={(e) => {
-                              e.preventDefault();
-                              navigate(`/scripts/${script.id}`);
-                            }}
                           >
                             {script.title}
-                          </a>
+                          </Link>
                         </div>
                         <div className="text-sm text-gray-400">
                           {script.description ? script.description.substring(0, 60) + (script.description.length > 60 ? '...' : '') : 'No description'}
@@ -418,21 +451,24 @@ const Search: React.FC = () => {
                     <div className="text-sm text-gray-300">{script.user?.username || 'Unknown'}</div>
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap">
-                    <div
-                      className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
-                        script.analysis?.quality_score >= 7
-                          ? 'bg-green-900 text-green-300'
-                          : script.analysis?.quality_score >= 4
-                          ? 'bg-yellow-900 text-yellow-300'
-                          : script.analysis?.quality_score
-                          ? 'bg-red-900 text-red-300'
-                          : 'bg-gray-800 text-gray-400'
-                      }`}
-                    >
-                      {script.analysis?.quality_score
-                        ? `${script.analysis.quality_score.toFixed(1)}/10`
-                        : 'N/A'}
-                    </div>
+                    {(() => {
+                      const qualityScore = getQualityScore(script);
+                      return (
+                        <div
+                          className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
+                            qualityScore === null
+                              ? 'bg-gray-800 text-gray-400'
+                              : qualityScore >= 7
+                              ? 'bg-green-900 text-green-300'
+                              : qualityScore >= 4
+                              ? 'bg-yellow-900 text-yellow-300'
+                              : 'bg-red-900 text-red-300'
+                          }`}
+                        >
+                          {qualityScore !== null ? `${qualityScore.toFixed(1)}/10` : 'N/A'}
+                        </div>
+                      );
+                    })()}
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-300">
                     {new Date(script.updatedAt).toLocaleDateString()}
