@@ -91,6 +91,14 @@ const buildCommandAnalysisMarkdown = (scriptTitle: string, analysis: any): strin
   return lines.join('\n');
 };
 
+const getConfidenceLabel = (confidence: unknown, analysisSource?: string): string => {
+  if (analysisSource === 'fallback' || analysisSource === 'static') return 'Fallback static analysis';
+  if (typeof confidence !== 'number') return 'Confidence not reported';
+  if (confidence >= 0.8) return 'High confidence';
+  if (confidence >= 0.55) return 'Medium confidence';
+  return 'Needs manual review';
+};
+
 const ScriptAnalysis: React.FC = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
@@ -562,6 +570,8 @@ When generating or modifying scripts:
   const testRecommendations = analysis.testRecommendations || analysis.executionSummary?.test_recommendations || [];
   const criteriaVersion = analysis.criteriaVersion || analysis.executionSummary?.criteria_version || '2026-04-26';
   const confidence = analysis.confidence ?? analysis.executionSummary?.confidence;
+  const analysisSource = analysis.analysisSource || analysis.analysis_source || analysis.executionSummary?.analysis_source;
+  const isCurrentAnalysis = analysis.isCurrent !== false;
   const commandAnalysisMarkdown = buildCommandAnalysisMarkdown(script.title, analysis);
   
   return (
@@ -748,6 +758,20 @@ When generating or modifying scripts:
                 </div>
               )}
 
+              {!isCurrentAnalysis && (
+                <div className="bg-yellow-900 bg-opacity-20 border border-yellow-700 rounded-lg p-4 mb-6">
+                  <div className="flex items-center">
+                    <FaExclamationTriangle className="text-yellow-300 mr-3" size={20} />
+                    <div>
+                      <h4 className="font-medium text-yellow-200">Analysis may be stale</h4>
+                      <p className="text-sm text-gray-300">
+                        This analysis was generated for an earlier script version or file hash. Rerun analysis before using these findings for approval.
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              )}
+
               <div className="bg-gray-700 rounded-lg shadow mb-6">
                 <div className="p-4 bg-gray-800 border-b border-gray-600">
                   <h2 className="text-lg font-medium">Analysis Summary</h2>
@@ -767,6 +791,16 @@ When generating or modifying scripts:
                           </span>
                         </>
                       )}
+                      <span className="text-gray-400">Trust signal</span>
+                      <span className={`px-2 py-1 rounded border ${
+                        getConfidenceLabel(confidence, analysisSource) === 'Needs manual review'
+                          ? 'bg-yellow-900/40 text-yellow-200 border-yellow-800'
+                          : getConfidenceLabel(confidence, analysisSource) === 'Fallback static analysis'
+                            ? 'bg-slate-900/60 text-slate-200 border-slate-700'
+                            : 'bg-emerald-900/40 text-emerald-200 border-emerald-800'
+                      }`}>
+                        {getConfidenceLabel(confidence, analysisSource)}
+                      </span>
                     </div>
                   </div>
 

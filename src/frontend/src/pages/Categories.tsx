@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, Link, useNavigate } from 'react-router-dom';
 import { categoryService, scriptService } from '../services/api';
+import { formatScriptDate, normalizeScriptSummary, type ScriptSummary } from '../utils/scriptSummary';
 
 interface Category {
   id: number;
@@ -10,34 +11,12 @@ interface Category {
   scriptCount?: number;
 }
 
-interface Script {
-  id: number;
-  title: string;
-  description: string;
-  categoryId: number;
-  user: {
-    username: string;
-  };
-  analysis?: {
-    code_quality_score?: number;
-    quality_score?: number;
-    qualityScore?: number;
-  };
-  executionCount: number;
-  updatedAt: string;
-}
-
-const getQualityScore = (script: Script): number | null => {
-  const score = script.analysis?.quality_score ?? script.analysis?.qualityScore ?? script.analysis?.code_quality_score;
-  return typeof score === 'number' ? score : null;
-};
-
 const Categories: React.FC = () => {
   const { id: categoryId } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const [categories, setCategories] = useState<Category[]>([]);
   const [selectedCategory, setSelectedCategory] = useState<Category | null>(null);
-  const [scripts, setScripts] = useState<Script[]>([]);
+  const [scripts, setScripts] = useState<ScriptSummary[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [categoryNotFound, setCategoryNotFound] = useState(false);
@@ -89,7 +68,7 @@ const Categories: React.FC = () => {
           sort: 'updated',
           limit: 50
         });
-        setScripts(result.scripts);
+        setScripts((result.scripts || []).map(normalizeScriptSummary));
         setError(null);
       } catch (err) {
         console.error('Error fetching scripts:', err);
@@ -230,10 +209,10 @@ const Categories: React.FC = () => {
                               {script.description}
                             </p>
                           </td>
-                          <td className="px-4 py-3 text-gray-300">{script.user?.username || 'Unknown'}</td>
+                          <td className="px-4 py-3 text-gray-300">{script.author}</td>
                           <td className="px-4 py-3">
                             {(() => {
-                              const qualityScore = getQualityScore(script);
+                              const qualityScore = script.qualityScore ?? null;
                               return (
                                 <div className="flex items-center">
                                   <span
@@ -256,7 +235,7 @@ const Categories: React.FC = () => {
                           </td>
                           <td className="px-4 py-3 text-gray-300">{script.executionCount}</td>
                           <td className="px-4 py-3 text-gray-300">
-                            {new Date(script.updatedAt).toLocaleDateString()}
+                            {formatScriptDate(script)}
                           </td>
                         </tr>
                       ))}

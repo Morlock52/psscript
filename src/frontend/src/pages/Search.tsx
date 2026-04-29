@@ -2,6 +2,7 @@ import React, { useEffect, useMemo, useState } from 'react';
 import { Link, useNavigate, useSearchParams } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import { scriptService, categoryService, tagService } from '../services/api';
+import { formatScriptDate, normalizeScriptSummary } from '../utils/scriptSummary';
 
 interface FilterState {
   query: string;
@@ -17,11 +18,6 @@ const defaultFilters: FilterState = {
   tags: [],
   sortBy: 'updated',
   onlyMine: false,
-};
-
-const getQualityScore = (script: any): number | null => {
-  const score = script.analysis?.quality_score ?? script.analysis?.qualityScore ?? script.analysis?.code_quality_score;
-  return typeof score === 'number' ? score : null;
 };
 
 const Search: React.FC = () => {
@@ -337,7 +333,9 @@ const Search: React.FC = () => {
       {/* Grid View */}
       {!isLoading && scriptsData?.scripts && scriptsData.scripts.length > 0 && view === 'grid' && (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {scriptsData.scripts.map((script: any) => (
+          {scriptsData.scripts.map((rawScript: any) => {
+            const script = normalizeScriptSummary(rawScript);
+            return (
             <div
               key={script.id}
               className="bg-gray-700 rounded-lg shadow overflow-hidden hover:bg-gray-650 transition-colors"
@@ -354,12 +352,11 @@ const Search: React.FC = () => {
                       </Link>
                     </h3>
                     <p className="text-sm text-gray-400">
-                      By {script.user?.username || 'Unknown'} • Updated{' '}
-                      {new Date(script.updatedAt).toLocaleDateString()}
+                      By {script.author} • Updated {formatScriptDate(script)}
                     </p>
                   </div>
                   {(() => {
-                    const qualityScore = getQualityScore(script);
+                    const qualityScore = script.qualityScore ?? null;
                     return (
                       <div
                         className={`px-2 py-1 text-xs rounded-full ${
@@ -379,25 +376,38 @@ const Search: React.FC = () => {
                 </div>
                 
                 <p className="mt-2 text-sm text-gray-300 line-clamp-2">
-                  {script.description || script.analysis?.purpose || 'No description available.'}
+                  {script.description || 'No description available.'}
                 </p>
                 
                 <div className="mt-4 flex items-center justify-between">
                   <div className="flex space-x-2">
                     <span className="inline-flex items-center px-2 py-1 text-xs font-medium rounded-full bg-gray-800 text-gray-300">
-                      {script.category?.name || 'Uncategorized'}
+                      {script.categoryName || 'Uncategorized'}
                     </span>
                     <span className="inline-flex items-center px-2 py-1 text-xs font-medium rounded-full bg-gray-800 text-gray-300">
                       v{script.version}
+                    </span>
+                    <span className="inline-flex items-center px-2 py-1 text-xs font-medium rounded-full bg-gray-800 text-gray-300">
+                      {script.lifecycleStatus.replace('_', ' ')}
                     </span>
                   </div>
                   <div className="text-xs text-gray-400">
                     {script.executionCount || 0} executions
                   </div>
                 </div>
+                {script.riskBadges.length > 0 && (
+                  <div className="mt-3 flex flex-wrap gap-2">
+                    {script.riskBadges.map((badge) => (
+                      <span key={badge} className="rounded-full border border-yellow-800 bg-yellow-950/60 px-2 py-1 text-xs text-yellow-200">
+                        {badge}
+                      </span>
+                    ))}
+                  </div>
+                )}
               </div>
             </div>
-          ))}
+          );
+        })}
         </div>
       )}
       
@@ -425,7 +435,9 @@ const Search: React.FC = () => {
               </tr>
             </thead>
             <tbody className="divide-y divide-gray-600">
-              {scriptsData.scripts.map((script: any) => (
+              {scriptsData.scripts.map((rawScript: any) => {
+                const script = normalizeScriptSummary(rawScript);
+                return (
                 <tr key={script.id} className="hover:bg-gray-650">
                   <td className="px-6 py-4 whitespace-nowrap">
                     <div className="flex items-center">
@@ -445,14 +457,14 @@ const Search: React.FC = () => {
                     </div>
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap">
-                    <div className="text-sm text-gray-300">{script.category?.name || 'Uncategorized'}</div>
+                    <div className="text-sm text-gray-300">{script.categoryName || 'Uncategorized'}</div>
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap">
-                    <div className="text-sm text-gray-300">{script.user?.username || 'Unknown'}</div>
+                    <div className="text-sm text-gray-300">{script.author}</div>
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap">
                     {(() => {
-                      const qualityScore = getQualityScore(script);
+                      const qualityScore = script.qualityScore ?? null;
                       return (
                         <div
                           className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
@@ -471,10 +483,11 @@ const Search: React.FC = () => {
                     })()}
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-300">
-                    {new Date(script.updatedAt).toLocaleDateString()}
+                    {formatScriptDate(script)}
                   </td>
                 </tr>
-              ))}
+              );
+            })}
             </tbody>
           </table>
         </div>
