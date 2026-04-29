@@ -1,9 +1,10 @@
 import React, { useState } from 'react';
 import SettingsLayout from './SettingsLayout';
+import { useTheme } from '../../contexts/ThemeContext';
 
 const AppearanceSettings: React.FC = () => {
+  const { theme, setTheme } = useTheme();
   // Theme settings
-  const [theme, setTheme] = useState('dark');
   const [accentColor, setAccentColor] = useState('blue');
   const [fontScale, setFontScale] = useState('medium');
   const [reducedMotion, setReducedMotion] = useState(false);
@@ -77,7 +78,7 @@ const AppearanceSettings: React.FC = () => {
         {/* Theme Selection */}
         <div className="mb-6">
           <h3 className="text-lg font-medium mb-3">Theme</h3>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div 
               className={`border rounded-lg p-4 cursor-pointer relative ${
                 theme === 'light' 
@@ -138,41 +139,6 @@ const AppearanceSettings: React.FC = () => {
               </div>
             </div>
             
-            <div 
-              className={`border rounded-lg p-4 cursor-pointer relative ${
-                theme === 'system' 
-                  ? 'border-blue-500 bg-blue-50 dark:bg-blue-900 dark:bg-opacity-20' 
-                  : 'border-gray-200 dark:border-gray-700'
-              }`}
-              onClick={() => setTheme('system')}
-            >
-              <div className="h-24 mb-3 bg-gradient-to-r from-white to-gray-800 border border-gray-300 rounded-md overflow-hidden">
-                <div className="h-6 bg-gradient-to-r from-gray-100 to-gray-800 border-b border-gray-300"></div>
-                <div className="p-2 flex justify-between">
-                  <div className="w-1/2">
-                    <div className="h-3 w-3/4 bg-gray-200 rounded mb-2"></div>
-                    <div className="h-2 w-full bg-gray-100 rounded mb-1"></div>
-                    <div className="h-2 w-full bg-gray-100 rounded mb-1"></div>
-                  </div>
-                  <div className="w-1/2 pl-2">
-                    <div className="h-3 w-3/4 bg-gray-700 rounded mb-2"></div>
-                    <div className="h-2 w-full bg-gray-700 rounded mb-1"></div>
-                    <div className="h-2 w-full bg-gray-700 rounded mb-1"></div>
-                  </div>
-                </div>
-              </div>
-              <div className="flex items-center">
-                <input
-                  type="radio"
-                  name="theme"
-                  value="system"
-                  checked={theme === 'system'}
-                  onChange={() => setTheme('system')}
-                  className="mr-2"
-                />
-                <span>Use System Settings</span>
-              </div>
-            </div>
           </div>
         </div>
         

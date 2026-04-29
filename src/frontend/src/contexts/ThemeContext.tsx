@@ -17,11 +17,11 @@ const THEME_STORAGE_KEY = 'psscript_theme';
 
 // Create context with default values
 const ThemeContext = createContext<ThemeContextType>({
-  theme: 'light',
+  theme: 'dark',
   toggleTheme: () => {},
   setTheme: () => {},
-  isDark: false,
-  isLight: true,
+  isDark: true,
+  isLight: false,
 });
 
 // Define props for ThemeProvider

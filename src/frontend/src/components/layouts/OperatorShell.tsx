@@ -2,6 +2,7 @@ import { ReactNode, useEffect, useState } from 'react';
 import { Sidebar } from './Sidebar';
 import { Topbar } from './Topbar';
 import { GradientField } from '../primitives/GradientField';
+import { useTheme } from '../../contexts/ThemeContext';
 
 export interface OperatorShellProps {
   children: ReactNode;
@@ -12,17 +13,19 @@ export interface OperatorShellProps {
   hideSidebar?: boolean;
 }
 
-export const OperatorShell = ({ children, theme = 'dark', rightRail, hideSidebar }: OperatorShellProps) => {
+export const OperatorShell = ({ children, theme, rightRail, hideSidebar }: OperatorShellProps) => {
   const [mobileNavOpen, setMobileNavOpen] = useState(false);
+  const { theme: appTheme } = useTheme();
+  const activeTheme = theme ?? appTheme;
 
   useEffect(() => {
     document.body.setAttribute('data-surface', 'operator');
-    document.body.setAttribute('data-theme', theme);
+    document.body.setAttribute('data-theme', activeTheme);
     return () => {
       document.body.removeAttribute('data-surface');
       document.body.removeAttribute('data-theme');
     };
-  }, [theme]);
+  }, [activeTheme]);
 
   return (
     <div className="relative min-h-screen flex overflow-x-hidden bg-surface-base text-ink-primary">
