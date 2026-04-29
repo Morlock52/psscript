@@ -326,7 +326,6 @@ const ScriptUpload: React.FC = () => {
                   type="file" 
                   ref={fileInputRef}
                   className="hidden" 
-                  accept=".ps1,.psm1,.psd1,.ps1xml"
                   onChange={handleFileChange}
                 />
                 
