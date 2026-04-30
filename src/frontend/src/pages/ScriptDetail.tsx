@@ -6,14 +6,16 @@ import ScriptDownloadButton from '../components/ScriptDownloadButton';
 import FullScreenEditor from '../components/FullScreenEditor';
 import toast from 'react-hot-toast';
 import { isHostedStaticAnalysisOnly } from '../services/supabase';
+import { useAuth } from '../hooks/useAuth';
 
 const ScriptDetail: React.FC = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
+  const { user } = useAuth();
   const [parameters, setParameters] = useState<Record<string, string>>({});
   const [isEditorOpen, setIsEditorOpen] = useState(false);
-  const [isAnalyzing, setIsAnalyzing] = useState(false);
   const hostedStaticOnly = isHostedStaticAnalysisOnly();
+  const isAdmin = user?.role === 'admin';
 
   const { data: script, isLoading, error, refetch } = useQuery({
     queryKey: ['script', id],
@@ -68,24 +70,6 @@ const ScriptDetail: React.FC = () => {
     }
   });
 
-  // Mutation for analyzing script with AI and saving to database
-  const analyzeScriptMutation = useMutation({
-    mutationFn: () => scriptService.analyzeScriptAndSave(id || ''),
-    onSuccess: (_analysisData) => {
-      toast.success('Script analyzed successfully');
-
-      // Navigate to the analysis page
-      navigate(`/scripts/${id}/analysis`);
-    },
-    onError: (error) => {
-      console.error('Error analyzing script:', error);
-      toast.error('Failed to analyze script');
-    },
-    onSettled: () => {
-      setIsAnalyzing(false);
-    }
-  });
-
   const deleteScriptMutation = useMutation({
     mutationFn: () => scriptService.archiveScript(id || '', 'Archived from script detail'),
     onSuccess: (data) => {
@@ -114,16 +98,23 @@ const ScriptDetail: React.FC = () => {
   };
 
   const handleOpenEditor = () => {
+    if (!isAdmin) {
+      toast.error('Only admins can edit script details.');
+      return;
+    }
     setIsEditorOpen(true);
   };
 
   const handleSaveScript = (content: string) => {
+    if (!isAdmin) {
+      toast.error('Only admins can edit script details.');
+      return;
+    }
     updateScriptMutation.mutate(content);
   };
 
   const handleAnalyzeScript = () => {
-    setIsAnalyzing(true);
-    analyzeScriptMutation.mutate();
+    navigate(`/scripts/${id}/analysis`);
   };
 
   const handleDeleteScript = () => {
@@ -174,28 +165,19 @@ const ScriptDetail: React.FC = () => {
             showOptions={true}
             variant="primary"
           />
-          <button
-            className={buttonPrimaryStyles}
-            onClick={handleOpenEditor}
-          >
-            Edit
-          </button>
+          {isAdmin && (
+            <button
+              className={buttonPrimaryStyles}
+              onClick={handleOpenEditor}
+            >
+              Edit
+            </button>
+          )}
           <button
             className="px-4 py-2 bg-violet-600 text-white rounded-lg hover:bg-violet-700 disabled:opacity-50 flex items-center transition-colors"
             onClick={handleAnalyzeScript}
-            disabled={isAnalyzing}
           >
-            {isAnalyzing ? (
-              <>
-                <svg className="animate-spin -ml-1 mr-2 h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                  <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                  <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                </svg>
-                Analyzing...
-              </>
-            ) : (
-              'Analyze with AI'
-            )}
+            Analyze with AI
           </button>
           <button
             className={buttonSecondaryStyles}
@@ -220,14 +202,16 @@ const ScriptDetail: React.FC = () => {
       </div>
 
       {/* Full Screen Editor */}
-      <FullScreenEditor
-        isOpen={isEditorOpen}
-        onClose={() => setIsEditorOpen(false)}
-        initialContent={script.content}
-        onSave={handleSaveScript}
-        title="Edit PowerShell Script"
-        scriptName={script.title}
-      />
+      {isAdmin && (
+        <FullScreenEditor
+          isOpen={isEditorOpen}
+          onClose={() => setIsEditorOpen(false)}
+          initialContent={script.content}
+          onSave={handleSaveScript}
+          title="Edit PowerShell Script"
+          scriptName={script.title}
+        />
+      )}
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         {/* Script Content */}
@@ -405,19 +389,8 @@ const ScriptDetail: React.FC = () => {
                 <button
                   className="px-4 py-2 bg-violet-600 text-white rounded-lg hover:bg-violet-700 disabled:opacity-50 w-full flex items-center justify-center transition-colors"
                   onClick={handleAnalyzeScript}
-                  disabled={isAnalyzing}
                 >
-                  {isAnalyzing ? (
-                    <>
-                      <svg className="animate-spin -ml-1 mr-2 h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                        <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                        <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                      </svg>
-                      Analyzing Script...
-                    </>
-                  ) : (
-                    'Analyze with AI'
-                  )}
+                  Choose AI Model
                 </button>
               </div>
             </div>
@@ -476,7 +449,7 @@ const ScriptDetail: React.FC = () => {
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
                           </svg>
                           <p className="font-medium">Not Analyzed Yet</p>
-                          <p className="text-sm">Click &quot;Analyze with AI&quot; to generate scores</p>
+                          <p className="text-sm">Open the analysis screen to choose an AI model and generate scores.</p>
                         </div>
                       );
                     }

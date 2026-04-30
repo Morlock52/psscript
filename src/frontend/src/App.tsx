@@ -124,7 +124,7 @@ const App: React.FC = () => {
               <Route path="/scripts" element={<ProtectedRoute><ScriptManagement /></ProtectedRoute>} />
               <Route path="/scripts/upload" element={<ProtectedRoute><ScriptUpload /></ProtectedRoute>} />
               <Route path="/scripts/:id" element={<ProtectedRoute><ScriptDetail /></ProtectedRoute>} />
-              <Route path="/scripts/:id/edit" element={<ProtectedRoute><ScriptEditor /></ProtectedRoute>} />
+              <Route path="/scripts/:id/edit" element={<ProtectedRoute requiredRole="admin"><ScriptEditor /></ProtectedRoute>} />
               <Route path="/scripts/:id/analysis" element={<ProtectedRoute><ScriptAnalysis /></ProtectedRoute>} />
               <Route path="/search" element={<ProtectedRoute><Search /></ProtectedRoute>} />
               <Route path="/categories" element={<ProtectedRoute><Categories /></ProtectedRoute>} />

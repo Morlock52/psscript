@@ -116,6 +116,7 @@ const ManageFiles: React.FC = () => {
     (script.category?.name && script.category.name.toLowerCase().includes(searchTerm.toLowerCase()))
   );
   const canDeleteScript = (script: Script) => user?.role === 'admin' || String(script.userId) === String(user?.id);
+  const canEditScript = () => user?.role === 'admin';
   const deletableFilteredScripts = filteredScripts.filter(canDeleteScript);
 
   const toggleScriptSelection = (scriptId: string) => {
@@ -341,26 +342,28 @@ const ManageFiles: React.FC = () => {
                     </td>
                     <td className="px-4 py-3">
                       <div className="flex space-x-2">
-                        <button
-                          onClick={() => navigate(`/scripts/${script.id}/edit`)}
-                          className="text-blue-400 hover:text-blue-300"
-                          title="Edit"
-                        >
-                          <svg
-                            className="w-5 h-5"
-                            fill="none"
-                            stroke="currentColor"
-                            viewBox="0 0 24 24"
-                            xmlns="http://www.w3.org/2000/svg"
+                        {canEditScript() && (
+                          <button
+                            onClick={() => navigate(`/scripts/${script.id}/edit`)}
+                            className="text-blue-400 hover:text-blue-300"
+                            title="Edit"
                           >
-                            <path
-                              strokeLinecap="round"
-                              strokeLinejoin="round"
-                              strokeWidth={2}
-                              d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"
-                            ></path>
-                          </svg>
-                        </button>
+                            <svg
+                              className="w-5 h-5"
+                              fill="none"
+                              stroke="currentColor"
+                              viewBox="0 0 24 24"
+                              xmlns="http://www.w3.org/2000/svg"
+                            >
+                              <path
+                                strokeLinecap="round"
+                                strokeLinejoin="round"
+                                strokeWidth={2}
+                                d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"
+                              ></path>
+                            </svg>
+                          </button>
+                        )}
                         <button
                           onClick={() => handleAIAnalysis(script)}
                           className="text-green-400 hover:text-green-300"

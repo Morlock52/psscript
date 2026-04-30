@@ -3,6 +3,7 @@ import { Link, useNavigate } from 'react-router-dom';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { scriptService, categoryService } from '../services/api';
 import InfoBox from '../components/InfoBox';
+import { useAuth } from '../hooks/useAuth';
 
 interface Script {
   id: string;
@@ -41,6 +42,8 @@ interface Category {
 const ScriptManagement: React.FC = () => {
   const navigate = useNavigate();
   const queryClient = useQueryClient();
+  const { user } = useAuth();
+  const isAdmin = user?.role === 'admin';
   const [selectedScripts, setSelectedScripts] = useState<string[]>([]);
   const [selectedCategory, setSelectedCategory] = useState<number | null>(null);
   const [isPublicFilter, setIsPublicFilter] = useState<boolean | null>(null);
@@ -503,12 +506,14 @@ const ScriptManagement: React.FC = () => {
                         >
                           View
                         </Link>
-                        <Link 
-                          to={`/scripts/${script.id}/edit`}
-                          className="text-indigo-600 hover:text-indigo-900 dark:text-indigo-400 dark:hover:text-indigo-300"
-                        >
-                          Edit
-                        </Link>
+                        {isAdmin && (
+                          <Link
+                            to={`/scripts/${script.id}/edit`}
+                            className="text-indigo-600 hover:text-indigo-900 dark:text-indigo-400 dark:hover:text-indigo-300"
+                          >
+                            Edit
+                          </Link>
+                        )}
                         <Link 
                           to={`/scripts/${script.id}/analysis`}
                           className="text-green-600 hover:text-green-900 dark:text-green-400 dark:hover:text-green-300"
