@@ -6,6 +6,14 @@ This training suite is aligned to the current hosted PSScript app: Netlify for t
 
 The suite teaches the full lifecycle of script design and management: intake, design review, upload, metadata, analysis, remediation, discovery, export, deletion, governance, and support.
 
+## Featured Training Video
+
+Start new learners with the 102-second role-based video before running the hands-on labs:
+
+[▶ Watch the PSScript training video](../videos/psscript-training-video.mp4)
+
+The video covers the hosted Netlify + Supabase operating model, audience tracks, safe script upload, edit/export, AI analysis, documentation, data maintenance, support evidence, and executive governance summary. The storyboard and Remotion-ready composition are stored with the video in [`../videos/`](../videos/).
+
 ## Lifecycle Map
 
 ![Script lifecycle map](../graphics/script-lifecycle-map-2026-04-29.svg)

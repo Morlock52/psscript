@@ -4,6 +4,16 @@ Last updated: April 29, 2026.
 
 This atlas indexes the current training screenshots for the hosted PSScript app. Use these images in support notes, training decks, onboarding guides, and release evidence.
 
+## Training Video
+
+The current video asset is available at [`../videos/psscript-training-video.mp4`](../videos/psscript-training-video.mp4). Use it as the opening orientation for onboarding, support handoff, or executive review before moving into the screenshot gallery.
+
+| Video asset | Path | Use |
+| --- | --- | --- |
+| PSScript training video | `../videos/psscript-training-video.mp4` | 102-second role-based walkthrough of hosted operations, upload, analysis, support evidence, and governance |
+| Storyboard | `../videos/PSSCRIPT-TRAINING-VIDEO-STORYBOARD.md` | Timing and slide-by-slide source for review or remake |
+| Remotion source | `../videos/remotion/PSScriptTrainingVideo.tsx` | Remotion-ready composition scaffold |
+
 ## Business Visual Pack
 
 Use this section when building a formal training handout, support SOP, or onboarding packet. The charts explain the operating structure; the screenshots prove the current app state.

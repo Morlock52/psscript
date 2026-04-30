@@ -20,6 +20,14 @@ PSScript is a governed workspace for PowerShell scripts. The current training pa
 - hosted operations through Netlify and Supabase
 - mobile navigation and responsive pages
 
+## Featured Training Video
+
+Use this video as the first-pass orientation for a class or stakeholder walkthrough:
+
+[▶ Watch the PSScript training video](../videos/psscript-training-video.mp4)
+
+The video is 102 seconds long and covers the role-based path for basic users, new beginners, senior engineers, admin/support operators, and C-level management. Use it before the guided walkthrough so learners understand the operating model before touching hosted data.
+
 ![Training support suite map](../graphics/training-support-suite-map-2026-04-29.svg)
 
 ## Business Training Package

@@ -33,6 +33,7 @@
     <a href="#the-story">Story</a> &nbsp;·&nbsp;
     <a href="#whats-actually-inside">What's inside</a> &nbsp;·&nbsp;
     <a href="#what-happens-when-you-upload-a-script">Walkthrough</a> &nbsp;·&nbsp;
+    <a href="#training-video">Training Video</a> &nbsp;·&nbsp;
     <a href="#the-door">The door</a> &nbsp;·&nbsp;
     <a href="#how-its-wired">Wiring</a> &nbsp;·&nbsp;
     <a href="#the-brains">Brains</a> &nbsp;·&nbsp;
@@ -113,6 +114,16 @@ Most READMEs list features. We thought it'd be more useful to walk you through w
 **6. You see the result.** The frontend renders scores side-by-side with the script source, the summary above the code, a dedicated **Criteria tab** showing the rubric version and confidence, runtime requirements showing PowerShell version plus modules or assemblies, prioritized findings as a triaged list, the remediation plan as a checklist, test recommendations beneath, and **version history** one click away on the script-detail page. From upload to visible: usually a couple of seconds.
 
 > **One quiet thing worth noticing:** every step above happens *behind* the approval gate. If you weren't enabled by an admin, your upload is rejected at step 2 and the AI never sees your script. That's the whole point.
+
+---
+
+## Training video.
+
+The repo includes a short corporate training video for onboarding, support handoff, and executive review:
+
+[▶ Watch the PSScript training video](./docs/videos/psscript-training-video.mp4)
+
+It walks through the current hosted Netlify + Supabase operating model, audience tracks, safe upload, edit/export, AI analysis, documentation, data maintenance, support evidence, and the C-level governance view. The source storyboard and Remotion-ready composition live in [`docs/videos/`](./docs/videos/).
 
 ---
 
@@ -550,6 +561,7 @@ Not in the hosted path, no. Non-admin users can upload, view, search, analyze, a
 | [Documentation Refresh · 2026-04-28](./docs/DOCUMENTATION-REFRESH-2026-04-28.md) | Current docs refresh scope, screenshot inventory, and validation            |
 | [Upload/Delete Fix Plan · 2026-04-29](./docs/UPLOAD-DELETE-FIX-PLAN-2026-04-29.md) | Hosted upload/delete root cause, fix plan, deployment, and smoke results |
 | [Training Suite](./docs/training-suite/README.md)                            | Hosted-state training, labs, and screenshots                                 |
+| [PSScript Training Video](./docs/videos/psscript-training-video.mp4)          | 102-second role-based onboarding video for users, engineers, support, and leadership |
 | [Documentation Hub](./docs/index.md)                                         | Full docs index                                                              |
 
 ---
