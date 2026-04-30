@@ -7,6 +7,30 @@ import { scriptService } from '../services/api';
 const inputStyles = "w-full px-3 py-2 rounded-md bg-[var(--surface-base)] text-[var(--ink-primary)] border border-[var(--surface-overlay)] focus:outline-none focus:ring-2 focus:ring-[var(--accent)]";
 const buttonSecondaryStyles = "px-4 py-2 rounded-md bg-[var(--surface-overlay)] hover:bg-[var(--surface-base)] text-[var(--ink-primary)] border border-[var(--surface-overlay)]";
 
+const getScriptLocalPath = (script: any): string => {
+  const candidates = [
+    script?.localPath,
+    script?.local_path,
+    script?.filePath,
+    script?.file_path,
+    script?.sourcePath,
+    script?.source_path,
+    script?.absolutePath,
+    script?.absolute_path,
+  ];
+
+  return candidates.find((candidate) => typeof candidate === 'string' && candidate.trim())?.trim() || '';
+};
+
+const buildPowerShellFileName = (title: string, script: any, id?: string): string => {
+  const baseName = (title || script?.title || script?.name || `script-${id || 'draft'}`)
+    .replace(/[^a-z0-9._-]+/gi, '-')
+    .replace(/^-+|-+$/g, '')
+    .slice(0, 80) || `script-${id || 'draft'}`;
+
+  return baseName.toLowerCase().endsWith('.ps1') ? baseName : `${baseName}.ps1`;
+};
+
 const ScriptEditor: React.FC = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
@@ -84,12 +108,8 @@ const ScriptEditor: React.FC = () => {
     navigate(`/scripts/${id}`);
   };
 
-  const handleOpenInVSCode = () => {
-    const baseName = (title || script?.title || script?.name || `script-${id || 'draft'}`)
-      .replace(/[^a-z0-9._-]+/gi, '-')
-      .replace(/^-+|-+$/g, '')
-      .slice(0, 80) || `script-${id || 'draft'}`;
-    const fileName = baseName.toLowerCase().endsWith('.ps1') ? baseName : `${baseName}.ps1`;
+  const handleDownloadForVSCode = () => {
+    const fileName = buildPowerShellFileName(title, script, id);
     const blob = new Blob([content], { type: 'text/x-powershell;charset=utf-8' });
     const url = URL.createObjectURL(blob);
     const link = document.createElement('a');
@@ -103,6 +123,20 @@ const ScriptEditor: React.FC = () => {
     URL.revokeObjectURL(url);
 
     setNotice('Downloaded a .ps1 copy of the current editor buffer. Open the downloaded file with VS Code to continue locally.');
+  };
+
+  const handleOpenInVSCode = () => {
+    const localPath = getScriptLocalPath(script);
+
+    if (!localPath) {
+      setNotice('This hosted script does not have a local file path saved, so the browser cannot open it directly in VS Code. Use "Download .ps1" to open a local copy.');
+      return;
+    }
+
+    const normalizedPath = localPath.replace(/\\/g, '/');
+    const vscodeUrl = `vscode://file/${encodeURI(normalizedPath)}`;
+    window.location.href = vscodeUrl;
+    setNotice('Opening VS Code. If nothing happens, confirm Visual Studio Code is installed and registered for vscode:// links.');
   };
 
   if (isLoading) {
@@ -135,6 +169,12 @@ const ScriptEditor: React.FC = () => {
               className={buttonSecondaryStyles}
             >
               Open in VS Code
+            </button>
+            <button
+              onClick={handleDownloadForVSCode}
+              className={buttonSecondaryStyles}
+            >
+              Download .ps1
             </button>
             <button
               onClick={handleCancel}

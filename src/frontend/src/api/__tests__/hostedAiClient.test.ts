@@ -258,4 +258,13 @@ describe('hosted AI client routing', () => {
     expect(db).toContain('EMAXCONNSESSION');
     expect(db).toContain('DB_QUERY_RETRY_ATTEMPTS');
   });
+
+  it('keeps script editing honest about VS Code local file launch limits', () => {
+    const scriptEditor = readWorkspaceFile('src/frontend/src/pages/ScriptEditor.tsx');
+
+    expect(scriptEditor).toContain('vscode://file/');
+    expect(scriptEditor).toContain('Open in VS Code');
+    expect(scriptEditor).toContain('Download .ps1');
+    expect(scriptEditor).toContain('does not have a local file path saved');
+  });
 });
