@@ -245,4 +245,17 @@ describe('hosted AI client routing', () => {
     expect(manageFiles).toContain('Only the owner or an admin can delete this script');
     expect(manageFiles).not.toContain('Remove from UI immediately');
   });
+
+  it('keeps hosted Supabase connections conservative for serverless bursts', () => {
+    const db = readWorkspaceFile('netlify/functions/_shared/db.ts');
+
+    expect(db).toContain("getEnv('DATABASE_POOLER_URL') || requireEnv('DATABASE_URL')");
+    expect(db).toContain("getEnv('DB_POOL_MAX', '1')");
+    expect(db).toContain('DB_POOL_ALLOW_HIGH_CONCURRENCY');
+    expect(db).toContain('connectionTimeoutMillis');
+    expect(db).toContain('idleTimeoutMillis');
+    expect(db).toContain('maxLifetimeSeconds');
+    expect(db).toContain('EMAXCONNSESSION');
+    expect(db).toContain('DB_QUERY_RETRY_ATTEMPTS');
+  });
 });
