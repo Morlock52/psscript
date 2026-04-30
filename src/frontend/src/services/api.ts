@@ -176,12 +176,30 @@ const scriptService = {
       return response.data;
 	       
      } catch (error) {
-      const err = error as AxiosError & { status?: number; details?: Record<string, unknown>; existingScriptId?: string | number };
+      const err = error as AxiosError & {
+        status?: number;
+        code?: string;
+        details?: Record<string, unknown>;
+        existingScriptId?: string | number;
+        requestId?: string;
+      };
+      const responseData = (err.response?.data as Record<string, unknown> | undefined) || err.details || {};
+      const status = err.status ?? err.response?.status;
+      const requestId = err.requestId || responseData.requestId;
 
-      if (err.status === 409) {
-        throw Object.assign(new Error(err.message || 'This script already exists.'), {
-          status: 409,
-          existingScriptId: err.existingScriptId || err.details?.existingScriptId,
+      const throwUploadError = (message: string, extra: Record<string, unknown> = {}) => {
+        throw Object.assign(new Error(message), {
+          status,
+          code: err.code || responseData.error,
+          details: responseData,
+          requestId,
+          ...extra,
+        });
+      };
+
+      if (status === 409) {
+        throwUploadError(err.message || String(responseData.message || 'This script already exists.'), {
+          existingScriptId: err.existingScriptId || responseData.existingScriptId,
         });
       }
       
@@ -207,38 +225,33 @@ const scriptService = {
       }
       
       // Handle axios errors with response
-      if (err.response) {
-        const { status, data } = err.response;
-        
-        // Type assertion for data
-        const responseData = data as any;
-        
+      if (err.response || status) {
         if (status === 400 && responseData.error === 'file_read_error') {
-          throw new Error('Could not read the uploaded file. Please try again with a different file.');
+          throwUploadError('Could not read the uploaded file. Please try again with a different file.');
         }
         
         if (status === 400 && responseData.error === 'invalid_content') {
-          throw new Error('The file does not appear to be a valid PowerShell script. Please check the file contents.');
+          throwUploadError('The file does not appear to be a valid PowerShell script. Please check the file contents.');
         }
         
         if (status === 400 && responseData.error === 'too_many_tags') {
-          throw new Error('A maximum of 10 tags is allowed. Please reduce the number of tags.');
+          throwUploadError('A maximum of 10 tags is allowed. Please reduce the number of tags.');
         }
         
         if (status === 413) {
-          throw new Error(responseData?.message || 'The script is too large. Maximum hosted upload size is 4MB.');
+          throwUploadError(String(responseData.message || 'The script is too large. Maximum hosted upload size is 4MB.'));
         }
         
         if (status === 429) {
-          throw new Error('Too many upload attempts. Please wait a moment and try again.');
+          throwUploadError('Too many upload attempts. Please wait a moment and try again.');
         }
         
         if (status >= 500) {
-          throw new Error('Server error. The upload service is currently unavailable. Please try again later.');
+          throwUploadError('Server error. The upload service is currently unavailable. Please try again later.');
         }
         
         if (responseData && responseData.message) {
-          throw new Error(responseData.message);
+          throwUploadError(String(responseData.message));
         }
       }
       

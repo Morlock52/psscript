@@ -1,5 +1,6 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { toast } from 'react-toastify';
+import { useAuth } from '../hooks/useAuth';
 import voiceService, { VoiceOption, VoiceSettings } from '../services/voiceService';
 
 const SUPPORTED_MIME_TYPES = [
@@ -121,6 +122,7 @@ const defaultSettings: VoiceSettings = {
 };
 
 const VoiceAssistantDock: React.FC = () => {
+  const { user } = useAuth();
   const [isOpen, setIsOpen] = useState(false);
   const [isRecording, setIsRecording] = useState(false);
   const [isBusy, setIsBusy] = useState(false);
@@ -136,8 +138,8 @@ const VoiceAssistantDock: React.FC = () => {
 
   const hasRealToken = useMemo(() => {
     const token = localStorage.getItem('auth_token');
-    return !!token && token !== 'dev-auth-disabled';
-  }, []);
+    return !!user && user.isEnabled !== false && !!token && token !== 'dev-auth-disabled';
+  }, [user]);
 
   useEffect(() => {
     if (!hasRealToken) {
@@ -182,23 +184,16 @@ const VoiceAssistantDock: React.FC = () => {
   }, []);
 
   const persistSettings = async (nextSettings: Partial<VoiceSettings>) => {
-    setSettings((current) => ({ ...current, ...nextSettings }));
-    if (!hasRealToken) {
-      return;
-    }
+    const mergedSettings = { ...settings, ...nextSettings };
+    setSettings(mergedSettings);
     try {
-      await voiceService.updateSettings({ ...settings, ...nextSettings });
+      await voiceService.updateSettings(mergedSettings);
     } catch (error) {
       console.warn('Failed to persist voice settings:', error);
     }
   };
 
   const startDictation = async () => {
-    if (!hasRealToken) {
-      toast.error('Voice features require a real authenticated session.');
-      return;
-    }
-
     if (!navigator.mediaDevices?.getUserMedia || typeof MediaRecorder === 'undefined') {
       toast.error('This browser does not support microphone recording.');
       return;
@@ -291,11 +286,6 @@ const VoiceAssistantDock: React.FC = () => {
   };
 
   const speakCurrentContext = async () => {
-    if (!hasRealToken) {
-      toast.error('Voice features require a real authenticated session.');
-      return;
-    }
-
     const text = getSpeakableText(transcript);
     if (!text) {
       toast.info('Select text or focus an input to read it aloud.');
@@ -329,6 +319,10 @@ const VoiceAssistantDock: React.FC = () => {
     }
   };
 
+  if (!hasRealToken) {
+    return null;
+  }
+
   return (
     <div className="fixed bottom-3 right-3 z-50 sm:bottom-4 sm:right-4">
       <div className="flex flex-col items-end gap-3">
@@ -351,11 +345,9 @@ const VoiceAssistantDock: React.FC = () => {
               </button>
             </div>
 
-            {!hasRealToken && (
-              <div className="mb-3 rounded-lg border border-amber-200 bg-amber-50 px-3 py-2 text-xs text-amber-800 dark:border-amber-900/50 dark:bg-amber-950/40 dark:text-amber-200">
-                Local auth-bypass mode is active. Voice routes require a real JWT-backed session.
-              </div>
-            )}
+            <div className="mb-3 rounded-lg border border-[var(--surface-overlay)] bg-[var(--surface-overlay)]/60 px-3 py-2 text-xs text-[var(--ink-secondary)]">
+              Audio output is AI-generated. Use dictation only where microphone capture is approved.
+            </div>
 
             <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
               <button

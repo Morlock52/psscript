@@ -72,6 +72,8 @@ const openAiVoices = [
   { id: 'shimmer', name: 'Shimmer', provider: 'openai' },
   { id: 'verse', name: 'Verse', provider: 'openai' },
 ];
+const VOICE_TTS_CACHE_MAX_ENTRIES = 24;
+const voiceTtsCache = new Map<string, any>();
 
 const ANALYSIS_CRITERIA_VERSION = '2026-04-26';
 const SCRIPT_CHILD_DELETE_TABLES = [
@@ -1090,8 +1092,18 @@ async function handleScriptById(req: Request, route: RouteParams): Promise<Respo
   }
 
   if (req.method === 'PUT') {
+    if (user.role !== 'admin') {
+      return json({
+        success: false,
+        error: 'admin_required',
+        message: 'Only admins can edit script details.',
+      }, { status: 403 });
+    }
+
     const body = await req.json().catch(() => ({}));
-    const current = await fetchScriptForUser(id, user.id);
+    const currentResult = await query(`${scriptSelect} WHERE s.id = $1 AND s.deleted_at IS NULL`, [id]);
+    const current = currentResult.rows[0];
+    if (!current) return json({ error: 'script_not_found', message: 'Script not found' }, { status: 404 });
     const nextContent = typeof body.content === 'string' ? body.content : undefined;
     const contentChanged = nextContent !== undefined && nextContent !== current.content;
     const nextVersion = contentChanged ? Number(current.version || 1) + 1 : Number(current.version || 1);
@@ -1099,16 +1111,16 @@ async function handleScriptById(req: Request, route: RouteParams): Promise<Respo
     const result = await query(
       `
         UPDATE scripts
-        SET title = COALESCE($3, title),
-            description = COALESCE($4, description),
-            content = COALESCE($5, content),
-            category_id = COALESCE($6, category_id),
-            version = $7,
+        SET title = COALESCE($2, title),
+            description = COALESCE($3, description),
+            content = COALESCE($4, content),
+            category_id = COALESCE($5, category_id),
+            version = $6,
             updated_at = now()
-        WHERE id = $1 AND user_id = $2
+        WHERE id = $1
         RETURNING *
       `,
-      [id, user.id, body.title, body.description, nextContent, body.category_id ?? body.categoryId, nextVersion]
+      [id, body.title, body.description, nextContent, body.category_id ?? body.categoryId, nextVersion]
     );
     if (!result.rows[0]) return json({ error: 'script_not_found', message: 'Script not found' }, { status: 404 });
 
@@ -4044,16 +4056,33 @@ async function synthesizeSpeech(input: {
 
   const format = normalizeAudioFormat(input.outputFormat, ['mp3', 'wav', 'opus', 'aac', 'flac', 'pcm'], 'mp3');
   const model = getEnv('VOICE_TTS_MODEL', OPENAI_TTS_MODEL);
+  const voice = normalizeVoiceId(input.voiceId);
+  const instructionText = input.voiceInstructions ? String(input.voiceInstructions).slice(0, 512) : undefined;
+  const cacheKey = JSON.stringify({
+    model,
+    voice,
+    format,
+    speed: input.speed,
+    instructions: instructionText || '',
+    text,
+  });
+  const cached = voiceTtsCache.get(cacheKey);
+  if (cached) {
+    voiceTtsCache.delete(cacheKey);
+    voiceTtsCache.set(cacheKey, cached);
+    return { ...cached, cached: true };
+  }
+
   const started = Date.now();
   const openai = new OpenAI({ apiKey: openaiKey });
   try {
     const response = await openai.audio.speech.create({
       model,
-      voice: normalizeVoiceId(input.voiceId) as any,
+      voice: voice as any,
       input: text,
       response_format: format as any,
       speed: input.speed,
-      instructions: input.voiceInstructions ? String(input.voiceInstructions).slice(0, 512) : undefined,
+      instructions: instructionText,
     });
     const audioBuffer = Buffer.from(await response.arrayBuffer());
     await recordAiMetric(metricContext, {
@@ -4063,14 +4092,21 @@ async function synthesizeSpeech(input: {
       latency: Date.now() - started,
       success: true,
     });
-    return {
+    const result = {
       audio_data: audioBuffer.toString('base64'),
       format,
       duration: 0,
       text,
       model,
-      voice: normalizeVoiceId(input.voiceId),
+      voice,
     };
+    voiceTtsCache.set(cacheKey, result);
+    while (voiceTtsCache.size > VOICE_TTS_CACHE_MAX_ENTRIES) {
+      const oldestKey = voiceTtsCache.keys().next().value;
+      if (!oldestKey) break;
+      voiceTtsCache.delete(oldestKey);
+    }
+    return result;
   } catch (error) {
     await recordAiMetric(metricContext, {
       provider: 'openai',
@@ -4091,10 +4127,13 @@ async function recognizeSpeech(input: {
   prompt?: string;
   transcriptionMode?: string;
 }, metricContext?: AiMetricContext) {
-  const base64 = input.audioData.replace(/^data:audio\/[^;]+;base64,/, '');
+  const base64 = input.audioData.replace(/^data:audio\/[^;]+;base64,/, '').replace(/\s/g, '');
   if (!base64) throw Object.assign(new Error('Audio data is required for speech recognition'), { status: 400, code: 'missing_audio' });
   if (base64.length > Number(getEnv('VOICE_MAX_BASE64_CHARS', '16000000'))) {
     throw Object.assign(new Error('Audio payload is too large'), { status: 413, code: 'audio_too_large' });
+  }
+  if (!isValidBase64AudioPayload(base64)) {
+    throw Object.assign(new Error('Audio data must be valid base64 audio'), { status: 400, code: 'invalid_audio' });
   }
 
   const openaiKey = getEnv('OPENAI_API_KEY');
@@ -4151,6 +4190,13 @@ async function recognizeSpeech(input: {
 
 function normalizeVoiceId(voiceId: string): string {
   return openAiVoices.some(voice => voice.id === voiceId) ? voiceId : 'marin';
+}
+
+function isValidBase64AudioPayload(base64: string): boolean {
+  if (base64.length % 4 === 1) {
+    return false;
+  }
+  return /^[A-Za-z0-9+/]+={0,2}$/.test(base64);
 }
 
 function normalizeAudioFormat(format: string, allowed: string[], fallback: string): string {
@@ -4471,108 +4517,109 @@ function toFrontendDocumentationItem(row: any) {
 
 function buildAnalysisReportLines(script: any, analysis: any): string[] {
   const lines = [
-    `${script.title} Analysis`,
+    `# ${script.title} Analysis`,
     '',
-    `Generated: ${new Date().toISOString()}`,
+    '**Report Type:** PSScript AI Readiness Report',
+    `**Generated:** ${new Date().toISOString()}`,
+    `**Criteria Version:** ${analysis.criteriaVersion || analysis.executionSummary?.criteria_version || ANALYSIS_CRITERIA_VERSION}`,
+    `**Confidence:** ${analysis.confidence ?? analysis.executionSummary?.confidence ?? 'N/A'}`,
     '',
-    'Summary',
+    '## Executive Summary',
     '',
     analysis.purpose || 'No summary available.',
     '',
-    'Scores',
+    '## Scorecard',
     '',
-    `- Quality: ${analysis.qualityScore ?? analysis.codeQualityScore ?? 'N/A'}/10`,
-    `- Security: ${analysis.securityScore ?? 'N/A'}/10`,
-    `- Risk: ${analysis.riskScore ?? 'N/A'}/10`,
-    `- Criteria version: ${analysis.criteriaVersion || analysis.executionSummary?.criteria_version || ANALYSIS_CRITERIA_VERSION}`,
-    `- Confidence: ${analysis.confidence ?? analysis.executionSummary?.confidence ?? 'N/A'}`,
+    `**Quality:** ${analysis.qualityScore ?? analysis.codeQualityScore ?? 'N/A'}/10`,
+    `**Security:** ${analysis.securityScore ?? 'N/A'}/10`,
+    `**Risk:** ${analysis.riskScore ?? 'N/A'}/10`,
     '',
-    'Beginner Breakdown',
+    '## Beginner Breakdown',
     '',
     analysis.beginnerExplanation || analysis.executionSummary?.beginner_explanation || 'No beginner breakdown available.',
     '',
-    'Management Summary',
+    '## Management Summary',
     '',
     analysis.managementSummary || analysis.executionSummary?.management_summary || 'No management summary available.',
     '',
-    'What The Script Does',
+    '## What The Script Does',
     '',
     ...((analysis.executionSummary?.key_actions || []).length
       ? analysis.executionSummary.key_actions.map((action: string) => `- ${action}`)
       : ['- No key actions were provided.']),
     '',
-    'Analysis Criteria',
+    '## Analysis Criteria',
     '',
     ...((analysis.analysisCriteria || analysis.executionSummary?.analysis_criteria || []).length
       ? (analysis.analysisCriteria || analysis.executionSummary?.analysis_criteria).map((criterion: any) =>
-          `- ${criterion.name || 'Criterion'} (${criterion.weight ?? 'N/A'}): ${criterion.score ?? 'N/A'}/10 - ${criterion.summary || ''}`
+          `**${criterion.name || 'Criterion'}:** Weight ${criterion.weight ?? 'N/A'}; Score ${criterion.score ?? 'N/A'}/10. ${criterion.summary || ''}`
         )
       : ['- No criteria were provided.']),
     '',
-    'Prioritized Findings',
+    '## Prioritized Findings',
     '',
     ...((analysis.prioritizedFindings || analysis.executionSummary?.prioritized_findings || []).length
       ? (analysis.prioritizedFindings || analysis.executionSummary?.prioritized_findings).flatMap((finding: any) => [
-          `${finding.id || 'Finding'}: ${finding.title || 'Finding'}`,
+          `### ${finding.id || 'Finding'}: ${finding.title || 'Finding'}`,
           '',
-          `- Severity: ${finding.severity || 'N/A'}`,
-          `- Category: ${finding.category || 'N/A'}`,
-          `- Evidence: ${finding.evidence || 'N/A'}`,
-          `- Impact: ${finding.impact || 'N/A'}`,
-          `- Recommendation: ${finding.recommendation || 'N/A'}`,
+          `**Severity:** ${finding.severity || 'N/A'}`,
+          `**Category:** ${finding.category || 'N/A'}`,
+          `**Evidence:** ${finding.evidence || 'N/A'}`,
+          `**Impact:** ${finding.impact || 'N/A'}`,
+          `**Recommendation:** ${finding.recommendation || 'N/A'}`,
           '',
         ])
       : ['- No prioritized findings were provided.', '']),
-    'Remediation Plan',
+    '## Remediation Plan',
     '',
     ...((analysis.remediationPlan || analysis.executionSummary?.remediation_plan || []).length
       ? (analysis.remediationPlan || analysis.executionSummary?.remediation_plan).map((item: any) =>
-          `- [${item.priority || 'priority'}] ${item.action || 'Action not provided'} (${item.effort || 'effort unknown'}): ${item.rationale || ''}`
+          `**${item.priority || 'Priority'}:** ${item.action || 'Action not provided'} (${item.effort || 'effort unknown'}). ${item.rationale || ''}`
         )
       : ['- No remediation plan was provided.']),
     '',
-    'Test Recommendations',
+    '## Test Recommendations',
     '',
     ...((analysis.testRecommendations || analysis.executionSummary?.test_recommendations || []).length
       ? (analysis.testRecommendations || analysis.executionSummary?.test_recommendations).map((item: string) => `- ${item}`)
       : ['- No test recommendations were provided.']),
     '',
-    'Suggestions',
+    '## Suggestions',
     '',
     ...((analysis.suggestions || []).length
       ? analysis.suggestions.map((item: string) => `- ${item}`)
       : ['- No suggestions were provided.']),
     '',
-    'Security Issues',
+    '## Security Issues',
     '',
     ...((analysis.securityIssues || analysis.security_issues || []).length
       ? (analysis.securityIssues || analysis.security_issues).map((item: string) => `- ${item}`)
       : ['- No security issues were identified.']),
     '',
-    'Best Practice Violations',
+    '## Best Practice Violations',
     '',
     ...((analysis.bestPracticeViolations || analysis.best_practice_violations || []).length
       ? (analysis.bestPracticeViolations || analysis.best_practice_violations).map((item: string) => `- ${item}`)
       : ['- No best practice violations were identified.']),
     '',
-    'Performance Insights',
+    '## Performance Insights',
     '',
     ...((analysis.performanceInsights || analysis.performance_insights || []).length
       ? (analysis.performanceInsights || analysis.performance_insights).map((item: string) => `- ${item}`)
       : ['- No performance insights were identified.']),
     '',
-    'Key Commands',
+    '## Key Commands',
     '',
     ...((analysis.commandDetails || analysis.command_details || []).length
       ? (analysis.commandDetails || analysis.command_details).flatMap((command: any) => [
-          `${command.name || 'Command'}`,
+          `### ${command.name || 'Command'}`,
           '',
           command.description || command.purpose || 'No description provided.',
           '',
-          `- Purpose: ${command.purpose || 'N/A'}`,
-          `- Beginner explanation: ${command.beginner_explanation || command.beginnerExplanation || 'N/A'}`,
-          `- Management impact: ${command.management_impact || command.managementImpact || 'N/A'}`,
-          `- Example: ${command.example || 'N/A'}`,
+          `**Purpose:** ${command.purpose || 'N/A'}`,
+          `**Beginner explanation:** ${command.beginner_explanation || command.beginnerExplanation || 'N/A'}`,
+          `**Management impact:** ${command.management_impact || command.managementImpact || 'N/A'}`,
+          `**Example:** ${command.example || 'N/A'}`,
           '',
         ])
       : ['No key command breakdown was provided.', '']),
@@ -4598,17 +4645,27 @@ function createTextPdf(lines: string[]): Uint8Array {
   const pageWidth = 595;
   const pageHeight = 842;
   const margin = 50;
-  const fontSize = 10;
-  const leading = 14;
-  const maxChars = 92;
-  const maxLinesPerPage = Math.floor((pageHeight - margin * 2) / leading);
-  const wrappedLines = lines.flatMap(line => wrapPdfLine(line, maxChars));
-  const pages: string[][] = [];
+  const wrappedLines = lines.flatMap(line => wrapPdfLine(line, 92));
+  const pages: PdfStyledLine[][] = [];
+  let currentPage: PdfStyledLine[] = [];
+  let remainingHeight = pageHeight - margin * 2;
 
-  for (let i = 0; i < wrappedLines.length; i += maxLinesPerPage) {
-    pages.push(wrappedLines.slice(i, i + maxLinesPerPage));
+  wrappedLines.forEach((line) => {
+    const styledLine = stylePdfLine(line);
+    const lineHeight = styledLine.leading;
+    if (currentPage.length > 0 && remainingHeight < lineHeight) {
+      pages.push(currentPage);
+      currentPage = [];
+      remainingHeight = pageHeight - margin * 2;
+    }
+    currentPage.push(styledLine);
+    remainingHeight -= lineHeight;
+  });
+
+  if (currentPage.length > 0) {
+    pages.push(currentPage);
   }
-  if (pages.length === 0) pages.push(['No report content was generated.']);
+  if (pages.length === 0) pages.push([stylePdfLine('No report content was generated.')]);
 
   const objects: string[] = [];
   objects.push('<< /Type /Catalog /Pages 2 0 R >>');
@@ -4619,8 +4676,8 @@ function createTextPdf(lines: string[]): Uint8Array {
   pages.forEach((pageLines, index) => {
     const pageObjectId = pageObjectIds[index];
     const contentObjectId = pageObjectId + 1;
-    const stream = buildPdfTextStream(pageLines, margin, pageHeight - margin, leading, fontSize);
-    objects.push(`<< /Type /Page /Parent 2 0 R /MediaBox [0 0 ${pageWidth} ${pageHeight}] /Resources << /Font << /F1 << /Type /Font /Subtype /Type1 /BaseFont /Helvetica >> >> >> /Contents ${contentObjectId} 0 R >>`);
+    const stream = buildPdfTextStream(pageLines, margin, pageHeight - margin);
+    objects.push(`<< /Type /Page /Parent 2 0 R /MediaBox [0 0 ${pageWidth} ${pageHeight}] /Resources << /Font << /F1 << /Type /Font /Subtype /Type1 /BaseFont /Helvetica >> /F2 << /Type /Font /Subtype /Type1 /BaseFont /Helvetica-Bold >> >> >> /Contents ${contentObjectId} 0 R >>`);
     objects.push(`<< /Length ${Buffer.byteLength(stream, 'latin1')} >>\nstream\n${stream}\nendstream`);
   });
 
@@ -4641,12 +4698,39 @@ function createTextPdf(lines: string[]): Uint8Array {
   return new Uint8Array(Buffer.from(body, 'latin1'));
 }
 
-function buildPdfTextStream(lines: string[], x: number, y: number, leading: number, fontSize: number): string {
+type PdfStyledLine = {
+  text: string;
+  font: 'F1' | 'F2';
+  fontSize: number;
+  leading: number;
+};
+
+function stylePdfLine(line: string): PdfStyledLine {
+  const normalized = String(line ?? '');
+  if (normalized.startsWith('# ')) {
+    return { text: normalized.slice(2), font: 'F2', fontSize: 18, leading: 26 };
+  }
+  if (normalized.startsWith('## ')) {
+    return { text: normalized.slice(3), font: 'F2', fontSize: 13, leading: 21 };
+  }
+  if (normalized.startsWith('### ')) {
+    return { text: normalized.slice(4), font: 'F2', fontSize: 11, leading: 17 };
+  }
+  if (/^\*\*[^*]+:\*\*/.test(normalized)) {
+    return { text: normalized.replace(/\*\*/g, ''), font: 'F2', fontSize: 10, leading: 15 };
+  }
+  return { text: normalized.replace(/\*\*/g, ''), font: 'F1', fontSize: 10, leading: 14 };
+}
+
+function buildPdfTextStream(lines: PdfStyledLine[], x: number, y: number): string {
+  let cursorY = y;
   const textLines = lines.map((line, index) => {
-    const prefix = index === 0 ? `${x} ${y} Td` : `0 -${leading} Td`;
-    return `${prefix} (${escapePdfText(line)}) Tj`;
+    if (index > 0) {
+      cursorY -= line.leading;
+    }
+    return `/${line.font} ${line.fontSize} Tf\n${x} ${cursorY} Td\n(${escapePdfText(line.text)}) Tj\n1 0 0 1 0 0 Tm`;
   });
-  return `BT\n/F1 ${fontSize} Tf\n${textLines.join('\n')}\nET`;
+  return `BT\n${textLines.join('\n')}\nET`;
 }
 
 function wrapPdfLine(line: string, maxChars: number): string[] {

@@ -1,27 +1,17 @@
 import React, { useState, useEffect } from 'react';
 import {
-  Container,
-  Grid,
-  Box,
-  Paper,
-  Typography,
-  Tabs,
-  Tab,
-  Button,
-  Divider,
-  TextField,
   CircularProgress,
   Alert,
   Snackbar,
   IconButton,
 } from '@mui/material';
-import { styled } from '@mui/material/styles';
 import CloseIcon from '@mui/icons-material/Close';
 import SearchIcon from '@mui/icons-material/Search';
 import CodeIcon from '@mui/icons-material/Code';
 import HelpIcon from '@mui/icons-material/Help';
 import PsychologyIcon from '@mui/icons-material/Psychology';
 import FileUploadIcon from '@mui/icons-material/FileUpload';
+import SettingsIcon from '@mui/icons-material/Settings';
 import { Link as RouterLink } from 'react-router-dom';
 
 // Import CSS
@@ -57,21 +47,13 @@ const TabPanel = (props: TabPanelProps) => {
       className="agentic-ai-tab-panel"
     >
       {value === index && (
-        <Box className="agentic-ai-tab-panel-content">
+        <div className="agentic-ai-tab-panel-content">
           {children}
-        </Box>
+        </div>
       )}
     </div>
   );
 };
-
-// Styled components
-const StyledPaper = styled(Paper)(({ theme }) => ({
-  padding: theme.spacing(3),
-  marginBottom: theme.spacing(3),
-  position: 'relative',
-  overflow: 'hidden',
-}));
 
 // Mock script examples for testing
 const MOCK_EXAMPLES: ScriptExample[] = [
@@ -194,6 +176,29 @@ if ($results.Count -gt 0) {
   },
 ];
 
+const workflowTabs = [
+  {
+    label: 'Examples',
+    description: 'Generate or load starter scripts',
+    icon: SearchIcon,
+  },
+  {
+    label: 'Script Editor',
+    description: 'Edit and prepare the active file',
+    icon: CodeIcon,
+  },
+  {
+    label: 'AI Analysis',
+    description: 'Review quality and risk findings',
+    icon: PsychologyIcon,
+  },
+  {
+    label: 'AI Assistant',
+    description: 'Ask follow-up questions',
+    icon: HelpIcon,
+  },
+];
+
 /**
  * Agentic AI Workflow Page
  * Main container for all AI-powered features
@@ -235,9 +240,7 @@ const AgenticAIPage: React.FC = () => {
   }, []);
   
   // Handle tab change
-  const handleTabChange = (_: React.SyntheticEvent, newValue: number) => {
-    setActiveTab(newValue);
-  };
+  const handleTabChange = (newValue: number) => setActiveTab(newValue);
   
   // Handle script analysis
   const handleAnalyzeScript = async () => {
@@ -410,216 +413,211 @@ const AgenticAIPage: React.FC = () => {
   };
   
   return (
-    <Container maxWidth="xl" className="agentic-ai-container">
-      <Typography variant="h4" gutterBottom>
-        PowerShell AI Assistant
-      </Typography>
-      <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
-        <Typography variant="body1" color="text.secondary">
-          Use our agentic AI workflows to analyze, generate, and understand PowerShell scripts.
-        </Typography>
-        <Button
-          variant="outlined"
-          size="small"
-          component={RouterLink}
-          to="/settings/api"
-          startIcon={
-            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
-              <path d="M8 4.754a3.246 3.246 0 1 0 0 6.492 3.246 3.246 0 0 0 0-6.492zM5.754 8a2.246 2.246 0 1 1 4.492 0 2.246 2.246 0 0 1-4.492 0z"/>
-              <path d="M9.796 1.343c-.527-1.79-3.065-1.79-3.592 0l-.094.319a.873.873 0 0 1-1.255.52l-.292-.16c-1.64-.892-3.433.902-2.54 2.541l.159.292a.873.873 0 0 1-.52 1.255l-.319.094c-1.79.527-1.79 3.065 0 3.592l.319.094a.873.873 0 0 1 .52 1.255l-.16.292c-.892 1.64.901 3.434 2.541 2.54l.292-.159a.873.873 0 0 1 1.255.52l.094.319c.527 1.79 3.065 1.79 3.592 0l.094-.319a.873.873 0 0 1 1.255-.52l.292.16c1.64.893 3.434-.902 2.54-2.541l-.159-.292a.873.873 0 0 1 .52-1.255l.319-.094c1.79-.527 1.79-3.065 0-3.592l-.319-.094a.873.873 0 0 1-.52-1.255l.16-.292c.893-1.64-.902-3.433-2.541-2.54l-.292.159a.873.873 0 0 1-1.255-.52l-.094-.319zm-2.633.283c.246-.835 1.428-.835 1.674 0l.094.319a1.873 1.873 0 0 0 2.693 1.115l.291-.16c.764-.415 1.6.42 1.184 1.185l-.159.292a1.873 1.873 0 0 0 1.116 2.692l.318.094c.835.246.835 1.428 0 1.674l-.319.094a1.873 1.873 0 0 0-1.115 2.693l.16.291c.415.764-.42 1.6-1.185 1.184l-.291-.159a1.873 1.873 0 0 0-2.693 1.116l-.094.318c-.246.835-1.428.835-1.674 0l-.094-.319a1.873 1.873 0 0 0-2.692-1.115l-.292.16c-.764.415-1.6-.42-1.184-1.185l.159-.291A1.873 1.873 0 0 0 1.945 8.93l-.319-.094c-.835-.246-.835-1.428 0-1.674l.319-.094A1.873 1.873 0 0 0 3.06 4.377l-.16-.292c-.415-.764.42-1.6 1.185-1.184l.292.159a1.873 1.873 0 0 0 2.692-1.115l.094-.319z"/>
-            </svg>
-          }
-        >
-          API Settings
-        </Button>
-      </Box>
-      
-      {/* Main tabs */}
-      <Box sx={{ borderBottom: 1, borderColor: 'divider' }}>
-        <Tabs
-          value={activeTab}
-          onChange={handleTabChange}
-          aria-label="AI workflow tabs"
-          variant="scrollable"
-          scrollButtons="auto"
-        >
-          <Tab
-            icon={<SearchIcon />}
-            label="Examples"
-            id="ai-workflow-tab-0"
-            aria-controls="ai-workflow-tabpanel-0"
-          />
-          <Tab
-            icon={<CodeIcon />}
-            label="Script Editor"
-            id="ai-workflow-tab-1"
-            aria-controls="ai-workflow-tabpanel-1"
-          />
-          <Tab
-            icon={<PsychologyIcon />}
-            label="AI Analysis"
-            id="ai-workflow-tab-2"
-            aria-controls="ai-workflow-tabpanel-2"
-          />
-          <Tab
-            icon={<HelpIcon />}
-            label="AI Assistant"
-            id="ai-workflow-tab-3"
-            aria-controls="ai-workflow-tabpanel-3"
-          />
-        </Tabs>
-      </Box>
-      
+    <div className="agentic-ai-container">
+      <section className="agentic-ai-hero">
+        <div className="agentic-ai-hero-copy">
+          <p className="agentic-ai-kicker">AI Workbench</p>
+          <h1>PowerShell AI Assistant</h1>
+          <p>
+            Generate, edit, analyze, and discuss PowerShell scripts in one hosted workflow that fits the rest of PSScript.
+          </p>
+        </div>
+        <div className="agentic-ai-hero-actions">
+          <RouterLink to="/settings/api" className="agentic-ai-btn agentic-ai-btn-secondary">
+            <SettingsIcon fontSize="small" />
+            API Settings
+          </RouterLink>
+          <label className="agentic-ai-btn agentic-ai-btn-primary">
+            <FileUploadIcon fontSize="small" />
+            Upload Script
+            <input type="file" hidden accept=".ps1" onChange={handleUploadScript} />
+          </label>
+        </div>
+      </section>
+
+      <section className="agentic-ai-summary-grid" aria-label="AI assistant workflow summary">
+        {workflowTabs.map((tab, index) => {
+          const Icon = tab.icon;
+          const isActive = activeTab === index;
+          return (
+            <button
+              key={tab.label}
+              type="button"
+              className={`agentic-ai-summary-card ${isActive ? 'is-active' : ''}`}
+              onClick={() => handleTabChange(index)}
+              aria-pressed={isActive}
+            >
+              <span className="agentic-ai-summary-icon">
+                <Icon fontSize="small" />
+              </span>
+              <span>
+                <strong>{tab.label}</strong>
+                <small>{tab.description}</small>
+              </span>
+            </button>
+          );
+        })}
+      </section>
+
+      <nav className="agentic-ai-tabs" aria-label="AI workflow tabs">
+        {workflowTabs.map((tab, index) => {
+          const Icon = tab.icon;
+          return (
+            <button
+              key={tab.label}
+              type="button"
+              className={`agentic-ai-tab ${activeTab === index ? 'is-active' : ''}`}
+              id={`ai-workflow-tab-${index}`}
+              aria-controls={`ai-workflow-tabpanel-${index}`}
+              aria-selected={activeTab === index}
+              role="tab"
+              onClick={() => handleTabChange(index)}
+            >
+              <Icon fontSize="small" />
+              <span>{tab.label}</span>
+            </button>
+          );
+        })}
+      </nav>
+
       {/* Tab panels */}
-      <Box className="agentic-ai-tab-content">
+      <div className="agentic-ai-tab-content">
         {/* Examples Tab */}
         <TabPanel value={activeTab} index={0}>
-          <Grid container spacing={3}>
-            <Grid item xs={12} lg={4}>
-              <StyledPaper className="agentic-ai-paper">
-                <Typography variant="h6" gutterBottom>
-                  Generate a Script
-                </Typography>
-                <Typography variant="body2" paragraph>
+          <div className="agentic-ai-workspace-grid">
+            <div className="agentic-ai-panel agentic-ai-generator-panel">
+              <div>
+                <p className="agentic-ai-panel-label">Prompt builder</p>
+                <h2>Generate a Script</h2>
+                <p className="agentic-ai-muted">
                   Describe what you want the script to do, and our AI will generate a PowerShell script for you.
-                </Typography>
-                
-                <TextField
-                  fullWidth
-                  label="Describe the script you need"
-                  multiline
-                  rows={4}
+                </p>
+              </div>
+
+              <label className="agentic-ai-field-label" htmlFor="generation-prompt">
+                Script request
+              </label>
+              <textarea
+                  id="generation-prompt"
                   value={generationPrompt}
                   onChange={(e) => setGenerationPrompt(e.target.value)}
                   placeholder="E.g., Create a script that monitors CPU and memory usage and sends an email alert when thresholds are exceeded"
-                  variant="outlined"
-                  className="generation-prompt-field"
+                  className="agentic-ai-textarea"
+                  rows={6}
                 />
                 
-                <Button
-                  variant="contained"
-                  fullWidth
+                <button
+                  type="button"
+                  className="agentic-ai-btn agentic-ai-btn-primary agentic-ai-btn-full"
                   onClick={handleGenerateScript}
                   disabled={isGenerating || !generationPrompt.trim()}
-                  startIcon={isGenerating ? <CircularProgress size={20} /> : null}
                 >
+                  {isGenerating && <CircularProgress size={18} color="inherit" />}
                   {isGenerating ? 'Generating...' : 'Generate Script'}
-                </Button>
-                
-                <Divider className="agentic-ai-divider" />
-                
-                <Typography variant="h6" gutterBottom>
-                  Upload a Script
-                </Typography>
-                <Typography variant="body2" paragraph>
-                  Upload your own PowerShell script to edit or analyze.
-                </Typography>
-                
-                <Button
-                  variant="outlined"
-                  component="label"
-                  fullWidth
-                  startIcon={<FileUploadIcon />}
-                >
-                  Upload Script
+                </button>
+
+              <div className="agentic-ai-upload-card">
+                <p className="agentic-ai-panel-label">Local intake</p>
+                <h3>Upload a Script</h3>
+                <p className="agentic-ai-muted">Load a `.ps1` file into this workbench for editing or analysis.</p>
+                <label className="agentic-ai-btn agentic-ai-btn-secondary agentic-ai-btn-full">
+                  <FileUploadIcon fontSize="small" />
+                  Choose PowerShell File
                   <input
                     type="file"
                     hidden
                     accept=".ps1"
                     onChange={handleUploadScript}
                   />
-                </Button>
-              </StyledPaper>
-            </Grid>
+                </label>
+              </div>
+            </div>
             
-            <Grid item xs={12} lg={8}>
-              <StyledPaper className="agentic-ai-paper">
+            <div className="agentic-ai-panel agentic-ai-examples-panel">
                 <ScriptExamplesViewer
                   examples={scriptExamples}
                   isLoading={isLoadingExamples}
                   onSelectExample={handleUseExample}
                 />
-              </StyledPaper>
-            </Grid>
-          </Grid>
+            </div>
+          </div>
         </TabPanel>
         
         {/* Script Editor Tab */}
         <TabPanel value={activeTab} index={1}>
-          <StyledPaper className="editor-paper">
-            <Box className="agentic-ai-header">
-              <Box>
-                <Typography variant="h6">
-                  Script Editor
-                </Typography>
-                <TextField
-                  size="small"
+          <div className="agentic-ai-panel agentic-ai-editor-panel">
+            <div className="agentic-ai-header">
+              <div className="agentic-ai-editor-title">
+                <p className="agentic-ai-panel-label">Active script</p>
+                <h2>Script Editor</h2>
+                <input
                   value={scriptName}
                   onChange={(e) => setScriptName(e.target.value)}
                   placeholder="script.ps1"
-                  className="script-name-field"
+                  className="agentic-ai-input"
+                  aria-label="Script filename"
                 />
-              </Box>
+              </div>
               
-              <Box>
-                <Button
-                  variant="contained"
+              <div className="agentic-ai-action-buttons">
+                <button
+                  type="button"
+                  className="agentic-ai-btn agentic-ai-btn-primary"
                   onClick={handleAnalyzeScript}
                   disabled={isAnalyzing || !scriptCode.trim()}
-                  startIcon={isAnalyzing ? <CircularProgress size={20} /> : null}
-                  className="analyze-button"
                 >
+                  {isAnalyzing && <CircularProgress size={18} color="inherit" />}
                   {isAnalyzing ? 'Analyzing...' : 'Analyze with AI'}
-                </Button>
+                </button>
                 
-                <Button
-                  variant="outlined"
+                <button
+                  type="button"
+                  className="agentic-ai-btn agentic-ai-btn-secondary"
                   onClick={() => handleAskAboutScript("How can I improve this script?")}
                   disabled={!scriptCode.trim()}
-                  className="ask-button"
                 >
                   Ask AI Assistant
-                </Button>
-              </Box>
-            </Box>
+                </button>
+              </div>
+            </div>
             
-            <Divider className="agentic-ai-divider" />
+            <div className="agentic-ai-divider" />
             
-            <Box className="agentic-ai-editor-container">
+            <div className="agentic-ai-editor-container">
               <CodeEditor
                 value={scriptCode}
                 onChange={setScriptCode}
                 language="powershell"
                 height="100%"
               />
-            </Box>
-          </StyledPaper>
+            </div>
+          </div>
         </TabPanel>
         
         {/* AI Analysis Tab */}
         <TabPanel value={activeTab} index={2}>
-          <StyledPaper className="agentic-ai-paper">
+          <div className="agentic-ai-panel">
             <AIAnalysisPanel
               analysis={aiAnalysis}
               isLoading={isAnalyzing}
               error={analysisError}
               onAskQuestion={handleAskAboutScript}
             />
-          </StyledPaper>
+          </div>
         </TabPanel>
         
         {/* AI Assistant Tab */}
         <TabPanel value={activeTab} index={3}>
-          <StyledPaper className="agentic-ai-paper">
+          <div className="agentic-ai-panel">
             <PleaseMethodAgent
               activeScript={scriptCode}
               onScriptGenerated={handleScriptFromAssistant}
               pendingQuestion={pendingAssistantQuestion?.question}
               pendingQuestionId={pendingAssistantQuestion?.id}
             />
-          </StyledPaper>
+          </div>
         </TabPanel>
-      </Box>
+      </div>
       
       {/* Notifications */}
       <Snackbar
@@ -646,7 +644,7 @@ const AgenticAIPage: React.FC = () => {
           {notification.message}
         </Alert>
       </Snackbar>
-    </Container>
+    </div>
   );
 };
 

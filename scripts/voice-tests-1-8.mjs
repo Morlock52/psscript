@@ -107,10 +107,10 @@ function summarize(results) {
   checks.push({
     id: 'test5',
     pass:
-      one('test5_failure', 'invalid_api_key')?.status === 401 &&
+      one('test5_failure', 'client_provider_key_ignored')?.status === 200 &&
       one('test5_failure', 'malformed_base64')?.status === 400 &&
       one('test5_failure', 'missing_text')?.status === 400,
-    note: 'Failure-path status codes'
+    note: 'Failure-path and provider-key isolation status codes'
   });
 
   checks.push({
@@ -355,7 +355,7 @@ async function main() {
   });
   push('test4_robust', { case: 'spanish', status: spanishRecognize.status, text: spanishRecognize.data?.text || null });
 
-  const badKeyResponse = await fetch(`${baseUrl}/api/voice/synthesize`, {
+  const clientProviderKeyResponse = await fetch(`${baseUrl}/api/voice/synthesize`, {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
@@ -364,13 +364,18 @@ async function main() {
     },
     body: JSON.stringify({ text: `bad key test ${Date.now()}`, voiceId: 'alloy', outputFormat: 'mp3' })
   });
-  let badKeyData = {};
+  let clientProviderKeyData = {};
   try {
-    badKeyData = await badKeyResponse.json();
+    clientProviderKeyData = await clientProviderKeyResponse.json();
   } catch {
-    badKeyData = {};
+    clientProviderKeyData = {};
   }
-  push('test5_failure', { case: 'invalid_api_key', status: badKeyResponse.status, error: toErrorMessage(badKeyData) });
+  push('test5_failure', {
+    case: 'client_provider_key_ignored',
+    status: clientProviderKeyResponse.status,
+    error: toErrorMessage(clientProviderKeyData),
+    hasAudio: Boolean(clientProviderKeyData?.audio_data)
+  });
 
   const malformed = await request('/api/voice/recognize', {
     method: 'POST',

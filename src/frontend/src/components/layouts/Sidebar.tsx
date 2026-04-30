@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { NavLink } from 'react-router-dom';
 import { clsx } from 'clsx';
 import { FaTimes } from 'react-icons/fa';
+import BrandMark from '../BrandMark';
 
 interface NavItem {
   to: string;
@@ -39,7 +40,7 @@ export const Sidebar = ({ mobile = false, onClose }: SidebarProps) => {
       aria-label="Primary navigation"
     >
       <div className="h-14 flex items-center justify-between px-4 border-b border-surface-overlay/40">
-        <span className="font-display text-ink-primary text-lg">{collapsed && !mobile ? 'PS' : 'PSScript'}</span>
+        <BrandMark size="sm" showText={!collapsed || mobile} />
         {mobile && (
           <button
             type="button"

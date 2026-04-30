@@ -2,7 +2,7 @@ import React, { useState, useRef, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useQuery, useMutation } from '@tanstack/react-query';
 import { scriptService, categoryService, tagService } from '../services/api';
-import { isRetryableError, getErrorMessage } from '../utils/errorUtils';
+import { isRetryableError, getErrorMessage, extractApiError } from '../utils/errorUtils';
 
 const ScriptUpload: React.FC = () => {
   const navigate = useNavigate();
@@ -17,6 +17,7 @@ const ScriptUpload: React.FC = () => {
   const [analyzeWithAI, setAnalyzeWithAI] = useState(true);
   const [customTag, setCustomTag] = useState('');
   const [fileError, setFileError] = useState('');
+  const [uploadDiagnostics, setUploadDiagnostics] = useState<string[]>([]);
   const [fileSize, setFileSize] = useState(0);
   const [fileName, setFileName] = useState('');
   const [fileType, setFileType] = useState('');
@@ -49,6 +50,7 @@ const ScriptUpload: React.FC = () => {
         setUploadProgress(0);
         setIsNetworkError(false);
         setRetryCount(0);
+        setUploadDiagnostics([]);
         
         // Navigate to the script detail page
         const scriptId = data.script?.id || data.id;
@@ -64,6 +66,7 @@ const ScriptUpload: React.FC = () => {
       onError: (error: unknown) => {
         console.error("Error uploading script:", error);
         setUploadProgress(0);
+        const apiError = extractApiError(error, "Failed to upload script. Please try again.");
 
         // Handle duplicate file (409) — navigate to existing script
         const err = error as Record<string, unknown>;
@@ -82,6 +85,14 @@ const ScriptUpload: React.FC = () => {
         // Use centralized error detection for reliable network error identification
         setIsNetworkError(isRetryableError(error));
         setFileError(getErrorMessage(error, "Failed to upload script. Please try again."));
+        setUploadDiagnostics([
+          apiError.status ? `HTTP ${apiError.status}` : '',
+          apiError.details?.error ? `Code: ${String(apiError.details.error)}` : apiError.code ? `Code: ${apiError.code}` : '',
+          apiError.details?.requestId ? `Request ID: ${String(apiError.details.requestId)}` : (err.requestId ? `Request ID: ${String(err.requestId)}` : ''),
+          apiError.details?.receivedBytes && apiError.details?.maxBytes
+            ? `Size: ${formatFileSize(Number(apiError.details.receivedBytes))} / ${formatFileSize(Number(apiError.details.maxBytes))}`
+            : '',
+        ].filter(Boolean));
       },
       retry: (failureCount, error: unknown) => {
         // Don't retry 409 (duplicate) — it will always fail
@@ -128,6 +139,7 @@ const ScriptUpload: React.FC = () => {
     // Check file extension
     if (!ALLOWED_EXTENSIONS.includes(fileExt)) {
       setFileError(`Only PowerShell files (${ALLOWED_EXTENSIONS.join(', ')}) are allowed`);
+      setUploadDiagnostics([`Selected file: ${file.name}`]);
       return;
     }
     
@@ -140,10 +152,12 @@ const ScriptUpload: React.FC = () => {
     
     if (file.size > MAX_HOSTED_UPLOAD_BYTES) {
       setFileError(`Hosted uploads are limited to ${MAX_HOSTED_UPLOAD_MB}MB. Paste a smaller script or split the file before uploading.`);
+      setUploadDiagnostics([`Selected size: ${formatFileSize(file.size)}`, `Hosted limit: ${MAX_HOSTED_UPLOAD_MB}MB`]);
       return;
     }
     
     setFileError('');
+    setUploadDiagnostics([]);
     
     // Read file content
     const reader = new FileReader();
@@ -290,6 +304,7 @@ const ScriptUpload: React.FC = () => {
     }
     
     setFileError('');
+    setUploadDiagnostics([]);
     setUploadProgress(0);
     setRetryCount(0);
     
@@ -356,11 +371,25 @@ const ScriptUpload: React.FC = () => {
                     <p className="text-sm text-red-500">{fileError}</p>
                     {isNetworkError && (
                       <button 
-                        onClick={handleRetry} 
+                        type="button"
+                        onClick={(event) => {
+                          event.stopPropagation();
+                          handleRetry();
+                        }}
                         className="mt-2 px-3 py-1 bg-blue-600 text-white text-sm rounded hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500"
                       >
                         Retry Upload
                       </button>
+                    )}
+                    {uploadDiagnostics.length > 0 && (
+                      <div className="mt-2 rounded border border-red-900/60 bg-red-950/30 px-3 py-2 text-left text-xs text-red-200">
+                        <p className="font-semibold">Upload diagnostics</p>
+                        <ul className="mt-1 list-disc space-y-1 pl-4">
+                          {uploadDiagnostics.map((item) => (
+                            <li key={item}>{item}</li>
+                          ))}
+                        </ul>
+                      </div>
                     )}
                     {retryCount > 0 && retryCount <= MAX_RETRIES && (
                       <p className="text-xs text-yellow-500 mt-1">

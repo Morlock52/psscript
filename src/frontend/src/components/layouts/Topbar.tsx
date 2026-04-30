@@ -2,6 +2,7 @@ import { useNavigate } from 'react-router-dom';
 import { FaBars, FaMoon, FaSignOutAlt, FaSun } from 'react-icons/fa';
 import { useAuth } from '../../hooks/useAuth';
 import { useTheme } from '../../contexts/ThemeContext';
+import BrandMark from '../BrandMark';
 
 interface TopbarProps {
   onMenuClick?: () => void;
@@ -29,6 +30,7 @@ export const Topbar = ({ onMenuClick }: TopbarProps) => {
         >
           <FaBars aria-hidden="true" />
         </button>
+        <BrandMark size="sm" showText={false} />
         <div className="min-w-0 max-w-[46vw] leading-tight">
           <span className="block truncate font-display text-base text-ink-primary">PSScript</span>
           <span className="block truncate text-[10px] text-ink-tertiary sm:text-[11px]">

@@ -1,43 +1,475 @@
 .agentic-ai-container {
-  margin-top: 24px;
-  margin-bottom: 64px;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  color: var(--ink-primary);
 }
 
-.agentic-ai-paper {
-  padding: 16px;
-  margin-bottom: 24px;
-  position: relative;
+.agentic-ai-hero,
+.agentic-ai-panel,
+.agentic-ai-summary-card,
+.agentic-ai-tabs {
+  border: 1px solid var(--surface-overlay);
+  background: var(--surface-raised);
+  box-shadow: var(--shadow-near);
+}
+
+.agentic-ai-hero {
+  display: flex;
+  justify-content: space-between;
+  gap: 24px;
+  align-items: flex-start;
+  border-radius: var(--radius-xl);
+  padding: 28px;
+  background: var(--gradient-surface);
   overflow: hidden;
 }
 
-.agentic-ai-tab-panel {
-  height: 100%;
-  padding: 24px;
+.agentic-ai-hero-copy {
+  min-width: 0;
+  max-width: 820px;
+}
+
+.agentic-ai-kicker,
+.agentic-ai-panel-label {
+  margin: 0;
+  color: var(--accent);
+  font-size: 0.72rem;
+  font-weight: 800;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+}
+
+.agentic-ai-hero h1,
+.agentic-ai-panel h2,
+.agentic-ai-panel h3 {
+  margin: 0;
+  letter-spacing: 0;
+  color: var(--ink-primary);
+}
+
+.agentic-ai-hero h1 {
+  margin-top: 8px;
+  font-size: clamp(2rem, 4vw, 3.25rem);
+  line-height: 1;
+  font-weight: 900;
+}
+
+.agentic-ai-hero p:not(.agentic-ai-kicker) {
+  margin: 14px 0 0;
+  color: var(--ink-secondary);
+  font-size: 1rem;
+  line-height: 1.7;
+}
+
+.agentic-ai-hero-actions,
+.agentic-ai-action-buttons {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.agentic-ai-hero-actions {
+  justify-content: flex-end;
+}
+
+.agentic-ai-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  min-height: 40px;
+  border-radius: var(--radius-md);
+  border: 1px solid transparent;
+  padding: 9px 14px;
+  font-size: 0.9rem;
+  font-weight: 750;
+  line-height: 1;
+  text-decoration: none;
+  cursor: pointer;
+  white-space: nowrap;
+}
+
+.agentic-ai-btn:disabled {
+  cursor: not-allowed;
+  opacity: 0.48;
+}
+
+.agentic-ai-btn-primary {
+  background: var(--accent);
+  color: var(--ink-inverse);
+}
+
+.agentic-ai-btn-primary:hover:not(:disabled) {
+  background: var(--color-primary-dark);
+}
+
+.agentic-ai-btn-secondary {
+  border-color: color-mix(in srgb, var(--ink-secondary) 22%, transparent);
+  background: var(--surface-overlay);
+  color: var(--ink-primary);
+}
+
+.agentic-ai-btn-secondary:hover:not(:disabled) {
+  border-color: color-mix(in srgb, var(--accent) 42%, transparent);
+  background: color-mix(in srgb, var(--accent) 12%, var(--surface-overlay));
+}
+
+.agentic-ai-btn-full {
+  width: 100%;
+}
+
+.agentic-ai-summary-grid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 12px;
+}
+
+.agentic-ai-summary-card {
+  display: flex;
+  gap: 12px;
+  align-items: flex-start;
+  min-width: 0;
+  min-height: 98px;
+  border-radius: var(--radius-lg);
+  padding: 16px;
+  color: var(--ink-primary);
+  text-align: left;
+  cursor: pointer;
+}
+
+.agentic-ai-summary-card.is-active {
+  border-color: color-mix(in srgb, var(--accent) 55%, var(--surface-overlay));
+  background: color-mix(in srgb, var(--accent) 10%, var(--surface-raised));
+}
+
+.agentic-ai-summary-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex: 0 0 auto;
+  width: 36px;
+  height: 36px;
+  border-radius: var(--radius-md);
+  background: var(--accent-soft);
+  color: var(--accent);
+}
+
+.agentic-ai-summary-card strong,
+.agentic-ai-summary-card small {
+  display: block;
+}
+
+.agentic-ai-summary-card strong {
+  font-size: 0.95rem;
+  line-height: 1.2;
+}
+
+.agentic-ai-summary-card small {
+  margin-top: 5px;
+  color: var(--ink-secondary);
+  font-size: 0.78rem;
+  line-height: 1.45;
+}
+
+.agentic-ai-tabs {
+  display: flex;
+  gap: 6px;
+  align-items: center;
+  overflow-x: auto;
+  border-radius: var(--radius-lg);
+  padding: 6px;
+}
+
+.agentic-ai-tab {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  min-height: 40px;
+  border: 1px solid transparent;
+  border-radius: var(--radius-md);
+  background: transparent;
+  color: var(--ink-secondary);
+  padding: 8px 12px;
+  font-size: 0.88rem;
+  font-weight: 750;
+  white-space: nowrap;
+  cursor: pointer;
+}
+
+.agentic-ai-tab:hover {
+  background: var(--surface-overlay);
+  color: var(--ink-primary);
+}
+
+.agentic-ai-tab.is-active {
+  border-color: color-mix(in srgb, var(--accent) 35%, transparent);
+  background: var(--accent-soft);
+  color: var(--ink-primary);
 }
 
 .agentic-ai-tab-content {
-  height: calc(100vh - 320px);
-  min-height: 600px;
+  min-height: 620px;
 }
 
-.agentic-ai-editor-container {
-  height: calc(100% - 80px);
+.agentic-ai-tab-panel {
+  min-height: inherit;
+}
+
+.agentic-ai-tab-panel[hidden] {
+  display: none;
+}
+
+.agentic-ai-tab-panel-content {
+  min-height: inherit;
+}
+
+.agentic-ai-workspace-grid {
+  display: grid;
+  grid-template-columns: minmax(280px, 0.38fr) minmax(0, 1fr);
+  gap: 20px;
+  align-items: stretch;
+}
+
+.agentic-ai-panel {
+  border-radius: var(--radius-xl);
+  padding: 20px;
+  overflow: hidden;
+}
+
+.agentic-ai-generator-panel {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.agentic-ai-examples-panel,
+.agentic-ai-editor-panel {
+  min-width: 0;
+}
+
+.agentic-ai-panel h2 {
+  margin-top: 4px;
+  font-size: 1.35rem;
+  font-weight: 850;
+}
+
+.agentic-ai-panel h3 {
+  margin-top: 4px;
+  font-size: 1rem;
+  font-weight: 800;
+}
+
+.agentic-ai-muted {
+  margin: 8px 0 0;
+  color: var(--ink-secondary);
+  font-size: 0.92rem;
+  line-height: 1.6;
+}
+
+.agentic-ai-field-label {
+  display: block;
+  color: var(--ink-secondary);
+  font-size: 0.82rem;
+  font-weight: 750;
+}
+
+.agentic-ai-textarea,
+.agentic-ai-input {
+  width: 100%;
+  border: 1px solid color-mix(in srgb, var(--ink-secondary) 20%, transparent);
+  border-radius: var(--radius-md);
+  background: var(--surface-base);
+  color: var(--ink-primary);
+  font: inherit;
+  outline: none;
+}
+
+.agentic-ai-textarea {
+  min-height: 150px;
+  resize: vertical;
+  padding: 12px;
+  line-height: 1.55;
+}
+
+.agentic-ai-input {
+  margin-top: 10px;
+  max-width: 360px;
+  padding: 9px 11px;
+}
+
+.agentic-ai-textarea::placeholder,
+.agentic-ai-input::placeholder {
+  color: var(--ink-tertiary);
+}
+
+.agentic-ai-textarea:focus,
+.agentic-ai-input:focus {
+  border-color: var(--ring-focus);
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--ring-focus) 18%, transparent);
+}
+
+.agentic-ai-upload-card {
+  border: 1px dashed color-mix(in srgb, var(--ink-secondary) 28%, transparent);
+  border-radius: var(--radius-lg);
+  background: color-mix(in srgb, var(--surface-overlay) 70%, transparent);
+  padding: 16px;
 }
 
 .agentic-ai-header {
   display: flex;
   justify-content: space-between;
-  align-items: center;
-  margin-bottom: 16px;
-}
-
-.agentic-ai-action-buttons {
-  display: flex;
-  gap: 8px;
-}
-
-.agentic-ai-generator-container {
-  display: flex;
-  flex-direction: column;
+  align-items: flex-start;
   gap: 16px;
+}
+
+.agentic-ai-editor-title {
+  min-width: 260px;
+  max-width: 460px;
+  flex: 1 1 340px;
+}
+
+.agentic-ai-divider {
+  height: 1px;
+  margin: 18px 0;
+  background: var(--surface-overlay);
+}
+
+.agentic-ai-editor-container {
+  height: min(68vh, 720px);
+  min-height: 520px;
+  overflow: hidden;
+  border: 1px solid var(--surface-overlay);
+  border-radius: var(--radius-lg);
+  background: var(--surface-base);
+}
+
+.agentic-ai-container .MuiPaper-root {
+  color: var(--ink-primary);
+  background: var(--surface-raised);
+  border-color: var(--surface-overlay);
+}
+
+.agentic-ai-container .MuiTypography-root {
+  color: inherit;
+}
+
+.agentic-ai-container .MuiButton-root {
+  border-radius: var(--radius-md);
+  font-weight: 750;
+  text-transform: none;
+}
+
+.agentic-ai-container .MuiButton-contained {
+  background: var(--accent);
+  color: var(--ink-inverse);
+}
+
+.agentic-ai-container .MuiButton-contained:hover {
+  background: var(--color-primary-dark);
+}
+
+.agentic-ai-container .MuiButton-outlined {
+  border-color: color-mix(in srgb, var(--ink-secondary) 24%, transparent);
+  color: var(--ink-primary);
+}
+
+.agentic-ai-container .MuiButton-outlined:hover {
+  border-color: color-mix(in srgb, var(--accent) 42%, transparent);
+  background: var(--accent-soft);
+}
+
+.agentic-ai-container .MuiTabs-indicator {
+  background: var(--accent);
+}
+
+.agentic-ai-container .MuiTab-root {
+  color: var(--ink-tertiary);
+  letter-spacing: 0.04em;
+}
+
+.agentic-ai-container .MuiTab-root.Mui-selected {
+  color: var(--accent);
+}
+
+.agentic-ai-container .MuiChip-root {
+  border-color: color-mix(in srgb, var(--ink-secondary) 28%, transparent);
+  color: var(--ink-secondary);
+}
+
+.agentic-ai-container .MuiChip-colorPrimary,
+.agentic-ai-container .MuiChip-filledPrimary {
+  background: var(--accent-soft);
+  color: var(--ink-primary);
+}
+
+@media (max-width: 1100px) {
+  .agentic-ai-summary-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .agentic-ai-workspace-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 720px) {
+  .agentic-ai-container {
+    gap: 16px;
+  }
+
+  .agentic-ai-hero {
+    flex-direction: column;
+    padding: 20px;
+  }
+
+  .agentic-ai-hero-actions,
+  .agentic-ai-action-buttons {
+    width: 100%;
+  }
+
+  .agentic-ai-hero-actions .agentic-ai-btn,
+  .agentic-ai-action-buttons .agentic-ai-btn {
+    flex: 1 1 100%;
+  }
+
+  .agentic-ai-summary-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .agentic-ai-summary-card {
+    min-height: 82px;
+  }
+
+  .agentic-ai-tabs {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    overflow: visible;
+    padding-right: 76px;
+  }
+
+  .agentic-ai-tab {
+    justify-content: flex-start;
+    min-width: 0;
+  }
+
+  .agentic-ai-tab span {
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  .agentic-ai-header {
+    flex-direction: column;
+  }
+
+  .agentic-ai-editor-title,
+  .agentic-ai-input {
+    max-width: none;
+  }
+
+  .agentic-ai-editor-container {
+    min-height: 440px;
+    height: 58vh;
+  }
 }

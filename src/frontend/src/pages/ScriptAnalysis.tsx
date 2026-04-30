@@ -9,6 +9,7 @@ import { streamAnalysis, AnalysisEvent } from '../services/langgraphService';
 import { AnalysisProgressPanel } from '../components/Analysis/AnalysisProgressPanel';
 import { AI_MODELS, loadSettings } from '../services/settings';
 import { getApiUrl } from '../utils/apiUrl';
+import { useAuth } from '../hooks/useAuth';
 
 // Define message type for AI chat
 interface Message {
@@ -202,7 +203,9 @@ const ScriptAnalysis: React.FC = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const queryClient = useQueryClient();
+  const { user } = useAuth();
   const [activeTab, setActiveTab] = useState<string>('overview');
+  const isAdmin = user?.role === 'admin';
 
   // AI Assistant state
   const [messages, setMessages] = useState<Message[]>([]);
@@ -749,16 +752,56 @@ When generating or modifying scripts:
   const isCurrentAnalysis = analysis.isCurrent !== false;
   const commandAnalysisMarkdown = buildCommandAnalysisMarkdown(script.title, analysis);
   const runtimeRequirements = inferRuntimeRequirements(script.content || '', analysis);
+  const scoreValue = (value: unknown): number => {
+    const numeric = Number(value ?? 0);
+    if (!Number.isFinite(numeric)) return 0;
+    return Math.min(10, Math.max(0, numeric > 10 ? numeric / 10 : numeric));
+  };
+  const qualityScore = scoreValue(analysis.codeQualityScore ?? analysis.code_quality_score);
+  const securityScore = scoreValue(analysis.securityScore ?? analysis.security_score);
+  const riskScore = scoreValue(analysis.riskScore ?? analysis.risk_score);
+  const reliabilityScore = scoreValue(analysis.reliabilityScore ?? analysis.reliability_score);
+  const securityConcernCount = analysis.securityConcerns?.length || analysis.security_concerns?.length || 0;
+  const performanceSuggestionCount = analysis.performanceSuggestions?.length || analysis.performance_suggestions?.length || 0;
+  const commandCount = analysis.commandDetails?.length || analysis.command_details?.length || 0;
+  const readinessLabel = securityScore >= 7 && qualityScore >= 7 && riskScore <= 4
+    ? 'Ready with standard review'
+    : securityScore >= 5 && qualityScore >= 5 && riskScore <= 7
+      ? 'Needs targeted remediation'
+      : 'Hold for engineering review';
+  const readinessTone = readinessLabel === 'Ready with standard review'
+    ? 'border-emerald-700/60 bg-emerald-950/30 text-emerald-200'
+    : readinessLabel === 'Needs targeted remediation'
+      ? 'border-yellow-700/60 bg-yellow-950/30 text-yellow-200'
+      : 'border-red-700/60 bg-red-950/30 text-red-200';
+  const reportMetrics = [
+    { label: 'Security', value: securityScore, note: securityScore >= 7 ? 'Strong control posture' : 'Review before production', reverse: false },
+    { label: 'Quality', value: qualityScore, note: qualityScore >= 7 ? 'Maintainable structure' : 'Refactor opportunities', reverse: false },
+    { label: 'Risk', value: riskScore, note: riskScore <= 4 ? 'Low execution risk' : 'Operational caution', reverse: true },
+    { label: 'Reliability', value: reliabilityScore, note: reliabilityScore > 0 ? 'Runtime confidence' : 'Not scored', reverse: false },
+  ];
+  const scoreTone = (value: number, reverse = false) => {
+    if (reverse) {
+      if (value <= 3) return 'bg-emerald-500';
+      if (value <= 6.9) return 'bg-yellow-500';
+      return 'bg-red-500';
+    }
+    if (value >= 7) return 'bg-emerald-500';
+    if (value >= 4) return 'bg-yellow-500';
+    return 'bg-red-500';
+  };
+  const confidenceLabel = getConfidenceLabel(confidence, analysisSource);
   
   return (
     <div className="container mx-auto pb-8">
       {/* Header with back button */}
-      <div className="mb-6 flex justify-between items-center">
-        <div>
-          <h1 className="text-2xl font-bold">AI Analysis: {script.title}</h1>
-          <p className="text-gray-400">Comprehensive analysis and improvement recommendations for your PowerShell script</p>
+      <div className="mb-6 flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
+        <div className="min-w-0">
+          <p className="text-xs font-semibold uppercase tracking-[0.24em] text-blue-300">PSScript AI Report</p>
+          <h1 className="mt-2 break-words text-2xl font-bold text-white sm:text-3xl">AI Analysis: {script.title}</h1>
+          <p className="mt-1 text-sm text-gray-400">Comprehensive analysis and improvement recommendations for your PowerShell script</p>
         </div>
-        <div className="flex space-x-2">
+        <div className="flex flex-wrap gap-2">
           <button
             className="px-4 py-2 bg-gray-600 text-white rounded-lg hover:bg-gray-700"
             onClick={() => navigate(`/scripts/${id}`)}
@@ -776,10 +819,125 @@ When generating or modifying scripts:
           </button>
         </div>
       </div>
+
+      <section className="mb-6 overflow-hidden rounded-2xl border border-slate-700 bg-slate-950 shadow-2xl">
+        <div className="border-b border-slate-800 bg-[radial-gradient(circle_at_top_left,rgba(37,99,235,0.28),transparent_34%),linear-gradient(135deg,rgba(15,23,42,1),rgba(17,24,39,1))] p-5 sm:p-6 lg:p-8">
+          <div className="grid gap-6 xl:grid-cols-[1.25fr_0.75fr]">
+            <div className="min-w-0">
+              <div className="flex flex-wrap items-center gap-2">
+                <span className={`rounded-full border px-3 py-1 text-xs font-semibold ${readinessTone}`}>
+                  {readinessLabel}
+                </span>
+                <span className="rounded-full border border-slate-700 bg-slate-900/70 px-3 py-1 text-xs text-slate-300">
+                  Criteria {criteriaVersion}
+                </span>
+                <span className="rounded-full border border-slate-700 bg-slate-900/70 px-3 py-1 text-xs text-slate-300">
+                  {confidenceLabel}
+                </span>
+              </div>
+              <h2 className="mt-5 max-w-4xl break-words text-3xl font-black tracking-normal text-white sm:text-4xl">
+                Executive Script Readiness Report
+              </h2>
+              <p className="mt-4 max-w-3xl text-sm leading-6 text-slate-300 sm:text-base">
+                {analysis.purpose || 'This report summarizes script intent, risk posture, runtime requirements, command behavior, and the next actions needed before production use.'}
+              </p>
+              <div className="mt-6 grid gap-3 sm:grid-cols-3">
+                <div className="rounded-xl border border-slate-800 bg-slate-900/75 p-4">
+                  <div className="text-2xl font-black text-white">{securityConcernCount}</div>
+                  <div className="mt-1 text-xs uppercase tracking-[0.18em] text-slate-400">Security Findings</div>
+                </div>
+                <div className="rounded-xl border border-slate-800 bg-slate-900/75 p-4">
+                  <div className="text-2xl font-black text-white">{performanceSuggestionCount}</div>
+                  <div className="mt-1 text-xs uppercase tracking-[0.18em] text-slate-400">Performance Items</div>
+                </div>
+                <div className="rounded-xl border border-slate-800 bg-slate-900/75 p-4">
+                  <div className="text-2xl font-black text-white">{commandCount}</div>
+                  <div className="mt-1 text-xs uppercase tracking-[0.18em] text-slate-400">Commands Mapped</div>
+                </div>
+              </div>
+            </div>
+
+            <div className="rounded-2xl border border-slate-700 bg-slate-900/80 p-4">
+              <div className="mb-4 flex items-center justify-between gap-3">
+                <div>
+                  <h3 className="text-sm font-semibold uppercase tracking-[0.18em] text-slate-300">Scorecard</h3>
+                  <p className="mt-1 text-xs text-slate-500">0-10 normalized scale</p>
+                </div>
+                <div className="rounded-full border border-blue-800 bg-blue-950/40 px-3 py-1 text-xs font-semibold text-blue-200">
+                  Report View
+                </div>
+              </div>
+              <div className="space-y-4">
+                {reportMetrics.map((metric) => (
+                  <div key={metric.label}>
+                    <div className="mb-1 flex items-center justify-between gap-3 text-sm">
+                      <span className="font-medium text-slate-200">{metric.label}</span>
+                      <span className="font-mono text-slate-300">{metric.value.toFixed(1)}/10</span>
+                    </div>
+                    <div className="h-2.5 overflow-hidden rounded-full bg-slate-800">
+                      <div
+                        className={`h-full rounded-full ${scoreTone(metric.value, metric.reverse)}`}
+                        style={{ width: `${metric.value * 10}%` }}
+                      />
+                    </div>
+                    <p className="mt-1 text-xs text-slate-500">{metric.note}</p>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div className="grid gap-0 border-slate-800 lg:grid-cols-[1fr_1fr_0.85fr]">
+          <div className="border-b border-slate-800 p-5 lg:border-b-0 lg:border-r">
+            <h3 className="text-sm font-semibold uppercase tracking-[0.18em] text-slate-400">Review Path</h3>
+            <div className="mt-4 grid grid-cols-2 gap-2 sm:grid-cols-4 lg:grid-cols-2">
+              {['Scope', 'Analyze', 'Remediate', 'Approve'].map((step, index) => (
+                <div key={step} className="rounded-lg border border-slate-800 bg-slate-900/70 p-3">
+                  <div className="mb-2 flex h-7 w-7 items-center justify-center rounded-full bg-blue-950 text-xs font-bold text-blue-200">
+                    {index + 1}
+                  </div>
+                  <div className="text-sm font-semibold text-slate-200">{step}</div>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          <div className="border-b border-slate-800 p-5 lg:border-b-0 lg:border-r">
+            <h3 className="text-sm font-semibold uppercase tracking-[0.18em] text-slate-400">Runtime Snapshot</h3>
+            <p className="mt-3 text-sm leading-6 text-slate-300">{runtimeRequirements.powerShellVersion}</p>
+            <div className="mt-4 flex flex-wrap gap-2">
+              {(runtimeRequirements.modules.length ? runtimeRequirements.modules.slice(0, 6) : ['No external modules detected']).map((moduleName) => (
+                <span key={moduleName} className="rounded-md border border-slate-700 bg-slate-900 px-2 py-1 text-xs text-slate-300">
+                  {moduleName}
+                </span>
+              ))}
+            </div>
+          </div>
+
+          <div className="p-5">
+            <h3 className="text-sm font-semibold uppercase tracking-[0.18em] text-slate-400">Risk Matrix</h3>
+            <div className="mt-4 grid grid-cols-3 gap-1 rounded-xl border border-slate-800 bg-slate-900 p-2">
+              {[0, 1, 2, 3, 4, 5, 6, 7, 8].map((cell) => {
+                const active = riskScore <= 3 ? cell === 6 : riskScore <= 6.9 ? cell === 4 : cell === 2;
+                const color = cell < 3 ? 'bg-red-900/50' : cell < 6 ? 'bg-yellow-900/40' : 'bg-emerald-900/40';
+                return (
+                  <div
+                    key={cell}
+                    className={`aspect-square rounded-md border ${active ? 'border-white ring-2 ring-blue-400' : 'border-slate-800'} ${color}`}
+                    aria-label={active ? `Current risk position: ${riskScore.toFixed(1)} out of 10` : undefined}
+                  />
+                );
+              })}
+            </div>
+            <p className="mt-3 text-xs text-slate-500">Marker is based on normalized risk score. Lower risk plots toward approval.</p>
+          </div>
+        </div>
+      </section>
       
       {/* Tab Navigation */}
-      <div className="mb-6 border-b border-gray-600">
-        <nav className="flex space-x-4">
+      <div className="mb-6 overflow-x-auto border-b border-gray-600">
+        <nav className="flex min-w-max space-x-4">
           <button
             className={`py-3 px-4 text-sm font-medium ${activeTab === 'overview' ? 'text-blue-400 border-b-2 border-blue-400' : 'text-gray-400 hover:text-white'}`}
             onClick={() => setActiveTab('overview')}
@@ -1056,12 +1214,90 @@ When generating or modifying scripts:
                       </ul>
                     </div>
                   )}
+
+                  <div className="mb-8 rounded-xl border border-slate-700 bg-slate-900/70 p-5">
+                    <div className="mb-5 flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between">
+                      <div>
+                        <p className="text-xs font-semibold uppercase tracking-[0.22em] text-blue-300">Complete Report</p>
+                        <h3 className="mt-1 text-xl font-bold text-white">Formatted AI Analysis Package</h3>
+                      </div>
+                      <span className="rounded-full border border-slate-700 bg-slate-950 px-3 py-1 text-xs text-slate-300">
+                        Headers + categorized findings
+                      </span>
+                    </div>
+
+                    <div className="grid gap-4 lg:grid-cols-2">
+                      <section className="rounded-lg border border-slate-800 bg-slate-950/70 p-4">
+                        <h4 className="mb-3 text-sm font-bold uppercase tracking-[0.18em] text-slate-300">1. Executive Readiness</h4>
+                        <dl className="space-y-2 text-sm">
+                          <div className="grid gap-1 sm:grid-cols-[9rem_1fr]">
+                            <dt className="font-bold text-blue-200">Readiness:</dt>
+                            <dd className="text-slate-300">{readinessLabel}</dd>
+                          </div>
+                          <div className="grid gap-1 sm:grid-cols-[9rem_1fr]">
+                            <dt className="font-bold text-blue-200">Trust signal:</dt>
+                            <dd className="text-slate-300">{confidenceLabel}</dd>
+                          </div>
+                          <div className="grid gap-1 sm:grid-cols-[9rem_1fr]">
+                            <dt className="font-bold text-blue-200">Criteria:</dt>
+                            <dd className="text-slate-300">{criteriaVersion}</dd>
+                          </div>
+                        </dl>
+                      </section>
+
+                      <section className="rounded-lg border border-slate-800 bg-slate-950/70 p-4">
+                        <h4 className="mb-3 text-sm font-bold uppercase tracking-[0.18em] text-slate-300">2. Score Categories</h4>
+                        <dl className="space-y-2 text-sm">
+                          {reportMetrics.map((metric) => (
+                            <div key={metric.label} className="grid gap-1 sm:grid-cols-[9rem_1fr]">
+                              <dt className="font-bold text-blue-200">{metric.label}:</dt>
+                              <dd className="text-slate-300">{metric.value.toFixed(1)}/10 - {metric.note}</dd>
+                            </div>
+                          ))}
+                        </dl>
+                      </section>
+
+                      <section className="rounded-lg border border-slate-800 bg-slate-950/70 p-4">
+                        <h4 className="mb-3 text-sm font-bold uppercase tracking-[0.18em] text-slate-300">3. Risk And Finding Categories</h4>
+                        <dl className="space-y-2 text-sm">
+                          <div className="grid gap-1 sm:grid-cols-[9rem_1fr]">
+                            <dt className="font-bold text-red-200">Security:</dt>
+                            <dd className="text-slate-300">{securityConcernCount} finding{securityConcernCount === 1 ? '' : 's'} tracked.</dd>
+                          </div>
+                          <div className="grid gap-1 sm:grid-cols-[9rem_1fr]">
+                            <dt className="font-bold text-yellow-200">Performance:</dt>
+                            <dd className="text-slate-300">{performanceSuggestionCount} optimization item{performanceSuggestionCount === 1 ? '' : 's'} tracked.</dd>
+                          </div>
+                          <div className="grid gap-1 sm:grid-cols-[9rem_1fr]">
+                            <dt className="font-bold text-emerald-200">Commands:</dt>
+                            <dd className="text-slate-300">{commandCount} PowerShell command{commandCount === 1 ? '' : 's'} mapped.</dd>
+                          </div>
+                        </dl>
+                      </section>
+
+                      <section className="rounded-lg border border-slate-800 bg-slate-950/70 p-4">
+                        <h4 className="mb-3 text-sm font-bold uppercase tracking-[0.18em] text-slate-300">4. Runtime And Approval</h4>
+                        <dl className="space-y-2 text-sm">
+                          <div className="grid gap-1 sm:grid-cols-[9rem_1fr]">
+                            <dt className="font-bold text-blue-200">PowerShell:</dt>
+                            <dd className="text-slate-300">{runtimeRequirements.powerShellVersion}</dd>
+                          </div>
+                          <div className="grid gap-1 sm:grid-cols-[9rem_1fr]">
+                            <dt className="font-bold text-blue-200">Modules:</dt>
+                            <dd className="text-slate-300">
+                              {runtimeRequirements.modules.length ? runtimeRequirements.modules.join(', ') : 'No external modules detected.'}
+                            </dd>
+                          </div>
+                        </dl>
+                      </section>
+                    </div>
+                  </div>
                 
-                <div className="grid grid-cols-4 gap-4 mb-8">
-                  {renderScoreIndicator(analysis.codeQualityScore, 'Quality')}
-                  {renderScoreIndicator(analysis.securityScore, 'Security')}
-                  {renderScoreIndicator(analysis.riskScore, 'Risk', true)}
-                  {analysis.reliabilityScore && renderScoreIndicator(analysis.reliabilityScore, 'Reliability')}
+                <div className="grid grid-cols-2 gap-4 mb-8 sm:grid-cols-4">
+                  {renderScoreIndicator(qualityScore, 'Quality')}
+                  {renderScoreIndicator(securityScore, 'Security')}
+                  {renderScoreIndicator(riskScore, 'Risk', true)}
+                  {reliabilityScore > 0 && renderScoreIndicator(reliabilityScore, 'Reliability')}
                 </div>
                 
                 <div className="mt-6 space-y-6">
@@ -1284,9 +1520,20 @@ When generating or modifying scripts:
                         Command Analysis
                       </h3>
                       <div className="bg-gray-800 p-4 rounded-lg border border-gray-700 overflow-auto">
-                        <pre className="text-sm text-gray-300 whitespace-pre-wrap font-mono">
+                        <ReactMarkdown
+                          components={{
+                            h1: ({children}) => <h1 className="mb-4 text-xl font-bold text-white">{children}</h1>,
+                            h2: ({children}) => <h2 className="mb-3 mt-5 border-b border-gray-700 pb-2 text-base font-bold text-blue-200">{children}</h2>,
+                            h3: ({children}) => <h3 className="mb-2 mt-4 text-sm font-bold uppercase tracking-[0.16em] text-slate-300">{children}</h3>,
+                            p: ({children}) => <p className="mb-3 text-sm leading-6 text-gray-300">{children}</p>,
+                            ul: ({children}) => <ul className="mb-4 space-y-2">{children}</ul>,
+                            li: ({children}) => <li className="rounded-md border border-gray-700 bg-gray-900/70 px-3 py-2 text-sm text-gray-300">{children}</li>,
+                            strong: ({children}) => <strong className="font-bold text-blue-200">{children}</strong>,
+                            code: ({children}) => <code className="rounded bg-gray-950 px-1.5 py-0.5 font-mono text-yellow-300">{children}</code>,
+                          }}
+                        >
                           {commandAnalysisMarkdown}
-                        </pre>
+                        </ReactMarkdown>
                       </div>
                     </div>
                   )}
@@ -1861,12 +2108,14 @@ When generating or modifying scripts:
                 >
                   View Script
                 </button>
-                <button
-                  onClick={() => navigate(`/scripts/${id}/edit`)}
-                  className="w-full px-4 py-2 bg-gray-600 text-white rounded-lg hover:bg-gray-700 flex items-center justify-center"
-                >
-                  Edit Script
-                </button>
+                {isAdmin && (
+                  <button
+                    onClick={() => navigate(`/scripts/${id}/edit`)}
+                    className="w-full px-4 py-2 bg-gray-600 text-white rounded-lg hover:bg-gray-700 flex items-center justify-center"
+                  >
+                    Edit Script
+                  </button>
+                )}
                 <button
                   onClick={handleExportAnalysis}
                   className="w-full px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 flex items-center justify-center"

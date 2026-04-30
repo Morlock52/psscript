@@ -22,6 +22,14 @@ const getScriptLocalPath = (script: any): string => {
   return candidates.find((candidate) => typeof candidate === 'string' && candidate.trim())?.trim() || '';
 };
 
+const canLaunchVSCodeProtocol = (localPath: string): boolean => {
+  if (!localPath || typeof window === 'undefined' || typeof navigator === 'undefined') {
+    return false;
+  }
+
+  return !/Android|iPhone|iPad|iPod|Mobile/i.test(navigator.userAgent);
+};
+
 const buildPowerShellFileName = (title: string, script: any, id?: string): string => {
   const baseName = (title || script?.title || script?.name || `script-${id || 'draft'}`)
     .replace(/[^a-z0-9._-]+/gi, '-')
@@ -108,6 +116,9 @@ const ScriptEditor: React.FC = () => {
     navigate(`/scripts/${id}`);
   };
 
+  const localScriptPath = getScriptLocalPath(script);
+  const canOpenInVSCode = canLaunchVSCodeProtocol(localScriptPath);
+
   const handleDownloadForVSCode = () => {
     const fileName = buildPowerShellFileName(title, script, id);
     const blob = new Blob([content], { type: 'text/x-powershell;charset=utf-8' });
@@ -126,14 +137,11 @@ const ScriptEditor: React.FC = () => {
   };
 
   const handleOpenInVSCode = () => {
-    const localPath = getScriptLocalPath(script);
-
-    if (!localPath) {
-      setNotice('This hosted script does not have a local file path saved, so the browser cannot open it directly in VS Code. Use "Download .ps1" to open a local copy.');
+    if (!localScriptPath) {
       return;
     }
 
-    const normalizedPath = localPath.replace(/\\/g, '/');
+    const normalizedPath = localScriptPath.replace(/\\/g, '/');
     const vscodeUrl = `vscode://file/${encodeURI(normalizedPath)}`;
     window.location.href = vscodeUrl;
     setNotice('Opening VS Code. If nothing happens, confirm Visual Studio Code is installed and registered for vscode:// links.');
@@ -164,12 +172,14 @@ const ScriptEditor: React.FC = () => {
         <div className="flex justify-between items-center mb-4">
           <h1 className="text-2xl font-bold text-[var(--ink-primary)]">Edit Script: {title || script?.title || script?.name}</h1>
           <div className="flex flex-wrap gap-2">
-            <button
-              onClick={handleOpenInVSCode}
-              className={buttonSecondaryStyles}
-            >
-              Open in VS Code
-            </button>
+            {canOpenInVSCode && (
+              <button
+                onClick={handleOpenInVSCode}
+                className={buttonSecondaryStyles}
+              >
+                Open in VS Code
+              </button>
+            )}
             <button
               onClick={handleDownloadForVSCode}
               className={buttonSecondaryStyles}

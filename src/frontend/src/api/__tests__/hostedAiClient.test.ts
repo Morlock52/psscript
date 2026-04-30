@@ -134,6 +134,8 @@ describe('hosted AI client routing', () => {
 
   it('keeps voice and streaming AI calls observable through hosted metrics', () => {
     const netlifyApi = readWorkspaceFile('netlify/functions/api.ts');
+    const voiceDock = readWorkspaceFile('src/frontend/src/components/VoiceAssistantDock.tsx');
+    const voiceRunner = readWorkspaceFile('scripts/voice-tests-1-8.mjs');
 
     expect(netlifyApi).toContain('streamText(messages');
     expect(netlifyApi).toContain("event.type === 'response.output_text.delta'");
@@ -141,11 +143,18 @@ describe('hosted AI client routing', () => {
     expect(netlifyApi).toContain("endpoint: route.path");
     expect(netlifyApi).toContain('synthesizeSpeech({');
     expect(netlifyApi).toContain('recognizeSpeech({');
+    expect(netlifyApi).toContain('VOICE_TTS_CACHE_MAX_ENTRIES');
+    expect(netlifyApi).toContain('isValidBase64AudioPayload');
+    expect(voiceDock).toContain('const { user } = useAuth();');
+    expect(voiceDock).toContain('return null;');
+    expect(voiceDock).toContain('Audio output is AI-generated');
+    expect(voiceRunner).toContain('client_provider_key_ignored');
     expect(netlifyApi).toContain("endpoint: '/documentation/crawl/ai'");
   });
 
   it('keeps hosted analysis resilient to structured output provider failures', () => {
     const netlifyApi = readWorkspaceFile('netlify/functions/api.ts');
+    const scriptAnalysis = readWorkspaceFile('src/frontend/src/pages/ScriptAnalysis.tsx');
 
     for (const field of [
       'beginner_explanation',
@@ -160,6 +169,14 @@ describe('hosted AI client routing', () => {
     expect(netlifyApi).toContain('json_schema');
     expect(netlifyApi).toContain('response_format');
     expect(netlifyApi).toContain('buildStaticPowerShellAnalysis(content, title)');
+    expect(netlifyApi).toContain('## Executive Summary');
+    expect(netlifyApi).toContain('**Quality:**');
+    expect(netlifyApi).toContain('/BaseFont /Helvetica-Bold');
+    expect(netlifyApi).toContain('function stylePdfLine');
+    expect(scriptAnalysis).toContain('Complete Report');
+    expect(scriptAnalysis).toContain('Formatted AI Analysis Package');
+    expect(scriptAnalysis).toContain('Score Categories');
+    expect(scriptAnalysis).toContain('ReactMarkdown');
   });
 
   it('falls back from SSE analysis to authenticated hosted analysis', () => {
@@ -204,6 +221,25 @@ describe('hosted AI client routing', () => {
     expect(scriptDetail).toContain('Version History');
     expect(scriptDetail).toContain('Data Protection');
     expect(scriptDetail).toContain('Per-script client-side encryption is not enabled in this build.');
+  });
+
+  it('routes script detail AI analysis requests to the model-selection screen first', () => {
+    const scriptDetail = readWorkspaceFile('src/frontend/src/pages/ScriptDetail.tsx');
+    const scriptAnalysis = readWorkspaceFile('src/frontend/src/pages/ScriptAnalysis.tsx');
+
+    const analyzeHandler = scriptDetail.slice(
+      scriptDetail.indexOf('const handleAnalyzeScript = () => {'),
+      scriptDetail.indexOf('const handleDeleteScript = () => {')
+    );
+
+    expect(analyzeHandler).toContain('navigate(`/scripts/${id}/analysis`);');
+    expect(analyzeHandler).not.toContain('analyzeScriptAndSave');
+    expect(analyzeHandler).not.toContain('.mutate(');
+    expect(scriptDetail).toContain('Choose AI Model');
+    expect(scriptDetail).toContain('Open the analysis screen to choose an AI model and generate scores.');
+    expect(scriptAnalysis).toContain('id="model-select"');
+    expect(scriptAnalysis).toContain('onChange={(e) => setSelectedModel(e.target.value)}');
+    expect(scriptAnalysis).toContain('onClick={handleLangGraphAnalysis}');
   });
 
   it('routes active chat and assistant follow-ups through hosted API paths', () => {
@@ -261,10 +297,37 @@ describe('hosted AI client routing', () => {
 
   it('keeps script editing honest about VS Code local file launch limits', () => {
     const scriptEditor = readWorkspaceFile('src/frontend/src/pages/ScriptEditor.tsx');
+    const app = readWorkspaceFile('src/frontend/src/App.tsx');
+    const scriptDetail = readWorkspaceFile('src/frontend/src/pages/ScriptDetail.tsx');
+    const scriptAnalysis = readWorkspaceFile('src/frontend/src/pages/ScriptAnalysis.tsx');
+    const scriptManagement = readWorkspaceFile('src/frontend/src/pages/ScriptManagement.tsx');
+    const manageFiles = readWorkspaceFile('src/frontend/src/pages/ManageFiles.tsx');
+    const netlifyApi = readWorkspaceFile('netlify/functions/api.ts');
 
     expect(scriptEditor).toContain('vscode://file/');
+    expect(scriptEditor).toContain('const canOpenInVSCode = canLaunchVSCodeProtocol(localScriptPath);');
+    expect(scriptEditor).toContain('Android|iPhone|iPad|iPod|Mobile');
     expect(scriptEditor).toContain('Open in VS Code');
     expect(scriptEditor).toContain('Download .ps1');
-    expect(scriptEditor).toContain('does not have a local file path saved');
+    expect(scriptEditor).toContain('{canOpenInVSCode && (');
+    expect(scriptEditor).toContain('if (!localScriptPath)');
+
+    const openHandler = scriptEditor.slice(
+      scriptEditor.indexOf('const handleOpenInVSCode = () => {'),
+      scriptEditor.indexOf('if (isLoading) {')
+    );
+    expect(openHandler).toContain('window.location.href = vscodeUrl;');
+    expect(openHandler).not.toContain('link.click()');
+    expect(openHandler).not.toContain('download');
+
+    expect(app).toContain('path="/scripts/:id/edit" element={<ProtectedRoute requiredRole="admin"><ScriptEditor /></ProtectedRoute>}');
+    expect(scriptDetail).toContain("const isAdmin = user?.role === 'admin';");
+    expect(scriptDetail).toContain('Only admins can edit script details.');
+    expect(scriptDetail).toContain('{isAdmin && (');
+    expect(scriptAnalysis).toContain("const isAdmin = user?.role === 'admin';");
+    expect(scriptManagement).toContain("const isAdmin = user?.role === 'admin';");
+    expect(manageFiles).toContain("const canEditScript = () => user?.role === 'admin';");
+    expect(netlifyApi).toContain("error: 'admin_required'");
+    expect(netlifyApi).toContain('Only admins can edit script details.');
   });
 });
