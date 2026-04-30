@@ -117,6 +117,41 @@ const normalizeStringList = (value: unknown): string[] => {
   return [];
 };
 
+const firstText = (...values: unknown[]): string => {
+  for (const value of values) {
+    if (typeof value === 'string' && value.trim()) {
+      return value.trim();
+    }
+  }
+
+  return '';
+};
+
+const firstArray = (...values: unknown[]): any[] => {
+  for (const value of values) {
+    if (Array.isArray(value)) {
+      return value;
+    }
+  }
+
+  return [];
+};
+
+const normalizeScoreValue = (...values: unknown[]): number | null => {
+  for (const value of values) {
+    if (value === null || value === undefined || value === '') {
+      continue;
+    }
+
+    const numeric = Number(value);
+    if (Number.isFinite(numeric)) {
+      return Math.min(10, Math.max(0, numeric > 10 ? numeric / 10 : numeric));
+    }
+  }
+
+  return null;
+};
+
 const addModule = (modules: Set<string>, moduleName: string) => {
   const cleaned = moduleName
     .replace(/^['"]|['"]$/g, '')
@@ -742,45 +777,75 @@ When generating or modifying scripts:
     );
   };
 
-  const analysisCriteria = analysis.analysisCriteria || analysis.executionSummary?.analysis_criteria || [];
-  const prioritizedFindings = analysis.prioritizedFindings || analysis.executionSummary?.prioritized_findings || [];
-  const remediationPlan = analysis.remediationPlan || analysis.executionSummary?.remediation_plan || [];
-  const testRecommendations = analysis.testRecommendations || analysis.executionSummary?.test_recommendations || [];
-  const criteriaVersion = analysis.criteriaVersion || analysis.executionSummary?.criteria_version || '2026-04-26';
+  const analysisCriteria = firstArray(analysis.analysisCriteria, analysis.analysis_criteria, analysis.executionSummary?.analysis_criteria);
+  const prioritizedFindings = firstArray(analysis.prioritizedFindings, analysis.prioritized_findings, analysis.executionSummary?.prioritized_findings);
+  const remediationPlan = firstArray(analysis.remediationPlan, analysis.remediation_plan, analysis.executionSummary?.remediation_plan);
+  const testRecommendations = firstArray(analysis.testRecommendations, analysis.test_recommendations, analysis.executionSummary?.test_recommendations);
+  const criteriaVersion = firstText(analysis.criteriaVersion, analysis.criteria_version, analysis.executionSummary?.criteria_version) || '2026-04-26';
   const confidence = analysis.confidence ?? analysis.executionSummary?.confidence;
   const analysisSource = analysis.analysisSource || analysis.analysis_source || analysis.executionSummary?.analysis_source;
   const isCurrentAnalysis = analysis.isCurrent !== false;
   const commandAnalysisMarkdown = buildCommandAnalysisMarkdown(script.title, analysis);
   const runtimeRequirements = inferRuntimeRequirements(script.content || '', analysis);
-  const scoreValue = (value: unknown): number => {
-    const numeric = Number(value ?? 0);
-    if (!Number.isFinite(numeric)) return 0;
-    return Math.min(10, Math.max(0, numeric > 10 ? numeric / 10 : numeric));
-  };
-  const qualityScore = scoreValue(analysis.codeQualityScore ?? analysis.code_quality_score);
-  const securityScore = scoreValue(analysis.securityScore ?? analysis.security_score);
-  const riskScore = scoreValue(analysis.riskScore ?? analysis.risk_score);
-  const reliabilityScore = scoreValue(analysis.reliabilityScore ?? analysis.reliability_score);
-  const securityConcernCount = analysis.securityConcerns?.length || analysis.security_concerns?.length || 0;
-  const performanceSuggestionCount = analysis.performanceSuggestions?.length || analysis.performance_suggestions?.length || 0;
-  const commandCount = analysis.commandDetails?.length || analysis.command_details?.length || 0;
-  const readinessLabel = securityScore >= 7 && qualityScore >= 7 && riskScore <= 4
-    ? 'Ready with standard review'
-    : securityScore >= 5 && qualityScore >= 5 && riskScore <= 7
-      ? 'Needs targeted remediation'
-      : 'Hold for engineering review';
+  const reportPurpose = firstText(
+    analysis.purpose,
+    analysis.summary,
+    analysis.description,
+    analysis.executionSummary?.summary,
+    analysis.executionSummary?.purpose,
+    analysis.executionSummary?.what_it_does
+  );
+  const securityIssues = firstArray(
+    analysis.securityConcerns,
+    analysis.security_concerns,
+    analysis.securityIssues,
+    analysis.security_issues,
+    analysis.executionSummary?.security_issues
+  );
+  const performanceItems = firstArray(
+    analysis.performanceSuggestions,
+    analysis.performance_suggestions,
+    analysis.performanceInsights,
+    analysis.performance_insights,
+    analysis.executionSummary?.performance_insights
+  );
+  const commandDetails = firstArray(analysis.commandDetails, analysis.command_details, analysis.executionSummary?.command_details);
+  const qualityScore = normalizeScoreValue(
+    analysis.qualityScore,
+    analysis.quality_score,
+    analysis.codeQualityScore,
+    analysis.code_quality_score,
+    analysis.executionSummary?.quality_score
+  );
+  const securityScore = normalizeScoreValue(analysis.securityScore, analysis.security_score, analysis.executionSummary?.security_score);
+  const riskScore = normalizeScoreValue(analysis.riskScore, analysis.risk_score, analysis.executionSummary?.risk_score);
+  const reliabilityScore = normalizeScoreValue(analysis.reliabilityScore, analysis.reliability_score, analysis.executionSummary?.reliability_score);
+  const hasReadinessScores = securityScore !== null && qualityScore !== null && riskScore !== null;
+  const securityConcernCount = securityIssues.length || prioritizedFindings.filter((finding: any) => /security/i.test(String(finding?.category || finding?.title || ''))).length;
+  const performanceSuggestionCount = performanceItems.length || prioritizedFindings.filter((finding: any) => /performance/i.test(String(finding?.category || finding?.title || ''))).length;
+  const commandCount = commandDetails.length;
+  const readinessLabel = !hasReadinessScores
+    ? 'Analysis data incomplete'
+    : securityScore >= 7 && qualityScore >= 7 && riskScore <= 4
+      ? 'Ready with standard review'
+      : securityScore >= 5 && qualityScore >= 5 && riskScore <= 7
+        ? 'Needs targeted remediation'
+        : 'Hold for engineering review';
   const readinessTone = readinessLabel === 'Ready with standard review'
     ? 'border-emerald-700/60 bg-emerald-950/30 text-emerald-200'
     : readinessLabel === 'Needs targeted remediation'
       ? 'border-yellow-700/60 bg-yellow-950/30 text-yellow-200'
-      : 'border-red-700/60 bg-red-950/30 text-red-200';
+      : readinessLabel === 'Analysis data incomplete'
+        ? 'border-slate-700 bg-slate-900/70 text-slate-200'
+        : 'border-red-700/60 bg-red-950/30 text-red-200';
   const reportMetrics = [
-    { label: 'Security', value: securityScore, note: securityScore >= 7 ? 'Strong control posture' : 'Review before production', reverse: false },
-    { label: 'Quality', value: qualityScore, note: qualityScore >= 7 ? 'Maintainable structure' : 'Refactor opportunities', reverse: false },
-    { label: 'Risk', value: riskScore, note: riskScore <= 4 ? 'Low execution risk' : 'Operational caution', reverse: true },
-    { label: 'Reliability', value: reliabilityScore, note: reliabilityScore > 0 ? 'Runtime confidence' : 'Not scored', reverse: false },
+    { label: 'Security', value: securityScore, note: securityScore === null ? 'Not scored by analysis' : securityScore >= 7 ? 'Strong control posture' : 'Review before production', reverse: false },
+    { label: 'Quality', value: qualityScore, note: qualityScore === null ? 'Not scored by analysis' : qualityScore >= 7 ? 'Maintainable structure' : 'Refactor opportunities', reverse: false },
+    { label: 'Risk', value: riskScore, note: riskScore === null ? 'Not scored by analysis' : riskScore <= 4 ? 'Low execution risk' : 'Operational caution', reverse: true },
+    { label: 'Reliability', value: reliabilityScore, note: reliabilityScore === null ? 'Not scored by analysis' : 'Runtime confidence', reverse: false },
   ];
-  const scoreTone = (value: number, reverse = false) => {
+  const scoreTone = (value: number | null, reverse = false) => {
+    if (value === null) return 'bg-slate-600';
     if (reverse) {
       if (value <= 3) return 'bg-emerald-500';
       if (value <= 6.9) return 'bg-yellow-500';
@@ -790,6 +855,7 @@ When generating or modifying scripts:
     if (value >= 4) return 'bg-yellow-500';
     return 'bg-red-500';
   };
+  const displayScore = (value: number | null) => value === null ? 'Not scored' : `${value.toFixed(1)}/10`;
   const confidenceLabel = getConfidenceLabel(confidence, analysisSource);
   
   return (
@@ -839,7 +905,7 @@ When generating or modifying scripts:
                 Executive Script Readiness Report
               </h2>
               <p className="mt-4 max-w-3xl text-sm leading-6 text-slate-300 sm:text-base">
-                {analysis.purpose || 'This report summarizes script intent, risk posture, runtime requirements, command behavior, and the next actions needed before production use.'}
+                {reportPurpose || 'This report summarizes script intent, risk posture, runtime requirements, command behavior, and the next actions needed before production use.'}
               </p>
               <div className="mt-6 grid gap-3 sm:grid-cols-3">
                 <div className="rounded-xl border border-slate-800 bg-slate-900/75 p-4">
@@ -872,12 +938,12 @@ When generating or modifying scripts:
                   <div key={metric.label}>
                     <div className="mb-1 flex items-center justify-between gap-3 text-sm">
                       <span className="font-medium text-slate-200">{metric.label}</span>
-                      <span className="font-mono text-slate-300">{metric.value.toFixed(1)}/10</span>
+                      <span className="font-mono text-slate-300">{displayScore(metric.value)}</span>
                     </div>
                     <div className="h-2.5 overflow-hidden rounded-full bg-slate-800">
                       <div
                         className={`h-full rounded-full ${scoreTone(metric.value, metric.reverse)}`}
-                        style={{ width: `${metric.value * 10}%` }}
+                        style={{ width: `${(metric.value ?? 0) * 10}%` }}
                       />
                     </div>
                     <p className="mt-1 text-xs text-slate-500">{metric.note}</p>
@@ -919,18 +985,20 @@ When generating or modifying scripts:
             <h3 className="text-sm font-semibold uppercase tracking-[0.18em] text-slate-400">Risk Matrix</h3>
             <div className="mt-4 grid grid-cols-3 gap-1 rounded-xl border border-slate-800 bg-slate-900 p-2">
               {[0, 1, 2, 3, 4, 5, 6, 7, 8].map((cell) => {
-                const active = riskScore <= 3 ? cell === 6 : riskScore <= 6.9 ? cell === 4 : cell === 2;
+                const active = riskScore === null ? false : riskScore <= 3 ? cell === 6 : riskScore <= 6.9 ? cell === 4 : cell === 2;
                 const color = cell < 3 ? 'bg-red-900/50' : cell < 6 ? 'bg-yellow-900/40' : 'bg-emerald-900/40';
                 return (
                   <div
                     key={cell}
                     className={`aspect-square rounded-md border ${active ? 'border-white ring-2 ring-blue-400' : 'border-slate-800'} ${color}`}
-                    aria-label={active ? `Current risk position: ${riskScore.toFixed(1)} out of 10` : undefined}
+                    aria-label={active && riskScore !== null ? `Current risk position: ${riskScore.toFixed(1)} out of 10` : undefined}
                   />
                 );
               })}
             </div>
-            <p className="mt-3 text-xs text-slate-500">Marker is based on normalized risk score. Lower risk plots toward approval.</p>
+            <p className="mt-3 text-xs text-slate-500">
+              {riskScore === null ? 'Risk score was not returned by the analyzer.' : 'Marker is based on normalized risk score. Lower risk plots toward approval.'}
+            </p>
           </div>
         </div>
       </section>
@@ -1297,7 +1365,7 @@ When generating or modifying scripts:
                   {renderScoreIndicator(qualityScore, 'Quality')}
                   {renderScoreIndicator(securityScore, 'Security')}
                   {renderScoreIndicator(riskScore, 'Risk', true)}
-                  {reliabilityScore > 0 && renderScoreIndicator(reliabilityScore, 'Reliability')}
+                  {reliabilityScore !== null && reliabilityScore > 0 && renderScoreIndicator(reliabilityScore, 'Reliability')}
                 </div>
                 
                 <div className="mt-6 space-y-6">

@@ -242,6 +242,24 @@ describe('hosted AI client routing', () => {
     expect(scriptAnalysis).toContain('onClick={handleLangGraphAnalysis}');
   });
 
+  it('normalizes hosted analysis fields before rendering the top report summary', () => {
+    const scriptAnalysis = readWorkspaceFile('src/frontend/src/pages/ScriptAnalysis.tsx');
+
+    expect(scriptAnalysis).toContain('const normalizeScoreValue = (...values: unknown[]): number | null => {');
+    expect(scriptAnalysis).toContain('analysis.qualityScore');
+    expect(scriptAnalysis).toContain('analysis.quality_score');
+    expect(scriptAnalysis).toContain('analysis.codeQualityScore');
+    expect(scriptAnalysis).toContain('analysis.code_quality_score');
+    expect(scriptAnalysis).toContain('const reportPurpose = firstText(');
+    expect(scriptAnalysis).toContain('analysis.executionSummary?.what_it_does');
+    expect(scriptAnalysis).toContain('const securityIssues = firstArray(');
+    expect(scriptAnalysis).toContain('analysis.securityIssues');
+    expect(scriptAnalysis).toContain('analysis.security_issues');
+    expect(scriptAnalysis).toContain('const displayScore = (value: number | null)');
+    expect(scriptAnalysis).toContain('Analysis data incomplete');
+    expect(scriptAnalysis).toContain('Risk score was not returned by the analyzer.');
+  });
+
   it('routes active chat and assistant follow-ups through hosted API paths', () => {
     const simpleChatApi = readWorkspaceFile('src/frontend/src/services/api-simple.ts');
     const agentPage = readWorkspaceFile('src/frontend/src/pages/AgenticAIPage.tsx');
