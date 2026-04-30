@@ -4,6 +4,10 @@
 
 Practice the support lifecycle for a script issue: capture evidence, verify hosted state, test delete behavior on disposable data, and document cleanup.
 
+![Support escalation ladder](../../graphics/support-escalation-ladder-2026-04-29.svg)
+
+![Role-based training workflow](../../graphics/training-role-workflow-2026-04-29.svg)
+
 ## Prerequisites
 
 - Approved account on `https://pstest.morloksmaze.com`.
@@ -29,6 +33,14 @@ Practice the support lifecycle for a script issue: capture evidence, verify host
 - No unrelated production scripts are modified.
 - Exported analysis evidence is a PDF.
 - The support note contains enough detail for a second person to reproduce the case.
+
+## Evidence Screenshots
+
+Capture or reference these surfaces during the exercise.
+
+![Analysis runtime requirements](../../screenshots/readme/analysis-runtime-requirements.png)
+
+![Data maintenance](../../screenshots/readme/data-maintenance.png)
 
 ## Evidence Template
 

@@ -1,0 +1,60 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1440" height="810" viewBox="0 0 1440 810" role="img" aria-labelledby="title desc">
+  <title id="title">PSScript role-based training workflow</title>
+  <desc id="desc">A swimlane diagram showing how authors, reviewers, admins, and support teams use PSScript training materials.</desc>
+  <defs>
+    <style>
+      .title{font:800 36px Inter,Arial,sans-serif;fill:#f8fafc}
+      .sub{font:500 20px Inter,Arial,sans-serif;fill:#cbd5e1}
+      .role{font:800 22px Inter,Arial,sans-serif;fill:#e0f2fe}
+      .box{font:650 18px Inter,Arial,sans-serif;fill:#f8fafc}
+      .note{font:500 16px Inter,Arial,sans-serif;fill:#aab8ca}
+      .arrow{stroke:#38bdf8;stroke-width:4;marker-end:url(#arrow)}
+    </style>
+    <marker id="arrow" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto">
+      <path d="M0,0 L0,6 L9,3 z" fill="#38bdf8"/>
+    </marker>
+  </defs>
+  <rect width="1440" height="810" rx="36" fill="#0f172a"/>
+  <text x="86" y="104" class="title">Role-Based Training Workflow</text>
+  <text x="88" y="142" class="sub">Each lane has the screenshots, checks, and evidence needed for a complete PSScript lifecycle.</text>
+  <g transform="translate(80 206)">
+    <rect width="1280" height="110" rx="20" fill="#111827" stroke="#334155"/>
+    <text x="28" y="48" class="role">Author</text>
+    <rect x="210" y="24" width="190" height="62" rx="16" fill="#075985"/><text x="234" y="62" class="box">Design</text>
+    <path d="M410 55h74" class="arrow"/>
+    <rect x="500" y="24" width="190" height="62" rx="16" fill="#0369a1"/><text x="524" y="62" class="box">Upload</text>
+    <path d="M700 55h74" class="arrow"/>
+    <rect x="790" y="24" width="190" height="62" rx="16" fill="#0284c7"/><text x="814" y="62" class="box">Edit/export</text>
+    <text x="1014" y="62" class="note">Screenshots: upload, edit, detail</text>
+  </g>
+  <g transform="translate(80 346)">
+    <rect width="1280" height="110" rx="20" fill="#111827" stroke="#334155"/>
+    <text x="28" y="48" class="role">Reviewer</text>
+    <rect x="210" y="24" width="190" height="62" rx="16" fill="#1d4ed8"/><text x="234" y="62" class="box">Analyze</text>
+    <path d="M410 55h74" class="arrow"/>
+    <rect x="500" y="24" width="190" height="62" rx="16" fill="#2563eb"/><text x="524" y="62" class="box">Remediate</text>
+    <path d="M700 55h74" class="arrow"/>
+    <rect x="790" y="24" width="190" height="62" rx="16" fill="#3b82f6"/><text x="814" y="62" class="box">PDF evidence</text>
+    <text x="1014" y="62" class="note">Screenshots: analysis, requirements</text>
+  </g>
+  <g transform="translate(80 486)">
+    <rect width="1280" height="110" rx="20" fill="#111827" stroke="#334155"/>
+    <text x="28" y="48" class="role">Admin</text>
+    <rect x="210" y="24" width="190" height="62" rx="16" fill="#4f46e5"/><text x="234" y="62" class="box">Approve</text>
+    <path d="M410 55h74" class="arrow"/>
+    <rect x="500" y="24" width="190" height="62" rx="16" fill="#6366f1"/><text x="524" y="62" class="box">Back up</text>
+    <path d="M700 55h74" class="arrow"/>
+    <rect x="790" y="24" width="190" height="62" rx="16" fill="#818cf8"/><text x="814" y="62" class="box">Operate</text>
+    <text x="1014" y="62" class="note">Screenshots: profile, data maintenance</text>
+  </g>
+  <g transform="translate(80 626)">
+    <rect width="1280" height="110" rx="20" fill="#111827" stroke="#334155"/>
+    <text x="28" y="48" class="role">Support</text>
+    <rect x="210" y="24" width="190" height="62" rx="16" fill="#6d28d9"/><text x="234" y="62" class="box">Reproduce</text>
+    <path d="M410 55h74" class="arrow"/>
+    <rect x="500" y="24" width="190" height="62" rx="16" fill="#7c3aed"/><text x="524" y="62" class="box">Collect logs</text>
+    <path d="M700 55h74" class="arrow"/>
+    <rect x="790" y="24" width="190" height="62" rx="16" fill="#8b5cf6"/><text x="814" y="62" class="box">Escalate</text>
+    <text x="1014" y="62" class="note">Evidence: route, deploy id, logs</text>
+  </g>
+</svg>

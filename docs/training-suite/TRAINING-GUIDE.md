@@ -22,6 +22,40 @@ PSScript is a governed workspace for PowerShell scripts. The current training pa
 
 ![Training support suite map](../graphics/training-support-suite-map-2026-04-29.svg)
 
+## Business Training Package
+
+The Settings training library is designed as a business enablement packet: every guide pairs a short procedure, a technical model, the current screenshots, and evidence expectations. Use the dashboard graphic at the start of onboarding, then use the scorecard before each class, operations review, or support handoff.
+
+![Business training dashboard](../graphics/training-corporate-dashboard-2026-04-29.svg)
+
+![Training readiness scorecard](../graphics/training-readiness-scorecard-2026-04-29.svg)
+
+### Visual Design Standard
+
+| Element | Training purpose | Standard |
+| --- | --- | --- |
+| Hero summary | Orient the learner before details | One sentence, current hosted model, clear audience |
+| Screenshots | Show the exact production surface | Current UI, readable width, route and action identified |
+| Charts | Make status and readiness scannable | Short labels, restrained corporate palette, no decorative filler |
+| Tables | Support repeatable operations | Narrow status columns, wider evidence/action columns |
+| Callouts | Prevent risky actions | Use for delete, restore, role, and production-data warnings |
+
+## Learner Tracks
+
+Use the same hosted environment for every track, but teach different depth by role. A class is complete only when the learner can perform the outcome and produce the listed evidence.
+
+| Audience | Teach first | They should be able to do | Proof of learning |
+| --- | --- | --- | --- |
+| Basic user | Navigation, search, documentation, PDF export | Find a known script, open documentation, read analysis, and download a PDF report | Screenshot of search result plus downloaded PDF |
+| New beginner | Upload form, metadata, categories, tags, safe test records | Upload a disposable `.ps1`, fill metadata, open detail, run or view analysis | Script id, category, tags, analysis screen |
+| Senior engineer | Analysis criteria, runtime requirements, modules, remediation, reuse | Decide whether a script is safe to reuse and document required fixes or accepted risk | Findings summary, dependency list, remediation note |
+| Admin or support | Approval gate, delete behavior, data maintenance, Netlify/Supabase evidence | Triage access, upload, delete, export, and maintenance issues without touching production data unnecessarily | Route, role, deploy id, Function log window, Supabase log window |
+| C-level management | Governance model, ownership, risk reporting, hosted operating model | Explain where scripts live, who approves access, how analysis supports risk control, and how incidents escalate | Lifecycle map plus readiness scorecard summary |
+
+### Training Depth By Role
+
+Basic users and beginners need guided steps with screenshots and simple success checks. Senior engineers need the same workflow plus code quality, PowerShell runtime, required modules, and risk decisions. Admins and support need evidence discipline: user role, route, deploy id, API response, logs, and backup-first behavior. C-level readers need a short business narrative: the app centralizes script knowledge, reduces unsafe reuse, keeps production data hosted in Supabase, and supports audit-style evidence through Netlify deploys, analysis reports, and screenshots.
+
 ## System Overview
 
 | Layer | Current implementation |
@@ -46,6 +80,20 @@ PSScript is a governed workspace for PowerShell scripts. The current training pa
 | Assistant | `/agentic` resolves to assistant instead of 404 | `../screenshots/readme/agentic-assistant.png` |
 | Settings | Profile and admin surfaces | `../screenshots/readme/settings-profile.png` |
 | Data maintenance | Backup-first admin maintenance | `../screenshots/readme/data-maintenance.png` |
+
+## Screenshot Walkthrough Set
+
+Use these screenshots in instructor-led demos. They are also surfaced as visual tiles inside Settings -> Docs & Training.
+
+![Settings docs and training](../screenshots/readme/settings-docs-training.png)
+
+![Dashboard screenshot](../screenshots/readme/dashboard.png)
+
+![Upload screenshot](../screenshots/readme/upload.png)
+
+![Analysis runtime requirements screenshot](../screenshots/readme/analysis-runtime-requirements.png)
+
+![Settings appearance screenshot](../screenshots/readme/settings-appearance.png)
 
 ## Environment Setup
 

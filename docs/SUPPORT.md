@@ -6,6 +6,24 @@ This guide reflects the active hosted app at `https://pstest.morloksmaze.com`.
 
 ![Support escalation ladder](./graphics/support-escalation-ladder-2026-04-29.svg)
 
+## Corporate Support Training Model
+
+Support training should read like an operating playbook, not a bug list. Start with the role workflow, gather current screenshots, then attach hosted evidence from Netlify and Supabase before escalating.
+
+![Role-based training workflow](./graphics/training-role-workflow-2026-04-29.svg)
+
+![Training readiness scorecard](./graphics/training-readiness-scorecard-2026-04-29.svg)
+
+## Support Training Outcomes
+
+| Audience | What they need from this guide | Correct behavior |
+| --- | --- | --- |
+| Basic user | Know what evidence to send when something fails | Share route, screenshot, script name, expected result, and actual result |
+| New beginner | Understand when not to retry destructive actions | Stop after one failed delete/export/upload and ask for help with the response text |
+| Senior engineer | Reproduce the workflow and isolate app, API, data, or provider failure | Attach script id, request payload shape, response status, and likely code surface |
+| Admin or support | Triage with hosted Netlify and Supabase evidence | Check role, enabled profile, Function logs, Supabase logs, and backup state |
+| C-level management | See whether the issue is availability, data risk, or process risk | Review severity, impacted workflow, mitigation, and owner |
+
 ## Before Opening An Issue
 
 - Reproduce the issue and write exact steps.
@@ -113,6 +131,12 @@ Collect:
 - [`training-suite/SCRIPT-LIFECYCLE-SUITE-2026-04-29.md`](./training-suite/SCRIPT-LIFECYCLE-SUITE-2026-04-29.md)
 - [`training-suite/SCREENSHOT-ATLAS.md`](./training-suite/SCREENSHOT-ATLAS.md)
 - [`training-suite/TRAINING-GUIDE.md`](./training-suite/TRAINING-GUIDE.md)
+
+### High-Value Support Screenshots
+
+![Analysis runtime requirements](./screenshots/readme/analysis-runtime-requirements.png)
+
+![Data maintenance](./screenshots/readme/data-maintenance.png)
 
 ## Developer-Only Appendix
 

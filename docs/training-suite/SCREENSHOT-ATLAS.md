@@ -4,6 +4,16 @@ Last updated: April 29, 2026.
 
 This atlas indexes the current training screenshots for the hosted PSScript app. Use these images in support notes, training decks, onboarding guides, and release evidence.
 
+## Business Visual Pack
+
+Use this section when building a formal training handout, support SOP, or onboarding packet. The charts explain the operating structure; the screenshots prove the current app state.
+
+![Business training dashboard](../graphics/training-corporate-dashboard-2026-04-29.svg)
+
+![Training readiness scorecard](../graphics/training-readiness-scorecard-2026-04-29.svg)
+
+![Role-based training workflow](../graphics/training-role-workflow-2026-04-29.svg)
+
 ## Production Screens
 
 | Screenshot | Path | Use |
@@ -23,10 +33,27 @@ This atlas indexes the current training screenshots for the hosted PSScript app.
 | Agent orchestration | `../screenshots/readme/agent-orchestration.png` | Multi-step AI workflow and coordination view |
 | Analytics | `../screenshots/readme/analytics.png` | Usage, score, and governance trend review |
 | Settings | `../screenshots/readme/settings.png` | Admin and user settings orientation |
+| Settings docs and training | `../screenshots/readme/settings-docs-training.png` | Business and technical training library, Canva link, charts, and screenshot references |
 | Settings profile | `../screenshots/readme/settings-profile.png` | Profile state, role, and account support |
 | Settings appearance | `../screenshots/readme/settings-appearance.png` | Light/dark mode, muted accent, font size, and accessibility controls |
 | Data maintenance | `../screenshots/readme/data-maintenance.png` | Backup-first maintenance and test data cleanup |
 | UI components | `../screenshots/readme/ui-components.png` | Design-system reference and support copy alignment |
+
+## Primary Screenshot Gallery
+
+![Dashboard](../screenshots/readme/dashboard.png)
+
+![Scripts library](../screenshots/readme/scripts.png)
+
+![Upload](../screenshots/readme/upload.png)
+
+![Script edit and VS Code export](../screenshots/readme/script-edit-vscode.png)
+
+![Analysis runtime requirements](../screenshots/readme/analysis-runtime-requirements.png)
+
+![Data maintenance](../screenshots/readme/data-maintenance.png)
+
+![Settings docs and training](../screenshots/readme/settings-docs-training.png)
 
 ## Graphics
 
@@ -35,6 +62,9 @@ This atlas indexes the current training screenshots for the hosted PSScript app.
 | Lifecycle map | `../graphics/script-lifecycle-map-2026-04-29.svg` | Explain the full lifecycle from design intake through support |
 | Support suite map | `../graphics/training-support-suite-map-2026-04-29.svg` | Explain the relationship between training, labs, screenshots, and support |
 | Support escalation ladder | `../graphics/support-escalation-ladder-2026-04-29.svg` | Explain severity triage and escalation evidence |
+| Business training dashboard | `../graphics/training-corporate-dashboard-2026-04-29.svg` | Explain the full enablement package |
+| Readiness scorecard | `../graphics/training-readiness-scorecard-2026-04-29.svg` | Check class readiness before handoff |
+| Role workflow | `../graphics/training-role-workflow-2026-04-29.svg` | Explain role responsibilities across the lifecycle |
 | Architecture aurora | `../graphics/architecture-aurora.svg` | Explain Netlify, Supabase, API, and browser flow |
 | Analysis pipeline | `../graphics/analysis-pipeline.svg` | Explain script analysis and report generation |
 | Security scorecard | `../graphics/security-scorecard.svg` | Explain score interpretation and remediation priority |

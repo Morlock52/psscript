@@ -1,0 +1,72 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1440" height="810" viewBox="0 0 1440 810" role="img" aria-labelledby="title desc">
+  <title id="title">PSScript business training dashboard</title>
+  <desc id="desc">A business and technical training overview showing role tracks, lifecycle stages, hosted operations, and support evidence.</desc>
+  <defs>
+    <linearGradient id="bg" x1="0" x2="1" y1="0" y2="1">
+      <stop offset="0" stop-color="#0f172a"/>
+      <stop offset="1" stop-color="#111827"/>
+    </linearGradient>
+    <linearGradient id="panel" x1="0" x2="1">
+      <stop offset="0" stop-color="#1e293b"/>
+      <stop offset="1" stop-color="#0f172a"/>
+    </linearGradient>
+    <style>
+      .label{font:600 24px Inter,Arial,sans-serif;fill:#e5edf8}
+      .small{font:500 18px Inter,Arial,sans-serif;fill:#9fb0c8}
+      .tiny{font:600 15px Inter,Arial,sans-serif;fill:#cbd5e1}
+      .metric{font:800 44px Inter,Arial,sans-serif;fill:#f8fafc}
+      .line{stroke:#38bdf8;stroke-width:4;stroke-linecap:round}
+      .muted{stroke:#334155;stroke-width:2}
+    </style>
+  </defs>
+  <rect width="1440" height="810" rx="36" fill="url(#bg)"/>
+  <rect x="48" y="46" width="1344" height="718" rx="28" fill="none" stroke="#334155" stroke-width="2"/>
+  <text x="82" y="112" class="label" font-size="34">PSScript Training &amp; Support Library</text>
+  <text x="84" y="148" class="small">Business enablement map for the hosted Netlify and Supabase operating model</text>
+
+  <g transform="translate(84 202)">
+    <rect width="278" height="172" rx="22" fill="url(#panel)" stroke="#334155"/>
+    <text x="24" y="44" class="tiny">Training tracks</text>
+    <text x="24" y="104" class="metric">5</text>
+    <text x="24" y="136" class="small">authors, reviewers, admins, support, trainers</text>
+  </g>
+  <g transform="translate(402 202)">
+    <rect width="278" height="172" rx="22" fill="url(#panel)" stroke="#334155"/>
+    <text x="24" y="44" class="tiny">Lifecycle stages</text>
+    <text x="24" y="104" class="metric">7</text>
+    <text x="24" y="136" class="small">access to support evidence</text>
+  </g>
+  <g transform="translate(720 202)">
+    <rect width="278" height="172" rx="22" fill="url(#panel)" stroke="#334155"/>
+    <text x="24" y="44" class="tiny">Evidence assets</text>
+    <text x="24" y="104" class="metric">12+</text>
+    <text x="24" y="136" class="small">screenshots, graphics, charts</text>
+  </g>
+  <g transform="translate(1038 202)">
+    <rect width="278" height="172" rx="22" fill="url(#panel)" stroke="#334155"/>
+    <text x="24" y="44" class="tiny">Database source</text>
+    <text x="24" y="104" class="metric">1</text>
+    <text x="24" y="136" class="small">hosted Supabase production path</text>
+  </g>
+
+  <g transform="translate(100 444)">
+    <text x="0" y="0" class="tiny">Role workflow</text>
+    <g transform="translate(0 32)">
+      <rect width="1180" height="96" rx="18" fill="#0b1220" stroke="#334155"/>
+      <circle cx="62" cy="48" r="18" fill="#38bdf8"/>
+      <text x="102" y="54" class="small">Author designs and uploads</text>
+      <path class="line" d="M310 48h110"/>
+      <circle cx="454" cy="48" r="18" fill="#60a5fa"/>
+      <text x="494" y="54" class="small">Reviewer analyzes and remediates</text>
+      <path class="line" d="M768 48h110"/>
+      <circle cx="912" cy="48" r="18" fill="#a78bfa"/>
+      <text x="952" y="54" class="small">Admin operates and supports</text>
+    </g>
+  </g>
+
+  <g transform="translate(100 632)">
+    <rect width="1180" height="76" rx="18" fill="#082f49" stroke="#155e75"/>
+    <text x="26" y="32" class="tiny">Training standard</text>
+    <text x="26" y="58" class="small">Every module pairs procedure, screenshot evidence, analysis expectations, and cleanup guidance.</text>
+  </g>
+</svg>

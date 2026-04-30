@@ -145,10 +145,10 @@ const SettingsLayout: React.FC<SettingsLayoutProps> = ({
         )}
       </div>
 
-      <div className="flex flex-col gap-5 md:flex-row md:gap-8">
+      <div className="flex flex-col gap-5 lg:flex-row lg:gap-8">
         {/* Side navigation */}
-        <div className="w-full md:w-64 flex-shrink-0">
-          <div className="sticky top-16 rounded-lg border border-gray-200 bg-white p-3 shadow dark:border-gray-700 dark:bg-gray-800 md:top-6 md:p-4">
+        <div className="w-full lg:w-64 flex-shrink-0">
+          <div className="sticky top-16 rounded-lg border border-gray-200 bg-white p-3 shadow dark:border-gray-700 dark:bg-gray-800 lg:top-6 lg:p-4">
             <nav>
               <ul className="space-y-1">
                 {settingsNav.map(item => (

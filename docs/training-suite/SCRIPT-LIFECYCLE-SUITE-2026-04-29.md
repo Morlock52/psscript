@@ -20,6 +20,24 @@ PSScript manages PowerShell script work through a governed lifecycle:
 
 ![Script lifecycle map](../graphics/script-lifecycle-map-2026-04-29.svg)
 
+## Corporate Lifecycle Model
+
+The lifecycle is taught as a role-based operating workflow. Authors own script intent and metadata, reviewers own analysis interpretation and remediation decisions, admins own access and hosted operations, and support owns evidence capture and escalation.
+
+![Role-based training workflow](../graphics/training-role-workflow-2026-04-29.svg)
+
+### Lifecycle Evidence Graph
+
+| Stage | Screenshot or graphic | Evidence checkpoint |
+| --- | --- | --- |
+| Access | `../screenshots/readme/login.png` | approved account reaches app shell |
+| Upload | `../screenshots/readme/upload.png` | script record stores with complete metadata |
+| Edit | `../screenshots/readme/script-edit-vscode.png` | `.ps1` export opens in local tooling |
+| Analyze | `../screenshots/readme/analysis-runtime-requirements.png` | score, findings, PowerShell version, modules, and assemblies are visible |
+| Discover | `../screenshots/readme/documentation.png` | script or policy can be found by search or documentation |
+| Operate | `../screenshots/readme/data-maintenance.png` | admin confirms backup-first controls |
+| Support | `../graphics/support-escalation-ladder-2026-04-29.svg` | case includes route, deploy id, logs, and screenshot |
+
 ## Source Guidance Used
 
 The April 2026 training model is aligned with:
@@ -37,6 +55,20 @@ The April 2026 training model is aligned with:
 | Reviewer | Security, quality, operational fit | Findings, remediation notes, approval decision |
 | Admin | Access approval, data maintenance, deploy health | User state, backup records, deploy id, logs |
 | Support | Reproduction, triage, escalation | Screenshots, route, payload status, timestamps |
+
+## Training Outcomes By Audience
+
+| Audience | Minimum outcome | Deep outcome | Evidence checkpoint |
+| --- | --- | --- | --- |
+| Basic user | Can sign in, browse scripts, search, read documentation, and export an analysis PDF | Can explain what a score means and when to ask for reviewer help | Search route, script id, PDF filename |
+| New beginner | Can upload a disposable PowerShell script with complete metadata | Can edit metadata, open a `.ps1` export in VS Code, and rerun analysis after a change | Upload screenshot, detail page, analysis screen |
+| Senior engineer | Can validate security, quality, maintainability, PowerShell version, modules, assemblies, and remediation | Can compare similar scripts and approve reuse only when dependencies and risks are understood | Findings summary, runtime requirements, accepted-risk note |
+| Admin or support | Can approve users, verify hosted health, collect logs, and handle disposable delete tests | Can diagnose upload, export, delete, and data maintenance issues using Netlify and Supabase evidence | Role, route, deploy id, request/log window |
+| C-level management | Can describe the governed script lifecycle and why hosted Supabase is the source of record | Can read readiness scorecards and escalation evidence without needing implementation details | Lifecycle map, readiness summary, escalation path |
+
+## What Good Training Looks Like
+
+Each session should include a short explanation, a live or screenshot-backed walkthrough, a learner action, and an evidence check. Do not mark a learner complete because they watched a demo. Mark them complete when they can use the hosted app in the correct role, produce the expected proof, and avoid unsafe production-data actions.
 
 ## Lifecycle Standard
 
@@ -89,6 +121,8 @@ Hosted uploads are intentionally capped at 4 MB in the UI. Larger scripts should
 
 ![Analysis](../screenshots/readme/analysis.png)
 
+![Runtime requirements](../screenshots/readme/analysis-runtime-requirements.png)
+
 Reviewers should read analysis output in this order:
 
 1. Criteria version and confidence.
@@ -121,6 +155,8 @@ Search results are advisory. Reviewers still validate the actual script, metadat
 ## Delete And Cleanup Standard
 
 ![Scripts](../screenshots/readme/scripts.png)
+
+![Data maintenance](../screenshots/readme/data-maintenance.png)
 
 Delete behavior must be intentional:
 
