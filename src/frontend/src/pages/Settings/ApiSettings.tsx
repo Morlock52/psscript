@@ -144,6 +144,15 @@ const ApiSettings: React.FC = () => {
   };
 
   const testProviderKey = async (provider: ProviderStatus['provider']) => {
+    const status = providerStatuses.get(provider);
+    if (status?.formatValid === false) {
+      setMessage({
+        severity: 'error',
+        text: status.formatMessage || `${status.label} API key format is not recognized. Save a valid key override first.`,
+      });
+      return;
+    }
+
     setIsLoading(true);
     try {
       const response = await fetch(`${getApiUrl()}/admin/api-keys/${provider}/test`, {
@@ -201,7 +210,7 @@ const ApiSettings: React.FC = () => {
                   {status && (
                     <Chip
                       size="small"
-                      color={status.configured ? 'success' : 'default'}
+                      color={status.configured ? (status.formatValid === false ? 'error' : 'success') : 'default'}
                       label={status.configured
                         ? `Configured via ${status.source}`
                         : 'Not configured'}
@@ -213,7 +222,8 @@ const ApiSettings: React.FC = () => {
                 </Typography>
                 {status?.configured && status.formatValid === false && (
                   <Alert severity="error" sx={{ mb: 2 }}>
-                    {status.formatMessage || `${provider.name} API key format is not recognized.`}
+                    {status.formatMessage || `${provider.name} API key format is not recognized.`} Save a valid key below
+                    to override the broken environment value.
                   </Alert>
                 )}
                 {isEditableProvider(provider.provider) && isAdmin && (
@@ -243,7 +253,7 @@ const ApiSettings: React.FC = () => {
                     <Button
                       variant="outlined"
                       onClick={() => void testProviderKey(provider.provider as ProviderStatus['provider'])}
-                      disabled={isLoading || !providerStatuses.get(provider.provider)?.configured}
+                      disabled={isLoading || !status?.configured || status.formatValid === false}
                     >
                       Test key
                     </Button>

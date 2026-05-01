@@ -767,7 +767,8 @@ async function handleAdminApiKeys(req: Request, route: RouteParams): Promise<Res
   if (route.segments[3] === 'test') {
     if (req.method !== 'POST') return methodNotAllowed();
     const result = await testProviderApiKey(provider);
-    return json(result, { status: result.ok ? 200 : 502 });
+    const status = result.ok ? 200 : (result.error === 'invalid_api_key_format' || result.error === 'missing_api_key' ? 400 : 502);
+    return json(result, { status });
   }
 
   if (req.method === 'PUT') {
