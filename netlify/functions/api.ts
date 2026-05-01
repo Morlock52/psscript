@@ -4618,6 +4618,16 @@ async function testProviderApiKey(provider: ApiKeyProvider): Promise<{
     };
   }
 
+  if (!config.prefixes.some(prefix => apiKey.startsWith(prefix))) {
+    return {
+      ok: false,
+      provider,
+      source,
+      message: `${config.label} API key format is not recognized for ${source} configuration.`,
+      error: 'invalid_api_key_format',
+    };
+  }
+
   let response: Response;
   try {
     response = provider === 'openai'
