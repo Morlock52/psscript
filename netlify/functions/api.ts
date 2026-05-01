@@ -4220,20 +4220,33 @@ async function synthesizeSpeech(input: {
   }
 
   const started = Date.now();
-  const openai = new OpenAI({ apiKey: openaiKey });
   try {
-    const response = await openai.audio.speech.create({
-      model,
-      voice: voice as any,
-      input: text,
-      response_format: format as any,
-      speed: input.speed,
-      instructions: instructionText,
-    }, {
+    const response = await fetch('https://api.openai.com/v1/audio/speech', {
+      method: 'POST',
       headers: {
+        Authorization: `Bearer ${openaiKey}`,
+        'Content-Type': 'application/json',
         Accept: mimeTypeForAudioFormat(format),
       },
+      body: JSON.stringify({
+        model,
+        voice,
+        input: text,
+        response_format: format,
+        speed: input.speed,
+        ...(instructionText ? { instructions: instructionText } : {}),
+      }),
     });
+
+    if (!response.ok) {
+      const errorPayload = await response.json().catch(() => null) as any;
+      const providerError = errorPayload?.error || {};
+      throw Object.assign(
+        new Error(providerError.message || providerError.code || `OpenAI TTS failed (${response.status})`),
+        { status: response.status, code: providerError.code || 'voice_provider_error' }
+      );
+    }
+
     const audioBuffer = Buffer.from(await response.arrayBuffer());
     await recordAiMetric(metricContext, {
       provider: 'openai',
