@@ -136,18 +136,39 @@ describe('hosted AI client routing', () => {
     const netlifyApi = readWorkspaceFile('netlify/functions/api.ts');
     const voiceDock = readWorkspaceFile('src/frontend/src/components/VoiceAssistantDock.tsx');
     const voiceRunner = readWorkspaceFile('scripts/voice-tests-1-8.mjs');
+    const voiceHandler = netlifyApi.slice(
+      netlifyApi.indexOf('async function handleVoice'),
+      netlifyApi.indexOf('async function handleAnalyticsSummary')
+    );
+    const voiceRecognizer = netlifyApi.slice(
+      netlifyApi.indexOf('async function recognizeSpeech'),
+      netlifyApi.indexOf('function normalizeVoiceId')
+    );
 
     expect(netlifyApi).toContain('streamText(messages');
     expect(netlifyApi).toContain("event.type === 'response.output_text.delta'");
     expect(netlifyApi).toContain("endpoint: '/chat/stream'");
     expect(netlifyApi).toContain("endpoint: route.path");
+    expect(voiceHandler).toContain('const user = await requireUser(req);');
+    expect(voiceHandler).toContain("route.path === '/voice/voices'");
+    expect(voiceHandler).toContain("route.path === '/voice/settings'");
+    expect(voiceHandler).toContain("route.path === '/voice/synthesize'");
+    expect(voiceHandler).toContain("route.path === '/voice/recognize'");
     expect(netlifyApi).toContain('synthesizeSpeech({');
     expect(netlifyApi).toContain('recognizeSpeech({');
     expect(netlifyApi).toContain('VOICE_TTS_CACHE_MAX_ENTRIES');
     expect(netlifyApi).toContain('isValidBase64AudioPayload');
+    expect(voiceRecognizer).toContain("code: 'missing_audio'");
+    expect(voiceRecognizer).toContain("getEnv('VOICE_MAX_BASE64_CHARS'");
+    expect(voiceRecognizer).toContain("code: 'audio_too_large'");
+    expect(voiceRecognizer).toContain("code: 'invalid_audio'");
+    expect(voiceRecognizer).toContain("normalizeAudioFormat(input.audioFormat, ['webm', 'ogg', 'mp3', 'mp4', 'm4a', 'wav', 'flac'], 'webm')");
+    expect(voiceRecognizer).toContain('await recordAiMetric(metricContext');
     expect(voiceDock).toContain('const { user } = useAuth();');
     expect(voiceDock).toContain('return null;');
     expect(voiceDock).toContain('Audio output is AI-generated');
+    expect(voiceDock).toContain('lastEditableTargetRef');
+    expect(voiceDock).toContain('MIN_RECORDING_MS');
     expect(voiceRunner).toContain('client_provider_key_ignored');
     expect(netlifyApi).toContain("endpoint: '/documentation/crawl/ai'");
   });

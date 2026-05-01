@@ -9,6 +9,10 @@ const SUPPORTED_MIME_TYPES = [
   'audio/ogg;codecs=opus',
   'audio/mp4',
 ];
+const MIN_RECORDING_MS = 350;
+const MIN_AUDIO_BYTES = 128;
+
+type EditableTarget = HTMLInputElement | HTMLTextAreaElement | HTMLElement;
 
 function selectRecorderMimeType(): string | undefined {
   if (typeof MediaRecorder === 'undefined') {
@@ -64,8 +68,42 @@ async function blobToBase64(blob: Blob): Promise<string> {
   });
 }
 
-function insertTranscriptIntoActiveElement(text: string, target: Element | null): boolean {
+function isEditableTarget(target: Element | null): target is EditableTarget {
   if (!target) {
+    return false;
+  }
+
+  if (target instanceof HTMLInputElement || target instanceof HTMLTextAreaElement) {
+    return !target.disabled && !target.readOnly;
+  }
+
+  return target instanceof HTMLElement && target.isContentEditable;
+}
+
+function setNativeTextValue(target: HTMLInputElement | HTMLTextAreaElement, value: string) {
+  const prototype = target instanceof HTMLTextAreaElement
+    ? HTMLTextAreaElement.prototype
+    : HTMLInputElement.prototype;
+  const descriptor = Object.getOwnPropertyDescriptor(prototype, 'value');
+
+  if (descriptor?.set) {
+    descriptor.set.call(target, value);
+  } else {
+    target.value = value;
+  }
+}
+
+function dispatchEditableChange(target: Element) {
+  if (typeof window.InputEvent === 'function') {
+    target.dispatchEvent(new InputEvent('input', { bubbles: true, inputType: 'insertText' }));
+  } else {
+    target.dispatchEvent(new Event('input', { bubbles: true }));
+  }
+  target.dispatchEvent(new Event('change', { bubbles: true }));
+}
+
+function insertTranscriptIntoActiveElement(text: string, target: Element | null): boolean {
+  if (!isEditableTarget(target)) {
     return false;
   }
 
@@ -73,22 +111,18 @@ function insertTranscriptIntoActiveElement(text: string, target: Element | null)
     const start = target.selectionStart ?? target.value.length;
     const end = target.selectionEnd ?? start;
     const nextValue = `${target.value.slice(0, start)}${text}${target.value.slice(end)}`;
-    target.value = nextValue;
+    setNativeTextValue(target, nextValue);
     const caret = start + text.length;
     target.setSelectionRange(caret, caret);
-    target.dispatchEvent(new Event('input', { bubbles: true }));
-    target.dispatchEvent(new Event('change', { bubbles: true }));
+    dispatchEditableChange(target);
     target.focus();
     return true;
   }
 
-  if (target instanceof HTMLElement && target.isContentEditable) {
-    target.focus();
-    document.execCommand('insertText', false, text);
-    return true;
-  }
-
-  return false;
+  target.focus();
+  document.execCommand('insertText', false, text);
+  dispatchEditableChange(target);
+  return true;
 }
 
 function getSpeakableText(transcriptDraft: string): string {
@@ -134,6 +168,8 @@ const VoiceAssistantDock: React.FC = () => {
   const audioStreamRef = useRef<MediaStream | null>(null);
   const audioChunksRef = useRef<Blob[]>([]);
   const activeElementRef = useRef<Element | null>(null);
+  const lastEditableTargetRef = useRef<Element | null>(null);
+  const recordingStartedAtRef = useRef(0);
   const audioRef = useRef<HTMLAudioElement | null>(null);
 
   const hasRealToken = useMemo(() => {
@@ -183,6 +219,29 @@ const VoiceAssistantDock: React.FC = () => {
     audioStreamRef.current?.getTracks().forEach((track) => track.stop());
   }, []);
 
+  useEffect(() => {
+    if (!hasRealToken) {
+      return;
+    }
+
+    const rememberEditableTarget = (event: Event) => {
+      const target = event.target instanceof Element ? event.target : null;
+      if (!isEditableTarget(target)) {
+        return;
+      }
+
+      lastEditableTargetRef.current = target;
+    };
+
+    document.addEventListener('focusin', rememberEditableTarget, true);
+    document.addEventListener('pointerdown', rememberEditableTarget, true);
+
+    return () => {
+      document.removeEventListener('focusin', rememberEditableTarget, true);
+      document.removeEventListener('pointerdown', rememberEditableTarget, true);
+    };
+  }, [hasRealToken]);
+
   const persistSettings = async (nextSettings: Partial<VoiceSettings>) => {
     const mergedSettings = { ...settings, ...nextSettings };
     setSettings(mergedSettings);
@@ -193,6 +252,12 @@ const VoiceAssistantDock: React.FC = () => {
     }
   };
 
+  const getDictationTarget = () => (
+    isEditableTarget(document.activeElement)
+      ? document.activeElement
+      : lastEditableTargetRef.current
+  );
+
   const startDictation = async () => {
     if (!navigator.mediaDevices?.getUserMedia || typeof MediaRecorder === 'undefined') {
       toast.error('This browser does not support microphone recording.');
@@ -201,7 +266,7 @@ const VoiceAssistantDock: React.FC = () => {
 
     try {
       setStatus('Requesting microphone...');
-      activeElementRef.current = document.activeElement;
+      activeElementRef.current = getDictationTarget();
       const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
       const mimeType = selectRecorderMimeType();
       const recorder = mimeType ? new MediaRecorder(stream, { mimeType }) : new MediaRecorder(stream);
@@ -219,8 +284,15 @@ const VoiceAssistantDock: React.FC = () => {
       recorder.onstop = async () => {
         try {
           setIsBusy(true);
-          setStatus('Transcribing...');
           const audioBlob = new Blob(audioChunksRef.current, { type: recorder.mimeType || 'audio/webm' });
+          const durationMs = Date.now() - recordingStartedAtRef.current;
+          if (!audioBlob.size || audioBlob.size < MIN_AUDIO_BYTES || durationMs < MIN_RECORDING_MS) {
+            setStatus('Recording too short');
+            toast.info('Hold dictation a little longer before stopping.');
+            return;
+          }
+
+          setStatus('Transcribing...');
           const audioData = await blobToBase64(audioBlob);
           const recognition = await voiceService.recognizeSpeech({
             audioData,
@@ -234,7 +306,7 @@ const VoiceAssistantDock: React.FC = () => {
           if (nextTranscript) {
             const inserted = insertTranscriptIntoActiveElement(
               nextTranscript,
-              activeElementRef.current || document.activeElement
+              activeElementRef.current || getDictationTarget()
             );
 
             if (inserted) {
@@ -261,6 +333,7 @@ const VoiceAssistantDock: React.FC = () => {
       };
 
       recorder.start();
+      recordingStartedAtRef.current = Date.now();
       setIsRecording(true);
       setStatus('Listening...');
     } catch (error: any) {
@@ -281,8 +354,13 @@ const VoiceAssistantDock: React.FC = () => {
   };
 
   const stopDictation = () => {
-    mediaRecorderRef.current?.stop();
+    if (!mediaRecorderRef.current) {
+      setStatus('Ready');
+      return;
+    }
+
     setStatus('Finishing recording...');
+    mediaRecorderRef.current.stop();
   };
 
   const speakCurrentContext = async () => {
@@ -338,6 +416,7 @@ const VoiceAssistantDock: React.FC = () => {
               </div>
               <button
                 type="button"
+                onPointerDown={(event) => event.preventDefault()}
                 onClick={() => setIsOpen(false)}
                 className="rounded-md px-2 py-1 text-xs text-[var(--ink-tertiary)] hover:bg-[var(--surface-overlay)]"
               >
@@ -352,6 +431,7 @@ const VoiceAssistantDock: React.FC = () => {
             <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
               <button
                 type="button"
+                onPointerDown={(event) => event.preventDefault()}
                 onClick={isRecording ? stopDictation : startDictation}
                 disabled={isBusy}
                 className={`rounded-xl border px-3 py-3 text-sm font-medium transition-colors ${
@@ -364,6 +444,7 @@ const VoiceAssistantDock: React.FC = () => {
               </button>
               <button
                 type="button"
+                onPointerDown={(event) => event.preventDefault()}
                 onClick={speakCurrentContext}
                 disabled={isBusy || isRecording}
                 className="rounded-xl border border-[var(--ink-muted)] bg-[var(--surface-overlay)] px-3 py-3 text-sm font-medium text-[var(--ink-primary)] hover:bg-[var(--surface-raised)] disabled:cursor-not-allowed disabled:opacity-60"
@@ -418,6 +499,7 @@ const VoiceAssistantDock: React.FC = () => {
               <span>{status}</span>
               <button
                 type="button"
+                onPointerDown={(event) => event.preventDefault()}
                 onClick={() => navigator.clipboard.writeText(transcript)}
                 disabled={!transcript.trim()}
                 className="rounded-md px-2 py-1 hover:bg-slate-100 disabled:opacity-40 dark:hover:bg-slate-800"
@@ -430,6 +512,7 @@ const VoiceAssistantDock: React.FC = () => {
 
         <button
           type="button"
+          onPointerDown={(event) => event.preventDefault()}
           onClick={() => setIsOpen((current) => !current)}
           className="rounded-full border border-[var(--ink-muted)] bg-[var(--surface-raised)]/95 px-4 py-3 text-sm font-black text-[var(--ink-primary)] shadow-[var(--shadow-near)] hover:bg-[var(--surface-overlay)] sm:px-5"
         >
