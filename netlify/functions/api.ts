@@ -2,6 +2,7 @@ import type { Config, Context } from '@netlify/functions';
 import OpenAI, { toFile } from 'openai';
 import Anthropic from '@anthropic-ai/sdk';
 import { createClient } from '@supabase/supabase-js';
+import { createCipheriv, createDecipheriv, createHash, randomBytes } from 'node:crypto';
 import { lookup } from 'node:dns/promises';
 import net from 'node:net';
 import { query } from './_shared/db';
@@ -29,6 +30,7 @@ type AiMetricDetails = {
   errorMessage?: string;
 };
 type ScriptDeleteMode = 'archive' | 'delete';
+type ApiKeyProvider = 'openai' | 'anthropic';
 
 const OPENAI_TEXT_MODEL = 'gpt-5.5';
 const OPENAI_ANALYSIS_MODEL = 'gpt-5.4-mini';
@@ -40,6 +42,10 @@ const SCRIPT_EMBEDDING_TIMEOUT_MS = 3000;
 const UPLOAD_ANALYSIS_TIMEOUT_MS = 12000;
 const HOSTED_SCRIPT_UPLOAD_MAX_BYTES = 4 * 1024 * 1024;
 const POWERSHELL_UPLOAD_EXTENSIONS = new Set(['.ps1', '.psm1', '.psd1', '.ps1xml']);
+const API_KEY_PROVIDERS: Record<ApiKeyProvider, { label: string; envName: string; prefixes: string[] }> = {
+  openai: { label: 'OpenAI', envName: 'OPENAI_API_KEY', prefixes: ['sk-'] },
+  anthropic: { label: 'Anthropic', envName: 'ANTHROPIC_API_KEY', prefixes: ['sk-ant-'] },
+};
 
 const AI_MODEL_PRICING: Record<string, { prompt: number; completion: number }> = {
   'gpt-5.5': { prompt: 5.00, completion: 30.00 },
@@ -89,6 +95,7 @@ const SCRIPT_CHILD_DELETE_TABLES = [
   'script_usage_stats',
 ];
 let scriptLifecycleSchemaPromise: Promise<void> | null = null;
+let providerApiKeysSchemaPromise: Promise<void> | null = null;
 const DB_BACKUP_TABLE = 'admin_db_backups';
 const DB_MAINTENANCE_TABLES = [
   'categories',
@@ -354,6 +361,7 @@ export default async function handleRequest(req: Request, context: Context): Pro
     if (route.path === '/auth/user') return await handleAuthUser(req);
     if (route.path === '/users') return await handleUsers(req);
     if (route.segments[0] === 'users' && route.segments[1]) return await handleUserById(req, route);
+    if (route.segments[0] === 'admin' && route.segments[1] === 'api-keys') return await handleAdminApiKeys(req, route);
     if (route.segments[0] === 'admin' && route.segments[1] === 'db') return await handleHostedDbAdmin(req, route);
     if (route.path === '/categories') return await handleCategories(req);
     if (route.path === '/tags') return await handleTags(req);
@@ -701,6 +709,89 @@ async function handleUserById(req: Request, route: RouteParams): Promise<Respons
     }
     await query('DELETE FROM app_profiles WHERE id = $1', [id]);
     return json({ success: true, deleted: 1 });
+  }
+
+  return methodNotAllowed();
+}
+
+async function handleAdminApiKeys(req: Request, route: RouteParams): Promise<Response> {
+  const admin = await requireAdmin(req);
+  await ensureProviderApiKeysSchema();
+
+  if (route.path === '/admin/api-keys') {
+    if (req.method !== 'GET') return methodNotAllowed();
+
+    const result = await query<{
+      provider: ApiKeyProvider;
+      key_hint: string;
+      updated_at: string;
+    }>(
+      `
+        SELECT provider, key_hint, updated_at
+        FROM provider_api_keys
+        WHERE provider = ANY($1::text[])
+      `,
+      [Object.keys(API_KEY_PROVIDERS)]
+    );
+    const overrides = new Map<ApiKeyProvider, { provider: ApiKeyProvider; key_hint: string; updated_at: string }>(
+      result.rows.map(row => [row.provider, row])
+    );
+
+    return json({
+      providers: (Object.keys(API_KEY_PROVIDERS) as ApiKeyProvider[]).map(provider => {
+        const override = overrides.get(provider);
+        const config = API_KEY_PROVIDERS[provider];
+        const envValue = getEnv(config.envName);
+        return {
+          provider,
+          label: config.label,
+          configured: Boolean(override || envValue),
+          source: override ? 'database' : (envValue ? 'environment' : 'missing'),
+          keyHint: override?.key_hint || (envValue ? keyHint(envValue) : ''),
+          updatedAt: override?.updated_at || null,
+        };
+      }),
+    });
+  }
+
+  const provider = normalizeApiKeyProvider(route.segments[2]);
+  if (!provider) return notFound(route.path);
+
+  if (req.method === 'PUT') {
+    const body = await req.json().catch(() => ({}));
+    const apiKey = normalizeProviderApiKey(provider, body.apiKey);
+    await query(
+      `
+        INSERT INTO provider_api_keys (provider, encrypted_api_key, key_hint, updated_by, updated_at)
+        VALUES ($1, $2, $3, $4, now())
+        ON CONFLICT (provider) DO UPDATE
+        SET encrypted_api_key = EXCLUDED.encrypted_api_key,
+            key_hint = EXCLUDED.key_hint,
+            updated_by = EXCLUDED.updated_by,
+            updated_at = now()
+      `,
+      [provider, encryptSecret(apiKey), keyHint(apiKey), admin.id]
+    );
+    return json({
+      success: true,
+      provider,
+      configured: true,
+      source: 'database',
+      keyHint: keyHint(apiKey),
+    });
+  }
+
+  if (req.method === 'DELETE') {
+    await query('DELETE FROM provider_api_keys WHERE provider = $1', [provider]);
+    const config = API_KEY_PROVIDERS[provider];
+    const envValue = getEnv(config.envName);
+    return json({
+      success: true,
+      provider,
+      configured: Boolean(envValue),
+      source: envValue ? 'environment' : 'missing',
+      keyHint: envValue ? keyHint(envValue) : '',
+    });
   }
 
   return methodNotAllowed();
@@ -1667,6 +1758,29 @@ async function ensureScriptLifecycleSchema(): Promise<void> {
     });
   }
   return scriptLifecycleSchemaPromise;
+}
+
+async function ensureProviderApiKeysSchema(): Promise<void> {
+  if (!providerApiKeysSchemaPromise) {
+    providerApiKeysSchemaPromise = (async () => {
+      await query(`
+        CREATE TABLE IF NOT EXISTS provider_api_keys (
+          provider TEXT PRIMARY KEY,
+          encrypted_api_key TEXT NOT NULL,
+          key_hint TEXT NOT NULL,
+          updated_by UUID REFERENCES app_profiles(id) ON DELETE SET NULL,
+          created_at TIMESTAMPTZ NOT NULL DEFAULT now(),
+          updated_at TIMESTAMPTZ NOT NULL DEFAULT now()
+        )
+      `);
+      await query('ALTER TABLE provider_api_keys ENABLE ROW LEVEL SECURITY');
+      await query('REVOKE ALL ON TABLE provider_api_keys FROM anon, authenticated');
+    })().catch(error => {
+      providerApiKeysSchemaPromise = null;
+      throw error;
+    });
+  }
+  return providerApiKeysSchemaPromise;
 }
 
 async function recordAuditEvent(input: {
@@ -3547,7 +3661,7 @@ async function getHostedAiBudgetAlerts(userId: string, dailyBudget: number, mont
 }
 
 async function completeText(messages: ChatMessage[], metricContext?: AiMetricContext): Promise<AiCompletion> {
-  const openaiKey = getEnv('OPENAI_API_KEY');
+  const openaiKey = await getProviderApiKey('openai');
   let openaiError: unknown = null;
   if (openaiKey) {
     const model = getEnv('OPENAI_MODEL', OPENAI_TEXT_MODEL);
@@ -3608,7 +3722,7 @@ async function streamText(
   metricContext: AiMetricContext | undefined,
   onDelta: (delta: string) => void
 ): Promise<AiCompletion> {
-  const openaiKey = getEnv('OPENAI_API_KEY');
+  const openaiKey = await getProviderApiKey('openai');
   let openaiError: unknown = null;
 
   if (openaiKey) {
@@ -3686,7 +3800,7 @@ async function streamText(
 }
 
 async function completeJson(messages: ChatMessage[], schema: any, name: string, metricContext?: AiMetricContext): Promise<Record<string, any>> {
-  const openaiKey = getEnv('OPENAI_API_KEY');
+  const openaiKey = await getProviderApiKey('openai');
   let openaiError: unknown = null;
   if (openaiKey) {
     const model = getEnv('OPENAI_ANALYSIS_MODEL', getEnv('OPENAI_MODEL', OPENAI_ANALYSIS_MODEL));
@@ -3769,7 +3883,7 @@ async function completeJson(messages: ChatMessage[], schema: any, name: string, 
 }
 
 async function completeTextWithAnthropic(messages: ChatMessage[], metricContext?: AiMetricContext): Promise<AiCompletion> {
-  const anthropicKey = getEnv('ANTHROPIC_API_KEY');
+  const anthropicKey = await getProviderApiKey('anthropic');
   if (!anthropicKey) return { text: '', provider: 'none', model: 'none' };
 
   const model = getEnv('ANTHROPIC_MODEL', ANTHROPIC_TEXT_MODEL);
@@ -3920,7 +4034,11 @@ async function summarizeDocumentationPage(
   commands: string[],
   metricContext?: AiMetricContext
 ): Promise<{ title: string; summary: string; tags: string[] } | null> {
-  if (!getEnv('OPENAI_API_KEY') && !getEnv('ANTHROPIC_API_KEY')) return null;
+  const [openaiKey, anthropicKey] = await Promise.all([
+    getProviderApiKey('openai'),
+    getProviderApiKey('anthropic'),
+  ]);
+  if (!openaiKey && !anthropicKey) return null;
 
   const schema = {
     type: 'object',
@@ -4154,7 +4272,7 @@ function titleFromUrl(value: string): string {
 }
 
 async function generateEmbedding(text: string): Promise<number[]> {
-  const openaiKey = getEnv('OPENAI_API_KEY');
+  const openaiKey = await getProviderApiKey('openai');
   if (!openaiKey) return [];
 
   const openai = new OpenAI({ apiKey: openaiKey });
@@ -4197,7 +4315,7 @@ async function synthesizeSpeech(input: {
   if (!text) throw Object.assign(new Error('Text is required for speech synthesis'), { status: 400, code: 'missing_text' });
   if (text.length > 4096) throw Object.assign(new Error('Speech text is limited to 4096 characters'), { status: 413, code: 'text_too_large' });
 
-  const openaiKey = getEnv('OPENAI_API_KEY');
+  const openaiKey = await getProviderApiKey('openai');
   if (!openaiKey) throw Object.assign(new Error('OPENAI_API_KEY is required for hosted voice synthesis'), { status: 503, code: 'voice_provider_unconfigured' });
 
   const format = normalizeAudioFormat(input.outputFormat, ['mp3', 'wav', 'opus', 'aac', 'flac', 'pcm'], 'mp3');
@@ -4299,7 +4417,7 @@ async function recognizeSpeech(input: {
     throw Object.assign(new Error('Audio data must be valid base64 audio'), { status: 400, code: 'invalid_audio' });
   }
 
-  const openaiKey = getEnv('OPENAI_API_KEY');
+  const openaiKey = await getProviderApiKey('openai');
   if (!openaiKey) throw Object.assign(new Error('OPENAI_API_KEY is required for hosted speech recognition'), { status: 503, code: 'voice_provider_unconfigured' });
 
   const format = normalizeAudioFormat(input.audioFormat, ['webm', 'ogg', 'mp3', 'mp4', 'm4a', 'wav', 'flac'], 'webm');
@@ -4378,6 +4496,91 @@ function getSupabaseAdminClient() {
       },
     }
   );
+}
+
+function getApiKeyEncryptionKey(): Buffer {
+  const secret = getEnv('API_KEY_ENCRYPTION_SECRET') || requireEnv('SUPABASE_SERVICE_ROLE_KEY');
+  return createHash('sha256').update(secret).digest();
+}
+
+function encryptSecret(value: string): string {
+  const iv = randomBytes(12);
+  const cipher = createCipheriv('aes-256-gcm', getApiKeyEncryptionKey(), iv);
+  const encrypted = Buffer.concat([cipher.update(value, 'utf8'), cipher.final()]);
+  const tag = cipher.getAuthTag();
+  return [
+    'v1',
+    iv.toString('base64url'),
+    tag.toString('base64url'),
+    encrypted.toString('base64url'),
+  ].join(':');
+}
+
+function decryptSecret(value: string): string {
+  const [version, iv, tag, encrypted] = value.split(':');
+  if (version !== 'v1' || !iv || !tag || !encrypted) {
+    throw Object.assign(new Error('Stored provider key could not be read'), {
+      status: 500,
+      code: 'provider_key_decrypt_failed',
+    });
+  }
+  const decipher = createDecipheriv(
+    'aes-256-gcm',
+    getApiKeyEncryptionKey(),
+    Buffer.from(iv, 'base64url')
+  );
+  decipher.setAuthTag(Buffer.from(tag, 'base64url'));
+  return Buffer.concat([
+    decipher.update(Buffer.from(encrypted, 'base64url')),
+    decipher.final(),
+  ]).toString('utf8');
+}
+
+function keyHint(value: string): string {
+  const trimmed = value.trim();
+  if (trimmed.length <= 8) return 'configured';
+  return `${trimmed.slice(0, 4)}...${trimmed.slice(-4)}`;
+}
+
+function normalizeApiKeyProvider(value: string | undefined): ApiKeyProvider | null {
+  return value === 'openai' || value === 'anthropic' ? value : null;
+}
+
+function normalizeProviderApiKey(provider: ApiKeyProvider, value: unknown): string {
+  const apiKey = typeof value === 'string' ? value.trim() : '';
+  if (!apiKey) {
+    throw Object.assign(new Error('API key is required'), { status: 400, code: 'missing_api_key' });
+  }
+
+  const config = API_KEY_PROVIDERS[provider];
+  if (!config.prefixes.some(prefix => apiKey.startsWith(prefix))) {
+    throw Object.assign(new Error(`${config.label} API key format is not recognized`), {
+      status: 400,
+      code: 'invalid_api_key_format',
+    });
+  }
+
+  if (apiKey.length < 20) {
+    throw Object.assign(new Error(`${config.label} API key is too short`), {
+      status: 400,
+      code: 'invalid_api_key_format',
+    });
+  }
+
+  return apiKey;
+}
+
+async function getProviderApiKey(provider: ApiKeyProvider): Promise<string> {
+  await ensureProviderApiKeysSchema();
+  const result = await query<{ encrypted_api_key: string }>(
+    'SELECT encrypted_api_key FROM provider_api_keys WHERE provider = $1',
+    [provider]
+  );
+  if (result.rows[0]?.encrypted_api_key) {
+    return decryptSecret(result.rows[0].encrypted_api_key);
+  }
+
+  return getEnv(API_KEY_PROVIDERS[provider].envName);
 }
 
 function normalizeRequiredString(value: unknown, label: string): string {

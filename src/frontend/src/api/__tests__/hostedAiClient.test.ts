@@ -174,6 +174,25 @@ describe('hosted AI client routing', () => {
     expect(netlifyApi).toContain("endpoint: '/documentation/crawl/ai'");
   });
 
+  it('keeps provider API key updates server-side and admin-only', () => {
+    const netlifyApi = readWorkspaceFile('netlify/functions/api.ts');
+    const apiSettings = readWorkspaceFile('src/frontend/src/pages/Settings/ApiSettings.tsx');
+    const migration = readWorkspaceFile('supabase/migrations/20260501_provider_api_keys.sql');
+
+    expect(netlifyApi).toContain("route.segments[0] === 'admin' && route.segments[1] === 'api-keys'");
+    expect(netlifyApi).toContain('async function handleAdminApiKeys');
+    expect(netlifyApi).toMatch(/async function handleAdminApiKeys[\s\S]*?await requireAdmin\(req\)/);
+    expect(netlifyApi).toContain('encryptSecret(apiKey)');
+    expect(netlifyApi).toContain("await getProviderApiKey('openai')");
+    expect(netlifyApi).not.toContain('return json({ apiKey');
+    expect(apiSettings).toContain('/admin/api-keys');
+    expect(apiSettings).toContain('Only admins can update provider API keys.');
+    expect(apiSettings).not.toContain('localStorage.setItem');
+    expect(migration).toContain('CREATE TABLE IF NOT EXISTS public.provider_api_keys');
+    expect(migration).toContain('ALTER TABLE public.provider_api_keys ENABLE ROW LEVEL SECURITY');
+    expect(migration).toContain('REVOKE ALL ON TABLE public.provider_api_keys FROM anon, authenticated');
+  });
+
   it('keeps hosted analysis resilient to structured output provider failures', () => {
     const netlifyApi = readWorkspaceFile('netlify/functions/api.ts');
     const scriptAnalysis = readWorkspaceFile('src/frontend/src/pages/ScriptAnalysis.tsx');
