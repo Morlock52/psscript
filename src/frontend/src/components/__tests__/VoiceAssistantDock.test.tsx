@@ -267,4 +267,28 @@ describe('VoiceAssistantDock', () => {
     expect(screen.getByLabelText('Generated speech')).toBeInTheDocument();
     expect(toast.info).toHaveBeenCalledWith('Speech is ready. Press play in the voice dock.');
   });
+
+  it('falls back to browser speech when hosted synthesis fails', async () => {
+    vi.mocked(voiceService.synthesizeSpeech).mockRejectedValue(new Error('invalid_issuer'));
+    const speak = vi.fn();
+    const cancel = vi.fn();
+    Object.defineProperty(window, 'speechSynthesis', {
+      configurable: true,
+      value: { speak, cancel },
+    });
+    vi.stubGlobal('SpeechSynthesisUtterance', vi.fn().mockImplementation(function MockUtterance(text: string) {
+      return { text, rate: 1 };
+    }));
+    const user = userEvent.setup();
+    render(<VoiceAssistantDock />);
+
+    await user.click(screen.getByRole('button', { name: 'Voice' }));
+    await user.type(screen.getByLabelText(/last transcript/i), 'Get-Date');
+    await user.click(screen.getByRole('button', { name: /speak selection/i }));
+
+    await waitFor(() => expect(screen.getByText('Speaking with browser voice')).toBeInTheDocument());
+    expect(cancel).toHaveBeenCalled();
+    expect(speak).toHaveBeenCalled();
+    expect(toast.info).toHaveBeenCalledWith('Hosted voice is unavailable. Using browser speech instead.');
+  });
 });

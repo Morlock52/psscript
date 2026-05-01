@@ -148,6 +148,18 @@ function getSpeakableText(transcriptDraft: string): string {
   return content.slice(0, 4096);
 }
 
+function speakWithBrowserVoice(text: string, speed: number): boolean {
+  if (!('speechSynthesis' in window) || typeof SpeechSynthesisUtterance === 'undefined') {
+    return false;
+  }
+
+  window.speechSynthesis.cancel();
+  const utterance = new SpeechSynthesisUtterance(text);
+  utterance.rate = Math.max(0.75, Math.min(1.4, speed || 1));
+  window.speechSynthesis.speak(utterance);
+  return true;
+}
+
 const defaultSettings: VoiceSettings = {
   voiceId: 'marin',
   autoPlay: true,
@@ -403,8 +415,13 @@ const VoiceAssistantDock: React.FC = () => {
       }
     } catch (error: any) {
       const message = error?.message || 'Voice playback failed.';
-      setStatus(message);
-      toast.error(error?.message || 'Voice playback failed.');
+      if (speakWithBrowserVoice(text, settings.speed || 1)) {
+        setStatus('Speaking with browser voice');
+        toast.info('Hosted voice is unavailable. Using browser speech instead.');
+      } else {
+        setStatus(message);
+        toast.error(error?.message || 'Voice playback failed.');
+      }
     } finally {
       setIsBusy(false);
     }
