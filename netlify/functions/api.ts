@@ -4229,6 +4229,10 @@ async function synthesizeSpeech(input: {
       response_format: format as any,
       speed: input.speed,
       instructions: instructionText,
+    }, {
+      headers: {
+        Accept: mimeTypeForAudioFormat(format),
+      },
     });
     const audioBuffer = Buffer.from(await response.arrayBuffer());
     await recordAiMetric(metricContext, {

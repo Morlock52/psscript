@@ -156,6 +156,7 @@ describe('hosted AI client routing', () => {
     expect(voiceHandler).toContain("route.path === '/voice/recognize'");
     expect(netlifyApi).toContain('synthesizeSpeech({');
     expect(netlifyApi).toContain('recognizeSpeech({');
+    expect(netlifyApi).toContain('Accept: mimeTypeForAudioFormat(format)');
     expect(netlifyApi).toContain('VOICE_TTS_CACHE_MAX_ENTRIES');
     expect(netlifyApi).toContain('isValidBase64AudioPayload');
     expect(voiceRecognizer).toContain("code: 'missing_audio'");
