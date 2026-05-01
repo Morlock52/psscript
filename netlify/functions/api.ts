@@ -4618,16 +4618,27 @@ async function testProviderApiKey(provider: ApiKeyProvider): Promise<{
     };
   }
 
-  const response = provider === 'openai'
-    ? await fetch('https://api.openai.com/v1/models', {
-        headers: { Authorization: `Bearer ${apiKey}` },
-      })
-    : await fetch('https://api.anthropic.com/v1/models', {
-        headers: {
-          'x-api-key': apiKey,
-          'anthropic-version': '2023-06-01',
-        },
-      });
+  let response: Response;
+  try {
+    response = provider === 'openai'
+      ? await fetch('https://api.openai.com/v1/models', {
+          headers: { Authorization: `Bearer ${apiKey}` },
+        })
+      : await fetch('https://api.anthropic.com/v1/models', {
+          headers: {
+            'x-api-key': apiKey,
+            'anthropic-version': '2023-06-01',
+          },
+        });
+  } catch (error: any) {
+    return {
+      ok: false,
+      provider,
+      source,
+      message: `${config.label} API key validation could not reach the provider.`,
+      error: error?.message || 'provider_unreachable',
+    };
+  }
 
   if (response.ok) {
     return {
@@ -4638,16 +4649,25 @@ async function testProviderApiKey(provider: ApiKeyProvider): Promise<{
     };
   }
 
-  const payload = await response.json().catch(() => ({})) as any;
+  const responseText = await response.text().catch(() => '');
+  const payload = responseText ? safeJsonParse(responseText) : {};
   const providerError = payload?.error || {};
   const errorCode = providerError.code || providerError.type || `provider_status_${response.status}`;
   return {
     ok: false,
     provider,
     source,
-    message: providerError.message || `${config.label} API key validation failed.`,
+    message: providerError.message || responseText || `${config.label} API key validation failed with status ${response.status}.`,
     error: errorCode,
   };
+}
+
+function safeJsonParse(value: string): any {
+  try {
+    return JSON.parse(value);
+  } catch {
+    return {};
+  }
 }
 
 function normalizeRequiredString(value: unknown, label: string): string {
