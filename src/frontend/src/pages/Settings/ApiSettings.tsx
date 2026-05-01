@@ -141,6 +141,25 @@ const ApiSettings: React.FC = () => {
     }
   };
 
+  const testProviderKey = async (provider: ProviderStatus['provider']) => {
+    setIsLoading(true);
+    try {
+      const response = await fetch(`${getApiUrl()}/admin/api-keys/${provider}/test`, {
+        method: 'POST',
+        headers: authHeaders(),
+      });
+      const payload = await response.json().catch(() => ({}));
+      if (!response.ok || !payload.ok) {
+        throw new Error(payload?.message || payload?.error || 'Provider key validation failed');
+      }
+      setMessage({ severity: 'success', text: payload.message || `${provider} API key is valid.` });
+    } catch (error: any) {
+      setMessage({ severity: 'error', text: error?.message || 'Provider key validation failed' });
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
   return (
     <div className="p-6">
       <Typography variant="h4" component="h1" gutterBottom>
@@ -187,7 +206,7 @@ const ApiSettings: React.FC = () => {
                 {provider.description}
               </Typography>
               {isEditableProvider(provider.provider) && isAdmin && (
-                <div className="mb-4 grid grid-cols-1 gap-3 md:grid-cols-[1fr_auto_auto]">
+                <div className="mb-4 grid grid-cols-1 gap-3 md:grid-cols-[1fr_auto_auto_auto]">
                   <TextField
                     label={`${provider.name} API key`}
                     type="password"
@@ -209,6 +228,13 @@ const ApiSettings: React.FC = () => {
                     disabled={isLoading || !(apiKeys[provider.provider] || '').trim()}
                   >
                     Save key
+                  </Button>
+                  <Button
+                    variant="outlined"
+                    onClick={() => void testProviderKey(provider.provider as ProviderStatus['provider'])}
+                    disabled={isLoading || !providerStatuses.get(provider.provider)?.configured}
+                  >
+                    Test key
                   </Button>
                   <Button
                     variant="outlined"

@@ -757,6 +757,12 @@ async function handleAdminApiKeys(req: Request, route: RouteParams): Promise<Res
   const provider = normalizeApiKeyProvider(route.segments[2]);
   if (!provider) return notFound(route.path);
 
+  if (route.segments[3] === 'test') {
+    if (req.method !== 'POST') return methodNotAllowed();
+    const result = await testProviderApiKey(provider);
+    return json(result, { status: result.ok ? 200 : 502 });
+  }
+
   if (req.method === 'PUT') {
     const body = await req.json().catch(() => ({}));
     const apiKey = normalizeProviderApiKey(provider, body.apiKey);
@@ -4581,6 +4587,67 @@ async function getProviderApiKey(provider: ApiKeyProvider): Promise<string> {
   }
 
   return getEnv(API_KEY_PROVIDERS[provider].envName);
+}
+
+async function testProviderApiKey(provider: ApiKeyProvider): Promise<{
+  ok: boolean;
+  provider: ApiKeyProvider;
+  source: 'database' | 'environment' | 'missing';
+  message: string;
+  error?: string;
+}> {
+  const result = await query<{ encrypted_api_key: string }>(
+    'SELECT encrypted_api_key FROM provider_api_keys WHERE provider = $1',
+    [provider]
+  );
+  const config = API_KEY_PROVIDERS[provider];
+  const source = result.rows[0]?.encrypted_api_key
+    ? 'database'
+    : (getEnv(config.envName) ? 'environment' : 'missing');
+  const apiKey = result.rows[0]?.encrypted_api_key
+    ? decryptSecret(result.rows[0].encrypted_api_key)
+    : getEnv(config.envName);
+
+  if (!apiKey) {
+    return {
+      ok: false,
+      provider,
+      source,
+      message: `${config.label} API key is not configured.`,
+      error: 'missing_api_key',
+    };
+  }
+
+  const response = provider === 'openai'
+    ? await fetch('https://api.openai.com/v1/models', {
+        headers: { Authorization: `Bearer ${apiKey}` },
+      })
+    : await fetch('https://api.anthropic.com/v1/models', {
+        headers: {
+          'x-api-key': apiKey,
+          'anthropic-version': '2023-06-01',
+        },
+      });
+
+  if (response.ok) {
+    return {
+      ok: true,
+      provider,
+      source,
+      message: `${config.label} API key is valid.`,
+    };
+  }
+
+  const payload = await response.json().catch(() => ({})) as any;
+  const providerError = payload?.error || {};
+  const errorCode = providerError.code || providerError.type || `provider_status_${response.status}`;
+  return {
+    ok: false,
+    provider,
+    source,
+    message: providerError.message || `${config.label} API key validation failed.`,
+    error: errorCode,
+  };
 }
 
 function normalizeRequiredString(value: unknown, label: string): string {
