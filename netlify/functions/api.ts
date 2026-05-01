@@ -742,12 +742,19 @@ async function handleAdminApiKeys(req: Request, route: RouteParams): Promise<Res
         const override = overrides.get(provider);
         const config = API_KEY_PROVIDERS[provider];
         const envValue = getEnv(config.envName);
+        const formatValid = override
+          ? true
+          : (envValue ? config.prefixes.some(prefix => envValue.startsWith(prefix)) : true);
         return {
           provider,
           label: config.label,
           configured: Boolean(override || envValue),
           source: override ? 'database' : (envValue ? 'environment' : 'missing'),
           keyHint: override?.key_hint || (envValue ? keyHint(envValue) : ''),
+          formatValid,
+          formatMessage: formatValid || !envValue || override
+            ? null
+            : `${config.label} expects keys starting with ${config.prefixes.join(' or ')}.`,
           updatedAt: override?.updated_at || null,
         };
       }),

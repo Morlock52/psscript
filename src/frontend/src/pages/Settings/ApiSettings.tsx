@@ -16,6 +16,8 @@ type ProviderStatus = {
   configured: boolean;
   source: 'database' | 'environment' | 'missing';
   keyHint: string;
+  formatValid?: boolean;
+  formatMessage?: string | null;
   updatedAt: string | null;
 };
 
@@ -185,73 +187,83 @@ const ApiSettings: React.FC = () => {
       )}
 
       <div className="grid grid-cols-1 gap-4">
-        {providerLinks.map((provider) => (
-          <Card key={provider.name} variant="outlined">
-            <CardContent>
-              <div className="mb-2 flex flex-wrap items-center gap-2">
-                <Typography variant="h6" component="h2">
-                  {provider.name}
-                </Typography>
-                {isEditableProvider(provider.provider) && providerStatuses.get(provider.provider) && (
-                  <Chip
-                    size="small"
-                    color={providerStatuses.get(provider.provider)?.configured ? 'success' : 'default'}
-                    label={providerStatuses.get(provider.provider)?.configured
-                      ? `Configured via ${providerStatuses.get(provider.provider)?.source}`
-                      : 'Not configured'}
-                  />
-                )}
-              </div>
-              <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
-                {provider.description}
-              </Typography>
-              {isEditableProvider(provider.provider) && isAdmin && (
-                <div className="mb-4 grid grid-cols-1 gap-3 md:grid-cols-[1fr_auto_auto_auto]">
-                  <TextField
-                    label={`${provider.name} API key`}
-                    type="password"
-                    autoComplete="off"
-                    value={apiKeys[provider.provider] || ''}
-                    onChange={(event) => setApiKeys(current => ({
-                      ...current,
-                      [provider.provider]: event.target.value,
-                    }))}
-                    helperText={providerStatuses.get(provider.provider)?.keyHint
-                      ? `Current: ${providerStatuses.get(provider.provider)?.keyHint}`
-                      : 'No key is currently configured.'}
-                    size="small"
-                    disabled={isLoading}
-                  />
-                  <Button
-                    variant="contained"
-                    onClick={() => void saveProviderKey(provider.provider as ProviderStatus['provider'])}
-                    disabled={isLoading || !(apiKeys[provider.provider] || '').trim()}
-                  >
-                    Save key
-                  </Button>
-                  <Button
-                    variant="outlined"
-                    onClick={() => void testProviderKey(provider.provider as ProviderStatus['provider'])}
-                    disabled={isLoading || !providerStatuses.get(provider.provider)?.configured}
-                  >
-                    Test key
-                  </Button>
-                  <Button
-                    variant="outlined"
-                    color="warning"
-                    onClick={() => void clearProviderKey(provider.provider as ProviderStatus['provider'])}
-                    disabled={isLoading || providerStatuses.get(provider.provider)?.source !== 'database'}
-                  >
-                    Clear override
-                  </Button>
+        {providerLinks.map((provider) => {
+          const status = isEditableProvider(provider.provider)
+            ? providerStatuses.get(provider.provider)
+            : undefined;
+          return (
+            <Card key={provider.name} variant="outlined">
+              <CardContent>
+                <div className="mb-2 flex flex-wrap items-center gap-2">
+                  <Typography variant="h6" component="h2">
+                    {provider.name}
+                  </Typography>
+                  {status && (
+                    <Chip
+                      size="small"
+                      color={status.configured ? 'success' : 'default'}
+                      label={status.configured
+                        ? `Configured via ${status.source}`
+                        : 'Not configured'}
+                    />
+                  )}
                 </div>
-              )}
-              <Link href={provider.url} target="_blank" rel="noopener noreferrer">
-                Open provider key management
-              </Link>
-            </CardContent>
-          </Card>
-        ))}
+                <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
+                  {provider.description}
+                </Typography>
+                {status?.configured && status.formatValid === false && (
+                  <Alert severity="error" sx={{ mb: 2 }}>
+                    {status.formatMessage || `${provider.name} API key format is not recognized.`}
+                  </Alert>
+                )}
+                {isEditableProvider(provider.provider) && isAdmin && (
+                  <div className="mb-4 grid grid-cols-1 gap-3 md:grid-cols-[1fr_auto_auto_auto]">
+                    <TextField
+                      label={`${provider.name} API key`}
+                      type="password"
+                      autoComplete="off"
+                      value={apiKeys[provider.provider] || ''}
+                      onChange={(event) => setApiKeys(current => ({
+                        ...current,
+                        [provider.provider]: event.target.value,
+                      }))}
+                      helperText={providerStatuses.get(provider.provider)?.keyHint
+                        ? `Current: ${providerStatuses.get(provider.provider)?.keyHint}`
+                        : 'No key is currently configured.'}
+                      size="small"
+                      disabled={isLoading}
+                    />
+                    <Button
+                      variant="contained"
+                      onClick={() => void saveProviderKey(provider.provider as ProviderStatus['provider'])}
+                      disabled={isLoading || !(apiKeys[provider.provider] || '').trim()}
+                    >
+                      Save key
+                    </Button>
+                    <Button
+                      variant="outlined"
+                      onClick={() => void testProviderKey(provider.provider as ProviderStatus['provider'])}
+                      disabled={isLoading || !providerStatuses.get(provider.provider)?.configured}
+                    >
+                      Test key
+                    </Button>
+                    <Button
+                      variant="outlined"
+                      color="warning"
+                      onClick={() => void clearProviderKey(provider.provider as ProviderStatus['provider'])}
+                      disabled={isLoading || providerStatuses.get(provider.provider)?.source !== 'database'}
+                    >
+                      Clear override
+                    </Button>
+                  </div>
+                )}
+                <Link href={provider.url} target="_blank" rel="noopener noreferrer">
+                  Open provider key management
+                </Link>
+              </CardContent>
+            </Card>
+          );
+        })}
       </div>
     </div>
   );

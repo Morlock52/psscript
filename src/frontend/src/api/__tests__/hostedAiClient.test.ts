@@ -185,10 +185,12 @@ describe('hosted AI client routing', () => {
     expect(netlifyApi).toContain('encryptSecret(apiKey)');
     expect(netlifyApi).toContain("route.segments[3] === 'test'");
     expect(netlifyApi).toContain('async function testProviderApiKey');
+    expect(netlifyApi).toContain('formatValid');
     expect(netlifyApi).toContain("await getProviderApiKey('openai')");
     expect(netlifyApi).not.toContain('return json({ apiKey');
     expect(apiSettings).toContain('/admin/api-keys');
     expect(apiSettings).toContain('Test key');
+    expect(apiSettings).toContain('status.formatValid === false');
     expect(apiSettings).toContain('Only admins can update provider API keys.');
     expect(apiSettings).not.toContain('localStorage.setItem');
     expect(migration).toContain('CREATE TABLE IF NOT EXISTS public.provider_api_keys');
