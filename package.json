@@ -25,6 +25,8 @@
     "test:voice:1-8": "node scripts/voice-tests-1-8.mjs",
     "test:voice:1-8:local": "node scripts/voice-tests-1-8.mjs --base-url https://127.0.0.1:4000 --insecure-tls",
     "test:voice:1-8:report": "node scripts/voice-tests-1-8.mjs --base-url https://127.0.0.1:4000 --insecure-tls --json-out /tmp/voice-tests-1-8-latest.json --md-out docs/VOICE-TESTS-1-8-LATEST.md",
+    "verify:frontend-bundle": "node scripts/check-frontend-bundle-budget.mjs",
+    "verify:db-security": "node scripts/verify-hosted-db-security.mjs",
     "verify:data-maintenance:e2e": "node scripts/verify-data-maintenance-e2e.mjs",
     "verify:data-maintenance:e2e:reuse": "node scripts/verify-data-maintenance-e2e.mjs --reuse-backend --no-build"
   },

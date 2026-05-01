@@ -74,6 +74,10 @@ jobs:
       - name: Build check
         run: npm run build
 
+      - name: Check frontend bundle budget
+        working-directory: ${{ github.workspace }}
+        run: node scripts/check-frontend-bundle-budget.mjs
+
   # ============================================
   # Backend Tests (with PostgreSQL)
   # ============================================
@@ -215,9 +219,6 @@ jobs:
           retention-days: 7
 
   # ============================================
-  # Voice Integration (OpenAI-backed)
-  # ============================================
-  # ============================================
   # Security Scanning
   # ============================================
   security-scan:
@@ -245,6 +246,39 @@ jobs:
           head: HEAD
           extra_args: --only-verified
         continue-on-error: true
+
+  # ============================================
+  # Hosted DB Security Drift
+  # ============================================
+  db-security-drift:
+    name: Hosted DB Security Drift
+    runs-on: ubuntu-latest
+    env:
+      DATABASE_URL: ${{ secrets.DATABASE_URL }}
+      DATABASE_POOLER_URL: ${{ secrets.DATABASE_POOLER_URL }}
+      DB_SSL_REJECT_UNAUTHORIZED: ${{ secrets.DB_SSL_REJECT_UNAUTHORIZED }}
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+          cache-dependency-path: package-lock.json
+
+      - name: Install root dependencies
+        run: npm ci
+
+      - name: Run hosted DB security drift check
+        run: |
+          if [ -z "$DATABASE_URL" ] && [ -z "$DATABASE_POOLER_URL" ]; then
+            echo "Skipping hosted DB security drift check because no DATABASE_URL or DATABASE_POOLER_URL secret is configured."
+            exit 0
+          fi
+          npm run verify:db-security
 
   # ============================================
   # Dependency Audit
@@ -278,7 +312,7 @@ jobs:
   quality-gate:
     name: Quality Gate
     runs-on: ubuntu-latest
-    needs: [backend-quality, frontend-quality, backend-tests, maintenance-smoke, voice-integration, security-scan]
+    needs: [backend-quality, frontend-quality, backend-tests, maintenance-smoke, security-scan, db-security-drift]
     if: always()
 
     steps:
@@ -292,9 +326,9 @@ jobs:
           echo "| Frontend Quality | ${{ needs.frontend-quality.result }} |" >> $GITHUB_STEP_SUMMARY
           echo "| Backend Tests | ${{ needs.backend-tests.result }} |" >> $GITHUB_STEP_SUMMARY
           echo "| Maintenance Smoke | ${{ needs.maintenance-smoke.result }} |" >> $GITHUB_STEP_SUMMARY
-          echo "| Voice Integration | ${{ needs.voice-integration.result }} |" >> $GITHUB_STEP_SUMMARY
           echo "| Security Scan | ${{ needs.security-scan.result }} |" >> $GITHUB_STEP_SUMMARY
+          echo "| Hosted DB Security Drift | ${{ needs.db-security-drift.result }} |" >> $GITHUB_STEP_SUMMARY
 
       - name: Fail if critical checks failed
-        if: needs.backend-quality.result == 'failure' || needs.frontend-quality.result == 'failure' || needs.backend-tests.result == 'failure' || needs.maintenance-smoke.result == 'failure' || needs.voice-integration.result == 'failure'
+        if: needs.backend-quality.result == 'failure' || needs.frontend-quality.result == 'failure' || needs.backend-tests.result == 'failure' || needs.maintenance-smoke.result == 'failure' || needs.db-security-drift.result == 'failure'
         run: exit 1
