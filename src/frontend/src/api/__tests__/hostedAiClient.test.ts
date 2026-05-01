@@ -208,6 +208,7 @@ describe('hosted AI client routing', () => {
       'beginner_explanation',
       'management_summary',
       'command_details',
+      'ms_docs_references',
       'execution_summary',
     ]) {
       expect(netlifyApi).toContain(`'${field}',`);
@@ -216,7 +217,7 @@ describe('hosted AI client routing', () => {
     expect(netlifyApi).toContain('function shouldUseStaticAnalysisFallback');
     expect(netlifyApi).toContain('json_schema');
     expect(netlifyApi).toContain('response_format');
-    expect(netlifyApi).toContain('buildStaticPowerShellAnalysis(content, title)');
+    expect(netlifyApi).toContain('await buildStaticPowerShellAnalysis(content, title)');
     expect(netlifyApi).toContain('## Executive Summary');
     expect(netlifyApi).toContain('**Quality:**');
     expect(netlifyApi).toContain('/BaseFont /Helvetica-Bold');
@@ -293,6 +294,7 @@ describe('hosted AI client routing', () => {
   it('normalizes hosted analysis fields before rendering the top report summary', () => {
     const scriptAnalysis = readWorkspaceFile('src/frontend/src/pages/ScriptAnalysis.tsx');
     const netlifyApi = readWorkspaceFile('netlify/functions/api.ts');
+    const microsoftLearnLinks = readWorkspaceFile('src/frontend/src/utils/microsoftLearnLinks.ts');
 
     expect(scriptAnalysis).toContain('const normalizeScoreValue = (...values: unknown[]): number | null => {');
     expect(scriptAnalysis).toContain('analysis.qualityScore');
@@ -315,6 +317,20 @@ describe('hosted AI client routing', () => {
     expect(netlifyApi).toContain('data_collection_summary');
     expect(netlifyApi).toContain('static_signals');
     expect(netlifyApi).toContain('Use the supplied deterministic static scan signals as evidence.');
+    expect(netlifyApi).toContain('buildMicrosoftLearnReferences');
+    expect(netlifyApi).toContain('microsoftLearnArticleExists');
+    expect(netlifyApi).toContain('Verified Microsoft Learn article');
+    expect(netlifyApi).toContain('Microsoft Learn search fallback');
+    expect(netlifyApi).toContain('Source confidence');
+    expect(scriptAnalysis).toContain('Microsoft Learn article');
+    expect(scriptAnalysis).toContain('docsReferenceForCommand');
+    expect(scriptAnalysis).toContain('microsoftLearnReferenceForCommandName');
+    expect(scriptAnalysis).toContain('qrCodeUrlFor');
+    expect(microsoftLearnLinks).toContain('api.qrserver.com/v1/create-qr-code');
+    expect(scriptAnalysis).toContain('inferCommandRiskBadges');
+    expect(scriptAnalysis).toContain('Security-sensitive');
+    expect(scriptAnalysis).toContain('buildCommandGroups');
+    expect(scriptAnalysis).toContain('sourceConfidence');
   });
 
   it('routes active chat and assistant follow-ups through hosted API paths', () => {

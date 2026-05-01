@@ -177,6 +177,7 @@ const analysisJsonSchema = {
     'risk_score',
     'suggestions',
     'command_details',
+    'ms_docs_references',
     'security_issues',
     'best_practice_violations',
     'performance_insights',
@@ -221,6 +222,20 @@ const analysisJsonSchema = {
               },
             },
           },
+        },
+      },
+    },
+    ms_docs_references: {
+      type: 'array',
+      items: {
+        type: 'object',
+        additionalProperties: false,
+        required: ['command', 'title', 'url', 'description'],
+        properties: {
+          command: { type: 'string' },
+          title: { type: 'string' },
+          url: { type: 'string' },
+          description: { type: 'string' },
         },
       },
     },
@@ -1597,6 +1612,17 @@ async function ensureBackupStore(): Promise<void> {
     )
   `);
   await query(`ALTER TABLE ${quoteIdentifier(DB_BACKUP_TABLE)} ENABLE ROW LEVEL SECURITY`);
+  await query(`
+    DO $$
+    BEGIN
+      IF to_regrole('anon') IS NOT NULL THEN
+        REVOKE ALL ON TABLE ${quoteIdentifier(DB_BACKUP_TABLE)} FROM anon;
+      END IF;
+      IF to_regrole('authenticated') IS NOT NULL THEN
+        REVOKE ALL ON TABLE ${quoteIdentifier(DB_BACKUP_TABLE)} FROM authenticated;
+      END IF;
+    END $$
+  `);
 }
 
 async function createHostedDbBackup(rawName: unknown, userId: string) {
@@ -2957,6 +2983,7 @@ async function analyzePowerShell(content: string, title: string, metricContext?:
             `Return only the requested analysis fields for the supplied script using criteria version ${ANALYSIS_CRITERIA_VERSION}.`,
             'Explain the whole script for both beginners and management.',
             'For command_details, include the key PowerShell commands that materially affect behavior, what each command does in plain English, and any important parameters used.',
+            'For ms_docs_references, include Microsoft Learn references for each command in command_details when a relevant official article is known.',
             'Score analysis_criteria with this weighted rubric: Security 35%, Operational safety 20%, Reliability 15%, Maintainability 15%, Compatibility 10%, Performance 5%.',
             'Prioritize findings by concrete execution impact. Security findings must cover secrets, injection or dynamic execution, remote downloads, privilege changes, destructive operations, and remoting when present.',
             'Operational safety must call out whether destructive or changing actions use CmdletBinding SupportsShouldProcess, $PSCmdlet.ShouldProcess, -WhatIf, and -Confirm patterns.',
@@ -2976,7 +3003,7 @@ async function analyzePowerShell(content: string, title: string, metricContext?:
   } catch (error: any) {
     if (!shouldUseStaticAnalysisFallback(error)) throw error;
     console.warn('[netlify-api] AI analysis degraded to static fallback', error);
-    parsed = buildStaticPowerShellAnalysis(content, title);
+    parsed = await buildStaticPowerShellAnalysis(content, title);
   }
 
   const executionSummary = parsed.execution_summary && typeof parsed.execution_summary === 'object'
@@ -2993,6 +3020,9 @@ async function analyzePowerShell(content: string, title: string, metricContext?:
   const remediationPlan = normalizeAnalysisArray(parsed.remediation_plan);
   const testRecommendations = normalizeStringArray(parsed.test_recommendations);
   const confidence = clampNumber(parsed.confidence, 0, 1, 0.75);
+  const parsedCommandDetails = Array.isArray(parsed.command_details) ? parsed.command_details : [];
+  const msDocsReferences = await buildMicrosoftLearnReferences(parsedCommandDetails, staticSignals);
+  const commandDetails = attachMicrosoftLearnReferences(parsedCommandDetails, msDocsReferences);
 
   return {
     criteria_version: parsed.criteria_version || ANALYSIS_CRITERIA_VERSION,
@@ -3011,7 +3041,8 @@ async function analyzePowerShell(content: string, title: string, metricContext?:
     quality_score: Number(parsed.quality_score ?? parsed.qualityScore ?? 7),
     risk_score: Number(parsed.risk_score ?? parsed.riskScore ?? 3),
     suggestions: Array.isArray(parsed.suggestions) ? parsed.suggestions : [],
-    command_details: Array.isArray(parsed.command_details) ? parsed.command_details : [],
+    command_details: commandDetails,
+    ms_docs_references: msDocsReferences,
     security_issues: Array.isArray(parsed.security_issues) ? parsed.security_issues : [],
     best_practice_violations: Array.isArray(parsed.best_practice_violations) ? parsed.best_practice_violations : [],
     performance_insights: Array.isArray(parsed.performance_insights) ? parsed.performance_insights : [],
@@ -3104,6 +3135,195 @@ function normalizeDataCollectionSummary(value: any, staticSignals: ReturnType<ty
   };
 }
 
+const MICROSOFT_LEARN_COMMAND_MODULES: Record<string, string> = {
+  'add-content': 'microsoft.powershell.management',
+  'clear-content': 'microsoft.powershell.management',
+  'clear-item': 'microsoft.powershell.management',
+  'copy-item': 'microsoft.powershell.management',
+  'get-childitem': 'microsoft.powershell.management',
+  'get-content': 'microsoft.powershell.management',
+  'get-item': 'microsoft.powershell.management',
+  'get-process': 'microsoft.powershell.management',
+  'get-service': 'microsoft.powershell.management',
+  'get-location': 'microsoft.powershell.management',
+  'move-item': 'microsoft.powershell.management',
+  'new-item': 'microsoft.powershell.management',
+  'remove-item': 'microsoft.powershell.management',
+  'rename-item': 'microsoft.powershell.management',
+  'restart-service': 'microsoft.powershell.management',
+  'set-content': 'microsoft.powershell.management',
+  'set-executionpolicy': 'microsoft.powershell.security',
+  'set-item': 'microsoft.powershell.management',
+  'start-process': 'microsoft.powershell.management',
+  'start-service': 'microsoft.powershell.management',
+  'stop-process': 'microsoft.powershell.management',
+  'stop-service': 'microsoft.powershell.management',
+  'write-output': 'microsoft.powershell.utility',
+  'write-host': 'microsoft.powershell.utility',
+  'write-error': 'microsoft.powershell.utility',
+  'write-warning': 'microsoft.powershell.utility',
+  'write-verbose': 'microsoft.powershell.utility',
+  'write-debug': 'microsoft.powershell.utility',
+  'where-object': 'microsoft.powershell.core',
+  'foreach-object': 'microsoft.powershell.core',
+  'select-object': 'microsoft.powershell.utility',
+  'sort-object': 'microsoft.powershell.utility',
+  'group-object': 'microsoft.powershell.utility',
+  'measure-object': 'microsoft.powershell.utility',
+  'format-table': 'microsoft.powershell.utility',
+  'format-list': 'microsoft.powershell.utility',
+  'convertfrom-json': 'microsoft.powershell.utility',
+  'convertto-json': 'microsoft.powershell.utility',
+  'convertto-securestring': 'microsoft.powershell.security',
+  'export-csv': 'microsoft.powershell.utility',
+  'import-csv': 'microsoft.powershell.utility',
+  'invoke-command': 'microsoft.powershell.core',
+  'invoke-expression': 'microsoft.powershell.utility',
+  'invoke-restmethod': 'microsoft.powershell.utility',
+  'invoke-webrequest': 'microsoft.powershell.utility',
+  'new-object': 'microsoft.powershell.utility',
+  'test-path': 'microsoft.powershell.management',
+};
+
+function normalizeCommandName(value: unknown): string {
+  return String(value || '').trim();
+}
+
+function microsoftLearnUrlForCommand(command: string): string {
+  const slug = command.toLowerCase();
+  const moduleName = MICROSOFT_LEARN_COMMAND_MODULES[slug];
+  if (moduleName) {
+    return `https://learn.microsoft.com/en-us/powershell/module/${moduleName}/${slug}?view=powershell-7.5`;
+  }
+
+  return `https://learn.microsoft.com/en-us/search/?terms=${encodeURIComponent(command)}&scope=PowerShell`;
+}
+
+function microsoftLearnSearchUrlForCommand(command: string): string {
+  return `https://learn.microsoft.com/en-us/search/?terms=${encodeURIComponent(command)}&scope=PowerShell`;
+}
+
+async function microsoftLearnArticleExists(url: string): Promise<boolean> {
+  const controller = new AbortController();
+  const timeout = setTimeout(() => controller.abort(), 2500);
+
+  try {
+    const response = await fetch(url, {
+      method: 'HEAD',
+      redirect: 'follow',
+      signal: controller.signal,
+    });
+
+    if (response.ok) return true;
+    if (![403, 405].includes(response.status)) return false;
+
+    const fallbackResponse = await fetch(url, {
+      method: 'GET',
+      headers: { Range: 'bytes=0-512' },
+      redirect: 'follow',
+      signal: controller.signal,
+    });
+
+    return fallbackResponse.ok;
+  } catch {
+    return false;
+  } finally {
+    clearTimeout(timeout);
+  }
+}
+
+async function buildMicrosoftLearnReferences(commandDetails: any[], staticSignals: ReturnType<typeof collectPowerShellStaticSignals>) {
+  const names = [
+    ...commandDetails.map((command) => normalizeCommandName(command?.name || command?.command)),
+    ...(Array.isArray(staticSignals.commands) ? staticSignals.commands.map(normalizeCommandName) : []),
+  ].filter((name) => /^[A-Za-z]+-[A-Za-z][A-Za-z0-9]+$/.test(name));
+
+  return Promise.all(Array.from(new Set(names.map((name) => name.toLowerCase())))
+    .slice(0, 24)
+    .map(async (lowerName) => {
+      const command = names.find((name) => name.toLowerCase() === lowerName) || lowerName;
+      const directUrl = microsoftLearnUrlForCommand(command);
+      const directUrlIsSearch = directUrl.includes('/search/');
+      const directArticleExists = directUrlIsSearch ? false : await microsoftLearnArticleExists(directUrl);
+      const url = directArticleExists ? directUrl : microsoftLearnSearchUrlForCommand(command);
+      const sourceConfidence = directArticleExists
+        ? 'Verified Microsoft Learn article'
+        : 'Microsoft Learn search fallback';
+
+      return {
+        command,
+        title: `${command} - Microsoft Learn`,
+        url,
+        description: `Official Microsoft Learn reference for the ${command} PowerShell command.`,
+        sourceConfidence,
+      };
+    }));
+}
+
+function attachMicrosoftLearnReferences(commandDetails: any[], references: any[]) {
+  const referenceByCommand = new Map(
+    references.map((reference) => [String(reference.command || '').toLowerCase(), reference])
+  );
+
+  return commandDetails.map((command) => {
+    const name = normalizeCommandName(command?.name || command?.command);
+    const reference = referenceByCommand.get(name.toLowerCase());
+    return reference
+      ? {
+          ...command,
+          msDocsUrl: reference.url,
+          msDocsTitle: reference.title,
+          msDocsDescription: reference.description,
+          msDocsSourceConfidence: reference.sourceConfidence,
+        }
+      : command;
+  });
+}
+
+function commandNameOf(command: any): string {
+  return normalizeCommandName(command?.name || command?.command);
+}
+
+function commandRiskLabels(command: any): string[] {
+  const commandName = commandNameOf(command);
+  const commandText = [
+    commandName,
+    command?.description,
+    command?.purpose,
+    command?.management_impact,
+    command?.managementImpact,
+    command?.example,
+    ...(Array.isArray(command?.parameters)
+      ? command.parameters.flatMap((param: any) => [param?.name, param?.description])
+      : []),
+  ].filter(Boolean).join(' ');
+
+  const labels: string[] = [];
+  const addLabel = (label: string) => {
+    if (!labels.includes(label)) labels.push(label);
+  };
+
+  if (/\b(Get|Find|Search|Select|Where|Measure|Format|Test|Read|Compare)-/i.test(commandName)) addLabel('Read-only');
+  if (/\b(Set|New|Remove|Clear|Start|Stop|Restart|Enable|Disable|Install|Uninstall|Update|Move|Rename|Copy|Add)-/i.test(commandName)) addLabel('Changes state');
+  if (/\b(Remove|Clear|Format|Uninstall|Stop|Restart)-/i.test(commandName)) addLabel('Destructive potential');
+  if (/\b(Invoke-WebRequest|Invoke-RestMethod|DownloadString|WebClient|HttpClient|Uri|Url)\b/i.test(commandText)) addLabel('Network/API');
+  if (/\b(Invoke-Command|Enter-PSSession|New-PSSession|ComputerName|Session)\b/i.test(commandText)) addLabel('Remoting');
+  if (/\b(Invoke-Expression|iex|ConvertTo-SecureString|Credential|Password|Secret|Token|ExecutionPolicy)\b/i.test(commandText)) addLabel('Security-sensitive');
+
+  return labels.length ? labels.slice(0, 4) : ['Review scope'];
+}
+
+function commandGroupLabel(command: any): string {
+  const labels = commandRiskLabels(command);
+  if (labels.includes('Destructive potential')) return 'Destructive or System-Changing';
+  if (labels.includes('Security-sensitive')) return 'Security-Sensitive';
+  if (labels.includes('Remoting')) return 'Remoting';
+  if (labels.includes('Network/API')) return 'Network and API';
+  if (labels.includes('Changes state')) return 'State-Changing';
+  if (labels.includes('Read-only')) return 'Read-Only and Discovery';
+  return 'Other Commands';
+}
+
 function collectPowerShellStaticSignals(content: string) {
   const lines = content.split(/\r?\n/);
   const commandMatches = Array.from(new Set(content.match(/\b[A-Z][A-Za-z]+-[A-Za-z][A-Za-z0-9]+\b/g) || [])).slice(0, 40);
@@ -3154,7 +3374,7 @@ function collectPowerShellStaticSignals(content: string) {
   };
 }
 
-function buildStaticPowerShellAnalysis(content: string, title: string) {
+async function buildStaticPowerShellAnalysis(content: string, title: string) {
   const staticSignals = collectPowerShellStaticSignals(content);
   const commands = Array.from(new Set(content.match(/\b[A-Z][A-Za-z]+-[A-Za-z][A-Za-z0-9]+\b/g) || [])).slice(0, 12);
   const parameterNames = Array.from(new Set(content.match(/(?<!\w)-[A-Za-z][A-Za-z0-9]+/g) || [])).slice(0, 24);
@@ -3275,6 +3495,7 @@ function buildStaticPowerShellAnalysis(content: string, title: string) {
       description: `Parameter detected in the script. Confirm the value passed to ${parameter} is appropriate for the target environment.`,
     })),
   }));
+  const msDocsReferences = await buildMicrosoftLearnReferences(commandDetails, staticSignals);
 
   return {
     criteria_version: ANALYSIS_CRITERIA_VERSION,
@@ -3293,7 +3514,8 @@ function buildStaticPowerShellAnalysis(content: string, title: string) {
       'Run in a non-production environment first and capture expected output.',
       'Add comments for business purpose, required permissions, and rollback steps if they are missing.',
     ],
-    command_details: commandDetails,
+    command_details: attachMicrosoftLearnReferences(commandDetails, msDocsReferences),
+    ms_docs_references: msDocsReferences,
     security_issues: securityIssues,
     best_practice_violations: commands.length
       ? bestPracticeViolations
@@ -3353,10 +3575,10 @@ async function saveAnalysis(scriptId: number, analysis: any) {
     `
       INSERT INTO script_analysis (
         script_id, purpose, security_score, quality_score, risk_score,
-        suggestions, command_details, security_issues, best_practice_violations,
+        suggestions, command_details, ms_docs_references, security_issues, best_practice_violations,
         performance_insights, execution_summary, script_version, file_hash, analysis_source
       )
-      VALUES ($1, $2, $3, $4, $5, $6::jsonb, $7::jsonb, $8::jsonb, $9::jsonb, $10::jsonb, $11::jsonb, $12, $13, $14)
+      VALUES ($1, $2, $3, $4, $5, $6::jsonb, $7::jsonb, $8::jsonb, $9::jsonb, $10::jsonb, $11::jsonb, $12::jsonb, $13, $14, $15)
       ON CONFLICT (script_id) DO UPDATE
       SET purpose = EXCLUDED.purpose,
           security_score = EXCLUDED.security_score,
@@ -3364,6 +3586,7 @@ async function saveAnalysis(scriptId: number, analysis: any) {
           risk_score = EXCLUDED.risk_score,
           suggestions = EXCLUDED.suggestions,
           command_details = EXCLUDED.command_details,
+          ms_docs_references = EXCLUDED.ms_docs_references,
           security_issues = EXCLUDED.security_issues,
           best_practice_violations = EXCLUDED.best_practice_violations,
           performance_insights = EXCLUDED.performance_insights,
@@ -3382,6 +3605,7 @@ async function saveAnalysis(scriptId: number, analysis: any) {
       analysis.risk_score,
       JSON.stringify(analysis.suggestions || []),
       JSON.stringify(analysis.command_details || []),
+      JSON.stringify(analysis.ms_docs_references || []),
       JSON.stringify(analysis.security_issues || []),
       JSON.stringify(analysis.best_practice_violations || []),
       JSON.stringify(analysis.performance_insights || []),
@@ -4988,6 +5212,12 @@ function toFrontendDocumentationItem(row: any) {
 }
 
 function buildAnalysisReportLines(script: any, analysis: any): string[] {
+  const commandDetails = analysis.commandDetails || analysis.command_details || [];
+  const docsReferences = analysis.msDocsReferences || analysis.ms_docs_references || [];
+  const docsByCommand = new Map(
+    docsReferences.map((reference: any) => [String(reference.command || '').toLowerCase(), reference])
+  );
+
   const lines = [
     `# ${script.title} Analysis`,
     '',
@@ -5082,18 +5312,35 @@ function buildAnalysisReportLines(script: any, analysis: any): string[] {
     '',
     '## Key Commands',
     '',
-    ...((analysis.commandDetails || analysis.command_details || []).length
-      ? (analysis.commandDetails || analysis.command_details).flatMap((command: any) => [
-          `### ${command.name || 'Command'}`,
+    ...(commandDetails.length
+      ? commandDetails.flatMap((command: any) => {
+          const commandName = commandNameOf(command) || 'Command';
+          const reference = docsByCommand.get(commandName.toLowerCase()) || {};
+          const docsUrl = command.msDocsUrl || command.ms_docs_url || reference.url;
+          const docsTitle = command.msDocsTitle || command.ms_docs_title || reference.title || `${commandName} - Microsoft Learn`;
+          const sourceConfidence = command.msDocsSourceConfidence || command.ms_docs_source_confidence || reference.sourceConfidence || reference.source_confidence;
+
+          return [
+          `### ${commandName}`,
           '',
           command.description || command.purpose || 'No description provided.',
           '',
+          `**Command group:** ${commandGroupLabel(command)}`,
+          `**Risk badges:** ${commandRiskLabels(command).join(', ')}`,
           `**Purpose:** ${command.purpose || 'N/A'}`,
           `**Beginner explanation:** ${command.beginner_explanation || command.beginnerExplanation || 'N/A'}`,
           `**Management impact:** ${command.management_impact || command.managementImpact || 'N/A'}`,
           `**Example:** ${command.example || 'N/A'}`,
+          ...(docsUrl
+            ? [
+                `**Microsoft Learn:** ${docsTitle}`,
+                docsUrl,
+                `**Source confidence:** ${sourceConfidence || 'Analyzer-provided URL'}`,
+              ]
+            : ['**Microsoft Learn:** No official reference link was attached.']),
           '',
-        ])
+        ];
+      })
       : ['No key command breakdown was provided.', '']),
   ];
 

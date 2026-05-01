@@ -3,13 +3,15 @@ import { useParams, useNavigate } from 'react-router-dom';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { scriptService } from '../services/api';
 import ReactMarkdown from 'react-markdown';
-import { FaExclamationTriangle, FaCheckCircle, FaInfoCircle, FaLightbulb, FaChartLine, FaPaperPlane, FaRobot } from 'react-icons/fa';
+import { FaExclamationTriangle, FaCheckCircle, FaInfoCircle, FaLightbulb, FaChartLine, FaPaperPlane, FaRobot, FaExternalLinkAlt } from 'react-icons/fa';
 // LangGraph Integration
 import { streamAnalysis, AnalysisEvent } from '../services/langgraphService';
 import { AnalysisProgressPanel } from '../components/Analysis/AnalysisProgressPanel';
 import { AI_MODELS, loadSettings } from '../services/settings';
 import { getApiUrl } from '../utils/apiUrl';
 import { useAuth } from '../hooks/useAuth';
+import { buildCommandAnalysisMarkdown } from '../utils/analysisMarkdown';
+import { microsoftLearnReferenceForCommandName, qrCodeUrlFor, type MSDocsReference } from '../utils/microsoftLearnLinks';
 
 // Define message type for AI chat
 interface Message {
@@ -19,77 +21,30 @@ interface Message {
 
 interface CommandDetail {
   name?: string;
+  command?: string;
   description?: string;
   purpose?: string;
   parameters?: Array<{ name?: string; description?: string }>;
   example?: string;
   alternatives?: string;
   alternativeNote?: string;
+  msDocsUrl?: string;
+  ms_docs_url?: string;
+  msDocsTitle?: string;
+  msDocsDescription?: string;
+  msDocsSourceConfidence?: string;
+  ms_docs_source_confidence?: string;
 }
 
-const buildCommandAnalysisMarkdown = (scriptTitle: string, analysis: any): string | null => {
-  const commandDetails = Array.isArray(analysis?.commandDetails) ? analysis.commandDetails as CommandDetail[] : [];
-  if (commandDetails.length === 0) {
-    return null;
-  }
+type CommandRiskBadge = {
+  label: string;
+  className: string;
+};
 
-  const commandNames = commandDetails
-    .map((command) => command.name)
-    .filter((name): name is string => Boolean(name));
-  const securityConcerns = Array.isArray(analysis?.securityConcerns) ? analysis.securityConcerns : [];
-  const performanceSuggestions = Array.isArray(analysis?.performanceSuggestions) ? analysis.performanceSuggestions : [];
-  const securityScore = Number(analysis?.securityScore ?? analysis?.security_score ?? 0);
-  const codeQualityScore = Number(analysis?.codeQualityScore ?? analysis?.code_quality_score ?? 0);
-
-  const lines = [
-    `# Command Analysis for ${scriptTitle}`,
-    '',
-    '## Commands Found',
-    commandNames.length > 0
-      ? commandNames.map((name) => `* ${name}`).join('\n')
-      : '* No named PowerShell commands were extracted.',
-    '',
-    '## Command Notes',
-    ...commandDetails.flatMap((command) => {
-      const commandName = command.name || 'Unnamed command';
-      const notes = [`* ${commandName}: ${command.description || command.purpose || 'No description was provided by the analyzer.'}`];
-
-      if (command.parameters?.length) {
-        const parameterNames = command.parameters
-          .map((param) => param.name)
-          .filter(Boolean)
-          .join(', ');
-        if (parameterNames) {
-          notes.push(`  * Parameters: ${parameterNames}`);
-        }
-      }
-
-      if (command.example) {
-        notes.push(`  * Example seen: ${command.example}`);
-      }
-
-      if (command.alternatives) {
-        notes.push(`  * Alternative: ${command.alternatives}${command.alternativeNote ? ` (${command.alternativeNote})` : ''}`);
-      }
-
-      return notes;
-    }),
-    '',
-    '## Safety and Quality Signals',
-    `* Security score: ${Number.isFinite(securityScore) && securityScore > 0 ? `${securityScore}/10` : 'Not scored'}`,
-    `* Code quality score: ${Number.isFinite(codeQualityScore) && codeQualityScore > 0 ? `${codeQualityScore}/10` : 'Not scored'}`,
-    securityConcerns.length > 0
-      ? `* Security concerns: ${securityConcerns.length}`
-      : '* Security concerns: none reported',
-    performanceSuggestions.length > 0
-      ? `* Performance suggestions: ${performanceSuggestions.length}`
-      : '* Performance suggestions: none reported',
-    '',
-    '## Tracking Note',
-    '* This section is generated from the analyzer output for this script. It does not add sample commands or assumptions that were not extracted from the uploaded file.'
-  ];
-
-  return lines.join('\n');
+type CommandGroup = {
+  label: string;
+  description: string;
+  commands: any[];
 };
 
 const getConfidenceLabel = (confidence: unknown, analysisSource?: string): string => {
@@ -135,6 +90,165 @@ const firstArray = (...values: unknown[]): any[] => {
   }
 
   return [];
+};
+
+const commandNameOf = (command: any): string => firstText(command?.name, command?.command);
+
+const buildDocsReferenceMap = (references: unknown[]): Map<string, MSDocsReference> => {
+  const docsByCommand = new Map<string, MSDocsReference>();
+
+  references.forEach((reference: any) => {
+    const command = firstText(reference?.command, reference?.name, reference?.title);
+    const url = firstText(reference?.url, reference?.href, reference?.link);
+    if (command && url) {
+      docsByCommand.set(command.toLowerCase(), {
+        command,
+        title: firstText(reference?.title) || `${command} - Microsoft Learn`,
+        url,
+        description: firstText(reference?.description, reference?.summary),
+        sourceConfidence: firstText(reference?.sourceConfidence, reference?.source_confidence),
+      });
+    }
+  });
+
+  return docsByCommand;
+};
+
+const docsReferenceForCommand = (command: any, docsByCommand: Map<string, MSDocsReference>): MSDocsReference | null => {
+  const commandName = commandNameOf(command);
+  const directUrl = firstText(command?.msDocsUrl, command?.ms_docs_url, command?.docsUrl, command?.documentationUrl);
+  if (directUrl) {
+    return {
+      command: commandName,
+      title: firstText(command?.msDocsTitle, command?.ms_docs_title) || `${commandName || 'PowerShell command'} - Microsoft Learn`,
+      url: directUrl,
+      description: firstText(command?.msDocsDescription, command?.ms_docs_description),
+      sourceConfidence: firstText(command?.msDocsSourceConfidence, command?.ms_docs_source_confidence) || 'Analyzer-provided URL',
+    };
+  }
+
+  return commandName
+    ? docsByCommand.get(commandName.toLowerCase()) || microsoftLearnReferenceForCommandName(commandName)
+    : null;
+};
+
+const inferCommandRiskBadges = (command: any): CommandRiskBadge[] => {
+  const commandName = commandNameOf(command);
+  const commandText = [
+    commandName,
+    command?.description,
+    command?.purpose,
+    command?.management_impact,
+    command?.managementImpact,
+    command?.example,
+    ...(Array.isArray(command?.parameters)
+      ? command.parameters.flatMap((param: any) => [param?.name, param?.description])
+      : []),
+  ].filter(Boolean).join(' ');
+
+  const badges: CommandRiskBadge[] = [];
+  const addBadge = (label: string, className: string) => {
+    if (!badges.some((badge) => badge.label === label)) {
+      badges.push({ label, className });
+    }
+  };
+
+  if (/\b(Get|Find|Search|Select|Where|Measure|Format|Test|Read|Compare)-/i.test(commandName)) {
+    addBadge('Read-only', 'border-emerald-700/70 bg-emerald-950/40 text-emerald-200');
+  }
+
+  if (/\b(Set|New|Remove|Clear|Start|Stop|Restart|Enable|Disable|Install|Uninstall|Update|Move|Rename|Copy|Add)-/i.test(commandName)) {
+    addBadge('Changes state', 'border-yellow-700/70 bg-yellow-950/40 text-yellow-200');
+  }
+
+  if (/\b(Remove|Clear|Format|Uninstall|Stop|Restart)-/i.test(commandName)) {
+    addBadge('Destructive potential', 'border-red-700/70 bg-red-950/40 text-red-200');
+  }
+
+  if (/\b(Invoke-WebRequest|Invoke-RestMethod|DownloadString|WebClient|HttpClient|Uri|Url)\b/i.test(commandText)) {
+    addBadge('Network/API', 'border-cyan-700/70 bg-cyan-950/40 text-cyan-200');
+  }
+
+  if (/\b(Invoke-Command|Enter-PSSession|New-PSSession|ComputerName|Session)\b/i.test(commandText)) {
+    addBadge('Remoting', 'border-purple-700/70 bg-purple-950/40 text-purple-200');
+  }
+
+  if (/\b(Invoke-Expression|iex|ConvertTo-SecureString|Credential|Password|Secret|Token|ExecutionPolicy)\b/i.test(commandText)) {
+    addBadge('Security-sensitive', 'border-orange-700/70 bg-orange-950/40 text-orange-200');
+  }
+
+  if (badges.length === 0) {
+    addBadge('Review scope', 'border-slate-700 bg-slate-900 text-slate-300');
+  }
+
+  return badges.slice(0, 4);
+};
+
+const commandGroupForBadges = (badges: CommandRiskBadge[]): Pick<CommandGroup, 'label' | 'description'> => {
+  const labels = badges.map((badge) => badge.label);
+
+  if (labels.includes('Destructive potential')) {
+    return {
+      label: 'Destructive or System-Changing',
+      description: 'Commands that may delete, stop, restart, clear, format, or otherwise materially change target systems.',
+    };
+  }
+
+  if (labels.includes('Security-sensitive')) {
+    return {
+      label: 'Security-Sensitive',
+      description: 'Commands involving dynamic execution, credentials, secrets, tokens, or execution policy.',
+    };
+  }
+
+  if (labels.includes('Remoting')) {
+    return {
+      label: 'Remoting',
+      description: 'Commands that may execute against remote sessions or remote computers.',
+    };
+  }
+
+  if (labels.includes('Network/API')) {
+    return {
+      label: 'Network and API',
+      description: 'Commands that may call HTTP endpoints, download content, or depend on network services.',
+    };
+  }
+
+  if (labels.includes('Changes state')) {
+    return {
+      label: 'State-Changing',
+      description: 'Commands that create, update, move, rename, copy, enable, disable, start, stop, or install resources.',
+    };
+  }
+
+  if (labels.includes('Read-only')) {
+    return {
+      label: 'Read-Only and Discovery',
+      description: 'Commands that primarily inspect, filter, format, compare, or test existing data.',
+    };
+  }
+
+  return {
+    label: 'Other Commands',
+    description: 'Commands that need manual scope review because the analyzer could not classify their impact confidently.',
+  };
+};
+
+const buildCommandGroups = (commands: any[]): CommandGroup[] => {
+  const groups = new Map<string, CommandGroup>();
+
+  commands.forEach((command) => {
+    const groupInfo = commandGroupForBadges(inferCommandRiskBadges(command));
+    const existing = groups.get(groupInfo.label);
+    if (existing) {
+      existing.commands.push(command);
+    } else {
+      groups.set(groupInfo.label, { ...groupInfo, commands: [command] });
+    }
+  });
+
+  return Array.from(groups.values());
 };
 
 const normalizeScoreValue = (...values: unknown[]): number | null => {
@@ -824,6 +938,9 @@ When generating or modifying scripts:
     analysis.executionSummary?.performance_insights
   );
   const commandDetails = firstArray(analysis.commandDetails, analysis.command_details, analysis.executionSummary?.command_details);
+  const msDocsReferences = firstArray(analysis.msDocsReferences, analysis.ms_docs_references, analysis.executionSummary?.ms_docs_references);
+  const docsByCommand = buildDocsReferenceMap(msDocsReferences);
+  const commandGroups = buildCommandGroups(commandDetails);
   const qualityScore = normalizeScoreValue(
     analysis.qualityScore,
     analysis.quality_score,
@@ -1547,38 +1664,83 @@ When generating or modifying scripts:
                       Key PowerShell Commands Analysis
                     </h3>
                     <div className="space-y-6">
-                      {analysis.commandDetails && analysis.commandDetails.length > 0 ? (
-                        analysis.commandDetails.map((command, index) => (
-                          <div key={index} className="bg-gradient-to-r from-gray-800 to-gray-900 p-4 rounded-lg border border-gray-700 shadow-md">
-                            <h4 className="text-blue-400 font-medium mb-3">{command.name}</h4>
-                            <div className="space-y-3">
-                              <p className="text-gray-300">{command.description}</p>
+                      {commandGroups.length > 0 ? (
+                        commandGroups.map((group) => (
+                          <section key={group.label} className="rounded-lg border border-slate-800 bg-slate-950/40 p-3">
+                            <div className="mb-4 flex flex-col gap-1 sm:flex-row sm:items-end sm:justify-between">
+                              <div>
+                                <h4 className="text-base font-semibold text-white">{group.label}</h4>
+                                <p className="mt-1 text-xs leading-5 text-slate-400">{group.description}</p>
+                              </div>
+                              <span className="text-xs font-semibold uppercase tracking-[0.16em] text-slate-500">
+                                {group.commands.length} {group.commands.length === 1 ? 'command' : 'commands'}
+                              </span>
+                            </div>
+                            <div className="space-y-4">
+                              {group.commands.map((command, index) => {
+                          const commandName = commandNameOf(command) || 'PowerShell command';
+                          const docsReference = docsReferenceForCommand(command, docsByCommand);
+                          const riskBadges = inferCommandRiskBadges(command);
+
+                          return (
+                          <div key={`${commandName}-${index}`} className="bg-slate-900/90 p-4 rounded-lg border border-slate-700 shadow-md">
+                            <div className="mb-3 flex flex-col gap-2 sm:flex-row sm:items-start sm:justify-between">
+                              <div>
+                                <p className="text-xs font-semibold uppercase tracking-[0.18em] text-slate-500">Command</p>
+                                <h4 className="mt-1 font-mono text-lg font-semibold text-blue-300">{commandName}</h4>
+                                <div className="mt-3 flex flex-wrap gap-2">
+                                  {riskBadges.map((badge) => (
+                                    <span
+                                      key={`${commandName}-${badge.label}`}
+                                      className={`rounded-full border px-2.5 py-1 text-xs font-semibold ${badge.className}`}
+                                    >
+                                      {badge.label}
+                                    </span>
+                                  ))}
+                                </div>
+                              </div>
+                              {docsReference?.url && (
+                                <a
+                                  href={docsReference.url}
+                                  target="_blank"
+                                  rel="noopener noreferrer"
+                                  className="inline-flex items-center gap-2 rounded-md border border-blue-700/70 bg-blue-950/50 px-3 py-2 text-sm font-medium text-blue-200 hover:border-blue-500 hover:bg-blue-900/60 hover:text-white"
+                                >
+                                  Microsoft Learn
+                                  <FaExternalLinkAlt className="h-3 w-3" />
+                                </a>
+                              )}
+                            </div>
+                            <div className="space-y-3 text-sm leading-6">
+                              <p className="text-gray-300">{command.description || command.purpose || 'No command description was provided by the analyzer.'}</p>
                               {(command.beginner_explanation || command.beginnerExplanation) && (
-                                <div className="bg-gray-900 bg-opacity-50 p-3 rounded-lg">
+                                <div className="bg-gray-950/70 p-3 rounded-lg border border-slate-800">
                                   <h5 className="text-sm text-emerald-300 font-semibold mb-2">Beginner Explanation</h5>
                                   <p className="text-gray-300">{command.beginner_explanation || command.beginnerExplanation}</p>
                                 </div>
                               )}
                               
-                              <div className="bg-gray-900 bg-opacity-50 p-3 rounded-lg">
+                              <div className="bg-gray-950/70 p-3 rounded-lg border border-slate-800">
                                 <h5 className="text-sm text-blue-300 font-semibold mb-2">Purpose</h5>
-                                <p className="text-gray-300">{command.purpose}</p>
+                                <p className="text-gray-300">{command.purpose || 'Purpose was not reported for this command.'}</p>
                               </div>
 
                               {(command.management_impact || command.managementImpact) && (
-                                <div className="bg-gray-900 bg-opacity-50 p-3 rounded-lg">
+                                <div className="bg-gray-950/70 p-3 rounded-lg border border-slate-800">
                                   <h5 className="text-sm text-yellow-300 font-semibold mb-2">Management Impact</h5>
                                   <p className="text-gray-300">{command.management_impact || command.managementImpact}</p>
                                 </div>
                               )}
                               
                               {command.parameters && command.parameters.length > 0 && (
-                                <div className="bg-gray-900 bg-opacity-50 p-3 rounded-lg">
+                                <div className="bg-gray-950/70 p-3 rounded-lg border border-slate-800">
                                   <h5 className="text-sm text-blue-300 font-semibold mb-2">Common Parameters</h5>
-                                  <ul className="list-disc pl-5 text-gray-300">
+                                  <ul className="space-y-2 text-gray-300">
                                     {command.parameters.map((param, paramIndex) => (
-                                      <li key={paramIndex}>
-                                        <code className="bg-gray-800 px-1 rounded text-yellow-300">{param.name}</code> - {param.description}
+                                      <li key={`${param.name || 'parameter'}-${paramIndex}`} className="rounded-md bg-slate-900 px-3 py-2">
+                                        <code className="bg-gray-800 px-1 rounded text-yellow-300">{param.name}</code>
+                                        <span className="text-gray-500"> - </span>
+                                        <span>{param.description}</span>
                                       </li>
                                     ))}
                                   </ul>
@@ -1586,16 +1748,16 @@ When generating or modifying scripts:
                               )}
                               
                               {command.example && (
-                                <div className="bg-gray-900 bg-opacity-50 p-3 rounded-lg">
+                                <div className="bg-gray-950/70 p-3 rounded-lg border border-slate-800">
                                   <h5 className="text-sm text-blue-300 font-semibold mb-2">Example in Script</h5>
-                                  <div className="bg-gray-800 p-2 rounded my-1 border-l-4 border-blue-500">
-                                    <code className="text-yellow-300">{command.example}</code>
+                                  <div className="bg-gray-800 p-3 rounded my-1 border-l-4 border-blue-500 overflow-x-auto">
+                                    <code className="text-yellow-300 whitespace-pre-wrap break-words">{command.example}</code>
                                   </div>
                                 </div>
                               )}
                               
                               {command.alternatives && (
-                                <div className="bg-gray-900 bg-opacity-50 p-3 rounded-lg">
+                                <div className="bg-gray-950/70 p-3 rounded-lg border border-slate-800">
                                   <h5 className="text-sm text-blue-300 font-semibold mb-2">Alternative Approaches</h5>
                                   <div className="bg-gray-800 p-2 rounded my-1 border-l-4 border-green-500">
                                     <code className="text-green-300">{command.alternatives}</code>
@@ -1606,23 +1768,52 @@ When generating or modifying scripts:
                                 </div>
                               )}
                               
-                              {command.msDocsUrl && (
-                                <div className="mt-2">
-                                  <a 
-                                    href={command.msDocsUrl} 
-                                    target="_blank" 
-                                    rel="noopener noreferrer"
-                                    className="text-blue-400 hover:text-blue-300 flex items-center"
-                                  >
-                                    <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
-                                    </svg>
-                                    Microsoft Documentation
-                                  </a>
+                              {docsReference?.url && (
+                                <div className="rounded-lg border border-blue-900/70 bg-blue-950/30 p-3">
+                                  <div className="mb-1 text-xs font-semibold uppercase tracking-[0.16em] text-blue-300">Microsoft Learn article</div>
+                                  <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+                                    <div className="min-w-0">
+                                      <a
+                                        href={docsReference.url}
+                                        target="_blank"
+                                        rel="noopener noreferrer"
+                                        className="inline-flex items-center gap-2 break-all font-medium text-blue-200 hover:text-white"
+                                      >
+                                        {docsReference.title || `${commandName} - Microsoft Learn`}
+                                        <FaExternalLinkAlt className="h-3 w-3 flex-shrink-0" />
+                                      </a>
+                                      {docsReference.description && (
+                                        <p className="mt-2 text-xs leading-5 text-blue-100/80">{docsReference.description}</p>
+                                      )}
+                                      {docsReference.sourceConfidence && (
+                                        <div className="mt-2 inline-flex rounded-full border border-blue-800/70 bg-blue-900/40 px-2.5 py-1 text-xs font-semibold text-blue-100">
+                                          {docsReference.sourceConfidence}
+                                        </div>
+                                      )}
+                                    </div>
+                                    <a
+                                      href={docsReference.url}
+                                      target="_blank"
+                                      rel="noopener noreferrer"
+                                      className="block h-28 w-28 flex-shrink-0 rounded-md border border-blue-800/70 bg-white p-2"
+                                      aria-label={`Open Microsoft Learn QR code target for ${commandName}`}
+                                    >
+                                      <img
+                                        src={qrCodeUrlFor(docsReference.url)}
+                                        alt={`QR code for ${commandName} Microsoft Learn article`}
+                                        className="h-full w-full"
+                                        loading="lazy"
+                                      />
+                                    </a>
+                                  </div>
                                 </div>
                               )}
                             </div>
                           </div>
+                          );
+                              })}
+                            </div>
+                          </section>
                         ))
                       ) : (
                         <div className="bg-gray-800 p-4 rounded-lg border border-gray-700">
@@ -1632,7 +1823,7 @@ When generating or modifying scripts:
                     </div>
                   </div>
                   
-                  {analysis.msDocsReferences && analysis.msDocsReferences.length > 0 && (
+                  {msDocsReferences.length > 0 && (
                     <div className="mt-6 pt-6 border-t border-gray-600">
                       <h3 className="text-lg font-medium mb-3 flex items-center">
                         <svg className="w-5 h-5 mr-2 text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
@@ -1642,7 +1833,7 @@ When generating or modifying scripts:
                       </h3>
                       <div className="bg-gray-800 p-4 rounded-lg border border-gray-700">
                         <ul className="space-y-3">
-                          {analysis.msDocsReferences.map((doc, index) => (
+                          {msDocsReferences.map((doc, index) => (
                             <li key={index} className="flex items-start bg-gray-900 bg-opacity-50 p-3 rounded-lg hover:bg-opacity-70 transition-colors duration-200">
                               <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 text-blue-400 mr-3 mt-0.5 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
