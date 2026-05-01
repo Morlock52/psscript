@@ -248,5 +248,23 @@ describe('VoiceAssistantDock', () => {
       outputFormat: 'mp3',
     })));
     expect(play).toHaveBeenCalled();
+    expect(screen.getByLabelText('Generated speech')).toBeInTheDocument();
+  });
+
+  it('keeps generated speech playable when browser autoplay is blocked', async () => {
+    const play = vi.fn().mockRejectedValue(new Error('NotAllowedError'));
+    vi.stubGlobal('Audio', vi.fn().mockImplementation(function MockAudio() {
+      return { play, pause: vi.fn(), volume: 0 };
+    }));
+    vi.spyOn(window, 'getSelection').mockReturnValue({ toString: () => 'Read this' } as Selection);
+    const user = userEvent.setup();
+    render(<VoiceAssistantDock />);
+
+    await user.click(screen.getByRole('button', { name: 'Voice' }));
+    await user.click(screen.getByRole('button', { name: /speak selection/i }));
+
+    await waitFor(() => expect(screen.getByText('Speech ready - press play')).toBeInTheDocument());
+    expect(screen.getByLabelText('Generated speech')).toBeInTheDocument();
+    expect(toast.info).toHaveBeenCalledWith('Speech is ready. Press play in the voice dock.');
   });
 });

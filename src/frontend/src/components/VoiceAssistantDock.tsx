@@ -164,6 +164,7 @@ const VoiceAssistantDock: React.FC = () => {
   const [voices, setVoices] = useState<VoiceOption[]>([]);
   const [settings, setSettings] = useState<VoiceSettings>(defaultSettings);
   const [status, setStatus] = useState('Ready');
+  const [audioUrl, setAudioUrl] = useState('');
   const mediaRecorderRef = useRef<MediaRecorder | null>(null);
   const audioStreamRef = useRef<MediaStream | null>(null);
   const audioChunksRef = useRef<Blob[]>([]);
@@ -372,6 +373,7 @@ const VoiceAssistantDock: React.FC = () => {
 
     try {
       setIsBusy(true);
+      setAudioUrl('');
       setStatus('Generating speech...');
       const synthesis = await voiceService.synthesizeSpeech({
         text,
@@ -381,16 +383,27 @@ const VoiceAssistantDock: React.FC = () => {
         voiceInstructions: 'Use a natural, confident assistant tone suitable for technical workflows.',
       });
 
-      const audio = new Audio(
-        `data:${audioFormatToMimeType(synthesis.format)};base64,${synthesis.audio_data}`
-      );
+      const nextAudioUrl = `data:${audioFormatToMimeType(synthesis.format)};base64,${synthesis.audio_data}`;
+      setAudioUrl(nextAudioUrl);
+
+      const audio = new Audio(nextAudioUrl);
       audio.volume = Math.max(0, Math.min(1, settings.volume || 0.9));
       audioRef.current?.pause();
       audioRef.current = audio;
-      await audio.play();
-      setStatus('Speaking');
+      if (settings.autoPlay !== false) {
+        try {
+          await audio.play();
+          setStatus('Speaking');
+        } catch {
+          setStatus('Speech ready - press play');
+          toast.info('Speech is ready. Press play in the voice dock.');
+        }
+      } else {
+        setStatus('Speech ready');
+      }
     } catch (error: any) {
-      setStatus('Speech playback failed');
+      const message = error?.message || 'Voice playback failed.';
+      setStatus(message);
       toast.error(error?.message || 'Voice playback failed.');
     } finally {
       setIsBusy(false);
@@ -494,6 +507,15 @@ const VoiceAssistantDock: React.FC = () => {
                 className="mt-1 w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm text-slate-900 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-100"
               />
             </label>
+
+            {audioUrl && (
+              <audio
+                controls
+                src={audioUrl}
+                className="mt-3 w-full"
+                aria-label="Generated speech"
+              />
+            )}
 
             <div className="mt-3 flex items-center justify-between text-xs text-slate-500 dark:text-slate-400">
               <span>{status}</span>
