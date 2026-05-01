@@ -536,42 +536,11 @@ export const analyticsService = {
   // Get security metrics
   getSecurityMetrics: async () => {
     try {
-      // Check if the endpoint exists by making a request
       const response = await apiClient.get("/analytics/security");
       return response.data;
     } catch (error) {
-      // If we get a 404, the endpoint doesn't exist yet - use mock data instead of showing errors
-      if (error.response && error.response.status === 404) {
-        console.log("Security metrics endpoint not implemented yet, using mock data");
-        // Return mock data that matches the expected structure
-        return {
-          highSecurityCount: 5,
-          highSecurityPercentage: 75,
-          mediumSecurityCount: 3,
-          mediumSecurityPercentage: 15,
-          lowSecurityCount: 2,
-          lowSecurityPercentage: 10,
-          totalScripts: 10,
-          commonIssues: [
-            { name: 'Hardcoded credentials', count: 2 },
-            { name: 'Insecure function calls', count: 1 },
-            { name: 'Missing error handling', count: 3 }
-          ]
-        };
-      } else {
-        // For other errors, log them but don't display in UI
-        console.error("Error fetching security metrics:", error);
-        return {
-          highSecurityCount: 0,
-          highSecurityPercentage: 0,
-          mediumSecurityCount: 0,
-          mediumSecurityPercentage: 0,
-          lowSecurityCount: 0,
-          lowSecurityPercentage: 0,
-          totalScripts: 0,
-          commonIssues: []
-        };
-      }
+      console.error("Error fetching security metrics:", error);
+      throw error;
     }
   },
   

@@ -244,6 +244,7 @@ describe('hosted AI client routing', () => {
 
   it('normalizes hosted analysis fields before rendering the top report summary', () => {
     const scriptAnalysis = readWorkspaceFile('src/frontend/src/pages/ScriptAnalysis.tsx');
+    const netlifyApi = readWorkspaceFile('netlify/functions/api.ts');
 
     expect(scriptAnalysis).toContain('const normalizeScoreValue = (...values: unknown[]): number | null => {');
     expect(scriptAnalysis).toContain('analysis.qualityScore');
@@ -258,6 +259,14 @@ describe('hosted AI client routing', () => {
     expect(scriptAnalysis).toContain('const displayScore = (value: number | null)');
     expect(scriptAnalysis).toContain('Analysis data incomplete');
     expect(scriptAnalysis).toContain('Risk score was not returned by the analyzer.');
+    expect(scriptAnalysis).toContain('Analysis Coverage');
+    expect(scriptAnalysis).toContain('What the analyzer actually inspected and understood from the script.');
+    expect(scriptAnalysis).toContain('staticSignals.has_should_process');
+    expect(scriptAnalysis).toContain('coverageStats.map');
+    expect(netlifyApi).toContain('function collectPowerShellStaticSignals(content: string)');
+    expect(netlifyApi).toContain('data_collection_summary');
+    expect(netlifyApi).toContain('static_signals');
+    expect(netlifyApi).toContain('Use the supplied deterministic static scan signals as evidence.');
   });
 
   it('routes active chat and assistant follow-ups through hosted API paths', () => {
@@ -341,11 +350,18 @@ describe('hosted AI client routing', () => {
     expect(app).toContain('path="/scripts/:id/edit" element={<ProtectedRoute requiredRole="admin"><ScriptEditor /></ProtectedRoute>}');
     expect(scriptDetail).toContain("const isAdmin = user?.role === 'admin';");
     expect(scriptDetail).toContain('Only admins can edit script details.');
+    expect(scriptDetail).toContain('Edit Details');
+    expect(scriptDetail).toContain('categoryService.getCategories');
+    expect(scriptDetail).toContain('tags: parseTagsInput');
     expect(scriptDetail).toContain('{isAdmin && (');
     expect(scriptAnalysis).toContain("const isAdmin = user?.role === 'admin';");
     expect(scriptManagement).toContain("const isAdmin = user?.role === 'admin';");
     expect(manageFiles).toContain("const canEditScript = () => user?.role === 'admin';");
     expect(netlifyApi).toContain("error: 'admin_required'");
     expect(netlifyApi).toContain('Only admins can edit script details.');
+    expect(netlifyApi).toContain('DELETE FROM script_tags WHERE script_id = $1');
+    expect(netlifyApi).toContain('is_public = $7');
+    expect(netlifyApi).toContain('const contentChanged = nextContent !== undefined && nextContent !== current.content;');
+    expect(netlifyApi).toContain('INSERT INTO script_versions');
   });
 });

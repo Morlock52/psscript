@@ -15,6 +15,26 @@
   status = 200
 
 [[redirects]]
+  from = "/mcp"
+  to = "/.netlify/functions/mcp"
+  status = 200
+
+[[redirects]]
+  from = "/.well-known/mcp/server.json"
+  to = "/.netlify/functions/mcp"
+  status = 200
+
+[[redirects]]
+  from = "/.well-known/oauth-protected-resource"
+  to = "/.netlify/functions/mcp"
+  status = 200
+
+[[redirects]]
+  from = "/.well-known/oauth-authorization-server"
+  to = "/.netlify/functions/mcp"
+  status = 200
+
+[[redirects]]
   from = "/*"
   to = "/index.html"
   status = 200

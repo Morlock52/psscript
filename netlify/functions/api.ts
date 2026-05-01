@@ -7,6 +7,7 @@ import net from 'node:net';
 import { query } from './_shared/db';
 import { getEnv, requireEnv } from './_shared/env';
 import { requireAdmin, requireUser, requireUserAllowingDisabled, type HostedUser } from './_shared/auth';
+import { handleAnalyticsDashboard } from './_shared/dashboard';
 import { json, methodNotAllowed, notFound } from './_shared/http';
 
 export const config: Config = {
@@ -275,6 +276,44 @@ const analysisJsonSchema = {
         business_value: { type: 'string' },
         key_actions: { type: 'array', items: { type: 'string' } },
         operational_risk: { type: 'string' },
+        data_collection_summary: {
+          type: 'object',
+          additionalProperties: false,
+          properties: {
+            script_lines_reviewed: { type: 'number' },
+            non_empty_lines_reviewed: { type: 'number' },
+            commands_identified: { type: 'number' },
+            functions_identified: { type: 'number' },
+            parameters_identified: { type: 'number' },
+            modules_identified: { type: 'number' },
+            review_inputs: { type: 'array', items: { type: 'string' } },
+          },
+        },
+        static_signals: {
+          type: 'object',
+          additionalProperties: false,
+          properties: {
+            line_count: { type: 'number' },
+            non_empty_line_count: { type: 'number' },
+            command_count: { type: 'number' },
+            function_count: { type: 'number' },
+            parameter_count: { type: 'number' },
+            has_comment_help: { type: 'boolean' },
+            has_cmdlet_binding: { type: 'boolean' },
+            has_should_process: { type: 'boolean' },
+            has_try_catch: { type: 'boolean' },
+            mutates_state: { type: 'boolean' },
+            uses_remoting: { type: 'boolean' },
+            uses_remote_content: { type: 'boolean' },
+            uses_dynamic_execution: { type: 'boolean' },
+            possible_secret_count: { type: 'number' },
+            requires: { type: 'array', items: { type: 'string' } },
+            modules: { type: 'array', items: { type: 'string' } },
+            functions: { type: 'array', items: { type: 'string' } },
+            parameters: { type: 'array', items: { type: 'string' } },
+            commands: { type: 'array', items: { type: 'string' } },
+          },
+        },
       },
     },
   },
@@ -286,6 +325,12 @@ const scriptSelect = `
          s.archived_at, s.archived_by, s.archive_reason, s.review_status, s.is_test_data,
          s.deleted_at, s.deleted_by,
          c.name AS category_name,
+         COALESCE((
+           SELECT array_agg(t.name ORDER BY t.name)
+           FROM script_tags st
+           JOIN tags t ON t.id = st.tag_id
+           WHERE st.script_id = s.id
+         ), ARRAY[]::text[]) AS tags,
          p.username AS author_username,
          sa.quality_score AS analysis_quality_score,
          sa.security_score AS analysis_security_score,
@@ -1104,23 +1149,64 @@ async function handleScriptById(req: Request, route: RouteParams): Promise<Respo
     const currentResult = await query(`${scriptSelect} WHERE s.id = $1 AND s.deleted_at IS NULL`, [id]);
     const current = currentResult.rows[0];
     if (!current) return json({ error: 'script_not_found', message: 'Script not found' }, { status: 404 });
+    const hasTitle = Object.prototype.hasOwnProperty.call(body, 'title');
+    const hasDescription = Object.prototype.hasOwnProperty.call(body, 'description');
+    const hasCategory = Object.prototype.hasOwnProperty.call(body, 'category_id') || Object.prototype.hasOwnProperty.call(body, 'categoryId');
+    const hasVisibility = Object.prototype.hasOwnProperty.call(body, 'is_public') || Object.prototype.hasOwnProperty.call(body, 'isPublic');
+    const hasTags = Object.prototype.hasOwnProperty.call(body, 'tags');
+    const nextTitle = hasTitle ? String(body.title || '').trim() : current.title;
+    const nextDescription = hasDescription ? String(body.description || '').trim() : current.description;
     const nextContent = typeof body.content === 'string' ? body.content : undefined;
+    if (hasTitle && !nextTitle) return json({ error: 'missing_title', message: 'Script title is required' }, { status: 400 });
+    if (nextContent !== undefined && !nextContent.trim()) return json({ error: 'missing_content', message: 'Script content is required' }, { status: 400 });
+
+    let nextCategoryId = current.category_id;
+    if (hasCategory) {
+      const rawCategoryId = Object.prototype.hasOwnProperty.call(body, 'category_id') ? body.category_id : body.categoryId;
+      nextCategoryId = rawCategoryId === null || rawCategoryId === '' ? null : Number(rawCategoryId);
+      if (nextCategoryId !== null && !Number.isFinite(nextCategoryId)) {
+        return json({ error: 'invalid_category_id', message: 'Invalid category id' }, { status: 400 });
+      }
+      if (nextCategoryId !== null) {
+        const categoryResult = await query('SELECT id FROM categories WHERE id = $1', [nextCategoryId]);
+        if (!categoryResult.rows[0]) {
+          return json({ error: 'invalid_category_id', message: 'Category not found' }, { status: 400 });
+        }
+      }
+    }
+
+    let nextIsPublic = current.is_public;
+    if (hasVisibility) {
+      const rawVisibility = body.is_public ?? body.isPublic;
+      if (typeof rawVisibility === 'boolean') {
+        nextIsPublic = rawVisibility;
+      } else if (rawVisibility === 'true' || rawVisibility === 'false') {
+        nextIsPublic = rawVisibility === 'true';
+      } else {
+        return json({ error: 'invalid_visibility', message: 'Visibility must be true or false' }, { status: 400 });
+      }
+    }
+
+    const nextTags = hasTags ? normalizeScriptTags(body.tags) : null;
     const contentChanged = nextContent !== undefined && nextContent !== current.content;
     const nextVersion = contentChanged ? Number(current.version || 1) + 1 : Number(current.version || 1);
+    const nextFileHash = contentChanged ? await sha256(nextContent) : current.file_hash;
 
     const result = await query(
       `
         UPDATE scripts
-        SET title = COALESCE($2, title),
-            description = COALESCE($3, description),
-            content = COALESCE($4, content),
-            category_id = COALESCE($5, category_id),
-            version = $6,
+        SET title = $2,
+            description = $3,
+            content = CASE WHEN $4::boolean THEN $5 ELSE content END,
+            category_id = $6,
+            is_public = $7,
+            file_hash = $8,
+            version = $9,
             updated_at = now()
         WHERE id = $1
         RETURNING *
       `,
-      [id, body.title, body.description, nextContent, body.category_id ?? body.categoryId, nextVersion]
+      [id, nextTitle, nextDescription, contentChanged, nextContent, nextCategoryId, nextIsPublic, nextFileHash, nextVersion]
     );
     if (!result.rows[0]) return json({ error: 'script_not_found', message: 'Script not found' }, { status: 404 });
 
@@ -1133,10 +1219,18 @@ async function handleScriptById(req: Request, route: RouteParams): Promise<Respo
         `,
         [id, nextContent, nextVersion, user.id, body.commit_message || body.commitMessage || 'Script updated']
       );
-      await recordAuditEvent({ eventType: 'update', scriptId: id, scriptTitle: result.rows[0].title, user, details: { contentChanged, version: nextVersion } });
     }
+    if (nextTags) await replaceScriptTags(id, nextTags);
+    await recordAuditEvent({
+      eventType: 'update',
+      scriptId: id,
+      scriptTitle: result.rows[0].title,
+      user,
+      details: { contentChanged, version: nextVersion, tagsChanged: Boolean(nextTags), metadataChanged: !contentChanged },
+    });
 
-    return json({ success: true, script: toFrontendScript(result.rows[0]) });
+    const updatedResult = await query(`${scriptSelect} WHERE s.id = $1 AND s.deleted_at IS NULL`, [id]);
+    return json({ success: true, script: toFrontendScript(updatedResult.rows[0] || result.rows[0]) });
   }
 
   if (req.method === 'DELETE') {
@@ -1397,6 +1491,7 @@ async function ensureBackupStore(): Promise<void> {
       updated_at TIMESTAMPTZ NOT NULL DEFAULT now()
     )
   `);
+  await query(`ALTER TABLE ${quoteIdentifier(DB_BACKUP_TABLE)} ENABLE ROW LEVEL SECURITY`);
 }
 
 async function createHostedDbBackup(rawName: unknown, userId: string) {
@@ -1565,6 +1660,7 @@ async function ensureScriptLifecycleSchema(): Promise<void> {
       await query('CREATE INDEX IF NOT EXISTS idx_audit_events_created_at ON audit_events (created_at DESC)');
       await query('CREATE INDEX IF NOT EXISTS idx_audit_events_script_id ON audit_events (script_id, created_at DESC) WHERE script_id IS NOT NULL');
       await query('CREATE INDEX IF NOT EXISTS idx_audit_events_user_id ON audit_events (user_id, created_at DESC) WHERE user_id IS NOT NULL');
+      await query('ALTER TABLE audit_events ENABLE ROW LEVEL SECURITY');
     })().catch(error => {
       scriptLifecycleSchemaPromise = null;
       throw error;
@@ -1762,7 +1858,7 @@ async function handleDocumentation(req: Request, route: RouteParams): Promise<Re
   }
 
   if (route.path === '/documentation/bulk' && req.method === 'POST') {
-    await requireUser(req);
+    await requireAdmin(req);
     const body = await req.json().catch(() => ({}));
     const documents = Array.isArray(body.documents) ? body.documents : [];
     let imported = 0;
@@ -2515,53 +2611,6 @@ async function handleAnalyticsUsage(req: Request): Promise<Response> {
   return json(result.rows);
 }
 
-async function handleAnalyticsDashboard(req: Request): Promise<Response> {
-  const user = await requireUser(req);
-  const summary = await query(
-    `
-      SELECT
-        COUNT(*)::int AS total_scripts,
-        COUNT(*) FILTER (WHERE s.created_at > now() - interval '7 days')::int AS recent_scripts,
-        COUNT(sa.script_id)::int AS total_analyses,
-        COALESCE(AVG(sa.security_score), 0)::float AS average_security_score
-      FROM scripts s
-      LEFT JOIN script_analysis sa ON sa.script_id = s.id
-      WHERE (s.user_id = $1 OR s.is_public = true)
-        AND s.deleted_at IS NULL
-        AND s.archived_at IS NULL
-        AND s.is_test_data = false
-    `,
-    [user.id]
-  );
-  const categories = await query(
-    `
-      SELECT COUNT(*)::int AS total_categories
-      FROM categories c
-      WHERE EXISTS (
-        SELECT 1
-        FROM scripts s
-        WHERE s.category_id = c.id
-          AND (s.user_id = $1 OR s.is_public = true)
-          AND s.deleted_at IS NULL
-          AND s.archived_at IS NULL
-          AND s.is_test_data = false
-      )
-    `,
-    [user.id]
-  );
-  return json({
-    totalScripts: Number(summary.rows[0]?.total_scripts || 0),
-    scriptsChange: 0,
-    totalCategories: Number(categories.rows[0]?.total_categories || 0),
-    avgSecurityScore: Number(summary.rows[0]?.average_security_score || 0),
-    securityScoreChange: 0,
-    totalAnalyses: Number(summary.rows[0]?.total_analyses || 0),
-    analysesChange: 0,
-    refreshedAt: new Date().toISOString(),
-    source: '/api/analytics/dashboard',
-  });
-}
-
 async function handleRecentActivity(req: Request, route: RouteParams): Promise<Response> {
   if (req.method !== 'GET') return methodNotAllowed();
   const user = await requireUser(req);
@@ -2598,7 +2647,7 @@ async function createScript(userId: string, input: any) {
   }
 
   const fileHash = await sha256(content);
-  const inputTags = Array.isArray(input.tags) ? input.tags.map((tag: unknown) => String(tag || '').trim().toLowerCase()).filter(Boolean) : [];
+  const inputTags = normalizeScriptTags(input.tags);
   const isTestData = Boolean(input.isTestData || input.is_test_data) ||
     inputTags.some((tag: string) => ['codex-smoke', 'delete-test', 'readme-screenshot', 'e2e', 'e2e-test', 'test-data'].includes(tag)) ||
     /^(e2e script|smoke upload|codex lifecycle|test upload)/i.test(String(input.title || ''));
@@ -2655,18 +2704,7 @@ async function createScript(userId: string, input: any) {
     [script.id, content, userId, 'Initial upload']
   );
 
-  const tags = inputTags;
-  for (const tag of tags) {
-    if (typeof tag !== 'string' || !tag.trim()) continue;
-    const tagResult = await query(
-      'INSERT INTO tags (name) VALUES ($1) ON CONFLICT (name) DO UPDATE SET name = EXCLUDED.name RETURNING id',
-      [tag.trim().toLowerCase()]
-    );
-    await query(
-      'INSERT INTO script_tags (script_id, tag_id) VALUES ($1, $2) ON CONFLICT DO NOTHING',
-      [script.id, tagResult.rows[0].id]
-    );
-  }
+  await replaceScriptTags(script.id, inputTags);
 
   try {
     await withTimeout(
@@ -2679,6 +2717,33 @@ async function createScript(userId: string, input: any) {
   }
 
   return toFrontendScript(script);
+}
+
+function normalizeScriptTags(rawTags: unknown): string[] {
+  const values = Array.isArray(rawTags)
+    ? rawTags
+    : typeof rawTags === 'string'
+      ? rawTags.split(',')
+      : [];
+  return Array.from(new Set(
+    values
+      .map((tag: unknown) => String(tag || '').trim().toLowerCase())
+      .filter(Boolean)
+  )).slice(0, 10);
+}
+
+async function replaceScriptTags(scriptId: number, tags: string[]): Promise<void> {
+  await query('DELETE FROM script_tags WHERE script_id = $1', [scriptId]);
+  for (const tag of tags) {
+    const tagResult = await query(
+      'INSERT INTO tags (name) VALUES ($1) ON CONFLICT (name) DO UPDATE SET name = EXCLUDED.name RETURNING id',
+      [tag]
+    );
+    await query(
+      'INSERT INTO script_tags (script_id, tag_id) VALUES ($1, $2) ON CONFLICT DO NOTHING',
+      [scriptId, tagResult.rows[0].id]
+    );
+  }
 }
 
 async function handleSimilarScripts(id: number, userId: string, route: RouteParams): Promise<Response> {
@@ -2751,6 +2816,8 @@ async function analyzePowerShell(content: string, title: string, metricContext?:
     throw Object.assign(new Error('Script content is required for analysis'), { status: 400, code: 'missing_content' });
   }
 
+  const staticSignals = collectPowerShellStaticSignals(content);
+
   let parsed: Record<string, any>;
   try {
     parsed = await completeJson(
@@ -2766,11 +2833,12 @@ async function analyzePowerShell(content: string, title: string, metricContext?:
             'Prioritize findings by concrete execution impact. Security findings must cover secrets, injection or dynamic execution, remote downloads, privilege changes, destructive operations, and remoting when present.',
             'Operational safety must call out whether destructive or changing actions use CmdletBinding SupportsShouldProcess, $PSCmdlet.ShouldProcess, -WhatIf, and -Confirm patterns.',
             'Use Microsoft PowerShell/PSScriptAnalyzer conventions, OWASP secure coding practices, and NIST SSDF review-and-test expectations.',
+            'Use the supplied deterministic static scan signals as evidence. Do not invent modules, commands, paths, or execution results that are not in the script or static signals.',
           ].join(' '),
         },
         {
           role: 'user',
-          content: `Analyze this PowerShell script.\n\nTitle: ${title}\n\n${content}`,
+          content: `Analyze this PowerShell script.\n\nTitle: ${title}\n\nStatic scan signals:\n${JSON.stringify(staticSignals, null, 2)}\n\nScript content:\n${content}`,
         },
       ],
       analysisJsonSchema,
@@ -2784,13 +2852,14 @@ async function analyzePowerShell(content: string, title: string, metricContext?:
   }
 
   const executionSummary = parsed.execution_summary && typeof parsed.execution_summary === 'object'
-    ? parsed.execution_summary
-    : {
+      ? parsed.execution_summary
+      : {
         what_it_does: parsed.purpose || 'Automates PowerShell tasks defined in the script.',
         business_value: 'Reduces manual administration by packaging repeatable steps into a script.',
         key_actions: [],
         operational_risk: 'Review permissions, system impact, and target scope before running in production.',
       };
+  const dataCollectionSummary = normalizeDataCollectionSummary(executionSummary.data_collection_summary, staticSignals);
   const analysisCriteria = normalizeAnalysisCriteria(parsed.analysis_criteria, parsed);
   const prioritizedFindings = normalizeAnalysisArray(parsed.prioritized_findings);
   const remediationPlan = normalizeAnalysisArray(parsed.remediation_plan);
@@ -2825,6 +2894,8 @@ async function analyzePowerShell(content: string, title: string, metricContext?:
     confidence,
     execution_summary: {
       ...executionSummary,
+      data_collection_summary: dataCollectionSummary,
+      static_signals: staticSignals,
       criteria_version: parsed.criteria_version || ANALYSIS_CRITERIA_VERSION,
       analysis_criteria: analysisCriteria,
       prioritized_findings: prioritizedFindings,
@@ -2883,7 +2954,80 @@ function normalizeAnalysisCriteria(value: any, parsed: Record<string, any>) {
   }));
 }
 
+function normalizeDataCollectionSummary(value: any, staticSignals: ReturnType<typeof collectPowerShellStaticSignals>) {
+  const source = value && typeof value === 'object' ? value : {};
+  const reviewInputs = Array.isArray(source.review_inputs)
+    ? source.review_inputs.map((item: unknown) => String(item || '').trim()).filter(Boolean)
+    : [
+        'Full uploaded script content',
+        'Deterministic PowerShell token and pattern scan',
+        'Hosted AI structured analysis rubric',
+        'PSScriptAnalyzer-aligned security, reliability, compatibility, and style checks',
+      ];
+
+  return {
+    script_lines_reviewed: clampNumber(source.script_lines_reviewed, 0, 1000000, staticSignals.line_count),
+    non_empty_lines_reviewed: clampNumber(source.non_empty_lines_reviewed, 0, 1000000, staticSignals.non_empty_line_count),
+    commands_identified: clampNumber(source.commands_identified, 0, 1000000, staticSignals.command_count),
+    functions_identified: clampNumber(source.functions_identified, 0, 1000000, staticSignals.function_count),
+    parameters_identified: clampNumber(source.parameters_identified, 0, 1000000, staticSignals.parameter_count),
+    modules_identified: clampNumber(source.modules_identified, 0, 1000000, staticSignals.modules.length),
+    review_inputs: reviewInputs,
+  };
+}
+
+function collectPowerShellStaticSignals(content: string) {
+  const lines = content.split(/\r?\n/);
+  const commandMatches = Array.from(new Set(content.match(/\b[A-Z][A-Za-z]+-[A-Za-z][A-Za-z0-9]+\b/g) || [])).slice(0, 40);
+  const parameterMatches = Array.from(new Set(content.match(/(?<!\w)-[A-Za-z][A-Za-z0-9]+/g) || [])).slice(0, 40);
+  const functionMatches = Array.from(content.matchAll(/\bfunction\s+([A-Za-z][A-Za-z0-9_-]*)/gi))
+    .map(match => match[1])
+    .filter(Boolean)
+    .slice(0, 30);
+  const requires = Array.from(content.matchAll(/#Requires\s+([^\r\n]+)/gi))
+    .map(match => match[1].trim())
+    .filter(Boolean)
+    .slice(0, 20);
+  const modules = new Set<string>();
+
+  for (const match of content.matchAll(/#Requires\s+-Modules?\s+([^\r\n]+)/gi)) {
+    String(match[1] || '').split(/[,;]/).forEach(moduleName => {
+      const cleaned = moduleName.replace(/['"]/g, '').replace(/\s+-.*$/, '').trim();
+      if (cleaned) modules.add(cleaned);
+    });
+  }
+
+  for (const match of content.matchAll(/Import-Module\s+(?:-Name\s+)?['"]?([A-Za-z0-9_.-]+)/gi)) {
+    if (match[1]) modules.add(match[1]);
+  }
+
+  const mutatesState = /\b(Set|New|Remove|Clear|Start|Stop|Restart|Enable|Disable|Install|Uninstall|Format|Move|Rename)-[A-Za-z][A-Za-z0-9]+\b/i.test(content);
+
+  return {
+    line_count: lines.length,
+    non_empty_line_count: lines.filter(line => line.trim()).length,
+    command_count: commandMatches.length,
+    function_count: functionMatches.length,
+    parameter_count: parameterMatches.length,
+    has_comment_help: /<#[\s\S]*\.(SYNOPSIS|DESCRIPTION|PARAMETER|EXAMPLE)/i.test(content),
+    has_cmdlet_binding: /\[CmdletBinding\b/i.test(content),
+    has_should_process: /\bSupportsShouldProcess\b|\$PSCmdlet\.ShouldProcess\s*\(/i.test(content),
+    has_try_catch: /\btry\s*\{[\s\S]*\bcatch\s*\{/i.test(content),
+    mutates_state: mutatesState,
+    uses_remoting: /\bInvoke-Command\b|\bEnter-PSSession\b|\bNew-PSSession\b/i.test(content),
+    uses_remote_content: /\bInvoke-WebRequest\b|\bInvoke-RestMethod\b|\bDownloadString\b|\bDownloadFile\b/i.test(content),
+    uses_dynamic_execution: /\bInvoke-Expression\b|\biex\b/i.test(content),
+    possible_secret_count: (content.match(/\b(password|passwd|pwd|secret|token|api[_-]?key)\b\s*=/gi) || []).length,
+    requires,
+    modules: Array.from(modules).slice(0, 30),
+    functions: functionMatches,
+    parameters: parameterMatches,
+    commands: commandMatches,
+  };
+}
+
 function buildStaticPowerShellAnalysis(content: string, title: string) {
+  const staticSignals = collectPowerShellStaticSignals(content);
   const commands = Array.from(new Set(content.match(/\b[A-Z][A-Za-z]+-[A-Za-z][A-Za-z0-9]+\b/g) || [])).slice(0, 12);
   const parameterNames = Array.from(new Set(content.match(/(?<!\w)-[A-Za-z][A-Za-z0-9]+/g) || [])).slice(0, 24);
   const riskPatterns = [
@@ -3051,6 +3195,8 @@ function buildStaticPowerShellAnalysis(content: string, title: string) {
       operational_risk: securityIssues.length
         ? 'Potentially sensitive commands were detected. Review permissions, remote content, deletion, execution policy, and process launch behavior before production use.'
         : 'No high-risk command pattern was detected by static fallback, but permissions and target scope still need review.',
+      data_collection_summary: normalizeDataCollectionSummary(null, staticSignals),
+      static_signals: staticSignals,
       criteria_version: ANALYSIS_CRITERIA_VERSION,
       analysis_criteria: analysisCriteria,
       prioritized_findings: prioritizedFindings,
@@ -4448,6 +4594,7 @@ function toFrontendScript(row: any) {
     deletedBy: row.deleted_by,
     lifecycleStatus,
     category: row.category_name ? { id: row.category_id, name: row.category_name } : null,
+    tags: Array.isArray(row.tags) ? row.tags : [],
     user: row.author_username ? { id: row.user_id, username: row.author_username } : null,
     analysis: row.analysis_quality_score == null && row.analysis_security_score == null && row.analysis_risk_score == null
       ? null

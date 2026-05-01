@@ -152,6 +152,11 @@ const normalizeScoreValue = (...values: unknown[]): number | null => {
   return null;
 };
 
+const numberOrZero = (value: unknown): number => {
+  const numeric = Number(value);
+  return Number.isFinite(numeric) ? numeric : 0;
+};
+
 const addModule = (modules: Set<string>, moduleName: string) => {
   const cleaned = moduleName
     .replace(/^['"]|['"]$/g, '')
@@ -787,6 +792,15 @@ When generating or modifying scripts:
   const isCurrentAnalysis = analysis.isCurrent !== false;
   const commandAnalysisMarkdown = buildCommandAnalysisMarkdown(script.title, analysis);
   const runtimeRequirements = inferRuntimeRequirements(script.content || '', analysis);
+  const staticSignals = analysis.executionSummary?.static_signals || analysis.execution_summary?.static_signals || {};
+  const dataCollectionSummary = analysis.executionSummary?.data_collection_summary || analysis.execution_summary?.data_collection_summary || {};
+  const reviewInputs = Array.isArray(dataCollectionSummary.review_inputs)
+    ? dataCollectionSummary.review_inputs.filter(Boolean)
+    : [
+        'Full uploaded script content',
+        'Hosted structured AI analysis',
+        'Deterministic PowerShell scan signals',
+      ];
   const reportPurpose = firstText(
     analysis.purpose,
     analysis.summary,
@@ -824,6 +838,24 @@ When generating or modifying scripts:
   const securityConcernCount = securityIssues.length || prioritizedFindings.filter((finding: any) => /security/i.test(String(finding?.category || finding?.title || ''))).length;
   const performanceSuggestionCount = performanceItems.length || prioritizedFindings.filter((finding: any) => /performance/i.test(String(finding?.category || finding?.title || ''))).length;
   const commandCount = commandDetails.length;
+  const coverageStats = [
+    {
+      label: 'Lines Reviewed',
+      value: numberOrZero(dataCollectionSummary.script_lines_reviewed ?? staticSignals.line_count ?? script.content?.split(/\r?\n/).length),
+    },
+    {
+      label: 'Commands Found',
+      value: numberOrZero(dataCollectionSummary.commands_identified ?? staticSignals.command_count ?? commandCount),
+    },
+    {
+      label: 'Functions',
+      value: numberOrZero(dataCollectionSummary.functions_identified ?? staticSignals.function_count),
+    },
+    {
+      label: 'Parameters',
+      value: numberOrZero(dataCollectionSummary.parameters_identified ?? staticSignals.parameter_count),
+    },
+  ];
   const readinessLabel = !hasReadinessScores
     ? 'Analysis data incomplete'
     : securityScore >= 7 && qualityScore >= 7 && riskScore <= 4
@@ -919,6 +951,58 @@ When generating or modifying scripts:
                 <div className="rounded-xl border border-slate-800 bg-slate-900/75 p-4">
                   <div className="text-2xl font-black text-white">{commandCount}</div>
                   <div className="mt-1 text-xs uppercase tracking-[0.18em] text-slate-400">Commands Mapped</div>
+                </div>
+              </div>
+
+              <div className="mt-6 rounded-xl border border-slate-800 bg-slate-900/75 p-4">
+                <div className="mb-4 flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+                  <div>
+                    <h3 className="text-sm font-semibold uppercase tracking-[0.18em] text-slate-300">Analysis Coverage</h3>
+                    <p className="mt-1 text-xs text-slate-500">What the analyzer actually inspected and understood from the script.</p>
+                  </div>
+                  <span className="rounded-full border border-slate-700 bg-slate-950 px-3 py-1 text-xs text-slate-300">
+                    {analysisSource === 'fallback' || analysisSource === 'static' ? 'Static fallback' : 'Hosted AI + static scan'}
+                  </span>
+                </div>
+                <div className="grid gap-3 sm:grid-cols-4">
+                  {coverageStats.map((stat) => (
+                    <div key={stat.label} className="rounded-lg border border-slate-800 bg-slate-950/70 p-3">
+                      <div className="text-xl font-bold text-white">{stat.value}</div>
+                      <div className="mt-1 text-[0.68rem] uppercase tracking-[0.16em] text-slate-500">{stat.label}</div>
+                    </div>
+                  ))}
+                </div>
+                <div className="mt-4 grid gap-3 lg:grid-cols-2">
+                  <div>
+                    <div className="mb-2 text-xs font-semibold uppercase tracking-[0.16em] text-slate-400">Review Inputs</div>
+                    <ul className="space-y-1 text-xs leading-5 text-slate-300">
+                      {reviewInputs.slice(0, 5).map((inputItem: string, index: number) => (
+                        <li key={`${inputItem}-${index}`} className="flex gap-2">
+                          <span className="text-blue-300">•</span>
+                          <span>{inputItem}</span>
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+                  <div>
+                    <div className="mb-2 text-xs font-semibold uppercase tracking-[0.16em] text-slate-400">Signals Detected</div>
+                    <div className="flex flex-wrap gap-2">
+                      {[
+                        staticSignals.has_comment_help ? 'Comment help' : 'No comment help detected',
+                        staticSignals.has_cmdlet_binding ? 'CmdletBinding' : 'No CmdletBinding detected',
+                        staticSignals.has_should_process ? 'ShouldProcess' : 'No ShouldProcess detected',
+                        staticSignals.has_try_catch ? 'Try/Catch' : 'No Try/Catch detected',
+                        staticSignals.mutates_state ? 'State-changing commands' : 'Read-only pattern likely',
+                        staticSignals.uses_dynamic_execution ? 'Dynamic execution' : '',
+                        staticSignals.uses_remote_content ? 'Remote content/API use' : '',
+                        staticSignals.uses_remoting ? 'Remoting' : '',
+                      ].filter(Boolean).map((signal) => (
+                        <span key={signal} className="rounded-md border border-slate-700 bg-slate-950 px-2 py-1 text-xs text-slate-300">
+                          {signal}
+                        </span>
+                      ))}
+                    </div>
+                  </div>
                 </div>
               </div>
             </div>
@@ -1319,7 +1403,7 @@ When generating or modifying scripts:
                           {reportMetrics.map((metric) => (
                             <div key={metric.label} className="grid gap-1 sm:grid-cols-[9rem_1fr]">
                               <dt className="font-bold text-blue-200">{metric.label}:</dt>
-                              <dd className="text-slate-300">{metric.value.toFixed(1)}/10 - {metric.note}</dd>
+                              <dd className="text-slate-300">{displayScore(metric.value)} - {metric.note}</dd>
                             </div>
                           ))}
                         </dl>

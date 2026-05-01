@@ -1,4 +1,5 @@
 import React from 'react';
+import { Link } from 'react-router-dom';
 import LoadingSpinner from './LoadingSpinner';
 
 interface StatCardProps {
@@ -8,6 +9,8 @@ interface StatCardProps {
   suffix?: string;
   change?: number;
   isLoading?: boolean;
+  to?: string;
+  ariaLabel?: string;
 }
 
 const StatCard: React.FC<StatCardProps> = ({
@@ -17,6 +20,8 @@ const StatCard: React.FC<StatCardProps> = ({
   suffix = '',
   change,
   isLoading = false,
+  to,
+  ariaLabel,
 }) => {
   // Get icon based on type
   const getIcon = () => {
@@ -125,7 +130,7 @@ const StatCard: React.FC<StatCardProps> = ({
     );
   };
 
-  return (
+  const content = (
     <div className="p-6 rounded-2xl shadow-[var(--shadow-near)] bg-[var(--surface-raised)] border border-[var(--surface-overlay)] transition-all duration-300 hover:-translate-y-0.5 hover:shadow-[var(--shadow-far)]">
       <div className="flex items-center justify-between mb-4">
         <div className="flex items-center">
@@ -153,6 +158,18 @@ const StatCard: React.FC<StatCardProps> = ({
         </div>
       )}
     </div>
+  );
+
+  if (!to) return content;
+
+  return (
+    <Link
+      to={to}
+      aria-label={ariaLabel || `View ${title}`}
+      className="block rounded-2xl focus:outline-none focus:ring-2 focus:ring-[var(--accent)] focus:ring-offset-2 focus:ring-offset-[var(--surface-base)]"
+    >
+      {content}
+    </Link>
   );
 };
 

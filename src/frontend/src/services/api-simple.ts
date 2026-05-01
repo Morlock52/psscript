@@ -70,7 +70,7 @@ const findBestResponse = (input: string): string => {
 };
 
 function isMockModeEnabled(): boolean {
-  return localStorage.getItem('psscript_mock_mode') === 'true' || import.meta.env.DEV;
+  return localStorage.getItem('psscript_mock_mode') === 'true' || import.meta.env.VITE_PSSCRIPT_MOCK_MODE === 'true';
 }
 
 function getAuthHeaders(): Record<string, string> {

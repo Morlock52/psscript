@@ -1,19 +1,35 @@
 import React, { useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useQuery, useMutation } from '@tanstack/react-query';
-import { scriptService } from '../services/api';
+import { categoryService, scriptService } from '../services/api';
 import ScriptDownloadButton from '../components/ScriptDownloadButton';
-import FullScreenEditor from '../components/FullScreenEditor';
 import toast from 'react-hot-toast';
 import { isHostedStaticAnalysisOnly } from '../services/supabase';
 import { useAuth } from '../hooks/useAuth';
+
+type ScriptDetailsFormState = {
+  title: string;
+  description: string;
+  categoryId: string;
+  isPublic: boolean;
+  tags: string;
+  content: string;
+};
+
+const parseTagsInput = (value: string): string[] =>
+  Array.from(new Set(
+    value
+      .split(',')
+      .map(tag => tag.trim().toLowerCase())
+      .filter(Boolean)
+  )).slice(0, 10);
 
 const ScriptDetail: React.FC = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const { user } = useAuth();
   const [parameters, setParameters] = useState<Record<string, string>>({});
-  const [isEditorOpen, setIsEditorOpen] = useState(false);
+  const [detailsForm, setDetailsForm] = useState<ScriptDetailsFormState | null>(null);
   const hostedStaticOnly = isHostedStaticAnalysisOnly();
   const isAdmin = user?.role === 'admin';
 
@@ -39,10 +55,17 @@ const ScriptDetail: React.FC = () => {
     refetchOnWindowFocus: false,
   });
 
-  const { data: versionHistory } = useQuery({
+  const { data: versionHistory, refetch: refetchVersions } = useQuery({
     queryKey: ['scriptVersions', id],
     queryFn: () => scriptService.getScriptVersions(id || ''),
     enabled: !!id,
+    refetchOnWindowFocus: false,
+  });
+
+  const { data: categories } = useQuery({
+    queryKey: ['categories'],
+    queryFn: categoryService.getCategories,
+    enabled: isAdmin && !!detailsForm,
     refetchOnWindowFocus: false,
   });
 
@@ -59,10 +82,19 @@ const ScriptDetail: React.FC = () => {
   });
 
   const updateScriptMutation = useMutation({
-    mutationFn: (content: string) => scriptService.updateScript(id || '', { content }),
+    mutationFn: (payload: {
+      title: string;
+      description: string;
+      categoryId: number | null;
+      isPublic: boolean;
+      tags: string[];
+      content: string;
+    }) => scriptService.updateScript(id || '', payload),
     onSuccess: () => {
-      // Refetch the script to get the updated version
       refetch();
+      refetchVersions();
+      setDetailsForm(null);
+      toast.success('Script details updated');
     },
     onError: (error) => {
       console.error('Error updating script:', error);
@@ -97,20 +129,44 @@ const ScriptDetail: React.FC = () => {
     }));
   };
 
-  const handleOpenEditor = () => {
+  const handleOpenDetails = () => {
     if (!isAdmin) {
       toast.error('Only admins can edit script details.');
       return;
     }
-    setIsEditorOpen(true);
+    setDetailsForm({
+      title: script.title || '',
+      description: script.description || '',
+      categoryId: script.categoryId ? String(script.categoryId) : '',
+      isPublic: Boolean(script.isPublic),
+      tags: Array.isArray(script.tags) ? script.tags.join(', ') : '',
+      content: script.content || '',
+    });
   };
 
-  const handleSaveScript = (content: string) => {
+  const handleSaveDetails = (event: React.FormEvent) => {
+    event.preventDefault();
     if (!isAdmin) {
       toast.error('Only admins can edit script details.');
       return;
     }
-    updateScriptMutation.mutate(content);
+    if (!detailsForm) return;
+    if (!detailsForm.title.trim()) {
+      toast.error('Script title is required');
+      return;
+    }
+    if (!detailsForm.content.trim()) {
+      toast.error('Script content is required');
+      return;
+    }
+    updateScriptMutation.mutate({
+      title: detailsForm.title.trim(),
+      description: detailsForm.description.trim(),
+      categoryId: detailsForm.categoryId ? Number(detailsForm.categoryId) : null,
+      isPublic: detailsForm.isPublic,
+      tags: parseTagsInput(detailsForm.tags),
+      content: detailsForm.content,
+    });
   };
 
   const handleAnalyzeScript = () => {
@@ -168,9 +224,9 @@ const ScriptDetail: React.FC = () => {
           {isAdmin && (
             <button
               className={buttonPrimaryStyles}
-              onClick={handleOpenEditor}
+              onClick={handleOpenDetails}
             >
-              Edit
+              Edit Details
             </button>
           )}
           <button
@@ -201,16 +257,115 @@ const ScriptDetail: React.FC = () => {
         </div>
       </div>
 
-      {/* Full Screen Editor */}
-      {isAdmin && (
-        <FullScreenEditor
-          isOpen={isEditorOpen}
-          onClose={() => setIsEditorOpen(false)}
-          initialContent={script.content}
-          onSave={handleSaveScript}
-          title="Edit PowerShell Script"
-          scriptName={script.title}
-        />
+      {isAdmin && detailsForm && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 p-4">
+          <form
+            onSubmit={handleSaveDetails}
+            className="w-full max-w-4xl max-h-[90vh] overflow-y-auto rounded-xl border border-[var(--surface-overlay)] bg-[var(--surface-raised)] shadow-[var(--shadow-far)]"
+          >
+            <div className="flex items-start justify-between gap-4 border-b border-[var(--surface-overlay)] p-5">
+              <div>
+                <h2 className="text-xl font-semibold text-[var(--ink-primary)]">Edit Script Details</h2>
+                <p className="mt-1 text-sm text-[var(--ink-secondary)]">
+                  Content edits create a new script version. Metadata-only edits keep the current version.
+                </p>
+              </div>
+              <button
+                type="button"
+                onClick={() => setDetailsForm(null)}
+                className={buttonSecondaryStyles}
+              >
+                Close
+              </button>
+            </div>
+
+            <div className="grid grid-cols-1 gap-5 p-5 md:grid-cols-2">
+              <label className="space-y-2">
+                <span className="block text-sm font-medium text-[var(--ink-secondary)]">Title</span>
+                <input
+                  type="text"
+                  value={detailsForm.title}
+                  onChange={(e) => setDetailsForm(prev => prev ? { ...prev, title: e.target.value } : prev)}
+                  className="w-full rounded-md border border-[var(--surface-overlay)] bg-[var(--surface-base)] px-3 py-2 text-[var(--ink-primary)] focus:border-[var(--accent)] focus:ring-2 focus:ring-[var(--accent)]/40"
+                />
+              </label>
+
+              <label className="space-y-2">
+                <span className="block text-sm font-medium text-[var(--ink-secondary)]">Category</span>
+                <select
+                  value={detailsForm.categoryId}
+                  onChange={(e) => setDetailsForm(prev => prev ? { ...prev, categoryId: e.target.value } : prev)}
+                  className="w-full rounded-md border border-[var(--surface-overlay)] bg-[var(--surface-base)] px-3 py-2 text-[var(--ink-primary)] focus:border-[var(--accent)] focus:ring-2 focus:ring-[var(--accent)]/40"
+                >
+                  <option value="">Uncategorized</option>
+                  {(categories?.categories || []).map((category: any) => (
+                    <option key={category.id} value={String(category.id)}>
+                      {category.name}
+                    </option>
+                  ))}
+                </select>
+              </label>
+
+              <label className="space-y-2 md:col-span-2">
+                <span className="block text-sm font-medium text-[var(--ink-secondary)]">Description</span>
+                <textarea
+                  value={detailsForm.description}
+                  onChange={(e) => setDetailsForm(prev => prev ? { ...prev, description: e.target.value } : prev)}
+                  rows={3}
+                  className="w-full rounded-md border border-[var(--surface-overlay)] bg-[var(--surface-base)] px-3 py-2 text-[var(--ink-primary)] focus:border-[var(--accent)] focus:ring-2 focus:ring-[var(--accent)]/40"
+                />
+              </label>
+
+              <label className="space-y-2 md:col-span-2">
+                <span className="block text-sm font-medium text-[var(--ink-secondary)]">Tags</span>
+                <input
+                  type="text"
+                  value={detailsForm.tags}
+                  onChange={(e) => setDetailsForm(prev => prev ? { ...prev, tags: e.target.value } : prev)}
+                  placeholder="powershell, security, operations"
+                  className="w-full rounded-md border border-[var(--surface-overlay)] bg-[var(--surface-base)] px-3 py-2 text-[var(--ink-primary)] focus:border-[var(--accent)] focus:ring-2 focus:ring-[var(--accent)]/40"
+                />
+              </label>
+
+              <label className="flex items-center gap-3 rounded-md border border-[var(--surface-overlay)] bg-[var(--surface-base)] px-3 py-2 md:col-span-2">
+                <input
+                  type="checkbox"
+                  checked={detailsForm.isPublic}
+                  onChange={(e) => setDetailsForm(prev => prev ? { ...prev, isPublic: e.target.checked } : prev)}
+                  className="h-4 w-4 rounded border-[var(--surface-overlay)] text-[var(--accent)] focus:ring-[var(--accent)]"
+                />
+                <span className="text-sm text-[var(--ink-secondary)]">Public script</span>
+              </label>
+
+              <label className="space-y-2 md:col-span-2">
+                <span className="block text-sm font-medium text-[var(--ink-secondary)]">Script Content</span>
+                <textarea
+                  value={detailsForm.content}
+                  onChange={(e) => setDetailsForm(prev => prev ? { ...prev, content: e.target.value } : prev)}
+                  rows={16}
+                  className="w-full rounded-md border border-[var(--surface-overlay)] bg-[var(--surface-base)] px-3 py-2 font-mono text-sm text-[var(--ink-primary)] focus:border-[var(--accent)] focus:ring-2 focus:ring-[var(--accent)]/40"
+                />
+              </label>
+            </div>
+
+            <div className="flex justify-end gap-3 border-t border-[var(--surface-overlay)] p-5">
+              <button
+                type="button"
+                onClick={() => setDetailsForm(null)}
+                className={buttonSecondaryStyles}
+              >
+                Cancel
+              </button>
+              <button
+                type="submit"
+                disabled={updateScriptMutation.isPending}
+                className={`${buttonPrimaryStyles} disabled:cursor-not-allowed disabled:opacity-60`}
+              >
+                {updateScriptMutation.isPending ? 'Saving...' : 'Save Details'}
+              </button>
+            </div>
+          </form>
+        </div>
       )}
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
@@ -308,8 +463,33 @@ const ScriptDetail: React.FC = () => {
             <div className="p-4">
               <div className="space-y-4">
                 <div>
+                  <h3 className="text-sm text-[var(--ink-tertiary)]">Description</h3>
+                  <p className="text-[var(--ink-primary)]">{script.description || 'No description provided'}</p>
+                </div>
+                <div>
                   <h3 className="text-sm text-[var(--ink-tertiary)]">Category</h3>
                   <p className="text-[var(--ink-primary)]">{script.category?.name || 'Uncategorized'}</p>
+                </div>
+                <div>
+                  <h3 className="text-sm text-[var(--ink-tertiary)]">Visibility</h3>
+                  <p className="text-[var(--ink-primary)]">{script.isPublic ? 'Public' : 'Private'}</p>
+                </div>
+                <div>
+                  <h3 className="text-sm text-[var(--ink-tertiary)]">Tags</h3>
+                  {Array.isArray(script.tags) && script.tags.length > 0 ? (
+                    <div className="mt-2 flex flex-wrap gap-2">
+                      {script.tags.map((tag: string) => (
+                        <span
+                          key={tag}
+                          className="rounded-full bg-[var(--surface-overlay)] px-2 py-1 text-xs text-[var(--ink-secondary)]"
+                        >
+                          {tag}
+                        </span>
+                      ))}
+                    </div>
+                  ) : (
+                    <p className="text-[var(--ink-primary)]">No tags</p>
+                  )}
                 </div>
                 <div>
                   <h3 className="text-sm text-[var(--ink-tertiary)]">Author</h3>

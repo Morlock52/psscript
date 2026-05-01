@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useAuth } from '../hooks/useAuth';
-import { scriptService, categoryService, analysisService } from '../services/api-enhanced';
+import { scriptService, categoryService } from '../services/api-enhanced';
 import { scriptService as scriptApi } from '../services/api';
 
 // Components
@@ -67,43 +67,20 @@ const Dashboard: React.FC = () => {
   // Fetch statistics
   const {
     data: stats,
-    isLoading: isLoadingStats
+    isLoading: isLoadingStats,
+    error: statsError
   } = useQuery({
     queryKey: ['dashboard-stats'],
     queryFn: () => scriptService.getDashboardStats(),
     staleTime: 300000,
   });
-
-  // Fetch recent activity
-  const {
-    data: activity,
-    isLoading: isLoadingActivity
-  } = useQuery({
-    queryKey: ['recent-activity'],
-    queryFn: () => scriptService.getRecentActivity(),
-    enabled: isAuthenticated,
-    staleTime: 60000,
-  });
-
-  // Fetch security metrics
-  const {
-    data: securityMetrics,
-    isLoading: isLoadingSecurityMetrics
-  } = useQuery({
-    queryKey: ['security-metrics'],
-    queryFn: () => analysisService.getSecurityMetrics(),
-    staleTime: 300000,
-  });
-
-  // Fetch trend data
-  const {
-    data: trendData,
-    isLoading: isLoadingTrendData,
-  } = useQuery({
-    queryKey: ['script-trends', trendPeriod],
-    queryFn: () => scriptService.getScriptTrends(trendPeriod),
-    staleTime: 300000,
-  });
+  const dashboardUnavailable = Boolean(statsError);
+  const trendPoints = trendPeriod === 'week' ? 7 : trendPeriod === 'month' ? 30 : 365;
+  const trendData = {
+    uploads: stats?.trends.uploads.slice(-trendPoints) || [],
+    executions: stats?.trends.executions.slice(-trendPoints) || [],
+    analyses: stats?.trends.analyses.slice(-trendPoints) || [],
+  };
 
   // Card base styles using CSS variables
   const cardStyles = "p-6 rounded-2xl shadow-[var(--shadow-near)] bg-[var(--surface-raised)] border border-[var(--surface-overlay)] transition-colors duration-300";
@@ -132,6 +109,11 @@ const Dashboard: React.FC = () => {
       </div>
 
       {/* Stats Cards */}
+      {dashboardUnavailable && (
+        <div className="mb-6 rounded-lg border border-[var(--signal-danger)]/40 bg-[var(--signal-danger)]/10 p-4 text-sm text-[var(--ink-primary)]">
+          Dashboard analytics are unavailable right now. Script lists still load independently.
+        </div>
+      )}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
         <StatCard
           title="Total Scripts"
@@ -139,12 +121,16 @@ const Dashboard: React.FC = () => {
           icon="script"
           change={stats?.scriptsChange || 0}
           isLoading={isLoadingStats}
+          to="/scripts"
+          ariaLabel="View all scripts"
         />
         <StatCard
           title="Categories"
           value={stats?.totalCategories || 0}
           icon="category"
           isLoading={isLoadingStats}
+          to="/categories"
+          ariaLabel="View script categories"
         />
         <StatCard
           title="Avg. Security Score"
@@ -153,6 +139,8 @@ const Dashboard: React.FC = () => {
           suffix="/10"
           change={stats?.securityScoreChange || 0}
           isLoading={isLoadingStats}
+          to="/analytics#security-overview"
+          ariaLabel="View security analytics"
         />
         <StatCard
           title="AI Analyses"
@@ -160,6 +148,8 @@ const Dashboard: React.FC = () => {
           icon="analysis"
           change={stats?.analysesChange || 0}
           isLoading={isLoadingStats}
+          to="/analytics#ai-analysis-tracking"
+          ariaLabel="View AI analysis analytics"
         />
       </div>
 
@@ -232,13 +222,17 @@ const Dashboard: React.FC = () => {
           <div className={cardStyles}>
             <h2 className="text-xl font-bold mb-4 text-[var(--ink-primary)]">Security Metrics</h2>
 
-            {isLoadingSecurityMetrics ? (
+            {isLoadingStats ? (
               <div className="flex justify-center py-8">
                 <LoadingSpinner size="lg" />
               </div>
+            ) : dashboardUnavailable ? (
+              <div className="flex h-64 items-center justify-center text-sm text-[var(--ink-tertiary)]">
+                Security analytics unavailable
+              </div>
             ) : (
               <div className="h-64">
-                <SecurityScoreChart data={securityMetrics?.securityScores || []} />
+                <SecurityScoreChart data={stats?.securityMetrics.securityScores || []} />
               </div>
             )}
           </div>
@@ -264,9 +258,13 @@ const Dashboard: React.FC = () => {
               </div>
             </div>
 
-            {isLoadingTrendData ? (
+            {isLoadingStats ? (
               <div className="flex justify-center py-8">
                 <LoadingSpinner size="lg" />
+              </div>
+            ) : dashboardUnavailable ? (
+              <div className="flex h-64 items-center justify-center text-sm text-[var(--ink-tertiary)]">
+                Trend analytics unavailable
               </div>
             ) : (
               <div className="h-64">
@@ -285,13 +283,13 @@ const Dashboard: React.FC = () => {
           <div className={cardStyles}>
             <h2 className="text-xl font-bold mb-4 text-[var(--ink-primary)]">Script Categories</h2>
 
-            {isLoadingCategories ? (
+            {isLoadingStats || isLoadingCategories ? (
               <div className="flex justify-center py-8">
                 <LoadingSpinner size="lg" />
               </div>
             ) : (
               <div className="h-64">
-                <CategoryPieChart data={categories?.categories || []} />
+                <CategoryPieChart data={stats?.categoryDistribution.length ? stats.categoryDistribution : categories?.categories || []} />
               </div>
             )}
           </div>
@@ -316,12 +314,16 @@ const Dashboard: React.FC = () => {
                   </Link>
                 </div>
               </div>
-            ) : isLoadingActivity ? (
+            ) : isLoadingStats ? (
               <div className="flex justify-center py-8">
                 <LoadingSpinner size="lg" />
               </div>
+            ) : dashboardUnavailable ? (
+              <div className="text-center py-8 text-[var(--ink-tertiary)]">
+                Activity unavailable
+              </div>
             ) : (
-              <ActivityFeed activities={activity || []} />
+              <ActivityFeed activities={stats?.recentActivity || []} />
             )}
           </div>
         </div>

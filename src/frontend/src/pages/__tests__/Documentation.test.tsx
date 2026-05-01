@@ -100,17 +100,25 @@ describe('Documentation manual tile management', () => {
   });
 
   it('shows manual create and edit controls for admins', async () => {
+    const user = userEvent.setup();
     await renderDocumentation('admin');
 
     expect(screen.getByRole('button', { name: /add documentation/i })).toBeInTheDocument();
     expect(screen.getByRole('button', { name: /edit existing manual doc/i })).toBeInTheDocument();
+
+    await user.click(screen.getByText('Existing Manual Doc'));
+    expect(screen.getByRole('button', { name: /edit details/i })).toBeInTheDocument();
   });
 
   it('hides manual create and edit controls for non-admin users', async () => {
+    const user = userEvent.setup();
     await renderDocumentation('user');
 
     expect(screen.queryByRole('button', { name: /add documentation/i })).not.toBeInTheDocument();
     expect(screen.queryByRole('button', { name: /edit existing manual doc/i })).not.toBeInTheDocument();
+
+    await user.click(screen.getByText('Existing Manual Doc'));
+    expect(screen.queryByRole('button', { name: /edit details/i })).not.toBeInTheDocument();
   });
 
   it('validates required manual documentation fields', async () => {

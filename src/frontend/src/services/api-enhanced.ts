@@ -1,6 +1,7 @@
 // Enhanced API service with additional methods for the PSScript application
 import { apiClient, scriptService as baseScriptService, categoryService, analyticsService } from './api';
 import { normalizeScriptSummaries } from '../utils/scriptSummary';
+import type { DashboardSecurityMetrics, DashboardStats } from '../types/dashboard';
 
 // Define types for the enhanced API
 interface Script {
@@ -29,33 +30,6 @@ interface _Category {
   description: string;
   count?: number;
   color?: string;
-}
-
-interface DashboardStats {
-  totalScripts: number;
-  scriptsChange: number;
-  totalCategories: number;
-  avgSecurityScore: number;
-  securityScoreChange: number;
-  totalAnalyses: number;
-  analysesChange: number;
-  recentScripts?: Script[];
-  popularScripts?: Script[];
-}
-
-interface SecurityMetrics {
-  securityScores: {
-    score: number;
-    count: number;
-    percentage: number;
-  }[];
-  commonIssues: {
-    issue: string;
-    count: number;
-    percentage: number;
-  }[];
-  averageScore: number;
-  totalScripts: number;
 }
 
 interface Activity {
@@ -114,42 +88,36 @@ export const scriptService = {
   
   // Get dashboard stats
   getDashboardStats: async (): Promise<DashboardStats> => {
-    try {
-      const dashboard = await apiClient.get('/analytics/dashboard').then(response => response.data);
-      
-      // Get recent scripts
-      const recentScripts = await scriptService.getRecentScripts(5);
-      
-      // Get popular scripts
-      const popularScripts = await scriptService.getPopularScripts(5);
-      
-      // Get categories
-      const categoriesResponse = await categoryService.getCategories();
-      const categories = categoriesResponse.categories || [];
-      
-      return {
-        totalScripts: dashboard.totalScripts || 0,
-        scriptsChange: dashboard.scriptsChange || 0,
-        totalCategories: categories.length,
-        avgSecurityScore: dashboard.avgSecurityScore || 0,
-        securityScoreChange: dashboard.securityScoreChange || 0,
-        totalAnalyses: dashboard.totalAnalyses || 0,
-        analysesChange: dashboard.analysesChange || 0,
-        recentScripts,
-        popularScripts
-      };
-    } catch (error) {
-      console.error('Error fetching dashboard stats:', error);
-      return {
+    const dashboard = await apiClient.get('/analytics/dashboard').then(response => response.data);
+
+    return {
+      totalScripts: Number(dashboard.totalScripts || 0),
+      scriptsChange: Number(dashboard.scriptsChange || 0),
+      totalCategories: Number(dashboard.totalCategories || 0),
+      avgSecurityScore: Number(dashboard.avgSecurityScore || 0),
+      securityScoreChange: Number(dashboard.securityScoreChange || 0),
+      totalAnalyses: Number(dashboard.totalAnalyses || 0),
+      analysesChange: Number(dashboard.analysesChange || 0),
+      categoryDistribution: Array.isArray(dashboard.categoryDistribution) ? dashboard.categoryDistribution : [],
+      securityMetrics: dashboard.securityMetrics || {
+        securityScores: [],
+        commonIssues: [],
+        averageScore: 0,
         totalScripts: 0,
-        scriptsChange: 0,
-        totalCategories: 0,
-        avgSecurityScore: 0,
-        securityScoreChange: 0,
-        totalAnalyses: 0,
-        analysesChange: 0
-      };
-    }
+      },
+      trends: dashboard.trends || { uploads: [], executions: [], analyses: [] },
+      recentActivity: Array.isArray(dashboard.recentActivity) ? dashboard.recentActivity : [],
+      workflowCounts: dashboard.workflowCounts || {
+        uploaded: 0,
+        analyzed: 0,
+        needsReview: 0,
+        highRisk: 0,
+        documented: 0,
+        exported: 0,
+      },
+      refreshedAt: dashboard.refreshedAt,
+      source: dashboard.source,
+    };
   },
   
   // Get recent activity
@@ -169,22 +137,13 @@ export const scriptService = {
     executions: { date: string; count: number }[];
     analyses: { date: string; count: number }[];
   }> => {
-    try {
-      const usage = await analyticsService.getUsageStats();
-      const rows = Array.isArray(usage) ? usage : [];
-      return {
-        uploads: rows.map((row: any) => ({ date: row.date, count: Number(row.scripts || row.count || 0) })).reverse(),
-        executions: [],
-        analyses: [],
-      };
-    } catch (error) {
-      console.error(`Error fetching script trends for ${period}:`, error);
-      return {
-        uploads: [],
-        executions: [],
-        analyses: []
-      };
-    }
+    const dashboard = await scriptService.getDashboardStats();
+    const points = period === 'week' ? 7 : period === 'month' ? 30 : 365;
+    return {
+      uploads: dashboard.trends.uploads.slice(-points),
+      executions: dashboard.trends.executions.slice(-points),
+      analyses: dashboard.trends.analyses.slice(-points),
+    };
   }
 };
 
@@ -193,34 +152,28 @@ export const analysisService = {
   ...analyticsService,
   
   // Get security metrics
-  getSecurityMetrics: async (): Promise<SecurityMetrics> => {
+  getSecurityMetrics: async (): Promise<DashboardSecurityMetrics> => {
     try {
       const metrics = await analyticsService.getSecurityMetrics();
+      if (Array.isArray(metrics.securityScores)) return metrics;
+      const high = Number(metrics.highSecurityCount ?? metrics.high ?? 0);
+      const medium = Number(metrics.mediumSecurityCount ?? metrics.medium ?? 0);
+      const low = Number(metrics.lowSecurityCount ?? metrics.low ?? 0);
+      const total = Number(metrics.totalScripts ?? high + medium + low);
       
-      // Transform to the expected format
       return {
         securityScores: [
-          { score: 8, count: metrics.highSecurityCount || 0, percentage: metrics.highSecurityPercentage || 0 },
-          { score: 5, count: metrics.mediumSecurityCount || 0, percentage: metrics.mediumSecurityPercentage || 0 },
-          { score: 2, count: metrics.lowSecurityCount || 0, percentage: metrics.lowSecurityPercentage || 0 }
+          { score: 8, count: high, percentage: total ? Math.round((high / total) * 100) : Number(metrics.highSecurityPercentage || 0) },
+          { score: 5, count: medium, percentage: total ? Math.round((medium / total) * 100) : Number(metrics.mediumSecurityPercentage || 0) },
+          { score: 2, count: low, percentage: total ? Math.round((low / total) * 100) : Number(metrics.lowSecurityPercentage || 0) }
         ],
         commonIssues: metrics.commonIssues || [],
-        averageScore: (metrics.highSecurityCount * 8 + metrics.mediumSecurityCount * 5 + metrics.lowSecurityCount * 2) / 
-                     (metrics.highSecurityCount + metrics.mediumSecurityCount + metrics.lowSecurityCount) || 0,
-        totalScripts: metrics.highSecurityCount + metrics.mediumSecurityCount + metrics.lowSecurityCount || 0
+        averageScore: Number(metrics.averageScore ?? metrics.average ?? 0),
+        totalScripts: total
       };
     } catch (error) {
       console.error('Error fetching security metrics:', error);
-      return {
-        securityScores: [
-          { score: 8, count: 0, percentage: 0 },
-          { score: 5, count: 0, percentage: 0 },
-          { score: 2, count: 0, percentage: 0 }
-        ],
-        commonIssues: [],
-        averageScore: 0,
-        totalScripts: 0
-      };
+      throw error;
     }
   }
 };

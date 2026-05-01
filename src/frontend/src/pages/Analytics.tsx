@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { analyticsService } from '../services/api';
 import CategoryPieChart from '../components/charts/CategoryPieChart';
@@ -10,6 +10,12 @@ const progressBarBgStyles = "w-full rounded-full h-2.5 bg-[var(--surface-base)]"
 const categoryItemStyles = "flex items-center justify-between p-3 rounded bg-[var(--surface-overlay)]";
 
 const Analytics: React.FC = () => {
+  useEffect(() => {
+    if (!window.location.hash) return;
+    const target = document.getElementById(window.location.hash.slice(1));
+    target?.scrollIntoView({ block: 'start' });
+  }, []);
+
   // Fetch real usage statistics
   const { data: usageStats, isLoading: usageLoading } = useQuery({
     queryKey: ['analytics', 'usage'],
@@ -61,7 +67,7 @@ const Analytics: React.FC = () => {
       <h1 className="text-2xl font-bold mb-6">Analytics Dashboard</h1>
 
       {/* Usage Statistics */}
-      <div className="mb-8">
+      <div id="usage-statistics" className="mb-8 scroll-mt-6">
         <h2 className="text-xl font-semibold mb-4">Usage Statistics</h2>
         {usageLoading ? (
           <div className="text-[var(--ink-tertiary)]">Loading statistics...</div>
@@ -98,7 +104,7 @@ const Analytics: React.FC = () => {
       </div>
 
       {/* AI Analysis Tracking */}
-      <div className="mb-8">
+      <div id="ai-analysis-tracking" className="mb-8 scroll-mt-6">
         <h2 className="text-xl font-semibold mb-4">AI Analysis Tracking</h2>
         {aiLoading ? (
           <div className="text-[var(--ink-tertiary)]">Loading AI analytics...</div>
@@ -192,7 +198,7 @@ const Analytics: React.FC = () => {
       </div>
 
       {/* Security Overview */}
-      <div className="mb-8">
+      <div id="security-overview" className="mb-8 scroll-mt-6">
         <h2 className="text-xl font-semibold mb-4">Security Overview</h2>
         {securityLoading ? (
           <div className="text-[var(--ink-tertiary)]">Loading security metrics...</div>
