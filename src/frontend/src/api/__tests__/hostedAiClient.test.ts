@@ -322,6 +322,12 @@ describe('hosted AI client routing', () => {
     expect(netlifyApi).toContain('Verified Microsoft Learn article');
     expect(netlifyApi).toContain('Microsoft Learn search fallback');
     expect(netlifyApi).toContain('Source confidence');
+    expect(netlifyApi).toContain('PDF_QR_MARKER');
+    expect(netlifyApi).toContain('fetchPdfQrImage');
+    expect(netlifyApi).toContain('/Subtype /Image');
+    expect(netlifyApi).toContain('/Subtype /Link');
+    expect(netlifyApi).toContain('api.qrserver.com/v1/create-qr-code');
+    expect(netlifyApi).toContain('PDF fallback Microsoft Learn article');
     expect(scriptAnalysis).toContain('Microsoft Learn article');
     expect(scriptAnalysis).toContain('docsReferenceForCommand');
     expect(scriptAnalysis).toContain('microsoftLearnReferenceForCommandName');

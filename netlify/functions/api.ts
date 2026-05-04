@@ -5,6 +5,8 @@ import { createClient } from '@supabase/supabase-js';
 import { createCipheriv, createDecipheriv, createHash, randomBytes } from 'node:crypto';
 import { lookup } from 'node:dns/promises';
 import net from 'node:net';
+import { deflateSync } from 'node:zlib';
+import { PNG } from 'pngjs';
 import { query } from './_shared/db';
 import { getEnv, requireEnv } from './_shared/env';
 import { requireAdmin, requireUser, requireUserAllowingDisabled, type HostedUser } from './_shared/auth';
@@ -1248,7 +1250,7 @@ async function handleScriptById(req: Request, route: RouteParams): Promise<Respo
     if (!result.rows[0]) {
       return json({ success: false, error: 'analysis_not_found', message: 'Analysis not found for this script' }, { status: 404 });
     }
-    return exportAnalysisPdf(script, toFrontendAnalysis(result.rows[0]));
+    return await exportAnalysisPdf(script, toFrontendAnalysis(result.rows[0]));
   }
 
   if (req.method === 'GET') {
@@ -3136,18 +3138,23 @@ function normalizeDataCollectionSummary(value: any, staticSignals: ReturnType<ty
 }
 
 const MICROSOFT_LEARN_COMMAND_MODULES: Record<string, string> = {
+  'add-type': 'microsoft.powershell.utility',
   'add-content': 'microsoft.powershell.management',
   'clear-content': 'microsoft.powershell.management',
   'clear-item': 'microsoft.powershell.management',
   'copy-item': 'microsoft.powershell.management',
   'get-childitem': 'microsoft.powershell.management',
   'get-content': 'microsoft.powershell.management',
+  'get-date': 'microsoft.powershell.utility',
   'get-item': 'microsoft.powershell.management',
   'get-process': 'microsoft.powershell.management',
   'get-service': 'microsoft.powershell.management',
   'get-location': 'microsoft.powershell.management',
+  'import-module': 'microsoft.powershell.core',
+  'join-path': 'microsoft.powershell.management',
   'move-item': 'microsoft.powershell.management',
   'new-item': 'microsoft.powershell.management',
+  'out-null': 'microsoft.powershell.core',
   'remove-item': 'microsoft.powershell.management',
   'rename-item': 'microsoft.powershell.management',
   'restart-service': 'microsoft.powershell.management',
@@ -5211,6 +5218,12 @@ function toFrontendDocumentationItem(row: any) {
   };
 }
 
+const PDF_QR_MARKER = '__PSSCRIPT_PDF_QR__:';
+
+function buildPdfQrMarker(url: string): string {
+  return `${PDF_QR_MARKER}${url}`;
+}
+
 function buildAnalysisReportLines(script: any, analysis: any): string[] {
   const commandDetails = analysis.commandDetails || analysis.command_details || [];
   const docsReferences = analysis.msDocsReferences || analysis.ms_docs_references || [];
@@ -5312,34 +5325,43 @@ function buildAnalysisReportLines(script: any, analysis: any): string[] {
     '',
     '## Key Commands',
     '',
-    ...(commandDetails.length
-      ? commandDetails.flatMap((command: any) => {
-          const commandName = commandNameOf(command) || 'Command';
-          const reference = docsByCommand.get(commandName.toLowerCase()) || {};
-          const docsUrl = command.msDocsUrl || command.ms_docs_url || reference.url;
-          const docsTitle = command.msDocsTitle || command.ms_docs_title || reference.title || `${commandName} - Microsoft Learn`;
-          const sourceConfidence = command.msDocsSourceConfidence || command.ms_docs_source_confidence || reference.sourceConfidence || reference.source_confidence;
+	    ...(commandDetails.length
+	      ? commandDetails.flatMap((command: any) => {
+	          const commandName = commandNameOf(command) || 'Command';
+	          const reference = docsByCommand.get(commandName.toLowerCase()) || {};
+	          let docsUrl = command.msDocsUrl || command.ms_docs_url || reference.url;
+	          const docsTitle = command.msDocsTitle || command.ms_docs_title || reference.title || `${commandName} - Microsoft Learn`;
+	          let sourceConfidence = command.msDocsSourceConfidence || command.ms_docs_source_confidence || reference.sourceConfidence || reference.source_confidence;
 
-          return [
-          `### ${commandName}`,
-          '',
-          command.description || command.purpose || 'No description provided.',
-          '',
-          `**Command group:** ${commandGroupLabel(command)}`,
-          `**Risk badges:** ${commandRiskLabels(command).join(', ')}`,
-          `**Purpose:** ${command.purpose || 'N/A'}`,
-          `**Beginner explanation:** ${command.beginner_explanation || command.beginnerExplanation || 'N/A'}`,
-          `**Management impact:** ${command.management_impact || command.managementImpact || 'N/A'}`,
-          `**Example:** ${command.example || 'N/A'}`,
-          ...(docsUrl
-            ? [
-                `**Microsoft Learn:** ${docsTitle}`,
-                docsUrl,
-                `**Source confidence:** ${sourceConfidence || 'Analyzer-provided URL'}`,
-              ]
-            : ['**Microsoft Learn:** No official reference link was attached.']),
-          '',
-        ];
+	          if (!docsUrl && /^[A-Za-z]+-[A-Za-z][A-Za-z0-9]+$/.test(commandName)) {
+	            docsUrl = microsoftLearnUrlForCommand(commandName);
+	            sourceConfidence = MICROSOFT_LEARN_COMMAND_MODULES[commandName.toLowerCase()]
+	              ? 'PDF fallback Microsoft Learn article'
+	              : 'PDF fallback Microsoft Learn search';
+	          }
+
+	          return [
+	            `### ${commandName}`,
+	            '',
+	            command.description || command.purpose || 'No description provided.',
+	            '',
+	            `**Command group:** ${commandGroupLabel(command)}`,
+	            `**Risk badges:** ${commandRiskLabels(command).join(', ')}`,
+	            `**Purpose:** ${command.purpose || 'N/A'}`,
+	            `**Beginner explanation:** ${command.beginner_explanation || command.beginnerExplanation || 'N/A'}`,
+	            `**Management impact:** ${command.management_impact || command.managementImpact || 'N/A'}`,
+	            `**Example:** ${command.example || 'N/A'}`,
+	            ...(docsUrl
+	              ? [
+	                  `**Microsoft Learn:** ${docsTitle}`,
+	                  docsUrl,
+	                  '**QR code:** Scan to open this Microsoft Learn link.',
+	                  buildPdfQrMarker(docsUrl),
+	                  `**Source confidence:** ${sourceConfidence || 'Analyzer-provided URL'}`,
+	                ]
+	              : ['**Microsoft Learn:** No official reference link was attached.']),
+	            '',
+	          ];
       })
       : ['No key command breakdown was provided.', '']),
   ];
@@ -5347,9 +5369,9 @@ function buildAnalysisReportLines(script: any, analysis: any): string[] {
   return lines;
 }
 
-function exportAnalysisPdf(script: any, analysis: any): Response {
+async function exportAnalysisPdf(script: any, analysis: any): Promise<Response> {
   const fileName = `${String(script.title || 'script-analysis').replace(/[^a-z0-9-_]+/gi, '-').toLowerCase() || 'script-analysis'}-analysis.pdf`;
-  const pdf = createTextPdf(buildAnalysisReportLines(script, analysis));
+  const pdf = await createTextPdf(buildAnalysisReportLines(script, analysis));
 
   return new Response(pdf, {
     headers: {
@@ -5360,45 +5382,133 @@ function exportAnalysisPdf(script: any, analysis: any): Response {
   });
 }
 
-function createTextPdf(lines: string[]): Uint8Array {
+async function createTextPdf(lines: string[]): Promise<Uint8Array> {
   const pageWidth = 595;
   const pageHeight = 842;
   const margin = 50;
-  const wrappedLines = lines.flatMap(line => wrapPdfLine(line, 92));
-  const pages: PdfStyledLine[][] = [];
-  let currentPage: PdfStyledLine[] = [];
-  let remainingHeight = pageHeight - margin * 2;
-
-  wrappedLines.forEach((line) => {
-    const styledLine = stylePdfLine(line);
-    const lineHeight = styledLine.leading;
-    if (currentPage.length > 0 && remainingHeight < lineHeight) {
-      pages.push(currentPage);
-      currentPage = [];
-      remainingHeight = pageHeight - margin * 2;
+  const renderableItems = lines.flatMap<PdfRenderableItem>((line) => {
+    const normalized = String(line ?? '');
+    if (normalized.startsWith(PDF_QR_MARKER)) {
+      return [{ kind: 'qr', url: normalized.slice(PDF_QR_MARKER.length).trim() }];
     }
-    currentPage.push(styledLine);
-    remainingHeight -= lineHeight;
+
+    const linkUrl = isPdfUrlLine(normalized) ? normalized.trim() : undefined;
+    return wrapPdfLine(normalized, linkUrl ? 84 : 92).map((wrappedLine) => ({
+      kind: 'text',
+      line: stylePdfLine(wrappedLine),
+      linkUrl,
+    }));
+  });
+  const qrImages = await loadPdfQrImages(renderableItems
+    .filter((item): item is PdfQrItem => item.kind === 'qr')
+    .map(item => item.url));
+  const pages: PdfPage[] = [];
+  let currentPage: PdfPlacedItem[] = [];
+  let cursorY = pageHeight - margin;
+
+  const pushPage = () => {
+    if (currentPage.length > 0) {
+      pages.push({ items: currentPage });
+      currentPage = [];
+      cursorY = pageHeight - margin;
+    }
+  };
+
+  const ensureSpace = (height: number) => {
+    if (currentPage.length > 0 && cursorY - height < margin) {
+      pushPage();
+    }
+  };
+
+  const addTextItem = (styledLine: PdfStyledLine, linkUrl?: string) => {
+    ensureSpace(styledLine.leading);
+    currentPage.push({
+      kind: 'text',
+      line: styledLine,
+      x: margin,
+      y: cursorY,
+      linkUrl,
+    });
+    cursorY -= styledLine.leading;
+  };
+
+  renderableItems.forEach((item) => {
+    if (item.kind === 'text') {
+      addTextItem(item.line, item.linkUrl);
+      return;
+    }
+
+    const image = qrImages.get(item.url);
+    if (!image) {
+      addTextItem(stylePdfLine('QR code unavailable. Use the Microsoft Learn URL above.'));
+      return;
+    }
+
+    const imageSize = 96;
+    const imageBlockHeight = imageSize + 14;
+    ensureSpace(imageBlockHeight);
+    currentPage.push({
+      kind: 'image',
+      imageName: image.name,
+      x: margin,
+      y: cursorY - imageSize,
+      width: imageSize,
+      height: imageSize,
+      linkUrl: item.url,
+    });
+    cursorY -= imageBlockHeight;
   });
 
-  if (currentPage.length > 0) {
-    pages.push(currentPage);
+  pushPage();
+  if (pages.length === 0) {
+    pages.push({
+      items: [{
+        kind: 'text',
+        line: stylePdfLine('No report content was generated.'),
+        x: margin,
+        y: pageHeight - margin,
+      }],
+    });
   }
-  if (pages.length === 0) pages.push([stylePdfLine('No report content was generated.')]);
 
   const objects: string[] = [];
-  objects.push('<< /Type /Catalog /Pages 2 0 R >>');
+  const addObject = (object: string) => {
+    objects.push(object);
+    return objects.length;
+  };
 
-  const pageObjectIds = pages.map((_, index) => 3 + index * 2);
-  objects.push(`<< /Type /Pages /Kids [${pageObjectIds.map(id => `${id} 0 R`).join(' ')}] /Count ${pages.length} >>`);
-
-  pages.forEach((pageLines, index) => {
-    const pageObjectId = pageObjectIds[index];
-    const contentObjectId = pageObjectId + 1;
-    const stream = buildPdfTextStream(pageLines, margin, pageHeight - margin);
-    objects.push(`<< /Type /Page /Parent 2 0 R /MediaBox [0 0 ${pageWidth} ${pageHeight}] /Resources << /Font << /F1 << /Type /Font /Subtype /Type1 /BaseFont /Helvetica >> /F2 << /Type /Font /Subtype /Type1 /BaseFont /Helvetica-Bold >> >> >> /Contents ${contentObjectId} 0 R >>`);
-    objects.push(`<< /Length ${Buffer.byteLength(stream, 'latin1')} >>\nstream\n${stream}\nendstream`);
+  const catalogObjectId = addObject('');
+  const pagesObjectId = addObject('');
+  const imageObjectIds = new Map<string, number>();
+  qrImages.forEach((image) => {
+    const imageStream = image.data.toString('latin1');
+    imageObjectIds.set(image.name, addObject(`<< /Type /XObject /Subtype /Image /Width ${image.width} /Height ${image.height} /ColorSpace /DeviceRGB /BitsPerComponent 8 /Filter /FlateDecode /Length ${image.data.byteLength} >>\nstream\n${imageStream}\nendstream`));
   });
+
+  const pageObjectIds: number[] = [];
+  pages.forEach((page) => {
+    const stream = buildPdfPageStream(page.items);
+    const contentObjectId = addObject(`<< /Length ${Buffer.byteLength(stream, 'latin1')} >>\nstream\n${stream}\nendstream`);
+    const annotationObjectIds = buildPdfAnnotations(page.items, pageWidth, margin).map(annotation =>
+      addObject(`<< /Type /Annot /Subtype /Link /Rect [${annotation.rect.map(formatPdfNumber).join(' ')}] /Border [0 0 0] /A << /S /URI /URI (${escapePdfText(annotation.url)}) >> >>`)
+    );
+    const imageResourceNames = Array.from(new Set(page.items
+      .filter((item): item is PdfPlacedImage => item.kind === 'image')
+      .map(item => item.imageName)));
+    const imageResources = imageResourceNames.length
+      ? ` /XObject << ${imageResourceNames
+          .map(name => `/${name} ${imageObjectIds.get(name)} 0 R`)
+          .join(' ')} >>`
+      : '';
+    const annotations = annotationObjectIds.length
+      ? ` /Annots [${annotationObjectIds.map(id => `${id} 0 R`).join(' ')}]`
+      : '';
+    const pageObjectId = addObject(`<< /Type /Page /Parent ${pagesObjectId} 0 R /MediaBox [0 0 ${pageWidth} ${pageHeight}] /Resources << /Font << /F1 << /Type /Font /Subtype /Type1 /BaseFont /Helvetica >> /F2 << /Type /Font /Subtype /Type1 /BaseFont /Helvetica-Bold >> >>${imageResources} >> /Contents ${contentObjectId} 0 R${annotations} >>`);
+    pageObjectIds.push(pageObjectId);
+  });
+
+  objects[catalogObjectId - 1] = `<< /Type /Catalog /Pages ${pagesObjectId} 0 R >>`;
+  objects[pagesObjectId - 1] = `<< /Type /Pages /Kids [${pageObjectIds.map(id => `${id} 0 R`).join(' ')}] /Count ${pages.length} >>`;
 
   let body = '%PDF-1.4\n';
   const offsets = [0];
@@ -5424,6 +5534,52 @@ type PdfStyledLine = {
   leading: number;
 };
 
+type PdfTextItem = {
+  kind: 'text';
+  line: PdfStyledLine;
+  linkUrl?: string;
+};
+
+type PdfQrItem = {
+  kind: 'qr';
+  url: string;
+};
+
+type PdfRenderableItem = PdfTextItem | PdfQrItem;
+
+type PdfPlacedText = PdfTextItem & {
+  x: number;
+  y: number;
+};
+
+type PdfPlacedImage = {
+  kind: 'image';
+  imageName: string;
+  x: number;
+  y: number;
+  width: number;
+  height: number;
+  linkUrl: string;
+};
+
+type PdfPlacedItem = PdfPlacedText | PdfPlacedImage;
+
+type PdfPage = {
+  items: PdfPlacedItem[];
+};
+
+type PdfQrImage = {
+  name: string;
+  width: number;
+  height: number;
+  data: Buffer;
+};
+
+type PdfAnnotation = {
+  rect: [number, number, number, number];
+  url: string;
+};
+
 function stylePdfLine(line: string): PdfStyledLine {
   const normalized = String(line ?? '');
   if (normalized.startsWith('# ')) {
@@ -5441,15 +5597,96 @@ function stylePdfLine(line: string): PdfStyledLine {
   return { text: normalized.replace(/\*\*/g, ''), font: 'F1', fontSize: 10, leading: 14 };
 }
 
-function buildPdfTextStream(lines: PdfStyledLine[], x: number, y: number): string {
-  let cursorY = y;
-  const textLines = lines.map((line, index) => {
-    if (index > 0) {
-      cursorY -= line.leading;
+function buildPdfPageStream(items: PdfPlacedItem[]): string {
+  return items.map((item) => {
+    if (item.kind === 'image') {
+      return `q\n${formatPdfNumber(item.width)} 0 0 ${formatPdfNumber(item.height)} ${formatPdfNumber(item.x)} ${formatPdfNumber(item.y)} cm\n/${item.imageName} Do\nQ`;
     }
-    return `/${line.font} ${line.fontSize} Tf\n${x} ${cursorY} Td\n(${escapePdfText(line.text)}) Tj\n1 0 0 1 0 0 Tm`;
+
+    return `BT\n/${item.line.font} ${item.line.fontSize} Tf\n${formatPdfNumber(item.x)} ${formatPdfNumber(item.y)} Td\n(${escapePdfText(item.line.text)}) Tj\nET`;
+  }).join('\n');
+}
+
+function buildPdfAnnotations(items: PdfPlacedItem[], pageWidth: number, margin: number): PdfAnnotation[] {
+  return items.flatMap((item) => {
+    if (!item.linkUrl) return [];
+    if (item.kind === 'image') {
+      return [{
+        rect: [item.x, item.y, item.x + item.width, item.y + item.height] as [number, number, number, number],
+        url: item.linkUrl,
+      }];
+    }
+
+    const textWidth = Math.min(pageWidth - margin - item.x, item.line.text.length * item.line.fontSize * 0.54);
+    return [{
+      rect: [item.x, item.y - 2, item.x + textWidth, item.y + item.line.fontSize + 2] as [number, number, number, number],
+      url: item.linkUrl,
+    }];
   });
-  return `BT\n${textLines.join('\n')}\nET`;
+}
+
+async function loadPdfQrImages(urls: string[]): Promise<Map<string, PdfQrImage>> {
+  const images = new Map<string, PdfQrImage>();
+  const uniqueUrls = Array.from(new Set(urls.filter(Boolean))).slice(0, 24);
+  const results = await Promise.all(uniqueUrls.map(async (url, index) => ({
+    url,
+    image: await fetchPdfQrImage(url, `Qr${index + 1}`),
+  })));
+
+  results.forEach(({ url, image }) => {
+    if (image) images.set(url, image);
+  });
+
+  return images;
+}
+
+async function fetchPdfQrImage(url: string, name: string): Promise<PdfQrImage | null> {
+  const controller = new AbortController();
+  const timeout = setTimeout(() => controller.abort(), 3000);
+
+  try {
+    const response = await fetch(pdfQrServiceUrl(url), {
+      redirect: 'follow',
+      signal: controller.signal,
+    });
+    if (!response.ok) return null;
+
+    const png = PNG.sync.read(Buffer.from(await response.arrayBuffer()));
+    const rgb = Buffer.alloc(png.width * png.height * 3);
+    for (let source = 0, target = 0; source < png.data.length; source += 4, target += 3) {
+      const alpha = png.data[source + 3] / 255;
+      rgb[target] = Math.round(png.data[source] * alpha + 255 * (1 - alpha));
+      rgb[target + 1] = Math.round(png.data[source + 1] * alpha + 255 * (1 - alpha));
+      rgb[target + 2] = Math.round(png.data[source + 2] * alpha + 255 * (1 - alpha));
+    }
+
+    return {
+      name,
+      width: png.width,
+      height: png.height,
+      data: deflateSync(rgb),
+    };
+  } catch (error) {
+    console.warn('[netlify-api] Failed to embed Microsoft Learn QR code in PDF', {
+      url,
+      message: error instanceof Error ? error.message : String(error),
+    });
+    return null;
+  } finally {
+    clearTimeout(timeout);
+  }
+}
+
+function pdfQrServiceUrl(url: string): string {
+  return `https://api.qrserver.com/v1/create-qr-code/?size=160x160&margin=8&data=${encodeURIComponent(url)}`;
+}
+
+function isPdfUrlLine(line: string): boolean {
+  return /^https?:\/\/\S+$/i.test(String(line ?? '').trim());
+}
+
+function formatPdfNumber(value: number): string {
+  return Number.isInteger(value) ? String(value) : value.toFixed(2);
 }
 
 function wrapPdfLine(line: string, maxChars: number): string[] {

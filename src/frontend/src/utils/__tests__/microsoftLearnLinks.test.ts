@@ -11,6 +11,9 @@ describe('microsoftLearnLinks', () => {
       url: 'https://learn.microsoft.com/en-us/powershell/module/microsoft.powershell.management/get-process?view=powershell-7.5',
       sourceConfidence: 'Client fallback Microsoft Learn article',
     });
+    expect(microsoftLearnReferenceForCommandName('Out-Null')?.url).toBe(
+      'https://learn.microsoft.com/en-us/powershell/module/microsoft.powershell.core/out-null?view=powershell-7.5'
+    );
   });
 
   it('falls back to Microsoft Learn search for unknown Verb-Noun commands', () => {
